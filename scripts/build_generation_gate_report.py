@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from cofitok.generation_cost import training_cost_summary
+from cofitok.generation_pair import generation_pair_contract
 from cofitok.reporting import write_json_report
 
 
@@ -189,9 +190,8 @@ def build_report(
     dense_branch = str(dense_training.get("git", {}).get("branch", ""))
     cofitok_cost = training_cost_summary(cofitok_training)
     dense_cost = training_cost_summary(dense_training)
-    matched_sections = all(
-        cofitok_training["config"][section] == dense_training["config"][section]
-        for section in ("data", "diffusion", "runtime", "optimization")
+    pair_contract = generation_pair_contract(
+        cofitok_training["config"], dense_training["config"]
     )
     gates = [
         _gate(
@@ -223,8 +223,8 @@ def build_report(
         ),
         _gate(
             "matched_training_protocol",
-            matched_sections and abs(parameter_gap) <= 0.02,
-            {"matched_sections": matched_sections, "relative_parameter_gap": parameter_gap},
+            pair_contract["valid"] and abs(parameter_gap) <= 0.02,
+            {"pair_contract": pair_contract, "relative_parameter_gap": parameter_gap},
         ),
         _gate(
             "training_cost_accounting",

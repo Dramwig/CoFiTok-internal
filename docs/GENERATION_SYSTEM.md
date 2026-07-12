@@ -183,6 +183,13 @@ images/second, and peak memory in the final JSON/Markdown/CSV comparison. The
 full paired-config preflight confirms 62,950,800 vs 62,824,707 parameters
 (+0.200706%). See
 `docs/records/2026-07-12_generation_matched_compute_accounting.md`.
+`cofitok.generation_pair.generation_pair_contract` additionally compares every
+shared resolved model field, all data/diffusion/runtime/optimization fields,
+the positive primary epsilon loss, and exact factorized-versus-dense identities.
+Only token/synthesis/feedback fields and CoFiTok auxiliary losses may differ;
+the dense baseline must keep every auxiliary loss weight at zero. Both the
+training-pair validator and promotion/final gates use this contract. See
+`docs/records/2026-07-12_generation_pair_contract.md`.
 
 The revision transition after the active 10% pair is also gated. Run
 `scripts/deploy_generation_posttraining_pipeline.ps1` locally only after both

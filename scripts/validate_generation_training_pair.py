@@ -6,8 +6,7 @@ import math
 from pathlib import Path
 from typing import Any
 
-
-MATCHED_CONFIG_SECTIONS = ("data", "diffusion", "runtime", "optimization")
+from cofitok.generation_pair import MATCHED_CONFIG_SECTIONS, generation_pair_contract
 
 
 def _read(path: str | Path) -> dict[str, Any]:
@@ -91,16 +90,9 @@ def validate_training_pair(
         expected_branch=expected_branch,
         expected_dataset=expected_dataset,
     )
-    mismatched_sections = [
-        section
-        for section in MATCHED_CONFIG_SECTIONS
-        if cofitok["config"].get(section) != dense["config"].get(section)
-    ]
-    if mismatched_sections:
-        raise ValueError(
-            "training pair has mismatched config sections: "
-            + ", ".join(mismatched_sections)
-        )
+    pair_contract = generation_pair_contract(cofitok["config"], dense["config"])
+    if not pair_contract["valid"]:
+        raise ValueError("training pair contract failed: " + "; ".join(pair_contract["issues"]))
     dense_parameters = validated_dense["parameter_count"]
     parameter_gap = (
         validated_cofitok["parameter_count"] - dense_parameters
@@ -117,6 +109,7 @@ def validate_training_pair(
         "expected_branch": expected_branch,
         "expected_dataset": expected_dataset,
         "matched_config_sections": list(MATCHED_CONFIG_SECTIONS),
+        "pair_contract": pair_contract,
         "relative_parameter_gap": parameter_gap,
         "max_parameter_gap": max_parameter_gap,
         "cofitok": validated_cofitok,

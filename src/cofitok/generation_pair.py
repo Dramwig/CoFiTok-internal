@@ -1,0 +1,95 @@
+from __future__ import annotations
+
+from typing import Any
+
+
+MATCHED_CONFIG_SECTIONS = ("data", "diffusion", "runtime", "optimization")
+FACTORIZATION_MODEL_FIELDS = {
+    "token_count",
+    "token_channels",
+    "predictor_use_feedback",
+    "synthesis_mode",
+    "synthesis_kernel_size",
+    "gamma_mode",
+    "synthesis_token_strides",
+    "synthesis_active_token_channels",
+    "deep_synthesis_hidden_channels",
+    "deep_synthesis_depth",
+}
+
+
+def generation_pair_contract(
+    cofitok_config: dict[str, Any],
+    dense_config: dict[str, Any],
+) -> dict[str, Any]:
+    mismatched_sections = [
+        section
+        for section in MATCHED_CONFIG_SECTIONS
+        if cofitok_config.get(section) != dense_config.get(section)
+    ]
+    cofitok_model = cofitok_config.get("model", {})
+    dense_model = dense_config.get("model", {})
+    shared_model_fields = sorted(
+        (set(cofitok_model) | set(dense_model)) - FACTORIZATION_MODEL_FIELDS
+    )
+    mismatched_model_fields = [
+        field
+        for field in shared_model_fields
+        if cofitok_model.get(field) != dense_model.get(field)
+    ]
+    issues = []
+    if mismatched_sections:
+        issues.append("mismatched config sections: " + ", ".join(mismatched_sections))
+    if mismatched_model_fields:
+        issues.append("mismatched shared model fields: " + ", ".join(mismatched_model_fields))
+
+    identities = {
+        "cofitok_token_count": int(cofitok_model.get("token_count", 0)),
+        "dense_token_count": int(dense_model.get("token_count", 0)),
+        "cofitok_feedback": cofitok_model.get("predictor_use_feedback"),
+        "dense_feedback": dense_model.get("predictor_use_feedback"),
+        "cofitok_synthesis": cofitok_model.get("synthesis_mode"),
+        "dense_synthesis": dense_model.get("synthesis_mode"),
+    }
+    if identities["cofitok_token_count"] <= 1 or identities["dense_token_count"] != 1:
+        issues.append("factorized/dense token-count identities are invalid")
+    if identities["cofitok_feedback"] is not True or identities["dense_feedback"] is not False:
+        issues.append("factorized/dense predictor-feedback identities are invalid")
+    if (
+        identities["cofitok_synthesis"] != "restricted"
+        or identities["dense_synthesis"] != "dense_identity"
+    ):
+        issues.append("factorized/dense synthesis identities are invalid")
+
+    cofitok_loss = cofitok_config.get("loss", {})
+    dense_loss = dense_config.get("loss", {})
+    cofitok_epsilon = float(cofitok_loss.get("epsilon_weight", 0.0))
+    dense_epsilon = float(dense_loss.get("epsilon_weight", 0.0))
+    if cofitok_epsilon <= 0.0 or cofitok_epsilon != dense_epsilon:
+        issues.append("primary epsilon loss weights are not matched and positive")
+    dense_nonzero_auxiliary = sorted(
+        key
+        for key, value in dense_loss.items()
+        if key != "epsilon_weight"
+        and key.endswith("_weight")
+        and isinstance(value, (int, float))
+        and float(value) != 0.0
+    )
+    if dense_nonzero_auxiliary:
+        issues.append(
+            "dense baseline has nonzero factorization auxiliary losses: "
+            + ", ".join(dense_nonzero_auxiliary)
+        )
+
+    return {
+        "valid": not issues,
+        "matched_config_sections": list(MATCHED_CONFIG_SECTIONS),
+        "factorization_model_fields": sorted(FACTORIZATION_MODEL_FIELDS),
+        "shared_model_fields": shared_model_fields,
+        "mismatched_config_sections": mismatched_sections,
+        "mismatched_shared_model_fields": mismatched_model_fields,
+        "identities": identities,
+        "primary_epsilon_weight": cofitok_epsilon,
+        "dense_nonzero_auxiliary_losses": dense_nonzero_auxiliary,
+        "issues": issues,
+    }

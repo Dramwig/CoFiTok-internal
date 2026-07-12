@@ -44,7 +44,24 @@ def _training(
             "diffusion": {"schedule_type": "cosine"},
             "runtime": {"precision": "bf16", "device": "cuda"},
             "optimization": {"gradient_accumulation_steps": 4},
-            "model": {"token_count": 8 if parameters > 100_000 else 1},
+            "model": {
+                "token_count": 8 if parameters > 100_000 else 1,
+                "token_channels": 64 if parameters > 100_000 else 3,
+                "image_channels": 3,
+                "image_size": 256,
+                "base_channels": 128,
+                "predictor_type": "scalable_unet",
+                "predictor_use_feedback": parameters > 100_000,
+                "num_classes": 1000,
+                "class_dropout_prob": 0.1,
+                "synthesis_mode": (
+                    "restricted" if parameters > 100_000 else "dense_identity"
+                ),
+            },
+            "loss": {
+                "epsilon_weight": 1.0,
+                "denoise_path_component_weight": 0.1 if parameters > 100_000 else 0.0,
+            },
         },
     }
 

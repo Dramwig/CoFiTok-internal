@@ -32,7 +32,22 @@ def _training(parameters: int, token_count: int) -> dict:
             "diffusion": {"schedule": "cosine"},
             "runtime": {"steps": 50_000, "device": "cuda"},
             "optimization": {"batch": 64, "gradient_accumulation_steps": 4},
-            "model": {"token_count": token_count, "image_channels": 3, "image_size": 256},
+            "model": {
+                "token_count": token_count,
+                "token_channels": 64 if token_count > 1 else 3,
+                "image_channels": 3,
+                "image_size": 256,
+                "base_channels": 128,
+                "predictor_type": "scalable_unet",
+                "predictor_use_feedback": token_count > 1,
+                "num_classes": 1000,
+                "class_dropout_prob": 0.1,
+                "synthesis_mode": "restricted" if token_count > 1 else "dense_identity",
+            },
+            "loss": {
+                "epsilon_weight": 1.0,
+                "denoise_path_component_weight": 0.1 if token_count > 1 else 0.0,
+            },
         },
     }
 
@@ -219,6 +234,28 @@ def test_generation_gate_holds_on_mismatched_training_revision() -> None:
     )
 
     gate = next(gate for gate in report["gates"] if gate["name"] == "matched_training_revision")
+    assert gate["passed"] is False
+
+
+def test_generation_gate_holds_on_shared_backbone_drift() -> None:
+    dense_training = _training(100_000, 1)
+    dense_training["config"]["model"]["class_dropout_prob"] = 0.2
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=dense_training,
+        cofitok_generation=_generation(20.0, 8, "a" * 64),
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(
+        gate for gate in report["gates"] if gate["name"] == "matched_training_protocol"
+    )
+    assert report["status"] == "fail"
     assert gate["passed"] is False
 
 
