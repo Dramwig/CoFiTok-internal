@@ -39,6 +39,10 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   only after encoding succeeds. JSON manifests and reports use the same atomic
   replacement rule, so interruption cannot turn a partial file into apparent
   completion or destroy the last valid report.
+- Resume and completion checks verify PNG decoding, CRC, dimensions, and color
+  mode rather than file existence alone. The expected `[C, H, W]` is immutable
+  sampling provenance; formal metrics revalidate every generated image and the
+  promotion gate requires the recorded shape to match each training config.
 - Generation evaluation uses `torch-fidelity==0.4.x` with generated samples as
   input 1 and the recursive 50K ImageNet validation directory as input 2. One
   report records FID, Inception Score, precision, recall, exact image counts,

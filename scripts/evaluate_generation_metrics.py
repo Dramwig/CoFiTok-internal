@@ -9,6 +9,7 @@ from typing import Any
 
 import torch
 
+from cofitok.image_integrity import is_valid_png
 from cofitok.reporting import write_json_report
 
 
@@ -72,6 +73,20 @@ def validate_sampling_provenance(
     actual_names = {path.name for path in generated_images}
     if actual_names != expected_names:
         raise ValueError("Generated sample filenames are not the complete zero-based numbered set")
+    image_shape = sampling.get("image_shape")
+    if not isinstance(image_shape, list) or len(image_shape) != 3:
+        raise ValueError("Sampling report is missing a [C, H, W] image_shape")
+    channels, height, width = (int(value) for value in image_shape)
+    invalid_images = [
+        path
+        for path in generated_images
+        if not is_valid_png(path, width=width, height=height, channels=channels)
+    ]
+    if invalid_images:
+        raise ValueError(
+            f"Generated sample integrity failed for {len(invalid_images)} images; "
+            f"first={invalid_images[0]}"
+        )
     resolved_generated = generated_dir.resolve()
     matching_budgets = [
         int(budget)
@@ -90,6 +105,7 @@ def validate_sampling_provenance(
         "checkpoint_step": int(report["checkpoint_step"]),
         "weights": report["weights"],
         "selected_prefix_budget": matching_budgets[0],
+        "image_shape": image_shape,
         "sampling": sampling,
     }
 

@@ -103,6 +103,18 @@ def build_report(
     dense_provenance = dense_generation["sample_provenance"]
     cofitok_sampling = _sampling_protocol(cofitok_provenance)
     dense_sampling = _sampling_protocol(dense_provenance)
+    cofitok_model_config = cofitok_training["config"]["model"]
+    dense_model_config = dense_training["config"]["model"]
+    cofitok_expected_shape = [
+        int(cofitok_model_config["image_channels"]),
+        int(cofitok_model_config["image_size"]),
+        int(cofitok_model_config["image_size"]),
+    ]
+    dense_expected_shape = [
+        int(dense_model_config["image_channels"]),
+        int(dense_model_config["image_size"]),
+        int(dense_model_config["image_size"]),
+    ]
     parameter_gap = (
         int(cofitok_training["parameter_count"]) - int(dense_training["parameter_count"])
     ) / int(dense_training["parameter_count"])
@@ -165,7 +177,9 @@ def build_report(
             and len(str(dense_provenance["checkpoint_sha256"])) == 64
             and cofitok_sampling.get("random_stream", {}).get("prefix_budgets_share_stream")
             is True
-            and cofitok_sampling.get("random_stream", {}).get("batch_size_invariant") is True,
+            and cofitok_sampling.get("random_stream", {}).get("batch_size_invariant") is True
+            and cofitok_sampling.get("image_shape") == cofitok_expected_shape
+            and dense_sampling.get("image_shape") == dense_expected_shape,
             {
                 "protocols_match": cofitok_sampling == dense_sampling,
                 "cofitok_checkpoint_step": cofitok_provenance["checkpoint_step"],
@@ -174,6 +188,8 @@ def build_report(
                 "dense_checkpoint_sha256": dense_provenance["checkpoint_sha256"],
                 "cofitok_prefix_budget": cofitok_provenance["selected_prefix_budget"],
                 "dense_prefix_budget": dense_provenance["selected_prefix_budget"],
+                "cofitok_image_shape": cofitok_sampling.get("image_shape"),
+                "dense_image_shape": dense_sampling.get("image_shape"),
             },
         ),
         _gate(

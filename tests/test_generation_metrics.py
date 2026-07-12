@@ -82,7 +82,7 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
                 "checkpoint_sha256": "a" * 64,
                 "checkpoint_step": 50_000,
                 "weights": "ema",
-                "sampling": {"start_index": 0, "num_samples": 2},
+                "sampling": {"start_index": 0, "num_samples": 2, "image_shape": [3, 4, 4]},
                 "output_dirs": {"8": generated.resolve().as_posix()},
             }
         ),
@@ -93,6 +93,7 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
 
     assert provenance["selected_prefix_budget"] == 8
     assert provenance["checkpoint_step"] == 50_000
+    assert provenance["image_shape"] == [3, 4, 4]
 
 
 def test_validate_sampling_provenance_rejects_stale_extra_sample(tmp_path) -> None:
@@ -109,7 +110,7 @@ def test_validate_sampling_provenance_rejects_stale_extra_sample(tmp_path) -> No
                 "checkpoint_sha256": "a" * 64,
                 "checkpoint_step": 50_000,
                 "weights": "ema",
-                "sampling": {"start_index": 0, "num_samples": 2},
+                "sampling": {"start_index": 0, "num_samples": 2, "image_shape": [3, 4, 4]},
                 "output_dirs": {"8": generated.resolve().as_posix()},
             }
         ),
@@ -122,3 +123,31 @@ def test_validate_sampling_provenance_rejects_stale_extra_sample(tmp_path) -> No
         assert "does not match" in str(error)
     else:
         raise AssertionError("stale extra sample was accepted")
+
+
+def test_validate_sampling_provenance_rejects_corrupt_png(tmp_path) -> None:
+    generated = tmp_path / "samples" / "prefix_8"
+    generated.mkdir(parents=True)
+    (generated / "000000.png").write_bytes(b"corrupt")
+    report_path = generated.parent / "sampling_report.json"
+    report_path.write_text(
+        json.dumps(
+            {
+                "status": "completed",
+                "checkpoint": "/checkpoints/model.pt",
+                "checkpoint_sha256": "a" * 64,
+                "checkpoint_step": 50_000,
+                "weights": "ema",
+                "sampling": {"start_index": 0, "num_samples": 1, "image_shape": [3, 4, 4]},
+                "output_dirs": {"8": generated.resolve().as_posix()},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        validate_sampling_provenance(report_path, generated, find_images(generated))
+    except ValueError as error:
+        assert "integrity failed" in str(error)
+    else:
+        raise AssertionError("corrupt PNG was accepted")

@@ -11,6 +11,7 @@ from torchvision.utils import save_image
 
 from cofitok.configs import config_from_dict
 from cofitok.diffusion import DiffusionSchedule, ddim_sample, select_sampling_timesteps
+from cofitok.image_integrity import is_valid_png
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
@@ -85,10 +86,18 @@ def _save_batch(
     directory.mkdir(parents=True, exist_ok=True)
     for offset, image in enumerate(images):
         path = directory / f"{start + offset:06d}.png"
-        if path.exists() and skip_existing:
-            continue
-        if path.exists() and not overwrite:
-            raise FileExistsError(f"Refusing to overwrite existing sample {path}")
+        image_size = int(image.shape[-1])
+        image_channels = int(image.shape[-3])
+        if path.exists():
+            if skip_existing and is_valid_png(
+                path,
+                width=image_size,
+                height=image_size,
+                channels=image_channels,
+            ):
+                continue
+            if not overwrite and not skip_existing:
+                raise FileExistsError(f"Refusing to overwrite existing sample {path}")
         temporary = path.with_name(f".{path.name}.part")
         try:
             save_image(
@@ -101,15 +110,37 @@ def _save_batch(
             temporary.unlink(missing_ok=True)
 
 
-def _batch_complete(directory: Path, start: int, count: int) -> bool:
-    return all((directory / f"{index:06d}.png").is_file() for index in range(start, start + count))
+def _batch_complete(
+    directory: Path,
+    start: int,
+    count: int,
+    *,
+    image_size: int,
+    image_channels: int,
+) -> bool:
+    return all(
+        is_valid_png(
+            directory / f"{index:06d}.png",
+            width=image_size,
+            height=image_size,
+            channels=image_channels,
+        )
+        for index in range(start, start + count)
+    )
 
 
 def _has_images(directories: list[Path]) -> bool:
     return any(any(directory.glob("*.png")) for directory in directories if directory.is_dir())
 
 
-def _validate_numbered_output(directory: Path, start: int, stop: int) -> None:
+def _validate_numbered_output(
+    directory: Path,
+    start: int,
+    stop: int,
+    *,
+    image_size: int,
+    image_channels: int,
+) -> None:
     expected = {f"{index:06d}.png" for index in range(start, stop)}
     actual = {path.name for path in directory.glob("*.png") if path.is_file()}
     if actual != expected:
@@ -117,6 +148,20 @@ def _validate_numbered_output(directory: Path, start: int, stop: int) -> None:
         extra = len(actual - expected)
         raise RuntimeError(
             f"Incomplete numbered sample set in {directory}: missing={missing}, extra={extra}"
+        )
+    invalid = [
+        name
+        for name in sorted(expected)
+        if not is_valid_png(
+            directory / name,
+            width=image_size,
+            height=image_size,
+            channels=image_channels,
+        )
+    ]
+    if invalid:
+        raise RuntimeError(
+            f"Invalid PNG samples in {directory}: count={len(invalid)}, first={invalid[0]}"
         )
 
 
@@ -186,6 +231,11 @@ def main() -> None:
         "eta": args.eta,
         "seed": args.seed,
         "precision": args.precision,
+        "image_shape": [
+            config.model.image_channels,
+            config.model.image_size,
+            config.model.image_size,
+        ],
         "class_schedule": "balanced_modulo" if config.model.num_classes > 0 else None,
         "random_stream": {
             "scope": "per_global_sample_index",
@@ -221,7 +271,13 @@ def main() -> None:
         labels = _labels(batch_start, count, config.model.num_classes, device)
         for budget in budgets:
             budget_directory = output_dir / f"prefix_{budget}"
-            if args.resume and _batch_complete(budget_directory, batch_start, count):
+            if args.resume and _batch_complete(
+                budget_directory,
+                batch_start,
+                count,
+                image_size=config.model.image_size,
+                image_channels=config.model.image_channels,
+            ):
                 continue
             generators = _sample_generators(args.seed, batch_start, count, device)
             with autocast_context(device, args.precision):
@@ -251,7 +307,13 @@ def main() -> None:
         print(f"generated {completed}/{args.num_samples}")
 
     for budget_directory in budget_directories:
-        _validate_numbered_output(budget_directory, args.start_index, stop_index)
+        _validate_numbered_output(
+            budget_directory,
+            args.start_index,
+            stop_index,
+            image_size=config.model.image_size,
+            image_channels=config.model.image_channels,
+        )
 
     report = {
         "schema_version": 2,

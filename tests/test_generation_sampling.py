@@ -9,6 +9,7 @@ from cofitok.configs import DiffusionConfig
 from cofitok.diffusion import DiffusionSchedule, ddim_sample, predict_epsilon
 from cofitok.models.cofitok import CoFiTokOutput
 from scripts.generate_samples import (
+    _batch_complete,
     _prepare_sampling_manifest,
     _sample_generators,
     _sample_seed,
@@ -179,18 +180,34 @@ def test_sampling_manifest_rejects_unproven_existing_images(tmp_path) -> None:
 
 def test_completed_sampling_report_requires_exact_numbered_output(tmp_path) -> None:
     directory = tmp_path / "prefix_8"
-    directory.mkdir()
-    (directory / "000000.png").touch()
-    (directory / "000001.png").touch()
-    _validate_numbered_output(directory, 0, 2)
+    _save_batch(
+        torch.zeros(2, 3, 4, 4),
+        directory,
+        0,
+        overwrite=False,
+        skip_existing=False,
+    )
+    _validate_numbered_output(directory, 0, 2, image_size=4, image_channels=3)
     (directory / "000003.png").touch()
 
     try:
-        _validate_numbered_output(directory, 0, 2)
+        _validate_numbered_output(directory, 0, 2, image_size=4, image_channels=3)
     except RuntimeError as error:
         assert "extra=1" in str(error)
     else:
         raise AssertionError("extra stale image was accepted")
+
+
+def test_resume_regenerates_corrupt_png_instead_of_skipping_it(tmp_path) -> None:
+    images = torch.zeros(2, 3, 4, 4)
+    _save_batch(images, tmp_path, 0, overwrite=False, skip_existing=False)
+    assert _batch_complete(tmp_path, 0, 2, image_size=4, image_channels=3)
+
+    (tmp_path / "000001.png").write_bytes(b"corrupt")
+    assert not _batch_complete(tmp_path, 0, 2, image_size=4, image_channels=3)
+
+    _save_batch(images, tmp_path, 0, overwrite=False, skip_existing=True)
+    assert _batch_complete(tmp_path, 0, 2, image_size=4, image_channels=3)
 
 
 def test_sample_png_is_published_only_after_encoding_completes(tmp_path, monkeypatch) -> None:

@@ -15,7 +15,7 @@ def _training(parameters: int, token_count: int) -> dict:
             "diffusion": {"schedule": "cosine"},
             "runtime": {"steps": 50_000},
             "optimization": {"batch": 64},
-            "model": {"token_count": token_count},
+            "model": {"token_count": token_count, "image_channels": 3, "image_size": 256},
         },
     }
 
@@ -43,6 +43,7 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
                 "start_index": 0,
                 "batch_size": 32,
                 "sample_steps": 100,
+                "image_shape": [3, 256, 256],
                 "prefix_budgets": [token_count],
                 "guidance_scale": 1.5,
                 "seed": 0,
@@ -111,6 +112,26 @@ def test_generation_gate_holds_on_unpaired_sampling_streams() -> None:
     cofitok = _generation(20.0, 8, "a" * 64)
     dense = _generation(20.0, 1, "b" * 64)
     dense["sample_provenance"]["sampling"]["random_stream"]["batch_size_invariant"] = False
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=dense,
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(gate for gate in report["gates"] if gate["name"] == "matched_sampling_provenance")
+    assert gate["passed"] is False
+
+
+def test_generation_gate_holds_when_sampling_shape_is_unproven() -> None:
+    cofitok = _generation(20.0, 8, "a" * 64)
+    dense = _generation(20.0, 1, "b" * 64)
+    del dense["sample_provenance"]["sampling"]["image_shape"]
     report = build_report(
         cofitok_training=_training(100_500, 8),
         dense_training=_training(100_000, 1),
