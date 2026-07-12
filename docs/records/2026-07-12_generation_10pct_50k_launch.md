@@ -29,3 +29,8 @@ step 1 gradient norm before clipping: 8.16974926
 
 This launch is not a completion claim. Promotion still requires both 50K runs,
 EMA sampling, matched FID, and prefix diagnostics.
+
+At step 50, elapsed training time was 120.44 seconds, total loss had fallen to
+0.71358 and epsilon loss to 0.68842 with finite gradient norm 3.33986. This is
+about 2.41 seconds per optimizer step, implying roughly 33.5 hours per 50K run
+before checkpoint/evaluation overhead and about 67 hours for the serial pair.
