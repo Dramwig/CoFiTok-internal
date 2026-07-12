@@ -23,6 +23,10 @@ quality = [
 official-fid = [
   "pytorch-fid>=0.3.0",
 ]
+generation-eval = [
+  "pytorch-fid>=0.3.0",
+  "torch-fidelity>=0.4.0,<0.5",
+]
 plotting = [
   "matplotlib>=3.8",
 ]

@@ -14,6 +14,7 @@ from cofitok.diffusion import DiffusionSchedule, ddim_sample, select_sampling_ti
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import write_json_report
 from cofitok.training import ExponentialMovingAverage
+from cofitok.training.runtime import autocast_context
 
 
 def parse_args() -> argparse.Namespace:
@@ -30,6 +31,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--start-index", type=int, default=0)
     parser.add_argument("--weights", choices=["ema", "model"], default="ema")
+    parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
     parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
 
@@ -101,20 +103,21 @@ def main() -> None:
             generator = torch.Generator(device=device).manual_seed(
                 args.seed + 1_000_003 * budget + batch_start
             )
-            samples = ddim_sample(
-                model,
-                schedule,
-                (count, config.model.image_channels, config.model.image_size, config.model.image_size),
-                sample_steps=args.sample_steps,
-                prefix_budget=budget,
-                eta=args.eta,
-                clip_x0=True,
-                device=device,
-                generator=generator,
-                class_labels=labels,
-                guidance_scale=args.guidance_scale,
-                guidance_rescale=args.guidance_rescale,
-            )
+            with autocast_context(device, args.precision):
+                samples = ddim_sample(
+                    model,
+                    schedule,
+                    (count, config.model.image_channels, config.model.image_size, config.model.image_size),
+                    sample_steps=args.sample_steps,
+                    prefix_budget=budget,
+                    eta=args.eta,
+                    clip_x0=True,
+                    device=device,
+                    generator=generator,
+                    class_labels=labels,
+                    guidance_scale=args.guidance_scale,
+                    guidance_rescale=args.guidance_rescale,
+                )
             _save_batch(samples.cpu(), output_dir / f"prefix_{budget}", batch_start, args.overwrite)
         completed = batch_start + count - args.start_index
         print(f"generated {completed}/{args.num_samples}")
@@ -138,6 +141,7 @@ def main() -> None:
             "guidance_rescale": args.guidance_rescale,
             "eta": args.eta,
             "seed": args.seed,
+            "precision": args.precision,
             "class_schedule": "balanced_modulo" if config.model.num_classes > 0 else None,
         },
         "output_dirs": {str(budget): str((output_dir / f"prefix_{budget}").resolve()) for budget in budgets},

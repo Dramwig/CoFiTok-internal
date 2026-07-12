@@ -22,6 +22,10 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Production inference loads EMA by default and supports deterministic DDIM,
   classifier-free guidance, guidance rescaling, prefix budgets, and resumable
   numbered PNG export.
+- Generation evaluation uses `torch-fidelity==0.4.x` with generated samples as
+  input 1 and the recursive 50K ImageNet validation directory as input 2. One
+  report records FID, Inception Score, precision, recall, exact image counts,
+  package version, seed, cache name, and runtime.
 
 ## Server paths
 
@@ -75,4 +79,16 @@ python scripts/generate_samples.py \
   --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/<run>/samples_50k_cfg15 \
   --num-samples 50000 --batch-size 32 --sample-steps 250 \
   --guidance-scale 1.5 --weights ema
+
+python scripts/evaluate_generation_metrics.py \
+  --real-dir /root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val \
+  --generated-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/<run>/samples_50k_cfg15/prefix_8 \
+  --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/<run>/samples_50k_cfg15/metrics \
+  --cache-root /root/autodl-tmp/CoFiTok/checkpoints/generation/eval_cache/torch_fidelity
 ```
+
+The 10% post-training gate is encoded in
+`artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh`. It refuses partial
+or dirty-worktree training reports, generates matched 10K EMA samples at DDIM
+100 / CFG 1.5, evaluates both methods with the same cached real features, and
+exports a 64-image CoFiTok prefix diagnostic at budgets 1/2/4/8.
