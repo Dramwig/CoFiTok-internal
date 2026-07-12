@@ -13,8 +13,9 @@ VALIDATOR="$4"
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
 PIPELINE=artifacts/runbooks/generation_complete_pipeline_after_10pct.sh
-LOG="$OUTPUT_ROOT/generation_complete_pipeline_after_10pct.log"
-PID_FILE="$OUTPUT_ROOT/generation_complete_pipeline_after_10pct.pid"
+SUPERVISOR=artifacts/runbooks/generation_completion_supervisor.sh
+LOG="$OUTPUT_ROOT/generation_completion_supervisor.log"
+PID_FILE="$OUTPUT_ROOT/generation_completion_supervisor.pid"
 COFITOK_REPORT="$OUTPUT_ROOT/imagenet256_10pct_cofitok_k8_50k_2026-07-12/training_report.json"
 DENSE_REPORT="$OUTPUT_ROOT/imagenet256_10pct_dense_50k_2026-07-12/training_report.json"
 
@@ -59,7 +60,7 @@ mkdir -p "$OUTPUT_ROOT"
 if [[ -f "$PID_FILE" ]]; then
   previous_pid="$(cat "$PID_FILE")"
   if [[ "$previous_pid" =~ ^[0-9]+$ ]] && kill -0 "$previous_pid" 2>/dev/null; then
-    printf 'generation completion pipeline is already active as PID %s\n' \
+    printf 'generation completion supervisor is already active as PID %s\n' \
       "$previous_pid"
     exit 0
   fi
@@ -88,16 +89,17 @@ bash -n artifacts/runbooks/generation_full_milestone_eval.sh
 bash -n artifacts/runbooks/generation_full_matched_300k_after_gate.sh
 bash -n artifacts/runbooks/generation_full_posteval_50k.sh
 bash -n "$PIPELINE"
+bash -n "$SUPERVISOR"
 
-nohup bash "$PIPELINE" >"$LOG" 2>&1 </dev/null &
-pipeline_pid=$!
+nohup bash "$SUPERVISOR" >"$LOG" 2>&1 </dev/null &
+supervisor_pid=$!
 pid_temporary="${PID_FILE}.tmp.$$"
-printf '%s\n' "$pipeline_pid" >"$pid_temporary"
+printf '%s\n' "$supervisor_pid" >"$pid_temporary"
 mv "$pid_temporary" "$PID_FILE"
 sleep 2
-if ! kill -0 "$pipeline_pid" 2>/dev/null; then
-  printf 'generation completion pipeline exited during launch; inspect %s\n' "$LOG" >&2
+if ! kill -0 "$supervisor_pid" 2>/dev/null; then
+  printf 'generation completion supervisor exited during launch; inspect %s\n' "$LOG" >&2
   exit 73
 fi
-printf 'launched generation completion pipeline PID %s at commit %s\n' \
-  "$pipeline_pid" "$TARGET_COMMIT"
+printf 'launched generation completion supervisor PID %s at commit %s\n' \
+  "$supervisor_pid" "$TARGET_COMMIT"

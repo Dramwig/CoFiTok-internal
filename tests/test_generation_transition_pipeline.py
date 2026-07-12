@@ -63,6 +63,9 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
     ]
     positions = [runbook.index(marker) for marker in ordered_markers]
     assert positions == sorted(positions)
+    assert 'if [[ ! -f "$SCALING_GATE" ]]' in runbook
+    assert 'if [[ ! -f "$FINAL_GATE" || ! -f "$FINAL_COMPARISON"' in runbook
+    assert "FINAL_VISUAL_AUDIT" in runbook
 
 
 def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None:
@@ -83,7 +86,9 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert "python -m pytest -q" in deployer
     assert "kill -0 \"$previous_pid\"" in deployer
     assert "exit 0" in deployer
-    assert "nohup bash \"$PIPELINE\"" in deployer
+    assert "generation_completion_supervisor.sh" in deployer
+    assert "bash -n \"$SUPERVISOR\"" in deployer
+    assert "nohup bash \"$SUPERVISOR\"" in deployer
     assert "sleep 2" in deployer
 
     pipeline = _read("artifacts/runbooks/generation_complete_pipeline_after_10pct.sh")

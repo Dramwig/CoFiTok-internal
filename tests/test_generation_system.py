@@ -111,6 +111,10 @@ def test_full_generation_configs_keep_matched_runtime_and_checkpoint_cadence() -
     assert "SELECTED_MICRO_BATCH * SELECTED_ACCUMULATION != 64" in runbook
     assert '--micro-batch-size "$SELECTED_MICRO_BATCH"' in runbook
     assert '--gradient-accumulation-steps "$SELECTED_ACCUMULATION"' in runbook
+    assert "paired_milestone_complete" in runbook
+    assert "paired milestone %s already complete; skipping" in runbook
+    assert 'checkpoint_tag.integrity.json' in runbook
+    assert "passed milestone %s without protected checkpoint" in runbook
 
     preflight = validate_pair(cofitok, dense, max_parameter_gap=0.02)
     assert preflight["status"] == "pass"

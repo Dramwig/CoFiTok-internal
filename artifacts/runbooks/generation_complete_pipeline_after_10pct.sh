@@ -7,6 +7,8 @@ STATUS="$OUTPUT_ROOT/generation_complete_pipeline_after_10pct.status.json"
 LOCK="$OUTPUT_ROOT/generation_complete_pipeline_after_10pct.lock"
 SCALING_GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/promotion_gate.json"
 FINAL_GATE="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/final_generation_gate.json"
+FINAL_COMPARISON="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/comparison/large_scale_generation_comparison.json"
+FINAL_VISUAL_AUDIT="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/visual_audit/visual_audit_report.json"
 COFITOK_10PCT="$OUTPUT_ROOT/imagenet256_10pct_cofitok_k8_50k_2026-07-12/training_report.json"
 DENSE_10PCT="$OUTPUT_ROOT/imagenet256_10pct_dense_50k_2026-07-12/training_report.json"
 PINNED_10PCT_REVISION=781a01444fddbf0d48a427ba58bdeed50167b5be
@@ -72,9 +74,11 @@ PY
 write_status running "validating the completed 10% matched training pair"
 validate_completed_training_pair
 
-STAGE=posteval_10pct
-write_status running "running matched 10K sampling, metrics, and scaling gate"
-bash artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh
+if [[ ! -f "$SCALING_GATE" ]]; then
+  STAGE=posteval_10pct
+  write_status running "running matched 10K sampling, metrics, and scaling gate"
+  bash artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh
+fi
 
 STAGE=promotion_gate
 write_status running "checking authorization for full ImageNet-256 training"
@@ -84,9 +88,11 @@ STAGE=full_training
 write_status running "running alternating matched full ImageNet-256 300K training"
 bash artifacts/runbooks/generation_full_matched_300k_after_gate.sh
 
-STAGE=full_posteval
-write_status running "running matched 50K-sample formal evaluation"
-bash artifacts/runbooks/generation_full_posteval_50k.sh
+if [[ ! -f "$FINAL_GATE" || ! -f "$FINAL_COMPARISON" || ! -f "$FINAL_VISUAL_AUDIT" ]]; then
+  STAGE=full_posteval
+  write_status running "running matched 50K-sample formal evaluation"
+  bash artifacts/runbooks/generation_full_posteval_50k.sh
+fi
 
 STAGE=final_gate
 write_status running "checking the large-scale generation readiness gate"

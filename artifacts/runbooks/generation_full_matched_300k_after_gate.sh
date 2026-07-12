@@ -76,8 +76,14 @@ train_to_milestone() {
   local current
   current="$(latest_step "$run_dir")"
   if (( current > target )); then
-    printf 'run %s passed missing milestone %s at step %s\n' "$run_dir" "$target" "$current" >&2
-    exit 1
+    local protected_checkpoint
+    protected_checkpoint="$run_dir/checkpoint_step_$(printf '%08d' "$target").pt"
+    if [[ ! -f "$protected_checkpoint" ]]; then
+      printf 'run %s passed milestone %s without protected checkpoint at step %s\n' \
+        "$run_dir" "$target" "$current" >&2
+      exit 1
+    fi
+    return
   fi
   if (( current == target )); then
     return
@@ -98,6 +104,36 @@ train_to_milestone() {
     printf 'run %s reached step %s instead of milestone %s\n' "$run_dir" "$reached" "$target" >&2
     exit 1
   fi
+}
+
+paired_milestone_complete() {
+  local step="$1"
+  local report
+  report="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/milestones/step_$(printf '%08d' "$step").json"
+  if [[ ! -f "$report" ]]; then
+    return 1
+  fi
+  local checkpoint_tag
+  checkpoint_tag="checkpoint_step_$(printf '%08d' "$step").pt"
+  for run_dir in "$COFITOK_RUN" "$DENSE_RUN"; do
+    if [[ ! -f "$run_dir/$checkpoint_tag" || ! -f "$run_dir/$checkpoint_tag.integrity.json" ]]; then
+      return 1
+    fi
+  done
+  python - "$report" "$step" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    report = json.load(handle)
+expected = int(sys.argv[2])
+if report.get("status") != "completed":
+    raise SystemExit(1)
+if int(report.get("milestone_step", -1)) != expected:
+    raise SystemExit(1)
+if int(report.get("expected_samples", -1)) != 2048:
+    raise SystemExit(1)
+PY
 }
 
 evaluate_milestone() {
@@ -129,6 +165,10 @@ build_paired_milestone() {
 }
 
 for milestone in 50000 100000 200000 300000; do
+  if paired_milestone_complete "$milestone"; then
+    printf 'paired milestone %s already complete; skipping\n' "$milestone"
+    continue
+  fi
   train_to_milestone \
     configs/generation/imagenet256_cofitok_k8_300k.json "$COFITOK_RUN" "$milestone"
   evaluate_milestone cofitok "$COFITOK_RUN" "$milestone" 8 4
