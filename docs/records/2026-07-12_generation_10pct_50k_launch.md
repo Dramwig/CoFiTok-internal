@@ -34,3 +34,15 @@ At step 50, elapsed training time was 120.44 seconds, total loss had fallen to
 0.71358 and epsilon loss to 0.68842 with finite gradient norm 3.33986. This is
 about 2.41 seconds per optimizer step, implying roughly 33.5 hours per 50K run
 before checkpoint/evaluation overhead and about 67 hours for the serial pair.
+
+At step 1,500, elapsed training time was 3,591.81 seconds. Total loss was
+0.029425, epsilon loss was 0.026842, and the gradient norm was 0.1915. The GPU
+reported 22,979 MiB allocated, 98% utilization, and 63 C. No checkpoint exists
+before the configured 5,000-step interval; at the observed 2.39 seconds per
+step, the first atomic recovery point is expected about 2.3 hours after this
+snapshot.
+
+The remote `781a014` runbook relies on `set -e`: a non-zero training exit stops
+the queue before dense starts. The local branch later added an explicit
+`training_complete` report guard, but that newer revision is intentionally not
+synchronized while this matched pair is active.
