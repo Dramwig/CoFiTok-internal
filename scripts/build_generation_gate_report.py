@@ -53,6 +53,14 @@ def _gate(name: str, passed: bool, evidence: dict[str, Any]) -> dict[str, Any]:
     return {"name": name, "passed": bool(passed), "evidence": evidence}
 
 
+def _positive_finite(value: Any) -> bool:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return False
+    return math.isfinite(numeric) and numeric > 0.0
+
+
 def _sampling_protocol(provenance: dict[str, Any]) -> dict[str, Any]:
     ignored = {"prefix_budgets"}
     return {
@@ -248,6 +256,30 @@ def build_report(
             and int(dense_sampling.get("start_index", -1)) == 0
             and int(cofitok_sampling.get("num_samples", -1)) == min_samples
             and int(dense_sampling.get("num_samples", -1)) == min_samples
+            and cofitok_provenance.get("sampling_progress", {}).get("status") == "completed"
+            and dense_provenance.get("sampling_progress", {}).get("status") == "completed"
+            and int(
+                cofitok_provenance.get("sampling_progress", {}).get(
+                    "completed_samples", -1
+                )
+            )
+            == min_samples
+            and int(
+                dense_provenance.get("sampling_progress", {}).get(
+                    "completed_samples", -1
+                )
+            )
+            == min_samples
+            and _positive_finite(
+                cofitok_provenance.get("sampling_progress", {}).get(
+                    "cumulative_elapsed_seconds"
+                )
+            )
+            and _positive_finite(
+                dense_provenance.get("sampling_progress", {}).get(
+                    "cumulative_elapsed_seconds"
+                )
+            )
             and cofitok_sampling.get("class_schedule")
             == dense_sampling.get("class_schedule")
             == "balanced_modulo"
@@ -271,6 +303,8 @@ def build_report(
                 "dense_image_shape": dense_sampling.get("image_shape"),
                 "cofitok_sample_set_sha256": cofitok_provenance.get("sample_set_sha256"),
                 "dense_sample_set_sha256": dense_provenance.get("sample_set_sha256"),
+                "cofitok_sampling_progress": cofitok_provenance.get("sampling_progress"),
+                "dense_sampling_progress": dense_provenance.get("sampling_progress"),
             },
         ),
         _gate(

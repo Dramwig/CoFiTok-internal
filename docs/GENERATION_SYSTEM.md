@@ -218,6 +218,16 @@ and gate provenance. Legacy 10% weights therefore require the migration stage;
 full checkpoints satisfy this contract at creation. See
 `docs/records/2026-07-12_generation_checkpoint_trust_boundary.md`.
 
+Long sampling runs expose atomic, resumable progress. Each completed batch
+updates `sampling_progress.json`, which is bound to the immutable sampling
+manifest SHA and carries cumulative elapsed time, throughput, ETA, PID/host,
+completed count, and failure/completion state. Formal metrics recompute the
+manifest SHA and require completed progress with exact counts/budgets/sample
+digests; the promotion/final gate enforces the same boundary for both methods.
+The gate also requires finite positive cumulative sampling time, and the final
+comparison publishes sampling elapsed time and throughput.
+See `docs/records/2026-07-12_generation_sampling_progress.md`.
+
 Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies
 strictly increasing finite metrics, resume-aware timing segments, checkpoint

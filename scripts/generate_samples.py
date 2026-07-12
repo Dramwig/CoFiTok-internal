@@ -12,7 +12,12 @@ from torchvision.utils import save_image
 from cofitok.diffusion import DiffusionSchedule, ddim_sample, select_sampling_timesteps
 from cofitok.generation import load_generation_model
 from cofitok.image_integrity import is_valid_png, sample_set_sha256
-from cofitok.reporting import write_json_report
+from cofitok.reporting import file_sha256, write_json_report
+from cofitok.sampling_progress import (
+    build_sampling_progress,
+    load_sampling_progress_state,
+    write_sampling_progress,
+)
 from cofitok.training.runtime import autocast_context
 
 
@@ -250,89 +255,145 @@ def main() -> None:
         "output_dirs": output_dirs,
     }
     budget_directories = [output_dir / f"prefix_{budget}" for budget in budgets]
+    sampling_manifest_path = output_dir / "sampling_manifest.json"
     _prepare_sampling_manifest(
-        output_dir / "sampling_manifest.json",
+        sampling_manifest_path,
         manifest,
         resume=args.resume,
         has_existing_images=_has_images(budget_directories),
     )
+    sampling_manifest_sha256 = file_sha256(sampling_manifest_path)
+    progress_path = output_dir / "sampling_progress.json"
+    progress_state = load_sampling_progress_state(
+        progress_path,
+        sampling_manifest_sha256=sampling_manifest_sha256,
+        total_samples=args.num_samples,
+        start_index=args.start_index,
+        prefix_budgets=budgets,
+    )
     start_time = time.time()
+    completed = int(progress_state["prior_completed_samples"])
+    write_sampling_progress(
+        progress_path,
+        build_sampling_progress(
+            progress_state,
+            status="running",
+            completed_samples=completed,
+            invocation_elapsed_seconds=0.0,
+        ),
+    )
 
-    for batch_start in range(args.start_index, stop_index, args.batch_size):
-        count = min(args.batch_size, stop_index - batch_start)
-        labels = _labels(batch_start, count, config.model.num_classes, device)
-        for budget in budgets:
-            budget_directory = output_dir / f"prefix_{budget}"
-            if args.resume and _batch_complete(
+    try:
+        for batch_start in range(args.start_index, stop_index, args.batch_size):
+            count = min(args.batch_size, stop_index - batch_start)
+            labels = _labels(batch_start, count, config.model.num_classes, device)
+            for budget in budgets:
+                budget_directory = output_dir / f"prefix_{budget}"
+                if args.resume and _batch_complete(
+                    budget_directory,
+                    batch_start,
+                    count,
+                    image_size=config.model.image_size,
+                    image_channels=config.model.image_channels,
+                ):
+                    continue
+                generators = _sample_generators(args.seed, batch_start, count, device)
+                with torch.inference_mode(), autocast_context(device, args.precision):
+                    samples = ddim_sample(
+                        model,
+                        schedule,
+                        (count, config.model.image_channels, config.model.image_size, config.model.image_size),
+                        sample_steps=args.sample_steps,
+                        prefix_budget=budget,
+                        eta=args.eta,
+                        clip_x0=True,
+                        device=device,
+                        sample_generators=generators,
+                        class_labels=labels,
+                        guidance_scale=args.guidance_scale,
+                        guidance_rescale=args.guidance_rescale,
+                        cfg_batch_mode=args.cfg_batch_mode,
+                    )
+                _save_batch(
+                    samples.cpu(),
+                    budget_directory,
+                    batch_start,
+                    overwrite=args.overwrite,
+                    skip_existing=args.resume,
+                )
+            completed = max(completed, batch_start + count - args.start_index)
+            invocation_elapsed = time.time() - start_time
+            write_sampling_progress(
+                progress_path,
+                build_sampling_progress(
+                    progress_state,
+                    status="running",
+                    completed_samples=completed,
+                    invocation_elapsed_seconds=invocation_elapsed,
+                ),
+            )
+            print(f"generated {completed}/{args.num_samples}")
+
+        sample_sets = {}
+        for budget, budget_directory in zip(budgets, budget_directories):
+            _validate_numbered_output(
                 budget_directory,
-                batch_start,
-                count,
+                args.start_index,
+                stop_index,
                 image_size=config.model.image_size,
                 image_channels=config.model.image_channels,
-            ):
-                continue
-            generators = _sample_generators(args.seed, batch_start, count, device)
-            with autocast_context(device, args.precision):
-                samples = ddim_sample(
-                    model,
-                    schedule,
-                    (count, config.model.image_channels, config.model.image_size, config.model.image_size),
-                    sample_steps=args.sample_steps,
-                    prefix_budget=budget,
-                    eta=args.eta,
-                    clip_x0=True,
-                    device=device,
-                    sample_generators=generators,
-                    class_labels=labels,
-                    guidance_scale=args.guidance_scale,
-                    guidance_rescale=args.guidance_rescale,
-                    cfg_batch_mode=args.cfg_batch_mode,
-                )
-            _save_batch(
-                samples.cpu(),
-                budget_directory,
-                batch_start,
-                overwrite=args.overwrite,
-                skip_existing=args.resume,
             )
-        completed = batch_start + count - args.start_index
-        print(f"generated {completed}/{args.num_samples}")
+            sample_paths = [
+                budget_directory / f"{index:06d}.png"
+                for index in range(args.start_index, stop_index)
+            ]
+            sample_sets[str(budget)] = {
+                "count": len(sample_paths),
+                "sha256": sample_set_sha256(sample_paths),
+            }
 
-    sample_sets = {}
-    for budget, budget_directory in zip(budgets, budget_directories):
-        _validate_numbered_output(
-            budget_directory,
-            args.start_index,
-            stop_index,
-            image_size=config.model.image_size,
-            image_channels=config.model.image_channels,
+        invocation_elapsed = time.time() - start_time
+        completed_progress = build_sampling_progress(
+            progress_state,
+            status="completed",
+            completed_samples=args.num_samples,
+            invocation_elapsed_seconds=invocation_elapsed,
+            sample_sets=sample_sets,
         )
-        sample_paths = [
-            budget_directory / f"{index:06d}.png"
-            for index in range(args.start_index, stop_index)
-        ]
-        sample_sets[str(budget)] = {
-            "count": len(sample_paths),
-            "sha256": sample_set_sha256(sample_paths),
+        report = {
+            "schema_version": 4,
+            "status": "completed",
+            "checkpoint": str(checkpoint_path.resolve()),
+            "checkpoint_sha256": checkpoint_hash,
+            "checkpoint_integrity_manifest": str(loaded.checkpoint_integrity_manifest),
+            "checkpoint_step": checkpoint_step,
+            "weights": args.weights,
+            "sampling": sampling,
+            "sampling_manifest_sha256": sampling_manifest_sha256,
+            "sampling_progress": progress_path.resolve().as_posix(),
+            "output_dirs": output_dirs,
+            "sample_sets": sample_sets,
+            "invocation_elapsed_seconds": invocation_elapsed,
+            "elapsed_seconds": completed_progress["cumulative_elapsed_seconds"],
+            "torch_version": torch.__version__,
+            "device": str(device),
         }
-
-    report = {
-        "schema_version": 3,
-        "status": "completed",
-        "checkpoint": str(checkpoint_path.resolve()),
-        "checkpoint_sha256": checkpoint_hash,
-        "checkpoint_integrity_manifest": str(loaded.checkpoint_integrity_manifest),
-        "checkpoint_step": checkpoint_step,
-        "weights": args.weights,
-        "sampling": sampling,
-        "output_dirs": output_dirs,
-        "sample_sets": sample_sets,
-        "elapsed_seconds": time.time() - start_time,
-        "torch_version": torch.__version__,
-        "device": str(device),
-    }
-    write_json_report(output_dir / "sampling_report.json", report)
-    print(f"wrote {output_dir / 'sampling_report.json'}")
+        write_json_report(output_dir / "sampling_report.json", report)
+        write_sampling_progress(progress_path, completed_progress)
+        print(f"wrote {output_dir / 'sampling_report.json'}")
+    except BaseException as error:
+        invocation_elapsed = time.time() - start_time
+        write_sampling_progress(
+            progress_path,
+            build_sampling_progress(
+                progress_state,
+                status="failed",
+                completed_samples=completed,
+                invocation_elapsed_seconds=invocation_elapsed,
+                error=error,
+            ),
+        )
+        raise
 
 
 if __name__ == "__main__":

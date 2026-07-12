@@ -34,9 +34,18 @@ def _matched_row(
 ) -> dict[str, Any]:
     provenance = generation["sample_provenance"]
     sampling = provenance["sampling"]
+    sampling_progress = provenance["sampling_progress"]
     training_cost = training_cost_summary(training)
     if training_cost["valid"] is not True:
         raise ValueError(f"{method} training cost accounting is invalid")
+    sampling_elapsed_seconds = float(sampling_progress["cumulative_elapsed_seconds"])
+    sample_count = int(generation["counts"]["generated_image_count"])
+    if not math.isfinite(sampling_elapsed_seconds) or sampling_elapsed_seconds <= 0.0:
+        raise ValueError(f"{method} sampling elapsed time is invalid")
+    if sampling_progress.get("status") != "completed":
+        raise ValueError(f"{method} sampling progress is incomplete")
+    if int(sampling_progress.get("completed_samples", -1)) != sample_count:
+        raise ValueError(f"{method} sampling progress count does not match metrics")
     return {
         "method": method,
         "comparison_tier": "matched_training_direct",
@@ -50,7 +59,10 @@ def _matched_row(
         "training_elapsed_seconds": training_cost["elapsed_seconds"],
         "training_images_per_second": training_cost["images_per_second"],
         "peak_vram_bytes": training_cost["peak_vram_bytes"],
-        "sample_count": int(generation["counts"]["generated_image_count"]),
+        "sample_count": sample_count,
+        "sampling_elapsed_seconds": sampling_elapsed_seconds,
+        "sampling_images_per_second": sample_count / sampling_elapsed_seconds,
+        "sampling_invocations": int(sampling_progress["invocation"]),
         "fid": _finite_metric(generation, "frechet_inception_distance"),
         "inception_score": _finite_metric(generation, "inception_score_mean"),
         "precision": _finite_metric(generation, "precision"),
@@ -214,12 +226,12 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "## Matched training (direct comparison)",
         "",
-        "| method | params | steps | eff. batch | train images | train h | img/s | VRAM GiB | samples | FID | IS | precision | recall |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| method | params | steps | eff. batch | train images | train h | train img/s | VRAM GiB | samples | sample h | sample img/s | FID | IS | precision | recall |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for row in report["matched_training_rows"]:
         lines.append(
-            "| {method} | {params} | {steps} | {batch} | {train_images} | {hours} | {throughput} | {vram} | {samples} | {fid} | {iscore} | {precision} | {recall} |".format(
+            "| {method} | {params} | {steps} | {batch} | {train_images} | {hours} | {throughput} | {vram} | {samples} | {sample_hours} | {sample_throughput} | {fid} | {iscore} | {precision} | {recall} |".format(
                 method=row["method"],
                 params=row["parameter_count"],
                 steps=row["training_steps"],
@@ -229,6 +241,8 @@ def render_markdown(report: dict[str, Any]) -> str:
                 throughput=_fmt(row["training_images_per_second"]),
                 vram=_fmt(row["peak_vram_bytes"] / (1024**3)),
                 samples=row["sample_count"],
+                sample_hours=_fmt(row["sampling_elapsed_seconds"] / 3600.0),
+                sample_throughput=_fmt(row["sampling_images_per_second"]),
                 fid=_fmt(row["fid"]),
                 iscore=_fmt(row["inception_score"]),
                 precision=_fmt(row["precision"]),
@@ -281,6 +295,9 @@ def render_csv(report: dict[str, Any]) -> str:
         "training_images_per_second",
         "peak_vram_bytes",
         "sample_count",
+        "sampling_elapsed_seconds",
+        "sampling_images_per_second",
+        "sampling_invocations",
         "fid",
         "inception_score",
         "precision",

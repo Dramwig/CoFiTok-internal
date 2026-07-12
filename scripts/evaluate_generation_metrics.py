@@ -10,7 +10,7 @@ from typing import Any
 import torch
 
 from cofitok.image_integrity import is_valid_png, sample_set_sha256
-from cofitok.reporting import write_json_report
+from cofitok.reporting import file_sha256, write_json_report
 
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg"}
@@ -114,6 +114,27 @@ def validate_sampling_provenance(
     expected_integrity_name = f"{Path(report['checkpoint']).name}.integrity.json"
     if Path(checkpoint_integrity_manifest).name != expected_integrity_name:
         raise ValueError("Sampling report checkpoint integrity manifest is malformed")
+    sampling_manifest_path = report_path.parent / "sampling_manifest.json"
+    if not sampling_manifest_path.is_file():
+        raise FileNotFoundError("Sampling manifest is missing beside the sampling report")
+    sampling_manifest_sha256 = file_sha256(sampling_manifest_path)
+    if report.get("sampling_manifest_sha256") != sampling_manifest_sha256:
+        raise ValueError("Sampling report does not match the immutable sampling manifest")
+    progress_path = Path(str(report.get("sampling_progress", "")))
+    expected_progress_path = report_path.parent / "sampling_progress.json"
+    if progress_path.resolve() != expected_progress_path.resolve() or not progress_path.is_file():
+        raise ValueError("Sampling progress path is missing or outside the sample run")
+    progress = json.loads(progress_path.read_text(encoding="utf-8"))
+    if progress.get("status") != "completed":
+        raise ValueError("Sampling progress is not completed")
+    if progress.get("sampling_manifest_sha256") != sampling_manifest_sha256:
+        raise ValueError("Sampling progress belongs to another manifest")
+    if int(progress.get("completed_samples", -1)) != expected_count:
+        raise ValueError("Sampling progress completed count does not match the sample set")
+    if progress.get("prefix_budgets") != sampling.get("prefix_budgets"):
+        raise ValueError("Sampling progress prefix budgets do not match the sampling report")
+    if progress.get("sample_sets") != report.get("sample_sets"):
+        raise ValueError("Sampling progress digests do not match the sampling report")
     return {
         "report": report_path.resolve().as_posix(),
         "checkpoint": report["checkpoint"],
@@ -124,6 +145,13 @@ def validate_sampling_provenance(
         "selected_prefix_budget": selected_budget,
         "image_shape": image_shape,
         "sample_set_sha256": actual_sample_sha256,
+        "sampling_progress": {
+            "report": progress_path.resolve().as_posix(),
+            "status": progress["status"],
+            "invocation": int(progress["invocation"]),
+            "completed_samples": int(progress["completed_samples"]),
+            "cumulative_elapsed_seconds": float(progress["cumulative_elapsed_seconds"]),
+        },
         "sampling": sampling,
     }
 

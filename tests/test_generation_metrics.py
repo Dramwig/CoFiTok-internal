@@ -7,6 +7,7 @@ from types import SimpleNamespace
 from PIL import Image
 
 from cofitok.image_integrity import sample_set_sha256
+from cofitok.reporting import file_sha256
 from scripts.evaluate_generation_metrics import (
     calculate_metrics,
     find_images,
@@ -76,6 +77,31 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
         Image.new("RGB", (4, 4)).save(generated / f"{index:06d}.png")
     report_path = generated.parent / "sampling_report.json"
     sample_sha256 = sample_set_sha256(find_images(generated))
+    sampling = {
+        "start_index": 0,
+        "num_samples": 2,
+        "image_shape": [3, 4, 4],
+        "prefix_budgets": [8],
+    }
+    sample_sets = {"8": {"count": 2, "sha256": sample_sha256}}
+    manifest_path = generated.parent / "sampling_manifest.json"
+    manifest_path.write_text('{"manifest": "test"}\n', encoding="utf-8")
+    manifest_sha256 = file_sha256(manifest_path)
+    progress_path = generated.parent / "sampling_progress.json"
+    progress_path.write_text(
+        json.dumps(
+            {
+                "status": "completed",
+                "sampling_manifest_sha256": manifest_sha256,
+                "completed_samples": 2,
+                "prefix_budgets": [8],
+                "sample_sets": sample_sets,
+                "invocation": 1,
+                "cumulative_elapsed_seconds": 1.0,
+            }
+        ),
+        encoding="utf-8",
+    )
     report_path.write_text(
         json.dumps(
             {
@@ -85,9 +111,11 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
                 "checkpoint_integrity_manifest": "/checkpoints/model.pt.integrity.json",
                 "checkpoint_step": 50_000,
                 "weights": "ema",
-                "sampling": {"start_index": 0, "num_samples": 2, "image_shape": [3, 4, 4]},
+                "sampling": sampling,
+                "sampling_manifest_sha256": manifest_sha256,
+                "sampling_progress": progress_path.resolve().as_posix(),
                 "output_dirs": {"8": generated.resolve().as_posix()},
-                "sample_sets": {"8": {"count": 2, "sha256": sample_sha256}},
+                "sample_sets": sample_sets,
             }
         ),
         encoding="utf-8",
@@ -100,6 +128,17 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
     assert provenance["checkpoint_integrity_manifest"].endswith("model.pt.integrity.json")
     assert provenance["image_shape"] == [3, 4, 4]
     assert provenance["sample_set_sha256"] == sample_sha256
+    assert provenance["sampling_progress"]["status"] == "completed"
+
+    progress = json.loads(progress_path.read_text(encoding="utf-8"))
+    progress["status"] = "running"
+    progress_path.write_text(json.dumps(progress), encoding="utf-8")
+    try:
+        validate_sampling_provenance(report_path, generated, find_images(generated))
+    except ValueError as error:
+        assert "progress is not completed" in str(error)
+    else:
+        raise AssertionError("incomplete sampling progress was accepted")
 
 
 def test_validate_sampling_provenance_rejects_stale_extra_sample(tmp_path) -> None:

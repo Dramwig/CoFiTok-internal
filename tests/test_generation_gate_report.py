@@ -61,6 +61,13 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
             "weights": "ema",
             "sample_set_sha256": ("c" if token_count > 1 else "d") * 64,
             "selected_prefix_budget": token_count,
+            "sampling_progress": {
+                "report": "/samples/sampling_progress.json",
+                "status": "completed",
+                "invocation": 1,
+                "completed_samples": 10_000,
+                "cumulative_elapsed_seconds": 100.0,
+            },
             "sampling": {
                 "num_samples": 10_000,
                 "start_index": 0,
@@ -143,6 +150,46 @@ def test_generation_gate_holds_on_unpaired_sampling_streams() -> None:
         dense_training=_training(100_000, 1),
         cofitok_generation=cofitok,
         dense_generation=dense,
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(gate for gate in report["gates"] if gate["name"] == "matched_sampling_provenance")
+    assert gate["passed"] is False
+
+
+def test_generation_gate_requires_completed_sampling_progress() -> None:
+    cofitok = _generation(20.0, 8, "a" * 64)
+    cofitok["sample_provenance"]["sampling_progress"]["status"] = "running"
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(gate for gate in report["gates"] if gate["name"] == "matched_sampling_provenance")
+    assert gate["passed"] is False
+
+
+def test_generation_gate_requires_positive_sampling_elapsed_time() -> None:
+    cofitok = _generation(20.0, 8, "a" * 64)
+    cofitok["sample_provenance"]["sampling_progress"][
+        "cumulative_elapsed_seconds"
+    ] = 0.0
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=_generation(20.0, 1, "b" * 64),
         cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
         dense_checkpoint=_checkpoint(0.1, "b" * 64),
         min_samples=10_000,

@@ -39,6 +39,12 @@ def _generation(fid: float, checkpoint_sha: str, sample_sha: str) -> dict:
             "checkpoint_sha256": checkpoint_sha,
             "sample_set_sha256": sample_sha,
             "sampling": {"sample_steps": 250, "guidance_scale": 1.5},
+            "sampling_progress": {
+                "status": "completed",
+                "completed_samples": 50_000,
+                "cumulative_elapsed_seconds": 10_000.0,
+                "invocation": 1,
+            },
         },
     }
 
@@ -113,8 +119,10 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     assert report["matched_training_rows"][0]["effective_batch_size"] == 64
     assert report["matched_training_rows"][0]["training_images_seen"] == 19_200_000
     assert report["matched_training_rows"][0]["peak_vram_bytes"] == 24 * 1024**3
+    assert report["matched_training_rows"][0]["sampling_images_per_second"] == 5.0
     assert "not a direct ranking" in render_markdown(report)
     assert "VRAM GiB" in render_markdown(report)
+    assert "sample img/s" in render_markdown(report)
     assert "matched_training_direct" in render_csv(report)
     assert "official_pretrained_contextual" in render_csv(report)
 
@@ -137,3 +145,18 @@ def test_comparison_rejects_gate_from_another_sample_set() -> None:
 
     with pytest.raises(ValueError, match="sample-set hash does not match"):
         _report(gate=gate)
+
+
+def test_comparison_rejects_incomplete_sampling_progress() -> None:
+    generation = _generation(12.0, "a" * 64, "c" * 64)
+    generation["sample_provenance"]["sampling_progress"]["status"] = "running"
+
+    with pytest.raises(ValueError, match="sampling progress is incomplete"):
+        build_report(
+            cofitok_training=_training(62_950_800, 8),
+            dense_training=_training(62_824_707, 1),
+            cofitok_generation=generation,
+            dense_generation=_generation(11.8, "b" * 64, "d" * 64),
+            final_gate=_gate(),
+            official_related=_official(),
+        )
