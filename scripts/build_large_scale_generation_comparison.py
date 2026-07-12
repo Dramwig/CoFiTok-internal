@@ -1,0 +1,306 @@
+from __future__ import annotations
+
+import argparse
+import csv
+import io
+import json
+import math
+from pathlib import Path
+from typing import Any
+
+from cofitok.reporting import write_json_report, write_text_report
+
+
+EXTERNAL_ALIASES = {"d_ar", "mar", "retok"}
+
+
+def _read(path: str | Path) -> dict[str, Any]:
+    with Path(path).open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _finite_metric(report: dict[str, Any], key: str) -> float:
+    value = float(report["metrics"][key])
+    if not math.isfinite(value):
+        raise ValueError(f"generation metric {key} is not finite")
+    return value
+
+
+def _matched_row(
+    method: str,
+    training: dict[str, Any],
+    generation: dict[str, Any],
+) -> dict[str, Any]:
+    provenance = generation["sample_provenance"]
+    sampling = provenance["sampling"]
+    return {
+        "method": method,
+        "comparison_tier": "matched_training_direct",
+        "directly_comparable_to_cofitok": True,
+        "dataset": training["config"]["data"]["dataset"],
+        "resolution": int(training["config"]["model"]["image_size"]),
+        "training_steps": int(training["target_steps"]),
+        "parameter_count": int(training["parameter_count"]),
+        "sample_count": int(generation["counts"]["generated_image_count"]),
+        "fid": _finite_metric(generation, "frechet_inception_distance"),
+        "inception_score": _finite_metric(generation, "inception_score_mean"),
+        "precision": _finite_metric(generation, "precision"),
+        "recall": _finite_metric(generation, "recall"),
+        "evaluator": generation["implementation"],
+        "sample_steps": int(sampling["sample_steps"]),
+        "guidance_scale": float(sampling["guidance_scale"]),
+        "checkpoint_sha256": provenance["checkpoint_sha256"],
+        "sample_set_sha256": provenance["sample_set_sha256"],
+        "protocol_note": "Same data, backbone family, optimizer, steps, and evaluator.",
+    }
+
+
+def _external_rows(official: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = official.get("rows", [])
+    aliases = {str(row.get("alias")) for row in rows}
+    if aliases != EXTERNAL_ALIASES:
+        raise ValueError(f"official related-method aliases do not match: {sorted(aliases)}")
+    output = []
+    for row in rows:
+        if row.get("status") != "completed_eval_only_50k":
+            raise ValueError(f"official baseline is incomplete: {row.get('alias')}")
+        if row.get("paper_table_role") != "secondary related-method only":
+            raise ValueError(f"official baseline has an unsafe table role: {row.get('alias')}")
+        if row.get("dataset") != "imagenet_256" or int(row.get("resolution", 0)) != 256:
+            raise ValueError(f"official baseline dataset mismatch: {row.get('alias')}")
+        if int(row.get("sample_count", 0)) != 50_000:
+            raise ValueError(f"official baseline sample count mismatch: {row.get('alias')}")
+        metrics = {
+            name: float(row[name])
+            for name in ("fid", "inception_score", "precision", "recall")
+        }
+        if not all(math.isfinite(value) for value in metrics.values()):
+            raise ValueError(f"official baseline metrics are non-finite: {row.get('alias')}")
+        output.append(
+            {
+                "method": row["method"],
+                "comparison_tier": "official_pretrained_contextual",
+                "directly_comparable_to_cofitok": False,
+                "dataset": row["dataset"],
+                "resolution": int(row["resolution"]),
+                "training_steps": None,
+                "parameter_count": None,
+                "sample_count": int(row["sample_count"]),
+                **metrics,
+                "evaluator": {
+                    "package": "ADM TensorFlow evaluation graph",
+                    "version": "pinned baseline protocol",
+                },
+                "sample_steps": None,
+                "guidance_scale": None,
+                "checkpoint_sha256": None,
+                "sample_set_sha256": None,
+                "protocol_note": row["protocol"],
+                "source_metrics": row.get("metrics_txt"),
+            }
+        )
+    return output
+
+
+def _gate_evidence(final_gate: dict[str, Any], name: str) -> dict[str, Any]:
+    matches = [
+        gate.get("evidence", {})
+        for gate in final_gate.get("gates", [])
+        if gate.get("name") == name
+    ]
+    if len(matches) != 1:
+        raise ValueError(f"final gate is missing unique evidence for {name}")
+    return matches[0]
+
+
+def build_report(
+    *,
+    cofitok_training: dict[str, Any],
+    dense_training: dict[str, Any],
+    cofitok_generation: dict[str, Any],
+    dense_generation: dict[str, Any],
+    final_gate: dict[str, Any],
+    official_related: dict[str, Any],
+) -> dict[str, Any]:
+    if final_gate.get("stage") != "full":
+        raise ValueError("large-scale comparison requires a full-stage gate report")
+    matched = [
+        _matched_row("CoFiTok K=8", cofitok_training, cofitok_generation),
+        _matched_row("Dense identity", dense_training, dense_generation),
+    ]
+    if matched[0]["evaluator"] != matched[1]["evaluator"]:
+        raise ValueError("matched methods used different evaluator implementations")
+    if matched[0]["sample_count"] != matched[1]["sample_count"]:
+        raise ValueError("matched methods used different sample counts")
+    if matched[1]["fid"] <= 0.0:
+        raise ValueError("dense FID must be positive")
+    gate_summary = final_gate.get("summary", {})
+    for key, row in (("cofitok_fid", matched[0]), ("dense_fid", matched[1])):
+        if not math.isclose(
+            float(gate_summary.get(key, math.nan)),
+            row["fid"],
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ):
+            raise ValueError(f"final gate {key} does not match generation metrics")
+    sampling_evidence = _gate_evidence(final_gate, "matched_sampling_provenance")
+    expected_provenance = (
+        (
+            "cofitok",
+            matched[0],
+        ),
+        (
+            "dense",
+            matched[1],
+        ),
+    )
+    for prefix, row in expected_provenance:
+        if sampling_evidence.get(f"{prefix}_checkpoint_sha256") != row["checkpoint_sha256"]:
+            raise ValueError(f"final gate {prefix} checkpoint hash does not match")
+        if sampling_evidence.get(f"{prefix}_sample_set_sha256") != row["sample_set_sha256"]:
+            raise ValueError(f"final gate {prefix} sample-set hash does not match")
+    external = _external_rows(official_related)
+    ready = (
+        final_gate.get("status") == "pass"
+        and final_gate.get("decision") == "large_scale_generation_ready"
+    )
+    return {
+        "schema_version": 1,
+        "status": "ready" if ready else "hold",
+        "final_gate": {
+            "status": final_gate.get("status"),
+            "decision": final_gate.get("decision"),
+        },
+        "comparison_policy": {
+            "primary_direct_tier": "matched_training_direct",
+            "external_context_tier": "official_pretrained_contextual",
+            "cross_tier_numeric_ranking_allowed": False,
+            "reason": (
+                "External rows use official pretrained checkpoints and the ADM TensorFlow "
+                "evaluator; CoFiTok and dense use matched training plus torch-fidelity."
+            ),
+        },
+        "matched_training_rows": matched,
+        "official_context_rows": external,
+        "matched_summary": {
+            "cofitok_minus_dense_fid": matched[0]["fid"] - matched[1]["fid"],
+            "cofitok_relative_fid": matched[0]["fid"] / matched[1]["fid"] - 1.0,
+        },
+    }
+
+
+def _fmt(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, float):
+        return f"{value:.4f}"
+    return str(value)
+
+
+def render_markdown(report: dict[str, Any]) -> str:
+    lines = [
+        "# Large-Scale Generation Comparison",
+        "",
+        f"Readiness: `{report['status']}`.",
+        "",
+        "## Matched training (direct comparison)",
+        "",
+        "| method | params | steps | samples | FID | IS | precision | recall |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    for row in report["matched_training_rows"]:
+        lines.append(
+            "| {method} | {params} | {steps} | {samples} | {fid} | {iscore} | {precision} | {recall} |".format(
+                method=row["method"],
+                params=row["parameter_count"],
+                steps=row["training_steps"],
+                samples=row["sample_count"],
+                fid=_fmt(row["fid"]),
+                iscore=_fmt(row["inception_score"]),
+                precision=_fmt(row["precision"]),
+                recall=_fmt(row["recall"]),
+            )
+        )
+    lines.extend(
+        [
+            "",
+            "## Official pretrained context (not a direct ranking)",
+            "",
+            "| method | protocol | samples | FID | IS | precision | recall |",
+            "| --- | --- | ---: | ---: | ---: | ---: | ---: |",
+        ]
+    )
+    for row in report["official_context_rows"]:
+        lines.append(
+            "| {method} | {protocol} | {samples} | {fid} | {iscore} | {precision} | {recall} |".format(
+                method=row["method"],
+                protocol=row["protocol_note"],
+                samples=row["sample_count"],
+                fid=_fmt(row["fid"]),
+                iscore=_fmt(row["inception_score"]),
+                precision=_fmt(row["precision"]),
+                recall=_fmt(row["recall"]),
+            )
+        )
+    lines.extend(
+        [
+            "",
+            "Do not rank across the two panels: checkpoint source, training budget, and evaluator differ.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def render_csv(report: dict[str, Any]) -> str:
+    fields = [
+        "comparison_tier",
+        "directly_comparable_to_cofitok",
+        "method",
+        "dataset",
+        "resolution",
+        "parameter_count",
+        "training_steps",
+        "sample_count",
+        "fid",
+        "inception_score",
+        "precision",
+        "recall",
+        "protocol_note",
+    ]
+    output = io.StringIO(newline="")
+    writer = csv.DictWriter(output, fieldnames=fields, extrasaction="ignore")
+    writer.writeheader()
+    writer.writerows(report["matched_training_rows"])
+    writer.writerows(report["official_context_rows"])
+    return output.getvalue()
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Build the final two-tier generation comparison.")
+    parser.add_argument("--cofitok-training", required=True)
+    parser.add_argument("--dense-training", required=True)
+    parser.add_argument("--cofitok-generation", required=True)
+    parser.add_argument("--dense-generation", required=True)
+    parser.add_argument("--final-gate", required=True)
+    parser.add_argument("--official-related", required=True)
+    parser.add_argument("--output-dir", required=True)
+    args = parser.parse_args()
+
+    report = build_report(
+        cofitok_training=_read(args.cofitok_training),
+        dense_training=_read(args.dense_training),
+        cofitok_generation=_read(args.cofitok_generation),
+        dense_generation=_read(args.dense_generation),
+        final_gate=_read(args.final_gate),
+        official_related=_read(args.official_related),
+    )
+    output_dir = Path(args.output_dir)
+    write_json_report(output_dir / "large_scale_generation_comparison.json", report)
+    write_text_report(output_dir / "large_scale_generation_comparison.md", render_markdown(report))
+    write_text_report(output_dir / "large_scale_generation_comparison.csv", render_csv(report))
+    print(output_dir)
+
+
+if __name__ == "__main__":
+    main()

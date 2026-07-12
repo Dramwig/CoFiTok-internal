@@ -133,4 +133,8 @@ Full-scale execution is deliberately gated. The runbook
 unless the 10% promotion report passes. After both full-data 300K runs finish,
 `artifacts/runbooks/generation_full_posteval_50k.sh` produces matched 50K EMA
 samples at DDIM-250 / CFG 1.5, full generation metrics, checkpoint mechanism
-diagnostics, and the final large-scale gate report.
+diagnostics, the final large-scale gate report, and a two-tier strong-baseline
+comparison. CoFiTok versus `dense_identity` is the direct matched-training
+panel. D-AR, MAR, and ReTok remain a separate official-pretrained contextual
+panel because their training budgets and ADM evaluator differ; machine-readable
+policy explicitly forbids cross-panel numeric ranking.

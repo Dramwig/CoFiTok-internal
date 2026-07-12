@@ -10,6 +10,7 @@ COFITOK_CHECKPOINT="$COFITOK_RUN/checkpoint_step_00300000.pt"
 DENSE_CHECKPOINT="$DENSE_RUN/checkpoint_step_00300000.pt"
 EVAL_CACHE="$OUTPUT_ROOT/eval_cache/torch_fidelity"
 REPORT_ROOT="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k"
+OFFICIAL_RELATED="$PROJECT/artifacts/reports/baselines/official_related_methods_2026-07-11_final/official_related_methods_table.json"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -37,6 +38,7 @@ validate_training_report "$COFITOK_RUN/training_report.json"
 validate_training_report "$DENSE_RUN/training_report.json"
 test -f "$COFITOK_CHECKPOINT"
 test -f "$DENSE_CHECKPOINT"
+test -f "$OFFICIAL_RELATED"
 
 python scripts/evaluate_generation_checkpoint.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
@@ -88,3 +90,12 @@ python scripts/build_generation_gate_report.py \
   --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --output "$REPORT_ROOT/final_generation_gate.json" --stage full \
   --min-samples 50000 --max-absolute-fid 20.0 --allow-fail
+
+python scripts/build_large_scale_generation_comparison.py \
+  --cofitok-training "$COFITOK_RUN/training_report.json" \
+  --dense-training "$DENSE_RUN/training_report.json" \
+  --cofitok-generation "$COFITOK_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
+  --dense-generation "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
+  --final-gate "$REPORT_ROOT/final_generation_gate.json" \
+  --official-related "$OFFICIAL_RELATED" \
+  --output-dir "$REPORT_ROOT/comparison"

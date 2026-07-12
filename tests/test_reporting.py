@@ -35,3 +35,13 @@ def test_write_json_report_replaces_complete_payload(tmp_path) -> None:
         "step": 5,
     }
     assert list(tmp_path.glob(".report.json.*.tmp")) == []
+
+
+def test_write_text_report_replaces_complete_payload(tmp_path) -> None:
+    target = tmp_path / "report.md"
+    target.write_text("previous\n", encoding="utf-8")
+
+    reporting.write_text_report(target, "completed\n")
+
+    assert target.read_text(encoding="utf-8") == "completed\n"
+    assert list(tmp_path.glob(".report.md.*.tmp")) == []
