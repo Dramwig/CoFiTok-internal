@@ -16,6 +16,9 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Production training uses bf16, gradient accumulation, gradient clipping,
   cosine LR, EMA, isolated DataLoader RNG, atomic checkpoints, retention, and
   exact model/optimizer/scheduler/RNG/sampler recovery.
+- Full 300K runs checkpoint every 5K optimizer steps and retain the latest
+  three states, matching the 10% gate cadence while bounding recovery loss on
+  the multi-day full-data queue.
 - Zero-weight objectives are not materialized in the production graph. The
   structural `S_k(0)=0` invariant is enforced by architecture and tested
   separately instead of paying for a gradient-free zero-token term every step.

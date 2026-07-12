@@ -53,7 +53,7 @@
     "precision": "bf16",
     "compile_model": false,
     "allow_tf32": true,
-    "checkpoint_interval": 10000,
+    "checkpoint_interval": 5000,
     "evaluation_interval": 2000,
     "keep_last_checkpoints": 3
   },

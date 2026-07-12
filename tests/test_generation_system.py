@@ -74,6 +74,19 @@ def test_generation_configs_form_a_matched_backbone_pair() -> None:
     assert dense.model.synthesis_mode == "dense_identity"
 
 
+def test_full_generation_configs_keep_matched_runtime_and_checkpoint_cadence() -> None:
+    cofitok = load_config("configs/generation/imagenet256_cofitok_k8_300k.json")
+    dense = load_config("configs/generation/imagenet256_dense_300k.json")
+
+    assert cofitok.data == dense.data
+    assert cofitok.diffusion == dense.diffusion
+    assert cofitok.runtime == dense.runtime
+    assert cofitok.optimization == dense.optimization
+    assert cofitok.runtime.steps == 300_000
+    assert cofitok.runtime.checkpoint_interval == 5_000
+    assert cofitok.runtime.keep_last_checkpoints == 3
+
+
 def test_stateful_sampler_restores_consumed_not_prefetched_position() -> None:
     dataset = list(range(20))
     sampler = StatefulRandomSampler(dataset, seed=7)
