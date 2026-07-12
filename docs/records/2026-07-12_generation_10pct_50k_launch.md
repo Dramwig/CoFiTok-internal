@@ -46,3 +46,19 @@ The remote `781a014` runbook relies on `set -e`: a non-zero training exit stops
 the queue before dense starts. The local branch later added an explicit
 `training_complete` report guard, but that newer revision is intentionally not
 synchronized while this matched pair is active.
+
+At step 4,000, a standalone read-only progress audit ran on `pro6000` from
+`/tmp` without changing the active repository or loading the model. The
+synchronized snapshot is:
+
+```text
+artifacts/reports/generation/training_progress_2026-07-12/cofitok_step_004000.json
+```
+
+The audit reports `healthy` with no issues, `2.3916888 s/step`, recent 10-record
+mean total loss `0.0325722`, recent mean epsilon loss `0.0306235`, and recent
+mean pre-clip gradient norm `0.1435504`. Checkpoint status is `not_due`, and the
+first configured validation/checkpoint remains at step 5,000. The maximum
+logged gradient norm `8.1697` is the early step-1 pre-clipping norm; the loop
+applies the configured `clip_grad_norm=1.0` before each optimizer update. Five
+logged pre-clip norms exceeded 1.0 in the first 4,000 steps.

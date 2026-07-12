@@ -138,3 +138,9 @@ comparison. CoFiTok versus `dense_identity` is the direct matched-training
 panel. D-AR, MAR, and ReTok remain a separate official-pretrained contextual
 panel because their training budgets and ADM evaluator differ; machine-readable
 policy explicitly forbids cross-panel numeric ranking.
+
+Live long-run health can be audited without loading the model or competing for
+GPU time using `scripts/audit_generation_training_progress.py`. It verifies
+strictly increasing finite metrics, resume-aware timing segments, checkpoint
+cadence and `latest.json`, then records recent loss/gradient summaries and ETA.
+Logged gradient norms are explicitly treated as pre-clipping total norms.
