@@ -15,7 +15,9 @@ This record marks engineering progress only. Large-scale generation is not
 complete until the 10% and full-data promotion gates in `docs/GENERATION_SYSTEM.md`
 are executed on `pro6000` and their reports/checkpoints are archived.
 
-The first real ImageNet-256 preflight used batch 8 with accumulation 8 and
-reached 92.75 GB peak VRAM on the 97.9 GB RTX PRO 6000. The matched production
-configs were therefore revised to batch 4 with accumulation 16, preserving
-effective batch 64 while leaving operational headroom for long runs.
+The first real ImageNet-256 preflight used cuDNN benchmarking and reached
+92.75 GB peak VRAM. Disabling benchmark algorithm search reduced peak memory to
+4.69 GiB for batch 4. A fixed-effective-batch sweep then measured batch/accum
+8/8 at 8.14 GiB, 16/4 at 15.05 GiB, and 32/2 at 28.88 GiB. Batch 16 / accum 4
+was fastest and is now locked for all matched 10% and full-data configs. The
+matched dense preflight used 13.87 GiB and also completed with finite metrics.
