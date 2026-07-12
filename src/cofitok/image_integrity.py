@@ -1,8 +1,23 @@
 from __future__ import annotations
 
+import hashlib
+from collections.abc import Iterable
 from pathlib import Path
 
 from PIL import Image
+
+
+def sample_set_sha256(paths: Iterable[str | Path], chunk_size: int = 8 * 1024 * 1024) -> str:
+    digest = hashlib.sha256()
+    normalized = sorted((Path(path) for path in paths), key=lambda path: path.name)
+    for path in normalized:
+        digest.update(path.name.encode("utf-8"))
+        digest.update(b"\0")
+        with path.open("rb") as handle:
+            for block in iter(lambda: handle.read(chunk_size), b""):
+                digest.update(block)
+        digest.update(b"\0")
+    return digest.hexdigest()
 
 
 def is_valid_png(

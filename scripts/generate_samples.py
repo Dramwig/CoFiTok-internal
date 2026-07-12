@@ -11,7 +11,7 @@ from torchvision.utils import save_image
 
 from cofitok.configs import config_from_dict
 from cofitok.diffusion import DiffusionSchedule, ddim_sample, select_sampling_timesteps
-from cofitok.image_integrity import is_valid_png
+from cofitok.image_integrity import is_valid_png, sample_set_sha256
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
@@ -244,6 +244,10 @@ def main() -> None:
             "batch_size_invariant": True,
             "resume_index_invariant": True,
         },
+        "sample_set_digest": {
+            "algorithm": "sha256",
+            "framing": "filename_utf8_nul_file_bytes_nul",
+        },
     }
     output_dirs = {
         str(budget): str((output_dir / f"prefix_{budget}").resolve()) for budget in budgets
@@ -306,7 +310,8 @@ def main() -> None:
         completed = batch_start + count - args.start_index
         print(f"generated {completed}/{args.num_samples}")
 
-    for budget_directory in budget_directories:
+    sample_sets = {}
+    for budget, budget_directory in zip(budgets, budget_directories):
         _validate_numbered_output(
             budget_directory,
             args.start_index,
@@ -314,9 +319,17 @@ def main() -> None:
             image_size=config.model.image_size,
             image_channels=config.model.image_channels,
         )
+        sample_paths = [
+            budget_directory / f"{index:06d}.png"
+            for index in range(args.start_index, stop_index)
+        ]
+        sample_sets[str(budget)] = {
+            "count": len(sample_paths),
+            "sha256": sample_set_sha256(sample_paths),
+        }
 
     report = {
-        "schema_version": 2,
+        "schema_version": 3,
         "status": "completed",
         "checkpoint": str(checkpoint_path.resolve()),
         "checkpoint_sha256": checkpoint_hash,
@@ -324,6 +337,7 @@ def main() -> None:
         "weights": args.weights,
         "sampling": sampling,
         "output_dirs": output_dirs,
+        "sample_sets": sample_sets,
         "elapsed_seconds": time.time() - start_time,
         "torch_version": torch.__version__,
         "device": str(device),

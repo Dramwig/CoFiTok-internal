@@ -43,6 +43,10 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   mode rather than file existence alone. The expected `[C, H, W]` is immutable
   sampling provenance; formal metrics revalidate every generated image and the
   promotion gate requires the recorded shape to match each training config.
+- Completed sampling reports commit to each exact numbered sample set with a
+  canonical SHA256 over filename and file bytes. Metric evaluation recomputes
+  this digest before FID, and the gate requires both matched methods to carry a
+  valid sample-set digest alongside their checkpoint hashes.
 - Generation evaluation uses `torch-fidelity==0.4.x` with generated samples as
   input 1 and the recursive 50K ImageNet validation directory as input 2. One
   report records FID, Inception Score, precision, recall, exact image counts,

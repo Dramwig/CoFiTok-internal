@@ -37,6 +37,7 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
             "checkpoint_sha256": sha,
             "checkpoint_step": 50_000,
             "weights": "ema",
+            "sample_set_sha256": ("c" if token_count > 1 else "d") * 64,
             "selected_prefix_budget": token_count,
             "sampling": {
                 "num_samples": 10_000,
@@ -132,6 +133,26 @@ def test_generation_gate_holds_when_sampling_shape_is_unproven() -> None:
     cofitok = _generation(20.0, 8, "a" * 64)
     dense = _generation(20.0, 1, "b" * 64)
     del dense["sample_provenance"]["sampling"]["image_shape"]
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=dense,
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(gate for gate in report["gates"] if gate["name"] == "matched_sampling_provenance")
+    assert gate["passed"] is False
+
+
+def test_generation_gate_holds_when_sample_set_digest_is_unproven() -> None:
+    cofitok = _generation(20.0, 8, "a" * 64)
+    dense = _generation(20.0, 1, "b" * 64)
+    del dense["sample_provenance"]["sample_set_sha256"]
     report = build_report(
         cofitok_training=_training(100_500, 8),
         dense_training=_training(100_000, 1),

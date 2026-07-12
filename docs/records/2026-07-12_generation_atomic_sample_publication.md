@@ -37,6 +37,10 @@ filesystem rename rather than a cross-device copy.
   resume; formal metric validation rejects corruption before torch-fidelity.
 - Sampling provenance records `[C, H, W]`, and the matched gate checks it
   against each checkpoint's training configuration.
+- Each completed budget records a canonical SHA256 framed as
+  `filename_utf8 NUL file_bytes NUL` in numeric filename order. Formal metric
+  evaluation recomputes it, so post-report mutation or corruption cannot remain
+  attached to the original evidence record.
 - Fault-injected JSON serialization leaves the prior valid JSON unchanged.
 - Successful JSON replacement parses to the complete new payload.
 

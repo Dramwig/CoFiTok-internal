@@ -6,6 +6,7 @@ from types import SimpleNamespace
 
 from PIL import Image
 
+from cofitok.image_integrity import sample_set_sha256
 from scripts.evaluate_generation_metrics import (
     calculate_metrics,
     find_images,
@@ -74,6 +75,7 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
     for index in range(2):
         Image.new("RGB", (4, 4)).save(generated / f"{index:06d}.png")
     report_path = generated.parent / "sampling_report.json"
+    sample_sha256 = sample_set_sha256(find_images(generated))
     report_path.write_text(
         json.dumps(
             {
@@ -84,6 +86,7 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
                 "weights": "ema",
                 "sampling": {"start_index": 0, "num_samples": 2, "image_shape": [3, 4, 4]},
                 "output_dirs": {"8": generated.resolve().as_posix()},
+                "sample_sets": {"8": {"count": 2, "sha256": sample_sha256}},
             }
         ),
         encoding="utf-8",
@@ -94,6 +97,7 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
     assert provenance["selected_prefix_budget"] == 8
     assert provenance["checkpoint_step"] == 50_000
     assert provenance["image_shape"] == [3, 4, 4]
+    assert provenance["sample_set_sha256"] == sample_sha256
 
 
 def test_validate_sampling_provenance_rejects_stale_extra_sample(tmp_path) -> None:
@@ -112,6 +116,7 @@ def test_validate_sampling_provenance_rejects_stale_extra_sample(tmp_path) -> No
                 "weights": "ema",
                 "sampling": {"start_index": 0, "num_samples": 2, "image_shape": [3, 4, 4]},
                 "output_dirs": {"8": generated.resolve().as_posix()},
+                "sample_sets": {"8": {"count": 2, "sha256": "b" * 64}},
             }
         ),
         encoding="utf-8",
@@ -140,6 +145,7 @@ def test_validate_sampling_provenance_rejects_corrupt_png(tmp_path) -> None:
                 "weights": "ema",
                 "sampling": {"start_index": 0, "num_samples": 1, "image_shape": [3, 4, 4]},
                 "output_dirs": {"8": generated.resolve().as_posix()},
+                "sample_sets": {"8": {"count": 1, "sha256": "b" * 64}},
             }
         ),
         encoding="utf-8",
@@ -151,3 +157,32 @@ def test_validate_sampling_provenance_rejects_corrupt_png(tmp_path) -> None:
         assert "integrity failed" in str(error)
     else:
         raise AssertionError("corrupt PNG was accepted")
+
+
+def test_validate_sampling_provenance_rejects_sample_set_digest_mismatch(tmp_path) -> None:
+    generated = tmp_path / "samples" / "prefix_8"
+    generated.mkdir(parents=True)
+    Image.new("RGB", (4, 4)).save(generated / "000000.png")
+    report_path = generated.parent / "sampling_report.json"
+    report_path.write_text(
+        json.dumps(
+            {
+                "status": "completed",
+                "checkpoint": "/checkpoints/model.pt",
+                "checkpoint_sha256": "a" * 64,
+                "checkpoint_step": 50_000,
+                "weights": "ema",
+                "sampling": {"start_index": 0, "num_samples": 1, "image_shape": [3, 4, 4]},
+                "output_dirs": {"8": generated.resolve().as_posix()},
+                "sample_sets": {"8": {"count": 1, "sha256": "b" * 64}},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        validate_sampling_provenance(report_path, generated, find_images(generated))
+    except ValueError as error:
+        assert "sample-set SHA256" in str(error)
+    else:
+        raise AssertionError("mismatched sample-set digest was accepted")

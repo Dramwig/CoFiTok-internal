@@ -9,7 +9,7 @@ from typing import Any
 
 import torch
 
-from cofitok.image_integrity import is_valid_png
+from cofitok.image_integrity import is_valid_png, sample_set_sha256
 from cofitok.reporting import write_json_report
 
 
@@ -95,6 +95,18 @@ def validate_sampling_provenance(
     ]
     if len(matching_budgets) != 1:
         raise ValueError("Generated directory does not map to exactly one sampling-report budget")
+    selected_budget = matching_budgets[0]
+    sample_set = report.get("sample_sets", {}).get(str(selected_budget))
+    if not isinstance(sample_set, dict):
+        raise ValueError("Sampling report is missing the selected sample-set digest")
+    if int(sample_set.get("count", -1)) != expected_count:
+        raise ValueError("Sampling report sample-set count does not match num_samples")
+    expected_sample_sha256 = str(sample_set.get("sha256", ""))
+    if len(expected_sample_sha256) != 64:
+        raise ValueError("Sampling report sample-set SHA256 is malformed")
+    actual_sample_sha256 = sample_set_sha256(generated_images)
+    if actual_sample_sha256 != expected_sample_sha256:
+        raise ValueError("Generated sample-set SHA256 does not match the sampling report")
     checkpoint_sha256 = str(report["checkpoint_sha256"])
     if len(checkpoint_sha256) != 64:
         raise ValueError("Sampling report checkpoint SHA256 is malformed")
@@ -104,8 +116,9 @@ def validate_sampling_provenance(
         "checkpoint_sha256": checkpoint_sha256,
         "checkpoint_step": int(report["checkpoint_step"]),
         "weights": report["weights"],
-        "selected_prefix_budget": matching_budgets[0],
+        "selected_prefix_budget": selected_budget,
         "image_shape": image_shape,
+        "sample_set_sha256": actual_sample_sha256,
         "sampling": sampling,
     }
 

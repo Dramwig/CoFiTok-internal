@@ -175,6 +175,8 @@ def build_report(
             == int(dense_training["config"]["model"]["token_count"])
             and len(str(cofitok_provenance["checkpoint_sha256"])) == 64
             and len(str(dense_provenance["checkpoint_sha256"])) == 64
+            and len(str(cofitok_provenance.get("sample_set_sha256", ""))) == 64
+            and len(str(dense_provenance.get("sample_set_sha256", ""))) == 64
             and cofitok_sampling.get("random_stream", {}).get("prefix_budgets_share_stream")
             is True
             and cofitok_sampling.get("random_stream", {}).get("batch_size_invariant") is True
@@ -190,6 +192,8 @@ def build_report(
                 "dense_prefix_budget": dense_provenance["selected_prefix_budget"],
                 "cofitok_image_shape": cofitok_sampling.get("image_shape"),
                 "dense_image_shape": dense_sampling.get("image_shape"),
+                "cofitok_sample_set_sha256": cofitok_provenance.get("sample_set_sha256"),
+                "dense_sample_set_sha256": dense_provenance.get("sample_set_sha256"),
             },
         ),
         _gate(
