@@ -8,6 +8,7 @@ import math
 from pathlib import Path
 from typing import Any
 
+from cofitok.generation_cost import training_cost_summary
 from cofitok.reporting import write_json_report, write_text_report
 
 
@@ -33,6 +34,9 @@ def _matched_row(
 ) -> dict[str, Any]:
     provenance = generation["sample_provenance"]
     sampling = provenance["sampling"]
+    training_cost = training_cost_summary(training)
+    if training_cost["valid"] is not True:
+        raise ValueError(f"{method} training cost accounting is invalid")
     return {
         "method": method,
         "comparison_tier": "matched_training_direct",
@@ -41,6 +45,11 @@ def _matched_row(
         "resolution": int(training["config"]["model"]["image_size"]),
         "training_steps": int(training["target_steps"]),
         "parameter_count": int(training["parameter_count"]),
+        "effective_batch_size": training_cost["effective_batch_size"],
+        "training_images_seen": training_cost["samples_seen"],
+        "training_elapsed_seconds": training_cost["elapsed_seconds"],
+        "training_images_per_second": training_cost["images_per_second"],
+        "peak_vram_bytes": training_cost["peak_vram_bytes"],
         "sample_count": int(generation["counts"]["generated_image_count"]),
         "fid": _finite_metric(generation, "frechet_inception_distance"),
         "inception_score": _finite_metric(generation, "inception_score_mean"),
@@ -205,15 +214,20 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "## Matched training (direct comparison)",
         "",
-        "| method | params | steps | samples | FID | IS | precision | recall |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| method | params | steps | eff. batch | train images | train h | img/s | VRAM GiB | samples | FID | IS | precision | recall |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for row in report["matched_training_rows"]:
         lines.append(
-            "| {method} | {params} | {steps} | {samples} | {fid} | {iscore} | {precision} | {recall} |".format(
+            "| {method} | {params} | {steps} | {batch} | {train_images} | {hours} | {throughput} | {vram} | {samples} | {fid} | {iscore} | {precision} | {recall} |".format(
                 method=row["method"],
                 params=row["parameter_count"],
                 steps=row["training_steps"],
+                batch=row["effective_batch_size"],
+                train_images=row["training_images_seen"],
+                hours=_fmt(row["training_elapsed_seconds"] / 3600.0),
+                throughput=_fmt(row["training_images_per_second"]),
+                vram=_fmt(row["peak_vram_bytes"] / (1024**3)),
                 samples=row["sample_count"],
                 fid=_fmt(row["fid"]),
                 iscore=_fmt(row["inception_score"]),
@@ -261,6 +275,11 @@ def render_csv(report: dict[str, Any]) -> str:
         "resolution",
         "parameter_count",
         "training_steps",
+        "effective_batch_size",
+        "training_images_seen",
+        "training_elapsed_seconds",
+        "training_images_per_second",
+        "peak_vram_bytes",
         "sample_count",
         "fid",
         "inception_score",

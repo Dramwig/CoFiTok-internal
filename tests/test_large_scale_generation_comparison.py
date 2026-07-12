@@ -13,8 +13,13 @@ def _training(parameters: int, token_count: int) -> dict:
     return {
         "target_steps": 300_000,
         "parameter_count": parameters,
+        "elapsed_seconds": 100_000.0,
+        "peak_vram_bytes": 24 * 1024**3,
+        "final_metrics": {"samples_seen": 19_200_000},
         "config": {
-            "data": {"dataset": "imagenet_256"},
+            "data": {"dataset": "imagenet_256", "batch_size": 16},
+            "runtime": {"device": "cuda"},
+            "optimization": {"gradient_accumulation_steps": 4},
             "model": {"image_size": 256, "token_count": token_count},
         },
     }
@@ -105,7 +110,11 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     assert report["comparison_policy"]["cross_tier_numeric_ranking_allowed"] is False
     assert all(row["directly_comparable_to_cofitok"] for row in report["matched_training_rows"])
     assert not any(row["directly_comparable_to_cofitok"] for row in report["official_context_rows"])
+    assert report["matched_training_rows"][0]["effective_batch_size"] == 64
+    assert report["matched_training_rows"][0]["training_images_seen"] == 19_200_000
+    assert report["matched_training_rows"][0]["peak_vram_bytes"] == 24 * 1024**3
     assert "not a direct ranking" in render_markdown(report)
+    assert "VRAM GiB" in render_markdown(report)
     assert "matched_training_direct" in render_csv(report)
     assert "official_pretrained_contextual" in render_csv(report)
 

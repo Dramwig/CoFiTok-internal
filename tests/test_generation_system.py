@@ -20,6 +20,7 @@ from cofitok.training.checkpointing import (
 )
 from cofitok.training.ema import ExponentialMovingAverage
 from cofitok.training.runtime import build_warmup_cosine_scheduler
+from scripts.validate_generation_configs import validate_pair
 
 
 def _small_model_config() -> ModelConfig:
@@ -105,6 +106,17 @@ def test_full_generation_configs_keep_matched_runtime_and_checkpoint_cadence() -
     assert runbook.count("--required-checkpoint-steps 50000,100000,200000,300000") == 2
     assert "cofitok_training_audit.json" in runbook
     assert "dense_training_audit.json" in runbook
+
+    preflight = validate_pair(cofitok, dense, max_parameter_gap=0.02)
+    assert preflight["status"] == "pass"
+    assert preflight["matched_runtime"]["steps"] == 300_000
+    assert preflight["matched_runtime"]["protected_checkpoint_steps"] == [
+        50_000,
+        100_000,
+        200_000,
+        300_000,
+    ]
+    assert preflight["matched_optimization"]["gradient_accumulation_steps"] == 4
 
 
 def test_stateful_sampler_restores_consumed_not_prefetched_position() -> None:

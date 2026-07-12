@@ -10,6 +10,9 @@ def _training(parameters: int, token_count: int) -> dict:
         "completed_steps": 50_000,
         "target_steps": 50_000,
         "parameter_count": parameters,
+        "elapsed_seconds": 1_000.0,
+        "peak_vram_bytes": 24 * 1024**3,
+        "final_metrics": {"samples_seen": 3_200_000},
         "git": {
             "dirty": False,
             "revision": "a" * 40,
@@ -23,10 +26,10 @@ def _training(parameters: int, token_count: int) -> dict:
             "step": 50_000,
         },
         "config": {
-            "data": {"dataset": "imagenet_256_10pct"},
+            "data": {"dataset": "imagenet_256_10pct", "batch_size": 16},
             "diffusion": {"schedule": "cosine"},
-            "runtime": {"steps": 50_000},
-            "optimization": {"batch": 64},
+            "runtime": {"steps": 50_000, "device": "cuda"},
+            "optimization": {"batch": 64, "gradient_accumulation_steps": 4},
             "model": {"token_count": token_count, "image_channels": 3, "image_size": 256},
         },
     }
@@ -347,4 +350,24 @@ def test_generation_gate_holds_when_quality_metrics_are_incomplete() -> None:
     )
 
     gate = next(gate for gate in report["gates"] if gate["name"] == "generation_metrics_complete")
+    assert gate["passed"] is False
+
+
+def test_generation_gate_requires_complete_training_cost_accounting() -> None:
+    dense_training = _training(100_000, 1)
+    dense_training["final_metrics"]["samples_seen"] -= 1
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=dense_training,
+        cofitok_generation=_generation(20.0, 8, "a" * 64),
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(gate for gate in report["gates"] if gate["name"] == "training_cost_accounting")
+    assert report["status"] == "fail"
     assert gate["passed"] is False

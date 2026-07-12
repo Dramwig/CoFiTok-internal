@@ -72,8 +72,14 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
         map_location="cpu",
         weights_only=False,
     )
-    for key in ("model", "ema", "optimizer", "scheduler", "rng_state", "extra_state"):
+    for key in ("model", "ema", "optimizer", "scheduler", "rng_state"):
         _assert_nested_equal(uninterrupted_checkpoint[key], resumed_checkpoint[key])
+    _assert_nested_equal(
+        uninterrupted_checkpoint["extra_state"]["sampler"],
+        resumed_checkpoint["extra_state"]["sampler"],
+    )
+    assert resumed_checkpoint["extra_state"]["cumulative_elapsed_seconds"] > 0.0
+    assert resumed_checkpoint["extra_state"]["cumulative_peak_vram_bytes"] == 0
     for key in (
         "total",
         "epsilon",

@@ -165,6 +165,15 @@ auditor fails if any reached protected checkpoint is absent, and integrity
 sidecars follow the same retention decision. See
 `docs/records/2026-07-12_generation_milestone_checkpoint_retention.md`.
 
+The matched direct panel also reports compute instead of assuming equal cost
+from equal steps. Checkpoints carry cumulative elapsed time and peak VRAM across
+segmented resumes. `cofitok.generation_cost.training_cost_summary` validates
+effective batch and exact images seen, then exposes training hours,
+images/second, and peak memory in the final JSON/Markdown/CSV comparison. The
+full paired-config preflight confirms 62,950,800 vs 62,824,707 parameters
+(+0.200706%). See
+`docs/records/2026-07-12_generation_matched_compute_accounting.md`.
+
 The revision transition after the active 10% pair is also gated. Run
 `scripts/deploy_generation_posttraining_pipeline.ps1` locally only after both
 50K training reports are complete. It verifies the pinned remote revision,

@@ -83,6 +83,8 @@ def validate_pair(
         "matched_backbone": {field: getattr(cofitok.model, field) for field in BACKBONE_FIELDS},
         "matched_data": asdict(cofitok.data),
         "matched_diffusion": asdict(cofitok.diffusion),
+        "matched_runtime": asdict(cofitok.runtime),
+        "matched_optimization": asdict(cofitok.optimization),
     }
 
 
@@ -101,4 +103,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

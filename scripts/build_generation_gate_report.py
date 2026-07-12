@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 from typing import Any
 
+from cofitok.generation_cost import training_cost_summary
 from cofitok.reporting import write_json_report
 
 
@@ -136,6 +137,8 @@ def build_report(
     dense_revision = str(dense_training.get("git", {}).get("revision", ""))
     cofitok_branch = str(cofitok_training.get("git", {}).get("branch", ""))
     dense_branch = str(dense_training.get("git", {}).get("branch", ""))
+    cofitok_cost = training_cost_summary(cofitok_training)
+    dense_cost = training_cost_summary(dense_training)
     matched_sections = all(
         cofitok_training["config"][section] == dense_training["config"][section]
         for section in ("data", "diffusion", "runtime", "optimization")
@@ -172,6 +175,14 @@ def build_report(
             "matched_training_protocol",
             matched_sections and abs(parameter_gap) <= 0.02,
             {"matched_sections": matched_sections, "relative_parameter_gap": parameter_gap},
+        ),
+        _gate(
+            "training_cost_accounting",
+            cofitok_cost["valid"]
+            and dense_cost["valid"]
+            and cofitok_cost["expected_samples_seen"]
+            == dense_cost["expected_samples_seen"],
+            {"cofitok": cofitok_cost, "dense": dense_cost},
         ),
         _gate(
             "matched_generation_protocol",
@@ -367,6 +378,8 @@ def build_report(
             "dense_recall": dense_quality["recall"],
             "ordered_rank": cofitok_checkpoint["metrics"]["ordered_rank_by_path_auc"],
             "order_count": cofitok_checkpoint["metrics"]["order_count"],
+            "cofitok_training_cost": cofitok_cost,
+            "dense_training_cost": dense_cost,
         },
     }
 

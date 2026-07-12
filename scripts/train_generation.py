@@ -307,6 +307,8 @@ def main() -> None:
     )
     schedule = DiffusionSchedule(config.diffusion, device=device)
     start_step = 0
+    cumulative_elapsed_before_segment = 0.0
+    cumulative_peak_vram_before_segment = 0
     metrics_resume_reconciliation = None
     if resume_path is not None:
         checkpoint = load_training_checkpoint(
@@ -323,6 +325,14 @@ def main() -> None:
         sampler_state = checkpoint.get("extra_state", {}).get("sampler")
         if sampler_state is None:
             raise ValueError("production checkpoint is missing sampler state")
+        cumulative_elapsed_before_segment = float(
+            checkpoint.get("extra_state", {}).get("cumulative_elapsed_seconds", 0.0)
+        )
+        cumulative_peak_vram_before_segment = int(
+            checkpoint.get("extra_state", {}).get("cumulative_peak_vram_bytes", 0)
+        )
+        if cumulative_elapsed_before_segment < 0.0 or cumulative_peak_vram_before_segment < 0:
+            raise ValueError("checkpoint cumulative compute accounting is invalid")
         sampler.load_state_dict(sampler_state)
         metrics_resume_reconciliation = reconcile_metrics_for_resume(
             metrics_path,
@@ -415,6 +425,7 @@ def main() -> None:
         scheduler.step()
         ema.update(base_model)
         completed_step = step
+        step_elapsed_seconds = time.time() - training_start
 
         last_metrics = {
             "step": step,
@@ -423,7 +434,10 @@ def main() -> None:
             "learning_rate": float(optimizer.param_groups[0]["lr"]),
             "ema_decay": ema._effective_decay(),
             "samples_seen": step * micro_samples,
-            "elapsed_seconds": time.time() - training_start,
+            "elapsed_seconds": step_elapsed_seconds,
+            "cumulative_elapsed_seconds": (
+                cumulative_elapsed_before_segment + step_elapsed_seconds
+            ),
         }
         if not stop.requested and (
             step % config.runtime.evaluation_interval == 0
@@ -460,6 +474,10 @@ def main() -> None:
             or stop.requested
         )
         if should_checkpoint:
+            segment_elapsed_seconds = time.time() - training_start
+            segment_peak_vram_bytes = (
+                torch.cuda.max_memory_allocated(device) if device.type == "cuda" else 0
+            )
             checkpoint_path = output_dir / f"checkpoint_step_{step:08d}.pt"
             save_training_checkpoint(
                 checkpoint_path,
@@ -471,7 +489,16 @@ def main() -> None:
                 step=step,
                 config=config_to_dict(config),
                 metrics=last_metrics,
-                extra_state={"sampler": sampler.state_dict()},
+                extra_state={
+                    "sampler": sampler.state_dict(),
+                    "cumulative_elapsed_seconds": (
+                        cumulative_elapsed_before_segment + segment_elapsed_seconds
+                    ),
+                    "cumulative_peak_vram_bytes": max(
+                        cumulative_peak_vram_before_segment,
+                        segment_peak_vram_bytes,
+                    ),
+                },
             )
             prune_checkpoints(
                 output_dir,
@@ -481,6 +508,10 @@ def main() -> None:
         if stop.requested:
             break
 
+    segment_elapsed_seconds = time.time() - training_start
+    segment_peak_vram_bytes = (
+        torch.cuda.max_memory_allocated(device) if device.type == "cuda" else 0
+    )
     report = {
         **manifest,
         "completed_steps": completed_step,
@@ -489,8 +520,12 @@ def main() -> None:
         "stop_requested": stop.requested,
         "stop_signal": stop.signal_number,
         "final_metrics": last_metrics,
-        "elapsed_seconds": time.time() - training_start,
-        "peak_vram_bytes": torch.cuda.max_memory_allocated(device) if device.type == "cuda" else 0,
+        "segment_elapsed_seconds": segment_elapsed_seconds,
+        "elapsed_seconds": cumulative_elapsed_before_segment + segment_elapsed_seconds,
+        "peak_vram_bytes": max(
+            cumulative_peak_vram_before_segment,
+            segment_peak_vram_bytes,
+        ),
         "latest_checkpoint": json.loads((output_dir / "latest.json").read_text(encoding="utf-8")),
     }
     write_json_report(output_dir / "training_report.json", report)
