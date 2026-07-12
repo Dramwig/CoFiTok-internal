@@ -277,6 +277,11 @@ The formal sampler also has an end-to-end CPU checkpoint-to-PNG subprocess
 test and derives actual DDIM timesteps from `GenerationSession.schedule`, so
 the exact 10K/50K CLI entry point is covered beyond lower-level sampler tests.
 See `docs/records/2026-07-12_formal_sampling_cli_integration.md`.
+All Python entry points referenced by the post-training runbooks are also
+source-to-source contract tested: the test extracts every multiline command,
+starts the corresponding CLI through `--help`, and verifies every option used
+by the runbook exists in that parser. See
+`docs/records/2026-07-12_generation_runbook_cli_contracts.md`.
 
 Promotion and final post-evaluation also create deterministic fixed-index
 CoFiTok/dense endpoint panels plus a separate `1/2/4/8` prefix-path panel.
