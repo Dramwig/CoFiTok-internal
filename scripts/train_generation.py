@@ -321,7 +321,11 @@ def main() -> None:
                     clean,
                     noise,
                     timesteps,
-                    zero_components=base_model.synthesis.zero_components_like(output.tokens),
+                    zero_components=(
+                        base_model.synthesis.zero_components_like(output.tokens)
+                        if config.loss.zero_token_weight > 0.0
+                        else None
+                    ),
                 )
                 scaled_loss = losses.total / accumulation
             if not torch.isfinite(scaled_loss):

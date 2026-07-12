@@ -16,6 +16,9 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Production training uses bf16, gradient accumulation, gradient clipping,
   cosine LR, EMA, isolated DataLoader RNG, atomic checkpoints, retention, and
   exact model/optimizer/scheduler/RNG/sampler recovery.
+- Zero-weight objectives are not materialized in the production graph. The
+  structural `S_k(0)=0` invariant is enforced by architecture and tested
+  separately instead of paying for a gradient-free zero-token term every step.
 - Production inference loads EMA by default and supports deterministic DDIM,
   classifier-free guidance, guidance rescaling, prefix budgets, and resumable
   numbered PNG export.
@@ -73,4 +76,3 @@ python scripts/generate_samples.py \
   --num-samples 50000 --batch-size 32 --sample-steps 250 \
   --guidance-scale 1.5 --weights ema
 ```
-

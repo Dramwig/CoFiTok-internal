@@ -345,25 +345,37 @@ def compute_losses(
     zero_components: list[torch.Tensor] | None = None,
 ) -> LossBreakdown:
     epsilon_loss = F.mse_loss(output.epsilon, noise)
-    prefix_loss = _prefix_loss(output, schedule, noisy_images, clean_images, timesteps)
-    monotonic_loss = _monotonic_loss(
-        output,
-        schedule,
-        noisy_images,
-        clean_images,
-        timesteps,
-        margin=config.monotonic_margin,
-    )
-    if zero_components:
+    if config.prefix_weight > 0.0:
+        prefix_loss = _prefix_loss(output, schedule, noisy_images, clean_images, timesteps)
+    else:
+        prefix_loss = output.epsilon.new_zeros(())
+    if config.monotonic_weight > 0.0:
+        monotonic_loss = _monotonic_loss(
+            output,
+            schedule,
+            noisy_images,
+            clean_images,
+            timesteps,
+            margin=config.monotonic_margin,
+        )
+    else:
+        monotonic_loss = output.epsilon.new_zeros(())
+    if config.zero_token_weight > 0.0 and zero_components:
         zero_token_loss = torch.stack([component.pow(2).mean() for component in zero_components]).mean()
     else:
         zero_token_loss = output.epsilon.new_zeros(())
-    energy_budget_loss = _energy_budget_loss(output, config.energy_target)
+    if config.energy_budget_weight > 0.0:
+        energy_budget_loss = _energy_budget_loss(output, config.energy_target)
+    else:
+        energy_budget_loss = output.epsilon.new_zeros(())
     if config.component_decorrelation_weight > 0.0:
         component_decorrelation_loss = _component_decorrelation_loss(output)
     else:
         component_decorrelation_loss = output.epsilon.new_zeros(())
-    tail_floor_loss = _tail_floor_loss(output, config.tail_floor_min_ratio)
+    if config.tail_floor_weight > 0.0:
+        tail_floor_loss = _tail_floor_loss(output, config.tail_floor_min_ratio)
+    else:
+        tail_floor_loss = output.epsilon.new_zeros(())
     if config.residual_component_weight > 0.0:
         residual_component_loss = _residual_component_loss(
             output,
