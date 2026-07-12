@@ -228,6 +228,14 @@ The gate also requires finite positive cumulative sampling time, and the final
 comparison publishes sampling elapsed time and throughput.
 See `docs/records/2026-07-12_generation_sampling_progress.md`.
 
+Large-scale completion is fail-closed. Before the completion pipeline can
+publish `pass`, `scripts/audit_large_scale_generation_completion.py` must verify
+the pinned 10% pair and promotion gate, full matched 300K pair, training audits,
+all four milestones, formal paired 50K sampling, final gate, and final comparison.
+Missing evidence is `in_progress`, contradictory evidence is `failed`, and only
+the full chain is `complete`. See
+`docs/records/2026-07-12_large_scale_generation_completion_audit.md`.
+
 Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies
 strictly increasing finite metrics, resume-aware timing segments, checkpoint

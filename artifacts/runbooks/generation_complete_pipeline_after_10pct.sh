@@ -15,6 +15,7 @@ source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
 cd "$PROJECT"
 export PYTHONPATH=src
+FULL_REVISION="$(git rev-parse HEAD)"
 mkdir -p "$OUTPUT_ROOT"
 
 exec 9>"$LOCK"
@@ -90,6 +91,14 @@ bash artifacts/runbooks/generation_full_posteval_50k.sh
 STAGE=final_gate
 write_status running "checking the large-scale generation readiness gate"
 validate_gate "$FINAL_GATE" large_scale_generation_ready
+
+STAGE=completion_audit
+write_status running "auditing all required large-scale generation evidence"
+python scripts/audit_large_scale_generation_completion.py \
+  --project-root "$PROJECT" --output-root "$OUTPUT_ROOT" \
+  --expected-10pct-revision "$PINNED_10PCT_REVISION" \
+  --expected-full-revision "$FULL_REVISION" \
+  --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/completion_audit.json"
 
 STAGE=complete
 write_status pass "large-scale generation training and formal evaluation passed"

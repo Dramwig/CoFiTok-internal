@@ -58,6 +58,7 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
         "STAGE=full_training",
         "STAGE=full_posteval",
         "STAGE=final_gate",
+        "STAGE=completion_audit",
         "STAGE=complete",
     ]
     positions = [runbook.index(marker) for marker in ordered_markers]
@@ -88,6 +89,8 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     pipeline = _read("artifacts/runbooks/generation_complete_pipeline_after_10pct.sh")
     assert "PINNED_10PCT_REVISION=781a01444fddbf0d48a427ba58bdeed50167b5be" in pipeline
     assert "validate_generation_training_pair.py" in pipeline
+    assert "audit_large_scale_generation_completion.py" in pipeline
+    assert '--expected-full-revision "$FULL_REVISION"' in pipeline
 
 
 def test_local_deployer_pins_current_training_revision_and_builds_bundle() -> None:
