@@ -23,6 +23,8 @@ The audit requires all of the following:
 - a passing 10K scaling gate authorizing full ImageNet-256;
 - matched full ImageNet-256 CoFiTok/dense 300K training at the deployed upgrade
   revision;
+- a revision-bound shared runtime selection whose microbatch and accumulation
+  are present in both 300K training reports and preserve effective batch 64;
 - complete training audits with validation events and protected 50K, 100K,
   200K, and 300K checkpoints;
 - all four paired 2,048-sample DDIM-50 milestone reports;

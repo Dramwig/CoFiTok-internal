@@ -73,6 +73,47 @@ def _training_audit_evidence(audits: dict[str, dict[str, Any]]) -> dict[str, Any
     return evidence
 
 
+def _runtime_selection_evidence(
+    selection: dict[str, Any],
+    training_reports: dict[str, dict[str, Any]],
+    *,
+    expected_revision: str,
+) -> dict[str, Any]:
+    if selection.get("status") != "selected":
+        raise ValueError("full training runtime selection is incomplete")
+    if selection.get("git_revision") != expected_revision:
+        raise ValueError("runtime selection revision differs from full training")
+    selected = selection.get("selected", {})
+    micro_batch = int(selected.get("micro_batch_size", -1))
+    accumulation = int(selected.get("gradient_accumulation_steps", -1))
+    effective_batch = int(selected.get("effective_batch_size", -1))
+    if micro_batch < 1 or accumulation < 1 or effective_batch != 64:
+        raise ValueError("selected full runtime is invalid")
+    if micro_batch * accumulation != effective_batch:
+        raise ValueError("selected full runtime changes effective batch")
+    for method, report in training_reports.items():
+        config = report.get("config", {})
+        if int(config.get("data", {}).get("batch_size", -1)) != micro_batch:
+            raise ValueError(f"{method} training did not use selected microbatch")
+        if (
+            int(
+                config.get("optimization", {}).get(
+                    "gradient_accumulation_steps", -1
+                )
+            )
+            != accumulation
+        ):
+            raise ValueError(f"{method} training did not use selected accumulation")
+    return {
+        "micro_batch_size": micro_batch,
+        "gradient_accumulation_steps": accumulation,
+        "effective_batch_size": effective_batch,
+        "estimated_speedup_over_16x4": float(
+            selected["estimated_speedup_over_16x4"]
+        ),
+    }
+
+
 def _milestone_evidence(
     milestones: dict[int, dict[str, Any]],
 ) -> tuple[dict[str, Any], list[str]]:
@@ -220,6 +261,7 @@ def build_completion_audit(
     dense_full_training: dict[str, Any] | None,
     cofitok_training_audit: dict[str, Any] | None,
     dense_training_audit: dict[str, Any] | None,
+    runtime_selection: dict[str, Any] | None,
     milestones: dict[int, dict[str, Any] | None],
     cofitok_generation: dict[str, Any] | None,
     dense_generation: dict[str, Any] | None,
@@ -263,6 +305,20 @@ def build_completion_audit(
                 expected_steps=300_000,
                 expected_revision=expected_full_revision,
                 expected_dataset="imagenet_256",
+            ),
+        )
+    )
+    checks.append(
+        _check(
+            "full_runtime_selection",
+            [runtime_selection, cofitok_full_training, dense_full_training],
+            lambda: _runtime_selection_evidence(
+                runtime_selection,
+                {
+                    "cofitok": cofitok_full_training,
+                    "dense_identity": dense_full_training,
+                },
+                expected_revision=expected_full_revision,
             ),
         )
     )
@@ -391,6 +447,7 @@ def main() -> None:
         dense_full_training=_read_optional(dense_full / "training_report.json"),
         cofitok_training_audit=_read_optional(full_root / "cofitok_training_audit.json"),
         dense_training_audit=_read_optional(full_root / "dense_training_audit.json"),
+        runtime_selection=_read_optional(full_root / "runtime_selection.json"),
         milestones={
             step: _read_optional(full_root / "milestones" / f"step_{step:08d}.json")
             for step in MILESTONE_STEPS

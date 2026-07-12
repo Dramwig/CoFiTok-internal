@@ -236,6 +236,14 @@ Missing evidence is `in_progress`, contradictory evidence is `failed`, and only
 the full chain is `complete`. See
 `docs/records/2026-07-12_large_scale_generation_completion_audit.md`.
 
+Before full 300K training starts, both methods run the same checkpoint-free
+training-runtime candidates `16x4`, `32x2`, and `64x1`. Selection preserves
+effective batch 64, requires both methods to fit below 90% VRAM, and minimizes
+the slower method's synchronized optimizer-step time. The selected microbatch
+and accumulation are applied to every full-training segment and verified again
+by the completion audit. See
+`docs/records/2026-07-12_generation_training_runtime_selection.md`.
+
 Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies
 strictly increasing finite metrics, resume-aware timing segments, checkpoint

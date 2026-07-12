@@ -94,3 +94,29 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
         for line in (resumed / "train_metrics.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert steps == [1, 2]
+
+
+def test_runtime_benchmark_executes_training_without_checkpoint(tmp_path) -> None:
+    output = tmp_path / "benchmark_run"
+    report_path = tmp_path / "benchmark_report.json"
+    _run(
+        output,
+        "--benchmark-steps",
+        "2",
+        "--benchmark-warmup-steps",
+        "1",
+        "--benchmark-output",
+        str(report_path),
+    )
+
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    assert report["status"] == "completed"
+    assert report["role"] == "training_runtime_selection_only"
+    assert report["benchmark_steps"] == 2
+    assert report["measured_steps"] == 1
+    assert report["effective_batch_size"] == 4
+    assert report["mean_optimizer_step_seconds"] > 0.0
+    assert report["images_per_second"] > 0.0
+    assert report["checkpoint_written"] is False
+    assert not list(output.glob("checkpoint_step_*.pt"))
+    assert not (output / "training_report.json").exists()

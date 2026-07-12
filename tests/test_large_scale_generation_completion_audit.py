@@ -87,6 +87,19 @@ def _training_audit() -> dict:
     }
 
 
+def _runtime_selection() -> dict:
+    return {
+        "status": "selected",
+        "git_revision": FULL_REVISION,
+        "selected": {
+            "micro_batch_size": 16,
+            "gradient_accumulation_steps": 4,
+            "effective_batch_size": 64,
+            "estimated_speedup_over_16x4": 1.0,
+        },
+    }
+
+
 def _milestone(step: int, alerts: list[str] | None = None) -> dict:
     row = {
         "checkpoint_step": step,
@@ -177,6 +190,7 @@ def _kwargs() -> dict:
         ),
         "cofitok_training_audit": _training_audit(),
         "dense_training_audit": _training_audit(),
+        "runtime_selection": _runtime_selection(),
         "milestones": {step: _milestone(step) for step in MILESTONE_STEPS},
         "cofitok_generation": _generation("a"),
         "dense_generation": _generation("b"),
@@ -192,7 +206,7 @@ def test_completion_audit_requires_every_large_scale_artifact() -> None:
     assert report["complete"] is True
     assert report["failed_checks"] == []
     assert report["missing_checks"] == []
-    assert len(report["checks"]) == 8
+    assert len(report["checks"]) == 9
 
 
 def test_completion_audit_reports_missing_work_as_in_progress() -> None:
@@ -205,6 +219,7 @@ def test_completion_audit_reports_missing_work_as_in_progress() -> None:
     assert report["complete"] is False
     assert report["missing_checks"] == [
         "full_matched_training",
+        "full_runtime_selection",
         "formal_50k_generation",
     ]
 
@@ -245,6 +260,20 @@ def test_completion_audit_rejects_stale_gate_and_comparison_provenance() -> None
         "final_generation_gate",
         "final_comparison_report",
     ]
+
+
+def test_completion_audit_rejects_training_that_ignores_selected_runtime() -> None:
+    kwargs = _kwargs()
+    kwargs["runtime_selection"]["selected"].update(
+        micro_batch_size=32,
+        gradient_accumulation_steps=2,
+        estimated_speedup_over_16x4=1.2,
+    )
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["full_runtime_selection"]
 
 
 def test_completion_audit_preserves_nonblocking_milestone_alerts() -> None:

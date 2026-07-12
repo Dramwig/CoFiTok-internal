@@ -6,6 +6,8 @@ OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
 GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/promotion_gate.json"
 COFITOK_RUN="$OUTPUT_ROOT/imagenet256_full_cofitok_k8_300k"
 DENSE_RUN="$OUTPUT_ROOT/imagenet256_full_dense_300k"
+RUNTIME_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/full_imagenet256_300k"
+RUNTIME_SELECTION="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/runtime_selection.json"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -21,6 +23,22 @@ with open(sys.argv[1], encoding="utf-8") as handle:
 if gate.get("status") != "pass" or gate.get("decision") != "promote_to_full_imagenet256":
     raise SystemExit("10% generation gate did not authorize full ImageNet-256 training")
 PY
+
+runtime_selected="$(python scripts/select_generation_training_runtime.py \
+  --cofitok-config configs/generation/imagenet256_cofitok_k8_300k.json \
+  --dense-config configs/generation/imagenet256_dense_300k.json \
+  --output-root "$RUNTIME_BENCHMARK_ROOT" --output "$RUNTIME_SELECTION" \
+  --candidates 16x4,32x2,64x1 --effective-batch-size 64 \
+  --benchmark-steps 8 --warmup-steps 2 --max-memory-fraction 0.90)"
+read -r SELECTED_MICRO_BATCH SELECTED_ACCUMULATION <<<"$runtime_selected"
+if [[ ! "$SELECTED_MICRO_BATCH" =~ ^[0-9]+$ || ! "$SELECTED_ACCUMULATION" =~ ^[0-9]+$ ]]; then
+  printf 'invalid selected runtime: %s\n' "$runtime_selected" >&2
+  exit 1
+fi
+if (( SELECTED_MICRO_BATCH * SELECTED_ACCUMULATION != 64 )); then
+  printf 'selected runtime changes effective batch: %s\n' "$runtime_selected" >&2
+  exit 1
+fi
 
 require_complete() {
   python - "$1" <<'PY'
@@ -71,6 +89,8 @@ train_to_milestone() {
   fi
   python scripts/train_generation.py \
     --config "$config" --output-dir "$run_dir" \
+    --micro-batch-size "$SELECTED_MICRO_BATCH" \
+    --gradient-accumulation-steps "$SELECTED_ACCUMULATION" \
     --stop-after-steps "$delta" "${resume_args[@]}"
   local reached
   reached="$(latest_step "$run_dir")"

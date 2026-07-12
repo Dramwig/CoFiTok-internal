@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import signal
+import statistics
 import subprocess
 import time
 from dataclasses import replace
@@ -65,6 +66,14 @@ def parse_args() -> argparse.Namespace:
         default=0,
         help="Stop cleanly after N optimizer steps without changing the configured LR schedule.",
     )
+    parser.add_argument(
+        "--benchmark-steps",
+        type=int,
+        default=0,
+        help="Run optimizer steps for runtime measurement without writing checkpoints.",
+    )
+    parser.add_argument("--benchmark-warmup-steps", type=int, default=2)
+    parser.add_argument("--benchmark-output", default="")
     return parser.parse_args()
 
 
@@ -247,6 +256,16 @@ def _evaluate_batch(
 
 def main() -> None:
     args = parse_args()
+    benchmark_mode = args.benchmark_steps > 0
+    if benchmark_mode:
+        if not args.benchmark_output:
+            raise ValueError("benchmark mode requires --benchmark-output")
+        if args.benchmark_warmup_steps < 0 or args.benchmark_warmup_steps >= args.benchmark_steps:
+            raise ValueError("benchmark warmup must leave at least one measured step")
+        if args.resume or args.max_steps > 0 or args.stop_after_steps > 0:
+            raise ValueError("benchmark mode cannot resume or override the training horizon")
+    elif args.benchmark_output:
+        raise ValueError("--benchmark-output requires --benchmark-steps")
     config = load_config(args.config)
     if args.max_steps > 0:
         config = replace(config, runtime=replace(config.runtime, steps=args.max_steps))
@@ -370,13 +389,21 @@ def main() -> None:
     write_json_report(output_dir / "run_manifest.json", manifest)
 
     training_start = time.time()
+    benchmark_durations: list[float] = []
+    if benchmark_mode and device.type == "cuda":
+        torch.cuda.reset_peak_memory_stats(device)
     last_metrics: dict[str, float | int] = {}
     completed_step = start_step
     accumulation = config.optimization.gradient_accumulation_steps
     loop_end = config.runtime.steps
     if args.stop_after_steps > 0:
         loop_end = min(loop_end, start_step + args.stop_after_steps)
+    if benchmark_mode:
+        loop_end = args.benchmark_steps
     for step in range(start_step + 1, loop_end + 1):
+        if benchmark_mode and device.type == "cuda":
+            torch.cuda.synchronize(device)
+        benchmark_step_start = time.perf_counter()
         model.train()
         optimizer.zero_grad(set_to_none=True)
         aggregate: dict[str, float] = {}
@@ -424,6 +451,10 @@ def main() -> None:
             scaler.update()
         scheduler.step()
         ema.update(base_model)
+        if benchmark_mode:
+            if device.type == "cuda":
+                torch.cuda.synchronize(device)
+            benchmark_durations.append(time.perf_counter() - benchmark_step_start)
         completed_step = step
         step_elapsed_seconds = time.time() - training_start
 
@@ -468,7 +499,7 @@ def main() -> None:
                 f"lr={last_metrics['learning_rate']:.3e}{validation_text}"
             )
 
-        should_checkpoint = (
+        should_checkpoint = not benchmark_mode and (
             step % config.runtime.checkpoint_interval == 0
             or step == loop_end
             or stop.requested
@@ -512,6 +543,46 @@ def main() -> None:
     segment_peak_vram_bytes = (
         torch.cuda.max_memory_allocated(device) if device.type == "cuda" else 0
     )
+    if benchmark_mode:
+        measured = benchmark_durations[args.benchmark_warmup_steps :]
+        mean_seconds = statistics.fmean(measured)
+        sorted_measured = sorted(measured)
+        p95_index = max(0, (95 * len(sorted_measured) + 99) // 100 - 1)
+        effective_batch_size = config.data.batch_size * config.optimization.gradient_accumulation_steps
+        benchmark_report = {
+            "schema_version": 1,
+            "status": "completed",
+            "role": "training_runtime_selection_only",
+            "config": config_to_dict(config),
+            "config_path": str(Path(args.config).resolve()),
+            "git": manifest["git"],
+            "device": manifest["device"],
+            "device_name": manifest["device_name"],
+            "parameter_count": manifest["parameter_count"],
+            "benchmark_steps": args.benchmark_steps,
+            "warmup_steps": args.benchmark_warmup_steps,
+            "measured_steps": len(measured),
+            "micro_batch_size": config.data.batch_size,
+            "gradient_accumulation_steps": config.optimization.gradient_accumulation_steps,
+            "effective_batch_size": effective_batch_size,
+            "mean_optimizer_step_seconds": mean_seconds,
+            "median_optimizer_step_seconds": statistics.median(measured),
+            "p95_optimizer_step_seconds": sorted_measured[p95_index],
+            "images_per_second": effective_batch_size / mean_seconds,
+            "peak_vram_bytes": segment_peak_vram_bytes,
+            "device_total_memory_bytes": (
+                torch.cuda.get_device_properties(device).total_memory
+                if device.type == "cuda"
+                else 0
+            ),
+            "durations_seconds": benchmark_durations,
+            "measured_durations_seconds": measured,
+            "last_metrics": last_metrics,
+            "checkpoint_written": False,
+        }
+        write_json_report(args.benchmark_output, benchmark_report)
+        print(f"wrote {args.benchmark_output}")
+        return
     report = {
         **manifest,
         "completed_steps": completed_step,
