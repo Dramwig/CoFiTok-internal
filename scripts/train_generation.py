@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import signal
 import subprocess
 import time
 from dataclasses import replace
@@ -31,6 +32,17 @@ from cofitok.training.runtime import (
     build_warmup_cosine_scheduler,
 )
 from cofitok.utils.seed import seed_everything
+
+
+class StopController:
+    def __init__(self) -> None:
+        self.requested = False
+        self.signal_number: int | None = None
+
+    def request(self, signal_number: int, _frame: object) -> None:
+        self.requested = True
+        self.signal_number = signal_number
+        print(f"received signal {signal_number}; checkpointing after the current optimizer step", flush=True)
 
 
 def parse_args() -> argparse.Namespace:
@@ -223,6 +235,9 @@ def main() -> None:
             ),
         )
     _validate_config(config)
+    stop = StopController()
+    signal.signal(signal.SIGTERM, stop.request)
+    signal.signal(signal.SIGINT, stop.request)
     seed_everything(config.runtime.seed)
     device = _resolve_device(config.runtime.device)
     if device.type == "cuda":
@@ -307,6 +322,7 @@ def main() -> None:
     metrics_path = output_dir / "train_metrics.jsonl"
     training_start = time.time()
     last_metrics: dict[str, float | int] = {}
+    completed_step = start_step
     accumulation = config.optimization.gradient_accumulation_steps
     loop_end = config.runtime.steps
     if args.stop_after_steps > 0:
@@ -359,6 +375,7 @@ def main() -> None:
             scaler.update()
         scheduler.step()
         ema.update(base_model)
+        completed_step = step
 
         last_metrics = {
             "step": step,
@@ -379,7 +396,9 @@ def main() -> None:
                 f"lr={last_metrics['learning_rate']:.3e}"
             )
 
-        if step % config.runtime.evaluation_interval == 0 or step == loop_end:
+        if not stop.requested and (
+            step % config.runtime.evaluation_interval == 0 or step == loop_end
+        ):
             try:
                 eval_batch = next(eval_iterator)
             except StopIteration:
@@ -393,7 +412,11 @@ def main() -> None:
                 device,
             )
 
-        should_checkpoint = step % config.runtime.checkpoint_interval == 0 or step == loop_end
+        should_checkpoint = (
+            step % config.runtime.checkpoint_interval == 0
+            or step == loop_end
+            or stop.requested
+        )
         if should_checkpoint:
             checkpoint_path = output_dir / f"checkpoint_step_{step:08d}.pt"
             save_training_checkpoint(
@@ -409,12 +432,16 @@ def main() -> None:
                 extra_state={"sampler": sampler.state_dict()},
             )
             prune_checkpoints(output_dir, config.runtime.keep_last_checkpoints)
+        if stop.requested:
+            break
 
     report = {
         **manifest,
-        "completed_steps": loop_end,
+        "completed_steps": completed_step,
         "target_steps": config.runtime.steps,
-        "training_complete": loop_end == config.runtime.steps,
+        "training_complete": completed_step == config.runtime.steps,
+        "stop_requested": stop.requested,
+        "stop_signal": stop.signal_number,
         "final_metrics": last_metrics,
         "elapsed_seconds": time.time() - training_start,
         "peak_vram_bytes": torch.cuda.max_memory_allocated(device) if device.type == "cuda" else 0,
