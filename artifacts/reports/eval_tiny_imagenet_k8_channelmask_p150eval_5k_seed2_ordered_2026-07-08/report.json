@@ -1,0 +1,200 @@
+{
+  "artifacts": {
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/eval_tiny_imagenet_k8_channelmask_p150eval_5k_seed2_ordered_2026-07-08/prefix_final.png",
+    "shuffled_prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/eval_tiny_imagenet_k8_channelmask_p150eval_5k_seed2_ordered_2026-07-08/prefix_final_shuffled.png"
+  },
+  "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_channelmask_p150eval_5k_seed2_2026-07-08/checkpoint_final.pt",
+  "config": {
+    "data": {
+      "batch_size": 32,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "tiny_imagenet_200",
+      "image_size": 64,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "denoise_path_component_weight": 0.0,
+      "denoise_path_prefix_weight": 0.0,
+      "denoise_path_progress_power": 1.5,
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_band_component_weight": 0.0,
+      "epsilon_band_prefix_weight": 0.0,
+      "epsilon_weight": 1.0,
+      "group_residual_size": 0,
+      "group_residual_weight": 0.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.05,
+      "prefix_weight": 0.25,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_early_dropout_prob": 0.0,
+      "tail_early_dropout_start": 1,
+      "tail_early_dropout_weight": 0.0,
+      "tail_endpoint_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "tail_late_monotonic_margin": 0.0,
+      "tail_late_monotonic_start": 0,
+      "tail_late_monotonic_weight": 0.0,
+      "tail_late_prefix_start": 0,
+      "tail_late_prefix_weight": 0.0,
+      "tail_replay_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 64,
+      "predictor_depth": 3,
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 8
+    },
+    "name": "train_tiny_imagenet_k8_channelmask_p150eval_5k_seed2_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 1000,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 103,
+      "steps": 5000
+    }
+  },
+  "prefix_summary": {
+    "active_tail_tokens": 1,
+    "component_energy": [
+      1.01360285282135,
+      0.03178019821643829,
+      0.0012343543348833919,
+      0.00022491658455692232,
+      8.922707638703287e-05,
+      4.27279737778008e-05,
+      2.9928944059065543e-05,
+      0.0001137594081228599
+    ],
+    "component_energy_ratio": [
+      0.9679929925309644,
+      0.03035016040960115,
+      0.0011788111518643654,
+      0.00021479584153604603,
+      8.521205760842114e-05,
+      4.080531056797236e-05,
+      2.8582208546854683e-05,
+      0.00010864048931086332
+    ],
+    "component_order": "ordered",
+    "component_order_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.13088974356651306,
+      "random_token_component_energy": 0.09667471051216125,
+      "random_token_component_energy_ratio": 0.7385965585708618,
+      "shuffled_component_mse": 0.26144498586654663,
+      "shuffled_component_relative_mse": 1.9974443912506104,
+      "zero_token_component_energy": 0.0,
+      "zero_token_component_energy_ratio": 0.0
+    },
+    "energy_effective_token_count": 1.161632458639943,
+    "energy_entropy": 0.1498263077420229,
+    "energy_entropy_normalized": 0.07205122372470672,
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/eval_tiny_imagenet_k8_channelmask_p150eval_5k_seed2_ordered_2026-07-08/prefix_final.png",
+    "head_energy_ratio": 0.9679929925309644,
+    "late_half_energy_ratio": 0.0002632400660341115,
+    "prefix_mse_to_clean": [
+      0.6538558006286621,
+      0.30607110261917114,
+      0.28532645106315613,
+      0.28105083107948303,
+      0.2786983847618103,
+      0.2765199840068817,
+      0.2741888165473938,
+      0.26256054639816284
+    ],
+    "prefix_mse_to_clean_auc": 0.30858053479875835,
+    "prefix_mse_to_denoise_path": [
+      10.989534378051758,
+      9.795061111450195,
+      7.674678802490234,
+      5.507924556732178,
+      3.5136661529541016,
+      1.8595833778381348,
+      0.7133195400238037,
+      0.26256054639816284
+    ],
+    "prefix_mse_to_denoise_path_auc": 4.955754429101944,
+    "random_order_seed": 0,
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4",
+      "prefix_5",
+      "prefix_6",
+      "prefix_7",
+      "prefix_8"
+    ],
+    "shuffled_final_clean_mse": 24.530080795288086,
+    "shuffled_final_mse_ratio": 93.42637776998366,
+    "shuffled_grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/eval_tiny_imagenet_k8_channelmask_p150eval_5k_seed2_ordered_2026-07-08/prefix_final_shuffled.png",
+    "shuffled_prefix_mse_to_clean": [
+      23.87713623046875,
+      24.582168579101562,
+      24.600101470947266,
+      24.596080780029297,
+      24.586593627929688,
+      24.574148178100586,
+      24.56647491455078,
+      24.530080795288086
+    ],
+    "shuffled_prefix_mse_to_clean_auc": 24.529882294791086,
+    "tail_energy_ratio": 0.03200700746903567,
+    "timestep": 500
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 0.6434621810913086,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

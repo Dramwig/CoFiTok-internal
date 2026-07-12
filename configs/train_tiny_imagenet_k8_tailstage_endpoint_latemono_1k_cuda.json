@@ -1,0 +1,45 @@
+{
+  "name": "train_tiny_imagenet_k8_tailstage_endpoint_latemono_1k_cuda",
+  "data": {
+    "dataset": "tiny_imagenet_200",
+    "root": "/root/autodl-tmp/CoFiTok/datasets",
+    "image_size": 64,
+    "channels": 3,
+    "batch_size": 32,
+    "num_workers": 2,
+    "class_conditional": false
+  },
+  "model": {
+    "image_channels": 3,
+    "image_size": 64,
+    "token_count": 8,
+    "token_channels": 16,
+    "base_channels": 48,
+    "predictor_depth": 3,
+    "synthesis_kernel_size": 3,
+    "gamma_mode": "learned_scalar",
+    "synthesis_active_token_channels": [4, 4, 8, 8, 12, 12, 16, 16]
+  },
+  "loss": {
+    "prefix_weight": 0.0,
+    "monotonic_weight": 0.0,
+    "tail_replay_weight": 20.0,
+    "tail_endpoint_weight": 0.03,
+    "tail_late_monotonic_weight": 0.10,
+    "tail_late_monotonic_start": 4,
+    "tail_late_monotonic_margin": 0.0
+  },
+  "runtime": {
+    "device": "cuda",
+    "seed": 97,
+    "steps": 1000
+  },
+  "optimization": {
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "betas": [0.9, 0.999],
+    "grad_clip_norm": 1.0,
+    "log_interval": 200,
+    "visualization_count": 8
+  }
+}

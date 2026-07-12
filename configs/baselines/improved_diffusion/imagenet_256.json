@@ -1,0 +1,17 @@
+{
+  "name": "baseline_improved_diffusion_imagenet_256",
+  "data": {
+    "dataset": "imagenet_256",
+    "root": "/root/autodl-tmp/CoFiTok/datasets",
+    "image_size": 256,
+    "channels": 3,
+    "batch_size": 4,
+    "num_workers": 2,
+    "class_conditional": false
+  },
+  "runtime": {
+    "device": "cuda",
+    "seed": 139,
+    "steps": 5000
+  }
+}

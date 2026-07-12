@@ -1,0 +1,33 @@
+{
+  "protocol": "imagenet_256_p0_5k",
+  "datasets": [
+    "imagenet_256_10pct",
+    "imagenet_256"
+  ],
+  "image_size": 256,
+  "internal_steps": 5000,
+  "internal_batch_size": 4,
+  "token_count": 4,
+  "token_channels": 16,
+  "base_channels": 24,
+  "files": [
+    "configs/train_imagenet256_10pct_k4_denoisepath_p150_light_5k_cuda.json",
+    "configs/train_imagenet256_10pct_k4_epsilononly_p150eval_5k_cuda.json",
+    "configs/train_imagenet256_10pct_k4_channelmask_p150eval_5k_cuda.json",
+    "configs/train_imagenet256_10pct_k4_denoisepath_p150_light_nopathprefix_5k_cuda.json",
+    "configs/train_imagenet256_10pct_k4_denoisepath_p150_light_cleanmono_5k_cuda.json",
+    "configs/train_imagenet256_10pct_k4_denoisepath_p150_light_simultaneous_5k_cuda.json",
+    "configs/train_imagenet256_10pct_k4_denoisepath_p150_light_deepsk_5k_cuda.json",
+    "configs/baselines/improved_diffusion/imagenet_256_10pct.json",
+    "configs/baselines/edm/imagenet_256_10pct.json",
+    "configs/train_imagenet256_k4_denoisepath_p150_light_5k_cuda.json",
+    "configs/train_imagenet256_k4_epsilononly_p150eval_5k_cuda.json",
+    "configs/train_imagenet256_k4_channelmask_p150eval_5k_cuda.json",
+    "configs/train_imagenet256_k4_denoisepath_p150_light_nopathprefix_5k_cuda.json",
+    "configs/train_imagenet256_k4_denoisepath_p150_light_cleanmono_5k_cuda.json",
+    "configs/train_imagenet256_k4_denoisepath_p150_light_simultaneous_5k_cuda.json",
+    "configs/train_imagenet256_k4_denoisepath_p150_light_deepsk_5k_cuda.json",
+    "configs/baselines/improved_diffusion/imagenet_256.json",
+    "configs/baselines/edm/imagenet_256.json"
+  ]
+}

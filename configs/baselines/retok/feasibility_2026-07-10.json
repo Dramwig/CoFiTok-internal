@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "baseline": "retok",
+  "status": "feasibility_only",
+  "repo_dir": "/root/autodl-tmp/CoFiTok/baselines/repos/retok",
+  "reason": "Training code and official-weight acquisition were not complete enough for a same-dataset reproducible adapter in this pass. Do not count as completed training baseline.",
+  "allowed_next_step": "Optional official-checkpoint reconstruction/eval-only row after weights are acquired and license/source are recorded.",
+  "matrix_status": "protocol_blocked"
+}

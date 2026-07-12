@@ -1,0 +1,35 @@
+{
+  "artifacts": {
+    "metrics_txt": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/samples_50k/GPT-XL-size-256-size-256-topk-0-topp-1.0-temperature-1.0-cfg-1.5-step-seed-0.txt",
+    "npz": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/samples_50k/GPT-XL-size-256-size-256-topk-0-topp-1.0-temperature-1.0-cfg-1.5-step-seed-0.npz"
+  },
+  "baseline": "retok",
+  "dataset": "imagenet_256",
+  "limitations": [
+    "Official ImageNet-256 pretrained eval-only, not same-dataset retraining.",
+    "Use only as a secondary related-method row.",
+    "Do not merge into the P0 all-dataset same-budget generation table."
+  ],
+  "metrics": {
+    "fid": 2.2188685477057106,
+    "inception_score": 245.939208984375,
+    "precision": 0.81586,
+    "recall": 0.5994,
+    "sfid": 5.895597453788696
+  },
+  "paper_table_role": "secondary related-method only",
+  "parameters": {
+    "checkpoint_family": "official ReTok GPT-XL + VQ_SB256",
+    "eval_only": true,
+    "per_proc_batch_size": 64,
+    "sample_count": 50000,
+    "sampler": "official sample_c2i_search_cfg.sh"
+  },
+  "png_count": 50048,
+  "protocol": "official_imagenet256_eval_only",
+  "reference_npz": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/official_refs/VIRTUAL_imagenet256_labeled.npz",
+  "report_type": "baseline_eval",
+  "resolution": 256,
+  "sample_count": 50000,
+  "status": "completed"
+}

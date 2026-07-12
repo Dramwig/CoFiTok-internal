@@ -1,0 +1,350 @@
+Logging to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_tiny_imagenet_200_5000steps_ddim50_2026-07-09/train
+creating model and diffusion...
+creating data loader...
+training...
+------------------------
+| grad_norm | 8.89     |
+| loss      | 0.998    |
+| loss_q0   | 0.995    |
+| loss_q1   | 1.01     |
+| loss_q2   | 0.998    |
+| loss_q3   | 0.99     |
+| mse       | 0.998    |
+| mse_q0    | 0.995    |
+| mse_q1    | 1.01     |
+| mse_q2    | 0.998    |
+| mse_q3    | 0.99     |
+| samples   | 32       |
+| step      | 0        |
+------------------------
+saving model 0...
+saving model 0.9999...
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+------------------------
+| grad_norm | 2.69     |
+| loss      | 0.174    |
+| loss_q0   | 0.275    |
+| loss_q1   | 0.15     |
+| loss_q2   | 0.14     |
+| loss_q3   | 0.131    |
+| mse       | 0.174    |
+| mse_q0    | 0.275    |
+| mse_q1    | 0.15     |
+| mse_q2    | 0.14     |
+| mse_q3    | 0.131    |
+| samples   | 1.6e+04  |
+| step      | 500      |
+------------------------
+------------------------
+| grad_norm | 0.717    |
+| loss      | 0.0467   |
+| loss_q0   | 0.147    |
+| loss_q1   | 0.0264   |
+| loss_q2   | 0.00625  |
+| loss_q3   | 0.0032   |
+| mse       | 0.0467   |
+| mse_q0    | 0.147    |
+| mse_q1    | 0.0264   |
+| mse_q2    | 0.00625  |
+| mse_q3    | 0.0032   |
+| samples   | 3.2e+04  |
+| step      | 1e+03    |
+------------------------
+------------------------
+| grad_norm | 0.573    |
+| loss      | 0.0436   |
+| loss_q0   | 0.145    |
+| loss_q1   | 0.0242   |
+| loss_q2   | 0.0052   |
+| loss_q3   | 0.00211  |
+| mse       | 0.0436   |
+| mse_q0    | 0.145    |
+| mse_q1    | 0.0242   |
+| mse_q2    | 0.0052   |
+| mse_q3    | 0.00211  |
+| samples   | 4.8e+04  |
+| step      | 1.5e+03  |
+------------------------
+------------------------
+| grad_norm | 0.519    |
+| loss      | 0.0427   |
+| loss_q0   | 0.139    |
+| loss_q1   | 0.0238   |
+| loss_q2   | 0.00473  |
+| loss_q3   | 0.0017   |
+| mse       | 0.0427   |
+| mse_q0    | 0.139    |
+| mse_q1    | 0.0238   |
+| mse_q2    | 0.00473  |
+| mse_q3    | 0.0017   |
+| samples   | 6.4e+04  |
+| step      | 2e+03    |
+------------------------
+------------------------
+| grad_norm | 0.486    |
+| loss      | 0.0417   |
+| loss_q0   | 0.137    |
+| loss_q1   | 0.0235   |
+| loss_q2   | 0.00452  |
+| loss_q3   | 0.00148  |
+| mse       | 0.0417   |
+| mse_q0    | 0.137    |
+| mse_q1    | 0.0235   |
+| mse_q2    | 0.00452  |
+| mse_q3    | 0.00148  |
+| samples   | 8e+04    |
+| step      | 2.5e+03  |
+------------------------
+------------------------
+| grad_norm | 0.433    |
+| loss      | 0.0399   |
+| loss_q0   | 0.131    |
+| loss_q1   | 0.0231   |
+| loss_q2   | 0.00433  |
+| loss_q3   | 0.00129  |
+| mse       | 0.0399   |
+| mse_q0    | 0.131    |
+| mse_q1    | 0.0231   |
+| mse_q2    | 0.00433  |
+| mse_q3    | 0.00129  |
+| samples   | 9.6e+04  |
+| step      | 3e+03    |
+------------------------
+------------------------
+| grad_norm | 0.416    |
+| loss      | 0.0396   |
+| loss_q0   | 0.13     |
+| loss_q1   | 0.0226   |
+| loss_q2   | 0.00415  |
+| loss_q3   | 0.00119  |
+| mse       | 0.0396   |
+| mse_q0    | 0.13     |
+| mse_q1    | 0.0226   |
+| mse_q2    | 0.00415  |
+| mse_q3    | 0.00119  |
+| samples   | 1.12e+05 |
+| step      | 3.5e+03  |
+------------------------
+------------------------
+| grad_norm | 0.372    |
+| loss      | 0.0389   |
+| loss_q0   | 0.127    |
+| loss_q1   | 0.0227   |
+| loss_q2   | 0.00408  |
+| loss_q3   | 0.00109  |
+| mse       | 0.0389   |
+| mse_q0    | 0.127    |
+| mse_q1    | 0.0227   |
+| mse_q2    | 0.00408  |
+| mse_q3    | 0.00109  |
+| samples   | 1.28e+05 |
+| step      | 4e+03    |
+------------------------
+------------------------
+| grad_norm | 0.33     |
+| loss      | 0.0392   |
+| loss_q0   | 0.127    |
+| loss_q1   | 0.0221   |
+| loss_q2   | 0.00401  |
+| loss_q3   | 0.00102  |
+| mse       | 0.0392   |
+| mse_q0    | 0.127    |
+| mse_q1    | 0.0221   |
+| mse_q2    | 0.00401  |
+| mse_q3    | 0.00102  |
+| samples   | 1.44e+05 |
+| step      | 4.5e+03  |
+------------------------
+saving model 0...
+saving model 0.9999...
+[rank0]:[W710 00:44:25.777726462 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Logging to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_tiny_imagenet_200_5000steps_ddim50_2026-07-09/sample
+creating model and diffusion...
+sampling...
+created 64 samples
+created 128 samples
+created 192 samples
+created 256 samples
+created 320 samples
+created 384 samples
+created 448 samples
+created 512 samples
+created 576 samples
+created 640 samples
+created 704 samples
+created 768 samples
+created 832 samples
+created 896 samples
+created 960 samples
+created 1024 samples
+saving to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_tiny_imagenet_200_5000steps_ddim50_2026-07-09/sample/samples_1024x64x64x3.npz
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+sampling complete
+[rank0]:[W710 00:44:53.891618974 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+wrote 1024 PNG images to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_tiny_imagenet_200_5000steps_ddim50_2026-07-09/samples_png
+wrote /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/improved_diffusion/improved_diffusion_tiny_imagenet_200_5000steps_ddim50_2026-07-09/generated_quality/generated_quality_report.json
+improved_diffusion_completed tiny_imagenet_200 /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/improved_diffusion/improved_diffusion_tiny_imagenet_200_5000steps_ddim50_2026-07-09
+
+Training options:
+{
+  "dataset_kwargs": {
+    "class_name": "training.dataset.ImageFolderDataset",
+    "path": "/root/autodl-tmp/CoFiTok/datasets/tiny_imagenet_200/extracted/tiny-imagenet-200/train",
+    "use_labels": false,
+    "xflip": false,
+    "cache": false,
+    "resolution": 64,
+    "max_size": 100000
+  },
+  "data_loader_kwargs": {
+    "pin_memory": true,
+    "num_workers": 1,
+    "prefetch_factor": 2
+  },
+  "network_kwargs": {
+    "model_type": "SongUNet",
+    "embedding_type": "positional",
+    "encoder_type": "standard",
+    "decoder_type": "standard",
+    "channel_mult_noise": 1,
+    "resample_filter": [
+      1,
+      1
+    ],
+    "model_channels": 64,
+    "channel_mult": [
+      1,
+      1,
+      1
+    ],
+    "class_name": "training.networks.EDMPrecond",
+    "dropout": 0.0,
+    "use_fp16": false
+  },
+  "loss_kwargs": {
+    "class_name": "training.loss.EDMLoss"
+  },
+  "optimizer_kwargs": {
+    "class_name": "torch.optim.Adam",
+    "lr": 0.0001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08
+  },
+  "total_kimg": 160,
+  "ema_halflife_kimg": 1,
+  "batch_size": 32,
+  "batch_gpu": 16,
+  "loss_scaling": 1.0,
+  "cudnn_benchmark": true,
+  "kimg_per_tick": 20,
+  "snapshot_ticks": 999,
+  "state_dump_ticks": 999,
+  "seed": 139,
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_tiny_imagenet_200_5000steps_edm40_2026-07-09/train"
+}
+
+Output directory:        /root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_tiny_imagenet_200_5000steps_edm40_2026-07-09/train
+Dataset path:            /root/autodl-tmp/CoFiTok/datasets/tiny_imagenet_200/extracted/tiny-imagenet-200/train
+Class-conditional:       False
+Network architecture:    ddpmpp
+Preconditioning & loss:  edm
+Number of GPUs:          1
+Batch size:              32
+Mixed-precision:         False
+
+Creating output directory...
+Loading dataset...
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/utils/data/sampler.py:68: UserWarning: `data_source` argument is not used and will be removed in 2.2.0.You may still have custom implementation that utilizes it.
+  warnings.warn(
+Constructing network...
+
+EDMPrecond                Parameters  Buffers  Output shape      Datatype
+---                       ---         ---      ---               ---     
+model.map_noise           -           -        [16, 64]          float32 
+model.map_layer0          16640       -        [16, 256]         float32 
+model.map_layer1          65792       -        [16, 256]         float32 
+model.enc.64x64_conv      1792        -        [16, 64, 64, 64]  float32 
+model.enc.64x64_block0    90560       -        [16, 64, 64, 64]  float32 
+model.enc.64x64_block1    90560       -        [16, 64, 64, 64]  float32 
+model.enc.64x64_block2    90560       -        [16, 64, 64, 64]  float32 
+model.enc.64x64_block3    90560       -        [16, 64, 64, 64]  float32 
+model.enc.32x32_down      94720       8        [16, 64, 32, 32]  float32 
+model.enc.32x32_block0    90560       -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block1    90560       -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block2    90560       -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block3    90560       -        [16, 64, 32, 32]  float32 
+model.enc.16x16_down      94720       8        [16, 64, 16, 16]  float32 
+model.enc.16x16_block0    107328      -        [16, 64, 16, 16]  float32 
+model.enc.16x16_block1    107328      -        [16, 64, 16, 16]  float32 
+model.enc.16x16_block2    107328      -        [16, 64, 16, 16]  float32 
+model.enc.16x16_block3    107328      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_in0       107328      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_in1       90560       -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block0    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block1    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block2    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block3    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block4    152576      -        [16, 64, 16, 16]  float32 
+model.dec.32x32_up        94720       8        [16, 64, 32, 32]  float32 
+model.dec.32x32_block0    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block1    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block2    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block3    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block4    135808      -        [16, 64, 32, 32]  float32 
+model.dec.64x64_up        94720       8        [16, 64, 64, 64]  float32 
+model.dec.64x64_block0    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_block1    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_block2    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_block3    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_block4    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_aux_norm  128         -        [16, 64, 64, 64]  float32 
+model.dec.64x64_aux_conv  1731        -        [16, 3, 64, 64]   float32 
+<top-level>               -           -        [16, 3, 64, 64]   float32 
+---                       ---         ---      ---               ---     
+Total                     3870531     32       -                 -       
+
+Setting up optimizer...
+Training for 160 kimg...
+
+tick 0     kimg 0.0       time 5s           sec/tick 0.4     sec/kimg 12.36   maintenance 4.6    cpumem 2.00   gpumem 2.81   reserved 3.09  
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/root/autodl-tmp/CoFiTok/baselines/repos/edm/train.py", line 234, in <module>
+[rank0]:     main()
+[rank0]:   File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/click/core.py", line 1514, in __call__
+[rank0]:     return self.main(*args, **kwargs)
+[rank0]:   File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/click/core.py", line 1435, in main
+[rank0]:     rv = self.invoke(ctx)
+[rank0]:   File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/click/core.py", line 1298, in invoke
+[rank0]:     return ctx.invoke(self.callback, **ctx.params)
+[rank0]:   File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/click/core.py", line 853, in invoke
+[rank0]:     return callback(*args, **kwargs)
+[rank0]:   File "/root/autodl-tmp/CoFiTok/baselines/repos/edm/train.py", line 229, in main
+[rank0]:     training_loop.training_loop(**c)
+[rank0]:   File "/root/autodl-tmp/CoFiTok/baselines/repos/edm/training/training_loop.py", line 127, in training_loop
+[rank0]:     images, labels = next(dataset_iterator)
+[rank0]:   File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 733, in __next__
+[rank0]:     data = self._next_data()
+[rank0]:   File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1515, in _next_data
+[rank0]:     return self._process_data(data, worker_id)
+[rank0]:   File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1550, in _process_data
+[rank0]:     data.reraise()
+[rank0]:   File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/_utils.py", line 750, in reraise
+[rank0]:     raise exception
+[rank0]: AssertionError: Caught AssertionError in DataLoader worker process 0.
+[rank0]: Original Traceback (most recent call last):
+[rank0]:   File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 349, in _worker_loop
+[rank0]:     data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+[rank0]:   File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 52, in fetch
+[rank0]:     data = [self.dataset[idx] for idx in possibly_batched_index]
+[rank0]:   File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 52, in <listcomp>
+[rank0]:     data = [self.dataset[idx] for idx in possibly_batched_index]
+[rank0]:   File "/root/autodl-tmp/CoFiTok/baselines/repos/edm/training/dataset.py", line 98, in __getitem__
+[rank0]:     assert list(image.shape) == self.image_shape
+[rank0]: AssertionError
+
+[rank0]:[W710 00:45:15.608503039 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

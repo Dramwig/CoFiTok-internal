@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "baseline": "titok_1d_tokenizer",
+  "protocol": "official_pretrained_tokenizer_reconstruction_eval",
+  "adapter": "scripts/baselines/evaluate_tokenizer_reconstruction.py",
+  "repo_dir": "/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer",
+  "model_id": "yucornetto/tokenizer_titok_l32_imagenet",
+  "data_root": "/root/autodl-tmp/CoFiTok/datasets",
+  "output_root": "artifacts/reports/baselines/titok_1d_tokenizer",
+  "eval_image_size": 256,
+  "split": "val",
+  "batch_size": 4,
+  "num_workers": 0,
+  "max_images_smoke": 4,
+  "max_images_recommended": 256,
+  "device": "cuda",
+  "seed": 139,
+  "feature_size": 8,
+  "datasets": [
+    {"alias": "cifar10", "source_resolution": 32},
+    {"alias": "tiny_imagenet_200", "source_resolution": 64},
+    {"alias": "imagenet_1k_64x64_hf", "source_resolution": 64},
+    {"alias": "downsampled_imagenet_64", "source_resolution": 64},
+    {"alias": "ffhq_64", "source_resolution": 64},
+    {"alias": "afhqv2_64", "source_resolution": 64},
+    {"alias": "imagenet_256_10pct", "source_resolution": 256},
+    {"alias": "imagenet_256", "source_resolution": 256}
+  ],
+  "notes": [
+    "Eval-only official pretrained reconstruction; no CoFiTok-local training is run.",
+    "32x32 and 64x64 datasets are resized to 256 before tokenization and must not be mixed into native-resolution P0 generation rows.",
+    "Use completed_eval_only matrix status, not completed, unless a separate retraining protocol is approved."
+  ]
+}

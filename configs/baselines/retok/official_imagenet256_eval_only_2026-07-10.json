@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "baseline": "retok",
+  "status": "official_generation_smoke_completed_50k_pending",
+  "matrix_status": "protocol_blocked_for_all_dataset_retraining",
+  "paper_table_role": "secondary_related_method_only",
+  "dataset_alias": "imagenet_256",
+  "resolution": 256,
+  "conditioning": "ImageNet class-conditional",
+  "repo_dir": "/root/autodl-tmp/CoFiTok/baselines/repos/retok",
+  "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only",
+  "official_assets": {
+    "google_drive_folder": "https://drive.google.com/drive/folders/1Qne5GwCILuJVH_fqQSN2MQFK7YF82UAn?usp=sharing",
+    "tokenizer_checkpoint": "checkpoints/VQ_SB256_e250.pt",
+    "gpt_checkpoint": "checkpoints/GPT_XL256_e300_VQ_SB.pt"
+  },
+  "verified_assets": {
+    "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/checkpoints",
+    "tokenizer_checkpoint_bytes": 931256810,
+    "tokenizer_checkpoint_sha256": "bde39f28b7dd07aebe1ec09d71d1ced6b65097e93aaf41e0b749ab858414d4b3",
+    "gpt_checkpoint_bytes": 3100222641,
+    "gpt_checkpoint_sha256": "3a8c811772e046bc94ca40c1c3e5db6e01f30bc0f509652144c9f80d40ef279e",
+    "vq_reconstruction_smoke_report": "artifacts/reports/baselines/retok/official_reconstruction_smoke_4_2026-07-10/baseline_eval_report.json",
+    "generation_smoke_report": "artifacts/reports/baselines/retok/official_generation_smoke_2_2026-07-10/baseline_eval_report.json"
+  },
+  "entrypoints": {
+    "tokenizer_reconstruction": "scripts/reconstruction.sh",
+    "ar_generation": "scripts/sample_c2i_search_cfg.sh"
+  },
+  "default_eval": {
+    "model": "GPT_XL256_e300_VQ_SB",
+    "tokenizer": "VQ_SB256_e250",
+    "num_images": 50000,
+    "cfg_scale": 1.5,
+    "cfg_schedule": "step",
+    "reference_batch": "VIRTUAL_imagenet256_labeled.npz",
+    "reference_url": "https://openaipublic.blob.core.windows.net/diffusion/jul-2021/ref_batches/imagenet/256/VIRTUAL_imagenet256_labeled.npz"
+  },
+  "limitations": [
+    "Official models target ImageNet-256 only.",
+    "Current smoke validates loading/generation only; 50K metrics are not run.",
+    "Use only as a secondary official-checkpoint related-method row."
+  ]
+}

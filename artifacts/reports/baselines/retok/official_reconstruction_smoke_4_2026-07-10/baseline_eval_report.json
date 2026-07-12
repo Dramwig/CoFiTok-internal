@@ -1,0 +1,31 @@
+{
+  "artifacts": {
+    "gpt_checkpoint_partial_bytes": 1269534720,
+    "ground_truth_png_count": 4,
+    "reconstruction_png_count": 4,
+    "repo_dir": "/root/autodl-tmp/CoFiTok/baselines/repos/retok",
+    "sample_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/reconstruction_smoke_4",
+    "vq_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/checkpoints/VQ_SB256_e250.pt",
+    "vq_checkpoint_bytes": 931256810,
+    "vq_checkpoint_sha256": "bde39f28b7dd07aebe1ec09d71d1ced6b65097e93aaf41e0b749ab858414d4b3"
+  },
+  "baseline": "retok",
+  "dataset": "imagenet_256",
+  "metric_notes": {
+    "protocol": "Smoke validates official ReTok VQ checkpoint loading and qualitative reconstruction only. It is not a 50K rFID/gFID result and does not validate GPT generation."
+  },
+  "paper_table_role": "not_for_paper_metric_table",
+  "parameters": {
+    "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/checkpoints/VQ_SB256_e250.pt",
+    "eval_only": true,
+    "gpt_checkpoint_transfer_status": "partial_not_verified",
+    "image_size": 256,
+    "model_config": "configs/vq/VQ_SB256.yaml",
+    "num_images": 4,
+    "quant_way": "vq"
+  },
+  "protocol": "official_vq_tokenizer_reconstruction_smoke_only",
+  "report_type": "baseline_eval",
+  "schema_version": 1,
+  "status": "completed"
+}

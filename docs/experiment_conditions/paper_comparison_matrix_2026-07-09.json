@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "description": "Paper-facing method x dataset comparison matrix for CoFiTok. This is a planning and audit artifact, not a claim that every cell is complete.",
+  "datasets": [
+    {
+      "alias": "cifar10",
+      "tier": "smoke",
+      "resolution": 32,
+      "role": "training-loop and diagnostic smoke"
+    },
+    {
+      "alias": "tiny_imagenet_200",
+      "tier": "formal_64",
+      "resolution": 64,
+      "role": "MVP main object dataset"
+    },
+    {
+      "alias": "imagenet_1k_64x64_hf",
+      "tier": "legacy_64",
+      "resolution": 64,
+      "role": "existing ImageNet-family HF fallback result source"
+    },
+    {
+      "alias": "downsampled_imagenet_64",
+      "tier": "formal_64",
+      "resolution": 64,
+      "role": "strict exact-source ImageNet-64 rerun target"
+    },
+    {
+      "alias": "ffhq_64",
+      "tier": "formal_64",
+      "resolution": 64,
+      "role": "non-classification face dataset for prefix visualization"
+    },
+    {
+      "alias": "afhqv2_64",
+      "tier": "formal_64",
+      "resolution": 64,
+      "role": "animal texture/detail dataset for late-token diagnostics"
+    },
+    {
+      "alias": "imagenet_256_10pct",
+      "tier": "formal_256_scaling",
+      "resolution": 256,
+      "role": "10% ImageNet-256 scaling validation"
+    },
+    {
+      "alias": "imagenet_256",
+      "tier": "formal_256_full",
+      "resolution": 256,
+      "role": "full ImageNet-256 scaling target"
+    }
+  ],
+  "methods": [
+    {
+      "alias": "cofitok_light",
+      "display_name": "CoFiTok full",
+      "type": "ours",
+      "priority": "P0",
+      "summary_variant": "light_denoise_path",
+      "required_sections": ["train", "quality", "generated_quality"]
+    },
+    {
+      "alias": "same_backbone_dense",
+      "display_name": "Parameter-matched direct dense epsilon/v predictor",
+      "type": "internal_baseline",
+      "priority": "P0",
+      "summary_variant": "dense_monolithic",
+      "required_sections": ["train", "quality", "generated_quality"]
+    },
+    {
+      "alias": "endpoint_only_factorized",
+      "display_name": "Endpoint-only factorized predictor",
+      "type": "internal_baseline",
+      "priority": "P0",
+      "summary_variant": "epsilon_only",
+      "required_sections": ["train", "quality", "generated_quality"]
+    },
+    {
+      "alias": "channel_mask",
+      "display_name": "Channel-mask baseline",
+      "type": "internal_baseline",
+      "priority": "P0",
+      "summary_variant": "channel_mask",
+      "required_sections": ["train", "quality"]
+    },
+    {
+      "alias": "cofitok_no_prefix_loss",
+      "display_name": "CoFiTok w/o prefix loss",
+      "type": "internal_ablation",
+      "priority": "P0",
+      "summary_variant": "no_prefix_loss_ablation",
+      "required_sections": ["train", "quality"]
+    },
+    {
+      "alias": "cofitok_no_monotonic_loss",
+      "display_name": "CoFiTok w/o monotonic loss",
+      "type": "internal_ablation",
+      "priority": "P0",
+      "summary_variant": "clean_monotonic_ablation",
+      "required_sections": ["train", "quality"]
+    },
+    {
+      "alias": "cofitok_simultaneous",
+      "display_name": "CoFiTok simultaneous components",
+      "type": "internal_ablation",
+      "priority": "P0",
+      "summary_variant": "simultaneous_predictor",
+      "required_sections": ["train", "quality"]
+    },
+    {
+      "alias": "cofitok_deep_synthesis",
+      "display_name": "CoFiTok deep S_k",
+      "type": "internal_ablation",
+      "priority": "P0",
+      "summary_variant": "deep_synthesis_ablation",
+      "required_sections": ["train", "quality"]
+    },
+    {
+      "alias": "edm",
+      "display_name": "EDM",
+      "type": "external_baseline",
+      "priority": "P0",
+      "summary_variant": null,
+      "required_sections": ["baseline_train", "baseline_eval"]
+    },
+    {
+      "alias": "improved_diffusion",
+      "display_name": "Improved DDPM",
+      "type": "external_baseline",
+      "priority": "P0",
+      "summary_variant": null,
+      "required_sections": ["baseline_train", "baseline_eval"]
+    },
+    {
+      "alias": "d_ar",
+      "display_name": "D-AR",
+      "type": "external_baseline",
+      "priority": "P0",
+      "summary_variant": null,
+      "required_sections": ["baseline_train", "baseline_eval"]
+    },
+    {
+      "alias": "ml_flextok",
+      "display_name": "FlexTok",
+      "type": "external_baseline",
+      "priority": "P1",
+      "summary_variant": null,
+      "required_sections": ["baseline_train_or_eval", "baseline_eval"]
+    },
+    {
+      "alias": "mar",
+      "display_name": "MAR",
+      "type": "external_baseline",
+      "priority": "P1",
+      "summary_variant": null,
+      "required_sections": ["baseline_train_or_eval", "baseline_eval"]
+    },
+    {
+      "alias": "titok_1d_tokenizer",
+      "display_name": "TiTok / 1D tokenizer",
+      "type": "external_baseline",
+      "priority": "P1",
+      "summary_variant": null,
+      "required_sections": ["baseline_train_or_eval", "baseline_eval"]
+    },
+    {
+      "alias": "retok",
+      "display_name": "ReTok",
+      "type": "external_baseline",
+      "priority": "P1",
+      "summary_variant": null,
+      "required_sections": ["baseline_train_or_eval", "baseline_eval"]
+    }
+  ]
+}

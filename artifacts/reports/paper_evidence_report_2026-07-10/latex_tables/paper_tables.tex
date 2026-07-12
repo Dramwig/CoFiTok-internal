@@ -1,0 +1,123 @@
+% Auto-generated from paper_evidence_report.json. Do not hand-edit metrics here.
+
+% Required packages already present in the current AAAI draft: graphicx, booktabs, caption.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Current P0 generation comparison. Lower Frechet-style metrics are better.}
+  \label{tab:p0-generation-current}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrrlrrrrlr}
+    \toprule
+    Dataset & C low & D low & DDPM low & EDM low & low winner & C Inc & D Inc & DDPM Inc & EDM Inc & Inc winner & C rank \\
+    \midrule
+    CIFAR-10 & 7.27 & 6.43 & 7.86 & 2.87 & EDM & 313.89 & 320.14 & 498.65 & 351.17 & CoFiTok & 1 \\
+    Tiny-IN & 8.22 & 8.27 & 9.07 & 3.10 & EDM & 373.24 & 385.51 & 381.24 & 268.72 & EDM & 2 \\
+    ImageNet-64 HF & 8.53 & 7.67 & 8.88 & 3.23 & EDM & 374.35 & 388.15 & 378.33 & 258.40 & EDM & 2 \\
+    ImageNet-64 strict & 8.36 & 7.58 & 8.80 & 2.75 & EDM & 374.68 & 377.12 & 355.11 & 248.31 & EDM & 3 \\
+    FFHQ-64 & 8.74 & 8.09 & 9.44 & 2.51 & EDM & 425.71 & 424.11 & 369.01 & 325.49 & EDM & 4 \\
+    AFHQv2-64 & 7.08 & 6.58 & 8.29 & 1.96 & EDM & 331.06 & 345.94 & 335.18 & 230.40 & EDM & 2 \\
+    ImageNet-256 10\% & 10.44 & 10.51 & 10.40 & 10.39 & EDM & 414.19 & 337.87 & 419.60 & 368.68 & Dense epsilon & 3 \\
+    ImageNet-256 & 10.54 & 10.28 & 10.40 & 10.40 & Dense epsilon & 417.26 & 354.43 & 414.30 & 368.43 & Dense epsilon & 4 \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \vspace{0.3em}
+  \caption*{\footnotesize C = CoFiTok; D = same-backbone dense epsilon. These are current smoke/short-run Frechet-style metrics, not formal SOTA FID claims.}
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Diagnostics for the supported CoFiTok claim.}
+  \label{tab:cofitok-diagnostics-current}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrrrrrrr}
+    \toprule
+    Dataset & C PSNR & D PSNR & mask PSNR & C path & D path & C effK & D effK & C zero & deep-S zero \\
+    \midrule
+    CIFAR-10 & 14.118 & 14.390 & 12.938 & 0.0960 & 1.3022 & 6.85 & 5.16 & 0.0000 & 0.0619 \\
+    Tiny-IN & 14.250 & 14.375 & 12.955 & 0.0763 & 0.8459 & 6.84 & 5.38 & 0.0000 & 0.0505 \\
+    ImageNet-64 HF & 15.062 & 15.131 & 13.593 & 0.0641 & 0.8837 & 6.77 & 5.40 & 0.0000 & 0.0450 \\
+    ImageNet-64 strict & 14.521 & 14.651 & 13.250 & 0.0681 & 1.0403 & 6.82 & 5.38 & 0.0000 & 0.0535 \\
+    FFHQ-64 & 15.024 & 15.144 & 13.285 & 0.0682 & 1.0807 & 6.82 & 5.42 & 0.0000 & 0.0518 \\
+    AFHQv2-64 & 15.167 & 15.196 & 13.384 & 0.0643 & 1.0118 & 6.82 & 5.46 & 0.0000 & 0.0561 \\
+    ImageNet-256 10\% & 13.627 & 13.867 & 13.807 & 0.1347 & 1.5609 & 3.35 & 3.66 & 0.0000 & 0.0179 \\
+    ImageNet-256 & 13.809 & 13.877 & 13.761 & 0.1255 & 1.4917 & 3.37 & 3.66 & 0.0000 & 0.0185 \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \vspace{0.3em}
+  \caption*{\footnotesize Lower path AUC indicates better prefix controllability. Zero-token ratio diagnoses whether the synthesis operator leaks structure at zero input.}
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{P1 eval-only tokenizer reconstruction baselines.}
+  \label{tab:p1-tokenizer-recon-current}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    Dataset & src & eval & FlexTok PSNR & FlexTok low & TiTok PSNR & TiTok low \\
+    \midrule
+    AFHQv2-64 & 64 & 256 & 24.04 & 0.036 & 17.29 & 0.217 \\
+    CIFAR-10 & 32 & 256 & 26.77 & 0.037 & 19.35 & 0.168 \\
+    ImageNet-64 strict & 64 & 256 & 22.57 & 0.042 & 16.73 & 0.196 \\
+    FFHQ-64 & 64 & 256 & 24.06 & 0.042 & 17.39 & 0.231 \\
+    ImageNet-64 HF & 64 & 256 & 23.60 & 0.039 & 18.04 & 0.182 \\
+    ImageNet-256 & 256 & 256 & 19.12 & 0.044 & 15.54 & 0.196 \\
+    ImageNet-256 10\% & 256 & 256 & 19.12 & 0.044 & 15.54 & 0.196 \\
+    Tiny-IN & 64 & 256 & 21.81 & 0.044 & 17.30 & 0.160 \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \vspace{0.3em}
+  \caption*{\footnotesize Official pretrained reconstruction at 256x256 on 256 images per dataset. These rows are not retrained generation baselines.}
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Official related-method eval-only rows.}
+  \label{tab:official-related-eval-only}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lllrlrrrr}
+    \toprule
+    Method & Dataset & Status & Samples & FID & sFID & IS & Prec. & Rec. \\
+    \midrule
+    D-AR & ImageNet-256 & completed\_eval\_only\_50k & 50000 & 2.628 & 6.720 & 285.89 & 0.803 & 0.588 \\
+    MAR & ImageNet-256 & hf\_safetensors\_smoke\_completed\_50k\_not\_run & 1 & -- & -- & -- & -- & -- \\
+    ReTok & ImageNet-256 & completed\_eval\_only\_50k & 50000 & 2.219 & 5.896 & 245.94 & 0.816 & 0.599 \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \vspace{0.3em}
+  \caption*{\footnotesize These rows use official pretrained protocols where available and are secondary comparisons; they are not part of the all-dataset same-budget P0 training matrix.}
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Claim support summary.}
+  \label{tab:claim-support-current}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{p{0.24\textwidth}p{0.68\textwidth}}
+    \toprule
+    Claim axis & Current evidence \\
+    \midrule
+    Generation quality & CoFiTok is best on 0/8 lowres rows and 1/8 Inception rows; average ranks are 3.00 and 2.62. Do not claim generation SOTA. \\
+    Prefix control & CoFiTok path AUC is lower than dense on 8/8 datasets. \\
+    Restricted synthesis & CoFiTok zero-token ratio is zero in current rows; deep-$S_k$ has nonzero zero-token ratio on 8/8 datasets. \\
+    Related methods & D-AR and ReTok official ImageNet-256 50K eval-only rows are complete as secondary comparisons; MAR has HF safetensors smoke-only evidence. \\
+    Main paper stance & The supported claim is ordered restricted dense-noise factorization with prefix-controllable denoising, not broad unconditional generation superiority. \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+\end{table*}

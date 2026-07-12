@@ -1,0 +1,1 @@
+{"parquet_files":[],"pending":[],"failed":[{"kind":"config-parquet","dataset":"sradc/imagenet_resized_64x64","config":"default","split":null}],"partial":false}

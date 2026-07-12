@@ -1,0 +1,27 @@
+{
+  "name": "smoke_random_cuda",
+  "data": {
+    "dataset": "random",
+    "root": "/root/autodl-tmp/CoFiTok/datasets",
+    "image_size": 32,
+    "channels": 3,
+    "batch_size": 8,
+    "num_workers": 0,
+    "class_conditional": false
+  },
+  "model": {
+    "image_channels": 3,
+    "image_size": 32,
+    "token_count": 4,
+    "token_channels": 16,
+    "base_channels": 32,
+    "predictor_depth": 2,
+    "synthesis_kernel_size": 3,
+    "gamma_mode": "learned_scalar"
+  },
+  "runtime": {
+    "seed": 13,
+    "device": "cuda",
+    "steps": 1
+  }
+}

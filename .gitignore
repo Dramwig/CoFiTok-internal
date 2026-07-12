@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environments
+.venv/
+venv/
+
+# Large or generated experiment state
+outputs/
+runs/
+wandb/
+lightning_logs/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.onnx
+
+# Local bulky data should never live in the code repository.
+datasets/
+checkpoints/
+
+# Keep small archived reports only when intentionally copied into artifacts/reports.
+artifacts/tmp/
+artifacts/cache/
+
+# Render/build scratch space and local LaTeX by-products.
+tmp/
+texput.log
+*.aux
+*.fdb_latexmk
+*.fls
+
+# Full generated sample sheets remain checkpoint assets, not source history.
+artifacts/reports/generated_*/samples_*.png

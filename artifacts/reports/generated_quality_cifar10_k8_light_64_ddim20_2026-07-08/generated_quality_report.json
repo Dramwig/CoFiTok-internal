@@ -1,0 +1,31 @@
+{
+  "config_name": "train_cifar10_k8_denoisepath_p150_light_3k_cuda",
+  "dataset": "cifar10",
+  "evaluation": {
+    "available_sample_images": 64,
+    "feature_size": 8,
+    "real_image_count": 256,
+    "sample_image_count": 64,
+    "seed": 137,
+    "split": "val"
+  },
+  "metric_notes": {
+    "inception_frechet": {
+      "available": true,
+      "model": "torchvision.models.inception_v3/IMAGENET1K_V1"
+    },
+    "lowres_frechet_proxy": "Small-scale relative metric over deterministic low-resolution RGB/color features."
+  },
+  "metrics": {
+    "inception_frechet": 313.8881060808702,
+    "lowres_frechet_proxy": 7.26628400341152
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 4.802282333374023,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  },
+  "samples_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generated_cifar10_k8_light_64_ddim20_2026-07-08/samples_prefix_8"
+}

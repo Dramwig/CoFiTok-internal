@@ -1,0 +1,40 @@
+{
+  "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_epsilononly_p150eval_3k_2026-07-08/checkpoint_final.pt",
+  "config_name": "train_cifar10_k8_epsilononly_p150eval_3k_cuda",
+  "dataset": "cifar10",
+  "evaluation": {
+    "available_sample_images": 1024,
+    "feature_size": 8,
+    "real_image_count": 4096,
+    "sample_image_count": 1024,
+    "seed": 137,
+    "split": "val"
+  },
+  "metric_notes": {
+    "inception_frechet": {
+      "available": true,
+      "model": "torchvision.models.inception_v3/IMAGENET1K_V1"
+    },
+    "lowres_frechet_proxy": "Small-scale relative metric over deterministic low-resolution RGB/color features."
+  },
+  "metrics": {
+    "inception_frechet": 320.1375688725353,
+    "lowres_frechet_proxy": 6.42897250404268
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 8.59789776802063,
+    "requested_device": "cuda",
+    "streamed_samples": true,
+    "torch_version": "2.7.1+cu128"
+  },
+  "samples_dir": "streamed_from_checkpoint",
+  "sampling": {
+    "batch_size": 64,
+    "clip_x0": true,
+    "eta": 0.0,
+    "prefix_budget": 8,
+    "sample_steps": 50
+  }
+}

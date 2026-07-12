@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "baseline": "ml_flextok",
+  "protocol": "official_pretrained_tokenizer_reconstruction_eval",
+  "adapter": "scripts/baselines/evaluate_tokenizer_reconstruction.py",
+  "repo_dir": "/root/autodl-tmp/CoFiTok/baselines/repos/ml_flextok",
+  "model_id": "EPFL-VILAB/flextok_d12_d12_in1k",
+  "data_root": "/root/autodl-tmp/CoFiTok/datasets",
+  "output_root": "artifacts/reports/baselines/ml_flextok",
+  "eval_image_size": 256,
+  "split": "val",
+  "batch_size": 1,
+  "num_workers": 0,
+  "max_images_smoke": 2,
+  "max_images_recommended": 256,
+  "device": "cuda",
+  "seed": 139,
+  "feature_size": 8,
+  "flextok_keep": -1,
+  "flextok_timesteps": 4,
+  "flextok_guidance_scale": 1.0,
+  "flextok_norm_guidance": false,
+  "datasets": [
+    {"alias": "cifar10", "source_resolution": 32},
+    {"alias": "tiny_imagenet_200", "source_resolution": 64},
+    {"alias": "imagenet_1k_64x64_hf", "source_resolution": 64},
+    {"alias": "downsampled_imagenet_64", "source_resolution": 64},
+    {"alias": "ffhq_64", "source_resolution": 64},
+    {"alias": "afhqv2_64", "source_resolution": 64},
+    {"alias": "imagenet_256_10pct", "source_resolution": 256},
+    {"alias": "imagenet_256", "source_resolution": 256}
+  ],
+  "notes": [
+    "Eval-only official pretrained reconstruction; no CoFiTok-local training is run.",
+    "32x32 and 64x64 datasets are resized to 256 before tokenization and must not be mixed into native-resolution P0 generation rows.",
+    "Use completed_eval_only matrix status, not completed, unless a separate retraining protocol is approved."
+  ]
+}

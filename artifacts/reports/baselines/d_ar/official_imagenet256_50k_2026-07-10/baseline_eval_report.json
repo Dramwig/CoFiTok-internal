@@ -1,0 +1,37 @@
+{
+  "baseline": "d_ar",
+  "conditioning": "ImageNet class-conditional",
+  "created_at": "2026-07-10",
+  "dataset_alias": "imagenet_256",
+  "limitations": [
+    "Official ImageNet-256 pretrained eval-only, not same-dataset retraining.",
+    "Use only as a secondary related-method row.",
+    "Do not merge into the P0 all-dataset same-budget generation table."
+  ],
+  "metrics": {
+    "fid": 2.6281051733921004,
+    "inception_score": 285.8914489746094,
+    "precision": 0.80288,
+    "recall": 0.5884,
+    "sfid": 6.719542262807067
+  },
+  "png_count": 50048,
+  "protocol": "official_imagenet256_eval_only_50k",
+  "reference_npz": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/official_refs/VIRTUAL_imagenet256_labeled.npz",
+  "repo_dir": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar",
+  "resolution": 256,
+  "sample_count": 50000,
+  "sample_npz": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/d_ar/official_imagenet256_eval_only/samples/GPT-L-D-AR-L-360K-size-256-size-256-VQ-16-topk-0-topp-1.0-temperature-1.0-cfg-1.2,8.0-seed-0-None.npz",
+  "sample_shape": [
+    50000,
+    256,
+    256,
+    3
+  ],
+  "schema_version": 1,
+  "status": "completed_eval_only",
+  "weights": {
+    "gpt": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/d_ar/official_imagenet256_eval_only/weights/D-AR-L-360K.pt",
+    "tokenizer": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/d_ar/official_imagenet256_eval_only/weights/D-AR-tokenizer_v1.pt"
+  }
+}

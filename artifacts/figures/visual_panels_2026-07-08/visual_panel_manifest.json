@@ -1,0 +1,50 @@
+{
+  "notes": [
+    "Panels are composed from existing report PNG artifacts.",
+    "Generated-sample panels are qualitative smoke evidence, not formal FID evidence.",
+    "Deep S_k panels are ablation evidence and should not be presented as the default method."
+  ],
+  "panel_count": 4,
+  "panels": [
+    {
+      "path": "artifacts/figures/visual_panels_2026-07-08/prefix_comparison_20k.png",
+      "source_images": [
+        "artifacts/reports/train_tiny_imagenet_k8_epsilononly_p150eval_20k_2026-07-08/prefix_final.png",
+        "artifacts/reports/train_tiny_imagenet_k8_denoisepath_p150_light_20k_2026-07-08/prefix_final.png",
+        "artifacts/reports/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_2026-07-08/prefix_final.png",
+        "artifacts/reports/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_2026-07-08/prefix_final.png"
+      ],
+      "title": "Prefix Denoising at 20k Steps"
+    },
+    {
+      "path": "artifacts/figures/visual_panels_2026-07-08/order_ablation_prefix_panel.png",
+      "source_images": [
+        "artifacts/reports/eval_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_ordered_2026-07-08/prefix_final.png",
+        "artifacts/reports/eval_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_random0_2026-07-08/prefix_final.png",
+        "artifacts/reports/eval_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_reverse_2026-07-08/prefix_final.png"
+      ],
+      "title": "Order Ablation Prefix Grids"
+    },
+    {
+      "path": "artifacts/figures/visual_panels_2026-07-08/sk_diagnostic_panel.png",
+      "source_images": [
+        "artifacts/reports/eval_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_ordered_2026-07-08/prefix_final.png",
+        "artifacts/reports/eval_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_ordered_2026-07-08/prefix_final_shuffled.png",
+        "artifacts/reports/eval_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_deepsk_5k_ordered_2026-07-08/prefix_final.png",
+        "artifacts/reports/eval_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_deepsk_5k_ordered_2026-07-08/prefix_final_shuffled.png"
+      ],
+      "title": "Restricted vs Deep S_k Diagnostics"
+    },
+    {
+      "path": "artifacts/figures/visual_panels_2026-07-08/sampling_comparison_20k.png",
+      "source_images": [
+        "artifacts/reports/generated_tiny_epsilononly_20k_256_ddim20_2026-07-08/samples_prefix_8.png",
+        "artifacts/reports/generated_tiny_imagenet_k8_light_20k_256_ddim20_2026-07-08/samples_prefix_8.png",
+        "artifacts/reports/generated_imagenet_hf_epsilononly_20k_256_ddim20_2026-07-08/samples_prefix_8.png",
+        "artifacts/reports/generated_imagenet_hf_k8_light_20k_256_ddim20_2026-07-08/samples_prefix_8.png"
+      ],
+      "title": "Generated Samples at 20k Steps"
+    }
+  ],
+  "reports_root": "artifacts/reports"
+}

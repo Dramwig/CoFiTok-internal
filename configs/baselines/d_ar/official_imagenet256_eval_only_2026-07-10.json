@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "baseline": "d_ar",
+  "status": "official_checkpoint_eval_only_protocol_defined",
+  "matrix_status": "protocol_blocked_for_all_dataset_retraining",
+  "paper_table_role": "secondary_related_method_only",
+  "dataset_alias": "imagenet_256",
+  "resolution": 256,
+  "conditioning": "ImageNet class-conditional",
+  "repo_dir": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar",
+  "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/d_ar/official_imagenet256_eval_only",
+  "official_assets": {
+    "tokenizer": "https://huggingface.co/showlab/D-AR/resolve/main/D-AR-tokenizer_v1.pt",
+    "dar_l": "https://huggingface.co/showlab/D-AR/resolve/main/D-AR-L-360K.pt",
+    "dar_xl": "https://huggingface.co/showlab/D-AR/resolve/main/D-AR-XL-360K.pt"
+  },
+  "entrypoints": {
+    "demo_sample": "sample_dar.sh",
+    "ddp_sample": "scripts/autoregressive/sample_c2i.sh",
+    "adm_eval": "evaluations/c2i/evaluator.py"
+  },
+  "default_eval": {
+    "model": "D-AR-L",
+    "num_images": 50000,
+    "reference_batch": "VIRTUAL_imagenet256_labeled.npz",
+    "reference_url": "https://openaipublic.blob.core.windows.net/diffusion/jul-2021/ref_batches/imagenet/256/VIRTUAL_imagenet256_labeled.npz"
+  },
+  "limitations": [
+    "Official checkpoints target ImageNet-256 only.",
+    "This is not same-dataset retraining on CIFAR10, Tiny-ImageNet, FFHQ, AFHQ, or ImageNet-64.",
+    "Use only as a secondary official-checkpoint related-method row."
+  ]
+}

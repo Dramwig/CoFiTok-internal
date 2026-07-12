@@ -1,0 +1,40 @@
+{
+  "name": "smoke_random_cpu",
+  "data": {
+    "dataset": "random",
+    "root": "/root/autodl-tmp/CoFiTok/datasets",
+    "image_size": 32,
+    "channels": 3,
+    "batch_size": 4,
+    "num_workers": 0,
+    "class_conditional": false
+  },
+  "diffusion": {
+    "num_train_timesteps": 1000,
+    "beta_start": 0.0001,
+    "beta_end": 0.02,
+    "prediction_target": "epsilon"
+  },
+  "model": {
+    "image_channels": 3,
+    "image_size": 32,
+    "token_count": 4,
+    "token_channels": 16,
+    "base_channels": 24,
+    "predictor_depth": 2,
+    "synthesis_kernel_size": 3,
+    "gamma_mode": "learned_scalar"
+  },
+  "loss": {
+    "epsilon_weight": 1.0,
+    "prefix_weight": 0.25,
+    "monotonic_weight": 0.05,
+    "monotonic_margin": 0.0,
+    "zero_token_weight": 0.01
+  },
+  "runtime": {
+    "seed": 13,
+    "device": "cpu",
+    "steps": 1
+  }
+}

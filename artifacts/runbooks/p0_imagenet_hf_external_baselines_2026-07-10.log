@@ -1,0 +1,339 @@
+Logging to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_imagenet_1k_64x64_hf_5000steps_ddim50_2026-07-10_imagenet_hf_external/train
+creating model and diffusion...
+creating data loader...
+training...
+------------------------
+| grad_norm | 9.45     |
+| loss      | 0.998    |
+| loss_q0   | 0.994    |
+| loss_q1   | 1        |
+| loss_q2   | 0.994    |
+| loss_q3   | 1        |
+| mse       | 0.998    |
+| mse_q0    | 0.994    |
+| mse_q1    | 1        |
+| mse_q2    | 0.994    |
+| mse_q3    | 1        |
+| samples   | 32       |
+| step      | 0        |
+------------------------
+saving model 0...
+saving model 0.9999...
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+------------------------
+| grad_norm | 2.64     |
+| loss      | 0.166    |
+| loss_q0   | 0.243    |
+| loss_q1   | 0.147    |
+| loss_q2   | 0.138    |
+| loss_q3   | 0.136    |
+| mse       | 0.166    |
+| mse_q0    | 0.243    |
+| mse_q1    | 0.147    |
+| mse_q2    | 0.138    |
+| mse_q3    | 0.136    |
+| samples   | 1.6e+04  |
+| step      | 500      |
+------------------------
+------------------------
+| grad_norm | 0.62     |
+| loss      | 0.037    |
+| loss_q0   | 0.118    |
+| loss_q1   | 0.0204   |
+| loss_q2   | 0.00564  |
+| loss_q3   | 0.00302  |
+| mse       | 0.037    |
+| mse_q0    | 0.118    |
+| mse_q1    | 0.0204   |
+| mse_q2    | 0.00564  |
+| mse_q3    | 0.00302  |
+| samples   | 3.2e+04  |
+| step      | 1e+03    |
+------------------------
+------------------------
+| grad_norm | 0.52     |
+| loss      | 0.0337   |
+| loss_q0   | 0.109    |
+| loss_q1   | 0.0188   |
+| loss_q2   | 0.00462  |
+| loss_q3   | 0.002    |
+| mse       | 0.0337   |
+| mse_q0    | 0.109    |
+| mse_q1    | 0.0188   |
+| mse_q2    | 0.00462  |
+| mse_q3    | 0.002    |
+| samples   | 4.8e+04  |
+| step      | 1.5e+03  |
+------------------------
+------------------------
+| grad_norm | 0.462    |
+| loss      | 0.0318   |
+| loss_q0   | 0.104    |
+| loss_q1   | 0.0181   |
+| loss_q2   | 0.00413  |
+| loss_q3   | 0.00161  |
+| mse       | 0.0318   |
+| mse_q0    | 0.104    |
+| mse_q1    | 0.0181   |
+| mse_q2    | 0.00413  |
+| mse_q3    | 0.00161  |
+| samples   | 6.4e+04  |
+| step      | 2e+03    |
+------------------------
+------------------------
+| grad_norm | 0.438    |
+| loss      | 0.0321   |
+| loss_q0   | 0.104    |
+| loss_q1   | 0.0178   |
+| loss_q2   | 0.00394  |
+| loss_q3   | 0.00139  |
+| mse       | 0.0321   |
+| mse_q0    | 0.104    |
+| mse_q1    | 0.0178   |
+| mse_q2    | 0.00394  |
+| mse_q3    | 0.00139  |
+| samples   | 8e+04    |
+| step      | 2.5e+03  |
+------------------------
+------------------------
+| grad_norm | 0.395    |
+| loss      | 0.0326   |
+| loss_q0   | 0.106    |
+| loss_q1   | 0.0175   |
+| loss_q2   | 0.0038   |
+| loss_q3   | 0.00123  |
+| mse       | 0.0326   |
+| mse_q0    | 0.106    |
+| mse_q1    | 0.0175   |
+| mse_q2    | 0.0038   |
+| mse_q3    | 0.00123  |
+| samples   | 9.6e+04  |
+| step      | 3e+03    |
+------------------------
+------------------------
+| grad_norm | 0.368    |
+| loss      | 0.0308   |
+| loss_q0   | 0.101    |
+| loss_q1   | 0.0171   |
+| loss_q2   | 0.00366  |
+| loss_q3   | 0.00113  |
+| mse       | 0.0308   |
+| mse_q0    | 0.101    |
+| mse_q1    | 0.0171   |
+| mse_q2    | 0.00366  |
+| mse_q3    | 0.00113  |
+| samples   | 1.12e+05 |
+| step      | 3.5e+03  |
+------------------------
+------------------------
+| grad_norm | 0.339    |
+| loss      | 0.0293   |
+| loss_q0   | 0.0962   |
+| loss_q1   | 0.0173   |
+| loss_q2   | 0.0036   |
+| loss_q3   | 0.00104  |
+| mse       | 0.0293   |
+| mse_q0    | 0.0962   |
+| mse_q1    | 0.0173   |
+| mse_q2    | 0.0036   |
+| mse_q3    | 0.00104  |
+| samples   | 1.28e+05 |
+| step      | 4e+03    |
+------------------------
+------------------------
+| grad_norm | 0.297    |
+| loss      | 0.0293   |
+| loss_q0   | 0.0969   |
+| loss_q1   | 0.0169   |
+| loss_q2   | 0.00349  |
+| loss_q3   | 0.000973 |
+| mse       | 0.0293   |
+| mse_q0    | 0.0969   |
+| mse_q1    | 0.0169   |
+| mse_q2    | 0.00349  |
+| mse_q3    | 0.000973 |
+| samples   | 1.44e+05 |
+| step      | 4.5e+03  |
+------------------------
+saving model 0...
+saving model 0.9999...
+[rank0]:[W710 01:48:11.348529239 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Logging to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_imagenet_1k_64x64_hf_5000steps_ddim50_2026-07-10_imagenet_hf_external/sample
+creating model and diffusion...
+sampling...
+created 64 samples
+created 128 samples
+created 192 samples
+created 256 samples
+created 320 samples
+created 384 samples
+created 448 samples
+created 512 samples
+created 576 samples
+created 640 samples
+created 704 samples
+created 768 samples
+created 832 samples
+created 896 samples
+created 960 samples
+created 1024 samples
+saving to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_imagenet_1k_64x64_hf_5000steps_ddim50_2026-07-10_imagenet_hf_external/sample/samples_1024x64x64x3.npz
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+sampling complete
+[rank0]:[W710 01:48:39.324758364 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+wrote 1024 PNG images to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_imagenet_1k_64x64_hf_5000steps_ddim50_2026-07-10_imagenet_hf_external/samples_png
+wrote /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/improved_diffusion/improved_diffusion_imagenet_1k_64x64_hf_5000steps_ddim50_2026-07-10_imagenet_hf_external/generated_quality/generated_quality_report.json
+improved_diffusion_completed imagenet_1k_64x64_hf /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/improved_diffusion/improved_diffusion_imagenet_1k_64x64_hf_5000steps_ddim50_2026-07-10_imagenet_hf_external
+
+Training options:
+{
+  "dataset_kwargs": {
+    "class_name": "training.dataset.ImageFolderDataset",
+    "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_1k_64x64_hf/extracted/train",
+    "use_labels": false,
+    "xflip": false,
+    "cache": false,
+    "resolution": 64,
+    "max_size": 1281167
+  },
+  "data_loader_kwargs": {
+    "pin_memory": true,
+    "num_workers": 1,
+    "prefetch_factor": 2
+  },
+  "network_kwargs": {
+    "model_type": "SongUNet",
+    "embedding_type": "positional",
+    "encoder_type": "standard",
+    "decoder_type": "standard",
+    "channel_mult_noise": 1,
+    "resample_filter": [
+      1,
+      1
+    ],
+    "model_channels": 64,
+    "channel_mult": [
+      1,
+      1,
+      1
+    ],
+    "class_name": "training.networks.EDMPrecond",
+    "dropout": 0.0,
+    "use_fp16": false
+  },
+  "loss_kwargs": {
+    "class_name": "training.loss.EDMLoss"
+  },
+  "optimizer_kwargs": {
+    "class_name": "torch.optim.Adam",
+    "lr": 0.0001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08
+  },
+  "total_kimg": 160,
+  "ema_halflife_kimg": 1,
+  "batch_size": 32,
+  "batch_gpu": 16,
+  "loss_scaling": 1.0,
+  "cudnn_benchmark": true,
+  "kimg_per_tick": 20,
+  "snapshot_ticks": 999,
+  "state_dump_ticks": 999,
+  "seed": 139,
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_imagenet_1k_64x64_hf_5000steps_edm40_2026-07-10_imagenet_hf_external/train"
+}
+
+Output directory:        /root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_imagenet_1k_64x64_hf_5000steps_edm40_2026-07-10_imagenet_hf_external/train
+Dataset path:            /root/autodl-tmp/CoFiTok/datasets/imagenet_1k_64x64_hf/extracted/train
+Class-conditional:       False
+Network architecture:    ddpmpp
+Preconditioning & loss:  edm
+Number of GPUs:          1
+Batch size:              32
+Mixed-precision:         False
+
+Creating output directory...
+Loading dataset...
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/utils/data/sampler.py:68: UserWarning: `data_source` argument is not used and will be removed in 2.2.0.You may still have custom implementation that utilizes it.
+  warnings.warn(
+Constructing network...
+
+EDMPrecond                Parameters  Buffers  Output shape      Datatype
+---                       ---         ---      ---               ---     
+model.map_noise           -           -        [16, 64]          float32 
+model.map_layer0          16640       -        [16, 256]         float32 
+model.map_layer1          65792       -        [16, 256]         float32 
+model.enc.64x64_conv      1792        -        [16, 64, 64, 64]  float32 
+model.enc.64x64_block0    90560       -        [16, 64, 64, 64]  float32 
+model.enc.64x64_block1    90560       -        [16, 64, 64, 64]  float32 
+model.enc.64x64_block2    90560       -        [16, 64, 64, 64]  float32 
+model.enc.64x64_block3    90560       -        [16, 64, 64, 64]  float32 
+model.enc.32x32_down      94720       8        [16, 64, 32, 32]  float32 
+model.enc.32x32_block0    90560       -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block1    90560       -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block2    90560       -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block3    90560       -        [16, 64, 32, 32]  float32 
+model.enc.16x16_down      94720       8        [16, 64, 16, 16]  float32 
+model.enc.16x16_block0    107328      -        [16, 64, 16, 16]  float32 
+model.enc.16x16_block1    107328      -        [16, 64, 16, 16]  float32 
+model.enc.16x16_block2    107328      -        [16, 64, 16, 16]  float32 
+model.enc.16x16_block3    107328      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_in0       107328      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_in1       90560       -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block0    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block1    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block2    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block3    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block4    152576      -        [16, 64, 16, 16]  float32 
+model.dec.32x32_up        94720       8        [16, 64, 32, 32]  float32 
+model.dec.32x32_block0    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block1    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block2    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block3    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block4    135808      -        [16, 64, 32, 32]  float32 
+model.dec.64x64_up        94720       8        [16, 64, 64, 64]  float32 
+model.dec.64x64_block0    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_block1    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_block2    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_block3    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_block4    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_aux_norm  128         -        [16, 64, 64, 64]  float32 
+model.dec.64x64_aux_conv  1731        -        [16, 3, 64, 64]   float32 
+<top-level>               -           -        [16, 3, 64, 64]   float32 
+---                       ---         ---      ---               ---     
+Total                     3870531     32       -                 -       
+
+Setting up optimizer...
+Training for 160 kimg...
+
+tick 0     kimg 0.0       time 16s          sec/tick 0.4     sec/kimg 12.65   maintenance 15.4   cpumem 2.17   gpumem 2.81   reserved 3.09  
+tick 1     kimg 20.0      time 1m 11s       sec/tick 55.1    sec/kimg 2.75    maintenance 0.1    cpumem 2.25   gpumem 1.93   reserved 2.18  
+tick 2     kimg 40.0      time 2m 07s       sec/tick 56.2    sec/kimg 2.81    maintenance 0.0    cpumem 2.25   gpumem 1.93   reserved 2.18  
+tick 3     kimg 60.0      time 3m 03s       sec/tick 55.8    sec/kimg 2.79    maintenance 0.0    cpumem 2.25   gpumem 1.93   reserved 2.18  
+tick 4     kimg 80.0      time 3m 58s       sec/tick 54.8    sec/kimg 2.74    maintenance 0.0    cpumem 2.25   gpumem 1.93   reserved 2.18  
+tick 5     kimg 100.0     time 4m 54s       sec/tick 55.9    sec/kimg 2.79    maintenance 0.0    cpumem 2.25   gpumem 1.93   reserved 2.18  
+tick 6     kimg 120.0     time 5m 50s       sec/tick 56.6    sec/kimg 2.83    maintenance 0.0    cpumem 2.25   gpumem 1.93   reserved 2.18  
+tick 7     kimg 140.0     time 6m 46s       sec/tick 55.8    sec/kimg 2.79    maintenance 0.0    cpumem 2.25   gpumem 1.93   reserved 2.18  
+tick 8     kimg 160.0     time 7m 42s       sec/tick 56.1    sec/kimg 2.81    maintenance 0.0    cpumem 2.25   gpumem 1.93   reserved 2.18  
+
+Exiting...
+[rank0]:[W710 01:56:49.062289008 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+[rank0]:[W710 01:56:51.740801500 ProcessGroupNCCL.cpp:4718] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 as device used by this process is currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. You can pecify device_id in init_process_group() to force use of a particular device.
+Loading network from "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_imagenet_1k_64x64_hf_5000steps_edm40_2026-07-10_imagenet_hf_external/train/network-snapshot-000160.pkl"...
+Generating 1024 images to "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_imagenet_1k_64x64_hf_5000steps_edm40_2026-07-10_imagenet_hf_external/samples_png"...
+  0%|          | 0/16 [00:00<?, ?batch/s]  6%|▋         | 1/16 [00:02<00:36,  2.46s/batch] 12%|█▎        | 2/16 [00:04<00:30,  2.19s/batch] 19%|█▉        | 3/16 [00:06<00:27,  2.10s/batch] 25%|██▌       | 4/16 [00:08<00:24,  2.06s/batch] 31%|███▏      | 5/16 [00:10<00:22,  2.04s/batch] 38%|███▊      | 6/16 [00:12<00:20,  2.03s/batch] 44%|████▍     | 7/16 [00:14<00:18,  2.02s/batch] 50%|█████     | 8/16 [00:16<00:16,  2.01s/batch] 56%|█████▋    | 9/16 [00:18<00:14,  2.01s/batch] 62%|██████▎   | 10/16 [00:20<00:12,  2.01s/batch] 69%|██████▉   | 11/16 [00:22<00:10,  2.00s/batch] 75%|███████▌  | 12/16 [00:24<00:08,  2.00s/batch] 81%|████████▏ | 13/16 [00:26<00:06,  2.00s/batch] 88%|████████▊ | 14/16 [00:28<00:04,  2.00s/batch] 94%|█████████▍| 15/16 [00:30<00:02,  2.00s/batch]100%|██████████| 16/16 [00:32<00:00,  2.00s/batch]100%|██████████| 16/16 [00:32<00:00,  2.03s/batch]
+Done.
+wrote /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/edm/edm_imagenet_1k_64x64_hf_5000steps_edm40_2026-07-10_imagenet_hf_external/generated_quality/generated_quality_report.json
+edm_completed imagenet_1k_64x64_hf /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/edm/edm_imagenet_1k_64x64_hf_5000steps_edm40_2026-07-10_imagenet_hf_external
+wrote artifacts/reports/summary_2026-07-10_imagenet_hf_external/experiment_summary.json
+wrote artifacts/reports/summary_2026-07-10_imagenet_hf_external/core_summary.md
+wrote artifacts/reports/baselines/summary_2026-07-10_imagenet_hf_external/baseline_summary.md
+wrote artifacts/reports/paper_comparison_matrix_2026-07-10_imagenet_hf_external/paper_comparison_matrix_audit.md
+p0_imagenet_hf_external_done artifacts/reports/summary_2026-07-10_imagenet_hf_external artifacts/reports/baselines/summary_2026-07-10_imagenet_hf_external artifacts/reports/paper_comparison_matrix_2026-07-10_imagenet_hf_external

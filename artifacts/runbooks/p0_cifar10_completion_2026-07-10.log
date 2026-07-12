@@ -1,0 +1,354 @@
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_cifar10_k8_denoisepath_p150_light_nopathprefix_3k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_nopathprefix_3k_cuda_2026-07-10_cifar_p0
+step 0001 total=1.1168 epsilon=1.0954 prefix=1529.6224 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.4611 path_c=0.0715
+step 0500 total=0.0520 epsilon=0.0436 prefix=773.4508 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0495 path_c=0.0278
+step 1000 total=0.0732 epsilon=0.0593 prefix=397.0453 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0965 path_c=0.0463
+step 1500 total=0.0808 epsilon=0.0591 prefix=585.3301 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.1651 path_c=0.0722
+step 2000 total=0.0564 epsilon=0.0451 prefix=527.7340 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0750 path_c=0.0376
+step 2500 total=0.0869 epsilon=0.0675 prefix=258.6438 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.1162 path_c=0.0646
+step 3000 total=0.0545 epsilon=0.0462 prefix=416.9641 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0469 path_c=0.0277
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_nopathprefix_3k_cuda_2026-07-10_cifar_p0/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_nopathprefix_3k_cuda_2026-07-10_cifar_p0/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_nopathprefix_3k_cuda_2026-07-10_cifar_p0/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_cifar10_k8_denoisepath_p150_light_nopathprefix_3k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_nopathprefix_3k_cuda_2026-07-10_cifar_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_cifar10_nopathprefix_3k_512_t500_lpips_inception_2026-07-10_cifar_p0 --split val --max-batches 16 --max-images 512 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_cifar10_nopathprefix_3k_512_t500_lpips_inception_2026-07-10_cifar_p0/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_cifar10_k8_denoisepath_p150_light_cleanmono_3k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_cleanmono_3k_cuda_2026-07-10_cifar_p0
+step 0001 total=2.3612 epsilon=1.2443 prefix=1526.9165 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.5362 path_c=0.0889
+step 0500 total=0.1229 epsilon=0.0761 prefix=821.9100 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.1604 path_c=0.0758
+step 1000 total=0.0857 epsilon=0.0570 prefix=522.4780 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0817 path_c=0.0546
+step 1500 total=0.0561 epsilon=0.0410 prefix=516.7528 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0387 path_c=0.0311
+step 2000 total=0.0455 epsilon=0.0391 prefix=251.9091 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0168 path_c=0.0130
+step 2500 total=0.0700 epsilon=0.0565 prefix=333.8513 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0347 path_c=0.0274
+step 3000 total=0.0493 epsilon=0.0415 prefix=590.3839 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0190 path_c=0.0166
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_cleanmono_3k_cuda_2026-07-10_cifar_p0/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_cleanmono_3k_cuda_2026-07-10_cifar_p0/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_cleanmono_3k_cuda_2026-07-10_cifar_p0/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_cifar10_k8_denoisepath_p150_light_cleanmono_3k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_cleanmono_3k_cuda_2026-07-10_cifar_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_cifar10_cleanmono_3k_512_t500_lpips_inception_2026-07-10_cifar_p0 --split val --max-batches 16 --max-images 512 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_cifar10_cleanmono_3k_512_t500_lpips_inception_2026-07-10_cifar_p0/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_cifar10_k8_denoisepath_p150_light_simultaneous_3k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_simultaneous_3k_cuda_2026-07-10_cifar_p0
+step 0001 total=1.1702 epsilon=1.0680 prefix=2973.1863 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.5060 path_c=0.0875
+step 0500 total=0.1098 epsilon=0.0760 prefix=400.9145 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.1060 path_c=0.0596
+step 1000 total=0.0737 epsilon=0.0541 prefix=560.7643 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0535 path_c=0.0384
+step 1500 total=0.1017 epsilon=0.0646 prefix=310.6154 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.1011 path_c=0.0732
+step 2000 total=0.0336 epsilon=0.0283 prefix=288.3215 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0138 path_c=0.0108
+step 2500 total=0.0522 epsilon=0.0438 prefix=261.4066 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0214 path_c=0.0173
+step 3000 total=0.0477 epsilon=0.0398 prefix=697.9902 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0196 path_c=0.0164
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_simultaneous_3k_cuda_2026-07-10_cifar_p0/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_simultaneous_3k_cuda_2026-07-10_cifar_p0/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_simultaneous_3k_cuda_2026-07-10_cifar_p0/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_cifar10_k8_denoisepath_p150_light_simultaneous_3k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_simultaneous_3k_cuda_2026-07-10_cifar_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_cifar10_simultaneous_3k_512_t500_lpips_inception_2026-07-10_cifar_p0 --split val --max-batches 16 --max-images 512 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_cifar10_simultaneous_3k_512_t500_lpips_inception_2026-07-10_cifar_p0/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_cifar10_k8_denoisepath_p150_light_deepsk_3k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_deepsk_3k_cuda_2026-07-10_cifar_p0
+step 0001 total=1.0963 epsilon=1.0126 prefix=2879.8850 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.4340 path_c=0.0619
+step 0500 total=0.1286 epsilon=0.0736 prefix=410.4087 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.1941 path_c=0.0865
+step 1000 total=0.0707 epsilon=0.0546 prefix=580.8573 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0477 path_c=0.0297
+step 1500 total=0.0818 epsilon=0.0636 prefix=322.0287 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0495 path_c=0.0357
+step 2000 total=0.0386 epsilon=0.0350 prefix=301.1958 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0111 path_c=0.0064
+step 2500 total=0.0478 epsilon=0.0425 prefix=268.0330 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0152 path_c=0.0100
+step 3000 total=0.0484 epsilon=0.0414 prefix=717.4976 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0188 path_c=0.0137
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_deepsk_3k_cuda_2026-07-10_cifar_p0/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_deepsk_3k_cuda_2026-07-10_cifar_p0/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_deepsk_3k_cuda_2026-07-10_cifar_p0/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_cifar10_k8_denoisepath_p150_light_deepsk_3k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_deepsk_3k_cuda_2026-07-10_cifar_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_cifar10_deepsk_3k_512_t500_lpips_inception_2026-07-10_cifar_p0 --split val --max-batches 16 --max-images 512 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_cifar10_deepsk_3k_512_t500_lpips_inception_2026-07-10_cifar_p0/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_generated_samples_stream.py --config configs/train_cifar10_k8_epsilononly_p150eval_3k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_epsilononly_p150eval_3k_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_cifar10_epsilononly_3k_1024_ddim50_2026-07-10_cifar_p0 --split val --sample-count 1024 --max-real-images 4096 --batch-size 64 --sample-steps 50 --enable-inception-fid
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_cifar10_epsilononly_3k_1024_ddim50_2026-07-10_cifar_p0/generated_quality_report.json
+Logging to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_cifar10_3000steps_ddim50_2026-07-10_cifar_p0/train
+creating model and diffusion...
+creating data loader...
+training...
+------------------------
+| grad_norm | 9.51     |
+| loss      | 1        |
+| loss_q0   | 1.01     |
+| loss_q1   | 1.01     |
+| loss_q2   | 1        |
+| loss_q3   | 0.994    |
+| mse       | 1        |
+| mse_q0    | 1.01     |
+| mse_q1    | 1.01     |
+| mse_q2    | 1        |
+| mse_q3    | 0.994    |
+| samples   | 32       |
+| step      | 0        |
+------------------------
+saving model 0...
+saving model 0.9999...
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+------------------------
+| grad_norm | 2.79     |
+| loss      | 0.173    |
+| loss_q0   | 0.256    |
+| loss_q1   | 0.155    |
+| loss_q2   | 0.144    |
+| loss_q3   | 0.133    |
+| mse       | 0.173    |
+| mse_q0    | 0.256    |
+| mse_q1    | 0.155    |
+| mse_q2    | 0.144    |
+| mse_q3    | 0.133    |
+| samples   | 1.6e+04  |
+| step      | 500      |
+------------------------
+------------------------
+| grad_norm | 0.803    |
+| loss      | 0.0412   |
+| loss_q0   | 0.13     |
+| loss_q1   | 0.023    |
+| loss_q2   | 0.00689  |
+| loss_q3   | 0.00414  |
+| mse       | 0.0412   |
+| mse_q0    | 0.13     |
+| mse_q1    | 0.023    |
+| mse_q2    | 0.00689  |
+| mse_q3    | 0.00414  |
+| samples   | 3.2e+04  |
+| step      | 1e+03    |
+------------------------
+------------------------
+| grad_norm | 0.628    |
+| loss      | 0.0385   |
+| loss_q0   | 0.123    |
+| loss_q1   | 0.0214   |
+| loss_q2   | 0.00568  |
+| loss_q3   | 0.00287  |
+| mse       | 0.0385   |
+| mse_q0    | 0.123    |
+| mse_q1    | 0.0214   |
+| mse_q2    | 0.00568  |
+| mse_q3    | 0.00287  |
+| samples   | 4.8e+04  |
+| step      | 1.5e+03  |
+------------------------
+------------------------
+| grad_norm | 0.568    |
+| loss      | 0.0366   |
+| loss_q0   | 0.119    |
+| loss_q1   | 0.0209   |
+| loss_q2   | 0.00516  |
+| loss_q3   | 0.00231  |
+| mse       | 0.0366   |
+| mse_q0    | 0.119    |
+| mse_q1    | 0.0209   |
+| mse_q2    | 0.00516  |
+| mse_q3    | 0.00231  |
+| samples   | 6.4e+04  |
+| step      | 2e+03    |
+------------------------
+------------------------
+| grad_norm | 0.527    |
+| loss      | 0.036    |
+| loss_q0   | 0.115    |
+| loss_q1   | 0.0202   |
+| loss_q2   | 0.00483  |
+| loss_q3   | 0.00192  |
+| mse       | 0.036    |
+| mse_q0    | 0.115    |
+| mse_q1    | 0.0202   |
+| mse_q2    | 0.00483  |
+| mse_q3    | 0.00192  |
+| samples   | 8e+04    |
+| step      | 2.5e+03  |
+------------------------
+saving model 0...
+saving model 0.9999...
+[rank0]:[W710 01:24:00.185646136 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Logging to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_cifar10_3000steps_ddim50_2026-07-10_cifar_p0/sample
+creating model and diffusion...
+sampling...
+created 64 samples
+created 128 samples
+created 192 samples
+created 256 samples
+created 320 samples
+created 384 samples
+created 448 samples
+created 512 samples
+created 576 samples
+created 640 samples
+created 704 samples
+created 768 samples
+created 832 samples
+created 896 samples
+created 960 samples
+created 1024 samples
+saving to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_cifar10_3000steps_ddim50_2026-07-10_cifar_p0/sample/samples_1024x32x32x3.npz
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+sampling complete
+[rank0]:[W710 01:24:13.882648174 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+wrote 1024 PNG images to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_cifar10_3000steps_ddim50_2026-07-10_cifar_p0/samples_png
+wrote /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/improved_diffusion/improved_diffusion_cifar10_3000steps_ddim50_2026-07-10_cifar_p0/generated_quality/generated_quality_report.json
+improved_diffusion_completed cifar10 /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/improved_diffusion/improved_diffusion_cifar10_3000steps_ddim50_2026-07-10_cifar_p0
+
+Training options:
+{
+  "dataset_kwargs": {
+    "class_name": "training.dataset.ImageFolderDataset",
+    "path": "/root/autodl-tmp/CoFiTok/datasets/cifar10/derived/imagefolder/train",
+    "use_labels": false,
+    "xflip": false,
+    "cache": false,
+    "resolution": 32,
+    "max_size": 50000
+  },
+  "data_loader_kwargs": {
+    "pin_memory": true,
+    "num_workers": 1,
+    "prefetch_factor": 2
+  },
+  "network_kwargs": {
+    "model_type": "SongUNet",
+    "embedding_type": "positional",
+    "encoder_type": "standard",
+    "decoder_type": "standard",
+    "channel_mult_noise": 1,
+    "resample_filter": [
+      1,
+      1
+    ],
+    "model_channels": 64,
+    "channel_mult": [
+      1,
+      1,
+      1
+    ],
+    "class_name": "training.networks.EDMPrecond",
+    "dropout": 0.0,
+    "use_fp16": false
+  },
+  "loss_kwargs": {
+    "class_name": "training.loss.EDMLoss"
+  },
+  "optimizer_kwargs": {
+    "class_name": "torch.optim.Adam",
+    "lr": 0.0001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08
+  },
+  "total_kimg": 96,
+  "ema_halflife_kimg": 1,
+  "batch_size": 32,
+  "batch_gpu": 16,
+  "loss_scaling": 1.0,
+  "cudnn_benchmark": true,
+  "kimg_per_tick": 20,
+  "snapshot_ticks": 999,
+  "state_dump_ticks": 999,
+  "seed": 139,
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_cifar10_3000steps_edm40_2026-07-10_cifar_p0/train"
+}
+
+Output directory:        /root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_cifar10_3000steps_edm40_2026-07-10_cifar_p0/train
+Dataset path:            /root/autodl-tmp/CoFiTok/datasets/cifar10/derived/imagefolder/train
+Class-conditional:       False
+Network architecture:    ddpmpp
+Preconditioning & loss:  edm
+Number of GPUs:          1
+Batch size:              32
+Mixed-precision:         False
+
+Creating output directory...
+Loading dataset...
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/utils/data/sampler.py:68: UserWarning: `data_source` argument is not used and will be removed in 2.2.0.You may still have custom implementation that utilizes it.
+  warnings.warn(
+Constructing network...
+
+EDMPrecond                Parameters  Buffers  Output shape      Datatype
+---                       ---         ---      ---               ---     
+model.map_noise           -           -        [16, 64]          float32 
+model.map_layer0          16640       -        [16, 256]         float32 
+model.map_layer1          65792       -        [16, 256]         float32 
+model.enc.32x32_conv      1792        -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block0    90560       -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block1    90560       -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block2    90560       -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block3    90560       -        [16, 64, 32, 32]  float32 
+model.enc.16x16_down      94720       8        [16, 64, 16, 16]  float32 
+model.enc.16x16_block0    107328      -        [16, 64, 16, 16]  float32 
+model.enc.16x16_block1    107328      -        [16, 64, 16, 16]  float32 
+model.enc.16x16_block2    107328      -        [16, 64, 16, 16]  float32 
+model.enc.16x16_block3    107328      -        [16, 64, 16, 16]  float32 
+model.enc.8x8_down        94720       8        [16, 64, 8, 8]    float32 
+model.enc.8x8_block0      90560       -        [16, 64, 8, 8]    float32 
+model.enc.8x8_block1      90560       -        [16, 64, 8, 8]    float32 
+model.enc.8x8_block2      90560       -        [16, 64, 8, 8]    float32 
+model.enc.8x8_block3      90560       -        [16, 64, 8, 8]    float32 
+model.dec.8x8_in0         107328      -        [16, 64, 8, 8]    float32 
+model.dec.8x8_in1         90560       -        [16, 64, 8, 8]    float32 
+model.dec.8x8_block0      135808      -        [16, 64, 8, 8]    float32 
+model.dec.8x8_block1      135808      -        [16, 64, 8, 8]    float32 
+model.dec.8x8_block2      135808      -        [16, 64, 8, 8]    float32 
+model.dec.8x8_block3      135808      -        [16, 64, 8, 8]    float32 
+model.dec.8x8_block4      135808      -        [16, 64, 8, 8]    float32 
+model.dec.16x16_up        94720       8        [16, 64, 16, 16]  float32 
+model.dec.16x16_block0    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block1    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block2    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block3    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block4    152576      -        [16, 64, 16, 16]  float32 
+model.dec.32x32_up        94720       8        [16, 64, 32, 32]  float32 
+model.dec.32x32_block0    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block1    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block2    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block3    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block4    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_aux_norm  128         -        [16, 64, 32, 32]  float32 
+model.dec.32x32_aux_conv  1731        -        [16, 3, 32, 32]   float32 
+<top-level>               -           -        [16, 3, 32, 32]   float32 
+---                       ---         ---      ---               ---     
+Total                     3870531     32       -                 -       
+
+Setting up optimizer...
+Training for 96 kimg...
+
+tick 0     kimg 0.0       time 4s           sec/tick 0.3     sec/kimg 9.61    maintenance 4.1    cpumem 2.00   gpumem 0.79   reserved 0.86  
+tick 1     kimg 20.0      time 54s          sec/tick 49.3    sec/kimg 2.46    maintenance 0.1    cpumem 2.08   gpumem 0.60   reserved 0.66  
+tick 2     kimg 40.0      time 1m 43s       sec/tick 49.0    sec/kimg 2.45    maintenance 0.0    cpumem 2.08   gpumem 0.60   reserved 0.66  
+tick 3     kimg 60.0      time 2m 32s       sec/tick 49.2    sec/kimg 2.46    maintenance 0.0    cpumem 2.08   gpumem 0.60   reserved 0.66  
+tick 4     kimg 80.0      time 3m 21s       sec/tick 49.1    sec/kimg 2.45    maintenance 0.0    cpumem 2.08   gpumem 0.60   reserved 0.66  
+tick 5     kimg 96.0      time 4m 00s       sec/tick 38.5    sec/kimg 2.41    maintenance 0.0    cpumem 2.08   gpumem 0.60   reserved 0.66  
+
+Exiting...
+[rank0]:[W710 01:28:28.824600187 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+[rank0]:[W710 01:28:31.901923997 ProcessGroupNCCL.cpp:4718] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 as device used by this process is currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. You can pecify device_id in init_process_group() to force use of a particular device.
+Loading network from "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_cifar10_3000steps_edm40_2026-07-10_cifar_p0/train/network-snapshot-000096.pkl"...
+Generating 1024 images to "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_cifar10_3000steps_edm40_2026-07-10_cifar_p0/samples_png"...
+  0%|          | 0/16 [00:00<?, ?batch/s]  6%|▋         | 1/16 [00:01<00:20,  1.38s/batch] 12%|█▎        | 2/16 [00:02<00:15,  1.09s/batch] 19%|█▉        | 3/16 [00:03<00:12,  1.00batch/s] 25%|██▌       | 4/16 [00:04<00:11,  1.05batch/s] 31%|███▏      | 5/16 [00:04<00:10,  1.08batch/s] 38%|███▊      | 6/16 [00:05<00:09,  1.10batch/s] 44%|████▍     | 7/16 [00:06<00:08,  1.10batch/s] 50%|█████     | 8/16 [00:07<00:07,  1.11batch/s] 56%|█████▋    | 9/16 [00:08<00:06,  1.12batch/s] 62%|██████▎   | 10/16 [00:09<00:05,  1.12batch/s] 69%|██████▉   | 11/16 [00:10<00:04,  1.12batch/s] 75%|███████▌  | 12/16 [00:11<00:03,  1.13batch/s] 81%|████████▏ | 13/16 [00:11<00:02,  1.13batch/s] 88%|████████▊ | 14/16 [00:12<00:01,  1.13batch/s] 94%|█████████▍| 15/16 [00:13<00:00,  1.13batch/s]100%|██████████| 16/16 [00:14<00:00,  1.13batch/s]100%|██████████| 16/16 [00:14<00:00,  1.09batch/s]
+Done.
+wrote /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/edm/edm_cifar10_3000steps_edm40_2026-07-10_cifar_p0/generated_quality/generated_quality_report.json
+edm_completed cifar10 /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/edm/edm_cifar10_3000steps_edm40_2026-07-10_cifar_p0
+wrote artifacts/reports/summary_2026-07-10_cifar_p0/experiment_summary.json
+wrote artifacts/reports/summary_2026-07-10_cifar_p0/core_summary.md
+wrote artifacts/reports/baselines/summary_2026-07-10_cifar_p0/baseline_summary.md
+wrote artifacts/reports/paper_comparison_matrix_2026-07-10_cifar_p0/paper_comparison_matrix_audit.md
+p0_cifar10_completion_done artifacts/reports/summary_2026-07-10_cifar_p0 artifacts/reports/baselines/summary_2026-07-10_cifar_p0 artifacts/reports/paper_comparison_matrix_2026-07-10_cifar_p0

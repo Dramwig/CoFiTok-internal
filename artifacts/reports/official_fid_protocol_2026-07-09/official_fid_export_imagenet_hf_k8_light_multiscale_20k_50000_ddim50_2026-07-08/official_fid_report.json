@@ -1,0 +1,32 @@
+{
+  "counts": {
+    "generated_image_count": 50000,
+    "real_image_count": 50000
+  },
+  "implementation": {
+    "available": true,
+    "package": "pytorch-fid"
+  },
+  "metric": "fid",
+  "metrics": {
+    "fid": 134.08177839208838
+  },
+  "parameters": {
+    "batch_size": 64,
+    "device": "cuda",
+    "dims": 2048,
+    "dry_run": false,
+    "num_workers": 8
+  },
+  "paths": {
+    "generated_dir": "/root/autodl-tmp/CoFiTok/checkpoints/official_fid_export_imagenet_hf_k8_light_multiscale_20k_50000_ddim50_2026-07-08/generated",
+    "real_dir": "/root/autodl-tmp/CoFiTok/checkpoints/official_fid_export_imagenet_hf_k8_light_multiscale_20k_50000_ddim50_2026-07-08/real"
+  },
+  "runtime": {
+    "cuda_available": true,
+    "elapsed_seconds": 45.59032368659973,
+    "torch_version": "2.7.1+cu128"
+  },
+  "schema_version": 1,
+  "status": "ok"
+}

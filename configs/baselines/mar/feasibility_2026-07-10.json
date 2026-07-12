@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "baseline": "mar",
+  "status": "feasibility_only",
+  "repo_dir": "/root/autodl-tmp/CoFiTok/baselines/repos/mar",
+  "reason": "Official training/evaluation targets large ImageNet-256 class-conditional continuous-token AR. Treating it as same-dataset retraining baseline would require a separate expensive protocol and is not comparable to P0 pixel-diffusion runs.",
+  "allowed_next_step": "Optional pretrained ImageNet-256 eval-only row, clearly separated from retrained all-dataset baselines.",
+  "matrix_status": "protocol_blocked"
+}

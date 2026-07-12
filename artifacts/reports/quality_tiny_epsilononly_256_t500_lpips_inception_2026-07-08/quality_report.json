@@ -1,0 +1,165 @@
+{
+  "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_5k_2026-07-08/checkpoint_final.pt",
+  "config": {
+    "data": {
+      "batch_size": 32,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "tiny_imagenet_200",
+      "image_size": 64,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "denoise_path_component_weight": 0.0,
+      "denoise_path_prefix_weight": 0.0,
+      "denoise_path_progress_power": 1.5,
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_band_component_weight": 0.0,
+      "epsilon_band_prefix_weight": 0.0,
+      "epsilon_weight": 1.0,
+      "group_residual_size": 0,
+      "group_residual_weight": 0.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.0,
+      "prefix_weight": 0.0,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_early_dropout_prob": 0.0,
+      "tail_early_dropout_start": 1,
+      "tail_early_dropout_weight": 0.0,
+      "tail_endpoint_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "tail_late_monotonic_margin": 0.0,
+      "tail_late_monotonic_start": 0,
+      "tail_late_monotonic_weight": 0.0,
+      "tail_late_prefix_start": 0,
+      "tail_late_prefix_weight": 0.0,
+      "tail_replay_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "deep_synthesis_depth": 3,
+      "deep_synthesis_hidden_channels": 0,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 64,
+      "predictor_depth": 3,
+      "predictor_use_feedback": true,
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_mode": "restricted",
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 8
+    },
+    "name": "train_tiny_imagenet_k8_epsilononly_p150eval_5k_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 1000,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 139,
+      "steps": 5000
+    }
+  },
+  "curve_auc": {
+    "inception_frechet": 383.4439336361905,
+    "lowres_frechet_proxy": 5.315526651102123,
+    "lpips_alex": 0.9264446360369524,
+    "mse": 8.361989942689737,
+    "psnr_db": -0.8792538640735726
+  },
+  "evaluation": {
+    "batch_count": 8,
+    "fixed_timestep": 500,
+    "image_count": 256,
+    "image_range": "[-1, 1]",
+    "max_batches": 8,
+    "max_images": 256,
+    "prefix_budgets": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "split": "val"
+  },
+  "metric_notes": {
+    "inception_frechet": {
+      "available": true,
+      "cache_hint": "Set TORCH_HOME to a project checkpoint/cache directory before first download.",
+      "model": "torchvision.models.inception_v3/IMAGENET1K_V1"
+    },
+    "lowres_frechet_proxy": "Small-scale rFID proxy over deterministic low-resolution RGB/color features; not a substitute for Inception/FID.",
+    "lpips": {
+      "available": true,
+      "model": "lpips.LPIPS(net='alex')"
+    },
+    "psnr_db": "Computed from MSE in normalized image range [-1, 1] with max_value=2."
+  },
+  "metrics_by_prefix": {
+    "1": {
+      "inception_frechet": 397.148344565936,
+      "lowres_frechet_proxy": 6.460705825637568,
+      "lpips_alex": 1.0035134702920914,
+      "mse": 11.334343314170837,
+      "psnr_db": -4.523363718382737
+    },
+    "2": {
+      "inception_frechet": 394.97328797155023,
+      "lowres_frechet_proxy": 6.190407299672198,
+      "lpips_alex": 1.0028818771243095,
+      "mse": 11.178131580352783,
+      "psnr_db": -4.463092261620518
+    },
+    "4": {
+      "inception_frechet": 383.4213177255797,
+      "lowres_frechet_proxy": 5.943781851203141,
+      "lpips_alex": 0.9902578592300415,
+      "mse": 8.167627453804016,
+      "psnr_db": -3.10035928930244
+    },
+    "8": {
+      "inception_frechet": 346.72604585694694,
+      "lowres_frechet_proxy": 1.1640757792244858,
+      "lpips_alex": 0.5688748732209206,
+      "mse": 0.14607827365398407,
+      "psnr_db": 14.374743635787215
+    }
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 17.8023419380188,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

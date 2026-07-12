@@ -1,0 +1,27 @@
+{
+  "name": "smoke_imagenet_256_cuda",
+  "data": {
+    "dataset": "imagenet_256",
+    "root": "/root/autodl-tmp/CoFiTok/datasets",
+    "image_size": 256,
+    "channels": 3,
+    "batch_size": 2,
+    "num_workers": 2,
+    "class_conditional": false
+  },
+  "model": {
+    "image_channels": 3,
+    "image_size": 256,
+    "token_count": 4,
+    "token_channels": 16,
+    "base_channels": 24,
+    "predictor_depth": 2,
+    "synthesis_kernel_size": 3,
+    "gamma_mode": "learned_scalar"
+  },
+  "runtime": {
+    "device": "cuda",
+    "seed": 13,
+    "steps": 1
+  }
+}

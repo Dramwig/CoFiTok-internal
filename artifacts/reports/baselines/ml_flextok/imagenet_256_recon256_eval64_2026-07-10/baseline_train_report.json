@@ -1,0 +1,19 @@
+{
+  "baseline": "ml_flextok",
+  "dataset": "imagenet_256",
+  "notes": "Eval-only official pretrained tokenizer baseline. No project-local training was run; this report is present so matrix accounting can distinguish eval-only P1 evidence from missing adapter work.",
+  "output_dir": "artifacts/reports/baselines/ml_flextok/imagenet_256_recon256_eval64_2026-07-10",
+  "parameters": {
+    "batch_size": 1,
+    "eval_only": true,
+    "learning_rate": null,
+    "official_pretrained_weights": true,
+    "pretrained_model_id": "EPFL-VILAB/flextok_d12_d12_in1k",
+    "train_steps": 0
+  },
+  "repo": "/root/autodl-tmp/CoFiTok/baselines/repos/ml_flextok",
+  "repo_commit": "28e0ffc24e590bdab0099d4a317b601cdc674a5b",
+  "report_type": "baseline_train",
+  "run_name": "ml_flextok_imagenet_256_recon256_64img",
+  "status": "completed"
+}

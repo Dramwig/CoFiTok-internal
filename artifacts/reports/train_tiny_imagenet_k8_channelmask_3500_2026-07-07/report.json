@@ -1,0 +1,292 @@
+{
+  "artifacts": {
+    "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_channelmask_3500_2026-07-07/checkpoint_final.pt",
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_channelmask_3500_2026-07-07/prefix_final.png"
+  },
+  "config": {
+    "data": {
+      "batch_size": 32,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "tiny_imagenet_200",
+      "image_size": 64,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_weight": 1.0,
+      "group_residual_size": 0,
+      "group_residual_weight": 0.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.05,
+      "prefix_weight": 0.25,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_early_dropout_prob": 0.0,
+      "tail_early_dropout_start": 1,
+      "tail_early_dropout_weight": 0.0,
+      "tail_endpoint_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "tail_late_prefix_start": 0,
+      "tail_late_prefix_weight": 0.0,
+      "tail_replay_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 64,
+      "predictor_depth": 3,
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 8
+    },
+    "name": "train_tiny_imagenet_k8_channelmask_3500_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 500,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 89,
+      "steps": 3500
+    }
+  },
+  "final_losses": {
+    "energy_budget": 0.0,
+    "epsilon": 0.14920978248119354,
+    "grad_norm": 57.92732620239258,
+    "group_residual": 0.0,
+    "monotonic": 0.03300809860229492,
+    "prefix": 7.944045543670654,
+    "residual_component": 0.0,
+    "sampled_budget": 0.0,
+    "sampled_component": 0.0,
+    "sampled_prefix": 0.0,
+    "tail_floor": 0.0,
+    "total": 2.136871576309204,
+    "zero_token": 0.0
+  },
+  "history": [
+    {
+      "energy_budget": 0.0,
+      "epsilon": 1.0988473892211914,
+      "grad_norm": 172.24366760253906,
+      "group_residual": 0.0,
+      "monotonic": 9.166608810424805,
+      "prefix": 647.73486328125,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 1,
+      "tail_floor": 0.0,
+      "total": 163.4908905029297,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.24477264285087585,
+      "grad_norm": 22.047636032104492,
+      "group_residual": 0.0,
+      "monotonic": 0.0034399034921079874,
+      "prefix": 26.325637817382812,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 500,
+      "tail_floor": 0.0,
+      "total": 6.826354026794434,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.16950856149196625,
+      "grad_norm": 533.8015747070312,
+      "group_residual": 0.0,
+      "monotonic": 0.0480346716940403,
+      "prefix": 68.61400604248047,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 1000,
+      "tail_floor": 0.0,
+      "total": 17.325410842895508,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.13524997234344482,
+      "grad_norm": 151.81057739257812,
+      "group_residual": 0.0,
+      "monotonic": 0.036801476031541824,
+      "prefix": 19.31672477722168,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 1500,
+      "tail_floor": 0.0,
+      "total": 4.96627140045166,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.12415139377117157,
+      "grad_norm": 27.5123291015625,
+      "group_residual": 0.0,
+      "monotonic": 0.011363795958459377,
+      "prefix": 4.083845138549805,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 2000,
+      "tail_floor": 0.0,
+      "total": 1.1456807851791382,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.2039455771446228,
+      "grad_norm": 37.424232482910156,
+      "group_residual": 0.0,
+      "monotonic": 0.015675630420446396,
+      "prefix": 2.6821489334106445,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 2500,
+      "tail_floor": 0.0,
+      "total": 0.8752666115760803,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.07366825640201569,
+      "grad_norm": 38.32957077026367,
+      "group_residual": 0.0,
+      "monotonic": 0.017412731423974037,
+      "prefix": 3.783600330352783,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 3000,
+      "tail_floor": 0.0,
+      "total": 1.0204389095306396,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.14920978248119354,
+      "grad_norm": 57.92732620239258,
+      "group_residual": 0.0,
+      "monotonic": 0.03300809860229492,
+      "prefix": 7.944045543670654,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 3500,
+      "tail_floor": 0.0,
+      "total": 2.136871576309204,
+      "zero_token": 0.0
+    }
+  ],
+  "prefix_summary": {
+    "active_tail_tokens": 1,
+    "component_energy": [
+      1.0153257846832275,
+      0.021457787603139877,
+      0.0006774018984287977,
+      0.00019988520944025367,
+      0.00021427424508146942,
+      7.827069202903658e-05,
+      4.508404163061641e-05,
+      0.00021477762493304908
+    ],
+    "component_energy_ratio": [
+      0.977954932705773,
+      0.020667995975292286,
+      0.0006524689296641688,
+      0.00019252808260750536,
+      0.00020638750447434626,
+      7.538980149112648e-05,
+      4.342464415274303e-05,
+      0.00020687235654478847
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.12977665662765503,
+      "random_token_component_energy": 0.07933550328016281,
+      "shuffled_component_mse": 0.2563197910785675,
+      "zero_token_component_energy": 0.0
+    },
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_channelmask_3500_2026-07-07/prefix_final.png",
+    "head_energy_ratio": 0.977954932705773,
+    "late_half_energy_ratio": 0.0005320743066630042,
+    "prefix_mse_to_clean": [
+      0.5738413333892822,
+      0.32196366786956787,
+      0.3134617209434509,
+      0.31212592124938965,
+      0.3020664155483246,
+      0.2973856031894684,
+      0.2927890717983246,
+      0.271316796541214
+    ],
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4",
+      "prefix_5",
+      "prefix_6",
+      "prefix_7",
+      "prefix_8"
+    ],
+    "tail_energy_ratio": 0.02204506729422696,
+    "timestep": 500
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 48.16179084777832,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

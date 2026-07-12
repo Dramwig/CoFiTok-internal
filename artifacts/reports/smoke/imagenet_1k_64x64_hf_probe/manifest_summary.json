@@ -1,0 +1,22 @@
+{
+  "config": "default",
+  "dataset_alias": "imagenet_1k_64x64_hf",
+  "image_format": "png",
+  "image_key": "image",
+  "label_key": "label",
+  "max_examples_per_split": 8,
+  "output_root": "/root/autodl-tmp/CoFiTok/tmp/imagenet_1k_64x64_hf_probe/datasets/imagenet_1k_64x64_hf/extracted",
+  "shard_size": 4,
+  "source_loader": "benjamin-paine/imagenet-1k-64x64",
+  "splits": [
+    {
+      "classes": {
+        "0000": 8
+      },
+      "examples": 8,
+      "manifest_path": "/root/autodl-tmp/CoFiTok/tmp/imagenet_1k_64x64_hf_probe/datasets/imagenet_1k_64x64_hf/extracted/train_manifest.jsonl",
+      "split": "train"
+    }
+  ],
+  "streaming": true
+}

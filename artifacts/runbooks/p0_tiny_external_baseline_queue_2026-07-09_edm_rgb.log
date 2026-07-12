@@ -1,0 +1,149 @@
+
+Training options:
+{
+  "dataset_kwargs": {
+    "class_name": "training.dataset.ImageFolderDataset",
+    "path": "/root/autodl-tmp/CoFiTok/datasets/tiny_imagenet_200/derived/edm_rgb_train",
+    "use_labels": false,
+    "xflip": false,
+    "cache": false,
+    "resolution": 64,
+    "max_size": 100000
+  },
+  "data_loader_kwargs": {
+    "pin_memory": true,
+    "num_workers": 1,
+    "prefetch_factor": 2
+  },
+  "network_kwargs": {
+    "model_type": "SongUNet",
+    "embedding_type": "positional",
+    "encoder_type": "standard",
+    "decoder_type": "standard",
+    "channel_mult_noise": 1,
+    "resample_filter": [
+      1,
+      1
+    ],
+    "model_channels": 64,
+    "channel_mult": [
+      1,
+      1,
+      1
+    ],
+    "class_name": "training.networks.EDMPrecond",
+    "dropout": 0.0,
+    "use_fp16": false
+  },
+  "loss_kwargs": {
+    "class_name": "training.loss.EDMLoss"
+  },
+  "optimizer_kwargs": {
+    "class_name": "torch.optim.Adam",
+    "lr": 0.0001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08
+  },
+  "total_kimg": 160,
+  "ema_halflife_kimg": 1,
+  "batch_size": 32,
+  "batch_gpu": 16,
+  "loss_scaling": 1.0,
+  "cudnn_benchmark": true,
+  "kimg_per_tick": 20,
+  "snapshot_ticks": 999,
+  "state_dump_ticks": 999,
+  "seed": 139,
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_tiny_imagenet_200_5000steps_edm40_2026-07-09_edm_rgb/train"
+}
+
+Output directory:        /root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_tiny_imagenet_200_5000steps_edm40_2026-07-09_edm_rgb/train
+Dataset path:            /root/autodl-tmp/CoFiTok/datasets/tiny_imagenet_200/derived/edm_rgb_train
+Class-conditional:       False
+Network architecture:    ddpmpp
+Preconditioning & loss:  edm
+Number of GPUs:          1
+Batch size:              32
+Mixed-precision:         False
+
+Creating output directory...
+Loading dataset...
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/utils/data/sampler.py:68: UserWarning: `data_source` argument is not used and will be removed in 2.2.0.You may still have custom implementation that utilizes it.
+  warnings.warn(
+Constructing network...
+
+EDMPrecond                Parameters  Buffers  Output shape      Datatype
+---                       ---         ---      ---               ---     
+model.map_noise           -           -        [16, 64]          float32 
+model.map_layer0          16640       -        [16, 256]         float32 
+model.map_layer1          65792       -        [16, 256]         float32 
+model.enc.64x64_conv      1792        -        [16, 64, 64, 64]  float32 
+model.enc.64x64_block0    90560       -        [16, 64, 64, 64]  float32 
+model.enc.64x64_block1    90560       -        [16, 64, 64, 64]  float32 
+model.enc.64x64_block2    90560       -        [16, 64, 64, 64]  float32 
+model.enc.64x64_block3    90560       -        [16, 64, 64, 64]  float32 
+model.enc.32x32_down      94720       8        [16, 64, 32, 32]  float32 
+model.enc.32x32_block0    90560       -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block1    90560       -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block2    90560       -        [16, 64, 32, 32]  float32 
+model.enc.32x32_block3    90560       -        [16, 64, 32, 32]  float32 
+model.enc.16x16_down      94720       8        [16, 64, 16, 16]  float32 
+model.enc.16x16_block0    107328      -        [16, 64, 16, 16]  float32 
+model.enc.16x16_block1    107328      -        [16, 64, 16, 16]  float32 
+model.enc.16x16_block2    107328      -        [16, 64, 16, 16]  float32 
+model.enc.16x16_block3    107328      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_in0       107328      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_in1       90560       -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block0    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block1    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block2    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block3    135808      -        [16, 64, 16, 16]  float32 
+model.dec.16x16_block4    152576      -        [16, 64, 16, 16]  float32 
+model.dec.32x32_up        94720       8        [16, 64, 32, 32]  float32 
+model.dec.32x32_block0    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block1    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block2    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block3    135808      -        [16, 64, 32, 32]  float32 
+model.dec.32x32_block4    135808      -        [16, 64, 32, 32]  float32 
+model.dec.64x64_up        94720       8        [16, 64, 64, 64]  float32 
+model.dec.64x64_block0    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_block1    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_block2    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_block3    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_block4    135808      -        [16, 64, 64, 64]  float32 
+model.dec.64x64_aux_norm  128         -        [16, 64, 64, 64]  float32 
+model.dec.64x64_aux_conv  1731        -        [16, 3, 64, 64]   float32 
+<top-level>               -           -        [16, 3, 64, 64]   float32 
+---                       ---         ---      ---               ---     
+Total                     3870531     32       -                 -       
+
+Setting up optimizer...
+Training for 160 kimg...
+
+tick 0     kimg 0.0       time 5s           sec/tick 0.4     sec/kimg 12.80   maintenance 4.5    cpumem 2.01   gpumem 2.81   reserved 3.09  
+tick 1     kimg 20.0      time 58s          sec/tick 52.6    sec/kimg 2.63    maintenance 0.1    cpumem 2.09   gpumem 1.93   reserved 2.18  
+tick 2     kimg 40.0      time 1m 47s       sec/tick 48.9    sec/kimg 2.45    maintenance 0.0    cpumem 2.09   gpumem 1.93   reserved 2.18  
+tick 3     kimg 60.0      time 2m 35s       sec/tick 48.5    sec/kimg 2.43    maintenance 0.0    cpumem 2.09   gpumem 1.93   reserved 2.18  
+tick 4     kimg 80.0      time 3m 28s       sec/tick 52.7    sec/kimg 2.64    maintenance 0.0    cpumem 2.09   gpumem 1.93   reserved 2.18  
+tick 5     kimg 100.0     time 4m 20s       sec/tick 52.5    sec/kimg 2.63    maintenance 0.0    cpumem 2.09   gpumem 1.93   reserved 2.18  
+tick 6     kimg 120.0     time 5m 13s       sec/tick 52.9    sec/kimg 2.64    maintenance 0.0    cpumem 2.09   gpumem 1.93   reserved 2.18  
+tick 7     kimg 140.0     time 6m 07s       sec/tick 53.4    sec/kimg 2.67    maintenance 0.0    cpumem 2.09   gpumem 1.93   reserved 2.18  
+tick 8     kimg 160.0     time 7m 00s       sec/tick 53.2    sec/kimg 2.66    maintenance 0.0    cpumem 2.09   gpumem 1.93   reserved 2.18  
+
+Exiting...
+[rank0]:[W710 00:55:45.161635017 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+[rank0]:[W710 00:55:48.104063416 ProcessGroupNCCL.cpp:4718] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 as device used by this process is currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. You can pecify device_id in init_process_group() to force use of a particular device.
+Loading network from "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_tiny_imagenet_200_5000steps_edm40_2026-07-09_edm_rgb/train/network-snapshot-000160.pkl"...
+Generating 1024 images to "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_tiny_imagenet_200_5000steps_edm40_2026-07-09_edm_rgb/samples_png"...
+  0%|          | 0/16 [00:00<?, ?batch/s]  6%|▋         | 1/16 [00:02<00:36,  2.47s/batch] 12%|█▎        | 2/16 [00:04<00:30,  2.19s/batch] 19%|█▉        | 3/16 [00:06<00:27,  2.10s/batch] 25%|██▌       | 4/16 [00:08<00:24,  2.06s/batch] 31%|███▏      | 5/16 [00:10<00:22,  2.04s/batch] 38%|███▊      | 6/16 [00:12<00:20,  2.02s/batch] 44%|████▍     | 7/16 [00:14<00:18,  2.01s/batch] 50%|█████     | 8/16 [00:16<00:16,  2.01s/batch] 56%|█████▋    | 9/16 [00:18<00:14,  2.00s/batch] 62%|██████▎   | 10/16 [00:20<00:12,  2.00s/batch] 69%|██████▉   | 11/16 [00:22<00:10,  2.00s/batch] 75%|███████▌  | 12/16 [00:24<00:07,  2.00s/batch] 81%|████████▏ | 13/16 [00:26<00:05,  2.00s/batch] 88%|████████▊ | 14/16 [00:28<00:03,  2.00s/batch] 94%|█████████▍| 15/16 [00:30<00:01,  2.00s/batch]100%|██████████| 16/16 [00:32<00:00,  2.00s/batch]100%|██████████| 16/16 [00:32<00:00,  2.03s/batch]
+Done.
+wrote /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/edm/edm_tiny_imagenet_200_5000steps_edm40_2026-07-09_edm_rgb/generated_quality/generated_quality_report.json
+edm_completed tiny_imagenet_200 /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/edm/edm_tiny_imagenet_200_5000steps_edm40_2026-07-09_edm_rgb
+wrote artifacts/reports/baselines/summary_2026-07-09_plus_edm_tiny/baseline_summary.md
+wrote artifacts/reports/formal64_p0_horizontal_table_2026-07-09_tiny_external/formal64_paper_table.md
+p0_tiny_external_baseline_queue_done artifacts/reports/baselines/summary_2026-07-09_plus_edm_tiny artifacts/reports/formal64_p0_horizontal_table_2026-07-09_tiny_external

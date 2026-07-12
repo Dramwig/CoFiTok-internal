@@ -1,0 +1,528 @@
+{
+  "dataset": "imagenet_1k_64x64_hf",
+  "entries": [
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_deepsk_5k_seed2_2026-07-08",
+      "component_ablation": true,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_deepsk_5k_seed2_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "Deep synthesis",
+      "id": "deep_synthesis_seed103",
+      "seed": 103,
+      "sweep_values": {},
+      "token_count": 8,
+      "train": false,
+      "variant": "deep_synthesis"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/imagenet_1k_64x64_hf_k8_denoisepath_p150_light_deepsk_5k_cuda",
+      "component_ablation": true,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_deepsk_5k_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "Deep synthesis",
+      "id": "deep_synthesis_seed139",
+      "seed": 139,
+      "sweep_values": {},
+      "token_count": 8,
+      "train": false,
+      "variant": "deep_synthesis"
+    },
+    {
+      "architecture_control": true,
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/direct_dense_seed103",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_aaai27_direct_dense_5k_seed103_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "Parameter-matched direct dense",
+      "id": "direct_dense_seed103",
+      "seed": 103,
+      "sweep_values": {},
+      "token_count": 1,
+      "train": true,
+      "variant": "direct_dense"
+    },
+    {
+      "architecture_control": true,
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/direct_dense_seed139",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_aaai27_direct_dense_5k_seed139_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "Parameter-matched direct dense",
+      "id": "direct_dense_seed139",
+      "seed": 139,
+      "sweep_values": {},
+      "token_count": 1,
+      "train": true,
+      "variant": "direct_dense"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_5k_seed2_2026-07-08",
+      "component_ablation": true,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_5k_seed2_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "Endpoint-only factorized",
+      "id": "endpoint_only_seed103",
+      "seed": 103,
+      "sweep_values": {},
+      "token_count": 8,
+      "train": false,
+      "variant": "endpoint_only"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_5k_2026-07-08",
+      "component_ablation": true,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_5k_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "Endpoint-only factorized",
+      "id": "endpoint_only_seed139",
+      "seed": 139,
+      "sweep_values": {},
+      "token_count": 8,
+      "train": false,
+      "variant": "endpoint_only"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_2026-07-08",
+      "component_ablation": true,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "CoFiTok (full)",
+      "id": "full_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "lambda_component": 0.3,
+        "lambda_prefix": 0.15,
+        "progress_power": 1.5,
+        "token_count": 8
+      },
+      "token_count": 8,
+      "train": false,
+      "variant": "full"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_2026-07-08",
+      "component_ablation": true,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "CoFiTok (full)",
+      "id": "full_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "lambda_component": 0.3,
+        "lambda_prefix": 0.15,
+        "progress_power": 1.5,
+        "token_count": 8
+      },
+      "token_count": 8,
+      "train": false,
+      "variant": "full"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/lambda_component_010_seed103",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_lambda_component_010_5k_seed103_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$\\lambda_{\\mathrm{component}}=0.10$",
+      "id": "lambda_component_010_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "lambda_component": 0.1
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "lambda_component_010"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/lambda_component_010_seed139",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_lambda_component_010_5k_seed139_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$\\lambda_{\\mathrm{component}}=0.10$",
+      "id": "lambda_component_010_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "lambda_component": 0.1
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "lambda_component_010"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/lambda_component_060_seed103",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_lambda_component_060_5k_seed103_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$\\lambda_{\\mathrm{component}}=0.60$",
+      "id": "lambda_component_060_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "lambda_component": 0.6
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "lambda_component_060"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/lambda_component_060_seed139",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_lambda_component_060_5k_seed139_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$\\lambda_{\\mathrm{component}}=0.60$",
+      "id": "lambda_component_060_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "lambda_component": 0.6
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "lambda_component_060"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/lambda_prefix_005_seed103",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_lambda_prefix_005_5k_seed103_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$\\lambda_{\\mathrm{prefix}}=0.05$",
+      "id": "lambda_prefix_005_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "lambda_prefix": 0.05
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "lambda_prefix_005"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/lambda_prefix_005_seed139",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_lambda_prefix_005_5k_seed139_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$\\lambda_{\\mathrm{prefix}}=0.05$",
+      "id": "lambda_prefix_005_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "lambda_prefix": 0.05
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "lambda_prefix_005"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/lambda_prefix_030_seed103",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_lambda_prefix_030_5k_seed103_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$\\lambda_{\\mathrm{prefix}}=0.30$",
+      "id": "lambda_prefix_030_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "lambda_prefix": 0.3
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "lambda_prefix_030"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/lambda_prefix_030_seed139",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_lambda_prefix_030_5k_seed139_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$\\lambda_{\\mathrm{prefix}}=0.30$",
+      "id": "lambda_prefix_030_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "lambda_prefix": 0.3
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "lambda_prefix_030"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/no_path_component_seed103",
+      "component_ablation": true,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_no_path_component_5k_seed103_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "No path-component term",
+      "id": "no_path_component_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "lambda_component": 0.0
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "no_path_component"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/no_path_component_seed139",
+      "component_ablation": true,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_no_path_component_5k_seed139_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "No path-component term",
+      "id": "no_path_component_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "lambda_component": 0.0
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "no_path_component"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/no_path_prefix_seed103",
+      "component_ablation": true,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_no_path_prefix_5k_seed103_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "No path-prefix term",
+      "id": "no_path_prefix_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "lambda_prefix": 0.0
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "no_path_prefix"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/no_path_prefix_seed139",
+      "component_ablation": true,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_no_path_prefix_5k_seed139_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "No path-prefix term",
+      "id": "no_path_prefix_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "lambda_prefix": 0.0
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "no_path_prefix"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/progress_power_075_seed103",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_progress_power_075_5k_seed103_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$p=0.75$",
+      "id": "progress_power_075_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "progress_power": 0.75
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "progress_power_075"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/progress_power_075_seed139",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_progress_power_075_5k_seed139_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$p=0.75$",
+      "id": "progress_power_075_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "progress_power": 0.75
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "progress_power_075"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/progress_power_100_seed103",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_progress_power_100_5k_seed103_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$p=1.00$",
+      "id": "progress_power_100_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "progress_power": 1.0
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "progress_power_100"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/progress_power_100_seed139",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_progress_power_100_5k_seed139_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$p=1.00$",
+      "id": "progress_power_100_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "progress_power": 1.0
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "progress_power_100"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/progress_power_200_seed103",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_progress_power_200_5k_seed103_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$p=2.00$",
+      "id": "progress_power_200_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "progress_power": 2.0
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "progress_power_200"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/progress_power_200_seed139",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_progress_power_200_5k_seed139_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$p=2.00$",
+      "id": "progress_power_200_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "progress_power": 2.0
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "progress_power_200"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/progress_power_250_seed103",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_progress_power_250_5k_seed103_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$p=2.50$",
+      "id": "progress_power_250_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "progress_power": 2.5
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "progress_power_250"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/progress_power_250_seed139",
+      "component_ablation": false,
+      "config": "configs/ablations/aaai27_2026-07-11/train_imagenet64_hf_k8_aaai27_progress_power_250_5k_seed139_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "$p=2.50$",
+      "id": "progress_power_250_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "progress_power": 2.5
+      },
+      "token_count": 8,
+      "train": true,
+      "variant": "progress_power_250"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_simultaneous_5k_seed2_2026-07-08",
+      "component_ablation": true,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_simultaneous_5k_seed2_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "Simultaneous tokens",
+      "id": "simultaneous_seed103",
+      "seed": 103,
+      "sweep_values": {},
+      "token_count": 8,
+      "train": false,
+      "variant": "simultaneous"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_simultaneous_5k_2026-07-08",
+      "component_ablation": true,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_simultaneous_5k_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "Simultaneous tokens",
+      "id": "simultaneous_seed139",
+      "seed": 139,
+      "sweep_values": {},
+      "token_count": 8,
+      "train": false,
+      "variant": "simultaneous"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k16_denoisepath_p150_light_5k_seed2_2026-07-08",
+      "component_ablation": false,
+      "config": "configs/train_imagenet_1k_64x64_hf_k16_denoisepath_p150_light_5k_seed2_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "K=16",
+      "id": "token_count_16_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "token_count": 16
+      },
+      "token_count": 16,
+      "train": false,
+      "variant": "token_count_16"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k16_denoisepath_p150_light_5k_2026-07-08",
+      "component_ablation": false,
+      "config": "configs/train_imagenet_1k_64x64_hf_k16_denoisepath_p150_light_5k_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "K=16",
+      "id": "token_count_16_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "token_count": 16
+      },
+      "token_count": 16,
+      "train": false,
+      "variant": "token_count_16"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k4_denoisepath_p150_light_5k_seed2_2026-07-08",
+      "component_ablation": false,
+      "config": "configs/train_imagenet_1k_64x64_hf_k4_denoisepath_p150_light_5k_seed2_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "K=4",
+      "id": "token_count_4_seed103",
+      "seed": 103,
+      "sweep_values": {
+        "token_count": 4
+      },
+      "token_count": 4,
+      "train": false,
+      "variant": "token_count_4"
+    },
+    {
+      "checkpoint_dir": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k4_denoisepath_p150_light_5k_2026-07-08",
+      "component_ablation": false,
+      "config": "configs/train_imagenet_1k_64x64_hf_k4_denoisepath_p150_light_5k_cuda.json",
+      "dataset": "imagenet_1k_64x64_hf",
+      "display": "K=4",
+      "id": "token_count_4_seed139",
+      "seed": 139,
+      "sweep_values": {
+        "token_count": 4
+      },
+      "token_count": 4,
+      "train": false,
+      "variant": "token_count_4"
+    }
+  ],
+  "evaluation_protocol": {
+    "component_order": "ordered",
+    "evaluation_progress_power": 1.5,
+    "image_count": 1024,
+    "note": "All power-sweep models are scored against the same p=1.5 reference path.",
+    "split": "val",
+    "timestep": 500
+  },
+  "schema_version": 1,
+  "suite": "aaai27_component_and_hyperparameter_ablation_2026-07-11",
+  "suite_root": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11",
+  "training_protocol": {
+    "batch_size": 32,
+    "class_conditional": false,
+    "image_size": 64,
+    "seeds": [
+      103,
+      139
+    ],
+    "steps": 5000
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "axes": [
+    "lambda_prefix",
+    "lambda_component",
+    "progress_power",
+    "token_count"
+  ],
+  "outputs": [
+    "artifacts\\figures\\ablation_hyperparameters_2026-07-11\\aaai27_ablation_hyperparameters.pdf",
+    "artifacts\\figures\\ablation_hyperparameters_2026-07-11\\aaai27_ablation_hyperparameters.png"
+  ],
+  "protocol": {
+    "component_order": "ordered",
+    "evaluation_progress_power": 1.5,
+    "image_count": 1024,
+    "note": "All power-sweep models are scored against the same p=1.5 reference path.",
+    "split": "val",
+    "timestep": 500
+  },
+  "schema_version": 1,
+  "source_report": "artifacts\\reports\\aaai27_ablation_2026-07-11\\ablation_report.json",
+  "statistics": "mean +/- sample standard deviation over seeds 103 and 139",
+  "style": "Matplotlib; Okabe-Ito blue/orange; vector PDF and 300-DPI PNG"
+}

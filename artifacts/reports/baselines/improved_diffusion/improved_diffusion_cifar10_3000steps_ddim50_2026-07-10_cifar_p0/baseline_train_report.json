@@ -1,0 +1,29 @@
+{
+  "baseline": "improved_diffusion",
+  "checkpoints": {
+    "ema": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_cifar10_3000steps_ddim50_2026-07-10_cifar_p0/train/ema_0.9999_003000.pt",
+    "model": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_cifar10_3000steps_ddim50_2026-07-10_cifar_p0/train/model003000.pt",
+    "sample_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_cifar10_3000steps_ddim50_2026-07-10_cifar_p0/train/ema_0.9999_003000.pt"
+  },
+  "data_dir": "/root/autodl-tmp/CoFiTok/datasets/cifar10/derived/imagefolder/train",
+  "dataset": "cifar10",
+  "output_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_cifar10_3000steps_ddim50_2026-07-10_cifar_p0/train",
+  "parameters": {
+    "batch_size": 32,
+    "diffusion_steps": 1000,
+    "learning_rate": "1e-4",
+    "microbatch": 8,
+    "num_channels": 64,
+    "num_res_blocks": 2,
+    "train_steps": 3000
+  },
+  "repo": "/root/autodl-tmp/CoFiTok/baselines/repos/improved_diffusion",
+  "repo_commit": "1bc7bbbdc414d83d4abf2ad8cc1446dc36c4e4d5",
+  "report_type": "baseline_train",
+  "run_name": "improved_diffusion_cifar10_3000steps_ddim50_2026-07-10_cifar_p0",
+  "runtime": {
+    "finished_at": "2026-07-10T01:24:01+08:00",
+    "started_at": "2026-07-10T01:17:19+08:00"
+  },
+  "status": "completed"
+}

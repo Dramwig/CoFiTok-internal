@@ -1,0 +1,20 @@
+{
+  "counts": {
+    "copied_fallback": 0,
+    "grayscale_converted": 1821,
+    "rgb_hardlinked": 98179,
+    "skipped_existing": 0,
+    "source_total": 100000
+  },
+  "created_at": "2026-07-10T00:46:49+0800",
+  "dataset": "tiny_imagenet_200",
+  "derived_alias": "tiny_imagenet_200_edm_rgb_train",
+  "derived_train_dir": "/root/autodl-tmp/CoFiTok/datasets/tiny_imagenet_200/derived/edm_rgb_train",
+  "elapsed_seconds": 9.56258225440979,
+  "examples": {
+    "grayscale_converted": "/root/autodl-tmp/CoFiTok/datasets/tiny_imagenet_200/derived/edm_rgb_train/n01644900/images/n01644900_417.png",
+    "rgb_hardlinked": "/root/autodl-tmp/CoFiTok/datasets/tiny_imagenet_200/derived/edm_rgb_train/n01443537/images/n01443537_0.JPEG"
+  },
+  "reason": "EDM ImageFolderDataset asserts uniform RGB image shape and does not convert grayscale JPEGs to RGB.",
+  "source_train_dir": "/root/autodl-tmp/CoFiTok/datasets/tiny_imagenet_200/extracted/tiny-imagenet-200/train"
+}

@@ -1,0 +1,29 @@
+{
+  "baseline": "edm",
+  "checkpoints": {
+    "snapshot": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_imagenet_256_10pct_5000steps_edm40_2026-07-10_imagenet256_10pct_p0/train/network-snapshot-000020.pkl"
+  },
+  "data_dir": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/train",
+  "dataset": "imagenet_256_10pct",
+  "output_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_imagenet_256_10pct_5000steps_edm40_2026-07-10_imagenet256_10pct_p0/train",
+  "parameters": {
+    "arch": "ddpmpp",
+    "batch_gpu": 2,
+    "batch_size": 4,
+    "cbase": 32,
+    "cres": "1,1,1",
+    "learning_rate": "1e-4",
+    "precond": "edm",
+    "train_mimg": 0.02,
+    "train_steps": 5000
+  },
+  "repo": "/root/autodl-tmp/CoFiTok/baselines/repos/edm",
+  "repo_commit": "008a4e5316c8e3bfe61a62f874bddba254295afb",
+  "report_type": "baseline_train",
+  "run_name": "edm_imagenet_256_10pct_5000steps_edm40_2026-07-10_imagenet256_10pct_p0",
+  "runtime": {
+    "finished_at": "2026-07-10T02:51:55+08:00",
+    "started_at": "2026-07-10T02:45:57+08:00"
+  },
+  "status": "completed"
+}

@@ -1,0 +1,303 @@
+{
+  "artifacts": {
+    "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_channelmask_soft_energy_1k_2026-07-07/checkpoint_final.pt",
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_channelmask_soft_energy_1k_2026-07-07/prefix_final.png"
+  },
+  "config": {
+    "data": {
+      "batch_size": 64,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "cifar10",
+      "image_size": 32,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "energy_budget_weight": 5.0,
+      "energy_target": [
+        0.65,
+        0.22,
+        0.09,
+        0.04
+      ],
+      "epsilon_weight": 1.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.05,
+      "prefix_weight": 0.25,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 32,
+      "predictor_depth": 3,
+      "synthesis_active_token_channels": [
+        8,
+        12,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 4
+    },
+    "name": "train_cifar10_k4_channelmask_soft_energy_1k_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 100,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 23,
+      "steps": 1000
+    }
+  },
+  "final_losses": {
+    "energy_budget": 0.029810603708028793,
+    "epsilon": 0.1621452271938324,
+    "grad_norm": 291.62408447265625,
+    "monotonic": 0.0,
+    "prefix": 35.2682991027832,
+    "residual_component": 0.0,
+    "sampled_budget": 0.0,
+    "sampled_component": 0.0,
+    "sampled_prefix": 0.0,
+    "tail_floor": 0.0,
+    "total": 9.128273010253906,
+    "zero_token": 0.0
+  },
+  "history": [
+    {
+      "energy_budget": 0.0953909158706665,
+      "epsilon": 1.032597303390503,
+      "grad_norm": 257.6534423828125,
+      "monotonic": 10.090128898620605,
+      "prefix": 1241.16455078125,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 1,
+      "tail_floor": 0.0,
+      "total": 312.3052062988281,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.02217783033847809,
+      "epsilon": 0.2984972894191742,
+      "grad_norm": 139.2161865234375,
+      "monotonic": 0.0,
+      "prefix": 396.8885498046875,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 100,
+      "tail_floor": 0.0,
+      "total": 99.63152313232422,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0065664309076964855,
+      "epsilon": 0.17469482123851776,
+      "grad_norm": 201.67044067382812,
+      "monotonic": 0.0,
+      "prefix": 121.17996978759766,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 200,
+      "tail_floor": 0.0,
+      "total": 30.502519607543945,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0037760487757623196,
+      "epsilon": 0.15930190682411194,
+      "grad_norm": 132.46774291992188,
+      "monotonic": 0.0,
+      "prefix": 152.37059020996094,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 300,
+      "tail_floor": 0.0,
+      "total": 38.27082824707031,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.004307124298065901,
+      "epsilon": 0.20262429118156433,
+      "grad_norm": 213.11773681640625,
+      "monotonic": 0.0,
+      "prefix": 77.54171752929688,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 400,
+      "tail_floor": 0.0,
+      "total": 19.609588623046875,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.010690990835428238,
+      "epsilon": 0.15845058858394623,
+      "grad_norm": 142.12713623046875,
+      "monotonic": 0.0,
+      "prefix": 69.91232299804688,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 500,
+      "tail_floor": 0.0,
+      "total": 17.689987182617188,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.018065789714455605,
+      "epsilon": 0.22040900588035583,
+      "grad_norm": 173.9136199951172,
+      "monotonic": 0.0,
+      "prefix": 59.81486511230469,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 600,
+      "tail_floor": 0.0,
+      "total": 15.26445484161377,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.02201782539486885,
+      "epsilon": 0.20443837344646454,
+      "grad_norm": 182.6159210205078,
+      "monotonic": 0.0,
+      "prefix": 64.9700698852539,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 700,
+      "tail_floor": 0.0,
+      "total": 16.557044982910156,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.024863436818122864,
+      "epsilon": 0.2159731388092041,
+      "grad_norm": 408.7986145019531,
+      "monotonic": 0.0,
+      "prefix": 83.61470794677734,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 800,
+      "tail_floor": 0.0,
+      "total": 21.243967056274414,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.02774285525083542,
+      "epsilon": 0.24292981624603271,
+      "grad_norm": 95.03893280029297,
+      "monotonic": 0.0,
+      "prefix": 29.48401641845703,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 900,
+      "tail_floor": 0.0,
+      "total": 7.75264835357666,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.029810603708028793,
+      "epsilon": 0.1621452271938324,
+      "grad_norm": 291.62408447265625,
+      "monotonic": 0.0,
+      "prefix": 35.2682991027832,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 1000,
+      "tail_floor": 0.0,
+      "total": 9.128273010253906,
+      "zero_token": 0.0
+    }
+  ],
+  "prefix_summary": {
+    "active_tail_tokens": 1,
+    "component_energy": [
+      0.9137362241744995,
+      0.05296936631202698,
+      0.002476711291819811,
+      0.0007361461757682264
+    ],
+    "component_energy_ratio": [
+      0.9420753116943777,
+      0.05461218561597344,
+      0.0025535252959091883,
+      0.0007589773937396564
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.242479607462883,
+      "random_token_component_energy": 0.13503505289554596,
+      "shuffled_component_mse": 0.48566073179244995,
+      "zero_token_component_energy": 0.0
+    },
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_channelmask_soft_energy_1k_2026-07-07/prefix_final.png",
+    "head_energy_ratio": 0.9420753116943777,
+    "prefix_mse_to_clean": [
+      0.9448797106742859,
+      0.41216859221458435,
+      0.3918454349040985,
+      0.381460040807724
+    ],
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4"
+    ],
+    "tail_energy_ratio": 0.05792468830562228,
+    "timestep": 500
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 8.400179862976074,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

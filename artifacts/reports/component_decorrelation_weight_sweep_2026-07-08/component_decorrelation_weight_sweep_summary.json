@@ -1,0 +1,194 @@
+{
+  "decision": {
+    "best_current_probe": "decor_0.005",
+    "next": "Run decor_0.005 on Tiny ImageNet K8 light, then repeat CIFAR seed2 if Tiny does not regress.",
+    "not_default_yet": "This is one seed and one small dataset; promote only after Tiny/ImageNet-family confirmation and/or seed repeat.",
+    "reason": "It gives a measurable component-correlation reduction with the smallest ordered path-AUC penalty and no loss of effective token count in the 3k CIFAR probe."
+  },
+  "rows": {
+    "baseline": {
+      "component_max_abs_cosine": 0.7733059525489807,
+      "component_mean_abs_cosine": 0.6344606876373291,
+      "delta_vs_baseline": {
+        "component_mean_abs_cosine": 0.0,
+        "ordered_path_auc": 0.0,
+        "quality_final_mse": 0.0,
+        "train_effective_tokens": 0.0
+      },
+      "orders": {
+        "ordered": {
+          "clean_auc": 4.660819200532777,
+          "effective_tokens": 6.834469953109744,
+          "final_clean_mse": 0.15455356240272522,
+          "path_auc": 0.09935658837535552,
+          "shuffled_final_mse_ratio": 151.91123258445836
+        },
+        "random": {
+          "clean_auc": 3.6281214548008784,
+          "effective_tokens": 6.834469953109744,
+          "final_clean_mse": 0.15455356240272522,
+          "path_auc": 0.2562830458794321,
+          "shuffled_final_mse_ratio": 151.91123258445836
+        },
+        "reverse": {
+          "clean_auc": 2.287383286016328,
+          "effective_tokens": 6.834469953109744,
+          "final_clean_mse": 0.15455356240272522,
+          "path_auc": 0.6741522720881871,
+          "shuffled_final_mse_ratio": 151.91123258445836
+        }
+      },
+      "quality_final_mse": 0.15311462059617043,
+      "quality_final_psnr_db": 14.170433287742334,
+      "quality_lowres_frechet_proxy": 1.8490533124044364,
+      "quality_lowres_frechet_proxy_auc": 5.597029080623257,
+      "quality_mse_auc": 6.722057551766436,
+      "train_active_tail_tokens": 7,
+      "train_clean_auc": 4.704517333635262,
+      "train_effective_tokens": 6.833542373674864,
+      "train_final_clean_mse": 0.15795044600963593,
+      "train_final_component_decorrelation_loss": null,
+      "train_late_half_energy_ratio": 0.7174600724137477,
+      "train_path_auc": 0.10032521281391382,
+      "weight": 0.0
+    },
+    "decor_0.005": {
+      "component_max_abs_cosine": 0.7381601333618164,
+      "component_mean_abs_cosine": 0.5164898037910461,
+      "delta_vs_baseline": {
+        "component_mean_abs_cosine": -0.11797088384628296,
+        "ordered_path_auc": 0.014217700410102091,
+        "quality_final_mse": -0.0001595430076122284,
+        "train_effective_tokens": 0.047458593269049665
+      },
+      "orders": {
+        "ordered": {
+          "clean_auc": 4.828194847064359,
+          "effective_tokens": 6.8818665502508525,
+          "final_clean_mse": 0.1542796939611435,
+          "path_auc": 0.11357428878545761,
+          "shuffled_final_mse_ratio": 152.10579188653924
+        },
+        "random": {
+          "clean_auc": 3.727800223444189,
+          "effective_tokens": 6.8818665502508525,
+          "final_clean_mse": 0.1542796939611435,
+          "path_auc": 0.2773772126861981,
+          "shuffled_final_mse_ratio": 152.10579188653924
+        },
+        "reverse": {
+          "clean_auc": 2.251183757824557,
+          "effective_tokens": 6.8818665502508525,
+          "final_clean_mse": 0.1542796939611435,
+          "path_auc": 0.7370045642767634,
+          "shuffled_final_mse_ratio": 152.10579188653924
+        }
+      },
+      "quality_final_mse": 0.1529550775885582,
+      "quality_final_psnr_db": 14.174960926676786,
+      "quality_lowres_frechet_proxy": 1.8497401642485891,
+      "quality_lowres_frechet_proxy_auc": 5.6340514952634635,
+      "quality_mse_auc": 6.988716844469309,
+      "train_active_tail_tokens": 7,
+      "train_clean_auc": 4.872911688472543,
+      "train_effective_tokens": 6.881000966943914,
+      "train_final_clean_mse": 0.15763910114765167,
+      "train_final_component_decorrelation_loss": 0.4948486089706421,
+      "train_late_half_energy_ratio": 0.7031399795945548,
+      "train_path_auc": 0.11481736839881965,
+      "weight": 0.005
+    },
+    "decor_0.01": {
+      "component_max_abs_cosine": 0.7174272537231445,
+      "component_mean_abs_cosine": 0.4308581437383379,
+      "delta_vs_baseline": {
+        "component_mean_abs_cosine": -0.20360254389899118,
+        "ordered_path_auc": 0.031452873588672714,
+        "quality_final_mse": -0.0015505366027355194,
+        "train_effective_tokens": -0.05799094883910172
+      },
+      "orders": {
+        "ordered": {
+          "clean_auc": 4.972700833209923,
+          "effective_tokens": 6.779817320513227,
+          "final_clean_mse": 0.1528787463903427,
+          "path_auc": 0.13080946196402823,
+          "shuffled_final_mse_ratio": 154.07977547485413
+        },
+        "random": {
+          "clean_auc": 3.805393745856626,
+          "effective_tokens": 6.779817320513227,
+          "final_clean_mse": 0.1528787463903427,
+          "path_auc": 0.3013179142560278,
+          "shuffled_final_mse_ratio": 154.07977547485413
+        },
+        "reverse": {
+          "clean_auc": 2.2026528354201997,
+          "effective_tokens": 6.779817320513227,
+          "final_clean_mse": 0.1528787612915039,
+          "path_auc": 0.8102710055453437,
+          "shuffled_final_mse_ratio": 154.07976045662954
+        }
+      },
+      "quality_final_mse": 0.1515640839934349,
+      "quality_final_psnr_db": 14.214636922182997,
+      "quality_lowres_frechet_proxy": 1.8477107793314884,
+      "quality_lowres_frechet_proxy_auc": 5.6726621188079775,
+      "quality_mse_auc": 7.238050335397323,
+      "train_active_tail_tokens": 7,
+      "train_clean_auc": 5.017047709652355,
+      "train_effective_tokens": 6.775551424835762,
+      "train_final_clean_mse": 0.1563389003276825,
+      "train_final_component_decorrelation_loss": 0.41779568791389465,
+      "train_late_half_energy_ratio": 0.6956539546160527,
+      "train_path_auc": 0.1321538080062185,
+      "weight": 0.01
+    },
+    "decor_0.05": {
+      "component_max_abs_cosine": 0.6491080522537231,
+      "component_mean_abs_cosine": 0.20499103835650853,
+      "delta_vs_baseline": {
+        "component_mean_abs_cosine": -0.42946964928082054,
+        "ordered_path_auc": 0.1412454658587064,
+        "quality_final_mse": -0.003676407039165497,
+        "train_effective_tokens": -0.8449990198406123
+      },
+      "orders": {
+        "ordered": {
+          "clean_auc": 5.45705189130136,
+          "effective_tokens": 5.983867575936805,
+          "final_clean_mse": 0.15014196932315826,
+          "path_auc": 0.24060205423406192,
+          "shuffled_final_mse_ratio": 157.00375580955546
+        },
+        "random": {
+          "clean_auc": 3.699327607239996,
+          "effective_tokens": 5.983867575936805,
+          "final_clean_mse": 0.15014198422431946,
+          "path_auc": 0.5798858808619636,
+          "shuffled_final_mse_ratio": 157.0037656346487
+        },
+        "reverse": {
+          "clean_auc": 2.1759340912103653,
+          "effective_tokens": 5.983867575936805,
+          "final_clean_mse": 0.15014198422431946,
+          "path_auc": 1.039993703365326,
+          "shuffled_final_mse_ratio": 157.0037402273831
+        }
+      },
+      "quality_final_mse": 0.14943821355700493,
+      "quality_final_psnr_db": 14.275983241374231,
+      "quality_lowres_frechet_proxy": 1.8040852590875922,
+      "quality_lowres_frechet_proxy_auc": 5.923978395717779,
+      "quality_mse_auc": 8.070446900402507,
+      "train_active_tail_tokens": 6,
+      "train_clean_auc": 5.501738375851086,
+      "train_effective_tokens": 5.988543353834252,
+      "train_final_clean_mse": 0.15439531207084656,
+      "train_final_component_decorrelation_loss": 0.20445653796195984,
+      "train_late_half_energy_ratio": 0.7114975264521388,
+      "train_path_auc": 0.2429318997476782,
+      "weight": 0.05
+    }
+  }
+}

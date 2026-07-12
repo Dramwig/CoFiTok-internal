@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "baseline": "mar",
+  "status": "official_pth_ema_50k_running",
+  "matrix_status": "protocol_blocked_for_all_dataset_retraining",
+  "paper_table_role": "secondary_related_method_only",
+  "dataset_alias": "imagenet_256",
+  "resolution": 256,
+  "conditioning": "ImageNet class-conditional",
+  "repo_dir": "/root/autodl-tmp/CoFiTok/baselines/repos/mar",
+  "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only",
+  "official_assets": {
+    "download_script": "util/download.py",
+    "hf_model_card": "https://huggingface.co/jadechoghari/mar",
+    "mar_b": "https://www.dropbox.com/scl/fi/f6dpuyjb7fudzxcyhvrhk/checkpoint-last.pth?rlkey=a6i4bo71vhfo4anp33n9ukujb&dl=0",
+    "mar_l": "https://www.dropbox.com/scl/fi/pxacc5b2mrt3ifw4cah6k/checkpoint-last.pth?rlkey=m48ovo6g7ivcbosrbdaz0ehqt&dl=0",
+    "mar_h": "https://www.dropbox.com/scl/fi/1qmfx6fpy3k7j9vcjjs3s/checkpoint-last.pth?rlkey=4lae281yzxb406atp32vzc83o&dl=0"
+  },
+  "verified_assets": {
+    "hf_repo_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo",
+    "mar_base_safetensors_bytes": 831736456,
+    "kl16_safetensors_bytes": 265856244,
+    "generation_smoke_report": "artifacts/reports/baselines/mar/official_hf_imagenet256_smoke_1_2026-07-10/baseline_eval_report.json",
+    "community_adapter": "scripts/baselines/sample_mar_hf_official.py",
+    "community_non_ema_50k_report": "artifacts/reports/baselines/mar/community_non_ema_50k_2026-07-11/baseline_eval_report.json",
+    "community_conversion_audit": "artifacts/reports/baselines/mar/community_conversion_audit_2026-07-11.json",
+    "official_pth_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/official_pth",
+    "official_model_sha256": "7e970a33bc90353e2fabe3498ed1f2d194dd8d17cd387665f80b2984dfca538c",
+    "official_vae_sha256": "34ce001bcfffb7af67ec8af1e683a30d7bd45760855ddc7deedc1330f2cfd38f",
+    "official_adapter": "scripts/baselines/sample_mar_official_pth.py",
+    "official_runbook": "artifacts/runbooks/mar_official_pth_ema_50k_2026-07-11.sh"
+  },
+  "entrypoints": {
+    "evaluate": "main_mar.py --evaluate",
+    "metrics": "engine_mar.py torch_fidelity with fid_stats/adm_in256_stats.npz"
+  },
+  "default_eval": {
+    "model": "MAR-B",
+    "num_images": 50000,
+    "num_iter": 256,
+    "num_sampling_steps": 100,
+    "cfg": 2.9,
+    "temperature": 1.0,
+    "batch_size": 768,
+    "decode_batch_size": 16,
+    "precision": "fp16"
+  },
+  "limitations": [
+    "Official models are ImageNet-256 class-conditional pretrained checkpoints.",
+    "This is not same-dataset retraining under the CoFiTok P0 5k-step budget.",
+    "Use only as a secondary official-checkpoint related-method row.",
+    "The completed community safetensors 50K used non-EMA checkpoint['model'] and is audit-only.",
+    "The pinned LTH14 checkpoint['model_ema'] 50K run is active; metrics remain pending until ADM evaluation completes."
+  ]
+}

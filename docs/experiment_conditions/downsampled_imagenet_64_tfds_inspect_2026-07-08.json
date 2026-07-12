@@ -1,0 +1,11 @@
+{
+  "builder_version": "2.0.0",
+  "dataset_alias": "downsampled_imagenet_64",
+  "dataset_size": "Unknown size",
+  "download_size": "Unknown size",
+  "features": "FeaturesDict({\n    'image': Image(shape=(None, None, 3), dtype=uint8),\n})",
+  "source_loader": "downsampled_imagenet",
+  "splits": {},
+  "supervised_keys": "None",
+  "tfds_version": "4.9.10"
+}

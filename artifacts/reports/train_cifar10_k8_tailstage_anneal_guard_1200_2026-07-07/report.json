@@ -1,0 +1,227 @@
+{
+  "artifacts": {
+    "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_tailstage_anneal_guard_1200_2026-07-07/checkpoint_final.pt",
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_tailstage_anneal_guard_1200_2026-07-07/prefix_final.png"
+  },
+  "config": {
+    "data": {
+      "batch_size": 64,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "cifar10",
+      "image_size": 32,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_weight": 1.0,
+      "group_residual_size": 0,
+      "group_residual_weight": 0.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.02,
+      "prefix_weight": 0.03,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 32,
+      "predictor_depth": 3,
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 8
+    },
+    "name": "train_cifar10_k8_tailstage_anneal_guard_1200_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0001,
+      "log_interval": 200,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 31,
+      "steps": 1200
+    }
+  },
+  "final_losses": {
+    "epsilon": 0.08867114782333374,
+    "grad_norm": 0.4305174648761749,
+    "monotonic": 0.07057980448007584,
+    "prefix": 10.336516380310059,
+    "tail": 0.08867114782333374,
+    "total": 0.4001782238483429
+  },
+  "history": [
+    {
+      "epsilon": 0.1114221140742302,
+      "grad_norm": 0.9243410229682922,
+      "monotonic": 0.4182947874069214,
+      "prefix": 6.601899147033691,
+      "step": 1,
+      "tail": 0.1114221140742302,
+      "total": 0.3178449869155884
+    },
+    {
+      "epsilon": 0.11882136762142181,
+      "grad_norm": 0.5220337510108948,
+      "monotonic": 0.13616470992565155,
+      "prefix": 8.811314582824707,
+      "step": 200,
+      "tail": 0.11882136762142181,
+      "total": 0.3858840763568878
+    },
+    {
+      "epsilon": 0.06792158633470535,
+      "grad_norm": 0.13100272417068481,
+      "monotonic": 0.02497599832713604,
+      "prefix": 2.723677635192871,
+      "step": 400,
+      "tail": 0.06792158633470535,
+      "total": 0.1501314342021942
+    },
+    {
+      "epsilon": 0.12113852798938751,
+      "grad_norm": 0.3527725338935852,
+      "monotonic": 0.10644300282001495,
+      "prefix": 10.56418514251709,
+      "step": 600,
+      "tail": 0.12113852798938751,
+      "total": 0.44019296765327454
+    },
+    {
+      "epsilon": 0.1070345863699913,
+      "grad_norm": 0.11716701090335846,
+      "monotonic": 0.05783609300851822,
+      "prefix": 6.379915237426758,
+      "step": 800,
+      "tail": 0.1070345863699913,
+      "total": 0.29958876967430115
+    },
+    {
+      "epsilon": 0.12346033751964569,
+      "grad_norm": 0.17708325386047363,
+      "monotonic": 0.05328863114118576,
+      "prefix": 6.983973503112793,
+      "step": 1000,
+      "tail": 0.12346033751964569,
+      "total": 0.33404532074928284
+    },
+    {
+      "epsilon": 0.08867114782333374,
+      "grad_norm": 0.4305174648761749,
+      "monotonic": 0.07057980448007584,
+      "prefix": 10.336516380310059,
+      "step": 1200,
+      "tail": 0.08867114782333374,
+      "total": 0.4001782238483429
+    }
+  ],
+  "prefix_summary": {
+    "active_tail_tokens": 1,
+    "component_energy": [
+      1.0199017524719238,
+      0.020896589383482933,
+      0.0023023521061986685,
+      0.00023502390831708908,
+      0.001137290382757783,
+      0.00021925359033048153,
+      0.0002315810415893793,
+      0.0006768457824364305
+    ],
+    "component_energy_ratio": [
+      0.9754218446165385,
+      0.01998524829791623,
+      0.0022019420330850934,
+      0.00022477405654419057,
+      0.0010876909274109556,
+      0.0002096915129330994,
+      0.00022148133996029195,
+      0.0006473272156116251
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.13070008158683777,
+      "random_token_component_energy": 0.06958085298538208,
+      "shuffled_component_mse": 0.2634428143501282,
+      "zero_token_component_energy": 0.0
+    },
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_tailstage_anneal_guard_1200_2026-07-07/prefix_final.png",
+    "late_half_energy_ratio": 0.0021661909959159718,
+    "prefix_mse_to_clean": [
+      0.5200116634368896,
+      0.25702258944511414,
+      0.22789673507213593,
+      0.22270163893699646,
+      0.21815705299377441,
+      0.21476100385189056,
+      0.2103717029094696,
+      0.19014975428581238
+    ],
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4",
+      "prefix_5",
+      "prefix_6",
+      "prefix_7",
+      "prefix_8"
+    ],
+    "tail_energy_ratio": 0.024578155383461486,
+    "timestep": 500
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 9.48937439918518,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  },
+  "tail_start": 4,
+  "trainable_names": [
+    "predictor.token_heads.4",
+    "synthesis.synthesizers.4",
+    "predictor.token_heads.5",
+    "synthesis.synthesizers.5",
+    "predictor.token_heads.6",
+    "synthesis.synthesizers.6",
+    "predictor.token_heads.7",
+    "synthesis.synthesizers.7",
+    "predictor.feedback.4",
+    "predictor.feedback.5",
+    "predictor.feedback.6"
+  ],
+  "warm_start_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_tailstage_warm_800_2026-07-07/checkpoint_final.pt"
+}

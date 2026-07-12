@@ -1,0 +1,68 @@
+{
+  "checks": {
+    "broad_short_budget_path_auc": true,
+    "defined_protocols_complete": true,
+    "imagenet256_confirmatory_all_gates": true,
+    "matched_20k_endpoint_cost_within_5pct": true,
+    "matched_20k_two_seed_path_auc": true,
+    "official_related_50k_complete": true,
+    "restricted_zero_token_contract": true
+  },
+  "decision": {
+    "broad_generation_superiority_supported": false,
+    "scoped_top_tier_evidence_ready": true,
+    "supported_claim": "ordered restricted dense-noise factorization with prefix-controllable denoising",
+    "top_tier_acceptance_guaranteed": false
+  },
+  "interpretation": "A true scoped_top_tier_evidence_ready value means the experimental package is coherent enough to support the scoped submission claim. It is not a prediction or guarantee of venue acceptance.",
+  "observations": {
+    "generation": {
+      "cofitok_average_inception_rank": 2.625,
+      "cofitok_average_lowres_rank": 3.125,
+      "cofitok_best_inception_count": 1,
+      "cofitok_best_lowres_count": 0,
+      "dataset_count": 8,
+      "inception_wins": {
+        "CoFiTok": 1,
+        "Direct dense epsilon": 2,
+        "EDM": 5
+      },
+      "lowres_wins": {
+        "Direct dense epsilon": 1,
+        "EDM": 7
+      }
+    },
+    "imagenet256_confirmatory": {
+      "available": true,
+      "exhaustive_order_pair_passes": [
+        true,
+        true
+      ],
+      "gate_count": 7,
+      "gate_pass_count": 7,
+      "mean_endpoint_relative_change": -0.06725721563239451,
+      "ordered_ranks_of_24": [
+        1,
+        1
+      ],
+      "overall_pass": true,
+      "text": "ImageNet-256 K4 20k confirmatory gates: 7/7 passed; overall PASS; mean endpoint-MSE change -6.73%; ordered ranks among all 24 permutations 1/1."
+    },
+    "literal_cartesian_product_complete": false,
+    "official_related_completed": [
+      "D-AR",
+      "MAR",
+      "ReTok"
+    ],
+    "repeated_endpoint_mse_change": 0.04197113085553089,
+    "repeated_path_auc": "4/4",
+    "short_path_auc": "8/8"
+  },
+  "residual_risks": [
+    "The strongest evidence is mechanistic prefix control, not generation SOTA.",
+    "Architecture-incompatible D-AR/MAR/ReTok rows are official eval-only, not matched-dataset/step retraining.",
+    "The main repeated experiments still use small backbones and two seeds.",
+    "ReTok's pinned repository does not declare a license; do not redistribute its code or weights."
+  ],
+  "schema_version": 1
+}

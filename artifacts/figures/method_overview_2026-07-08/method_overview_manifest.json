@@ -1,0 +1,31 @@
+{
+  "artifact_count": 2,
+  "canvas": {
+    "height": 1080,
+    "width": 1760
+  },
+  "constraints": [
+    "S_k receives only the current token z_k.",
+    "S_k receives no x_t, timestep, label, prompt, previous tokens, skips, or learned constants.",
+    "Default S_k is bias-free, shallow, local, and condition-free.",
+    "S_k(0)=0 by construction for the restricted operator.",
+    "CoFiTok tokens are dense noise components, not VAE-style image latents."
+  ],
+  "figures": [
+    {
+      "format": "png",
+      "path": "artifacts/figures/method_overview_2026-07-08/method_overview.png",
+      "role": "raster draft"
+    },
+    {
+      "format": "svg",
+      "path": "artifacts/figures/method_overview_2026-07-08/method_overview.svg",
+      "role": "vector draft"
+    }
+  ],
+  "notes": [
+    "This schematic is a paper-facing method overview, not a numeric result.",
+    "The expressive predictor T can be upgraded without changing the restricted S_k interface.",
+    "The blocked dashed path marks information that must not enter S_k in the default method."
+  ]
+}

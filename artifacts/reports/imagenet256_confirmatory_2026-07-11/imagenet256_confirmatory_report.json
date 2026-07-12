@@ -1,0 +1,181 @@
+{
+  "claim_scope": "Tests ordered denoising-path factorization and endpoint preservation; generation Frechet-style metrics are exploratory.",
+  "dataset": "imagenet_256",
+  "decision": {
+    "endpoint_order_relative_spreads": [
+      5.138878231747602e-10,
+      3.7042967881440798e-09
+    ],
+    "endpoint_relative_changes": [
+      -0.08203588233627201,
+      -0.052478548928517
+    ],
+    "exhaustive_endpoint_pair_passes": [
+      true,
+      true
+    ],
+    "exhaustive_order_pair_passes": [
+      true,
+      true
+    ],
+    "gates": {
+      "all_24_permutation_endpoint_sums_preserved": true,
+      "endpoint_sum_preserved_across_orders": true,
+      "exhaustive_nonidentity_and_reverse_ci_positive_both_seeds": true,
+      "mean_endpoint_mse_within_plus_5pct_of_dense_monolithic": true,
+      "path_auc_lower_than_endpoint_only_both_seeds": true,
+      "random_and_reverse_worse_both_seeds": true,
+      "zero_token_ratio_zero_both_seeds": true
+    },
+    "mean_endpoint_relative_change": -0.06725721563239451,
+    "overall_pass": true,
+    "path_auc_pair_passes": [
+      true,
+      true
+    ],
+    "random_order_pair_passes": [
+      true,
+      true
+    ],
+    "reverse_order_pair_passes": [
+      true,
+      true
+    ],
+    "zero_ratio_pair_passes": [
+      true,
+      true
+    ]
+  },
+  "fixed_timestep": 500,
+  "generation_rows": [
+    {
+      "inception_frechet": 370.36724530934623,
+      "lowres_frechet_proxy": 11.161941710894869,
+      "method": "endpoint_only_factorized",
+      "real_count": 10000,
+      "report": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_dense_20k_seed103_4096_ddim50_2026-07-11_imagenet256_20k_repeat/generated_quality_report.json",
+      "sample_count": 4096,
+      "seed": 103
+    },
+    {
+      "inception_frechet": 449.3912519709745,
+      "lowres_frechet_proxy": 9.739615005733533,
+      "method": "dense_monolithic",
+      "real_count": 10000,
+      "report": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_dense_monolithic_20k_seed103_4096_ddim50_2026-07-11_imagenet256_20k_repeat/generated_quality_report.json",
+      "sample_count": 4096,
+      "seed": 103
+    },
+    {
+      "inception_frechet": 349.4075741657879,
+      "lowres_frechet_proxy": 10.823176271672082,
+      "method": "cofitok",
+      "real_count": 10000,
+      "report": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_cofitok_20k_seed103_4096_ddim50_2026-07-11_imagenet256_20k_repeat/generated_quality_report.json",
+      "sample_count": 4096,
+      "seed": 103
+    },
+    {
+      "inception_frechet": 404.6116105317665,
+      "lowres_frechet_proxy": 8.975323132672164,
+      "method": "endpoint_only_factorized",
+      "real_count": 10000,
+      "report": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_dense_20k_seed139_4096_ddim50_2026-07-11_imagenet256_20k_repeat/generated_quality_report.json",
+      "sample_count": 4096,
+      "seed": 139
+    },
+    {
+      "inception_frechet": 384.81262698201067,
+      "lowres_frechet_proxy": 10.559651261458043,
+      "method": "dense_monolithic",
+      "real_count": 10000,
+      "report": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_dense_monolithic_20k_seed139_4096_ddim50_2026-07-11_imagenet256_20k_repeat/generated_quality_report.json",
+      "sample_count": 4096,
+      "seed": 139
+    },
+    {
+      "inception_frechet": 356.9311305007452,
+      "lowres_frechet_proxy": 11.083898263457204,
+      "method": "cofitok",
+      "real_count": 10000,
+      "report": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_cofitok_20k_seed139_4096_ddim50_2026-07-11_imagenet256_20k_repeat/generated_quality_report.json",
+      "sample_count": 4096,
+      "seed": 139
+    }
+  ],
+  "generation_sample_count": 4096,
+  "protocol": "imagenet256_20k_two_seed_cofitok_endpoint_only_and_dense_monolithic",
+  "quality_image_count": 1024,
+  "resolution": 256,
+  "rows": [
+    {
+      "cofitok_endpoint_mse": 0.11326919667772017,
+      "cofitok_ordered_endpoint_mse": 0.11326919667772017,
+      "cofitok_ordered_path_auc": 0.06641658689113683,
+      "cofitok_random_endpoint_mse": 0.11326919664861634,
+      "cofitok_random_path_auc": 0.5130027620277057,
+      "cofitok_reverse_endpoint_mse": 0.11326919661951251,
+      "cofitok_reverse_path_auc": 0.7192099581055421,
+      "cofitok_zero_ratio": 0.0,
+      "dense_monolithic_endpoint_mse": 0.1233917475619819,
+      "dense_monolithic_zero_ratio": 0.0,
+      "endpoint_only_path_auc": 1.7879055001831148,
+      "exhaustive_endpoint_epsilon_sum_mse_max": 2.8951429436056744e-15,
+      "exhaustive_nonidentity_mean_path_auc": 0.3157271438034039,
+      "fraction_nonidentity_worse": 1.0,
+      "nonidentity_delta_ci_high": 0.24970843953196892,
+      "nonidentity_delta_ci_low": 0.24890990406311175,
+      "ordered_rank_of_24": 1,
+      "reverse_delta_ci_high": 0.6537241584752337,
+      "reverse_delta_ci_low": 0.6518592305103084,
+      "seed": 103
+    },
+    {
+      "cofitok_endpoint_mse": 0.11785164143657312,
+      "cofitok_ordered_endpoint_mse": 0.11785164143657312,
+      "cofitok_ordered_path_auc": 0.06784174639809255,
+      "cofitok_random_endpoint_mse": 0.1178516416111961,
+      "cofitok_random_path_auc": 0.4711733152119753,
+      "cofitok_reverse_endpoint_mse": 0.11785164117463864,
+      "cofitok_reverse_path_auc": 0.6821424810380753,
+      "cofitok_zero_ratio": 0.0,
+      "dense_monolithic_endpoint_mse": 0.12437886372208595,
+      "dense_monolithic_zero_ratio": 0.0,
+      "endpoint_only_path_auc": 1.4401473227286867,
+      "exhaustive_endpoint_epsilon_sum_mse_max": 2.8842606878158247e-15,
+      "exhaustive_nonidentity_mean_path_auc": 0.30819661680004135,
+      "fraction_nonidentity_worse": 1.0,
+      "nonidentity_delta_ci_high": 0.24068664222249936,
+      "nonidentity_delta_ci_low": 0.24001727631984976,
+      "ordered_rank_of_24": 1,
+      "reverse_delta_ci_high": 0.6149839902558597,
+      "reverse_delta_ci_low": 0.6136027376895072,
+      "seed": 139
+    }
+  ],
+  "schema_version": 1,
+  "seeds": [
+    103,
+    139
+  ],
+  "source_reports": [
+    "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet256_cofitok_20k_seed103_ordered_1024_t500_2026-07-11_imagenet256_20k_repeat/quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet256_cofitok_20k_seed103_random_1024_t500_2026-07-11_imagenet256_20k_repeat/quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet256_cofitok_20k_seed103_reverse_1024_t500_2026-07-11_imagenet256_20k_repeat/quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet256_endpoint_only_20k_seed103_ordered_1024_t500_2026-07-11_imagenet256_20k_repeat/quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet256_dense_monolithic_20k_seed103_ordered_1024_t500_2026-07-11_imagenet256_20k_repeat/quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/order_permutations_imagenet256_cofitok_20k_seed103_1024_t500_2026-07-11_imagenet256_20k_repeat/order_permutation_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_dense_20k_seed103_4096_ddim50_2026-07-11_imagenet256_20k_repeat/generated_quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_dense_monolithic_20k_seed103_4096_ddim50_2026-07-11_imagenet256_20k_repeat/generated_quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_cofitok_20k_seed103_4096_ddim50_2026-07-11_imagenet256_20k_repeat/generated_quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet256_cofitok_20k_seed139_ordered_1024_t500_2026-07-11_imagenet256_20k_repeat/quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet256_cofitok_20k_seed139_random_1024_t500_2026-07-11_imagenet256_20k_repeat/quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet256_cofitok_20k_seed139_reverse_1024_t500_2026-07-11_imagenet256_20k_repeat/quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet256_endpoint_only_20k_seed139_ordered_1024_t500_2026-07-11_imagenet256_20k_repeat/quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet256_dense_monolithic_20k_seed139_ordered_1024_t500_2026-07-11_imagenet256_20k_repeat/quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/order_permutations_imagenet256_cofitok_20k_seed139_1024_t500_2026-07-11_imagenet256_20k_repeat/order_permutation_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_dense_20k_seed139_4096_ddim50_2026-07-11_imagenet256_20k_repeat/generated_quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_dense_monolithic_20k_seed139_4096_ddim50_2026-07-11_imagenet256_20k_repeat/generated_quality_report.json",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_cofitok_20k_seed139_4096_ddim50_2026-07-11_imagenet256_20k_repeat/generated_quality_report.json"
+  ]
+}

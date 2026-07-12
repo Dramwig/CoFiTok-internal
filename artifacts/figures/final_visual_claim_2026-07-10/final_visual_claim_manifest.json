@@ -1,0 +1,18 @@
+{
+  "inputs": {
+    "evidence": "artifacts/reports/paper_evidence_report_2026-07-10/paper_evidence_report.json",
+    "prefix_panel": "artifacts/figures/visual_panels_2026-07-08/prefix_comparison_20k.png",
+    "sk_diagnostic_panel": "artifacts/figures/visual_panels_2026-07-08/sk_diagnostic_panel.png"
+  },
+  "metrics": {
+    "cofitok_best_lowres_count": 0,
+    "cofitok_path_auc_better_than_dense": 8,
+    "dataset_count": 8,
+    "deep_synthesis_nonzero_zero_ratio_count": 8
+  },
+  "notes": [
+    "This panel summarizes visual evidence and machine-checked metrics from paper_evidence_report.json.",
+    "It supports the scoped claim: prefix-controllable dense-noise factorization, not generation SOTA."
+  ],
+  "path": "artifacts/figures/final_visual_claim_2026-07-10/cofitok_final_visual_claim_panel.png"
+}

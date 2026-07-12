@@ -1,0 +1,56 @@
+{
+  "data": {
+    "batch_size": 32,
+    "channels": 3,
+    "class_conditional": false,
+    "dataset": "imagenet_1k_64x64_hf",
+    "image_size": 64,
+    "num_workers": 2,
+    "root": "/root/autodl-tmp/CoFiTok/datasets"
+  },
+  "loss": {
+    "denoise_path_component_weight": 0.3,
+    "denoise_path_prefix_weight": 0.0,
+    "denoise_path_progress_power": 1.5,
+    "epsilon_weight": 1.0,
+    "monotonic_weight": 0.0,
+    "prefix_weight": 0.0
+  },
+  "model": {
+    "base_channels": 48,
+    "gamma_mode": "learned_scalar",
+    "image_channels": 3,
+    "image_size": 64,
+    "predictor_depth": 3,
+    "synthesis_active_token_channels": [
+      4,
+      4,
+      8,
+      8,
+      12,
+      12,
+      16,
+      16
+    ],
+    "synthesis_kernel_size": 3,
+    "token_channels": 16,
+    "token_count": 8
+  },
+  "name": "train_imagenet64_hf_k8_aaai27_no_path_prefix_5k_seed139_cuda",
+  "optimization": {
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "grad_clip_norm": 1.0,
+    "learning_rate": 0.0002,
+    "log_interval": 1000,
+    "visualization_count": 8,
+    "weight_decay": 0.0001
+  },
+  "runtime": {
+    "device": "cuda",
+    "seed": 139,
+    "steps": 5000
+  }
+}

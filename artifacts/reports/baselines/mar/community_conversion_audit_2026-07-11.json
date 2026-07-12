@@ -1,0 +1,67 @@
+{
+  "assets": {
+    "community_safetensors": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/mar-base.safetensors",
+      "sha256": "d8735425f563a88bd7aabc5ff8ac43d2b3dbb0777b8dc4e0dbcb1abfb6c5cb07"
+    },
+    "community_vae_safetensors": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/kl16.safetensors",
+      "sha256": "ae6e66b66cce64248cace5aa6cf8bdb3e834947801cbf7e059028592e2b1de31"
+    },
+    "official_pth": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/official_pth/checkpoint-last.pth",
+      "sha256": "7e970a33bc90353e2fabe3498ed1f2d194dd8d17cd387665f80b2984dfca538c"
+    },
+    "official_vae_ckpt": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/official_pth/kl16.ckpt",
+      "sha256": "34ce001bcfffb7af67ec8af1e683a30d7bd45760855ddc7deedc1330f2cfd38f"
+    }
+  },
+  "audit": "mar_community_safetensors_conversion",
+  "best_matching_model_state": "model",
+  "model_comparisons": {
+    "model": {
+      "all_tensors_exact": true,
+      "common_key_count": 364,
+      "compared_elements": 207924768,
+      "exact_tensor_count": 364,
+      "max_absolute_error": 0.0,
+      "mean_absolute_error": 0.0,
+      "missing_from_safetensors": [],
+      "missing_from_state": [],
+      "root_mean_squared_error": 0.0,
+      "safe_key_count": 364,
+      "shape_mismatches": [],
+      "state_key_count": 364
+    },
+    "model_ema": {
+      "all_tensors_exact": false,
+      "common_key_count": 364,
+      "compared_elements": 207924768,
+      "exact_tensor_count": 0,
+      "max_absolute_error": 0.5549802780151367,
+      "mean_absolute_error": 0.01588273101893973,
+      "missing_from_safetensors": [],
+      "missing_from_state": [],
+      "root_mean_squared_error": 0.02086519532593659,
+      "safe_key_count": 364,
+      "shape_mismatches": [],
+      "state_key_count": 364
+    }
+  },
+  "schema_version": 1,
+  "vae_comparison": {
+    "all_tensors_exact": true,
+    "common_key_count": 312,
+    "compared_elements": 66456019,
+    "exact_tensor_count": 312,
+    "max_absolute_error": 0.0,
+    "mean_absolute_error": 0.0,
+    "missing_from_safetensors": [],
+    "missing_from_state": [],
+    "root_mean_squared_error": 0.0,
+    "safe_key_count": 312,
+    "shape_mismatches": [],
+    "state_key_count": 312
+  }
+}

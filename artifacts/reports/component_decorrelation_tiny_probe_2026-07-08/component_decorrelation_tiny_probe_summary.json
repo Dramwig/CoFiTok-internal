@@ -1,0 +1,101 @@
+{
+  "decision": {
+    "candidate_status": "useful ablation candidate, not a default objective term yet",
+    "next": "Repeat decor_0.005 with CIFAR seed2 or Tiny seed2 before promoting; consider delayed/scheduled decor to reduce path-AUC cost.",
+    "read": "Tiny ImageNet matches CIFAR direction: decor_0.005 reduces component cosine and slightly improves endpoint quality, while modestly worsening ordered path AUC."
+  },
+  "rows": {
+    "baseline": {
+      "component_max_abs_cosine": 0.8493800163269043,
+      "component_mean_abs_cosine": 0.7223122886248997,
+      "delta_vs_baseline": {
+        "component_mean_abs_cosine": 0.0,
+        "ordered_path_auc": 0.0,
+        "quality_final_mse": 0.0,
+        "train_effective_tokens": 0.0
+      },
+      "orders": {
+        "ordered": {
+          "clean_auc": 4.716600411704609,
+          "effective_tokens": 6.803341170159017,
+          "final_clean_mse": 0.17020049691200256,
+          "path_auc": 0.0766382986413581,
+          "shuffled_final_mse_ratio": 138.28481516573072
+        },
+        "random": {
+          "clean_auc": 3.404685737831252,
+          "effective_tokens": 6.803341170159017,
+          "final_clean_mse": 0.17020049691200256,
+          "path_auc": 0.25701855229479925,
+          "shuffled_final_mse_ratio": 138.28481516573072
+        },
+        "reverse": {
+          "clean_auc": 2.215578109025955,
+          "effective_tokens": 6.803341170159017,
+          "final_clean_mse": 0.17020049691200256,
+          "path_auc": 0.7140138851744788,
+          "shuffled_final_mse_ratio": 138.28481516573072
+        }
+      },
+      "quality_final_mse": 0.14871828258037567,
+      "quality_final_psnr_db": 14.296956298288634,
+      "quality_lowres_frechet_proxy": 1.1860510265100865,
+      "quality_lowres_frechet_proxy_auc": 5.257617365663472,
+      "quality_mse_auc": 6.728809205194314,
+      "train_active_tail_tokens": 7,
+      "train_clean_auc": 4.693736986390182,
+      "train_effective_tokens": 6.804285433205951,
+      "train_final_clean_mse": 0.1663869470357895,
+      "train_final_component_decorrelation_loss": null,
+      "train_late_half_energy_ratio": 0.726713296747319,
+      "train_path_auc": 0.07594848118190255,
+      "weight": 0.0
+    },
+    "decor_0.005": {
+      "component_max_abs_cosine": 0.8091151118278503,
+      "component_mean_abs_cosine": 0.5904444966997419,
+      "delta_vs_baseline": {
+        "component_mean_abs_cosine": -0.13186779192515785,
+        "ordered_path_auc": 0.01969742881400245,
+        "quality_final_mse": -0.0006387531757354736,
+        "train_effective_tokens": -0.00657267320152588
+      },
+      "orders": {
+        "ordered": {
+          "clean_auc": 4.96953929747854,
+          "effective_tokens": 6.798383218877024,
+          "final_clean_mse": 0.17041653394699097,
+          "path_auc": 0.09633572745536055,
+          "shuffled_final_mse_ratio": 138.08658973143787
+        },
+        "random": {
+          "clean_auc": 3.452092713543347,
+          "effective_tokens": 6.798383218877024,
+          "final_clean_mse": 0.17041656374931335,
+          "path_auc": 0.30159235319920946,
+          "shuffled_final_mse_ratio": 138.08656558295738
+        },
+        "reverse": {
+          "clean_auc": 2.163228690624237,
+          "effective_tokens": 6.798383218877024,
+          "final_clean_mse": 0.17041653394699097,
+          "path_auc": 0.812752942953791,
+          "shuffled_final_mse_ratio": 138.08658973143787
+        }
+      },
+      "quality_final_mse": 0.1480795294046402,
+      "quality_final_psnr_db": 14.315649657647242,
+      "quality_lowres_frechet_proxy": 1.1711288740843393,
+      "quality_lowres_frechet_proxy_auc": 5.353079505238512,
+      "quality_mse_auc": 7.09830675770839,
+      "train_active_tail_tokens": 7,
+      "train_clean_auc": 4.946294625954969,
+      "train_effective_tokens": 6.797712760004425,
+      "train_final_clean_mse": 0.16580359637737274,
+      "train_final_component_decorrelation_loss": 0.5501209497451782,
+      "train_late_half_energy_ratio": 0.7061778642632678,
+      "train_path_auc": 0.09553820373756546,
+      "weight": 0.005
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "baseline": "d_ar",
+  "blockers": [
+    "AR training image-size choices exclude 64.",
+    "AR sampling image-size choices exclude 64.",
+    "Tokenizer training image-size choices exclude 64.",
+    "Official pretrained tokenizer and D-AR checkpoints target ImageNet-256.",
+    "AR training path is class-conditional ImageFolder/ImageNet-style.",
+    "Tokenizer training uses extra perceptual/DINO losses before AR training."
+  ],
+  "compatible_followups": [
+    "ImageNet-256 eval-only comparison with official tokenizer and D-AR checkpoints.",
+    "ImageNet-256 training comparison with explicit tokenizer-training budget.",
+    "A separate 128/256 protocol if the paper expands beyond MVP formal64."
+  ],
+  "decision": "Do not enter D-AR as a completed formal64 baseline. Record it as the nearest diffusion-as-AR threat until a separate compatible protocol is defined.",
+  "formal64_datasets": [
+    "downsampled_imagenet_64",
+    "ffhq_64",
+    "afhqv2_64"
+  ],
+  "formal64_status": "not_protocol_compatible_without_code_and_protocol_changes",
+  "image_size_choices": {
+    "ar_sample": [
+      256,
+      384,
+      512
+    ],
+    "ar_train": [
+      256,
+      384,
+      448,
+      512
+    ],
+    "tokenizer_train": [
+      128,
+      384,
+      256,
+      512
+    ]
+  },
+  "repo": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar",
+  "repo_commit": "cd921b892c14ef52a06133b21a73257a6399ad52",
+  "required_files": {
+    "ar_sample": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar/autoregressive/sample/sample_c2i.py",
+    "ar_train": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar/autoregressive/train/train_c2i_accelerate.py",
+    "getting_started": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar/GETTING_STARTED.md",
+    "imagenet_dataset": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar/dataset/imagenet.py",
+    "readme": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar/README.md",
+    "requirements": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar/requirements.txt",
+    "tokenizer_config": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar/configs/tokenizer_v1.yaml",
+    "tokenizer_train": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar/tokenizer/tokenizer_image/vq_train_accelerate.py"
+  },
+  "status": "feasibility_only"
+}

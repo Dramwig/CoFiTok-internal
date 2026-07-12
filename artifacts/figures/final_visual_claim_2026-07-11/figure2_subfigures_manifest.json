@@ -1,0 +1,74 @@
+{
+  "figure": 2,
+  "gap_pixels": 12,
+  "latex_layout": "2x2 minipages; labels and captions are rendered by LaTeX",
+  "notes": [
+    "Each output is a standalone bitmap subfigure, not a precomposed full Figure 2.",
+    "No title, metric card, subfigure letter, or caption text is baked into the bitmap.",
+    "Within each bitmap, the left/right experimental conditions are recorded in this manifest and the LaTeX caption."
+  ],
+  "schema_version": 1,
+  "subfigure_count": 4,
+  "subfigures": [
+    {
+      "height": 662,
+      "key": "a",
+      "left": {
+        "label": "Tiny ImageNet endpoint-only",
+        "source": "artifacts/reports/train_tiny_imagenet_k8_epsilononly_p150eval_20k_2026-07-08/prefix_final.png"
+      },
+      "path": "artifacts/figures/final_visual_claim_2026-07-11/figure2a_tiny_prefix.png",
+      "right": {
+        "label": "Tiny ImageNet CoFiTok K8",
+        "source": "artifacts/reports/train_tiny_imagenet_k8_denoisepath_p150_light_20k_2026-07-08/prefix_final.png"
+      },
+      "sha256": "06e412e3015218a8d250f40534c4fe4c114cb0dd4ee5e33d49fe2123f5ff830d",
+      "width": 1072
+    },
+    {
+      "height": 662,
+      "key": "b",
+      "left": {
+        "label": "ImageNet-64 endpoint-only",
+        "source": "artifacts/reports/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_2026-07-08/prefix_final.png"
+      },
+      "path": "artifacts/figures/final_visual_claim_2026-07-11/figure2b_imagenet64_prefix.png",
+      "right": {
+        "label": "ImageNet-64 CoFiTok K8",
+        "source": "artifacts/reports/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_2026-07-08/prefix_final.png"
+      },
+      "sha256": "7d7d5b481eb0365ba13217b994b77f324203ff0b3f040545f1460be1f0b041f3",
+      "width": 1072
+    },
+    {
+      "height": 662,
+      "key": "c",
+      "left": {
+        "label": "Restricted synthesis ordered",
+        "source": "artifacts/reports/eval_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_ordered_2026-07-08/prefix_final.png"
+      },
+      "path": "artifacts/figures/final_visual_claim_2026-07-11/figure2c_restricted_synthesis.png",
+      "right": {
+        "label": "Restricted synthesis shuffled",
+        "source": "artifacts/reports/eval_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_ordered_2026-07-08/prefix_final_shuffled.png"
+      },
+      "sha256": "edd9c872e35006527e7b551338d11427332dcd02fa6cc157a9a4276bd719b7aa",
+      "width": 1072
+    },
+    {
+      "height": 662,
+      "key": "d",
+      "left": {
+        "label": "Deep synthesis ordered",
+        "source": "artifacts/reports/eval_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_deepsk_5k_ordered_2026-07-08/prefix_final.png"
+      },
+      "path": "artifacts/figures/final_visual_claim_2026-07-11/figure2d_deep_synthesis.png",
+      "right": {
+        "label": "Deep synthesis shuffled",
+        "source": "artifacts/reports/eval_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_deepsk_5k_ordered_2026-07-08/prefix_final_shuffled.png"
+      },
+      "sha256": "b1311a910afa0bfe9f457461504ff415a3922589b0959f235f97f193df39dc28",
+      "width": 1072
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "config_name": "baseline_edm_imagenet_256",
+  "dataset": "imagenet_256",
+  "evaluation": {
+    "available_sample_images": 512,
+    "feature_size": 8,
+    "real_image_count": 2048,
+    "sample_image_count": 512,
+    "seed": 139,
+    "split": "val"
+  },
+  "metric_notes": {
+    "inception_frechet": {
+      "available": true,
+      "model": "torchvision.models.inception_v3/IMAGENET1K_V1"
+    },
+    "lowres_frechet_proxy": "Small-scale relative metric over deterministic low-resolution RGB/color features."
+  },
+  "metrics": {
+    "inception_frechet": 368.4282242177966,
+    "lowres_frechet_proxy": 10.397463730243391
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 20.37615466117859,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  },
+  "samples_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_imagenet_256_5000steps_edm40_2026-07-10_imagenet256_p0/samples_png"
+}

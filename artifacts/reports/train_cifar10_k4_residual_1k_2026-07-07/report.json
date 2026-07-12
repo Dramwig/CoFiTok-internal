@@ -1,0 +1,239 @@
+{
+  "artifacts": {
+    "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_residual_1k_2026-07-07/checkpoint_final.pt",
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_residual_1k_2026-07-07/prefix_final.png"
+  },
+  "config": {
+    "data": {
+      "batch_size": 64,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "cifar10",
+      "image_size": 32,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_weight": 1.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.05,
+      "prefix_weight": 0.25,
+      "residual_component_weight": 0.05,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 32,
+      "predictor_depth": 3,
+      "synthesis_kernel_size": 3,
+      "token_channels": 16,
+      "token_count": 4
+    },
+    "name": "train_cifar10_k4_residual_1k_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 100,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 23,
+      "steps": 1000
+    }
+  },
+  "final_losses": {
+    "energy_budget": 0.0,
+    "epsilon": 0.15920665860176086,
+    "grad_norm": 88.85881805419922,
+    "monotonic": 0.0,
+    "prefix": 25.70720863342285,
+    "residual_component": 0.14188852906227112,
+    "total": 6.593103408813477,
+    "zero_token": 0.0
+  },
+  "history": [
+    {
+      "energy_budget": 0.0,
+      "epsilon": 1.0323935747146606,
+      "grad_norm": 308.4881591796875,
+      "monotonic": 11.017741203308105,
+      "prefix": 1241.37060546875,
+      "residual_component": 0.44068247079849243,
+      "step": 1,
+      "total": 311.94793701171875,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.28264734148979187,
+      "grad_norm": 105.43203735351562,
+      "monotonic": 0.0,
+      "prefix": 305.86553955078125,
+      "residual_component": 0.819647490978241,
+      "step": 100,
+      "total": 76.7900161743164,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.17105329036712646,
+      "grad_norm": 97.04551696777344,
+      "monotonic": 0.0,
+      "prefix": 72.34620666503906,
+      "residual_component": 0.1350124329328537,
+      "step": 200,
+      "total": 18.264354705810547,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.15879686176776886,
+      "grad_norm": 148.3225860595703,
+      "monotonic": 0.0,
+      "prefix": 76.62628173828125,
+      "residual_component": 0.12036384642124176,
+      "step": 300,
+      "total": 19.32138442993164,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.19586127996444702,
+      "grad_norm": 100.19414520263672,
+      "monotonic": 0.0,
+      "prefix": 41.687957763671875,
+      "residual_component": 0.45723992586135864,
+      "step": 400,
+      "total": 10.64071273803711,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.15626685321331024,
+      "grad_norm": 353.1714172363281,
+      "monotonic": 0.0,
+      "prefix": 46.58526611328125,
+      "residual_component": 0.7613995671272278,
+      "step": 500,
+      "total": 11.840653419494629,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.21281647682189941,
+      "grad_norm": 192.20242309570312,
+      "monotonic": 0.0,
+      "prefix": 42.3487548828125,
+      "residual_component": 0.5959228873252869,
+      "step": 600,
+      "total": 10.829801559448242,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.19777077436447144,
+      "grad_norm": 375.6227722167969,
+      "monotonic": 0.0,
+      "prefix": 50.90178298950195,
+      "residual_component": 0.2968493103981018,
+      "step": 700,
+      "total": 12.938058853149414,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.21042095124721527,
+      "grad_norm": 469.088623046875,
+      "monotonic": 0.0,
+      "prefix": 62.02965545654297,
+      "residual_component": 0.3309372365474701,
+      "step": 800,
+      "total": 15.734381675720215,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.2415543496608734,
+      "grad_norm": 189.85592651367188,
+      "monotonic": 0.0,
+      "prefix": 22.741077423095703,
+      "residual_component": 0.36334648728370667,
+      "step": 900,
+      "total": 5.944991111755371,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.15920665860176086,
+      "grad_norm": 88.85881805419922,
+      "monotonic": 0.0,
+      "prefix": 25.70720863342285,
+      "residual_component": 0.14188852906227112,
+      "step": 1000,
+      "total": 6.593103408813477,
+      "zero_token": 0.0
+    }
+  ],
+  "prefix_summary": {
+    "active_tail_tokens": 1,
+    "component_energy": [
+      0.9687818288803101,
+      0.03899025917053223,
+      0.002146516228094697,
+      0.0007263931329362094
+    ],
+    "component_energy_ratio": [
+      0.9585777709890524,
+      0.03857957964505941,
+      0.002123907241011075,
+      0.0007187421248770886
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.25266125798225403,
+      "random_token_component_energy": 0.15992793440818787,
+      "shuffled_component_mse": 0.5086212754249573,
+      "zero_token_component_energy": 0.0
+    },
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_residual_1k_2026-07-07/prefix_final.png",
+    "head_energy_ratio": 0.9585777709890524,
+    "prefix_mse_to_clean": [
+      0.7496415376663208,
+      0.3831465244293213,
+      0.36801671981811523,
+      0.35717806220054626
+    ],
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4"
+    ],
+    "tail_energy_ratio": 0.041422229010947574,
+    "timestep": 500
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 8.284615516662598,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

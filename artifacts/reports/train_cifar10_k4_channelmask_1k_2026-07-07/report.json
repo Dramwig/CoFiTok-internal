@@ -1,0 +1,298 @@
+{
+  "artifacts": {
+    "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_channelmask_1k_2026-07-07/checkpoint_final.pt",
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_channelmask_1k_2026-07-07/prefix_final.png"
+  },
+  "config": {
+    "data": {
+      "batch_size": 64,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "cifar10",
+      "image_size": 32,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_weight": 1.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.05,
+      "prefix_weight": 0.25,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 32,
+      "predictor_depth": 3,
+      "synthesis_active_token_channels": [
+        4,
+        8,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 4
+    },
+    "name": "train_cifar10_k4_channelmask_1k_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 100,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 23,
+      "steps": 1000
+    }
+  },
+  "final_losses": {
+    "energy_budget": 0.0,
+    "epsilon": 0.1684008240699768,
+    "grad_norm": 248.9969940185547,
+    "monotonic": 0.0,
+    "prefix": 40.48875045776367,
+    "residual_component": 0.0,
+    "sampled_budget": 0.0,
+    "sampled_component": 0.0,
+    "sampled_prefix": 0.0,
+    "tail_floor": 0.0,
+    "total": 10.29058837890625,
+    "zero_token": 0.0
+  },
+  "history": [
+    {
+      "energy_budget": 0.0,
+      "epsilon": 1.0256093740463257,
+      "grad_norm": 207.9544219970703,
+      "monotonic": 8.928874015808105,
+      "prefix": 1231.494140625,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 1,
+      "tail_floor": 0.0,
+      "total": 309.3455810546875,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.28353291749954224,
+      "grad_norm": 162.0751495361328,
+      "monotonic": 0.0,
+      "prefix": 544.5521240234375,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 100,
+      "tail_floor": 0.0,
+      "total": 136.42156982421875,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.1785213202238083,
+      "grad_norm": 83.42019653320312,
+      "monotonic": 0.0,
+      "prefix": 163.32752990722656,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 200,
+      "tail_floor": 0.0,
+      "total": 41.01040267944336,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.17044386267662048,
+      "grad_norm": 155.3473358154297,
+      "monotonic": 0.0,
+      "prefix": 180.2995147705078,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 300,
+      "tail_floor": 0.0,
+      "total": 45.245323181152344,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.20669108629226685,
+      "grad_norm": 183.58006286621094,
+      "monotonic": 0.0,
+      "prefix": 85.43632507324219,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 400,
+      "tail_floor": 0.0,
+      "total": 21.565773010253906,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.16070519387722015,
+      "grad_norm": 141.8582763671875,
+      "monotonic": 0.0,
+      "prefix": 81.20689392089844,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 500,
+      "tail_floor": 0.0,
+      "total": 20.46242904663086,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.22718212008476257,
+      "grad_norm": 142.45603942871094,
+      "monotonic": 0.0,
+      "prefix": 70.17448425292969,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 600,
+      "tail_floor": 0.0,
+      "total": 17.770803451538086,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.21069151163101196,
+      "grad_norm": 316.8889465332031,
+      "monotonic": 0.0,
+      "prefix": 79.91564178466797,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 700,
+      "tail_floor": 0.0,
+      "total": 20.18960189819336,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.22798286378383636,
+      "grad_norm": 695.9849853515625,
+      "monotonic": 0.0,
+      "prefix": 105.7994384765625,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 800,
+      "tail_floor": 0.0,
+      "total": 26.67784309387207,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.25631922483444214,
+      "grad_norm": 211.87022399902344,
+      "monotonic": 0.04649035260081291,
+      "prefix": 35.05332946777344,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 900,
+      "tail_floor": 0.0,
+      "total": 9.02197551727295,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.1684008240699768,
+      "grad_norm": 248.9969940185547,
+      "monotonic": 0.0,
+      "prefix": 40.48875045776367,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 1000,
+      "tail_floor": 0.0,
+      "total": 10.29058837890625,
+      "zero_token": 0.0
+    }
+  ],
+  "prefix_summary": {
+    "active_tail_tokens": 1,
+    "component_energy": [
+      0.8579549193382263,
+      0.0615745410323143,
+      0.004586176015436649,
+      0.001085657742805779
+    ],
+    "component_energy_ratio": [
+      0.9273170333663666,
+      0.06655258852647417,
+      0.004956949416889032,
+      0.0011734286902701427
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.23130032420158386,
+      "random_token_component_energy": 0.12283912301063538,
+      "shuffled_component_mse": 0.46475735306739807,
+      "zero_token_component_energy": 0.0
+    },
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_channelmask_1k_2026-07-07/prefix_final.png",
+    "head_energy_ratio": 0.9273170333663666,
+    "prefix_mse_to_clean": [
+      1.0771404504776,
+      0.43505486845970154,
+      0.3929094672203064,
+      0.3870048224925995
+    ],
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4"
+    ],
+    "tail_energy_ratio": 0.07268296663363334,
+    "timestep": 500
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 7.664395332336426,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

@@ -1,0 +1,51 @@
+from __future__ import annotations
+
+import torch
+
+from cofitok.configs import DiffusionConfig
+
+
+class DiffusionSchedule:
+    def __init__(self, config: DiffusionConfig, device: torch.device | str) -> None:
+        self.config = config
+        betas = torch.linspace(
+            config.beta_start,
+            config.beta_end,
+            config.num_train_timesteps,
+            dtype=torch.float32,
+            device=device,
+        )
+        alphas = 1.0 - betas
+        alphas_cumprod = torch.cumprod(alphas, dim=0)
+        self.betas = betas
+        self.alphas = alphas
+        self.alphas_cumprod = alphas_cumprod
+        self.sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
+        self.sqrt_one_minus_alphas_cumprod = torch.sqrt(1.0 - alphas_cumprod)
+
+    @property
+    def num_train_timesteps(self) -> int:
+        return self.config.num_train_timesteps
+
+    def sample_timesteps(self, batch_size: int, device: torch.device | str) -> torch.Tensor:
+        return torch.randint(0, self.num_train_timesteps, (batch_size,), device=device)
+
+    def add_noise(
+        self,
+        clean_images: torch.Tensor,
+        noise: torch.Tensor,
+        timesteps: torch.Tensor,
+    ) -> torch.Tensor:
+        alpha = self.sqrt_alphas_cumprod[timesteps].view(-1, 1, 1, 1)
+        sigma = self.sqrt_one_minus_alphas_cumprod[timesteps].view(-1, 1, 1, 1)
+        return alpha * clean_images + sigma * noise
+
+    def predict_x0_from_epsilon(
+        self,
+        noisy_images: torch.Tensor,
+        epsilon: torch.Tensor,
+        timesteps: torch.Tensor,
+    ) -> torch.Tensor:
+        alpha = self.sqrt_alphas_cumprod[timesteps].view(-1, 1, 1, 1)
+        sigma = self.sqrt_one_minus_alphas_cumprod[timesteps].view(-1, 1, 1, 1)
+        return (noisy_images - sigma * epsilon) / alpha.clamp_min(1e-8)

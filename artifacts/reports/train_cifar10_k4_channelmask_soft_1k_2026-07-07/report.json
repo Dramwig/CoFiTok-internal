@@ -1,0 +1,298 @@
+{
+  "artifacts": {
+    "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_channelmask_soft_1k_2026-07-07/checkpoint_final.pt",
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_channelmask_soft_1k_2026-07-07/prefix_final.png"
+  },
+  "config": {
+    "data": {
+      "batch_size": 64,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "cifar10",
+      "image_size": 32,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_weight": 1.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.05,
+      "prefix_weight": 0.25,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 32,
+      "predictor_depth": 3,
+      "synthesis_active_token_channels": [
+        8,
+        12,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 4
+    },
+    "name": "train_cifar10_k4_channelmask_soft_1k_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 100,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 23,
+      "steps": 1000
+    }
+  },
+  "final_losses": {
+    "energy_budget": 0.0,
+    "epsilon": 0.15962368249893188,
+    "grad_norm": 202.30654907226562,
+    "monotonic": 0.0,
+    "prefix": 33.82780456542969,
+    "residual_component": 0.0,
+    "sampled_budget": 0.0,
+    "sampled_component": 0.0,
+    "sampled_prefix": 0.0,
+    "tail_floor": 0.0,
+    "total": 8.616575241088867,
+    "zero_token": 0.0
+  },
+  "history": [
+    {
+      "energy_budget": 0.0,
+      "epsilon": 1.032597303390503,
+      "grad_norm": 257.4410400390625,
+      "monotonic": 10.090128898620605,
+      "prefix": 1241.16455078125,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 1,
+      "tail_floor": 0.0,
+      "total": 311.8282470703125,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.29885971546173096,
+      "grad_norm": 138.79766845703125,
+      "monotonic": 0.0,
+      "prefix": 396.7976379394531,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 100,
+      "tail_floor": 0.0,
+      "total": 99.4982681274414,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.17254941165447235,
+      "grad_norm": 91.96207427978516,
+      "monotonic": 0.0,
+      "prefix": 118.76104736328125,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 200,
+      "tail_floor": 0.0,
+      "total": 29.862812042236328,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.15983299911022186,
+      "grad_norm": 136.87083435058594,
+      "monotonic": 0.0,
+      "prefix": 150.66775512695312,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 300,
+      "tail_floor": 0.0,
+      "total": 37.8267707824707,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.198586568236351,
+      "grad_norm": 133.16232299804688,
+      "monotonic": 0.06110064312815666,
+      "prefix": 75.67300415039062,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 400,
+      "tail_floor": 0.0,
+      "total": 19.11989402770996,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.15659108757972717,
+      "grad_norm": 120.17376708984375,
+      "monotonic": 0.0,
+      "prefix": 69.23284912109375,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 500,
+      "tail_floor": 0.0,
+      "total": 17.46480369567871,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.2194911539554596,
+      "grad_norm": 357.3958435058594,
+      "monotonic": 0.0,
+      "prefix": 61.45995330810547,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 600,
+      "tail_floor": 0.0,
+      "total": 15.584479331970215,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.20059755444526672,
+      "grad_norm": 266.845947265625,
+      "monotonic": 0.02266184613108635,
+      "prefix": 65.35946655273438,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 700,
+      "tail_floor": 0.0,
+      "total": 16.541597366333008,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.21032404899597168,
+      "grad_norm": 269.0235900878906,
+      "monotonic": 0.0,
+      "prefix": 79.69573974609375,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 800,
+      "tail_floor": 0.0,
+      "total": 20.134258270263672,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.24222111701965332,
+      "grad_norm": 341.2273254394531,
+      "monotonic": 0.0,
+      "prefix": 30.987667083740234,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 900,
+      "tail_floor": 0.0,
+      "total": 7.989137649536133,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.15962368249893188,
+      "grad_norm": 202.30654907226562,
+      "monotonic": 0.0,
+      "prefix": 33.82780456542969,
+      "residual_component": 0.0,
+      "sampled_budget": 0.0,
+      "sampled_component": 0.0,
+      "sampled_prefix": 0.0,
+      "step": 1000,
+      "tail_floor": 0.0,
+      "total": 8.616575241088867,
+      "zero_token": 0.0
+    }
+  ],
+  "prefix_summary": {
+    "active_tail_tokens": 1,
+    "component_energy": [
+      0.9199091196060181,
+      0.05097019672393799,
+      0.0023994373623281717,
+      0.0007120524533092976
+    ],
+    "component_energy_ratio": [
+      0.944474130352837,
+      0.052331291427322665,
+      0.0024635113054337194,
+      0.0007310669144066427
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.24349769949913025,
+      "random_token_component_energy": 0.1348457932472229,
+      "shuffled_component_mse": 0.4883232116699219,
+      "zero_token_component_energy": 0.0
+    },
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_channelmask_soft_1k_2026-07-07/prefix_final.png",
+    "head_energy_ratio": 0.944474130352837,
+    "prefix_mse_to_clean": [
+      0.9260425567626953,
+      0.39440640807151794,
+      0.3761748671531677,
+      0.36741113662719727
+    ],
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4"
+    ],
+    "tail_energy_ratio": 0.05552586964716303,
+    "timestep": 500
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 7.716395616531372,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

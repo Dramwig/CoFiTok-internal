@@ -1,0 +1,231 @@
+{
+  "artifacts": {
+    "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_energy_1k_2026-07-07/checkpoint_final.pt",
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_energy_1k_2026-07-07/prefix_final.png"
+  },
+  "config": {
+    "data": {
+      "batch_size": 64,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "cifar10",
+      "image_size": 32,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "energy_budget_weight": 25.0,
+      "energy_target": [
+        0.55,
+        0.25,
+        0.13,
+        0.07
+      ],
+      "epsilon_weight": 1.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.05,
+      "prefix_weight": 0.25,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 32,
+      "predictor_depth": 3,
+      "synthesis_kernel_size": 3,
+      "token_channels": 16,
+      "token_count": 4
+    },
+    "name": "train_cifar10_k4_energy_1k_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 100,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 23,
+      "steps": 1000
+    }
+  },
+  "final_losses": {
+    "energy_budget": 0.0046183327212929726,
+    "epsilon": 0.15838471055030823,
+    "grad_norm": 181.31182861328125,
+    "monotonic": 0.0,
+    "prefix": 25.752370834350586,
+    "total": 6.711935997009277,
+    "zero_token": 0.0
+  },
+  "history": [
+    {
+      "energy_budget": 0.034545570611953735,
+      "epsilon": 1.0323935747146606,
+      "grad_norm": 308.85015869140625,
+      "monotonic": 11.017741203308105,
+      "prefix": 1241.37060546875,
+      "step": 1,
+      "total": 312.78955078125,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0028614106122404337,
+      "epsilon": 0.2816388010978699,
+      "grad_norm": 105.48677062988281,
+      "monotonic": 0.0,
+      "prefix": 305.7720947265625,
+      "step": 100,
+      "total": 76.79619598388672,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.017644379287958145,
+      "epsilon": 0.1729133427143097,
+      "grad_norm": 48.57753372192383,
+      "monotonic": 0.0,
+      "prefix": 71.35787963867188,
+      "step": 200,
+      "total": 18.4534912109375,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.025080548599362373,
+      "epsilon": 0.169151172041893,
+      "grad_norm": 146.17831420898438,
+      "monotonic": 0.0,
+      "prefix": 85.1190414428711,
+      "step": 300,
+      "total": 22.075925827026367,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.024280082434415817,
+      "epsilon": 0.22560147941112518,
+      "grad_norm": 42.3087158203125,
+      "monotonic": 0.0,
+      "prefix": 43.53096008300781,
+      "step": 400,
+      "total": 11.715343475341797,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.01714448630809784,
+      "epsilon": 0.2280249297618866,
+      "grad_norm": 97.22299194335938,
+      "monotonic": 0.0,
+      "prefix": 44.818626403808594,
+      "step": 500,
+      "total": 11.861292839050293,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.00424894830211997,
+      "epsilon": 0.2559435963630676,
+      "grad_norm": 115.1978530883789,
+      "monotonic": 0.0,
+      "prefix": 41.989723205566406,
+      "step": 600,
+      "total": 10.859598159790039,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.00045891731861047447,
+      "epsilon": 0.21926508843898773,
+      "grad_norm": 384.6481628417969,
+      "monotonic": 0.0,
+      "prefix": 49.78232192993164,
+      "step": 700,
+      "total": 12.676318168640137,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.00044139428064227104,
+      "epsilon": 0.2046678513288498,
+      "grad_norm": 294.4493408203125,
+      "monotonic": 0.0,
+      "prefix": 60.445072174072266,
+      "step": 800,
+      "total": 15.326971054077148,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0009079518495127559,
+      "epsilon": 0.2316296547651291,
+      "grad_norm": 192.47860717773438,
+      "monotonic": 0.0,
+      "prefix": 22.03966522216797,
+      "step": 900,
+      "total": 5.76424503326416,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0046183327212929726,
+      "epsilon": 0.15838471055030823,
+      "grad_norm": 181.31182861328125,
+      "monotonic": 0.0,
+      "prefix": 25.752370834350586,
+      "step": 1000,
+      "total": 6.711935997009277,
+      "zero_token": 0.0
+    }
+  ],
+  "prefix_summary": {
+    "active_tail_tokens": 2,
+    "component_energy": [
+      0.9682404398918152,
+      0.0643770843744278,
+      0.013791538774967194,
+      0.005742100533097982
+    ],
+    "component_energy_ratio": [
+      0.920248414308229,
+      0.06118615518679808,
+      0.013107944231240844,
+      0.0054574862737320415
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.2630378007888794,
+      "random_token_component_energy": 0.16399532556533813,
+      "shuffled_component_mse": 0.5148200392723083,
+      "zero_token_component_energy": 0.0
+    },
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_energy_1k_2026-07-07/prefix_final.png",
+    "head_energy_ratio": 0.920248414308229,
+    "prefix_mse_to_clean": [
+      0.7925917506217957,
+      0.566152811050415,
+      0.5478919744491577,
+      0.45867297053337097
+    ],
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4"
+    ],
+    "tail_energy_ratio": 0.07975158569177096,
+    "timestep": 500
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 8.102245092391968,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "figure_count": 8,
+  "figures": [
+    {
+      "metric": "path_auc",
+      "path": "artifacts/figures/summary_2026-07-08/path_auc_20k.png",
+      "source": "experiment_summary.train"
+    },
+    {
+      "metric": "final_clean_mse",
+      "path": "artifacts/figures/summary_2026-07-08/final_clean_mse_20k.png",
+      "source": "experiment_summary.train"
+    },
+    {
+      "metric": "effective_tokens",
+      "path": "artifacts/figures/summary_2026-07-08/effective_tokens_20k.png",
+      "source": "experiment_summary.train"
+    },
+    {
+      "metric": "inception_frechet",
+      "path": "artifacts/figures/summary_2026-07-08/generated_inception_20k_256.png",
+      "source": "experiment_summary.generated_quality"
+    },
+    {
+      "metric": "inception_frechet",
+      "path": "artifacts/figures/summary_2026-07-08/generated_inception_20k_1024.png",
+      "source": "experiment_summary.generated_quality"
+    },
+    {
+      "metric": "inception_frechet",
+      "path": "artifacts/figures/summary_2026-07-08/generated_inception_20k_8192.png",
+      "source": "experiment_summary.generated_quality"
+    },
+    {
+      "metric": "inception_frechet",
+      "path": "artifacts/figures/summary_2026-07-08/generated_inception_20k_hf_50000.png",
+      "source": "experiment_summary.generated_quality"
+    },
+    {
+      "metric": "path_auc",
+      "path": "artifacts/figures/summary_2026-07-08/imagenet_hf_order_path_auc.png",
+      "source": "experiment_summary.order_eval"
+    }
+  ],
+  "notes": [
+    "All figures are rendered from experiment_summary.json.",
+    "Generated-sample Frechet values are smoke metrics, not publication-scale FID."
+  ],
+  "summary": "artifacts/reports/summary_2026-07-08/experiment_summary.json"
+}

@@ -1,0 +1,291 @@
+{
+  "artifacts": {
+    "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_prefixsample_1k_2026-07-07/checkpoint_final.pt",
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_prefixsample_1k_2026-07-07/prefix_final.png"
+  },
+  "config": {
+    "data": {
+      "batch_size": 64,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "cifar10",
+      "image_size": 32,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_weight": 1.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.05,
+      "prefix_weight": 0.15,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 1.0,
+      "sampled_prefix_weight": 0.35,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 32,
+      "predictor_depth": 3,
+      "synthesis_kernel_size": 3,
+      "token_channels": 16,
+      "token_count": 4
+    },
+    "name": "train_cifar10_k4_prefixsample_1k_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 100,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 23,
+      "steps": 1000
+    }
+  },
+  "final_losses": {
+    "energy_budget": 0.0,
+    "epsilon": 0.13474169373512268,
+    "grad_norm": 643.0311279296875,
+    "monotonic": 0.15360260009765625,
+    "prefix": 46.66708755493164,
+    "residual_component": 0.0,
+    "sampled_budget": 2.0,
+    "sampled_component": 0.254840224981308,
+    "sampled_prefix": 29.951736450195312,
+    "tail_floor": 0.0,
+    "total": 17.880434036254883,
+    "zero_token": 0.0
+  },
+  "history": [
+    {
+      "energy_budget": 0.0,
+      "epsilon": 1.0323935747146606,
+      "grad_norm": 463.91552734375,
+      "monotonic": 11.017741203308105,
+      "prefix": 1241.37060546875,
+      "residual_component": 0.0,
+      "sampled_budget": 1.0,
+      "sampled_component": 1.452427864074707,
+      "sampled_prefix": 1225.6123046875,
+      "step": 1,
+      "tail_floor": 0.0,
+      "total": 618.2056274414062,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.26560819149017334,
+      "grad_norm": 134.10557556152344,
+      "monotonic": 0.0,
+      "prefix": 256.0522155761719,
+      "residual_component": 0.0,
+      "sampled_budget": 3.0,
+      "sampled_component": 0.14286039769649506,
+      "sampled_prefix": 132.4687957763672,
+      "step": 100,
+      "tail_floor": 0.0,
+      "total": 85.18038177490234,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.2092840075492859,
+      "grad_norm": 181.5828094482422,
+      "monotonic": 0.0,
+      "prefix": 118.13885498046875,
+      "residual_component": 0.0,
+      "sampled_budget": 3.0,
+      "sampled_component": 0.13141962885856628,
+      "sampled_prefix": 58.26557922363281,
+      "step": 200,
+      "tail_floor": 0.0,
+      "total": 38.45448684692383,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.24765698611736298,
+      "grad_norm": 278.263916015625,
+      "monotonic": 0.05834706872701645,
+      "prefix": 86.26306915283203,
+      "residual_component": 0.0,
+      "sampled_budget": 1.0,
+      "sampled_component": 1.2274527549743652,
+      "sampled_prefix": 199.54220581054688,
+      "step": 300,
+      "tail_floor": 0.0,
+      "total": 84.25725555419922,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.27190130949020386,
+      "grad_norm": 205.909912109375,
+      "monotonic": 0.0,
+      "prefix": 87.34141540527344,
+      "residual_component": 0.0,
+      "sampled_budget": 2.0,
+      "sampled_component": 0.5940665006637573,
+      "sampled_prefix": 51.34675216674805,
+      "step": 400,
+      "tail_floor": 0.0,
+      "total": 31.93854331970215,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.22822099924087524,
+      "grad_norm": 389.39215087890625,
+      "monotonic": 0.0,
+      "prefix": 78.60386657714844,
+      "residual_component": 0.0,
+      "sampled_budget": 1.0,
+      "sampled_component": 1.0390162467956543,
+      "sampled_prefix": 178.44888305664062,
+      "step": 500,
+      "tail_floor": 0.0,
+      "total": 75.51492309570312,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.22412727773189545,
+      "grad_norm": 367.06170654296875,
+      "monotonic": 0.0,
+      "prefix": 64.19595336914062,
+      "residual_component": 0.0,
+      "sampled_budget": 3.0,
+      "sampled_component": 0.14692705869674683,
+      "sampled_prefix": 35.604637145996094,
+      "step": 600,
+      "tail_floor": 0.0,
+      "total": 22.46207046508789,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.2522774338722229,
+      "grad_norm": 452.9306640625,
+      "monotonic": 0.0,
+      "prefix": 41.58961486816406,
+      "residual_component": 0.0,
+      "sampled_budget": 1.0,
+      "sampled_component": 0.9585342407226562,
+      "sampled_prefix": 88.02693176269531,
+      "step": 700,
+      "tail_floor": 0.0,
+      "total": 38.2586784362793,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.1950603425502777,
+      "grad_norm": 227.6827850341797,
+      "monotonic": 0.0,
+      "prefix": 55.801513671875,
+      "residual_component": 0.0,
+      "sampled_budget": 3.0,
+      "sampled_component": 0.0982012078166008,
+      "sampled_prefix": 32.696372985839844,
+      "step": 800,
+      "tail_floor": 0.0,
+      "total": 20.107219696044922,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.187965989112854,
+      "grad_norm": 599.5374755859375,
+      "monotonic": 0.0,
+      "prefix": 41.44050598144531,
+      "residual_component": 0.0,
+      "sampled_budget": 4.0,
+      "sampled_component": 0.10494449734687805,
+      "sampled_prefix": 25.641414642333984,
+      "step": 900,
+      "tail_floor": 0.0,
+      "total": 15.483481407165527,
+      "zero_token": 0.0
+    },
+    {
+      "energy_budget": 0.0,
+      "epsilon": 0.13474169373512268,
+      "grad_norm": 643.0311279296875,
+      "monotonic": 0.15360260009765625,
+      "prefix": 46.66708755493164,
+      "residual_component": 0.0,
+      "sampled_budget": 2.0,
+      "sampled_component": 0.254840224981308,
+      "sampled_prefix": 29.951736450195312,
+      "step": 1000,
+      "tail_floor": 0.0,
+      "total": 17.880434036254883,
+      "zero_token": 0.0
+    }
+  ],
+  "prefix_summary": {
+    "active_tail_tokens": 1,
+    "component_energy": [
+      0.9477113485336304,
+      0.03938768059015274,
+      0.0020305286161601543,
+      0.0008313849102705717
+    ],
+    "component_energy_ratio": [
+      0.9573219585780046,
+      0.0397871056253072,
+      0.0020511199267359455,
+      0.0008398158699522832
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.24749024212360382,
+      "random_token_component_energy": 0.15778374671936035,
+      "shuffled_component_mse": 0.49386054277420044,
+      "zero_token_component_energy": 0.0
+    },
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k4_prefixsample_1k_2026-07-07/prefix_final.png",
+    "head_energy_ratio": 0.9573219585780046,
+    "prefix_mse_to_clean": [
+      0.7893447875976562,
+      0.39165163040161133,
+      0.3832493722438812,
+      0.3728486895561218
+    ],
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4"
+    ],
+    "tail_energy_ratio": 0.042678041421995425,
+    "timestep": 500
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 7.9234044551849365,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

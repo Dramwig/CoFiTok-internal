@@ -1,0 +1,87 @@
+{
+  "date_tag": "2026-07-08",
+  "generated_quality_count": 6,
+  "order_eval_count": 24,
+  "quality_batches": 64,
+  "quality_count": 10,
+  "quality_images": 1024,
+  "real_count": 8192,
+  "run_count": 10,
+  "runs": [
+    {
+      "config": "configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "label": "tiny_epsilononly_20k_seed2",
+      "order_eval": false,
+      "sample_eval": true,
+      "train_id": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "label": "tiny_k8_light_20k_seed2",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "order_eval": false,
+      "sample_eval": true,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "label": "tiny_k8_light_multiscale_10k",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "label": "tiny_k8_light_cleanmono_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    }
+  ],
+  "sample_count": 2048,
+  "sample_steps": 50,
+  "sampling_count": 6,
+  "script": "C:/Users/zixi-/Desktop/PaperField/CoFiTok/CoFiTok-internal/artifacts/runbooks/next_validation_queue_2026-07-08.sh",
+  "train_count": 10
+}

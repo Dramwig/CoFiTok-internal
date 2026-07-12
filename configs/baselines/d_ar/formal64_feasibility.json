@@ -1,0 +1,20 @@
+{
+  "baseline": "d_ar",
+  "dataset_aliases": [
+    "downsampled_imagenet_64",
+    "ffhq_64",
+    "afhqv2_64"
+  ],
+  "status": "feasibility_only",
+  "target_protocol": "formal64 exact-source comparison",
+  "external_repo": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar",
+  "adapter_report": "artifacts/reports/baselines/d_ar/adapter_feasibility_2026-07-09.json",
+  "decision": "Do not run as a completed formal64 baseline without a separate protocol change.",
+  "reason": [
+    "Public D-AR code and checkpoints target ImageNet-256.",
+    "AR train/sample image-size choices exclude 64.",
+    "Tokenizer train image-size choices exclude 64.",
+    "A fair D-AR run requires tokenizer training or adaptation before AR training.",
+    "FFHQ formal64 is unlabeled, while the public AR path is class-conditional ImageFolder."
+  ]
+}

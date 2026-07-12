@@ -1,0 +1,31 @@
+{
+  "config_name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda",
+  "dataset": "imagenet_1k_64x64_hf",
+  "evaluation": {
+    "available_sample_images": 2048,
+    "feature_size": 8,
+    "real_image_count": 8192,
+    "sample_image_count": 2048,
+    "seed": 103,
+    "split": "val"
+  },
+  "metric_notes": {
+    "inception_frechet": {
+      "available": true,
+      "model": "torchvision.models.inception_v3/IMAGENET1K_V1"
+    },
+    "lowres_frechet_proxy": "Small-scale relative metric over deterministic low-resolution RGB/color features."
+  },
+  "metrics": {
+    "inception_frechet": 274.0250694212341,
+    "lowres_frechet_proxy": 6.685616749214734
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 10.028122186660767,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  },
+  "samples_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8"
+}

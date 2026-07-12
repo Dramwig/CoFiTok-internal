@@ -1,0 +1,572 @@
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_imagenet256_k4_denoisepath_p150_light_5k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_5k_cuda_2026-07-10_imagenet256_p0
+step 0001 total=1.1485 epsilon=1.0615 prefix=1407.1184 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.4171 path_c=0.0813
+step 1000 total=0.0574 epsilon=0.0394 prefix=3.5173 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0429 path_c=0.0385
+step 2000 total=0.0577 epsilon=0.0449 prefix=336.0118 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0318 path_c=0.0268
+step 3000 total=0.0209 epsilon=0.0142 prefix=794.0562 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0158 path_c=0.0142
+step 4000 total=0.0172 epsilon=0.0121 prefix=73.5328 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0123 path_c=0.0106
+step 5000 total=0.0330 epsilon=0.0275 prefix=5.5061 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0150 path_c=0.0106
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_5k_cuda_2026-07-10_imagenet256_p0/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_5k_cuda_2026-07-10_imagenet256_p0/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_imagenet256_k4_denoisepath_p150_light_5k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_light_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0 --split val --max-batches 64 --max-images 256 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_light_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_imagenet256_k4_epsilononly_p150eval_5k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_epsilononly_p150eval_5k_cuda_2026-07-10_imagenet256_p0
+step 0001 total=1.0615 epsilon=1.0615 prefix=1407.1184 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 1000 total=0.0387 epsilon=0.0387 prefix=3.9487 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 2000 total=0.0447 epsilon=0.0447 prefix=405.7555 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 3000 total=0.0140 epsilon=0.0140 prefix=1006.4594 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 4000 total=0.0117 epsilon=0.0117 prefix=96.4487 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 5000 total=0.0272 epsilon=0.0272 prefix=7.4466 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_epsilononly_p150eval_5k_cuda_2026-07-10_imagenet256_p0/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_epsilononly_p150eval_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_epsilononly_p150eval_5k_cuda_2026-07-10_imagenet256_p0/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_imagenet256_k4_epsilononly_p150eval_5k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_epsilononly_p150eval_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_epsilononly_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0 --split val --max-batches 64 --max-images 256 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_epsilononly_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_imagenet256_k4_channelmask_p150eval_5k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_channelmask_p150eval_5k_cuda_2026-07-10_imagenet256_p0
+step 0001 total=354.2972 epsilon=1.0615 prefix=1407.1184 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 1000 total=0.2670 epsilon=0.0360 prefix=0.9240 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 2000 total=4.4746 epsilon=0.0556 prefix=17.6756 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 3000 total=5.8961 epsilon=0.0086 prefix=23.5307 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 4000 total=0.4355 epsilon=0.0086 prefix=1.7069 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 5000 total=0.0866 epsilon=0.0302 prefix=0.2254 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_channelmask_p150eval_5k_cuda_2026-07-10_imagenet256_p0/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_channelmask_p150eval_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_channelmask_p150eval_5k_cuda_2026-07-10_imagenet256_p0/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_imagenet256_k4_channelmask_p150eval_5k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_channelmask_p150eval_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_channelmask_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0 --split val --max-batches 64 --max-images 256 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_channelmask_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_imagenet256_k4_denoisepath_p150_light_nopathprefix_5k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_nopathprefix_5k_cuda_2026-07-10_imagenet256_p0
+step 0001 total=1.0663 epsilon=1.0412 prefix=36.9309 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.4133 path_c=0.0838
+step 1000 total=0.0466 epsilon=0.0335 prefix=613.8809 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0465 path_c=0.0437
+step 2000 total=0.1005 epsilon=0.0818 prefix=2158.9932 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0781 path_c=0.0624
+step 3000 total=0.0272 epsilon=0.0204 prefix=144.8357 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0236 path_c=0.0225
+step 4000 total=0.0766 epsilon=0.0672 prefix=339.6619 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0405 path_c=0.0312
+step 5000 total=0.0280 epsilon=0.0238 prefix=27.4190 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0176 path_c=0.0140
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_nopathprefix_5k_cuda_2026-07-10_imagenet256_p0/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_nopathprefix_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_nopathprefix_5k_cuda_2026-07-10_imagenet256_p0/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_imagenet256_k4_denoisepath_p150_light_nopathprefix_5k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_nopathprefix_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_nopathprefix_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0 --split val --max-batches 64 --max-images 256 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_nopathprefix_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_imagenet256_k4_denoisepath_p150_light_cleanmono_5k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_cleanmono_5k_cuda_2026-07-10_imagenet256_p0
+step 0001 total=1.1170 epsilon=1.0185 prefix=66.3709 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.4023 path_c=0.0796
+step 1000 total=0.0587 epsilon=0.0414 prefix=13.0331 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0414 path_c=0.0371
+step 2000 total=0.0378 epsilon=0.0276 prefix=34.2239 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0242 path_c=0.0219
+step 3000 total=0.0411 epsilon=0.0325 prefix=1660.7262 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0201 path_c=0.0187
+step 4000 total=0.0418 epsilon=0.0347 prefix=52.1276 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0189 path_c=0.0141
+step 5000 total=0.0648 epsilon=0.0563 prefix=326.3884 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0249 path_c=0.0159
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_cleanmono_5k_cuda_2026-07-10_imagenet256_p0/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_cleanmono_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_cleanmono_5k_cuda_2026-07-10_imagenet256_p0/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_imagenet256_k4_denoisepath_p150_light_cleanmono_5k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_cleanmono_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_cleanmono_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0 --split val --max-batches 64 --max-images 256 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_cleanmono_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_imagenet256_k4_denoisepath_p150_light_simultaneous_5k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_simultaneous_5k_cuda_2026-07-10_imagenet256_p0
+step 0001 total=1.1295 epsilon=1.0437 prefix=1393.7935 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.4108 path_c=0.0806
+step 1000 total=0.0545 epsilon=0.0372 prefix=3.0594 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0381 path_c=0.0386
+step 2000 total=0.0669 epsilon=0.0530 prefix=303.1825 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0328 path_c=0.0301
+step 3000 total=0.0212 epsilon=0.0132 prefix=730.6891 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0164 path_c=0.0183
+step 4000 total=0.0189 epsilon=0.0131 prefix=70.8309 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0128 path_c=0.0130
+step 5000 total=0.0393 epsilon=0.0326 prefix=5.4206 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0169 path_c=0.0139
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_simultaneous_5k_cuda_2026-07-10_imagenet256_p0/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_simultaneous_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_simultaneous_5k_cuda_2026-07-10_imagenet256_p0/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_imagenet256_k4_denoisepath_p150_light_simultaneous_5k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_simultaneous_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_simultaneous_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0 --split val --max-batches 64 --max-images 256 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_simultaneous_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_imagenet256_k4_denoisepath_p150_light_deepsk_5k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_deepsk_5k_cuda_2026-07-10_imagenet256_p0
+step 0001 total=1.0870 epsilon=1.0058 prefix=1376.3132 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.3961 path_c=0.0723
+step 1000 total=0.0396 epsilon=0.0335 prefix=3.1170 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0184 path_c=0.0109
+step 2000 total=0.0455 epsilon=0.0403 prefix=307.1965 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0166 path_c=0.0090
+step 3000 total=0.0148 epsilon=0.0127 prefix=747.2853 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0067 path_c=0.0035
+step 4000 total=0.0131 epsilon=0.0114 prefix=70.3875 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0056 path_c=0.0028
+step 5000 total=0.0236 epsilon=0.0212 prefix=5.3898 energy=0.0000 residual=0.0000 decor=0.0000 decor_w=0.00000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0086 path_c=0.0037
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_deepsk_5k_cuda_2026-07-10_imagenet256_p0/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_deepsk_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_deepsk_5k_cuda_2026-07-10_imagenet256_p0/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_imagenet256_k4_denoisepath_p150_light_deepsk_5k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_deepsk_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_deepsk_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0 --split val --max-batches 64 --max-images 256 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet256_deepsk_5k_256_t500_lpips_inception_2026-07-10_imagenet256_p0/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_generated_samples_stream.py --config configs/train_imagenet256_k4_denoisepath_p150_light_5k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_light_5k_512_ddim50_2026-07-10_imagenet256_p0 --split val --sample-count 512 --max-real-images 2048 --batch-size 4 --sample-steps 50 --enable-inception-fid
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_light_5k_512_ddim50_2026-07-10_imagenet256_p0/generated_quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_generated_samples_stream.py --config configs/train_imagenet256_k4_epsilononly_p150eval_5k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_epsilononly_p150eval_5k_cuda_2026-07-10_imagenet256_p0/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_epsilononly_5k_512_ddim50_2026-07-10_imagenet256_p0 --split val --sample-count 512 --max-real-images 2048 --batch-size 4 --sample-steps 50 --enable-inception-fid
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet256_epsilononly_5k_512_ddim50_2026-07-10_imagenet256_p0/generated_quality_report.json
+Logging to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_imagenet_256_5000steps_ddim50_2026-07-10_imagenet256_p0/train
+creating model and diffusion...
+creating data loader...
+training...
+------------------------
+| grad_norm | 6.9      |
+| loss      | 0.998    |
+| loss_q0   | 0.994    |
+| loss_q2   | 1        |
+| loss_q3   | 1        |
+| mse       | 0.998    |
+| mse_q0    | 0.994    |
+| mse_q2    | 1        |
+| mse_q3    | 1        |
+| samples   | 4        |
+| step      | 0        |
+------------------------
+saving model 0...
+saving model 0.9999...
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+------------------------
+| grad_norm | 3.43     |
+| loss      | 0.302    |
+| loss_q0   | 0.374    |
+| loss_q1   | 0.281    |
+| loss_q2   | 0.288    |
+| loss_q3   | 0.258    |
+| mse       | 0.302    |
+| mse_q0    | 0.374    |
+| mse_q1    | 0.281    |
+| mse_q2    | 0.288    |
+| mse_q3    | 0.258    |
+| samples   | 2e+03    |
+| step      | 500      |
+------------------------
+------------------------
+| grad_norm | 0.912    |
+| loss      | 0.0478   |
+| loss_q0   | 0.137    |
+| loss_q1   | 0.0267   |
+| loss_q2   | 0.0163   |
+| loss_q3   | 0.0149   |
+| mse       | 0.0478   |
+| mse_q0    | 0.137    |
+| mse_q1    | 0.0267   |
+| mse_q2    | 0.0163   |
+| mse_q3    | 0.0149   |
+| samples   | 4e+03    |
+| step      | 1e+03    |
+------------------------
+------------------------
+| grad_norm | 0.715    |
+| loss      | 0.0375   |
+| loss_q0   | 0.12     |
+| loss_q1   | 0.0198   |
+| loss_q2   | 0.00921  |
+| loss_q3   | 0.00773  |
+| mse       | 0.0375   |
+| mse_q0    | 0.12     |
+| mse_q1    | 0.0198   |
+| mse_q2    | 0.00921  |
+| mse_q3    | 0.00773  |
+| samples   | 6e+03    |
+| step      | 1.5e+03  |
+------------------------
+------------------------
+| grad_norm | 0.641    |
+| loss      | 0.0352   |
+| loss_q0   | 0.112    |
+| loss_q1   | 0.0164   |
+| loss_q2   | 0.00717  |
+| loss_q3   | 0.0056   |
+| mse       | 0.0352   |
+| mse_q0    | 0.112    |
+| mse_q1    | 0.0164   |
+| mse_q2    | 0.00717  |
+| mse_q3    | 0.0056   |
+| samples   | 8e+03    |
+| step      | 2e+03    |
+------------------------
+------------------------
+| grad_norm | 0.59     |
+| loss      | 0.0314   |
+| loss_q0   | 0.0966   |
+| loss_q1   | 0.015    |
+| loss_q2   | 0.00587  |
+| loss_q3   | 0.00436  |
+| mse       | 0.0314   |
+| mse_q0    | 0.0966   |
+| mse_q1    | 0.015    |
+| mse_q2    | 0.00587  |
+| mse_q3    | 0.00436  |
+| samples   | 1e+04    |
+| step      | 2.5e+03  |
+------------------------
+------------------------
+| grad_norm | 0.548    |
+| loss      | 0.031    |
+| loss_q0   | 0.0955   |
+| loss_q1   | 0.0143   |
+| loss_q2   | 0.00513  |
+| loss_q3   | 0.00363  |
+| mse       | 0.031    |
+| mse_q0    | 0.0955   |
+| mse_q1    | 0.0143   |
+| mse_q2    | 0.00513  |
+| mse_q3    | 0.00363  |
+| samples   | 1.2e+04  |
+| step      | 3e+03    |
+------------------------
+------------------------
+| grad_norm | 0.451    |
+| loss      | 0.0271   |
+| loss_q0   | 0.0897   |
+| loss_q1   | 0.0136   |
+| loss_q2   | 0.00472  |
+| loss_q3   | 0.00312  |
+| mse       | 0.0271   |
+| mse_q0    | 0.0897   |
+| mse_q1    | 0.0136   |
+| mse_q2    | 0.00472  |
+| mse_q3    | 0.00312  |
+| samples   | 1.4e+04  |
+| step      | 3.5e+03  |
+------------------------
+------------------------
+| grad_norm | 0.43     |
+| loss      | 0.0269   |
+| loss_q0   | 0.0872   |
+| loss_q1   | 0.0138   |
+| loss_q2   | 0.0044   |
+| loss_q3   | 0.0028   |
+| mse       | 0.0269   |
+| mse_q0    | 0.0872   |
+| mse_q1    | 0.0138   |
+| mse_q2    | 0.0044   |
+| mse_q3    | 0.0028   |
+| samples   | 1.6e+04  |
+| step      | 4e+03    |
+------------------------
+------------------------
+| grad_norm | 0.429    |
+| loss      | 0.0274   |
+| loss_q0   | 0.0923   |
+| loss_q1   | 0.0133   |
+| loss_q2   | 0.00396  |
+| loss_q3   | 0.00258  |
+| mse       | 0.0274   |
+| mse_q0    | 0.0923   |
+| mse_q1    | 0.0133   |
+| mse_q2    | 0.00396  |
+| mse_q3    | 0.00258  |
+| samples   | 1.8e+04  |
+| step      | 4.5e+03  |
+------------------------
+saving model 0...
+saving model 0.9999...
+[rank0]:[W710 03:31:27.849283787 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Logging to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_imagenet_256_5000steps_ddim50_2026-07-10_imagenet256_p0/sample
+creating model and diffusion...
+sampling...
+created 4 samples
+created 8 samples
+created 12 samples
+created 16 samples
+created 20 samples
+created 24 samples
+created 28 samples
+created 32 samples
+created 36 samples
+created 40 samples
+created 44 samples
+created 48 samples
+created 52 samples
+created 56 samples
+created 60 samples
+created 64 samples
+created 68 samples
+created 72 samples
+created 76 samples
+created 80 samples
+created 84 samples
+created 88 samples
+created 92 samples
+created 96 samples
+created 100 samples
+created 104 samples
+created 108 samples
+created 112 samples
+created 116 samples
+created 120 samples
+created 124 samples
+created 128 samples
+created 132 samples
+created 136 samples
+created 140 samples
+created 144 samples
+created 148 samples
+created 152 samples
+created 156 samples
+created 160 samples
+created 164 samples
+created 168 samples
+created 172 samples
+created 176 samples
+created 180 samples
+created 184 samples
+created 188 samples
+created 192 samples
+created 196 samples
+created 200 samples
+created 204 samples
+created 208 samples
+created 212 samples
+created 216 samples
+created 220 samples
+created 224 samples
+created 228 samples
+created 232 samples
+created 236 samples
+created 240 samples
+created 244 samples
+created 248 samples
+created 252 samples
+created 256 samples
+created 260 samples
+created 264 samples
+created 268 samples
+created 272 samples
+created 276 samples
+created 280 samples
+created 284 samples
+created 288 samples
+created 292 samples
+created 296 samples
+created 300 samples
+created 304 samples
+created 308 samples
+created 312 samples
+created 316 samples
+created 320 samples
+created 324 samples
+created 328 samples
+created 332 samples
+created 336 samples
+created 340 samples
+created 344 samples
+created 348 samples
+created 352 samples
+created 356 samples
+created 360 samples
+created 364 samples
+created 368 samples
+created 372 samples
+created 376 samples
+created 380 samples
+created 384 samples
+created 388 samples
+created 392 samples
+created 396 samples
+created 400 samples
+created 404 samples
+created 408 samples
+created 412 samples
+created 416 samples
+created 420 samples
+created 424 samples
+created 428 samples
+created 432 samples
+created 436 samples
+created 440 samples
+created 444 samples
+created 448 samples
+created 452 samples
+created 456 samples
+created 460 samples
+created 464 samples
+created 468 samples
+created 472 samples
+created 476 samples
+created 480 samples
+created 484 samples
+created 488 samples
+created 492 samples
+created 496 samples
+created 500 samples
+created 504 samples
+created 508 samples
+created 512 samples
+saving to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_imagenet_256_5000steps_ddim50_2026-07-10_imagenet256_p0/sample/samples_512x256x256x3.npz
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+sampling complete
+[rank0]:[W710 03:32:59.254976289 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+wrote 512 PNG images to /root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_imagenet_256_5000steps_ddim50_2026-07-10_imagenet256_p0/samples_png
+wrote /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/improved_diffusion/improved_diffusion_imagenet_256_5000steps_ddim50_2026-07-10_imagenet256_p0/generated_quality/generated_quality_report.json
+improved_diffusion_completed imagenet_256 /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/improved_diffusion/improved_diffusion_imagenet_256_5000steps_ddim50_2026-07-10_imagenet256_p0
+
+Training options:
+{
+  "dataset_kwargs": {
+    "class_name": "training.dataset.ImageFolderDataset",
+    "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/train",
+    "use_labels": false,
+    "xflip": false,
+    "cache": false,
+    "resolution": 256,
+    "max_size": 1281167
+  },
+  "data_loader_kwargs": {
+    "pin_memory": true,
+    "num_workers": 1,
+    "prefetch_factor": 2
+  },
+  "network_kwargs": {
+    "model_type": "SongUNet",
+    "embedding_type": "positional",
+    "encoder_type": "standard",
+    "decoder_type": "standard",
+    "channel_mult_noise": 1,
+    "resample_filter": [
+      1,
+      1
+    ],
+    "model_channels": 32,
+    "channel_mult": [
+      1,
+      1,
+      1
+    ],
+    "class_name": "training.networks.EDMPrecond",
+    "dropout": 0.0,
+    "use_fp16": false
+  },
+  "loss_kwargs": {
+    "class_name": "training.loss.EDMLoss"
+  },
+  "optimizer_kwargs": {
+    "class_name": "torch.optim.Adam",
+    "lr": 0.0001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08
+  },
+  "total_kimg": 20,
+  "ema_halflife_kimg": 1,
+  "batch_size": 4,
+  "batch_gpu": 2,
+  "loss_scaling": 1.0,
+  "cudnn_benchmark": true,
+  "kimg_per_tick": 20,
+  "snapshot_ticks": 999,
+  "state_dump_ticks": 999,
+  "seed": 139,
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_imagenet_256_5000steps_edm40_2026-07-10_imagenet256_p0/train"
+}
+
+Output directory:        /root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_imagenet_256_5000steps_edm40_2026-07-10_imagenet256_p0/train
+Dataset path:            /root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/train
+Class-conditional:       False
+Network architecture:    ddpmpp
+Preconditioning & loss:  edm
+Number of GPUs:          1
+Batch size:              4
+Mixed-precision:         False
+
+Creating output directory...
+Loading dataset...
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/utils/data/sampler.py:68: UserWarning: `data_source` argument is not used and will be removed in 2.2.0.You may still have custom implementation that utilizes it.
+  warnings.warn(
+Constructing network...
+
+EDMPrecond                  Parameters  Buffers  Output shape       Datatype
+---                         ---         ---      ---                ---     
+model.map_noise             -           -        [2, 32]            float32 
+model.map_layer0            4224        -        [2, 128]           float32 
+model.map_layer1            16512       -        [2, 128]           float32 
+model.enc.256x256_conv      896         -        [2, 32, 256, 256]  float32 
+model.enc.256x256_block0    22752       -        [2, 32, 256, 256]  float32 
+model.enc.256x256_block1    22752       -        [2, 32, 256, 256]  float32 
+model.enc.256x256_block2    22752       -        [2, 32, 256, 256]  float32 
+model.enc.256x256_block3    22752       -        [2, 32, 256, 256]  float32 
+model.enc.128x128_down      23808       8        [2, 32, 128, 128]  float32 
+model.enc.128x128_block0    22752       -        [2, 32, 128, 128]  float32 
+model.enc.128x128_block1    22752       -        [2, 32, 128, 128]  float32 
+model.enc.128x128_block2    22752       -        [2, 32, 128, 128]  float32 
+model.enc.128x128_block3    22752       -        [2, 32, 128, 128]  float32 
+model.enc.64x64_down        23808       8        [2, 32, 64, 64]    float32 
+model.enc.64x64_block0      22752       -        [2, 32, 64, 64]    float32 
+model.enc.64x64_block1      22752       -        [2, 32, 64, 64]    float32 
+model.enc.64x64_block2      22752       -        [2, 32, 64, 64]    float32 
+model.enc.64x64_block3      22752       -        [2, 32, 64, 64]    float32 
+model.dec.64x64_in0         27040       -        [2, 32, 64, 64]    float32 
+model.dec.64x64_in1         22752       -        [2, 32, 64, 64]    float32 
+model.dec.64x64_block0      34112       -        [2, 32, 64, 64]    float32 
+model.dec.64x64_block1      34112       -        [2, 32, 64, 64]    float32 
+model.dec.64x64_block2      34112       -        [2, 32, 64, 64]    float32 
+model.dec.64x64_block3      34112       -        [2, 32, 64, 64]    float32 
+model.dec.64x64_block4      34112       -        [2, 32, 64, 64]    float32 
+model.dec.128x128_up        23808       8        [2, 32, 128, 128]  float32 
+model.dec.128x128_block0    34112       -        [2, 32, 128, 128]  float32 
+model.dec.128x128_block1    34112       -        [2, 32, 128, 128]  float32 
+model.dec.128x128_block2    34112       -        [2, 32, 128, 128]  float32 
+model.dec.128x128_block3    34112       -        [2, 32, 128, 128]  float32 
+model.dec.128x128_block4    34112       -        [2, 32, 128, 128]  float32 
+model.dec.256x256_up        23808       8        [2, 32, 256, 256]  float32 
+model.dec.256x256_block0    34112       -        [2, 32, 256, 256]  float32 
+model.dec.256x256_block1    34112       -        [2, 32, 256, 256]  float32 
+model.dec.256x256_block2    34112       -        [2, 32, 256, 256]  float32 
+model.dec.256x256_block3    34112       -        [2, 32, 256, 256]  float32 
+model.dec.256x256_block4    34112       -        [2, 32, 256, 256]  float32 
+model.dec.256x256_aux_norm  64          -        [2, 32, 256, 256]  float32 
+model.dec.256x256_aux_conv  867         -        [2, 3, 256, 256]   float32 
+<top-level>                 -           -        [2, 3, 256, 256]   float32 
+---                         ---         ---      ---                ---     
+Total                       952291      32       -                  -       
+
+Setting up optimizer...
+Training for 20 kimg...
+
+tick 0     kimg 0.0       time 17s          sec/tick 1.0     sec/kimg 249.92  maintenance 16.4   cpumem 2.19   gpumem 2.85   reserved 2.85  
+tick 1     kimg 20.0      time 6m 10s       sec/tick 352.0   sec/kimg 17.60   maintenance 0.1    cpumem 2.25   gpumem 1.86   reserved 2.31  
+
+Exiting...
+[rank0]:[W710 03:40:08.389975727 ProcessGroupNCCL.cpp:1479] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+[rank0]:[W710 03:40:10.991514417 ProcessGroupNCCL.cpp:4718] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 as device used by this process is currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. You can pecify device_id in init_process_group() to force use of a particular device.
+Loading network from "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_imagenet_256_5000steps_edm40_2026-07-10_imagenet256_p0/train/network-snapshot-000020.pkl"...
+Generating 512 images to "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_imagenet_256_5000steps_edm40_2026-07-10_imagenet256_p0/samples_png"...
+  0%|          | 0/128 [00:00<?, ?batch/s]  1%|          | 1/128 [00:01<03:10,  1.50s/batch]  2%|▏         | 2/128 [00:02<02:40,  1.27s/batch]  2%|▏         | 3/128 [00:03<02:28,  1.18s/batch]  3%|▎         | 4/128 [00:04<02:21,  1.14s/batch]  4%|▍         | 5/128 [00:05<02:17,  1.12s/batch]  5%|▍         | 6/128 [00:06<02:14,  1.11s/batch]  5%|▌         | 7/128 [00:07<02:12,  1.09s/batch]  6%|▋         | 8/128 [00:09<02:10,  1.09s/batch]  7%|▋         | 9/128 [00:10<02:09,  1.09s/batch]  8%|▊         | 10/128 [00:11<02:07,  1.08s/batch]  9%|▊         | 11/128 [00:12<02:08,  1.10s/batch]  9%|▉         | 12/128 [00:13<02:06,  1.09s/batch] 10%|█         | 13/128 [00:14<02:05,  1.09s/batch] 11%|█         | 14/128 [00:15<02:03,  1.08s/batch] 12%|█▏        | 15/128 [00:16<02:03,  1.09s/batch] 12%|█▎        | 16/128 [00:17<02:01,  1.09s/batch] 13%|█▎        | 17/128 [00:18<02:00,  1.08s/batch] 14%|█▍        | 18/128 [00:19<01:59,  1.08s/batch] 15%|█▍        | 19/128 [00:21<01:57,  1.08s/batch] 16%|█▌        | 20/128 [00:22<01:56,  1.08s/batch] 16%|█▋        | 21/128 [00:23<01:55,  1.08s/batch] 17%|█▋        | 22/128 [00:24<01:55,  1.09s/batch] 18%|█▊        | 23/128 [00:25<01:55,  1.10s/batch] 19%|█▉        | 24/128 [00:26<01:53,  1.09s/batch] 20%|█▉        | 25/128 [00:27<01:53,  1.11s/batch] 20%|██        | 26/128 [00:28<01:53,  1.11s/batch] 21%|██        | 27/128 [00:29<01:51,  1.10s/batch] 22%|██▏       | 28/128 [00:30<01:49,  1.09s/batch] 23%|██▎       | 29/128 [00:31<01:47,  1.09s/batch] 23%|██▎       | 30/128 [00:33<01:46,  1.09s/batch] 24%|██▍       | 31/128 [00:34<01:46,  1.09s/batch] 25%|██▌       | 32/128 [00:35<01:44,  1.09s/batch] 26%|██▌       | 33/128 [00:36<01:44,  1.10s/batch] 27%|██▋       | 34/128 [00:37<01:43,  1.10s/batch] 27%|██▋       | 35/128 [00:38<01:41,  1.09s/batch] 28%|██▊       | 36/128 [00:39<01:40,  1.09s/batch] 29%|██▉       | 37/128 [00:40<01:38,  1.09s/batch] 30%|██▉       | 38/128 [00:41<01:37,  1.08s/batch] 30%|███       | 39/128 [00:42<01:36,  1.08s/batch] 31%|███▏      | 40/128 [00:43<01:34,  1.08s/batch] 32%|███▏      | 41/128 [00:45<01:33,  1.08s/batch] 33%|███▎      | 42/128 [00:46<01:33,  1.09s/batch] 34%|███▎      | 43/128 [00:47<01:32,  1.09s/batch] 34%|███▍      | 44/128 [00:48<01:31,  1.08s/batch] 35%|███▌      | 45/128 [00:49<01:30,  1.09s/batch] 36%|███▌      | 46/128 [00:50<01:29,  1.09s/batch] 37%|███▋      | 47/128 [00:51<01:27,  1.08s/batch] 38%|███▊      | 48/128 [00:52<01:26,  1.08s/batch] 38%|███▊      | 49/128 [00:53<01:25,  1.08s/batch] 39%|███▉      | 50/128 [00:54<01:24,  1.08s/batch] 40%|███▉      | 51/128 [00:55<01:23,  1.08s/batch] 41%|████      | 52/128 [00:56<01:21,  1.08s/batch] 41%|████▏     | 53/128 [00:58<01:20,  1.08s/batch] 42%|████▏     | 54/128 [00:59<01:19,  1.08s/batch] 43%|████▎     | 55/128 [01:00<01:18,  1.08s/batch] 44%|████▍     | 56/128 [01:01<01:17,  1.08s/batch] 45%|████▍     | 57/128 [01:02<01:16,  1.08s/batch] 45%|████▌     | 58/128 [01:03<01:15,  1.08s/batch] 46%|████▌     | 59/128 [01:04<01:14,  1.08s/batch] 47%|████▋     | 60/128 [01:05<01:13,  1.08s/batch] 48%|████▊     | 61/128 [01:06<01:12,  1.08s/batch] 48%|████▊     | 62/128 [01:07<01:10,  1.07s/batch] 49%|████▉     | 63/128 [01:08<01:09,  1.07s/batch] 50%|█████     | 64/128 [01:09<01:08,  1.07s/batch] 51%|█████     | 65/128 [01:10<01:07,  1.08s/batch] 52%|█████▏    | 66/128 [01:11<01:06,  1.08s/batch] 52%|█████▏    | 67/128 [01:13<01:05,  1.08s/batch] 53%|█████▎    | 68/128 [01:14<01:04,  1.08s/batch] 54%|█████▍    | 69/128 [01:15<01:03,  1.07s/batch] 55%|█████▍    | 70/128 [01:16<01:02,  1.08s/batch] 55%|█████▌    | 71/128 [01:17<01:01,  1.07s/batch] 56%|█████▋    | 72/128 [01:18<01:00,  1.07s/batch] 57%|█████▋    | 73/128 [01:19<00:59,  1.07s/batch] 58%|█████▊    | 74/128 [01:20<00:58,  1.07s/batch] 59%|█████▊    | 75/128 [01:21<00:56,  1.07s/batch] 59%|█████▉    | 76/128 [01:22<00:55,  1.07s/batch] 60%|██████    | 77/128 [01:23<00:54,  1.08s/batch] 61%|██████    | 78/128 [01:24<00:53,  1.08s/batch] 62%|██████▏   | 79/128 [01:25<00:52,  1.08s/batch] 62%|██████▎   | 80/128 [01:27<00:51,  1.08s/batch] 63%|██████▎   | 81/128 [01:28<00:50,  1.08s/batch] 64%|██████▍   | 82/128 [01:29<00:49,  1.08s/batch] 65%|██████▍   | 83/128 [01:30<00:48,  1.08s/batch] 66%|██████▌   | 84/128 [01:31<00:47,  1.08s/batch] 66%|██████▋   | 85/128 [01:32<00:46,  1.08s/batch] 67%|██████▋   | 86/128 [01:33<00:45,  1.08s/batch] 68%|██████▊   | 87/128 [01:34<00:44,  1.08s/batch] 69%|██████▉   | 88/128 [01:35<00:43,  1.08s/batch] 70%|██████▉   | 89/128 [01:36<00:41,  1.08s/batch] 70%|███████   | 90/128 [01:37<00:40,  1.08s/batch] 71%|███████   | 91/128 [01:38<00:39,  1.08s/batch] 72%|███████▏  | 92/128 [01:39<00:39,  1.09s/batch] 73%|███████▎  | 93/128 [01:41<00:37,  1.09s/batch] 73%|███████▎  | 94/128 [01:42<00:36,  1.08s/batch] 74%|███████▍  | 95/128 [01:43<00:35,  1.08s/batch] 75%|███████▌  | 96/128 [01:44<00:34,  1.08s/batch] 76%|███████▌  | 97/128 [01:45<00:33,  1.08s/batch] 77%|███████▋  | 98/128 [01:46<00:32,  1.08s/batch] 77%|███████▋  | 99/128 [01:47<00:31,  1.08s/batch] 78%|███████▊  | 100/128 [01:48<00:30,  1.08s/batch] 79%|███████▉  | 101/128 [01:49<00:29,  1.08s/batch] 80%|███████▉  | 102/128 [01:50<00:27,  1.08s/batch] 80%|████████  | 103/128 [01:51<00:26,  1.07s/batch] 81%|████████▏ | 104/128 [01:52<00:25,  1.07s/batch] 82%|████████▏ | 105/128 [01:53<00:24,  1.07s/batch] 83%|████████▎ | 106/128 [01:55<00:23,  1.07s/batch] 84%|████████▎ | 107/128 [01:56<00:22,  1.07s/batch] 84%|████████▍ | 108/128 [01:57<00:21,  1.07s/batch] 85%|████████▌ | 109/128 [01:58<00:20,  1.08s/batch] 86%|████████▌ | 110/128 [01:59<00:19,  1.08s/batch] 87%|████████▋ | 111/128 [02:00<00:18,  1.08s/batch] 88%|████████▊ | 112/128 [02:01<00:17,  1.08s/batch] 88%|████████▊ | 113/128 [02:02<00:16,  1.08s/batch] 89%|████████▉ | 114/128 [02:03<00:15,  1.08s/batch] 90%|████████▉ | 115/128 [02:04<00:13,  1.08s/batch] 91%|█████████ | 116/128 [02:05<00:12,  1.08s/batch] 91%|█████████▏| 117/128 [02:06<00:11,  1.08s/batch] 92%|█████████▏| 118/128 [02:07<00:10,  1.08s/batch] 93%|█████████▎| 119/128 [02:09<00:09,  1.08s/batch] 94%|█████████▍| 120/128 [02:10<00:08,  1.07s/batch] 95%|█████████▍| 121/128 [02:11<00:07,  1.07s/batch] 95%|█████████▌| 122/128 [02:12<00:06,  1.07s/batch] 96%|█████████▌| 123/128 [02:13<00:05,  1.07s/batch] 97%|█████████▋| 124/128 [02:14<00:04,  1.08s/batch] 98%|█████████▊| 125/128 [02:15<00:03,  1.07s/batch] 98%|█████████▊| 126/128 [02:16<00:02,  1.08s/batch] 99%|█████████▉| 127/128 [02:17<00:01,  1.08s/batch]100%|██████████| 128/128 [02:18<00:00,  1.08s/batch]100%|██████████| 128/128 [02:18<00:00,  1.08s/batch]
+Done.
+wrote /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/edm/edm_imagenet_256_5000steps_edm40_2026-07-10_imagenet256_p0/generated_quality/generated_quality_report.json
+edm_completed imagenet_256 /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/edm/edm_imagenet_256_5000steps_edm40_2026-07-10_imagenet256_p0
+wrote artifacts/reports/summary_2026-07-10_imagenet256_p0/experiment_summary.json
+wrote artifacts/reports/summary_2026-07-10_imagenet256_p0/core_summary.md
+wrote artifacts/reports/baselines/summary_2026-07-10_imagenet256_p0/baseline_summary.md
+wrote artifacts/reports/paper_comparison_matrix_2026-07-10_imagenet256_p0/paper_comparison_matrix_audit.md
+p0_imagenet256_done artifacts/reports/summary_2026-07-10_imagenet256_p0 artifacts/reports/baselines/summary_2026-07-10_imagenet256_p0 artifacts/reports/paper_comparison_matrix_2026-07-10_imagenet256_p0

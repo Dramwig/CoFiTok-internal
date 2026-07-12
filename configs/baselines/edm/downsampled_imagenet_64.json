@@ -1,0 +1,17 @@
+{
+  "name": "baseline_edm_downsampled_imagenet_64",
+  "data": {
+    "dataset": "downsampled_imagenet_64",
+    "root": "/root/autodl-tmp/CoFiTok/datasets",
+    "image_size": 64,
+    "channels": 3,
+    "batch_size": 64,
+    "num_workers": 2,
+    "class_conditional": false
+  },
+  "runtime": {
+    "device": "cuda",
+    "seed": 139,
+    "steps": 5000
+  }
+}

@@ -1,0 +1,198 @@
+{
+  "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k4_denoisepath_p150_light_5k_2026-07-08/checkpoint_final.pt",
+  "component_correlation": {
+    "max_abs_cosine": 0.9667402505874634,
+    "mean_abs_cosine": 0.8973091095685959,
+    "pair_image_count": 6144
+  },
+  "component_energy": {
+    "energy_effective_token_count": 3.3166874314320274,
+    "energy_entropy": 1.198966523216068,
+    "energy_entropy_normalized": 0.8648715286178518,
+    "ratios": [
+      0.04473384272651071,
+      0.21539950779847744,
+      0.32110238406758446,
+      0.4187642654074274
+    ],
+    "squared_energy_sums": [
+      168006.64208984375,
+      808974.72265625,
+      1205962.421875,
+      1572750.6015625
+    ]
+  },
+  "config": {
+    "data": {
+      "batch_size": 32,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "imagenet_1k_64x64_hf",
+      "image_size": 64,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "component_decorrelation_start_step": 0,
+      "component_decorrelation_warmup_steps": 0,
+      "component_decorrelation_weight": 0.0,
+      "denoise_path_component_weight": 0.3,
+      "denoise_path_prefix_weight": 0.15,
+      "denoise_path_progress_power": 1.5,
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_band_component_weight": 0.0,
+      "epsilon_band_prefix_weight": 0.0,
+      "epsilon_weight": 1.0,
+      "group_residual_size": 0,
+      "group_residual_weight": 0.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.0,
+      "prefix_weight": 0.0,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_early_dropout_prob": 0.0,
+      "tail_early_dropout_start": 1,
+      "tail_early_dropout_weight": 0.0,
+      "tail_endpoint_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "tail_late_monotonic_margin": 0.0,
+      "tail_late_monotonic_start": 0,
+      "tail_late_monotonic_weight": 0.0,
+      "tail_late_prefix_start": 0,
+      "tail_late_prefix_weight": 0.0,
+      "tail_replay_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "deep_synthesis_depth": 3,
+      "deep_synthesis_hidden_channels": 0,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 64,
+      "predictor_depth": 3,
+      "predictor_multiscale_levels": 2,
+      "predictor_type": "tiny_conv",
+      "predictor_use_feedback": true,
+      "synthesis_active_token_channels": [
+        4,
+        8,
+        12,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_mode": "restricted",
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 4
+    },
+    "name": "train_imagenet_1k_64x64_hf_k4_denoisepath_p150_light_5k_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 1000,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 139,
+      "steps": 5000
+    }
+  },
+  "curve_auc": {
+    "denoise_path_mse": 0.07337411009939387,
+    "lowres_frechet_proxy": 3.760291677553361,
+    "mse": 3.8153889250631132,
+    "psnr_db": 2.8909317523631555
+  },
+  "diagnostics": {
+    "endpoint_epsilon_sum_mse": 0.0,
+    "zero_token_component_energy_ratio": 0.0
+  },
+  "evaluation": {
+    "batch_count": 32,
+    "component_order": "ordered",
+    "component_order_indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "denoise_path_progress_power": 1.5,
+    "evaluation_denoise_path_progress_power": 1.5,
+    "fixed_timestep": 500,
+    "image_count": 1024,
+    "image_range": "[-1, 1]",
+    "max_batches": 1024,
+    "max_images": 1024,
+    "prefix_budgets": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "random_order_seed": 0,
+    "split": "val",
+    "training_denoise_path_progress_power": 1.5
+  },
+  "metric_notes": {
+    "inception_frechet": {
+      "available": false,
+      "cache_hint": "Set TORCH_HOME to a project checkpoint/cache directory before first download.",
+      "reason": "not requested"
+    },
+    "lowres_frechet_proxy": "Small-scale rFID proxy over deterministic low-resolution RGB/color features; not a substitute for Inception/FID.",
+    "lpips": {
+      "available": false,
+      "reason": "not requested"
+    },
+    "psnr_db": "Computed from MSE in normalized image range [-1, 1] with max_value=2."
+  },
+  "metrics_by_prefix": {
+    "1": {
+      "denoise_path_mse": 0.03768968104850501,
+      "lowres_frechet_proxy": 6.021647069845317,
+      "mse": 9.571423590183258,
+      "psnr_db": -3.7891654533927275
+    },
+    "2": {
+      "denoise_path_mse": 0.039977448526769876,
+      "lowres_frechet_proxy": 4.949445438843113,
+      "mse": 5.050766259431839,
+      "psnr_db": -1.0129727926559546
+    },
+    "3": {
+      "denoise_path_mse": 0.09654718777164817,
+      "lowres_frechet_proxy": 2.828019995373638,
+      "mse": 1.544935867190361,
+      "psnr_db": 4.131495354657686
+    },
+    "4": {
+      "denoise_path_mse": 0.12950570695102215,
+      "lowres_frechet_proxy": 0.9851721270413475,
+      "mse": 0.12950570695102215,
+      "psnr_db": 14.897710843568198
+    }
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 0.7730815410614014,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

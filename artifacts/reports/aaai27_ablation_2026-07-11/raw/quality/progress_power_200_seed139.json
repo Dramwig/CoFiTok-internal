@@ -1,0 +1,242 @@
+{
+  "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/aaai27_ablation_2026-07-11/train/progress_power_200_seed139/checkpoint_final.pt",
+  "component_correlation": {
+    "max_abs_cosine": 0.8756070733070374,
+    "mean_abs_cosine": 0.6837369331291744,
+    "pair_image_count": 28672
+  },
+  "component_energy": {
+    "energy_effective_token_count": 5.434942137530875,
+    "energy_entropy": 1.6928488742480325,
+    "energy_entropy_normalized": 0.8140882252840337,
+    "ratios": [
+      0.006332343441033293,
+      0.013018946009537097,
+      0.0401587108917216,
+      0.07716585473372611,
+      0.12991599410835092,
+      0.18444858634583736,
+      0.22441275573212494,
+      0.32454680873766867
+    ],
+    "squared_energy_sums": [
+      15522.6259765625,
+      31913.655883789062,
+      98442.01513671875,
+      189158.51806640625,
+      318466.205078125,
+      452143.26171875,
+      550108.392578125,
+      795569.408203125
+    ]
+  },
+  "config": {
+    "data": {
+      "batch_size": 32,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "imagenet_1k_64x64_hf",
+      "image_size": 64,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "component_decorrelation_start_step": 0,
+      "component_decorrelation_warmup_steps": 0,
+      "component_decorrelation_weight": 0.0,
+      "denoise_path_component_weight": 0.3,
+      "denoise_path_prefix_weight": 0.15,
+      "denoise_path_progress_power": 2.0,
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_band_component_weight": 0.0,
+      "epsilon_band_prefix_weight": 0.0,
+      "epsilon_weight": 1.0,
+      "group_residual_size": 0,
+      "group_residual_weight": 0.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.0,
+      "prefix_weight": 0.0,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_early_dropout_prob": 0.0,
+      "tail_early_dropout_start": 1,
+      "tail_early_dropout_weight": 0.0,
+      "tail_endpoint_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "tail_late_monotonic_margin": 0.0,
+      "tail_late_monotonic_start": 0,
+      "tail_late_monotonic_weight": 0.0,
+      "tail_late_prefix_start": 0,
+      "tail_late_prefix_weight": 0.0,
+      "tail_replay_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "deep_synthesis_depth": 3,
+      "deep_synthesis_hidden_channels": 0,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 64,
+      "predictor_depth": 3,
+      "predictor_multiscale_levels": 2,
+      "predictor_type": "tiny_conv",
+      "predictor_use_feedback": true,
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_mode": "restricted",
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 8
+    },
+    "name": "train_imagenet64_hf_k8_aaai27_progress_power_200_5k_seed139_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 1000,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 139,
+      "steps": 5000
+    }
+  },
+  "curve_auc": {
+    "denoise_path_mse": 0.15482885293853801,
+    "lowres_frechet_proxy": 4.559799805685093,
+    "mse": 5.74745823138593,
+    "psnr_db": 0.4363940894055643
+  },
+  "diagnostics": {
+    "endpoint_epsilon_sum_mse": 0.0,
+    "zero_token_component_energy_ratio": 0.0
+  },
+  "evaluation": {
+    "batch_count": 32,
+    "component_order": "ordered",
+    "component_order_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "denoise_path_progress_power": 1.5,
+    "evaluation_denoise_path_progress_power": 1.5,
+    "fixed_timestep": 500,
+    "image_count": 1024,
+    "image_range": "[-1, 1]",
+    "max_batches": 1024,
+    "max_images": 1024,
+    "prefix_budgets": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "random_order_seed": 0,
+    "split": "val",
+    "training_denoise_path_progress_power": 2.0
+  },
+  "metric_notes": {
+    "inception_frechet": {
+      "available": false,
+      "cache_hint": "Set TORCH_HOME to a project checkpoint/cache directory before first download.",
+      "reason": "not requested"
+    },
+    "lowres_frechet_proxy": "Small-scale rFID proxy over deterministic low-resolution RGB/color features; not a substitute for Inception/FID.",
+    "lpips": {
+      "available": false,
+      "reason": "not requested"
+    },
+    "psnr_db": "Computed from MSE in normalized image range [-1, 1] with max_value=2."
+  },
+  "metrics_by_prefix": {
+    "1": {
+      "denoise_path_mse": 0.012538020237116143,
+      "lowres_frechet_proxy": 6.227879376680677,
+      "mse": 11.294481575489044,
+      "psnr_db": -4.508063099690074
+    },
+    "2": {
+      "denoise_path_mse": 0.07050910568796098,
+      "lowres_frechet_proxy": 6.245370433824585,
+      "mse": 10.529792189598083,
+      "psnr_db": -4.203598089362136
+    },
+    "3": {
+      "denoise_path_mse": 0.16110765375196934,
+      "lowres_frechet_proxy": 6.072254365836369,
+      "mse": 9.020176023244858,
+      "psnr_db": -3.531550212891484
+    },
+    "4": {
+      "denoise_path_mse": 0.22007447062060237,
+      "lowres_frechet_proxy": 5.659768219423872,
+      "mse": 7.009634867310524,
+      "psnr_db": -2.436354047781786
+    },
+    "5": {
+      "denoise_path_mse": 0.21013383520767093,
+      "lowres_frechet_proxy": 4.8810477117182725,
+      "mse": 4.639834985136986,
+      "psnr_db": -0.6444254389959072
+    },
+    "6": {
+      "denoise_path_mse": 0.18338924506679177,
+      "lowres_frechet_proxy": 3.5130399111827533,
+      "mse": 2.4418416172266006,
+      "psnr_db": 2.1434250002181248
+    },
+    "7": {
+      "denoise_path_mse": 0.16583936288952827,
+      "lowres_frechet_proxy": 1.9699416288117877,
+      "mse": 0.877207862213254,
+      "psnr_db": 6.58957475823013
+    },
+    "8": {
+      "denoise_path_mse": 0.13295857445336878,
+      "lowres_frechet_proxy": 0.9264733613153368,
+      "mse": 0.13295857445336878,
+      "psnr_db": 14.783436412534094
+    }
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 1.2609803676605225,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

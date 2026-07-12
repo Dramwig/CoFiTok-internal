@@ -1,0 +1,200 @@
+{
+  "artifacts": {
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/eval_cifar10_k8_denoisepath_p150_3k_seed2_ordered_2026-07-08/prefix_final.png",
+    "shuffled_prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/eval_cifar10_k8_denoisepath_p150_3k_seed2_ordered_2026-07-08/prefix_final_shuffled.png"
+  },
+  "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_3k_seed2_2026-07-08/checkpoint_final.pt",
+  "config": {
+    "data": {
+      "batch_size": 64,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "cifar10",
+      "image_size": 32,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "denoise_path_component_weight": 1.0,
+      "denoise_path_prefix_weight": 0.5,
+      "denoise_path_progress_power": 1.5,
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_band_component_weight": 0.0,
+      "epsilon_band_prefix_weight": 0.0,
+      "epsilon_weight": 1.0,
+      "group_residual_size": 0,
+      "group_residual_weight": 0.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.0,
+      "prefix_weight": 0.0,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_early_dropout_prob": 0.0,
+      "tail_early_dropout_start": 1,
+      "tail_early_dropout_weight": 0.0,
+      "tail_endpoint_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "tail_late_monotonic_margin": 0.0,
+      "tail_late_monotonic_start": 0,
+      "tail_late_monotonic_weight": 0.0,
+      "tail_late_prefix_start": 0,
+      "tail_late_prefix_weight": 0.0,
+      "tail_replay_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 32,
+      "predictor_depth": 3,
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 8
+    },
+    "name": "train_cifar10_k8_denoisepath_p150_3k_seed2_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 500,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 149,
+      "steps": 3000
+    }
+  },
+  "prefix_summary": {
+    "active_tail_tokens": 7,
+    "component_energy": [
+      0.0034826723858714104,
+      0.0065198480151593685,
+      0.014521487057209015,
+      0.020347293466329575,
+      0.023450661450624466,
+      0.028762031346559525,
+      0.030283261090517044,
+      0.03644927963614464
+    ],
+    "component_energy_ratio": [
+      0.02125959017261524,
+      0.0397996944393451,
+      0.08864481907216609,
+      0.12420781293439478,
+      0.14315198114515695,
+      0.17557465394689165,
+      0.18486083344690143,
+      0.22250061484252875
+    ],
+    "component_order": "ordered",
+    "component_order_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.020477067679166794,
+      "random_token_component_energy": 0.1595778912305832,
+      "random_token_component_energy_ratio": 7.793004989624023,
+      "shuffled_component_mse": 0.04092542082071304,
+      "shuffled_component_relative_mse": 1.9985977411270142,
+      "zero_token_component_energy": 0.0,
+      "zero_token_component_energy_ratio": 0.0
+    },
+    "energy_effective_token_count": 6.781600745008491,
+    "energy_entropy": 1.914213172169386,
+    "energy_entropy_normalized": 0.920541950231035,
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/eval_cifar10_k8_denoisepath_p150_3k_seed2_ordered_2026-07-08/prefix_final.png",
+    "head_energy_ratio": 0.02125959017261524,
+    "late_half_energy_ratio": 0.7260880833814787,
+    "prefix_mse_to_clean": [
+      10.851840019226074,
+      9.466432571411133,
+      7.438328742980957,
+      5.165589809417725,
+      3.2590599060058594,
+      1.640082597732544,
+      0.6003502607345581,
+      0.15813611447811127
+    ],
+    "prefix_mse_to_clean_auc": 4.724975993590696,
+    "prefix_mse_to_denoise_path": [
+      0.017426081001758575,
+      0.031620729714632034,
+      0.041609883308410645,
+      0.04379895329475403,
+      0.0774935781955719,
+      0.08881428092718124,
+      0.11794199794530869,
+      0.15813611447811127
+    ],
+    "prefix_mse_to_denoise_path_auc": 0.06986578873225621,
+    "random_order_seed": 0,
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4",
+      "prefix_5",
+      "prefix_6",
+      "prefix_7",
+      "prefix_8"
+    ],
+    "shuffled_final_clean_mse": 23.589696884155273,
+    "shuffled_final_mse_ratio": 149.17336853764982,
+    "shuffled_grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/eval_cifar10_k8_denoisepath_p150_3k_seed2_ordered_2026-07-08/prefix_final_shuffled.png",
+    "shuffled_prefix_mse_to_clean": [
+      11.908811569213867,
+      12.041728019714355,
+      12.45987319946289,
+      13.36245346069336,
+      14.79619026184082,
+      16.93207359313965,
+      19.72112274169922,
+      23.589696884155273
+    ],
+    "shuffled_prefix_mse_to_clean_auc": 15.29467078617641,
+    "tail_energy_ratio": 0.9787404098273846,
+    "timestep": 500
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 0.4840714931488037,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

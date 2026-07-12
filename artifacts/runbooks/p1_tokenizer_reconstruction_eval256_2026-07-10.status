@@ -1,0 +1,9 @@
+status=finished
+created_at=2026-07-10T08:41:27+08:00
+log=/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/runbooks/p1_tokenizer_reconstruction_eval256_2026-07-10.log
+max_images=256
+tag=eval256_2026-07-10
+pid=999573
+first_monitor=2026-07-10T08:43:15+08:00
+first_monitor_reports=5
+status=finished rc=0 finished_at=2026-07-10T08:47:47+08:00

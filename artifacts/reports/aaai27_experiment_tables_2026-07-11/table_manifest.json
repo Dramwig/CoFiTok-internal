@@ -1,0 +1,10 @@
+{
+  "all_dataset_row_count": 8,
+  "confirmatory_row_count": 2,
+  "notes": [
+    "The concise main table excludes the legacy clean-prefix objective row.",
+    "Numerical values are copied from the locked evidence JSON without modification."
+  ],
+  "schema_version": 1,
+  "source_evidence": "artifacts\\reports\\paper_evidence_report_2026-07-11_final\\paper_evidence_report.json"
+}

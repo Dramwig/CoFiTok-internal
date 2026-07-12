@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "baseline": "mar",
+  "protocol": "official_imagenet256_eval_only_probe",
+  "status": "blocked_weight_acquisition",
+  "created_at": "2026-07-10",
+  "dataset_alias": "imagenet_256",
+  "resolution": 256,
+  "conditioning": "ImageNet class-conditional",
+  "repo_dir": "/root/autodl-tmp/CoFiTok/baselines/repos/mar",
+  "intended_entrypoint": "torchrun main_mar.py --evaluate",
+  "dependency_status": {
+    "torch_fidelity": "available",
+    "opencv_python_headless": "available",
+    "tensorboard": "available"
+  },
+  "weights": {
+    "official_dropbox_pth": "unavailable_on_pro6000_503_or_html_stub",
+    "hf_kl16_safetensors": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_weights/kl16.safetensors",
+    "hf_mar_base_safetensors": "download_stalled_then_removed_incomplete_cache"
+  },
+  "observations": [
+    "The repository utility util/download.py wrote 3.7KB Dropbox HTML stubs instead of valid .pth/.ckpt files on pro6000.",
+    "Direct curl with the same official Dropbox URLs and dl=1 returned HTTP 503 for kl16.ckpt.",
+    "The HuggingFace model card lists kl16.safetensors and mar-base.safetensors, but the repository's main_mar.py native resume path expects checkpoint-last.pth with model/model_ema keys.",
+    "HF kl16.safetensors downloaded successfully; mar-base.safetensors stalled for over 30 minutes and the incomplete cache was removed."
+  ],
+  "sample_count": 0,
+  "metrics": {},
+  "limitations": [
+    "No MAR sample or metric was produced.",
+    "This remains a secondary official-checkpoint related-method protocol, not a same-dataset P0 retraining baseline.",
+    "Do not include this row as completed in paper tables until a verified MAR-B checkpoint-last.pth or an explicitly documented HF safetensors adapter is used."
+  ],
+  "next_step": "Acquire verified MAR-B official .pth assets from a stable source, or define a separate HF-safetensors adapter/protocol and record the conversion/loading path."
+}

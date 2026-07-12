@@ -1,0 +1,98 @@
+{
+  "artifacts": {
+    "generation_report": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/samples_50k_official_pth/MAR-B-official-pth-ema-size-256-ariter-256-diffsteps-100-cfg-2.9-linear-temp-1.0-seed-0/baseline_eval_report.json",
+    "hf_repo_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/official_pth",
+    "metrics_txt": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/samples_50k_official_pth/MAR-B-official-pth-ema-size-256-ariter-256-diffsteps-100-cfg-2.9-linear-temp-1.0-seed-0.txt",
+    "npz": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/samples_50k_official_pth/MAR-B-official-pth-ema-size-256-ariter-256-diffsteps-100-cfg-2.9-linear-temp-1.0-seed-0.npz",
+    "sample_npz": {
+      "bytes": 9830400360,
+      "dtype": "uint8",
+      "key": "arr_0",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/samples_50k_official_pth/MAR-B-official-pth-ema-size-256-ariter-256-diffsteps-100-cfg-2.9-linear-temp-1.0-seed-0.npz",
+      "sha256": "0bb2d567bfbf883e8087b943465c83cc3ff893bd3f41e927a3074591e264aa4c",
+      "shape": [
+        50000,
+        256,
+        256,
+        3
+      ]
+    },
+    "samples_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/samples_50k_official_pth/MAR-B-official-pth-ema-size-256-ariter-256-diffsteps-100-cfg-2.9-linear-temp-1.0-seed-0",
+    "source_root": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/official_pth",
+    "weights": {
+      "model": {
+        "bytes": 1663614946,
+        "checkpoint_state": "model_ema",
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/official_pth/checkpoint-last.pth",
+        "sha256": "7e970a33bc90353e2fabe3498ed1f2d194dd8d17cd387665f80b2984dfca538c"
+      },
+      "official_repo": {
+        "commit": "c6d53f7fa6427634b5850ebed771b7c2d19ea21f",
+        "path": "/root/autodl-tmp/CoFiTok/baselines/repos/mar"
+      },
+      "vae": {
+        "bytes": 265900046,
+        "checkpoint_state": "model",
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/official_pth/kl16.ckpt",
+        "sha256": "34ce001bcfffb7af67ec8af1e683a30d7bd45760855ddc7deedc1330f2cfd38f"
+      }
+    }
+  },
+  "baseline": "mar",
+  "dataset": "imagenet_256",
+  "limitations": [
+    "Official ImageNet-256 pretrained eval-only, not same-dataset retraining.",
+    "Uses checkpoint['model_ema'] from the pinned LTH14 MAR-B PTH.",
+    "Use only as a secondary related-method row.",
+    "Do not merge into the P0 all-dataset same-budget generation table."
+  ],
+  "metric_notes": {
+    "protocol": "Pinned LTH14 MAR-B checkpoint model_ema and original KL-16 VAE with the official ImageNet-256 sampling parameters. This is eval-only and not same-budget P0 retraining."
+  },
+  "metrics": {
+    "fid": 2.3384937046978393,
+    "inception_score": 62.897865295410156,
+    "precision": 0.8216,
+    "recall": 0.5716,
+    "sfid": 4.699853900194512
+  },
+  "paper_table_role": "secondary related-method only",
+  "parameters": {
+    "balanced_images_per_class": 50,
+    "batch_size": 768,
+    "cfg_scale": 2.9,
+    "cfg_schedule": "linear",
+    "class_num": 1000,
+    "decode_batch_size": 16,
+    "model_type": "mar_base",
+    "num_ar_steps": 256,
+    "num_images": 50000,
+    "num_sampling_steps": 100,
+    "precision": "fp16",
+    "resume_seed_rule": "batch_seed=global_seed+batch_start_index",
+    "seed": 0,
+    "temperature": 1.0
+  },
+  "png_count": 50000,
+  "progress": {
+    "completed_images": 50000,
+    "elapsed_seconds": 17201.1333891768,
+    "eta_seconds": 0.0,
+    "expected_images": 50000,
+    "images_per_second": 2.9324658062001094,
+    "measured_generation_seconds": 17050.497193960473
+  },
+  "protocol": "official_imagenet256_lth14_pth_ema_eval_only_50k",
+  "reference_npz": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/official_refs/VIRTUAL_imagenet256_labeled.npz",
+  "report_type": "baseline_eval",
+  "resolution": 256,
+  "runtime": {
+    "cuda_version": "12.8",
+    "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "peak_memory_bytes": 14745516544,
+    "torch_version": "2.7.1+cu128"
+  },
+  "sample_count": 50000,
+  "schema_version": 1,
+  "status": "completed"
+}

@@ -1,0 +1,138 @@
+{
+  "active_processes": {
+    "returncode": 1,
+    "stderr": "",
+    "stdout": ""
+  },
+  "gpu": {
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "0, 0 MiB, 97887 MiB, 0 %"
+  },
+  "gpu_apps": {
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  "host_code_dir": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+  "log_path": "artifacts/logs/next_validation_queue_2026-07-08.log",
+  "log_tail": [
+    "    {",
+    "      \"evidence\": {",
+    "        \"datasets\": {",
+    "          \"cifar10\": {",
+    "            \"present_count\": 12,",
+    "            \"required_snippet_count\": 12",
+    "          },",
+    "          \"tiny_imagenet_200\": {",
+    "            \"present_count\": 13,",
+    "            \"required_snippet_count\": 13",
+    "          }",
+    "        },",
+    "        \"path\": \"/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/datasets_2026-07-07.md\"",
+    "      },",
+    "      \"missing\": [],",
+    "      \"name\": \"cifar_tiny_records\",",
+    "      \"status\": \"ok\"",
+    "    },",
+    "    {",
+    "      \"evidence\": {",
+    "        \"manifest\": \"/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/imagenet_1k_64x64_hf_manifest_summary_2026-07-08.json\",",
+    "        \"manifest_dataset_alias\": \"imagenet_1k_64x64_hf\",",
+    "        \"manifest_source_loader\": \"benjamin-paine/imagenet-1k-64x64\",",
+    "        \"plan\": \"/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/imagenet_1k_64x64_hf_plan_2026-07-08.md\",",
+    "        \"split_rows\": {",
+    "          \"train\": 1281167,",
+    "          \"validation\": 50000",
+    "        }",
+    "      },",
+    "      \"missing\": [],",
+    "      \"name\": \"imagenet_hf_records\",",
+    "      \"status\": \"ok\"",
+    "    },",
+    "    {",
+    "      \"evidence\": {",
+    "        \"fallback\": \"imagenet_1k_64x64_hf\",",
+    "        \"inspect\": \"/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/downsampled_imagenet_64_tfds_inspect_2026-07-08.json\",",
+    "        \"inspect_dataset_alias\": \"downsampled_imagenet_64\",",
+    "        \"inspect_source_loader\": \"downsampled_imagenet\",",
+    "        \"plan\": \"/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/downsampled_imagenet_64_plan_2026-07-08.md\",",
+    "        \"tfds_version\": \"4.9.10\"",
+    "      },",
+    "      \"missing\": [],",
+    "      \"name\": \"downsampled_fallback_record\",",
+    "      \"status\": \"ok\"",
+    "    }",
+    "  ],",
+    "  \"conditions_dir\": \"/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions\",",
+    "  \"missing_count\": 0,",
+    "  \"ok_count\": 3,",
+    "  \"status\": \"ok\"",
+    "}",
+    "Traceback (most recent call last):",
+    "  File \"/root/autodl-tmp/CoFiTok/CoFiTok-internal/scripts/validate_summary_consistency.py\", line 144, in <module>",
+    "    main()",
+    "  File \"/root/autodl-tmp/CoFiTok/CoFiTok-internal/scripts/validate_summary_consistency.py\", line 135, in main",
+    "    result = validate_summary(",
+    "  File \"/root/autodl-tmp/CoFiTok/CoFiTok-internal/scripts/validate_summary_consistency.py\", line 115, in validate_summary",
+    "    raise AssertionError(f\"{doc} has {key}: {counts_in_doc[key]} but summary has {json_counts[key]}\")",
+    "AssertionError: docs/reports/cofitok_mvp_report_2026-07-08.md has train: 89 but summary has 99"
+  ],
+  "pid": "341508",
+  "process": {
+    "returncode": 1,
+    "stderr": "",
+    "stdout": "PID   PPID STAT     ELAPSED CMD"
+  },
+  "queue": {
+    "by_type": {
+      "generated_quality": {
+        "complete": 6,
+        "expected": 6,
+        "missing": 0
+      },
+      "order_eval": {
+        "complete": 24,
+        "expected": 24,
+        "missing": 0
+      },
+      "quality": {
+        "complete": 10,
+        "expected": 10,
+        "missing": 0
+      },
+      "sampling": {
+        "complete": 6,
+        "expected": 6,
+        "missing": 0
+      },
+      "train": {
+        "complete": 10,
+        "expected": 10,
+        "missing": 0
+      }
+    },
+    "complete_labels": [
+      "tiny_epsilononly_20k_seed2",
+      "tiny_k8_light_20k_seed2",
+      "imagenet_hf_epsilononly_20k_seed2",
+      "imagenet_hf_k8_light_20k_seed2",
+      "tiny_k8_light_multiscale_10k",
+      "imagenet_hf_k8_light_multiscale_10k",
+      "tiny_k8_light_nopathprefix_10k",
+      "tiny_k8_light_cleanmono_10k",
+      "imagenet_hf_k8_light_nopathprefix_10k",
+      "imagenet_hf_k8_light_cleanmono_10k"
+    ],
+    "complete_run_count": 10,
+    "counts": {
+      "complete": 56,
+      "expected": 56,
+      "missing": 0
+    },
+    "first_incomplete": null,
+    "status": "complete"
+  },
+  "remote_status_json": "artifacts/reports/next_validation_queue_status_poll_2026-07-08.json",
+  "status": "complete"
+}

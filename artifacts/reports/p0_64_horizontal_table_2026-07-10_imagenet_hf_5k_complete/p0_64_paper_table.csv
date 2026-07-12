@@ -1,0 +1,61 @@
+dataset,protocol_steps,method,display_name,status,evidence,sample_nfe,sample_lowres_frechet,sample_inception_frechet,denoise_psnr,path_auc,effective_tokens,zero_token_ratio
+cifar10,3000,cofitok_light,CoFiTok,completed,"train,quality,generated_quality",50,7.26628400341152,313.8881060808702,14.117879986548111,0.09602397015052182,6.847324330404836,0.0
+cifar10,3000,same_backbone_dense,Dense epsilon,completed,"train,quality,generated_quality",50,6.42897250404268,320.1375688725353,14.390476661822952,1.3022162999425615,5.159063349338261,0.0
+cifar10,3000,channel_mask,Channel mask,completed,"train,quality",,,,12.937694805520339,5.019766877804484,1.0962579098594605,0.0
+cifar10,3000,cofitok_no_prefix_loss,No prefix loss,completed,"train,quality",,,,14.285832809427298,0.14724184399736778,6.723166762718239,0.0
+cifar10,3000,cofitok_clean_monotonic,Clean monotonic,completed,"train,quality",,,,14.352750652596125,0.10323328125689711,6.739835666518657,0.0
+cifar10,3000,cofitok_simultaneous,Simultaneous components,completed,"train,quality",,,,14.4165855606111,0.09409167444599527,6.923969811884298,0.0
+cifar10,3000,cofitok_deep_synthesis,Deep S_k,completed,"train,quality",,,,14.101815374474175,0.058317238464951515,6.790080386237465,0.061934541910886765
+cifar10,3000,improved_diffusion,Improved DDPM,completed,"baseline_train,baseline_eval",50,7.8610039072364755,498.64594463276137,,,,
+cifar10,3000,edm,EDM,completed,"baseline_train,baseline_eval",79,2.8680827656489063,351.16575166569066,,,,
+cifar10,3000,d_ar,D-AR,protocol_blocked,feasibility_report,,,,,,,
+tiny_imagenet_200,5000,cofitok_light,CoFiTok,completed,"train,quality,generated_quality",50,8.219693173877044,373.23502397820016,14.249674575803976,0.07627656896199499,6.843034763255056,0.0
+tiny_imagenet_200,5000,same_backbone_dense,Dense epsilon,completed,"train,quality,generated_quality",50,8.267616088585038,385.5077538897933,14.374743635787215,0.8459047962512288,5.377338493768649,0.0
+tiny_imagenet_200,5000,channel_mask,Channel mask,completed,"train,quality",,,,12.954610979278602,4.946076078074319,1.1640164914420992,
+tiny_imagenet_200,5000,cofitok_no_prefix_loss,No prefix loss,completed,"train,quality",,,,14.493757818097915,0.1122341241155352,6.570695572078357,0.0
+tiny_imagenet_200,5000,cofitok_clean_monotonic,Clean monotonic,completed,"train,quality",,,,14.327161910928112,0.0726724062114954,6.765209693182966,0.0
+tiny_imagenet_200,5000,cofitok_simultaneous,Simultaneous components,completed,"train,quality",,,,14.27777453552222,0.07517398361648832,6.871676960784846,0.0
+tiny_imagenet_200,5000,cofitok_deep_synthesis,Deep S_k,completed,"train,quality",,,,14.39830822532953,0.04769849205123527,6.888914326074404,0.050537750124931335
+tiny_imagenet_200,5000,improved_diffusion,Improved DDPM,completed,"baseline_train,baseline_eval",50,9.0747346839439,381.23827236998477,,,,
+tiny_imagenet_200,5000,edm,EDM,completed,"baseline_train,baseline_eval",79,3.099583559119309,268.7190000188071,,,,
+tiny_imagenet_200,5000,d_ar,D-AR,protocol_blocked,feasibility_report,,,,,,,
+imagenet_1k_64x64_hf,5000,cofitok_light,CoFiTok,completed,"train,quality,generated_quality",50,8.533712805690053,374.35234759284276,15.062061211552457,0.06412318748022829,6.767741756514339,0.0
+imagenet_1k_64x64_hf,5000,same_backbone_dense,Dense epsilon,completed,"train,quality,generated_quality",50,7.67468186337346,388.1463497872908,15.13139755804086,0.8837306760251522,5.399607161235092,0.0
+imagenet_1k_64x64_hf,5000,channel_mask,Channel mask,completed,"train,quality",,,,13.5929393493204,4.8844171821006706,1.111378188409333,0.0
+imagenet_1k_64x64_hf,5000,cofitok_no_prefix_loss,No prefix loss,completed,"train,quality",,,,14.93180999861767,0.09392996158983026,6.559790763067958,0.0
+imagenet_1k_64x64_hf,5000,cofitok_clean_monotonic,Clean monotonic,completed,"train,quality",,,,14.903977254369142,0.06578289118728467,6.772634862050262,0.0
+imagenet_1k_64x64_hf,5000,cofitok_simultaneous,Simultaneous components,completed,"train,quality",,,,14.903605639448752,0.0723053075905357,6.800998911031761,0.0
+imagenet_1k_64x64_hf,5000,cofitok_deep_synthesis,Deep S_k,completed,"train,quality",,,,13.779007774542901,0.04332395962306431,6.747716927836551,0.044966015964746475
+imagenet_1k_64x64_hf,5000,improved_diffusion,Improved DDPM,completed,"baseline_train,baseline_eval",50,8.883037715101102,378.3324602547109,,,,
+imagenet_1k_64x64_hf,5000,edm,EDM,completed,"baseline_train,baseline_eval",79,3.228504037402854,258.4005064476586,,,,
+imagenet_1k_64x64_hf,5000,d_ar,D-AR,protocol_blocked,feasibility_report,,,,,,,
+downsampled_imagenet_64,5000,cofitok_light,CoFiTok,completed,"train,quality,generated_quality",50,8.355380816355524,374.6833211029276,14.52147508895212,0.06812273418264729,6.816560233713641,0.0
+downsampled_imagenet_64,5000,same_backbone_dense,Dense epsilon,completed,"train,quality,generated_quality",50,7.577812659398078,377.11908568974957,14.651084187745635,1.0403179127190794,5.3762934422803195,0.0
+downsampled_imagenet_64,5000,channel_mask,Channel mask,completed,"train,quality",,,,13.250280617095136,4.903067118355206,1.1123639499880713,0.0
+downsampled_imagenet_64,5000,cofitok_no_prefix_loss,No prefix loss,completed,"train,quality",,,,14.473724973591192,0.09533826341586453,6.572800843896454,0.0
+downsampled_imagenet_64,5000,cofitok_clean_monotonic,Clean monotonic,completed,"train,quality",,,,14.663516521379147,0.0643927130315985,6.826100800610612,0.0
+downsampled_imagenet_64,5000,cofitok_simultaneous,Simultaneous components,completed,"train,quality",,,,14.58630176684532,0.06809995962040764,6.887179086556721,0.0
+downsampled_imagenet_64,5000,cofitok_deep_synthesis,Deep S_k,completed,"train,quality",,,,14.50189022285771,0.03972585239846792,6.7542539617942685,0.05347995460033417
+downsampled_imagenet_64,5000,improved_diffusion,Improved DDPM,completed,"baseline_train,baseline_eval",50,8.804418110119745,355.10614289345926,,,,
+downsampled_imagenet_64,5000,edm,EDM,completed,"baseline_train,baseline_eval",79,2.7540114242858196,248.3075505878844,,,,
+downsampled_imagenet_64,5000,d_ar,D-AR,protocol_blocked,feasibility_report,,,,,,,
+ffhq_64,5000,cofitok_light,CoFiTok,completed,"train,quality,generated_quality",50,8.737876966314342,425.7088653024866,15.024007154107888,0.06822829387549843,6.818310856995398,0.0
+ffhq_64,5000,same_backbone_dense,Dense epsilon,completed,"train,quality,generated_quality",50,8.088101433963073,424.1108256360812,15.144207282398387,1.0807267986238003,5.415471530357965,0.0
+ffhq_64,5000,channel_mask,Channel mask,completed,"train,quality",,,,13.285442535796594,4.877475644860949,1.1131526689621274,0.0
+ffhq_64,5000,cofitok_no_prefix_loss,No prefix loss,completed,"train,quality",,,,14.947708130755398,0.09963527441556964,6.522770039397141,0.0
+ffhq_64,5000,cofitok_clean_monotonic,Clean monotonic,completed,"train,quality",,,,15.13498222552115,0.06716050819626876,6.769591812710388,0.0
+ffhq_64,5000,cofitok_simultaneous,Simultaneous components,completed,"train,quality",,,,15.156946374687635,0.06374235225043126,6.861113259825649,0.0
+ffhq_64,5000,cofitok_deep_synthesis,Deep S_k,completed,"train,quality",,,,14.951145469564082,0.045646446623972485,6.787238345582562,0.05183367058634758
+ffhq_64,5000,improved_diffusion,Improved DDPM,completed,"baseline_train,baseline_eval",50,9.435978870946819,369.00541295678664,,,,
+ffhq_64,5000,edm,EDM,completed,"baseline_train,baseline_eval",79,2.5077071461475207,325.4897769846005,,,,
+ffhq_64,5000,d_ar,D-AR,protocol_blocked,feasibility_report,,,,,,,
+afhqv2_64,5000,cofitok_light,CoFiTok,completed,"train,quality,generated_quality",50,7.0780572877931425,331.0574038258805,15.167191914164803,0.06434416331882988,6.818504819239168,0.0
+afhqv2_64,5000,same_backbone_dense,Dense epsilon,completed,"train,quality,generated_quality",50,6.579158283451607,345.9385928805596,15.195914726628292,1.0117721964738198,5.461851498945411,0.0
+afhqv2_64,5000,channel_mask,Channel mask,completed,"train,quality",,,,13.38362394370871,4.748266390391758,1.1124385616572507,0.0
+afhqv2_64,5000,cofitok_no_prefix_loss,No prefix loss,completed,"train,quality",,,,15.080936877370036,0.09357279219797679,6.537933622885137,0.0
+afhqv2_64,5000,cofitok_clean_monotonic,Clean monotonic,completed,"train,quality",,,,15.160879503430401,0.0665016013330647,6.753061678797444,0.0
+afhqv2_64,5000,cofitok_simultaneous,Simultaneous components,completed,"train,quality",,,,15.105001025171482,0.06036976232592549,6.846111663542767,0.0
+afhqv2_64,5000,cofitok_deep_synthesis,Deep S_k,completed,"train,quality",,,,15.109751514279736,0.04166295479184815,6.793912364252545,0.05612469092011452
+afhqv2_64,5000,improved_diffusion,Improved DDPM,completed,"baseline_train,baseline_eval",50,8.291808750162996,335.18135687651903,,,,
+afhqv2_64,5000,edm,EDM,completed,"baseline_train,baseline_eval",79,1.9621273075384704,230.39794041164038,,,,
+afhqv2_64,5000,d_ar,D-AR,protocol_blocked,feasibility_report,,,,,,,

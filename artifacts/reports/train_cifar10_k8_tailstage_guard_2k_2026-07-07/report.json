@@ -1,0 +1,263 @@
+{
+  "artifacts": {
+    "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_tailstage_guard_2k_2026-07-07/checkpoint_final.pt",
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_tailstage_guard_2k_2026-07-07/prefix_final.png"
+  },
+  "config": {
+    "data": {
+      "batch_size": 64,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "cifar10",
+      "image_size": 32,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_weight": 1.0,
+      "group_residual_size": 0,
+      "group_residual_weight": 0.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.05,
+      "prefix_weight": 0.1,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 32,
+      "predictor_depth": 3,
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 8
+    },
+    "name": "train_cifar10_k8_tailstage_guard_2k_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 200,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 29,
+      "steps": 2000
+    }
+  },
+  "final_losses": {
+    "epsilon": 0.17268840968608856,
+    "grad_norm": 0.7104997038841248,
+    "monotonic": 0.025766713544726372,
+    "prefix": 7.753911972045898,
+    "tail": 0.17268840968608856,
+    "total": 0.9493680000305176
+  },
+  "history": [
+    {
+      "epsilon": 0.0648382157087326,
+      "grad_norm": 0.7264228463172913,
+      "monotonic": 0.007467747200280428,
+      "prefix": 2.8781120777130127,
+      "step": 1,
+      "tail": 0.0648382157087326,
+      "total": 0.35302284359931946
+    },
+    {
+      "epsilon": 0.06104683130979538,
+      "grad_norm": 0.7286420464515686,
+      "monotonic": 0.015389511361718178,
+      "prefix": 9.237282752990723,
+      "step": 200,
+      "tail": 0.06104683503508568,
+      "total": 0.9855446219444275
+    },
+    {
+      "epsilon": 0.09417758882045746,
+      "grad_norm": 0.570892333984375,
+      "monotonic": 0.025858165696263313,
+      "prefix": 11.119153022766113,
+      "step": 400,
+      "tail": 0.09417758882045746,
+      "total": 1.2073858976364136
+    },
+    {
+      "epsilon": 0.09368178248405457,
+      "grad_norm": 0.44025918841362,
+      "monotonic": 0.012070026248693466,
+      "prefix": 4.170832633972168,
+      "step": 600,
+      "tail": 0.09368178248405457,
+      "total": 0.5113685727119446
+    },
+    {
+      "epsilon": 0.08751899003982544,
+      "grad_norm": 0.5898196697235107,
+      "monotonic": 0.025220734998583794,
+      "prefix": 8.295202255249023,
+      "step": 800,
+      "tail": 0.08751899003982544,
+      "total": 0.9183002710342407
+    },
+    {
+      "epsilon": 0.08864729106426239,
+      "grad_norm": 0.5692649483680725,
+      "monotonic": 0.013517431914806366,
+      "prefix": 4.306121349334717,
+      "step": 1000,
+      "tail": 0.08864729106426239,
+      "total": 0.5199353098869324
+    },
+    {
+      "epsilon": 0.11445029079914093,
+      "grad_norm": 0.7162611484527588,
+      "monotonic": 0.03698737546801567,
+      "prefix": 8.184163093566895,
+      "step": 1200,
+      "tail": 0.11445029079914093,
+      "total": 0.9347159266471863
+    },
+    {
+      "epsilon": 0.08095602691173553,
+      "grad_norm": 1.2494397163391113,
+      "monotonic": 0.039961475878953934,
+      "prefix": 17.60480499267578,
+      "step": 1400,
+      "tail": 0.08095602691173553,
+      "total": 1.8434345722198486
+    },
+    {
+      "epsilon": 0.10953797399997711,
+      "grad_norm": 0.9212527871131897,
+      "monotonic": 0.03153939172625542,
+      "prefix": 5.96940803527832,
+      "step": 1600,
+      "tail": 0.10953797399997711,
+      "total": 0.7080557346343994
+    },
+    {
+      "epsilon": 0.10488681495189667,
+      "grad_norm": 0.4067321717739105,
+      "monotonic": 0.007487144321203232,
+      "prefix": 2.6696484088897705,
+      "step": 1800,
+      "tail": 0.10488681495189667,
+      "total": 0.3722260296344757
+    },
+    {
+      "epsilon": 0.17268840968608856,
+      "grad_norm": 0.7104997038841248,
+      "monotonic": 0.025766713544726372,
+      "prefix": 7.753911972045898,
+      "step": 2000,
+      "tail": 0.17268840968608856,
+      "total": 0.9493680000305176
+    }
+  ],
+  "prefix_summary": {
+    "active_tail_tokens": 1,
+    "component_energy": [
+      1.024214506149292,
+      0.020887693390250206,
+      0.0024174032732844353,
+      0.00022556408657692373,
+      0.0014260405441746116,
+      8.18604021333158e-05,
+      6.11122595728375e-05,
+      0.0006646105321124196
+    ],
+    "component_energy_ratio": [
+      0.9754620905509297,
+      0.019893443159523433,
+      0.002302335337475659,
+      0.00021482727897769585,
+      0.0013581612856283735,
+      7.79638625687114e-05,
+      5.820332764601739e-05,
+      0.0006329751972503781
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.1312473565340042,
+      "random_token_component_energy": 0.06308998912572861,
+      "shuffled_component_mse": 0.26243898272514343,
+      "zero_token_component_energy": 0.0
+    },
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_tailstage_guard_2k_2026-07-07/prefix_final.png",
+    "late_half_energy_ratio": 0.0021273036730934804,
+    "prefix_mse_to_clean": [
+      0.5222603678703308,
+      0.2624747157096863,
+      0.2307155430316925,
+      0.22511112689971924,
+      0.22793635725975037,
+      0.22845998406410217,
+      0.22776910662651062,
+      0.20666846632957458
+    ],
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4",
+      "prefix_5",
+      "prefix_6",
+      "prefix_7",
+      "prefix_8"
+    ],
+    "tail_energy_ratio": 0.024537909449070267,
+    "timestep": 500
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 14.88387393951416,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  },
+  "tail_start": 4,
+  "trainable_names": [
+    "predictor.token_heads.4",
+    "synthesis.synthesizers.4",
+    "predictor.token_heads.5",
+    "synthesis.synthesizers.5",
+    "predictor.token_heads.6",
+    "synthesis.synthesizers.6",
+    "predictor.token_heads.7",
+    "synthesis.synthesizers.7",
+    "predictor.feedback.4",
+    "predictor.feedback.5",
+    "predictor.feedback.6"
+  ],
+  "warm_start_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_channelmask_3k_2026-07-07/checkpoint_final.pt"
+}

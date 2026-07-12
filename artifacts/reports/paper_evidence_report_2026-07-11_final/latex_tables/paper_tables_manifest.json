@@ -1,0 +1,18 @@
+{
+  "evidence": "artifacts/reports/paper_evidence_report_2026-07-11_final/paper_evidence_report.json",
+  "evidence_sha256": "90e0efafb105581ae3353d26bc230f81537439647dbc2af5dcb80d4ec6104ea0",
+  "output": {
+    "compile_check_tex": "artifacts/reports/paper_evidence_report_2026-07-11_final/latex_tables/paper_tables_compile_check.tex",
+    "paper_tables_appendix_tex": "artifacts/reports/paper_evidence_report_2026-07-11_final/latex_tables/paper_tables_appendix.tex",
+    "paper_tables_main_tex": "artifacts/reports/paper_evidence_report_2026-07-11_final/latex_tables/paper_tables_main.tex",
+    "paper_tables_preview": "artifacts/reports/paper_evidence_report_2026-07-11_final/latex_tables/paper_tables_preview.md",
+    "paper_tables_tex": "artifacts/reports/paper_evidence_report_2026-07-11_final/latex_tables/paper_tables.tex"
+  },
+  "row_counts": {
+    "diagnostic_rows": 8,
+    "generation_rows": 8,
+    "imagenet256_confirmatory_rows": 2,
+    "official_related_rows": 3,
+    "p1_rows": 16
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "alias": "downsampled_imagenet_64",
+  "status": "completed",
+  "download_date": "2026-07-09",
+  "server": "pro6000",
+  "remote_dataset_dir": "/root/autodl-tmp/CoFiTok/datasets/downsampled_imagenet_64",
+  "source": {
+    "name": "Academic Torrents downsampled ImageNet 64x64",
+    "details_url": "https://academictorrents.com/details/96816a530ee002254d29bf7a61c0c158d3dedc3b",
+    "info_hash": "96816a530ee002254d29bf7a61c0c158d3dedc3b",
+    "magnet": "magnet:?xt=urn:btih:96816a530ee002254d29bf7a61c0c158d3dedc3b",
+    "note": "ImageNet official small URLs returned HTTP 404 on 2026-07-09; Academic Torrents webpage/download endpoint timed out from this environment, so aria2 magnet+DHT was used."
+  },
+  "raw_dir": "/root/autodl-tmp/CoFiTok/datasets/downsampled_imagenet_64/raw",
+  "raw_files": [
+    {
+      "path": "/root/autodl-tmp/CoFiTok/datasets/downsampled_imagenet_64/raw/96816a530ee002254d29bf7a61c0c158d3dedc3b.torrent",
+      "name": "96816a530ee002254d29bf7a61c0c158d3dedc3b.torrent",
+      "bytes": 240592,
+      "sha256": "1104077da8c88db149d74ffb6d1f9fe17b32abf535880966ee1684559820cdfa"
+    },
+    {
+      "path": "/root/autodl-tmp/CoFiTok/datasets/downsampled_imagenet_64/raw/small/train_64x64.tar",
+      "name": "train_64x64.tar",
+      "bytes": 12112588800,
+      "sha256": "e2a2c1947a748d0d256e98e6d82800d855441dc9e4de2e71a773f1324c4524d7"
+    },
+    {
+      "path": "/root/autodl-tmp/CoFiTok/datasets/downsampled_imagenet_64/raw/small/valid_64x64.tar",
+      "name": "valid_64x64.tar",
+      "bytes": 477255680,
+      "sha256": "eeac03ec4f585baf871d2b4cb9c974bfe345e74878a74e5820fe6eb1041629cd"
+    }
+  ],
+  "raw_checksums": "/root/autodl-tmp/CoFiTok/datasets/downsampled_imagenet_64/raw/checksums.sha256",
+  "extracted_dir": "/root/autodl-tmp/CoFiTok/datasets/downsampled_imagenet_64/extracted",
+  "splits": {
+    "train": {
+      "path": "/root/autodl-tmp/CoFiTok/datasets/downsampled_imagenet_64/extracted/train_64x64",
+      "png_files": 1281149
+    },
+    "valid": {
+      "path": "/root/autodl-tmp/CoFiTok/datasets/downsampled_imagenet_64/extracted/valid_64x64",
+      "png_files": 49999
+    }
+  },
+  "image_resolution": "64x64 RGB PNG in sampled verification",
+  "labels": "No class-label files were present in this torrent payload; use as unconditional image dataset unless labels are supplied separately.",
+  "preprocessing": "Raw torrent payload extracted only; no crop, resize, normalization, filtering, or relabeling applied.",
+  "sample_png_verification": {
+    "train": [
+      {
+        "name": "0000001.png",
+        "bytes": 10363,
+        "size": [
+          64,
+          64
+        ]
+      },
+      {
+        "name": "0000002.png",
+        "bytes": 9230,
+        "size": [
+          64,
+          64
+        ]
+      },
+      {
+        "name": "0640575.png",
+        "bytes": 9605,
+        "size": [
+          64,
+          64
+        ]
+      },
+      {
+        "name": "1281148.png",
+        "bytes": 9267,
+        "size": [
+          64,
+          64
+        ]
+      },
+      {
+        "name": "1281149.png",
+        "bytes": 9375,
+        "size": [
+          64,
+          64
+        ]
+      }
+    ],
+    "valid": [
+      {
+        "name": "00001.png",
+        "bytes": 8317,
+        "size": [
+          64,
+          64
+        ]
+      },
+      {
+        "name": "00002.png",
+        "bytes": 9805,
+        "size": [
+          64,
+          64
+        ]
+      },
+      {
+        "name": "25000.png",
+        "bytes": 10116,
+        "size": [
+          64,
+          64
+        ]
+      },
+      {
+        "name": "49998.png",
+        "bytes": 9155,
+        "size": [
+          64,
+          64
+        ]
+      },
+      {
+        "name": "49999.png",
+        "bytes": 9615,
+        "size": [
+          64,
+          64
+        ]
+      }
+    ]
+  },
+  "bytes": {
+    "raw": 12590085363,
+    "extracted": 11568705497,
+    "metadata": 68167,
+    "total_dataset_dir": 24158859027
+  },
+  "download_log": "/root/autodl-tmp/CoFiTok/datasets/downsampled_imagenet_64/metadata/download_logs/downsampled_imagenet_64_aria2_20260709_102244.log"
+}

@@ -1,0 +1,133 @@
+{
+  "date": "2026-07-08",
+  "dataset": "tiny_imagenet_200",
+  "purpose": "Compare Tiny ImageNet static decorrelation, scheduled 0.005, and a lower/later scheduled 0.003 refinement.",
+  "candidate_schedule": {
+    "component_decorrelation_weight": 0.003,
+    "component_decorrelation_start_step": 3000,
+    "component_decorrelation_warmup_steps": 1500,
+    "full_weight_step": 4500,
+    "total_steps": 5000
+  },
+  "variants": {
+    "baseline": {
+      "config_name": "train_tiny_imagenet_k8_denoisepath_p150_light_5k_cuda",
+      "remote_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_5k_2026-07-08/checkpoint_final.pt",
+      "component_decorrelation_weight": 0.0,
+      "component_decorrelation_start_step": 0,
+      "component_decorrelation_warmup_steps": 0,
+      "final_component_decorrelation_effective_weight": 0.0,
+      "train_path_auc": 0.07594848118190255,
+      "quality_final_mse": 0.14871828258037567,
+      "quality_mse_auc": 6.728809205194314,
+      "effective_token_count": 6.804285433205951,
+      "mean_abs_component_cosine": 0.7223122886248997,
+      "max_abs_component_cosine": 0.8493800163269043,
+      "order_eval": {
+        "ordered_path_auc": 0.0766382986413581,
+        "random_path_auc": 0.25701855229479925,
+        "reverse_path_auc": 0.7140138851744788,
+        "ordered_effective_token_count": 6.803341170159017
+      },
+      "delta_vs_baseline": {
+        "train_path_auc": 0.0,
+        "quality_final_mse": 0.0,
+        "quality_mse_auc": 0.0,
+        "effective_token_count": 0.0,
+        "mean_abs_component_cosine": 0.0,
+        "ordered_path_auc": 0.0
+      }
+    },
+    "static_decorw0005": {
+      "config_name": "train_tiny_imagenet_k8_denoisepath_p150_light_decorw0005_5k_cuda",
+      "remote_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_decorw0005_5k_2026-07-08/checkpoint_final.pt",
+      "component_decorrelation_weight": 0.005,
+      "component_decorrelation_start_step": 0,
+      "component_decorrelation_warmup_steps": 0,
+      "final_component_decorrelation_effective_weight": 0.005,
+      "train_path_auc": 0.09553820373756546,
+      "quality_final_mse": 0.1480795294046402,
+      "quality_mse_auc": 7.09830675770839,
+      "effective_token_count": 6.797712760004425,
+      "mean_abs_component_cosine": 0.5904444966997419,
+      "max_abs_component_cosine": 0.8091151118278503,
+      "order_eval": {
+        "ordered_path_auc": 0.09633572745536055,
+        "random_path_auc": 0.30159235319920946,
+        "reverse_path_auc": 0.812752942953791,
+        "ordered_effective_token_count": 6.798383218877024
+      },
+      "delta_vs_baseline": {
+        "train_path_auc": 0.01958972255566291,
+        "quality_final_mse": -0.0006387531757354736,
+        "quality_mse_auc": 0.36949755251407623,
+        "effective_token_count": -0.00657267320152588,
+        "mean_abs_component_cosine": -0.13186779192515785,
+        "ordered_path_auc": 0.01969742881400245
+      }
+    },
+    "scheduled_decorw0005": {
+      "config_name": "train_tiny_imagenet_k8_denoisepath_p150_light_decorw0005_sched2500w1500_5k_cuda",
+      "remote_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_decorw0005_sched2500w1500_5k_2026-07-08/checkpoint_final.pt",
+      "component_decorrelation_weight": 0.005,
+      "component_decorrelation_start_step": 2500,
+      "component_decorrelation_warmup_steps": 1500,
+      "final_component_decorrelation_effective_weight": 0.005,
+      "train_path_auc": 0.0864667354949883,
+      "quality_final_mse": 0.14803966507315636,
+      "quality_mse_auc": 6.926573608691494,
+      "effective_token_count": 6.91747668620954,
+      "mean_abs_component_cosine": 0.6207762360572815,
+      "max_abs_component_cosine": 0.823351263999939,
+      "order_eval": {
+        "ordered_path_auc": 0.08718525618314743,
+        "random_path_auc": 0.473721695797784,
+        "reverse_path_auc": 0.768046287553651,
+        "ordered_effective_token_count": 6.919203258204124
+      },
+      "delta_vs_baseline": {
+        "train_path_auc": 0.010518254313085756,
+        "quality_final_mse": -0.0006786175072193146,
+        "quality_mse_auc": 0.19776440349717994,
+        "effective_token_count": 0.11319125300358834,
+        "mean_abs_component_cosine": -0.10153605256761822,
+        "ordered_path_auc": 0.010546957541789331
+      }
+    },
+    "scheduled_decorw0003": {
+      "config_name": "train_tiny_imagenet_k8_denoisepath_p150_light_decorw0003_sched3000w1500_5k_cuda",
+      "remote_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_decorw0003_sched3000w1500_5k_2026-07-08/checkpoint_final.pt",
+      "component_decorrelation_weight": 0.003,
+      "component_decorrelation_start_step": 3000,
+      "component_decorrelation_warmup_steps": 1500,
+      "final_component_decorrelation_effective_weight": 0.003,
+      "train_path_auc": 0.07970399875193834,
+      "quality_final_mse": 0.14856731332838535,
+      "quality_mse_auc": 6.783633628549675,
+      "effective_token_count": 6.831569208831258,
+      "mean_abs_component_cosine": 0.6889802983828953,
+      "max_abs_component_cosine": 0.8368000388145447,
+      "order_eval": {
+        "ordered_path_auc": 0.08034988479422671,
+        "random_path_auc": 0.44774738273450304,
+        "reverse_path_auc": 0.7305243079151426,
+        "ordered_effective_token_count": 6.83098293211034
+      },
+      "delta_vs_baseline": {
+        "train_path_auc": 0.0037555175700357962,
+        "quality_final_mse": -0.0001509692519903183,
+        "quality_mse_auc": 0.05482442335536142,
+        "effective_token_count": 0.027283775625306816,
+        "mean_abs_component_cosine": -0.033331990242004395,
+        "ordered_path_auc": 0.0037115861528686095
+      }
+    }
+  },
+  "decision": {
+    "status": "best_schedule_so_far_for_prefix_preservation",
+    "summary": "The lower/later schedule keeps ordered path AUC closer to baseline than both static 0.005 and scheduled 0.005, but the component-correlation reduction is correspondingly smaller. It is the better decorrelation setting if preserving prefix order is the priority.",
+    "best_ordered_path_auc_variant": "baseline",
+    "best_component_cosine_variant": "static_decorw0005",
+    "next_action": "Use scheduled decor 0.003 as the preferred decorrelation ablation setting; do not make it default until a second seed confirms the path/cosine tradeoff."
+  }
+}

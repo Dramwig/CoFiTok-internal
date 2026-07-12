@@ -1,0 +1,228 @@
+{
+  "artifacts": {
+    "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_tailstage_warm_300_2026-07-07/checkpoint_final.pt",
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_tailstage_warm_300_2026-07-07/prefix_final.png"
+  },
+  "config": {
+    "data": {
+      "batch_size": 32,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "tiny_imagenet_200",
+      "image_size": 64,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_weight": 1.0,
+      "group_residual_size": 0,
+      "group_residual_weight": 0.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.0,
+      "prefix_weight": 0.0,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_early_dropout_prob": 0.0,
+      "tail_early_dropout_start": 1,
+      "tail_early_dropout_weight": 0.0,
+      "tail_endpoint_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "tail_late_prefix_start": 0,
+      "tail_late_prefix_weight": 0.0,
+      "tail_replay_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 64,
+      "predictor_depth": 3,
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 8
+    },
+    "name": "train_tiny_imagenet_k8_tailstage_warm_300_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 100,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 67,
+      "steps": 300
+    }
+  },
+  "final_losses": {
+    "early_dropout": 0.0,
+    "endpoint": 0.0,
+    "epsilon": 0.12119057029485703,
+    "grad_norm": 0.09729225933551788,
+    "late_prefix": 0.0,
+    "monotonic": 0.0,
+    "prefix": 0.0,
+    "tail": 0.12119057029485703,
+    "tail_replay": 0.0,
+    "total": 0.12119057029485703
+  },
+  "history": [
+    {
+      "early_dropout": 0.0,
+      "endpoint": 0.0,
+      "epsilon": 0.1395249217748642,
+      "grad_norm": 0.49713897705078125,
+      "late_prefix": 0.0,
+      "monotonic": 0.0,
+      "prefix": 0.0,
+      "step": 1,
+      "tail": 0.1395249217748642,
+      "tail_replay": 0.0,
+      "total": 0.1395249217748642
+    },
+    {
+      "early_dropout": 0.0,
+      "endpoint": 0.0,
+      "epsilon": 0.16059112548828125,
+      "grad_norm": 0.11882172524929047,
+      "late_prefix": 0.0,
+      "monotonic": 0.0,
+      "prefix": 0.0,
+      "step": 100,
+      "tail": 0.16059112548828125,
+      "tail_replay": 0.0,
+      "total": 0.16059112548828125
+    },
+    {
+      "early_dropout": 0.0,
+      "endpoint": 0.0,
+      "epsilon": 0.05892445892095566,
+      "grad_norm": 0.07506485283374786,
+      "late_prefix": 0.0,
+      "monotonic": 0.0,
+      "prefix": 0.0,
+      "step": 200,
+      "tail": 0.05892445892095566,
+      "tail_replay": 0.0,
+      "total": 0.05892445892095566
+    },
+    {
+      "early_dropout": 0.0,
+      "endpoint": 0.0,
+      "epsilon": 0.12119057029485703,
+      "grad_norm": 0.09729225933551788,
+      "late_prefix": 0.0,
+      "monotonic": 0.0,
+      "prefix": 0.0,
+      "step": 300,
+      "tail": 0.12119057029485703,
+      "tail_replay": 0.0,
+      "total": 0.12119057029485703
+    }
+  ],
+  "prefix_summary": {
+    "active_tail_tokens": 1,
+    "component_energy": [
+      0.6307846903800964,
+      0.14385896921157837,
+      0.006446622312068939,
+      0.002183280186727643,
+      0.0028868992812931538,
+      0.004074005410075188,
+      0.005810253322124481,
+      0.005959907080978155
+    ],
+    "component_energy_ratio": [
+      0.7865100387190627,
+      0.17937423842120112,
+      0.008038136057514725,
+      0.0027222787908232084,
+      0.0035996042708958515,
+      0.00507977793641298,
+      0.00724466309193081,
+      0.007431262712158642
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.10025057941675186,
+      "random_token_component_energy": 0.08075985312461853,
+      "shuffled_component_mse": 0.19952459633350372,
+      "zero_token_component_energy": 0.0
+    },
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_tailstage_warm_300_2026-07-07/prefix_final.png",
+    "late_half_energy_ratio": 0.023355308011398283,
+    "prefix_mse_to_clean": [
+      2.2431480884552,
+      0.5744449496269226,
+      0.5061452984809875,
+      0.47982752323150635,
+      0.43624433875083923,
+      0.4302581250667572,
+      0.3883085250854492,
+      0.3901903033256531
+    ],
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4",
+      "prefix_5",
+      "prefix_6",
+      "prefix_7",
+      "prefix_8"
+    ],
+    "tail_energy_ratio": 0.2134899612809373,
+    "timestep": 500
+  },
+  "replay_checkpoint": "",
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 2.059340238571167,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  },
+  "tail_start": 4,
+  "trainable_names": [
+    "predictor.token_heads.4",
+    "synthesis.synthesizers.4",
+    "predictor.token_heads.5",
+    "synthesis.synthesizers.5",
+    "predictor.token_heads.6",
+    "synthesis.synthesizers.6",
+    "predictor.token_heads.7",
+    "synthesis.synthesizers.7",
+    "predictor.feedback.4",
+    "predictor.feedback.5",
+    "predictor.feedback.6"
+  ],
+  "warm_start_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_channelmask_smoke_800_2026-07-07/checkpoint_final.pt"
+}

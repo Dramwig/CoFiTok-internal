@@ -1,0 +1,172 @@
+{
+  "interpretation": {
+    "recommended_next": "Try smaller weights such as 0.005 and 0.01, and/or schedule decor after denoise-path ordering stabilizes.",
+    "short_read": "component_decorrelation_weight=0.05 lowers post-hoc component cosine, slightly improves final reconstruction metrics, but worsens denoise-path/order AUC and reduces effective token count; keep as a second-stage ablation, not a new default yet."
+  },
+  "order_eval": {
+    "baseline": {
+      "ordered": {
+        "clean_auc": 4.660819200532777,
+        "component_order_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "effective_tokens": 6.834469953109744,
+        "final_clean_mse": 0.15455356240272522,
+        "path_auc": 0.09935658837535552,
+        "shuffled_final_mse_ratio": 151.91123258445836
+      },
+      "random": {
+        "clean_auc": 3.6281214548008784,
+        "component_order_indices": [
+          4,
+          0,
+          7,
+          3,
+          2,
+          5,
+          1,
+          6
+        ],
+        "effective_tokens": 6.834469953109744,
+        "final_clean_mse": 0.15455356240272522,
+        "path_auc": 0.2562830458794321,
+        "shuffled_final_mse_ratio": 151.91123258445836
+      },
+      "reverse": {
+        "clean_auc": 2.287383286016328,
+        "component_order_indices": [
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1,
+          0
+        ],
+        "effective_tokens": 6.834469953109744,
+        "final_clean_mse": 0.15455356240272522,
+        "path_auc": 0.6741522720881871,
+        "shuffled_final_mse_ratio": 151.91123258445836
+      }
+    },
+    "decor_w005": {
+      "ordered": {
+        "clean_auc": 5.45705189130136,
+        "component_order_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "effective_tokens": 5.983867575936805,
+        "final_clean_mse": 0.15014196932315826,
+        "path_auc": 0.24060205423406192,
+        "shuffled_final_mse_ratio": 157.00375580955546
+      },
+      "random": {
+        "clean_auc": 3.699327607239996,
+        "component_order_indices": [
+          4,
+          0,
+          7,
+          3,
+          2,
+          5,
+          1,
+          6
+        ],
+        "effective_tokens": 5.983867575936805,
+        "final_clean_mse": 0.15014198422431946,
+        "path_auc": 0.5798858808619636,
+        "shuffled_final_mse_ratio": 157.0037656346487
+      },
+      "reverse": {
+        "clean_auc": 2.1759340912103653,
+        "component_order_indices": [
+          7,
+          6,
+          5,
+          4,
+          3,
+          2,
+          1,
+          0
+        ],
+        "effective_tokens": 5.983867575936805,
+        "final_clean_mse": 0.15014198422431946,
+        "path_auc": 1.039993703365326,
+        "shuffled_final_mse_ratio": 157.0037402273831
+      }
+    }
+  },
+  "quality": {
+    "baseline": {
+      "component_max_abs_cosine": 0.7733059525489807,
+      "component_mean_abs_cosine": 0.6344606876373291,
+      "final_budget": 8,
+      "final_lowres_frechet_proxy": 1.8490533124044364,
+      "final_mse": 0.15311462059617043,
+      "final_psnr_db": 14.170433287742334,
+      "fixed_timestep": 500,
+      "image_count": 256,
+      "lowres_frechet_proxy_auc": 5.597029080623257,
+      "mse_auc": 6.722057551766436,
+      "pair_image_count": 7168
+    },
+    "decor_w005": {
+      "component_max_abs_cosine": 0.6491080522537231,
+      "component_mean_abs_cosine": 0.20499103835650853,
+      "final_budget": 8,
+      "final_lowres_frechet_proxy": 1.8040852590875922,
+      "final_mse": 0.14943821355700493,
+      "final_psnr_db": 14.275983241374231,
+      "fixed_timestep": 500,
+      "image_count": 256,
+      "lowres_frechet_proxy_auc": 5.923978395717779,
+      "mse_auc": 8.070446900402507,
+      "pair_image_count": 7168
+    }
+  },
+  "train": {
+    "baseline": {
+      "active_tail_tokens": 7,
+      "clean_auc": 4.704517333635262,
+      "effective_tokens": 6.833542373674864,
+      "final_clean_mse": 0.15795044600963593,
+      "final_component_decorrelation_loss": null,
+      "final_epsilon_loss": 0.04950535297393799,
+      "final_total_loss": 0.061871495097875595,
+      "late_half_energy_ratio": 0.7174600724137477,
+      "path_auc": 0.10032521281391382,
+      "random_token_ratio": 5.9029364585876465,
+      "shuffled_final_mse_ratio": 144.4851936461515,
+      "zero_token_ratio": 0.0
+    },
+    "decor_w005": {
+      "active_tail_tokens": 6,
+      "clean_auc": 5.501738375851086,
+      "effective_tokens": 5.988543353834252,
+      "final_clean_mse": 0.15439531207084656,
+      "final_component_decorrelation_loss": 0.20445653796195984,
+      "final_epsilon_loss": 0.04921340197324753,
+      "final_total_loss": 0.07912500947713852,
+      "late_half_energy_ratio": 0.7114975264521388,
+      "path_auc": 0.2429318997476782,
+      "random_token_ratio": 3.022799253463745,
+      "shuffled_final_mse_ratio": 148.49631870305004,
+      "zero_token_ratio": 0.0
+    }
+  }
+}

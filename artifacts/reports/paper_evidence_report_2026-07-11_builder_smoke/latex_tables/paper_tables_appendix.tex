@@ -1,0 +1,73 @@
+% Auto-generated from paper_evidence_report.json. Do not hand-edit metrics here.
+
+% Appendix/supplement subset: P1 tokenizer reconstruction, official related rows, and claim summary.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{P1 eval-only tokenizer reconstruction baselines.}
+  \label{tab:p1-tokenizer-recon-current}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    Dataset & src & eval & FlexTok PSNR & FlexTok low & TiTok PSNR & TiTok low \\
+    \midrule
+    AFHQv2-64 & 64 & 256 & 24.04 & 0.036 & 17.29 & 0.217 \\
+    CIFAR-10 & 32 & 256 & 26.77 & 0.037 & 19.35 & 0.168 \\
+    ImageNet-64 strict & 64 & 256 & 22.57 & 0.042 & 16.73 & 0.196 \\
+    FFHQ-64 & 64 & 256 & 24.06 & 0.042 & 17.39 & 0.231 \\
+    ImageNet-64 HF & 64 & 256 & 23.60 & 0.039 & 18.04 & 0.182 \\
+    ImageNet-256 & 256 & 256 & 19.12 & 0.044 & 15.54 & 0.196 \\
+    ImageNet-256 10\% & 256 & 256 & 19.12 & 0.044 & 15.54 & 0.196 \\
+    Tiny-IN & 64 & 256 & 21.81 & 0.044 & 17.30 & 0.160 \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \vspace{0.3em}
+  \caption*{\footnotesize Official pretrained reconstruction at 256x256 on 256 images per dataset. These rows are not retrained generation baselines.}
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Official related-method eval-only rows.}
+  \label{tab:official-related-eval-only}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lllrlrrrr}
+    \toprule
+    Method & Dataset & Status & Samples & FID & sFID & IS & Prec. & Rec. \\
+    \midrule
+    D-AR & ImageNet-256 & completed\_eval\_only\_50k & 50000 & 2.628 & 6.720 & 285.89 & 0.803 & 0.588 \\
+    MAR & ImageNet-256 & community\_non\_ema\_audit\_completed\_official\_ema\_pending & 50000 & 5.561 & 6.255 & 52.00 & 0.717 & 0.625 \\
+    ReTok & ImageNet-256 & completed\_eval\_only\_50k & 50000 & 2.219 & 5.896 & 245.94 & 0.816 & 0.599 \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \vspace{0.3em}
+  \caption*{\footnotesize These rows use official pretrained protocols where available and are secondary comparisons; they are not part of the all-dataset same-budget P0 training matrix.}
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Claim support summary.}
+  \label{tab:claim-support-current}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{p{0.24\textwidth}p{0.68\textwidth}}
+    \toprule
+    Claim axis & Current evidence \\
+    \midrule
+    Generation quality & CoFiTok is best on 0/8 lowres rows and 1/8 Inception rows; average ranks are 3.00 and 2.62. Do not claim generation SOTA. \\
+    Prefix control & CoFiTok path AUC is lower than dense on 8/8 datasets. \\
+    Repeated 20k evidence & CoFiTok lowers path AUC in 4/4 paired dataset-seed runs (mean relative reduction 96.31\%), while endpoint MSE changes by +2.89\% on average. \\
+    ImageNet-256 scaling & ImageNet-256 20k confirmatory report is pending. \\
+    Restricted synthesis & CoFiTok zero-token ratio is zero in current rows; deep-$S_k$ has nonzero zero-token ratio on 8/8 datasets. \\
+    Related methods & completed official 50K: D-AR, ReTok; running/eval pending: MAR. All rows remain secondary and outside P0 fair training. \\
+    Main paper stance & The supported claim is ordered restricted dense-noise factorization with prefix-controllable denoising, not broad unconditional generation superiority. \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+\end{table*}

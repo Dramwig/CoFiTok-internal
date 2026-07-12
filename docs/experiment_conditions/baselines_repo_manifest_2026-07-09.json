@@ -1,0 +1,200 @@
+{
+  "created_at_utc": "2026-07-09T04:40:02.891849+00:00",
+  "failed_count": 0,
+  "project": "CoFiTok",
+  "record_count": 7,
+  "records": [
+    {
+      "alias": "edm",
+      "clone_command": [
+        "git",
+        "clone",
+        "--depth",
+        "1",
+        "--no-tags",
+        "https://github.com/NVlabs/edm",
+        "/root/autodl-tmp/CoFiTok/baselines/repos/edm"
+      ],
+      "commit": "008a4e5316c8e3bfe61a62f874bddba254295afb",
+      "commit_date": "2024-03-16T08:49:06+02:00",
+      "dirty_status": [],
+      "error": null,
+      "family": "pixel_diffusion",
+      "license_files": [
+        "LICENSE.txt"
+      ],
+      "license": "CC-BY-NC-SA-4.0",
+      "method_name": "EDM",
+      "origin_url": "https://github.com/NVlabs/edm",
+      "priority": "P0",
+      "repo_url": "https://github.com/NVlabs/edm",
+      "status": "cloned",
+      "target_path": "/root/autodl-tmp/CoFiTok/baselines/repos/edm"
+    },
+    {
+      "alias": "improved_diffusion",
+      "clone_command": [
+        "git",
+        "clone",
+        "--depth",
+        "1",
+        "--no-tags",
+        "https://github.com/openai/improved-diffusion",
+        "/root/autodl-tmp/CoFiTok/baselines/repos/improved_diffusion"
+      ],
+      "commit": "1bc7bbbdc414d83d4abf2ad8cc1446dc36c4e4d5",
+      "commit_date": "2024-03-12T21:02:06-04:00",
+      "dirty_status": [],
+      "error": null,
+      "family": "pixel_diffusion",
+      "license_files": [
+        "LICENSE"
+      ],
+      "license": "MIT",
+      "method_name": "Improved DDPM",
+      "origin_url": "https://github.com/openai/improved-diffusion",
+      "priority": "P0",
+      "repo_url": "https://github.com/openai/improved-diffusion",
+      "status": "cloned",
+      "target_path": "/root/autodl-tmp/CoFiTok/baselines/repos/improved_diffusion"
+    },
+    {
+      "alias": "d_ar",
+      "clone_command": [
+        "git",
+        "clone",
+        "--depth",
+        "1",
+        "--no-tags",
+        "https://github.com/showlab/D-AR",
+        "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar"
+      ],
+      "commit": "cd921b892c14ef52a06133b21a73257a6399ad52",
+      "commit_date": "2025-06-22T02:43:08+08:00",
+      "dirty_status": [],
+      "error": null,
+      "family": "diffusion_as_ar",
+      "license_files": [
+        "LICENSE"
+      ],
+      "license": "MIT",
+      "method_name": "D-AR",
+      "origin_url": "https://github.com/showlab/D-AR",
+      "priority": "P0",
+      "repo_url": "https://github.com/showlab/D-AR",
+      "status": "cloned",
+      "target_path": "/root/autodl-tmp/CoFiTok/baselines/repos/d_ar"
+    },
+    {
+      "alias": "ml_flextok",
+      "clone_command": [
+        "git",
+        "clone",
+        "--depth",
+        "1",
+        "--no-tags",
+        "https://github.com/apple/ml-flextok",
+        "/root/autodl-tmp/CoFiTok/baselines/repos/ml_flextok"
+      ],
+      "commit": "28e0ffc24e590bdab0099d4a317b601cdc674a5b",
+      "commit_date": "2025-06-02T18:37:56+00:00",
+      "dirty_status": [],
+      "error": null,
+      "family": "ordered_visual_tokenizer",
+      "license_files": [
+        "LICENSE",
+        "LICENSE_WEIGHTS"
+      ],
+      "license": "Apple/EPFL Sample Code License 1.1 (non-commercial); weights separately licensed",
+      "method_name": "FlexTok",
+      "origin_url": "https://github.com/apple/ml-flextok",
+      "priority": "P1",
+      "repo_url": "https://github.com/apple/ml-flextok",
+      "status": "cloned",
+      "target_path": "/root/autodl-tmp/CoFiTok/baselines/repos/ml_flextok"
+    },
+    {
+      "alias": "mar",
+      "clone_command": [
+        "git",
+        "clone",
+        "--depth",
+        "1",
+        "--no-tags",
+        "https://github.com/LTH14/mar",
+        "/root/autodl-tmp/CoFiTok/baselines/repos/mar"
+      ],
+      "commit": "c6d53f7fa6427634b5850ebed771b7c2d19ea21f",
+      "commit_date": "2026-02-20T11:07:48-05:00",
+      "dirty_status": [],
+      "error": null,
+      "family": "continuous_token_ar",
+      "license_files": [
+        "LICENSE"
+      ],
+      "license": "MIT",
+      "method_name": "MAR",
+      "origin_url": "https://github.com/LTH14/mar",
+      "priority": "P1",
+      "repo_url": "https://github.com/LTH14/mar",
+      "status": "cloned",
+      "target_path": "/root/autodl-tmp/CoFiTok/baselines/repos/mar"
+    },
+    {
+      "alias": "titok_1d_tokenizer",
+      "clone_command": [
+        "git",
+        "clone",
+        "--depth",
+        "1",
+        "--no-tags",
+        "https://github.com/bytedance/1d-tokenizer",
+        "/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer"
+      ],
+      "commit": "942a96fbdd873780179d1b78d5462911528bf8c8",
+      "commit_date": "2025-03-20T10:30:54-07:00",
+      "dirty_status": [],
+      "error": null,
+      "family": "compact_visual_tokenizer",
+      "license_files": [
+        "LICENSE"
+      ],
+      "license": "Apache-2.0",
+      "method_name": "TiTok / 1D Tokenizer",
+      "origin_url": "https://github.com/bytedance/1d-tokenizer",
+      "priority": "P1",
+      "repo_url": "https://github.com/bytedance/1d-tokenizer",
+      "status": "cloned",
+      "target_path": "/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer"
+    },
+    {
+      "alias": "retok",
+      "clone_command": [
+        "git",
+        "clone",
+        "--depth",
+        "1",
+        "--no-tags",
+        "https://github.com/zfu006/ReTok",
+        "/root/autodl-tmp/CoFiTok/baselines/repos/retok"
+      ],
+      "commit": "ffaa8a7b4ea7e39c09f78010dfcc239c2a054ed7",
+      "commit_date": "2026-02-09T07:35:33+00:00",
+      "dirty_status": [],
+      "error": null,
+      "family": "flexible_visual_tokenizer",
+      "license_files": [],
+      "license": "not_declared_in_repository",
+      "method_name": "ReTok",
+      "origin_url": "https://github.com/zfu006/ReTok",
+      "priority": "P1",
+      "repo_url": "https://github.com/zfu006/ReTok",
+      "status": "cloned",
+      "target_path": "/root/autodl-tmp/CoFiTok/baselines/repos/retok"
+    }
+  ],
+  "registry_path": "baselines/registry.json",
+  "repo_root": "/root/autodl-tmp/CoFiTok/baselines/repos",
+  "license_audited_at": "2026-07-11",
+  "schema_version": 1
+}

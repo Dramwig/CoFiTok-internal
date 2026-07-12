@@ -1,0 +1,28 @@
+++ nvidia-smi --query-gpu=name --format=csv,noheader
+++ wc -l
++ NV_GPUS=1
++ GPUS=1
++ NNODES=1
++ NODE_RANK=0
++ PORT=55625
++ MASTER_ADDR=127.0.0.1
++ HOSTE_NODE_ADDR=127.0.0.1:55625
+++ date +%Y_%m_%d-%H_%M_%S
++ TIMESTAMP=2026_07_10-18_11_23
++ TORCH_RUN_PATH=torchrun
++ export TOKENIZERS_PARALLELISM=true
++ TOKENIZERS_PARALLELISM=true
++ torchrun --nnodes=1 --nproc_per_node=1 --node_rank=0 --master_addr=127.0.0.1 --master_port=55625 autoregressive/sample/sample_c2i_cfg_search.py --quant-way vq --image-size 256 --image-size-eval 256 --sample-dir /root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/generation_smoke_2 --vq-ckpt /root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/checkpoints/VQ_SB256_e250.pt --tok-config configs/vq/VQ_SB256.yaml --gpt-model GPT-XL --cfg-schedule step --cfg-scale 1.5 --top-k 0 --top-p 1.0 --temperature 1.0 --step-start-ratio 0.18 --gpt-ckpt /root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/checkpoints/GPT_XL256_e300_VQ_SB.pt --per-proc-batch-size 1 --num-fid-samples 2 --precision bf16 --global-seed 0 --time-cnt-only
+Starting rank=0, seed=0, world_size=1.
+VQVitModelPlusArgs(codebook_size=16384, codebook_embed_dim=8, codebook_l2_norm=True, codebook_show_usage=True, commit_loss_beta=0.25, entropy_loss_ratio=0.0, use_lfq=False, bernoulli_sample=False, eval_deterministic=False, simvq=False, codebook_transform=None, freeze_codebook=False, encoder_ch_mult=[1, 1, 2, 2, 4], decoder_ch_mult=[1, 1, 2, 2, 4], model_size=None, encoder_size='small', decoder_size='base', num_latent_tokens=256, z_channels=256, dropout_p=0.0, use_rope=False, use_qk_norm=False, use_flash_attn=False, multi_level_query_init=True, learnable_1d_query_init=False, rope_1d=False, last_level_2d_query_init=False, multi_level_2d_query_init=False, learnable_2d_query_init=False, adaptive_gn=True, d2s_up=True, res_up_down_sample=False, downsample_match_channel=False, upsample_match_channel=False, res_codebook_updown_sample=False, downsample_improve=False, use_attn=False, rope_2d=False, rot=True, stochastic=False, stochastic_temperature=0.03, distill_depth=3, encoder_2d_distill=False, out_inner_dim=768, fea_rec_loss_type='mse', fea_rec_loss_weight=1.0, with_prior_model=False, prior_model_config=None)
+no model compile
+Saving .png samples at /root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/generation_smoke_2/GPT-XL-size-256-size-256-topk-0-topp-1.0-temperature-1.0-cfg-1.5-step-seed-0
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+[rank0]:[W710 18:11:43.818669081 ProcessGroupNCCL.cpp:4718] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 as device used by this process is currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. You can pecify device_id in init_process_group() to force use of a particular device.
+Total number of images that will be sampled: 2
+  0%|          | 0/2 [00:00<?, ?it/s]/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/contextlib.py:103: FutureWarning: `torch.backends.cuda.sdp_kernel()` is deprecated. In the future, this context manager will be removed. Please see `torch.nn.attention.sdpa_kernel()` for the new context manager, with updated signature.
+  self.gen = func(*args, **kwds)
+ 50%|█████     | 1/2 [00:04<00:04,  4.52s/it]100%|██████████| 2/2 [00:08<00:00,  4.35s/it]100%|██████████| 2/2 [00:08<00:00,  4.38s/it]
+generation time cost: 4.274022817611694
+decode time cost: 0.08149051666259766

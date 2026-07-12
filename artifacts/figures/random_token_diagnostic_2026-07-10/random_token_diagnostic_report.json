@@ -1,0 +1,167 @@
+{
+  "artifacts": {
+    "labeled_panel": "artifacts/figures/random_token_diagnostic_2026-07-10/random_token_prefix_panel.png",
+    "unlabeled_grid": "artifacts/figures/random_token_diagnostic_2026-07-10/random_token_prefix_grid.png"
+  },
+  "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_2026-07-08/checkpoint_final.pt",
+  "config": {
+    "data": {
+      "batch_size": 32,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "imagenet_1k_64x64_hf",
+      "image_size": 64,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "component_decorrelation_start_step": 0,
+      "component_decorrelation_warmup_steps": 0,
+      "component_decorrelation_weight": 0.0,
+      "denoise_path_component_weight": 0.3,
+      "denoise_path_prefix_weight": 0.15,
+      "denoise_path_progress_power": 1.5,
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_band_component_weight": 0.0,
+      "epsilon_band_prefix_weight": 0.0,
+      "epsilon_weight": 1.0,
+      "group_residual_size": 0,
+      "group_residual_weight": 0.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.0,
+      "prefix_weight": 0.0,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_early_dropout_prob": 0.0,
+      "tail_early_dropout_start": 1,
+      "tail_early_dropout_weight": 0.0,
+      "tail_endpoint_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "tail_late_monotonic_margin": 0.0,
+      "tail_late_monotonic_start": 0,
+      "tail_late_monotonic_weight": 0.0,
+      "tail_late_prefix_start": 0,
+      "tail_late_prefix_weight": 0.0,
+      "tail_replay_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "deep_synthesis_depth": 3,
+      "deep_synthesis_hidden_channels": 0,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 64,
+      "predictor_depth": 3,
+      "predictor_multiscale_levels": 2,
+      "predictor_type": "tiny_conv",
+      "predictor_use_feedback": true,
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_mode": "restricted",
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 8
+    },
+    "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 1000,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 20260710,
+      "steps": 5000
+    }
+  },
+  "diagnostics": {
+    "original_component_energy": 0.02204240672290325,
+    "random_token_component_energy": 0.16199830174446106,
+    "random_token_component_energy_ratio": 7.349392414093018,
+    "shuffled_component_mse": 0.04393170773983002,
+    "shuffled_component_relative_mse": 1.9930540323257446,
+    "zero_token_component_energy": 0.0,
+    "zero_token_component_energy_ratio": 0.0
+  },
+  "evaluation": {
+    "fixed_timestep": 500,
+    "image_range": "[-1, 1]",
+    "note": "Diagnostic visualization only; not a generation-quality metric.",
+    "num_images": 4,
+    "prefix_budgets": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "random_token_distribution": "iid torch.randn_like(model_tokens)",
+    "seed": 20260710,
+    "split": "val"
+  },
+  "metrics": {
+    "ordered_prefix_mse_to_clean": {
+      "1": 10.693355560302734,
+      "2": 9.517375946044922,
+      "4": 5.481078147888184,
+      "8": 0.09913617372512817
+    },
+    "random_token_prefix_mse_to_clean": {
+      "1": 13.718597412109375,
+      "2": 15.057162284851074,
+      "4": 19.396427154541016,
+      "8": 27.345848083496094
+    },
+    "shuffled_token_final_mse_to_clean": {
+      "8": 23.628036499023438
+    },
+    "zero_token_final_mse_to_clean": {
+      "8": 11.891966819763184
+    }
+  },
+  "rows": [
+    "clean x0",
+    "noisy xt",
+    "ordered m=1",
+    "ordered m=2",
+    "ordered m=4",
+    "ordered m=8",
+    "random z m=1",
+    "random z m=2",
+    "random z m=4",
+    "random z m=8",
+    "zero z m=8",
+    "shuffled z m=8"
+  ],
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 1.099682331085205,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

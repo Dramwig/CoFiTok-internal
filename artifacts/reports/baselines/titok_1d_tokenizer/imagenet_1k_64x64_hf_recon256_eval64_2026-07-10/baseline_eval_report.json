@@ -1,0 +1,82 @@
+{
+  "baseline": "titok_1d_tokenizer",
+  "checkpoint": "yucornetto/tokenizer_titok_l32_imagenet",
+  "dataset": "imagenet_1k_64x64_hf",
+  "evaluation": {
+    "available_sample_images": 64,
+    "eval_image_size": 256,
+    "feature_size": 8,
+    "image_count": 64,
+    "real_image_count": 64,
+    "sample_image_count": 64,
+    "seed": 139,
+    "source_resolution": 64,
+    "split": "val"
+  },
+  "metric_notes": {
+    "inception_frechet": {
+      "available": false,
+      "reason": "not requested"
+    },
+    "last_batch_mse": 0.04149908199906349,
+    "lowres_frechet_proxy": "Small-scale reconstruction Frechet proxy over deterministic low-resolution RGB/color features.",
+    "protocol": "Tokenizer reconstruction, not unconditional generation. Datasets are resized to eval_image_size before tokenization so 32/64 source datasets are not directly comparable to native-resolution P0 rows."
+  },
+  "metrics": {
+    "lowres_frechet_proxy": 0.4658390725711087,
+    "reconstruction_mse": 0.0569324791431427,
+    "reconstruction_psnr_db": 18.46699895611545
+  },
+  "parameters": {
+    "flextok_keep": null,
+    "model_id": "yucornetto/tokenizer_titok_l32_imagenet",
+    "sample_steps": 1,
+    "sampler": "tokenizer_reconstruction",
+    "sampler_nfe": 1
+  },
+  "report_type": "baseline_eval",
+  "run_name": "titok_1d_tokenizer_imagenet_1k_64x64_hf_recon256_64img",
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 12.618247509002686,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  },
+  "samples_dir": "streamed_reconstructions",
+  "status": "completed",
+  "tokens": [
+    {
+      "quantize_mode": "vq",
+      "token_shape": [
+        4,
+        1,
+        32
+      ]
+    },
+    {
+      "quantize_mode": "vq",
+      "token_shape": [
+        4,
+        1,
+        32
+      ]
+    },
+    {
+      "quantize_mode": "vq",
+      "token_shape": [
+        4,
+        1,
+        32
+      ]
+    },
+    {
+      "quantize_mode": "vq",
+      "token_shape": [
+        4,
+        1,
+        32
+      ]
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "baseline": "ml_flextok",
+  "checkpoint": "EPFL-VILAB/flextok_d12_d12_in1k",
+  "dataset": "ffhq_64",
+  "evaluation": {
+    "available_sample_images": 64,
+    "eval_image_size": 256,
+    "feature_size": 8,
+    "image_count": 64,
+    "real_image_count": 64,
+    "sample_image_count": 64,
+    "seed": 139,
+    "source_resolution": 64,
+    "split": "val"
+  },
+  "metric_notes": {
+    "inception_frechet": {
+      "available": false,
+      "reason": "not requested"
+    },
+    "last_batch_mse": 0.008818861097097397,
+    "lowres_frechet_proxy": "Small-scale reconstruction Frechet proxy over deterministic low-resolution RGB/color features.",
+    "protocol": "Tokenizer reconstruction, not unconditional generation. Datasets are resized to eval_image_size before tokenization so 32/64 source datasets are not directly comparable to native-resolution P0 rows."
+  },
+  "metrics": {
+    "lowres_frechet_proxy": 0.11584392487644402,
+    "reconstruction_mse": 0.016111139899294358,
+    "reconstruction_psnr_db": 23.949337225127152
+  },
+  "parameters": {
+    "flextok_keep": -1,
+    "model_id": "EPFL-VILAB/flextok_d12_d12_in1k",
+    "sample_steps": 4,
+    "sampler": "tokenizer_reconstruction",
+    "sampler_nfe": 4
+  },
+  "report_type": "baseline_eval",
+  "run_name": "ml_flextok_ffhq_64_recon256_64img",
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 18.581146240234375,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  },
+  "samples_dir": "streamed_reconstructions",
+  "status": "completed",
+  "tokens": [
+    {
+      "decode_timesteps": 4,
+      "full_token_lengths": [
+        256
+      ],
+      "guidance_scale": 1.0,
+      "kept_token_lengths": [
+        256
+      ],
+      "perform_norm_guidance": false
+    },
+    {
+      "decode_timesteps": 4,
+      "full_token_lengths": [
+        256
+      ],
+      "guidance_scale": 1.0,
+      "kept_token_lengths": [
+        256
+      ],
+      "perform_norm_guidance": false
+    },
+    {
+      "decode_timesteps": 4,
+      "full_token_lengths": [
+        256
+      ],
+      "guidance_scale": 1.0,
+      "kept_token_lengths": [
+        256
+      ],
+      "perform_norm_guidance": false
+    },
+    {
+      "decode_timesteps": 4,
+      "full_token_lengths": [
+        256
+      ],
+      "guidance_scale": 1.0,
+      "kept_token_lengths": [
+        256
+      ],
+      "perform_norm_guidance": false
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+status=started started_at=2026-07-10T09:20:16+08:00 HF_HUB_DISABLE_XET=1
+Fetching 6 files:   0%|          | 0/6 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 6 files:  17%|█▋        | 1/6 [00:19<01:38, 19.71s/it]Fetching 6 files:  33%|███▎      | 2/6 [00:52<01:50, 27.59s/it]Fetching 6 files:  50%|█████     | 3/6 [00:54<00:47, 15.80s/it]Fetching 6 files:  67%|██████▋   | 4/6 [00:55<00:19,  9.90s/it]Fetching 6 files:  83%|████████▎ | 5/6 [00:56<00:06,  6.65s/it]Fetching 6 files: 100%|██████████| 6/6 [00:57<00:00,  4.68s/it]Fetching 6 files: 100%|██████████| 6/6 [00:57<00:00,  9.53s/it]
+[32m✓ Downloaded[0m
+  path: /root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo
+status=command_done rc=0 finished_at=2026-07-10T09:21:14+08:00
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/README.md 3338
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/__init__.py 17
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/diffloss.py 8774
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/diffusion.py 1709
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/diffusion_utils.py 2627
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/gaussian_diffusion.py 34483
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/kl16.safetensors 265856244
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/mar-base.safetensors 831736456
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/mar.py 14285
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/model_index.json 65
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/pipeline.py 4418
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/respace.py 5484
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/vae.py 15519

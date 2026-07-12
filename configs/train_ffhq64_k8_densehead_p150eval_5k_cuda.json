@@ -1,0 +1,49 @@
+{
+  "data": {
+    "batch_size": 32,
+    "channels": 3,
+    "class_conditional": false,
+    "dataset": "ffhq_64",
+    "image_size": 64,
+    "num_workers": 2,
+    "root": "/root/autodl-tmp/CoFiTok/datasets"
+  },
+  "loss": {
+    "denoise_path_progress_power": 1.5,
+    "epsilon_weight": 1.0,
+    "monotonic_weight": 0.0,
+    "prefix_weight": 0.0,
+    "zero_token_weight": 0.0
+  },
+  "model": {
+    "base_channels": 52,
+    "gamma_mode": "fixed_one",
+    "image_channels": 3,
+    "image_size": 64,
+    "predictor_depth": 3,
+    "predictor_use_feedback": false,
+    "synthesis_active_token_channels": [],
+    "synthesis_kernel_size": 3,
+    "synthesis_mode": "dense_identity",
+    "synthesis_token_strides": [],
+    "token_channels": 3,
+    "token_count": 1
+  },
+  "name": "train_ffhq64_k8_densehead_p150eval_5k_cuda",
+  "optimization": {
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "grad_clip_norm": 1.0,
+    "learning_rate": 0.0002,
+    "log_interval": 1000,
+    "visualization_count": 8,
+    "weight_decay": 0.0001
+  },
+  "runtime": {
+    "device": "cuda",
+    "seed": 139,
+    "steps": 5000
+  }
+}

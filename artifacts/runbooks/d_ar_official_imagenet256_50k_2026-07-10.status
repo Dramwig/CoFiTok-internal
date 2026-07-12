@@ -1,0 +1,19 @@
+status=finished
+created_at=2026-07-10T06:16:54+08:00
+log=/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/runbooks/d_ar_official_imagenet256_50k_2026-07-10.log
+pid=990280
+first_monitor=2026-07-10T06:17:53+08:00
+first_monitor_samples=128
+first_monitor_gpu_util=96pct
+monitor_10pct=2026-07-10T06:28:18+08:00
+monitor_10pct_samples=5184
+monitor_25pct=2026-07-10T06:43:41+08:00
+monitor_25pct_samples=12544
+monitor_50pct=2026-07-10T07:14:02+08:00
+monitor_50pct_samples=26752
+monitor_94pct=2026-07-10T07:59:36+08:00
+monitor_94pct_samples=47271
+npz_built=2026-07-10T08:14:57+08:00
+npz_shape=(50000,256,256,3)
+png_count=50048
+status=finished rc=0 finished_at=2026-07-10T08:30:54+08:00

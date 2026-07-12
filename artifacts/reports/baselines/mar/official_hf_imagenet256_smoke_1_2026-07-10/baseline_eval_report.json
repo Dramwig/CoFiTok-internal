@@ -1,0 +1,35 @@
+{
+  "artifacts": {
+    "hf_repo_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo",
+    "kl16_bytes": 265856244,
+    "mar_base_bytes": 831736456,
+    "sample_image": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_smoke_1/sampled_image.png"
+  },
+  "baseline": "mar",
+  "dataset": "imagenet_256",
+  "metric_notes": {
+    "protocol": "Smoke validates official Hugging Face safetensors loading and generation only. It is not a 50K FID/IS result."
+  },
+  "paper_table_role": "not_for_paper_metric_table",
+  "parameters": {
+    "cfg_scale": 1.0,
+    "cfg_schedule": "constant",
+    "class_labels": [
+      207
+    ],
+    "eval_only": true,
+    "model_type": "mar_base",
+    "num_ar_steps": 1,
+    "num_images": 1,
+    "seed": 0
+  },
+  "protocol": "official_hf_safetensors_smoke_only",
+  "report_type": "baseline_eval",
+  "runtime": {
+    "cuda_available": true,
+    "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "elapsed_sec": 51.22272753715515
+  },
+  "schema_version": 1,
+  "status": "completed"
+}

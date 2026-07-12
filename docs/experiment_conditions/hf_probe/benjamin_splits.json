@@ -1,0 +1,1 @@
+{"splits":[{"dataset":"benjamin-paine/imagenet-1k-64x64","config":"default","split":"train"},{"dataset":"benjamin-paine/imagenet-1k-64x64","config":"default","split":"validation"},{"dataset":"benjamin-paine/imagenet-1k-64x64","config":"default","split":"test"}],"pending":[],"failed":[]}

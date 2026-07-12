@@ -1,0 +1,154 @@
+{
+  "component_energy": [
+    0.016476573422551155,
+    0.016029633581638336,
+    0.019111936911940575,
+    0.011262336745858192
+  ],
+  "config": {
+    "data": {
+      "batch_size": 16,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "cifar10",
+      "image_size": 32,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "epsilon_weight": 1.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.05,
+      "prefix_weight": 0.25,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 32,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 32,
+      "predictor_depth": 2,
+      "synthesis_kernel_size": 3,
+      "token_channels": 16,
+      "token_count": 4
+    },
+    "name": "smoke_cifar10_cuda",
+    "runtime": {
+      "device": "cuda",
+      "seed": 13,
+      "steps": 1
+    }
+  },
+  "diagnostics": {
+    "original_component_energy": 0.014932322315871716,
+    "random_token_component_energy": 0.0992765873670578,
+    "shuffled_component_mse": 0.02186807617545128,
+    "zero_token_component_energy": 0.0
+  },
+  "losses": {
+    "epsilon": 1.085707426071167,
+    "monotonic": 13.66912841796875,
+    "prefix": 592.3338012695312,
+    "total": 149.8526153564453,
+    "zero_token": 0.0
+  },
+  "output_shapes": {
+    "components": [
+      [
+        16,
+        3,
+        32,
+        32
+      ],
+      [
+        16,
+        3,
+        32,
+        32
+      ],
+      [
+        16,
+        3,
+        32,
+        32
+      ],
+      [
+        16,
+        3,
+        32,
+        32
+      ]
+    ],
+    "epsilon": [
+      16,
+      3,
+      32,
+      32
+    ],
+    "prefix_epsilons": [
+      [
+        16,
+        3,
+        32,
+        32
+      ],
+      [
+        16,
+        3,
+        32,
+        32
+      ],
+      [
+        16,
+        3,
+        32,
+        32
+      ],
+      [
+        16,
+        3,
+        32,
+        32
+      ]
+    ],
+    "tokens": [
+      [
+        16,
+        16,
+        32,
+        32
+      ],
+      [
+        16,
+        16,
+        32,
+        32
+      ],
+      [
+        16,
+        16,
+        32,
+        32
+      ],
+      [
+        16,
+        16,
+        32,
+        32
+      ]
+    ]
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 0.3845484256744385,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

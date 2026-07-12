@@ -1,0 +1,209 @@
+{
+  "artifacts": {
+    "prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_5k_seed2_ordered_2026-07-08/prefix_final.png",
+    "shuffled_prefix_grid": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_5k_seed2_ordered_2026-07-08/prefix_final_shuffled.png"
+  },
+  "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_5k_seed2_2026-07-08/checkpoint_final.pt",
+  "config": {
+    "data": {
+      "batch_size": 32,
+      "channels": 3,
+      "class_conditional": false,
+      "dataset": "tiny_imagenet_200",
+      "image_size": 64,
+      "num_workers": 2,
+      "root": "/root/autodl-tmp/CoFiTok/datasets"
+    },
+    "diffusion": {
+      "beta_end": 0.02,
+      "beta_start": 0.0001,
+      "num_train_timesteps": 1000,
+      "prediction_target": "epsilon"
+    },
+    "loss": {
+      "component_decorrelation_start_step": 0,
+      "component_decorrelation_warmup_steps": 0,
+      "component_decorrelation_weight": 0.0,
+      "denoise_path_component_weight": 0.3,
+      "denoise_path_prefix_weight": 0.15,
+      "denoise_path_progress_power": 1.5,
+      "energy_budget_weight": 0.0,
+      "energy_target": [],
+      "epsilon_band_component_weight": 0.0,
+      "epsilon_band_prefix_weight": 0.0,
+      "epsilon_weight": 1.0,
+      "group_residual_size": 0,
+      "group_residual_weight": 0.0,
+      "monotonic_margin": 0.0,
+      "monotonic_weight": 0.0,
+      "prefix_weight": 0.0,
+      "residual_component_weight": 0.0,
+      "sampled_component_weight": 0.0,
+      "sampled_prefix_weight": 0.0,
+      "tail_early_dropout_prob": 0.0,
+      "tail_early_dropout_start": 1,
+      "tail_early_dropout_weight": 0.0,
+      "tail_endpoint_weight": 0.0,
+      "tail_floor_min_ratio": 0.0,
+      "tail_floor_weight": 0.0,
+      "tail_late_monotonic_margin": 0.0,
+      "tail_late_monotonic_start": 0,
+      "tail_late_monotonic_weight": 0.0,
+      "tail_late_prefix_start": 0,
+      "tail_late_prefix_weight": 0.0,
+      "tail_replay_weight": 0.0,
+      "zero_token_weight": 0.01
+    },
+    "model": {
+      "base_channels": 48,
+      "deep_synthesis_depth": 3,
+      "deep_synthesis_hidden_channels": 0,
+      "gamma_mode": "learned_scalar",
+      "image_channels": 3,
+      "image_size": 64,
+      "predictor_depth": 3,
+      "predictor_multiscale_levels": 2,
+      "predictor_type": "tiny_conv",
+      "predictor_use_feedback": true,
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_kernel_size": 3,
+      "synthesis_mode": "restricted",
+      "synthesis_token_strides": [],
+      "token_channels": 16,
+      "token_count": 8
+    },
+    "name": "train_tiny_imagenet_k8_denoisepath_p150_light_5k_seed2_cuda",
+    "optimization": {
+      "betas": [
+        0.9,
+        0.999
+      ],
+      "grad_clip_norm": 1.0,
+      "learning_rate": 0.0002,
+      "log_interval": 1000,
+      "visualization_count": 8,
+      "weight_decay": 0.0001
+    },
+    "runtime": {
+      "device": "cuda",
+      "seed": 103,
+      "steps": 5000
+    }
+  },
+  "prefix_summary": {
+    "active_tail_tokens": 7,
+    "component_energy": [
+      0.005264541134238243,
+      0.0061455415561795235,
+      0.019123833626508713,
+      0.015567027032375336,
+      0.02643248438835144,
+      0.029624400660395622,
+      0.033170245587825775,
+      0.037378691136837006
+    ],
+    "component_energy_ratio": [
+      0.03048254149452501,
+      0.035583675901826956,
+      0.11073007830886555,
+      0.0901355949856084,
+      0.15304834393470704,
+      0.17153005349470177,
+      0.1920610670013861,
+      0.21642864487837918
+    ],
+    "component_order": "ordered",
+    "component_order_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "diagnostics": {
+      "original_component_energy": 0.021588345989584923,
+      "random_token_component_energy": 0.17784415185451508,
+      "random_token_component_energy_ratio": 8.237970352172852,
+      "shuffled_component_mse": 0.04303468018770218,
+      "shuffled_component_relative_mse": 1.9934217929840088,
+      "zero_token_component_energy": 0.0,
+      "zero_token_component_energy_ratio": 0.0
+    },
+    "energy_effective_token_count": 6.844882626812272,
+    "energy_entropy": 1.923501311305196,
+    "energy_entropy_normalized": 0.9250086009878082,
+    "grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_5k_seed2_ordered_2026-07-08/prefix_final.png",
+    "head_energy_ratio": 0.03048254149452501,
+    "late_half_energy_ratio": 0.7330681093091741,
+    "prefix_mse_to_clean": [
+      10.599445343017578,
+      9.444788932800293,
+      7.088952541351318,
+      5.382930755615234,
+      3.296678066253662,
+      1.6879934072494507,
+      0.6131585836410522,
+      0.1652473658323288
+    ],
+    "prefix_mse_to_clean_auc": 4.6995498059051375,
+    "prefix_mse_to_denoise_path": [
+      0.02675945684313774,
+      0.04302516579627991,
+      0.041389111429452896,
+      0.06164797395467758,
+      0.06926707923412323,
+      0.09078767150640488,
+      0.11611907184123993,
+      0.1652473658323288
+    ],
+    "prefix_mse_to_denoise_path_auc": 0.07403421215713024,
+    "random_order_seed": 0,
+    "rows": [
+      "clean",
+      "noisy",
+      "prefix_1",
+      "prefix_2",
+      "prefix_3",
+      "prefix_4",
+      "prefix_5",
+      "prefix_6",
+      "prefix_7",
+      "prefix_8"
+    ],
+    "shuffled_final_clean_mse": 23.476421356201172,
+    "shuffled_final_mse_ratio": 142.06835454201396,
+    "shuffled_grid_path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_5k_seed2_ordered_2026-07-08/prefix_final_shuffled.png",
+    "shuffled_prefix_mse_to_clean": [
+      11.910484313964844,
+      12.037646293640137,
+      12.531477928161621,
+      13.217094421386719,
+      14.678954124450684,
+      16.78207015991211,
+      19.638935089111328,
+      23.476421356201172
+    ],
+    "shuffled_prefix_mse_to_clean_auc": 15.225661550249372,
+    "tail_energy_ratio": 0.9695174585054749,
+    "timestep": 500
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 1.120208978652954,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  }
+}

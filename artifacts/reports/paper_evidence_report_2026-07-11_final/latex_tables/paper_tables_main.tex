@@ -1,0 +1,49 @@
+% Auto-generated from paper_evidence_report.json. Do not hand-edit metrics here.
+
+% Main-paper subset: CoFiTok diagnostics and ImageNet-256 confirmatory order evidence.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Diagnostics for the supported CoFiTok claim.}
+  \label{tab:cofitok-diagnostics-current}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrrrrrrr}
+    \toprule
+    Dataset & C PSNR & D PSNR & mask PSNR & C path & E path & C effK & E effK & C zero & deep-S zero \\
+    \midrule
+    CIFAR-10 & 14.245 & 14.407 & 13.063 & 0.0967 & 0.7906 & 6.84 & 5.24 & 0.0000 & 0.0619 \\
+    Tiny-IN & 14.348 & 14.453 & 13.015 & 0.0731 & 1.1177 & 6.80 & 5.57 & 0.0000 & 0.0505 \\
+    ImageNet-64 HF & 14.897 & 15.004 & 13.548 & 0.0672 & 1.1120 & 6.79 & 5.33 & 0.0000 & 0.0522 \\
+    ImageNet-64 strict & 14.521 & 14.656 & 13.250 & 0.0705 & 1.0502 & 6.82 & 5.36 & 0.0000 & 0.0535 \\
+    FFHQ-64 & 15.024 & 15.126 & 13.285 & 0.0676 & 1.0830 & 6.82 & 5.41 & 0.0000 & 0.0518 \\
+    AFHQv2-64 & 15.167 & 15.154 & 13.384 & 0.0653 & 1.0185 & 6.82 & 5.45 & 0.0000 & 0.0561 \\
+    ImageNet-256 10\% & 13.627 & 13.490 & 13.807 & 0.1416 & 1.5686 & 3.36 & 3.67 & 0.0000 & 0.0179 \\
+    ImageNet-256 & 13.809 & 13.770 & 13.761 & 0.1325 & 1.5003 & 3.37 & 3.67 & 0.0000 & 0.0185 \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \vspace{0.3em}
+  \caption*{\footnotesize Lower path AUC indicates better prefix controllability. Zero-token ratio diagnoses whether the synthesis operator leaks structure at zero input.}
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{ImageNet-256 K4 20k confirmatory order and endpoint results over 1,024 validation images at $t=500$.}
+  \label{tab:imagenet256-confirmatory-order}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{rrrrrrrrr}
+    \toprule
+    Seed & E path & C ordered & non-ID mean & reverse & rank/24 & $\Delta$ CI low & D endpoint & C endpoint \\
+    \midrule
+    103 & 1.7879 & 0.0664 & 0.3157 & 0.7192 & 1 & 0.2489 & 0.1234 & 0.1133 \\
+    139 & 1.4401 & 0.0678 & 0.3082 & 0.6821 & 1 & 0.2400 & 0.1244 & 0.1179 \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \vspace{0.3em}
+  \caption*{\footnotesize E = endpoint-only factorized; C = CoFiTok; D = parameter-matched direct dense. non-ID averages the other 23 K4 permutations; $\Delta$ CI low is the 95\% paired-bootstrap lower bound for non-ID minus ordered path AUC.}
+\end{table*}

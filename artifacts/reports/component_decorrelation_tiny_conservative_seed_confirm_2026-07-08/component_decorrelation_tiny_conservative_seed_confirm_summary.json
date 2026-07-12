@@ -1,0 +1,167 @@
+{
+  "date": "2026-07-08",
+  "dataset": "tiny_imagenet_200",
+  "purpose": "Second-seed confirmation for the conservative component decorrelation schedule.",
+  "candidate_schedule": {
+    "component_decorrelation_weight": 0.003,
+    "component_decorrelation_start_step": 3000,
+    "component_decorrelation_warmup_steps": 1500,
+    "full_weight_step": 4500,
+    "total_steps": 5000
+  },
+  "seeds": {
+    "139": {
+      "baseline": {
+        "config_name": "train_tiny_imagenet_k8_denoisepath_p150_light_5k_cuda",
+        "remote_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_5k_2026-07-08/checkpoint_final.pt",
+        "component_decorrelation_weight": 0.0,
+        "component_decorrelation_start_step": 0,
+        "component_decorrelation_warmup_steps": 0,
+        "train_path_auc": 0.07594848118190255,
+        "quality_final_mse": 0.14871828258037567,
+        "quality_mse_auc": 6.728809205194314,
+        "effective_token_count": 6.804285433205951,
+        "mean_abs_component_cosine": 0.7223122886248997,
+        "max_abs_component_cosine": 0.8493800163269043,
+        "order_eval": {
+          "ordered_path_auc": 0.0766382986413581,
+          "random_path_auc": 0.25701855229479925,
+          "reverse_path_auc": 0.7140138851744788,
+          "ordered_effective_token_count": 6.803341170159017
+        }
+      },
+      "scheduled_decorw0003": {
+        "config_name": "train_tiny_imagenet_k8_denoisepath_p150_light_decorw0003_sched3000w1500_5k_cuda",
+        "remote_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_decorw0003_sched3000w1500_5k_2026-07-08/checkpoint_final.pt",
+        "component_decorrelation_weight": 0.003,
+        "component_decorrelation_start_step": 3000,
+        "component_decorrelation_warmup_steps": 1500,
+        "train_path_auc": 0.07970399875193834,
+        "quality_final_mse": 0.14856731332838535,
+        "quality_mse_auc": 6.783633628549675,
+        "effective_token_count": 6.831569208831258,
+        "mean_abs_component_cosine": 0.6889802983828953,
+        "max_abs_component_cosine": 0.8368000388145447,
+        "order_eval": {
+          "ordered_path_auc": 0.08034988479422671,
+          "random_path_auc": 0.44774738273450304,
+          "reverse_path_auc": 0.7305243079151426,
+          "ordered_effective_token_count": 6.83098293211034
+        },
+        "delta_vs_baseline": {
+          "train_path_auc": 0.0037555175700357962,
+          "quality_final_mse": -0.0001509692519903183,
+          "quality_mse_auc": 0.05482442335536142,
+          "effective_token_count": 0.027283775625306816,
+          "mean_abs_component_cosine": -0.033331990242004395,
+          "ordered_path_auc": 0.0037115861528686095,
+          "random_path_auc": 0.1907288304397038,
+          "reverse_path_auc": 0.01651042274066372
+        }
+      }
+    },
+    "103": {
+      "baseline": {
+        "config_name": "train_tiny_imagenet_k8_denoisepath_p150_light_5k_seed2_cuda",
+        "remote_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_5k_seed2_2026-07-08/checkpoint_final.pt",
+        "component_decorrelation_weight": 0.0,
+        "component_decorrelation_start_step": 0,
+        "component_decorrelation_warmup_steps": 0,
+        "train_path_auc": 0.07627656896199499,
+        "quality_final_mse": 0.15034622699022293,
+        "quality_mse_auc": 6.7425143631796045,
+        "effective_token_count": 6.843034763255056,
+        "mean_abs_component_cosine": 0.6966809460094997,
+        "max_abs_component_cosine": 0.8613921403884888,
+        "order_eval": {
+          "ordered_path_auc": 0.07403421215713024,
+          "random_path_auc": 0.40899052045175005,
+          "reverse_path_auc": 0.6940578339355332,
+          "ordered_effective_token_count": 6.844882626812272
+        }
+      },
+      "scheduled_decorw0003": {
+        "config_name": "train_tiny_imagenet_k8_denoisepath_p150_light_decorw0003_sched3000w1500_5k_seed2_cuda",
+        "remote_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_decorw0003_sched3000w1500_5k_seed2_2026-07-08/checkpoint_final.pt",
+        "component_decorrelation_weight": 0.003,
+        "component_decorrelation_start_step": 3000,
+        "component_decorrelation_warmup_steps": 1500,
+        "train_path_auc": 0.07985132187604904,
+        "quality_final_mse": 0.15013026259839535,
+        "quality_mse_auc": 6.784789660014212,
+        "effective_token_count": 6.882909130363266,
+        "mean_abs_component_cosine": 0.6643594758851188,
+        "max_abs_component_cosine": 0.8515139818191528,
+        "order_eval": {
+          "ordered_path_auc": 0.07761630495744092,
+          "random_path_auc": 0.42085966787167955,
+          "reverse_path_auc": 0.708581550845078,
+          "ordered_effective_token_count": 6.884602324049963
+        },
+        "delta_vs_baseline": {
+          "train_path_auc": 0.003574752914054055,
+          "quality_final_mse": -0.0002159643918275833,
+          "quality_mse_auc": 0.04227529683460762,
+          "effective_token_count": 0.039874367108209796,
+          "mean_abs_component_cosine": -0.03232147012438091,
+          "ordered_path_auc": 0.003582092800310674,
+          "random_path_auc": 0.011869147419929504,
+          "reverse_path_auc": 0.014523716909544793
+        }
+      }
+    }
+  },
+  "aggregate": {
+    "mean_delta_vs_baseline": {
+      "train_path_auc": 0.0036651352420449257,
+      "quality_final_mse": -0.0001834668219089508,
+      "quality_mse_auc": 0.04854986009498452,
+      "effective_token_count": 0.033579071366758306,
+      "mean_abs_component_cosine": -0.032826730183192654,
+      "ordered_path_auc": 0.0036468394765896417,
+      "random_path_auc": 0.10129898892981665,
+      "reverse_path_auc": 0.015517069825104257
+    },
+    "per_seed_direction": {
+      "train_path_auc": [
+        0.0037555175700357962,
+        0.003574752914054055
+      ],
+      "quality_final_mse": [
+        -0.0001509692519903183,
+        -0.0002159643918275833
+      ],
+      "quality_mse_auc": [
+        0.05482442335536142,
+        0.04227529683460762
+      ],
+      "effective_token_count": [
+        0.027283775625306816,
+        0.039874367108209796
+      ],
+      "mean_abs_component_cosine": [
+        -0.033331990242004395,
+        -0.03232147012438091
+      ],
+      "ordered_path_auc": [
+        0.0037115861528686095,
+        0.003582092800310674
+      ],
+      "random_path_auc": [
+        0.1907288304397038,
+        0.011869147419929504
+      ],
+      "reverse_path_auc": [
+        0.01651042274066372,
+        0.014523716909544793
+      ]
+    }
+  },
+  "decision": {
+    "status": "confirmed_ablation_candidate",
+    "summary": "Across seeds 139 and 103, scheduled decor 0.003 consistently reduces component cosine. The path-order penalty stays small relative to static/scheduled 0.005, but quality/path effects remain seed-sensitive, so this remains an ablation candidate rather than a default objective.",
+    "cosine_reduction_consistent": true,
+    "ordered_path_penalty_under_0p01_each_seed": true,
+    "next_action": "Use scheduled decor 0.003 for decorrelation ablation tables; keep the main CoFiTok objective without decorrelation for headline prefix-order results."
+  }
+}

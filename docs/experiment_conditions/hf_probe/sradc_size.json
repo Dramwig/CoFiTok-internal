@@ -1,0 +1,1 @@
+{"size":{"dataset":{"dataset":"sradc/imagenet_resized_64x64","num_bytes_original_files":0,"num_bytes_parquet_files":0,"num_bytes_memory":0,"num_rows":0,"estimated_num_rows":null},"configs":[],"splits":[]},"pending":[],"failed":[{"kind":"config-size","dataset":"sradc/imagenet_resized_64x64","config":"default","split":null}],"partial":false}
