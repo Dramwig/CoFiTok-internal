@@ -7,13 +7,13 @@ from pathlib import Path
 
 import torch
 
-from cofitok.configs import config_from_dict, config_to_dict
+from cofitok.configs import config_to_dict
 from cofitok.data import build_dataloader
 from cofitok.diffusion import DiffusionSchedule
+from cofitok.generation import load_generation_model
 from cofitok.metrics import normalized_curve_auc
 from cofitok.models import CoFiTokTiny
-from cofitok.reporting import file_sha256, write_json_report
-from cofitok.training import ExponentialMovingAverage
+from cofitok.reporting import write_json_report
 from cofitok.training.runtime import autocast_context
 
 
@@ -245,24 +245,13 @@ def main() -> None:
     args = parse_args()
     if args.num_images < 1:
         raise ValueError("num-images must be positive")
-    checkpoint_path = Path(args.checkpoint)
-    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
-    config = config_from_dict(checkpoint["config"])
+    loaded = load_generation_model(args.checkpoint, weights=args.weights)
+    checkpoint_path = loaded.checkpoint_path
+    config = loaded.config
     if not 0 <= args.timestep < config.diffusion.num_train_timesteps:
         raise ValueError("timestep is outside the diffusion schedule")
-    device = torch.device(config.runtime.device)
-    if device.type == "cuda" and not torch.cuda.is_available():
-        raise RuntimeError("CUDA checkpoint evaluation requested but CUDA is unavailable")
-    model = CoFiTokTiny(config.model).to(device)
-    model.load_state_dict(checkpoint["model"], strict=True)
-    if args.weights == "ema":
-        ema = ExponentialMovingAverage(
-            model,
-            decay=config.optimization.ema_decay,
-            warmup_steps=config.optimization.ema_warmup_steps,
-        )
-        ema.load_state_dict(checkpoint["ema"])
-        ema.copy_to(model)
+    device = loaded.device
+    model = loaded.model
     schedule = DiffusionSchedule(config.diffusion, device=device)
     loader = build_dataloader(config.data, split="val", drop_last=False)
     orders = component_orders(config.model.token_count, args.random_orders, args.seed)
@@ -284,8 +273,8 @@ def main() -> None:
         "schema_version": 1,
         "status": "completed",
         "checkpoint": checkpoint_path.resolve().as_posix(),
-        "checkpoint_sha256": file_sha256(checkpoint_path),
-        "checkpoint_step": int(checkpoint["step"]),
+        "checkpoint_sha256": loaded.checkpoint_sha256,
+        "checkpoint_step": loaded.checkpoint_step,
         "weights": args.weights,
         "precision": args.precision,
         "config": config_to_dict(config),

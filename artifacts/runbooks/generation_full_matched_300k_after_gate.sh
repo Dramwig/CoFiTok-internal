@@ -36,25 +36,89 @@ if report.get("completed_steps") != report.get("target_steps"):
 PY
 }
 
-if [[ -f "$COFITOK_RUN/latest.json" ]]; then
+latest_step() {
+  python - "$1" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1]) / "latest.json"
+if not path.is_file():
+    print(0)
+else:
+    with path.open(encoding="utf-8") as handle:
+        print(int(json.load(handle)["step"]))
+PY
+}
+
+train_to_milestone() {
+  local config="$1"
+  local run_dir="$2"
+  local target="$3"
+  local current
+  current="$(latest_step "$run_dir")"
+  if (( current > target )); then
+    printf 'run %s passed missing milestone %s at step %s\n' "$run_dir" "$target" "$current" >&2
+    exit 1
+  fi
+  if (( current == target )); then
+    return
+  fi
+  local delta=$((target - current))
+  local resume_args=()
+  if (( current > 0 )); then
+    resume_args=(--resume auto)
+  fi
   python scripts/train_generation.py \
-    --config configs/generation/imagenet256_cofitok_k8_300k.json \
-    --output-dir "$COFITOK_RUN" --resume auto
-else
-  python scripts/train_generation.py \
-    --config configs/generation/imagenet256_cofitok_k8_300k.json \
-    --output-dir "$COFITOK_RUN"
-fi
+    --config "$config" --output-dir "$run_dir" \
+    --stop-after-steps "$delta" "${resume_args[@]}"
+  local reached
+  reached="$(latest_step "$run_dir")"
+  if (( reached != target )); then
+    printf 'run %s reached step %s instead of milestone %s\n' "$run_dir" "$reached" "$target" >&2
+    exit 1
+  fi
+}
+
+evaluate_milestone() {
+  local method="$1"
+  local run_dir="$2"
+  local step="$3"
+  local prefix_budget="$4"
+  local random_orders="$5"
+  local checkpoint
+  checkpoint="$run_dir/checkpoint_step_$(printf '%08d' "$step").pt"
+  test -f "$checkpoint"
+  bash artifacts/runbooks/generation_full_milestone_eval.sh \
+    "$method" "$run_dir" "$checkpoint" "$step" "$prefix_budget" "$random_orders"
+}
+
+build_paired_milestone() {
+  local step="$1"
+  local step_tag
+  step_tag="step_$(printf '%08d' "$step")"
+  local cofitok_milestone="$COFITOK_RUN/milestones/$step_tag"
+  local dense_milestone="$DENSE_RUN/milestones/$step_tag"
+  python scripts/build_generation_milestone_report.py \
+    --cofitok-generation "$cofitok_milestone/samples_2048_ddim50_cfg15/metrics/generation_metrics_report.json" \
+    --dense-generation "$dense_milestone/samples_2048_ddim50_cfg15/metrics/generation_metrics_report.json" \
+    --cofitok-checkpoint-eval "$cofitok_milestone/checkpoint_eval/checkpoint_evaluation_report.json" \
+    --dense-checkpoint-eval "$dense_milestone/checkpoint_eval/checkpoint_evaluation_report.json" \
+    --milestone-step "$step" --expected-samples 2048 \
+    --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/milestones/$step_tag.json"
+}
+
+for milestone in 50000 100000 200000 300000; do
+  train_to_milestone \
+    configs/generation/imagenet256_cofitok_k8_300k.json "$COFITOK_RUN" "$milestone"
+  evaluate_milestone cofitok "$COFITOK_RUN" "$milestone" 8 4
+
+  train_to_milestone \
+    configs/generation/imagenet256_dense_300k.json "$DENSE_RUN" "$milestone"
+  evaluate_milestone dense_identity "$DENSE_RUN" "$milestone" 1 0
+
+  build_paired_milestone "$milestone"
+done
+
 require_complete "$COFITOK_RUN/training_report.json"
-
-if [[ -f "$DENSE_RUN/latest.json" ]]; then
-  python scripts/train_generation.py \
-    --config configs/generation/imagenet256_dense_300k.json \
-    --output-dir "$DENSE_RUN" --resume auto
-else
-  python scripts/train_generation.py \
-    --config configs/generation/imagenet256_dense_300k.json \
-    --output-dir "$DENSE_RUN"
-fi
 require_complete "$DENSE_RUN/training_report.json"
-

@@ -92,6 +92,13 @@ checkpoints: /root/autodl-tmp/CoFiTok/checkpoints/generation
 The 10% gate is an engineering and architecture decision point. It is not a
 replacement for the full-data result and must not overwrite locked paper tables.
 
+The full queue alternates CoFiTok and dense at 50K, 100K, 200K, and 300K
+milestones. At each matched point it produces 2,048 fixed-protocol EMA samples
+at DDIM-50 / CFG 1.5, FID/IS trend metrics, and a 256-image mechanism audit.
+These milestone reports are explicitly non-claim diagnostics: they expose
+severe quality or ordering regressions before another long segment consumes GPU
+time, but they never replace the final 50K DDIM-250 evaluation.
+
 ## Commands
 
 ```bash
@@ -135,7 +142,9 @@ exports a 64-image CoFiTok prefix diagnostic at budgets 1/2/4/8.
 
 Full-scale execution is deliberately gated. The runbook
 `artifacts/runbooks/generation_full_matched_300k_after_gate.sh` refuses to start
-unless the 10% promotion report passes. After both full-data 300K runs finish,
+unless the 10% promotion report passes. It uses exact-resume training segments
+and the read-only `generation_full_milestone_eval.sh` quality protocol at each
+matched milestone. After both full-data 300K runs finish,
 `artifacts/runbooks/generation_full_posteval_50k.sh` produces matched 50K EMA
 samples at DDIM-250 / CFG 1.5, full generation metrics, checkpoint mechanism
 diagnostics, the final large-scale gate report, and a two-tier strong-baseline
