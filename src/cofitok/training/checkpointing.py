@@ -50,6 +50,66 @@ def verify_training_checkpoint(path: str | Path) -> dict[str, Any]:
     return integrity
 
 
+def backfill_training_checkpoint_integrity(
+    path: str | Path,
+    *,
+    update_latest: bool = False,
+) -> dict[str, Any]:
+    """Add integrity metadata to a legacy atomic checkpoint without changing its bytes."""
+    checkpoint_path = Path(path)
+    integrity_path = checkpoint_integrity_path(checkpoint_path)
+    if integrity_path.is_file():
+        integrity = verify_training_checkpoint(checkpoint_path)
+    else:
+        checkpoint_sha256 = file_sha256(checkpoint_path)
+        payload = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+        required = {
+            "format_version",
+            "step",
+            "config",
+            "model",
+            "ema",
+            "optimizer",
+            "scheduler",
+            "rng_state",
+            "extra_state",
+        }
+        missing = sorted(required - payload.keys())
+        if missing:
+            raise ValueError(f"Legacy checkpoint is missing exact-resume state: {missing}")
+        if int(payload["format_version"]) != CHECKPOINT_FORMAT_VERSION:
+            raise ValueError(f"Unsupported checkpoint format: {payload['format_version']}")
+        sampler = payload["extra_state"].get("sampler")
+        if sampler is None:
+            raise ValueError("Legacy production checkpoint is missing sampler state")
+        integrity = {
+            "schema_version": CHECKPOINT_INTEGRITY_VERSION,
+            "checkpoint": checkpoint_path.name,
+            "checkpoint_bytes": checkpoint_path.stat().st_size,
+            "checkpoint_sha256": checkpoint_sha256,
+            "checkpoint_format_version": int(payload["format_version"]),
+            "step": int(payload["step"]),
+        }
+        del payload
+        write_json_report(integrity_path, integrity)
+        verify_training_checkpoint(checkpoint_path)
+
+    if update_latest:
+        latest_path = checkpoint_path.parent / "latest.json"
+        if latest_path.is_file():
+            with latest_path.open("r", encoding="utf-8") as handle:
+                previous_latest = json.load(handle)
+            if previous_latest.get("checkpoint") != checkpoint_path.name:
+                raise ValueError("Refusing to repoint latest.json to a non-latest checkpoint")
+            if int(previous_latest.get("step", -1)) != int(integrity["step"]):
+                raise ValueError("Legacy latest.json step does not match checkpoint payload")
+        write_json_report(
+            latest_path,
+            {**integrity, "integrity_manifest": integrity_path.name},
+        )
+    return integrity
+
+
 def resolve_latest_checkpoint(directory: str | Path) -> Path:
     root = Path(directory)
     latest_path = root / "latest.json"

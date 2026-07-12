@@ -21,6 +21,11 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   automatic resume verifies the pointer, sidecar, file bytes, payload step, and
   payload format before restoring state. Full readiness additionally requires
   the final training hash to match the checkpoint used for sampling.
+- The active 10% matched queue predates integrity sidecars. Its post-evaluation
+  runbook therefore performs a one-time legacy migration: load and validate the
+  final payload's exact-resume fields, hash the immutable checkpoint bytes, add
+  the sidecar, and atomically bind `latest.json` plus `training_report.json` to
+  that hash. It never rewrites the checkpoint payload.
 - Full 300K runs checkpoint every 5K optimizer steps and retain the latest
   three states, matching the 10% gate cadence while bounding recovery loss on
   the multi-day full-data queue.

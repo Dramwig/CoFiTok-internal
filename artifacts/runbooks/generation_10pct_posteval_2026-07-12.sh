@@ -37,6 +37,16 @@ validate_training_report "$DENSE_RUN/training_report.json"
 test -f "$COFITOK_CHECKPOINT"
 test -f "$DENSE_CHECKPOINT"
 
+python scripts/migrate_generation_checkpoint_integrity.py \
+  --checkpoint "$COFITOK_CHECKPOINT" \
+  --training-report "$COFITOK_RUN/training_report.json" \
+  --output "$COFITOK_RUN/checkpoint_integrity_migration.json"
+
+python scripts/migrate_generation_checkpoint_integrity.py \
+  --checkpoint "$DENSE_CHECKPOINT" \
+  --training-report "$DENSE_RUN/training_report.json" \
+  --output "$DENSE_RUN/checkpoint_integrity_migration.json"
+
 python scripts/preflight_generation_sampling.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output "$COFITOK_RUN/sampling_preflight_gate10k_ddim100_cfg15.json" \

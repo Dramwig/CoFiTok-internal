@@ -9,6 +9,7 @@ from cofitok.configs import ModelConfig, load_config
 from cofitok.data.sampler import StatefulRandomSampler
 from cofitok.models import CoFiTokTiny, ScalableUNetTokenPredictor
 from cofitok.training.checkpointing import (
+    backfill_training_checkpoint_integrity,
     checkpoint_integrity_path,
     load_training_checkpoint,
     prune_checkpoints,
@@ -203,3 +204,56 @@ def test_prune_checkpoints_removes_matching_integrity_manifests(tmp_path) -> Non
     assert not checkpoint_integrity_path(old).exists()
     assert latest.exists()
     assert checkpoint_integrity_path(latest).exists()
+
+
+def test_legacy_checkpoint_integrity_backfill_preserves_checkpoint_bytes(tmp_path) -> None:
+    path = tmp_path / "checkpoint_step_00000017.pt"
+    torch.save(
+        {
+            "format_version": 1,
+            "step": 17,
+            "config": {"name": "legacy"},
+            "model": {},
+            "ema": {},
+            "optimizer": {},
+            "scheduler": {},
+            "rng_state": {},
+            "extra_state": {"sampler": {"position": 3}},
+        },
+        path,
+    )
+    before = path.read_bytes()
+    (tmp_path / "latest.json").write_text(
+        json.dumps({"checkpoint": path.name, "step": 17}),
+        encoding="utf-8",
+    )
+
+    integrity = backfill_training_checkpoint_integrity(path, update_latest=True)
+
+    assert path.read_bytes() == before
+    assert integrity["step"] == 17
+    assert len(integrity["checkpoint_sha256"]) == 64
+    assert verify_training_checkpoint(path) == integrity
+    assert resolve_latest_checkpoint(tmp_path) == path
+
+
+def test_legacy_checkpoint_backfill_requires_sampler_state(tmp_path) -> None:
+    path = tmp_path / "checkpoint_step_00000017.pt"
+    torch.save(
+        {
+            "format_version": 1,
+            "step": 17,
+            "config": {},
+            "model": {},
+            "ema": {},
+            "optimizer": {},
+            "scheduler": {},
+            "rng_state": {},
+            "extra_state": {},
+        },
+        path,
+    )
+
+    with pytest.raises(ValueError, match="sampler state"):
+        backfill_training_checkpoint_integrity(path)
+    assert not checkpoint_integrity_path(path).exists()
