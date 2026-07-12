@@ -170,7 +170,7 @@ def _git_revision() -> dict[str, str | bool]:
         ).stdout.strip()
         dirty = bool(
             subprocess.run(
-                ["git", "status", "--porcelain"],
+                ["git", "status", "--porcelain", "--untracked-files=no"],
                 check=True,
                 capture_output=True,
                 text=True,
