@@ -1,0 +1,73 @@
+{
+  "checkpoint": {
+    "interval": 5000,
+    "latest": {
+      "checkpoint": "checkpoint_step_00010000.pt",
+      "step": 10000
+    },
+    "missing_required_steps": [],
+    "required_steps": [],
+    "status": "available",
+    "steps": [
+      5000,
+      10000
+    ]
+  },
+  "current_segment_start_step": 1,
+  "eta_seconds": 95646.3519477024,
+  "expected_steps": 50000,
+  "gradient_clipping": {
+    "configured_max_norm": 1.0,
+    "logged_norm_semantics": "pre_clip_total_norm",
+    "observed_max_pre_clip_norm": 8.16974925994873,
+    "pre_clip_exceedance_count": 5
+  },
+  "issues": [],
+  "last_step": 10000,
+  "latest_metrics": {
+    "component_decorrelation": 0.0,
+    "denoise_path_component": 0.005724423215724528,
+    "denoise_path_prefix": 0.008662088657729328,
+    "elapsed_seconds": 23912.353425979614,
+    "ema_decay": 0.9999,
+    "energy_budget": 0.0,
+    "epsilon": 0.03418807312846184,
+    "epsilon_band_component": 0.0,
+    "epsilon_band_prefix": 0.0,
+    "grad_norm": 0.17495505511760712,
+    "group_residual": 0.0,
+    "learning_rate": 9.271396472013283e-05,
+    "monotonic": 0.0,
+    "prefix": 0.0,
+    "residual_component": 0.0,
+    "sampled_budget": 0.0,
+    "sampled_component": 0.0,
+    "sampled_prefix": 0.0,
+    "samples_seen": 640000,
+    "step": 10000,
+    "tail_floor": 0.0,
+    "total": 0.03519362071529031,
+    "zero_token": 0.0
+  },
+  "metric_row_count": 201,
+  "progress_fraction": 0.2,
+  "recent_mean": {
+    "epsilon": 0.029280846728943287,
+    "grad_norm": 0.10564177110791206,
+    "total": 0.030154211120679973
+  },
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_cofitok_k8_50k_2026-07-12",
+  "schema_version": 1,
+  "seconds_per_step": 2.39115879869256,
+  "status": "healthy",
+  "validation": {
+    "configured_interval": 1000,
+    "event_count": 0,
+    "expected_event_count": 10,
+    "logging_complete": false
+  },
+  "validation_event_count": 0,
+  "warnings": [
+    "validation metrics are missing from train_metrics.jsonl; legacy revisions may evaluate after emitting the log row"
+  ]
+}
