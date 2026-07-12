@@ -78,3 +78,13 @@ python scripts/generate_samples.py \
   --output-dir "$COFITOK_RUN/prefix_diagnostic_64_ddim100_cfg15" \
   --num-samples 64 --batch-size 16 --sample-steps 100 \
   --prefix-budgets 1,2,4,8 --guidance-scale 1.5 --weights ema --precision bf16
+
+python scripts/build_generation_gate_report.py \
+  --cofitok-training "$COFITOK_RUN/training_report.json" \
+  --dense-training "$DENSE_RUN/training_report.json" \
+  --cofitok-generation "$COFITOK_RUN/samples_gate10k_ddim100_cfg15/metrics/generation_metrics_report.json" \
+  --dense-generation "$DENSE_RUN/samples_gate10k_ddim100_cfg15/metrics/generation_metrics_report.json" \
+  --cofitok-checkpoint-eval "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --output "$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/promotion_gate.json" \
+  --allow-fail

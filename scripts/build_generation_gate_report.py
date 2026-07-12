@@ -1,0 +1,197 @@
+from __future__ import annotations
+
+import argparse
+import json
+import math
+from pathlib import Path
+from typing import Any
+
+from cofitok.reporting import write_json_report
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Build the ImageNet-256 10% generation promotion gate.")
+    parser.add_argument("--cofitok-training", required=True)
+    parser.add_argument("--dense-training", required=True)
+    parser.add_argument("--cofitok-generation", required=True)
+    parser.add_argument("--dense-generation", required=True)
+    parser.add_argument("--cofitok-checkpoint-eval", required=True)
+    parser.add_argument("--dense-checkpoint-eval", required=True)
+    parser.add_argument("--output", required=True)
+    parser.add_argument("--min-samples", type=int, default=10_000)
+    parser.add_argument("--max-fid-regression", type=float, default=0.05)
+    parser.add_argument("--max-endpoint-regression", type=float, default=0.05)
+    parser.add_argument("--allow-fail", action="store_true")
+    return parser.parse_args()
+
+
+def _read(path: str | Path) -> dict[str, Any]:
+    with Path(path).open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _metric(report: dict[str, Any], name: str) -> float:
+    value = float(report["metrics"][name])
+    if not math.isfinite(value):
+        raise ValueError(f"metric {name} is not finite")
+    return value
+
+
+def _gate(name: str, passed: bool, evidence: dict[str, Any]) -> dict[str, Any]:
+    return {"name": name, "passed": bool(passed), "evidence": evidence}
+
+
+def build_report(
+    *,
+    cofitok_training: dict[str, Any],
+    dense_training: dict[str, Any],
+    cofitok_generation: dict[str, Any],
+    dense_generation: dict[str, Any],
+    cofitok_checkpoint: dict[str, Any],
+    dense_checkpoint: dict[str, Any],
+    min_samples: int,
+    max_fid_regression: float,
+    max_endpoint_regression: float,
+) -> dict[str, Any]:
+    cofitok_fid = _metric(cofitok_generation, "frechet_inception_distance")
+    dense_fid = _metric(dense_generation, "frechet_inception_distance")
+    cofitok_endpoint = float(
+        cofitok_checkpoint["metrics"]["orders"]["ordered"]["endpoint_clean_mse"]
+    )
+    dense_endpoint = float(
+        dense_checkpoint["metrics"]["orders"]["ordered"]["endpoint_clean_mse"]
+    )
+    generated_counts = (
+        int(cofitok_generation["counts"]["generated_image_count"]),
+        int(dense_generation["counts"]["generated_image_count"]),
+    )
+    evaluator_pair = (
+        cofitok_generation["implementation"],
+        dense_generation["implementation"],
+    )
+    parameter_gap = (
+        int(cofitok_training["parameter_count"]) - int(dense_training["parameter_count"])
+    ) / int(dense_training["parameter_count"])
+    matched_sections = all(
+        cofitok_training["config"][section] == dense_training["config"][section]
+        for section in ("data", "diffusion", "runtime", "optimization")
+    )
+    gates = [
+        _gate(
+            "training_complete",
+            all(
+                report.get("training_complete") is True
+                and report.get("completed_steps") == report.get("target_steps")
+                and report.get("git", {}).get("dirty") is False
+                for report in (cofitok_training, dense_training)
+            ),
+            {
+                "cofitok_steps": cofitok_training.get("completed_steps"),
+                "dense_steps": dense_training.get("completed_steps"),
+                "cofitok_revision": cofitok_training.get("git", {}).get("revision"),
+                "dense_revision": dense_training.get("git", {}).get("revision"),
+            },
+        ),
+        _gate(
+            "matched_training_protocol",
+            matched_sections and abs(parameter_gap) <= 0.02,
+            {"matched_sections": matched_sections, "relative_parameter_gap": parameter_gap},
+        ),
+        _gate(
+            "matched_generation_protocol",
+            generated_counts[0] == generated_counts[1]
+            and min(generated_counts) >= min_samples
+            and evaluator_pair[0] == evaluator_pair[1]
+            and cofitok_generation["parameters"] == dense_generation["parameters"],
+            {
+                "generated_counts": list(generated_counts),
+                "cofitok_evaluator": evaluator_pair[0],
+                "dense_evaluator": evaluator_pair[1],
+            },
+        ),
+        _gate(
+            "fid_within_tolerance",
+            cofitok_fid <= dense_fid * (1.0 + max_fid_regression),
+            {
+                "cofitok_fid": cofitok_fid,
+                "dense_fid": dense_fid,
+                "relative_change": cofitok_fid / dense_fid - 1.0,
+                "max_regression": max_fid_regression,
+            },
+        ),
+        _gate(
+            "endpoint_within_tolerance",
+            cofitok_endpoint <= dense_endpoint * (1.0 + max_endpoint_regression),
+            {
+                "cofitok_endpoint_mse": cofitok_endpoint,
+                "dense_endpoint_mse": dense_endpoint,
+                "relative_change": cofitok_endpoint / dense_endpoint - 1.0,
+                "max_regression": max_endpoint_regression,
+            },
+        ),
+        _gate(
+            "ordered_prefix_path",
+            int(cofitok_checkpoint["metrics"]["ordered_rank_by_path_auc"]) == 1
+            and int(cofitok_checkpoint["metrics"]["order_count"]) >= 10,
+            {
+                "rank": cofitok_checkpoint["metrics"]["ordered_rank_by_path_auc"],
+                "order_count": cofitok_checkpoint["metrics"]["order_count"],
+            },
+        ),
+        _gate(
+            "restricted_synthesis_contract",
+            float(cofitok_checkpoint["metrics"]["zero_token_max_abs"]) == 0.0,
+            {"zero_token_max_abs": cofitok_checkpoint["metrics"]["zero_token_max_abs"]},
+        ),
+        _gate(
+            "shuffle_mismatch",
+            float(cofitok_checkpoint["metrics"]["shuffled_to_ordered_endpoint_ratio"]) > 1.0,
+            {
+                "shuffled_to_ordered_endpoint_ratio": cofitok_checkpoint["metrics"][
+                    "shuffled_to_ordered_endpoint_ratio"
+                ]
+            },
+        ),
+    ]
+    return {
+        "schema_version": 1,
+        "status": "pass" if all(gate["passed"] for gate in gates) else "fail",
+        "decision": "promote_to_full_imagenet256" if all(gate["passed"] for gate in gates) else "hold",
+        "thresholds": {
+            "min_samples": min_samples,
+            "max_fid_regression": max_fid_regression,
+            "max_endpoint_regression": max_endpoint_regression,
+        },
+        "gates": gates,
+        "summary": {
+            "cofitok_fid": cofitok_fid,
+            "dense_fid": dense_fid,
+            "cofitok_endpoint_mse": cofitok_endpoint,
+            "dense_endpoint_mse": dense_endpoint,
+            "ordered_rank": cofitok_checkpoint["metrics"]["ordered_rank_by_path_auc"],
+            "order_count": cofitok_checkpoint["metrics"]["order_count"],
+        },
+    }
+
+
+def main() -> None:
+    args = parse_args()
+    report = build_report(
+        cofitok_training=_read(args.cofitok_training),
+        dense_training=_read(args.dense_training),
+        cofitok_generation=_read(args.cofitok_generation),
+        dense_generation=_read(args.dense_generation),
+        cofitok_checkpoint=_read(args.cofitok_checkpoint_eval),
+        dense_checkpoint=_read(args.dense_checkpoint_eval),
+        min_samples=args.min_samples,
+        max_fid_regression=args.max_fid_regression,
+        max_endpoint_regression=args.max_endpoint_regression,
+    )
+    write_json_report(Path(args.output), report)
+    print(f"wrote {args.output}")
+    if report["status"] != "pass" and not args.allow_fail:
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()
