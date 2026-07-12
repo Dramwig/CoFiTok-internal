@@ -63,6 +63,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--output-dir", required=True)
+    parser.add_argument("--report", default="")
     parser.add_argument("--class-ids", default="")
     parser.add_argument("--seeds", default="")
     parser.add_argument("--seed", type=int, default=0)
@@ -92,7 +93,11 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError("duplicate seed/class requests would overwrite the same image")
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    report_path = output_dir / "inference_report.json"
+    report_path = (
+        Path(args.report)
+        if getattr(args, "report", "")
+        else output_dir / "inference_report.json"
+    )
     if report_path.exists() and not args.overwrite:
         raise FileExistsError(f"Inference report already exists: {report_path}")
     started = time.perf_counter()
@@ -164,6 +169,8 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
                 "checkpoint_integrity_manifest",
                 "checkpoint_step",
                 "weights",
+                "artifact_type",
+                "source_checkpoint_sha256",
             )
         },
         "request": {
@@ -189,7 +196,7 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
 def main() -> None:
     args = parse_args()
     report = run_inference(args)
-    print(Path(args.output_dir) / "inference_report.json")
+    print(Path(args.report) if args.report else Path(args.output_dir) / "inference_report.json")
     print(f"generated {report['output_count']} images")
 
 

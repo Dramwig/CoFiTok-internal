@@ -143,6 +143,20 @@ def test_formal_sampling_runbooks_select_one_shared_batch() -> None:
         assert "--prefix-indices 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15" in runbook
 
 
+def test_inference_export_runbook_verifies_and_smoke_tests_both_methods() -> None:
+    runbook = Path(
+        "artifacts/runbooks/generation_export_inference_artifacts.sh"
+    ).read_text(encoding="utf-8")
+
+    assert runbook.count("export_generation_inference_artifact.py") == 2
+    assert runbook.count("preflight_generation_sampling.py") == 2
+    assert runbook.count("infer_generation.py") == 2
+    assert "cofitok_k8_ema_inference.pt" in runbook
+    assert "dense_identity_ema_inference.pt" in runbook
+    assert "--prefix-budgets 1,8" in runbook
+    assert "--sample-steps 10" in runbook
+
+
 def test_stateful_sampler_restores_consumed_not_prefetched_position() -> None:
     dataset = list(range(20))
     sampler = StatefulRandomSampler(dataset, seed=7)

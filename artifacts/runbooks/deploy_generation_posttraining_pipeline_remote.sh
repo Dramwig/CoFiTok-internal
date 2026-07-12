@@ -88,6 +88,7 @@ bash -n artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh
 bash -n artifacts/runbooks/generation_full_milestone_eval.sh
 bash -n artifacts/runbooks/generation_full_matched_300k_after_gate.sh
 bash -n artifacts/runbooks/generation_full_posteval_50k.sh
+bash -n artifacts/runbooks/generation_export_inference_artifacts.sh
 bash -n "$PIPELINE"
 bash -n "$SUPERVISOR"
 

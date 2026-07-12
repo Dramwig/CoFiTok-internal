@@ -21,6 +21,8 @@ The structured classifier retries only:
 - `full_training`, which resumes exact model/optimizer/scheduler/RNG/sampler and
   reconciles canonical metrics;
 - `full_posteval`, whose numbered samples and atomic progress are resumable.
+- `inference_export`, whose verified EMA artifacts and atomic smoke reports are
+  idempotent for the same source checkpoint SHA.
 
 It never retries `preconditions`, `promotion_gate`, `final_gate`,
 `completion_audit`, or unknown stages. These may represent scientific failure,

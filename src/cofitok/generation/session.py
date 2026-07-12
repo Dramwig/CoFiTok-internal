@@ -150,6 +150,8 @@ class GenerationSession:
             ),
             "checkpoint_step": self.loaded.checkpoint_step,
             "weights": self.loaded.weights,
+            "artifact_type": self.loaded.artifact_type,
+            "source_checkpoint_sha256": self.loaded.source_checkpoint_sha256,
             "device": str(self.device),
             "request": {
                 "seeds": list(request.seeds),

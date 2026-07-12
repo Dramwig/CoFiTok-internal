@@ -279,6 +279,67 @@ def _visual_audit_evidence(
     }
 
 
+def _inference_export_evidence(
+    exports: dict[str, dict[str, Any]],
+    generation_reports: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    evidence = {}
+    for method, expected_smoke_count in (("cofitok", 4), ("dense_identity", 2)):
+        export = exports[f"{method}_export"]
+        preflight = exports[f"{method}_preflight"]
+        smoke = exports[f"{method}_smoke"]
+        source_provenance = generation_reports[method]["sample_provenance"]
+        if export.get("status") != "completed" or export.get("verified") is not True:
+            raise ValueError(f"{method} inference export is incomplete")
+        if export.get("weights") != "ema_export":
+            raise ValueError(f"{method} inference export is not EMA-only")
+        if int(export.get("checkpoint_step", -1)) != 300_000:
+            raise ValueError(f"{method} inference export is not from step 300K")
+        if export.get("source_checkpoint_sha256") != source_provenance.get(
+            "checkpoint_sha256"
+        ):
+            raise ValueError(f"{method} inference export source checkpoint differs")
+        artifact_sha = str(export.get("artifact_sha256", ""))
+        artifact_bytes = int(export.get("artifact_bytes", 0))
+        source_bytes = int(export.get("source_checkpoint_bytes", 0))
+        if len(artifact_sha) != 64 or not 0 < artifact_bytes < source_bytes:
+            raise ValueError(f"{method} inference export size/hash is invalid")
+        if preflight.get("status") != "passed":
+            raise ValueError(f"{method} inference export preflight failed")
+        if preflight.get("checkpoint_sha256") != artifact_sha:
+            raise ValueError(f"{method} export preflight artifact SHA256 differs")
+        if preflight.get("artifact_type") != "cofitok_generation_inference":
+            raise ValueError(f"{method} export preflight artifact type differs")
+        if preflight.get("weights") != "ema_export":
+            raise ValueError(f"{method} export preflight did not load exported EMA")
+        if preflight.get("source_checkpoint_sha256") != export.get(
+            "source_checkpoint_sha256"
+        ):
+            raise ValueError(f"{method} export preflight source provenance differs")
+        checkpoint = smoke.get("checkpoint", {})
+        if smoke.get("status") != "completed" or int(
+            smoke.get("output_count", -1)
+        ) != expected_smoke_count:
+            raise ValueError(f"{method} inference export smoke is incomplete")
+        if checkpoint.get("checkpoint_sha256") != artifact_sha:
+            raise ValueError(f"{method} export smoke artifact SHA256 differs")
+        if checkpoint.get("artifact_type") != "cofitok_generation_inference":
+            raise ValueError(f"{method} export smoke artifact type differs")
+        if checkpoint.get("source_checkpoint_sha256") != export.get(
+            "source_checkpoint_sha256"
+        ):
+            raise ValueError(f"{method} export smoke source provenance differs")
+        if any(len(str(row.get("sha256", ""))) != 64 for row in smoke.get("outputs", [])):
+            raise ValueError(f"{method} export smoke output SHA256 is malformed")
+        evidence[method] = {
+            "artifact_sha256": artifact_sha,
+            "artifact_bytes": artifact_bytes,
+            "source_checkpoint_bytes": source_bytes,
+            "smoke_output_count": expected_smoke_count,
+        }
+    return evidence
+
+
 def _final_gate_evidence(
     gate: dict[str, Any], generation_reports: dict[str, dict[str, Any]]
 ) -> dict[str, Any]:
@@ -352,6 +413,7 @@ def build_completion_audit(
     runtime_selection: dict[str, Any] | None,
     sampling_runtime_selection: dict[str, Any] | None,
     visual_audit: dict[str, Any] | None,
+    inference_exports: dict[str, dict[str, Any] | None],
     milestones: dict[int, dict[str, Any] | None],
     cofitok_generation: dict[str, Any] | None,
     dense_generation: dict[str, Any] | None,
@@ -479,6 +541,26 @@ def build_completion_audit(
     )
     checks.append(
         _check(
+            "deployable_ema_inference_artifacts",
+            [
+                inference_exports.get(name)
+                for name in (
+                    "cofitok_export",
+                    "dense_identity_export",
+                    "cofitok_preflight",
+                    "dense_identity_preflight",
+                    "cofitok_smoke",
+                    "dense_identity_smoke",
+                )
+            ],
+            lambda: _inference_export_evidence(
+                inference_exports,
+                {"cofitok": cofitok_generation, "dense_identity": dense_generation},
+            ),
+        )
+    )
+    checks.append(
+        _check(
             "final_generation_gate",
             [final_gate],
             lambda: _final_gate_evidence(
@@ -563,6 +645,26 @@ def main() -> None:
             full_root / "sampling_runtime_selection.json"
         ),
         visual_audit=_read_optional(full_root / "visual_audit/visual_audit_report.json"),
+        inference_exports={
+            "cofitok_export": _read_optional(
+                full_root / "exports/cofitok_export_report.json"
+            ),
+            "dense_identity_export": _read_optional(
+                full_root / "exports/dense_export_report.json"
+            ),
+            "cofitok_preflight": _read_optional(
+                full_root / "exports/cofitok_export_preflight.json"
+            ),
+            "dense_identity_preflight": _read_optional(
+                full_root / "exports/dense_export_preflight.json"
+            ),
+            "cofitok_smoke": _read_optional(
+                full_root / "exports/cofitok_export_inference_smoke.json"
+            ),
+            "dense_identity_smoke": _read_optional(
+                full_root / "exports/dense_export_inference_smoke.json"
+            ),
+        },
         milestones={
             step: _read_optional(full_root / "milestones" / f"step_{step:08d}.json")
             for step in MILESTONE_STEPS

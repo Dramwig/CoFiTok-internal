@@ -6,7 +6,12 @@ from pathlib import Path
 from typing import Any
 
 
-RETRYABLE_STAGES = {"posteval_10pct", "full_training", "full_posteval"}
+RETRYABLE_STAGES = {
+    "posteval_10pct",
+    "full_training",
+    "full_posteval",
+    "inference_export",
+}
 
 
 def classify_pipeline_exit(

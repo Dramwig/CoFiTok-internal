@@ -58,6 +58,7 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
         "STAGE=full_training",
         "STAGE=full_posteval",
         "STAGE=final_gate",
+        "STAGE=inference_export",
         "STAGE=completion_audit",
         "STAGE=complete",
     ]
@@ -66,6 +67,7 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
     assert 'if [[ ! -f "$SCALING_GATE" ]]' in runbook
     assert 'if [[ ! -f "$FINAL_GATE" || ! -f "$FINAL_COMPARISON"' in runbook
     assert "FINAL_VISUAL_AUDIT" in runbook
+    assert "generation_export_inference_artifacts.sh" in runbook
 
 
 def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None:

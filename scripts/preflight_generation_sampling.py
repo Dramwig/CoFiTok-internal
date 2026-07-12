@@ -103,7 +103,10 @@ def run_sampling_preflight(
         "checkpoint_sha256": loaded.checkpoint_sha256,
         "checkpoint_integrity_manifest": str(loaded.checkpoint_integrity_manifest),
         "checkpoint_step": loaded.checkpoint_step,
-        "weights": weights,
+        "weights": loaded.weights,
+        "requested_weights": weights,
+        "artifact_type": loaded.artifact_type,
+        "source_checkpoint_sha256": loaded.source_checkpoint_sha256,
         "device": str(device),
         "torch_version": torch.__version__,
         "request": {

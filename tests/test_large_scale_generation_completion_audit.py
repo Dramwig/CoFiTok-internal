@@ -211,6 +211,42 @@ def _visual_audit() -> dict:
     }
 
 
+def _inference_exports() -> dict:
+    output = {}
+    for method, source_sha, artifact_sha, count in (
+        ("cofitok", "a" * 64, "f" * 64, 4),
+        ("dense_identity", "b" * 64, "9" * 64, 2),
+    ):
+        output[f"{method}_export"] = {
+            "status": "completed",
+            "verified": True,
+            "weights": "ema_export",
+            "checkpoint_step": 300_000,
+            "source_checkpoint_sha256": source_sha,
+            "source_checkpoint_bytes": 1_000,
+            "artifact_sha256": artifact_sha,
+            "artifact_bytes": 400,
+        }
+        output[f"{method}_preflight"] = {
+            "status": "passed",
+            "checkpoint_sha256": artifact_sha,
+            "artifact_type": "cofitok_generation_inference",
+            "weights": "ema_export",
+            "source_checkpoint_sha256": source_sha,
+        }
+        output[f"{method}_smoke"] = {
+            "status": "completed",
+            "output_count": count,
+            "checkpoint": {
+                "checkpoint_sha256": artifact_sha,
+                "artifact_type": "cofitok_generation_inference",
+                "source_checkpoint_sha256": source_sha,
+            },
+            "outputs": [{"sha256": str(index) * 64} for index in range(1, count + 1)],
+        }
+    return output
+
+
 def _kwargs() -> dict:
     return {
         "expected_10pct_revision": TEN_REVISION,
@@ -249,6 +285,7 @@ def _kwargs() -> dict:
         "runtime_selection": _runtime_selection(),
         "sampling_runtime_selection": _sampling_runtime_selection(),
         "visual_audit": _visual_audit(),
+        "inference_exports": _inference_exports(),
         "milestones": {step: _milestone(step) for step in MILESTONE_STEPS},
         "cofitok_generation": _generation("a"),
         "dense_generation": _generation("b"),
@@ -264,7 +301,7 @@ def test_completion_audit_requires_every_large_scale_artifact() -> None:
     assert report["complete"] is True
     assert report["failed_checks"] == []
     assert report["missing_checks"] == []
-    assert len(report["checks"]) == 11
+    assert len(report["checks"]) == 12
 
 
 def test_completion_audit_reports_missing_work_as_in_progress() -> None:
@@ -362,6 +399,18 @@ def test_completion_audit_rejects_visual_audit_from_stale_sample_set() -> None:
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == ["deterministic_visual_quality_audit"]
+
+
+def test_completion_audit_rejects_export_from_stale_training_checkpoint() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_exports"]["cofitok_export"][
+        "source_checkpoint_sha256"
+    ] = "Z" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
 
 
 def test_completion_audit_preserves_nonblocking_milestone_alerts() -> None:

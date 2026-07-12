@@ -269,11 +269,18 @@ to formal metrics. See
 
 The multi-week completion run is wrapped by a bounded supervisor. Only
 recoverable execution stages (`posteval_10pct`, `full_training`,
-`full_posteval`) receive up to four exponential-backoff retries; scientific
+`full_posteval`, `inference_export`) receive up to four exponential-backoff retries; scientific
 gates, preconditions, unknown states, and completion-audit failures stop
 immediately. Existing gates and fully paired milestones are evidence-driven
 skip points, with protected checkpoint/sidecar checks before milestone reuse.
 See `docs/records/2026-07-12_generation_completion_supervisor.md`.
+
+After the final gate, both methods export separate EMA-only deployment
+artifacts. Their type-specific sidecars are verified before deserialization;
+source training checkpoint SHA, step, artifact SHA/bytes, real-forward preflight,
+and short DDIM smoke PNGs are required by completion. These artifacts are smaller
+inference copies and never replace exact-resume training checkpoints. See
+`docs/records/2026-07-12_deployable_ema_inference_artifact.md`.
 
 Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies

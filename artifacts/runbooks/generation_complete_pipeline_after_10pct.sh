@@ -98,6 +98,10 @@ STAGE=final_gate
 write_status running "checking the large-scale generation readiness gate"
 validate_gate "$FINAL_GATE" large_scale_generation_ready
 
+STAGE=inference_export
+write_status running "exporting and smoke-testing deployable EMA artifacts"
+bash artifacts/runbooks/generation_export_inference_artifacts.sh
+
 STAGE=completion_audit
 write_status running "auditing all required large-scale generation evidence"
 python scripts/audit_large_scale_generation_completion.py \

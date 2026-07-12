@@ -45,6 +45,23 @@ seed. Filenames encode seed, class, and prefix. PNG publication is atomic and
 and SHA256 for every output. Existing reports/images are not overwritten unless
 `--overwrite` is explicit.
 
+## EMA-only deployment artifact
+
+After final completion, prefer the smaller verified artifact for routine
+inference:
+
+```bash
+python scripts/infer_generation.py \
+  --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/generation/exports/imagenet256_full_300k/cofitok_k8_ema_inference.pt \
+  --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/inference/deployed \
+  --class-ids 207 --seeds 101,102 --prefix-budgets 8 \
+  --sample-steps 250 --guidance-scale 1.5 --weights ema --precision bf16
+```
+
+The artifact contains EMA-applied weights only. Keep `--weights ema`; requesting
+`model` is rejected. The original full training checkpoint remains mandatory for
+exact resume and scientific provenance.
+
 ## Formal sampling
 
 `generate_samples.py` uses the same `GenerationSession`; its immutable sampling

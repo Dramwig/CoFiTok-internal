@@ -35,6 +35,8 @@ The audit requires all of the following:
   50K sample reports actually use with batch-invariant random streams;
 - deterministic fixed-index CoFiTok/dense endpoint panels and a separate
   `1/2/4/8` prefix-path panel bound to the formal checkpoint/sample-set hashes;
+- verified, smaller EMA-only artifacts for both methods, each bound to the source
+  300K checkpoint and proven by real-forward preflight plus short DDIM PNG smoke;
 - a passing final gate with decision `large_scale_generation_ready`;
 - the ready two-tier comparison containing the matched pair and three official
   contextual methods.
