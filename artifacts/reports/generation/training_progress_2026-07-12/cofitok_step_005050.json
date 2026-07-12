@@ -1,0 +1,61 @@
+{
+  "checkpoint": {
+    "interval": 5000,
+    "latest": {
+      "checkpoint": "checkpoint_step_00005000.pt",
+      "step": 5000
+    },
+    "status": "available",
+    "steps": [
+      5000
+    ]
+  },
+  "current_segment_start_step": 1,
+  "eta_seconds": 107507.8330357775,
+  "expected_steps": 50000,
+  "gradient_clipping": {
+    "configured_max_norm": 1.0,
+    "logged_norm_semantics": "pre_clip_total_norm",
+    "observed_max_pre_clip_norm": 8.16974925994873,
+    "pre_clip_exceedance_count": 5
+  },
+  "issues": [],
+  "last_step": 5050,
+  "latest_metrics": {
+    "component_decorrelation": 0.0,
+    "denoise_path_component": 0.01415403961436823,
+    "denoise_path_prefix": 0.018822921614628285,
+    "elapsed_seconds": 12078.95301604271,
+    "ema_decay": 0.9999,
+    "energy_budget": 0.0,
+    "epsilon": 0.0410282458178699,
+    "epsilon_band_component": 0.0,
+    "epsilon_band_prefix": 0.0,
+    "grad_norm": 0.12524041533470154,
+    "group_residual": 0.0,
+    "learning_rate": 9.849145383929274e-05,
+    "monotonic": 0.0,
+    "prefix": 0.0,
+    "residual_component": 0.0,
+    "sampled_budget": 0.0,
+    "sampled_component": 0.0,
+    "sampled_prefix": 0.0,
+    "samples_seen": 323200,
+    "step": 5050,
+    "tail_floor": 0.0,
+    "total": 0.04338479577563703,
+    "zero_token": 0.0
+  },
+  "metric_row_count": 102,
+  "progress_fraction": 0.101,
+  "recent_mean": {
+    "epsilon": 0.035744218481704594,
+    "grad_norm": 0.14893794655799866,
+    "total": 0.037623866577632725
+  },
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_cofitok_k8_50k_2026-07-12",
+  "schema_version": 1,
+  "seconds_per_step": 2.3917204234878198,
+  "status": "healthy",
+  "validation_event_count": 0
+}

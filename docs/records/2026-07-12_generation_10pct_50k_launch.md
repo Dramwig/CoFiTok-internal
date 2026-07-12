@@ -62,3 +62,29 @@ first configured validation/checkpoint remains at step 5,000. The maximum
 logged gradient norm `8.1697` is the early step-1 pre-clipping norm; the loop
 applies the configured `clip_grad_norm=1.0` before each optimizer update. Five
 logged pre-clip norms exceeded 1.0 in the first 4,000 steps.
+
+At step 5,000, the first atomic recovery checkpoint completed successfully:
+
+```text
+checkpoint: checkpoint_step_00005000.pt
+bytes: 1,008,218,658
+latest.json: {"checkpoint": "checkpoint_step_00005000.pt", "step": 5000}
+temporary files remaining: 0
+```
+
+The original training PID remained active and reached step 5,050 after the
+save. A second read-only audit reports `healthy`, `issues=[]`, checkpoint status
+`available`, `2.3917204 s/step`, and a remaining CoFiTok ETA of approximately
+107,508 seconds at that snapshot. The synchronized audit is:
+
+```text
+artifacts/reports/generation/training_progress_2026-07-12/cofitok_step_005050.json
+```
+
+The audit's `validation_event_count=0` is a logging limitation of commit
+`781a014`, not evidence that validation code was skipped. That revision writes
+the JSONL row before running its periodic validation, so intermediate
+`validation_epsilon_mse` values are not persisted in `train_metrics.jsonl`.
+Final checkpoint evaluation and the matched 10K EMA generation gate remain the
+authoritative quality evidence. This limitation is fixed on the local upgrade
+branch but is intentionally not synchronized during the active matched pair.
