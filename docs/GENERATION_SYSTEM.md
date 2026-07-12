@@ -201,6 +201,14 @@ failure rather than reported as generation readiness.
 The final completion audit requires the deployment receipt, so changing remote
 HEAD alone cannot prove a controlled revision transition.
 
+While the pinned legacy 10% pair runs, a separate read-only monitor may be
+launched from `/tmp` without changing the training revision. It atomically
+records pair stage, steps, metric age, checkpoints, process presence, disk, and
+GPU state; it fails closed on a 30-minute metric stall or an incomplete queue
+with no process after a transition grace period. It never loads checkpoints,
+uses the GPU, restarts training, or modifies either run directory. See
+`docs/records/2026-07-12_generation_10pct_readonly_monitor.md`.
+
 Both promotion decisions are provenance gates, not only metric thresholds.
 They require the CoFiTok and dense training reports to share the same
 40-character `git.revision` on `scale/generative-system`, use the same real
