@@ -286,4 +286,8 @@ Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies
 strictly increasing finite metrics, resume-aware timing segments, checkpoint
 cadence and `latest.json`, then records recent loss/gradient summaries and ETA.
+For the pinned legacy 10% queue, `legacy_compute` records the newest checkpoint
+byte count and SHA256 without modifying it; the post-training migration later
+binds those bytes to a sidecar. New full runs use `--integrity-policy required`,
+which rejects a missing or mismatched sidecar and `latest.json` integrity binding.
 Logged gradient norms are explicitly treated as pre-clipping total norms.

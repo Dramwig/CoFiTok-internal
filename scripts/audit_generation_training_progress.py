@@ -8,7 +8,11 @@ from pathlib import Path
 from statistics import mean
 from typing import Any
 
-from cofitok.reporting import write_json_report
+from cofitok.reporting import file_sha256, write_json_report
+from cofitok.training.checkpointing import (
+    checkpoint_integrity_path,
+    verify_training_checkpoint,
+)
 
 
 CHECKPOINT_PATTERN = re.compile(r"checkpoint_step_(\d+)\.pt$")
@@ -19,6 +23,7 @@ REQUIRED_FINITE_FIELDS = (
     "learning_rate",
     "elapsed_seconds",
 )
+INTEGRITY_POLICIES = ("legacy_compute", "required")
 
 
 def _read_metrics(path: Path) -> list[dict[str, Any]]:
@@ -56,6 +61,73 @@ def _latest_pointer(run_dir: Path) -> dict[str, Any] | None:
         return json.load(handle)
 
 
+def _audit_latest_checkpoint_integrity(
+    run_dir: Path,
+    checkpoint_steps: list[int],
+    latest: dict[str, Any] | None,
+    policy: str,
+) -> tuple[dict[str, Any], list[str], list[str]]:
+    if policy not in INTEGRITY_POLICIES:
+        raise ValueError(f"integrity_policy must be one of {INTEGRITY_POLICIES}")
+    if not checkpoint_steps:
+        return ({"policy": policy, "status": "not_available"}, [], [])
+
+    step = checkpoint_steps[-1]
+    checkpoint = run_dir / f"checkpoint_step_{step:08d}.pt"
+    integrity_path = checkpoint_integrity_path(checkpoint)
+    base = {
+        "policy": policy,
+        "checkpoint": checkpoint.name,
+        "step": step,
+        "integrity_manifest": integrity_path.name if integrity_path.is_file() else None,
+    }
+    if not integrity_path.is_file():
+        if policy == "required":
+            issue = f"latest checkpoint integrity manifest is missing: {integrity_path.name}"
+            return ({**base, "status": "missing_manifest"}, [issue], [])
+        report = {
+            **base,
+            "status": "legacy_computed",
+            "checkpoint_bytes": checkpoint.stat().st_size,
+            "checkpoint_sha256": file_sha256(checkpoint),
+        }
+        warning = (
+            "latest legacy checkpoint has no integrity manifest; size and SHA256 were "
+            "computed read-only and must be bound by post-training migration"
+        )
+        return report, [], [warning]
+
+    try:
+        integrity = verify_training_checkpoint(checkpoint)
+        if int(integrity.get("step", -1)) != step:
+            raise ValueError("integrity manifest step does not match checkpoint filename")
+        if latest is None:
+            raise ValueError("latest.json is unavailable for integrity binding")
+        if latest.get("integrity_manifest") != integrity_path.name:
+            raise ValueError("latest.json does not bind the newest integrity manifest")
+        if latest.get("checkpoint_sha256") != integrity.get("checkpoint_sha256"):
+            raise ValueError("latest.json SHA256 does not match the integrity manifest")
+        if int(latest.get("checkpoint_bytes", -1)) != int(integrity["checkpoint_bytes"]):
+            raise ValueError("latest.json byte count does not match the integrity manifest")
+    except (FileNotFoundError, OSError, TypeError, ValueError, json.JSONDecodeError) as error:
+        return (
+            {**base, "status": "invalid", "error": str(error)},
+            [f"latest checkpoint integrity verification failed: {error}"],
+            [],
+        )
+    return (
+        {
+            **base,
+            "status": "verified",
+            "checkpoint_bytes": int(integrity["checkpoint_bytes"]),
+            "checkpoint_sha256": integrity["checkpoint_sha256"],
+            "checkpoint_format_version": int(integrity["checkpoint_format_version"]),
+        },
+        [],
+        [],
+    )
+
+
 def audit_progress(
     run_dir: str | Path,
     *,
@@ -64,6 +136,7 @@ def audit_progress(
     grad_clip_norm: float = 1.0,
     evaluation_interval: int | None = None,
     required_checkpoint_steps: list[int] | tuple[int, ...] = (),
+    integrity_policy: str = "legacy_compute",
 ) -> dict[str, Any]:
     if expected_steps < 1 or checkpoint_interval < 1 or grad_clip_norm <= 0.0:
         raise ValueError("expected_steps, checkpoint_interval, and grad_clip_norm must be positive")
@@ -73,6 +146,8 @@ def audit_progress(
         raise ValueError("required_checkpoint_steps must be sorted and unique")
     if any(step < 1 or step > expected_steps for step in required_checkpoint_steps):
         raise ValueError("required checkpoint step is outside the expected training range")
+    if integrity_policy not in INTEGRITY_POLICIES:
+        raise ValueError(f"integrity_policy must be one of {INTEGRITY_POLICIES}")
     root = Path(run_dir)
     rows = _read_metrics(root / "train_metrics.jsonl")
     issues = []
@@ -146,6 +221,16 @@ def audit_progress(
                 issues.append("latest.json step does not match the newest checkpoint")
     elif latest is not None:
         issues.append("latest.json exists without a checkpoint file")
+    latest_integrity, integrity_issues, integrity_warnings = (
+        _audit_latest_checkpoint_integrity(
+            root,
+            checkpoint_steps,
+            latest,
+            integrity_policy,
+        )
+    )
+    issues.extend(integrity_issues)
+    warnings.extend(integrity_warnings)
 
     training_report = None
     training_report_path = root / "training_report.json"
@@ -174,7 +259,7 @@ def audit_progress(
         and last_step == expected_steps
     )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "invalid" if issues else ("complete" if complete else "healthy"),
         "run_dir": root.resolve().as_posix(),
         "expected_steps": expected_steps,
@@ -215,6 +300,7 @@ def audit_progress(
             "required_steps": list(required_checkpoint_steps),
             "missing_required_steps": missing_required_checkpoints,
             "latest": latest,
+            "latest_integrity": latest_integrity,
         },
         "issues": issues,
         "warnings": warnings,
@@ -233,6 +319,15 @@ def main() -> None:
         help="Comma-separated checkpoint steps that must remain available once reached.",
     )
     parser.add_argument("--grad-clip-norm", type=float, default=1.0)
+    parser.add_argument(
+        "--integrity-policy",
+        choices=INTEGRITY_POLICIES,
+        default="legacy_compute",
+        help=(
+            "legacy_compute hashes a sidecar-free legacy checkpoint read-only; required "
+            "fails unless the newest checkpoint, sidecar, and latest.json binding verify"
+        ),
+    )
     parser.add_argument("--output", required=True)
     parser.add_argument("--allow-invalid", action="store_true")
     args = parser.parse_args()
@@ -249,6 +344,7 @@ def main() -> None:
         grad_clip_norm=args.grad_clip_norm,
         evaluation_interval=args.evaluation_interval,
         required_checkpoint_steps=required_checkpoint_steps,
+        integrity_policy=args.integrity_policy,
     )
     write_json_report(args.output, report)
     print(args.output)

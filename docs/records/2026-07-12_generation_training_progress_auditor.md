@@ -15,6 +15,8 @@ The report verifies:
 - resume-aware timing segments when elapsed time resets;
 - checkpoint due, grace, available, or overdue state;
 - newest checkpoint and `latest.json` filename/step agreement;
+- newest checkpoint byte count and SHA256, computed read-only for the pinned
+  legacy queue or verified against a mandatory sidecar for upgraded runs;
 - training-report completion agreement when a final report exists.
 
 It records recent loss/gradient means, current segment throughput, ETA,
@@ -36,3 +38,11 @@ persisted in `train_metrics.jsonl`; a live step-6400 audit correctly reports
 `event_count=0`, `expected_event_count=6`, and the legacy-observability warning
 while retaining `status=healthy`. The upgrade branch emits the log after
 validation, so full 300K runs are expected to have complete validation logging.
+
+The integrity policy is deliberately asymmetric during the transition. Current
+10% checkpoints predate integrity sidecars, so `legacy_compute` hashes the
+newest file without loading or rewriting it and emits a compatibility warning.
+After both matched 50K runs finish, the existing migration validates exact-resume
+payload fields and binds those same bytes. Full 300K audits pass
+`--integrity-policy required`; a missing sidecar, changed byte count, SHA
+mismatch, or stale `latest.json` binding makes the audit invalid.
