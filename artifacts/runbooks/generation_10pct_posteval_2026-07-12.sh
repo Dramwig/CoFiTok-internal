@@ -37,6 +37,18 @@ validate_training_report "$DENSE_RUN/training_report.json"
 test -f "$COFITOK_CHECKPOINT"
 test -f "$DENSE_CHECKPOINT"
 
+python scripts/evaluate_generation_checkpoint.py \
+  --checkpoint "$COFITOK_CHECKPOINT" \
+  --output-dir "$COFITOK_RUN/checkpoint_eval_ema_t500_1024" \
+  --num-images 1024 --timestep 500 --random-orders 16 \
+  --weights ema --precision bf16
+
+python scripts/evaluate_generation_checkpoint.py \
+  --checkpoint "$DENSE_CHECKPOINT" \
+  --output-dir "$DENSE_RUN/checkpoint_eval_ema_t500_1024" \
+  --num-images 1024 --timestep 500 --random-orders 0 \
+  --weights ema --precision bf16
+
 python scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/samples_gate10k_ddim100_cfg15" \
