@@ -25,7 +25,13 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
         "implementation": {"package": "torch_fidelity", "version": "0.4.0"},
         "counts": {"generated_image_count": 10_000},
         "parameters": {"batch_size": 64, "seed": 2027},
-        "metrics": {"frechet_inception_distance": fid},
+        "metrics": {
+            "frechet_inception_distance": fid,
+            "inception_score_mean": 18.0,
+            "inception_score_std": 0.2,
+            "precision": 0.6,
+            "recall": 0.4,
+        },
         "sample_provenance": {
             "checkpoint": "/checkpoint.pt",
             "checkpoint_sha256": sha,
@@ -137,4 +143,64 @@ def test_generation_gate_holds_when_mechanism_eval_uses_another_checkpoint() -> 
     gate = next(
         gate for gate in report["gates"] if gate["name"] == "checkpoint_evaluation_provenance"
     )
+    assert gate["passed"] is False
+
+
+def test_full_generation_gate_uses_ready_decision_and_absolute_fid() -> None:
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(19.0, 8, "a" * 64),
+        dense_generation=_generation(18.5, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+        stage="full",
+        max_absolute_fid=20.0,
+    )
+
+    assert report["status"] == "pass"
+    assert report["decision"] == "large_scale_generation_ready"
+    assert report["stage"] == "full"
+
+
+def test_full_generation_gate_holds_above_absolute_fid_limit() -> None:
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(20.5, 8, "a" * 64),
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+        stage="full",
+        max_absolute_fid=20.0,
+    )
+
+    gate = next(gate for gate in report["gates"] if gate["name"] == "absolute_fid_quality")
+    assert report["status"] == "fail"
+    assert report["decision"] == "hold"
+    assert gate["passed"] is False
+
+
+def test_generation_gate_holds_when_quality_metrics_are_incomplete() -> None:
+    cofitok = _generation(20.0, 8, "a" * 64)
+    del cofitok["metrics"]["recall"]
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(gate for gate in report["gates"] if gate["name"] == "generation_metrics_complete")
     assert gate["passed"] is False

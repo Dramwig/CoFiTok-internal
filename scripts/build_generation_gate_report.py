@@ -18,8 +18,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--cofitok-checkpoint-eval", required=True)
     parser.add_argument("--dense-checkpoint-eval", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument("--stage", choices=["scaling", "full"], default="scaling")
     parser.add_argument("--min-samples", type=int, default=10_000)
     parser.add_argument("--max-fid-regression", type=float, default=0.05)
+    parser.add_argument("--max-absolute-fid", type=float, default=100.0)
     parser.add_argument("--max-endpoint-regression", type=float, default=0.05)
     parser.add_argument("--allow-fail", action="store_true")
     return parser.parse_args()
@@ -30,11 +32,20 @@ def _read(path: str | Path) -> dict[str, Any]:
         return json.load(handle)
 
 
-def _metric(report: dict[str, Any], name: str) -> float:
-    value = float(report["metrics"][name])
-    if not math.isfinite(value):
-        raise ValueError(f"metric {name} is not finite")
-    return value
+def _quality_metrics(report: dict[str, Any]) -> dict[str, float | None]:
+    names = (
+        "frechet_inception_distance",
+        "inception_score_mean",
+        "inception_score_std",
+        "precision",
+        "recall",
+    )
+    values: dict[str, float | None] = {}
+    for name in names:
+        raw = report.get("metrics", {}).get(name)
+        value = float(raw) if raw is not None else None
+        values[name] = value if value is not None and math.isfinite(value) else None
+    return values
 
 
 def _gate(name: str, passed: bool, evidence: dict[str, Any]) -> dict[str, Any]:
@@ -61,9 +72,17 @@ def build_report(
     min_samples: int,
     max_fid_regression: float,
     max_endpoint_regression: float,
+    stage: str = "scaling",
+    max_absolute_fid: float = 100.0,
 ) -> dict[str, Any]:
-    cofitok_fid = _metric(cofitok_generation, "frechet_inception_distance")
-    dense_fid = _metric(dense_generation, "frechet_inception_distance")
+    if stage not in {"scaling", "full"}:
+        raise ValueError("stage must be scaling or full")
+    if not math.isfinite(max_absolute_fid) or max_absolute_fid <= 0.0:
+        raise ValueError("max_absolute_fid must be finite and positive")
+    cofitok_quality = _quality_metrics(cofitok_generation)
+    dense_quality = _quality_metrics(dense_generation)
+    cofitok_fid = cofitok_quality["frechet_inception_distance"]
+    dense_fid = dense_quality["frechet_inception_distance"]
     cofitok_endpoint = float(
         cofitok_checkpoint["metrics"]["orders"]["ordered"]["endpoint_clean_mse"]
     )
@@ -125,6 +144,12 @@ def build_report(
             },
         ),
         _gate(
+            "generation_metrics_complete",
+            all(value is not None for value in cofitok_quality.values())
+            and all(value is not None for value in dense_quality.values()),
+            {"cofitok": cofitok_quality, "dense": dense_quality},
+        ),
+        _gate(
             "matched_sampling_provenance",
             cofitok_sampling == dense_sampling
             and cofitok_provenance["weights"] == dense_provenance["weights"] == "ema"
@@ -170,13 +195,25 @@ def build_report(
         ),
         _gate(
             "fid_within_tolerance",
-            cofitok_fid <= dense_fid * (1.0 + max_fid_regression),
+            cofitok_fid is not None
+            and dense_fid is not None
+            and dense_fid > 0.0
+            and cofitok_fid <= dense_fid * (1.0 + max_fid_regression),
             {
                 "cofitok_fid": cofitok_fid,
                 "dense_fid": dense_fid,
-                "relative_change": cofitok_fid / dense_fid - 1.0,
+                "relative_change": (
+                    cofitok_fid / dense_fid - 1.0
+                    if cofitok_fid is not None and dense_fid is not None and dense_fid > 0.0
+                    else None
+                ),
                 "max_regression": max_fid_regression,
             },
+        ),
+        _gate(
+            "absolute_fid_quality",
+            cofitok_fid is not None and cofitok_fid <= max_absolute_fid,
+            {"cofitok_fid": cofitok_fid, "max_absolute_fid": max_absolute_fid},
         ),
         _gate(
             "endpoint_within_tolerance",
@@ -212,13 +249,21 @@ def build_report(
             },
         ),
     ]
+    passed = all(gate["passed"] for gate in gates)
+    pass_decision = (
+        "promote_to_full_imagenet256"
+        if stage == "scaling"
+        else "large_scale_generation_ready"
+    )
     return {
         "schema_version": 1,
-        "status": "pass" if all(gate["passed"] for gate in gates) else "fail",
-        "decision": "promote_to_full_imagenet256" if all(gate["passed"] for gate in gates) else "hold",
+        "stage": stage,
+        "status": "pass" if passed else "fail",
+        "decision": pass_decision if passed else "hold",
         "thresholds": {
             "min_samples": min_samples,
             "max_fid_regression": max_fid_regression,
+            "max_absolute_fid": max_absolute_fid,
             "max_endpoint_regression": max_endpoint_regression,
         },
         "gates": gates,
@@ -227,6 +272,12 @@ def build_report(
             "dense_fid": dense_fid,
             "cofitok_endpoint_mse": cofitok_endpoint,
             "dense_endpoint_mse": dense_endpoint,
+            "cofitok_inception_score": cofitok_quality["inception_score_mean"],
+            "dense_inception_score": dense_quality["inception_score_mean"],
+            "cofitok_precision": cofitok_quality["precision"],
+            "dense_precision": dense_quality["precision"],
+            "cofitok_recall": cofitok_quality["recall"],
+            "dense_recall": dense_quality["recall"],
             "ordered_rank": cofitok_checkpoint["metrics"]["ordered_rank_by_path_auc"],
             "order_count": cofitok_checkpoint["metrics"]["order_count"],
         },
@@ -245,6 +296,8 @@ def main() -> None:
         min_samples=args.min_samples,
         max_fid_regression=args.max_fid_regression,
         max_endpoint_regression=args.max_endpoint_regression,
+        stage=args.stage,
+        max_absolute_fid=args.max_absolute_fid,
     )
     write_json_report(Path(args.output), report)
     print(f"wrote {args.output}")

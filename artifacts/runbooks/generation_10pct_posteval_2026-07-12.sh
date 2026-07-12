@@ -90,4 +90,4 @@ python scripts/build_generation_gate_report.py \
   --cofitok-checkpoint-eval "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --output "$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/promotion_gate.json" \
-  --allow-fail
+  --stage scaling --min-samples 10000 --max-absolute-fid 100.0 --allow-fail

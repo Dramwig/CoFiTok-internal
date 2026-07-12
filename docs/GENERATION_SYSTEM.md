@@ -60,8 +60,9 @@ checkpoints: /root/autodl-tmp/CoFiTok/checkpoints/generation
    FID under one real-image directory and evaluator version.
 4. Full gate: matched 300K-step runs on full `imagenet_256`, 50K EMA samples,
    official FID plus IS/precision/recall, prefix diagnostics, and checkpoint
-   hashes. Promote only if CoFiTok keeps its prefix-control advantage without a
-   material endpoint generation regression against dense.
+   hashes. Declare the system ready only if CoFiTok keeps its prefix-control
+   advantage without a material endpoint generation regression against dense,
+   all distribution metrics are finite, and CoFiTok FID is at most 20.0.
 
 The 10% gate is an engineering and architecture decision point. It is not a
 replacement for the full-data result and must not overwrite locked paper tables.

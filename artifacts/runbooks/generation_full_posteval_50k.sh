@@ -86,4 +86,5 @@ python scripts/build_generation_gate_report.py \
   --dense-generation "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
   --cofitok-checkpoint-eval "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
-  --output "$REPORT_ROOT/final_generation_gate.json" --min-samples 50000 --allow-fail
+  --output "$REPORT_ROOT/final_generation_gate.json" --stage full \
+  --min-samples 50000 --max-absolute-fid 20.0 --allow-fail
