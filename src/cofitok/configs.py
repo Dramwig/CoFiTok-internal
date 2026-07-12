@@ -100,6 +100,7 @@ class RuntimeConfig:
     precision: str = "fp32"
     compile_model: bool = False
     allow_tf32: bool = True
+    cudnn_benchmark: bool = False
     checkpoint_interval: int = 1000
     evaluation_interval: int = 1000
     keep_last_checkpoints: int = 3

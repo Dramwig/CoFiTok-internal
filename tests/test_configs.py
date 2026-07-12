@@ -19,6 +19,7 @@ def test_load_config_with_optimization_defaults(tmp_path) -> None:
     assert config.model.synthesis_mode == "restricted"
     assert config.model.deep_synthesis_hidden_channels == 0
     assert config.model.deep_synthesis_depth == 3
+    assert config.runtime.cudnn_benchmark is False
     assert config.loss.energy_budget_weight == 0.0
     assert config.loss.energy_target == []
     assert config.loss.residual_component_weight == 0.0

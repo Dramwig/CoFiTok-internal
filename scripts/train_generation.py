@@ -216,7 +216,7 @@ def main() -> None:
     if device.type == "cuda":
         torch.backends.cuda.matmul.allow_tf32 = config.runtime.allow_tf32
         torch.backends.cudnn.allow_tf32 = config.runtime.allow_tf32
-        torch.backends.cudnn.benchmark = True
+        torch.backends.cudnn.benchmark = config.runtime.cudnn_benchmark
     torch.set_float32_matmul_precision("high")
 
     output_dir = Path(args.output_dir)
