@@ -39,6 +39,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--resume", default="", help="Checkpoint path or 'auto' for latest.json.")
     parser.add_argument("--max-steps", type=int, default=0, help="Override steps for smoke runs.")
+    parser.add_argument("--micro-batch-size", type=int, default=0)
+    parser.add_argument("--gradient-accumulation-steps", type=int, default=0)
     parser.add_argument(
         "--stop-after-steps",
         type=int,
@@ -210,6 +212,16 @@ def main() -> None:
     config = load_config(args.config)
     if args.max_steps > 0:
         config = replace(config, runtime=replace(config.runtime, steps=args.max_steps))
+    if args.micro_batch_size > 0:
+        config = replace(config, data=replace(config.data, batch_size=args.micro_batch_size))
+    if args.gradient_accumulation_steps > 0:
+        config = replace(
+            config,
+            optimization=replace(
+                config.optimization,
+                gradient_accumulation_steps=args.gradient_accumulation_steps,
+            ),
+        )
     _validate_config(config)
     seed_everything(config.runtime.seed)
     device = _resolve_device(config.runtime.device)
