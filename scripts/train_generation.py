@@ -386,16 +386,6 @@ def main() -> None:
             "samples_seen": step * micro_samples,
             "elapsed_seconds": time.time() - training_start,
         }
-        should_log = step == start_step + 1 or step % config.optimization.log_interval == 0
-        if should_log:
-            with metrics_path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(last_metrics, sort_keys=True) + "\n")
-            print(
-                f"step={step} total={aggregate['total']:.6f} "
-                f"epsilon={aggregate['epsilon']:.6f} grad={last_metrics['grad_norm']:.4f} "
-                f"lr={last_metrics['learning_rate']:.3e}"
-            )
-
         if not stop.requested and (
             step % config.runtime.evaluation_interval == 0 or step == loop_end
         ):
@@ -410,6 +400,18 @@ def main() -> None:
                 eval_batch,
                 config,
                 device,
+            )
+
+        should_log = step == start_step + 1 or step % config.optimization.log_interval == 0
+        if should_log:
+            with metrics_path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(last_metrics, sort_keys=True) + "\n")
+            validation = last_metrics.get("validation_epsilon_mse")
+            validation_text = "" if validation is None else f" val={validation:.6f}"
+            print(
+                f"step={step} total={aggregate['total']:.6f} "
+                f"epsilon={aggregate['epsilon']:.6f} grad={last_metrics['grad_norm']:.4f} "
+                f"lr={last_metrics['learning_rate']:.3e}{validation_text}"
             )
 
         should_checkpoint = (
