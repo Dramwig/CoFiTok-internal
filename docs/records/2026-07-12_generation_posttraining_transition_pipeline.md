@@ -13,7 +13,10 @@ code update while either training process is active.
 `scripts/deploy_generation_posttraining_pipeline.ps1` is the only supported
 transition command. It creates a bundle from the clean local
 `scale/generative-system` HEAD and delegates the state-changing work to
-`artifacts/runbooks/deploy_generation_posttraining_pipeline_remote.sh`.
+`artifacts/runbooks/deploy_generation_posttraining_pipeline_remote.sh`. The
+local command also transfers `scripts/validate_generation_training_pair.py`
+to `/tmp`, so pre-deployment and post-deployment checks use the same testable
+training-report contract even while the remote repository is still pinned.
 
 The remote helper refuses deployment unless:
 
@@ -22,7 +25,9 @@ The remote helper refuses deployment unless:
 - no tracked remote file is modified (historical untracked reports are
   permitted);
 - both 10% training reports reached exactly 50,000 steps, identify the pinned
-  commit, and report a clean tracked worktree;
+  revision and upgrade branch, report a clean tracked worktree, use matched
+  data/diffusion/runtime/optimization sections, remain within the 2% parameter
+  matching tolerance, and identify the exact step-50K checkpoint;
 - neither the matched runbook nor either 10% training command is still active;
 - the bundle resolves to the exact local target commit and can be applied with
   a fast-forward-only merge.

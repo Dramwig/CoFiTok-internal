@@ -48,8 +48,8 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
 
     assert "flock -n 9" in runbook
     assert "trap record_failure EXIT" in runbook
-    assert "training_complete" in runbook
-    assert "completed_steps\") != 50_000" in runbook
+    assert "scripts/validate_generation_training_pair.py" in runbook
+    assert "--expected-steps 50000" in runbook
     assert "promote_to_full_imagenet256" in runbook
     assert "large_scale_generation_ready" in runbook
     ordered_markers = [
@@ -73,8 +73,9 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert "git diff --cached --quiet" in deployer
     assert '"$current_commit" != "$TARGET_COMMIT"' in deployer
     assert '"$current_commit" == "$EXPECTED_COMMIT"' in deployer
-    assert "training_complete" in deployer
-    assert "report.get(\"git\", {}).get(\"revision\")" in deployer
+    assert 'python "$VALIDATOR"' in deployer
+    assert '--expected-revision "$EXPECTED_COMMIT"' in deployer
+    assert deployer.index("conda activate pf-vlm") < deployer.index('python "$VALIDATOR"')
     assert "pgrep -af '[s]cripts/train_generation.py" in deployer
     assert "git bundle verify" in deployer
     assert "git merge --ff-only FETCH_HEAD" in deployer
@@ -86,7 +87,7 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
 
     pipeline = _read("artifacts/runbooks/generation_complete_pipeline_after_10pct.sh")
     assert "PINNED_10PCT_REVISION=781a01444fddbf0d48a427ba58bdeed50167b5be" in pipeline
-    assert "report.get(\"git\", {}).get(\"revision\")" in pipeline
+    assert "validate_generation_training_pair.py" in pipeline
 
 
 def test_local_deployer_pins_current_training_revision_and_builds_bundle() -> None:
@@ -97,4 +98,6 @@ def test_local_deployer_pins_current_training_revision_and_builds_bundle() -> No
     assert "--untracked-files=no" in deployer
     assert '"bundle", "create"' in deployer
     assert "deploy_generation_posttraining_pipeline_remote.sh" in deployer
+    assert "validate_generation_training_pair.py" in deployer
+    assert "$RemoteValidator" in deployer
     assert "ExpectedRemoteCommit" in deployer

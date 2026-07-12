@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if (( $# != 3 )); then
-  printf 'usage: %s BUNDLE EXPECTED_COMMIT TARGET_COMMIT\n' "$0" >&2
+if (( $# != 4 )); then
+  printf 'usage: %s BUNDLE EXPECTED_COMMIT TARGET_COMMIT VALIDATOR\n' "$0" >&2
   exit 64
 fi
 
 BUNDLE="$1"
 EXPECTED_COMMIT="$2"
 TARGET_COMMIT="$3"
+VALIDATOR="$4"
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
 PIPELINE=artifacts/runbooks/generation_complete_pipeline_after_10pct.sh
@@ -18,6 +19,8 @@ COFITOK_REPORT="$OUTPUT_ROOT/imagenet256_10pct_cofitok_k8_50k_2026-07-12/trainin
 DENSE_REPORT="$OUTPUT_ROOT/imagenet256_10pct_dense_50k_2026-07-12/training_report.json"
 
 cd "$PROJECT"
+source /root/miniconda3/etc/profile.d/conda.sh
+conda activate pf-vlm
 
 current_commit="$(git rev-parse HEAD)"
 if [[ "$current_commit" != "$EXPECTED_COMMIT" && "$current_commit" != "$TARGET_COMMIT" ]]; then
@@ -33,23 +36,15 @@ if [[ "$current_commit" == "$EXPECTED_COMMIT" && ! -f "$BUNDLE" ]]; then
   printf 'upgrade bundle is missing: %s\n' "$BUNDLE" >&2
   exit 67
 fi
+if [[ ! -f "$VALIDATOR" ]]; then
+  printf 'training-pair validator is missing: %s\n' "$VALIDATOR" >&2
+  exit 74
+fi
 
-python - "$COFITOK_REPORT" "$DENSE_REPORT" "$EXPECTED_COMMIT" <<'PY'
-import json
-import sys
-
-for path in sys.argv[1:3]:
-    with open(path, encoding="utf-8") as handle:
-        report = json.load(handle)
-    if report.get("training_complete") is not True:
-        raise SystemExit(f"training is incomplete: {path}")
-    if report.get("completed_steps") != 50_000 or report.get("target_steps") != 50_000:
-        raise SystemExit(f"training did not finish exactly 50K steps: {path}")
-    if report.get("git", {}).get("revision") != sys.argv[3]:
-        raise SystemExit(f"training report revision does not match pinned revision: {path}")
-    if report.get("git", {}).get("dirty") is not False:
-        raise SystemExit(f"training used a dirty tracked worktree: {path}")
-PY
+python "$VALIDATOR" \
+  --cofitok-training "$COFITOK_REPORT" \
+  --dense-training "$DENSE_REPORT" \
+  --expected-steps 50000 --expected-revision "$EXPECTED_COMMIT"
 
 if pgrep -af '[s]cripts/train_generation.py.*configs/generation/imagenet256_10pct_' >/dev/null; then
   printf 'a 10%% generation training process is still active\n' >&2
@@ -86,8 +81,6 @@ if [[ "$current_commit" == "$EXPECTED_COMMIT" ]]; then
   fi
 fi
 
-source /root/miniconda3/etc/profile.d/conda.sh
-conda activate pf-vlm
 export PYTHONPATH=src
 python -m pytest -q
 bash -n artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh

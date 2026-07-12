@@ -45,22 +45,10 @@ record_failure() {
 trap record_failure EXIT
 
 validate_completed_training_pair() {
-  python - "$COFITOK_10PCT" "$DENSE_10PCT" "$PINNED_10PCT_REVISION" <<'PY'
-import json
-import sys
-
-for path in sys.argv[1:3]:
-    with open(path, encoding="utf-8") as handle:
-        report = json.load(handle)
-    if report.get("training_complete") is not True:
-        raise SystemExit(f"training is incomplete: {path}")
-    if report.get("completed_steps") != 50_000 or report.get("target_steps") != 50_000:
-        raise SystemExit(f"training did not finish exactly 50K steps: {path}")
-    if report.get("git", {}).get("dirty") is not False:
-        raise SystemExit(f"training used a dirty tracked worktree: {path}")
-    if report.get("git", {}).get("revision") != sys.argv[3]:
-        raise SystemExit(f"training report revision does not match the pinned queue: {path}")
-PY
+  python scripts/validate_generation_training_pair.py \
+    --cofitok-training "$COFITOK_10PCT" \
+    --dense-training "$DENSE_10PCT" \
+    --expected-steps 50000 --expected-revision "$PINNED_10PCT_REVISION"
 }
 
 validate_gate() {

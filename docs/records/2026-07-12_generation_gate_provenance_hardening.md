@@ -15,6 +15,14 @@ The remote deployer and the locked completion pipeline now validate
 `781a01444fddbf0d48a427ba58bdeed50167b5be`. The completion pipeline therefore
 also rejects a direct launch with reports from another revision.
 
+The shared validation is centralized in
+`scripts/validate_generation_training_pair.py`. The local deployer transfers
+that stdlib-only validator to `/tmp` for the pre-fast-forward check; the
+post-deployment pipeline invokes the tracked copy. In addition to revision and
+completion, it checks the upgrade branch, dataset alias, exact latest
+checkpoint, matched data/diffusion/runtime/optimization sections, and the 2%
+parameter-count tolerance.
+
 The scaling and full generation gates additionally require:
 
 - CoFiTok and dense reports from the same 40-character revision on
