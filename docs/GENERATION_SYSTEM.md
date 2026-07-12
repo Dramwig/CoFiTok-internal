@@ -158,6 +158,18 @@ panel. D-AR, MAR, and ReTok remain a separate official-pretrained contextual
 panel because their training budgets and ADM evaluator differ; machine-readable
 policy explicitly forbids cross-panel numeric ranking.
 
+The revision transition after the active 10% pair is also gated. Run
+`scripts/deploy_generation_posttraining_pipeline.ps1` locally only after both
+50K training reports are complete. It verifies the pinned remote revision,
+clean tracked files, completed reports, and absent training processes before a
+fast-forward-only bundle deployment. Remote tests and shell syntax checks must
+pass before it launches
+`artifacts/runbooks/generation_complete_pipeline_after_10pct.sh`. That pipeline
+uses an exclusive lock and atomic stage status, runs the 10K promotion gate,
+the alternating full 300K queue, the formal 50K-sample evaluation, and both
+gate decisions in order. A held gate or interrupted stage is recorded as a
+failure rather than reported as generation readiness.
+
 Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies
 strictly increasing finite metrics, resume-aware timing segments, checkpoint
