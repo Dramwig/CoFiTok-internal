@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import json
 import time
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--real-dir", required=True)
     parser.add_argument("--generated-dir", required=True)
+    parser.add_argument(
+        "--sampling-report",
+        default="",
+        help="Sampling report to verify; defaults to the generated directory parent.",
+    )
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--prc-batch-size", type=int, default=10_000)
@@ -40,6 +46,52 @@ def find_images(path: Path) -> list[Path]:
         for candidate in path.rglob("*")
         if candidate.is_file() and candidate.suffix.lower() in IMAGE_EXTENSIONS
     )
+
+
+def validate_sampling_provenance(
+    report_path: Path,
+    generated_dir: Path,
+    generated_images: list[Path],
+) -> dict[str, Any]:
+    if not report_path.is_file():
+        raise FileNotFoundError(f"Sampling report does not exist: {report_path}")
+    with report_path.open("r", encoding="utf-8") as handle:
+        report = json.load(handle)
+    if report.get("status") != "completed":
+        raise ValueError(f"Sampling report is not complete: {report_path}")
+    sampling = report["sampling"]
+    if int(sampling["start_index"]) != 0:
+        raise ValueError("Formal generation metrics require a sample set starting at index zero")
+    expected_count = int(sampling["num_samples"])
+    if len(generated_images) != expected_count:
+        raise ValueError(
+            f"generated image count {len(generated_images)} does not match sampling report "
+            f"count {expected_count}"
+        )
+    expected_names = {f"{index:06d}.png" for index in range(expected_count)}
+    actual_names = {path.name for path in generated_images}
+    if actual_names != expected_names:
+        raise ValueError("Generated sample filenames are not the complete zero-based numbered set")
+    resolved_generated = generated_dir.resolve()
+    matching_budgets = [
+        int(budget)
+        for budget, directory in report["output_dirs"].items()
+        if Path(directory).resolve() == resolved_generated
+    ]
+    if len(matching_budgets) != 1:
+        raise ValueError("Generated directory does not map to exactly one sampling-report budget")
+    checkpoint_sha256 = str(report["checkpoint_sha256"])
+    if len(checkpoint_sha256) != 64:
+        raise ValueError("Sampling report checkpoint SHA256 is malformed")
+    return {
+        "report": report_path.resolve().as_posix(),
+        "checkpoint": report["checkpoint"],
+        "checkpoint_sha256": checkpoint_sha256,
+        "checkpoint_step": int(report["checkpoint_step"]),
+        "weights": report["weights"],
+        "selected_prefix_budget": matching_budgets[0],
+        "sampling": sampling,
+    }
 
 
 def calculate_metrics(
@@ -92,6 +144,16 @@ def main() -> None:
         raise ValueError(f"real image count {len(real_images)} is below {args.min_samples}")
     if len(generated_images) < args.min_samples:
         raise ValueError(f"generated image count {len(generated_images)} is below {args.min_samples}")
+    sampling_report_path = (
+        Path(args.sampling_report)
+        if args.sampling_report
+        else generated_dir.parent / "sampling_report.json"
+    )
+    sample_provenance = validate_sampling_provenance(
+        sampling_report_path,
+        generated_dir,
+        generated_images,
+    )
     cuda = torch.cuda.is_available() and not args.cpu
     start = time.time()
     metrics, version = calculate_metrics(
@@ -121,6 +183,7 @@ def main() -> None:
             "real_image_count": len(real_images),
             "generated_image_count": len(generated_images),
         },
+        "sample_provenance": sample_provenance,
         "parameters": {
             "batch_size": args.batch_size,
             "prc_batch_size": args.prc_batch_size,
@@ -146,4 +209,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

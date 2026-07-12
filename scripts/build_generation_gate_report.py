@@ -41,6 +41,15 @@ def _gate(name: str, passed: bool, evidence: dict[str, Any]) -> dict[str, Any]:
     return {"name": name, "passed": bool(passed), "evidence": evidence}
 
 
+def _sampling_protocol(provenance: dict[str, Any]) -> dict[str, Any]:
+    ignored = {"prefix_budgets"}
+    return {
+        key: value
+        for key, value in provenance["sampling"].items()
+        if key not in ignored
+    }
+
+
 def build_report(
     *,
     cofitok_training: dict[str, Any],
@@ -61,6 +70,8 @@ def build_report(
     dense_endpoint = float(
         dense_checkpoint["metrics"]["orders"]["ordered"]["endpoint_clean_mse"]
     )
+    cofitok_checkpoint_sha = str(cofitok_checkpoint["checkpoint_sha256"])
+    dense_checkpoint_sha = str(dense_checkpoint["checkpoint_sha256"])
     generated_counts = (
         int(cofitok_generation["counts"]["generated_image_count"]),
         int(dense_generation["counts"]["generated_image_count"]),
@@ -69,6 +80,10 @@ def build_report(
         cofitok_generation["implementation"],
         dense_generation["implementation"],
     )
+    cofitok_provenance = cofitok_generation["sample_provenance"]
+    dense_provenance = dense_generation["sample_provenance"]
+    cofitok_sampling = _sampling_protocol(cofitok_provenance)
+    dense_sampling = _sampling_protocol(dense_provenance)
     parameter_gap = (
         int(cofitok_training["parameter_count"]) - int(dense_training["parameter_count"])
     ) / int(dense_training["parameter_count"])
@@ -107,6 +122,50 @@ def build_report(
                 "generated_counts": list(generated_counts),
                 "cofitok_evaluator": evaluator_pair[0],
                 "dense_evaluator": evaluator_pair[1],
+            },
+        ),
+        _gate(
+            "matched_sampling_provenance",
+            cofitok_sampling == dense_sampling
+            and cofitok_provenance["weights"] == dense_provenance["weights"] == "ema"
+            and int(cofitok_provenance["checkpoint_step"])
+            == int(cofitok_training["target_steps"])
+            and int(dense_provenance["checkpoint_step"])
+            == int(dense_training["target_steps"])
+            and int(cofitok_provenance["selected_prefix_budget"])
+            == int(cofitok_training["config"]["model"]["token_count"])
+            and int(dense_provenance["selected_prefix_budget"])
+            == int(dense_training["config"]["model"]["token_count"])
+            and len(str(cofitok_provenance["checkpoint_sha256"])) == 64
+            and len(str(dense_provenance["checkpoint_sha256"])) == 64
+            and cofitok_sampling.get("random_stream", {}).get("prefix_budgets_share_stream")
+            is True
+            and cofitok_sampling.get("random_stream", {}).get("batch_size_invariant") is True,
+            {
+                "protocols_match": cofitok_sampling == dense_sampling,
+                "cofitok_checkpoint_step": cofitok_provenance["checkpoint_step"],
+                "dense_checkpoint_step": dense_provenance["checkpoint_step"],
+                "cofitok_checkpoint_sha256": cofitok_provenance["checkpoint_sha256"],
+                "dense_checkpoint_sha256": dense_provenance["checkpoint_sha256"],
+                "cofitok_prefix_budget": cofitok_provenance["selected_prefix_budget"],
+                "dense_prefix_budget": dense_provenance["selected_prefix_budget"],
+            },
+        ),
+        _gate(
+            "checkpoint_evaluation_provenance",
+            int(cofitok_checkpoint["checkpoint_step"])
+            == int(cofitok_provenance["checkpoint_step"])
+            and int(dense_checkpoint["checkpoint_step"])
+            == int(dense_provenance["checkpoint_step"])
+            and cofitok_checkpoint_sha == cofitok_provenance["checkpoint_sha256"]
+            and dense_checkpoint_sha == dense_provenance["checkpoint_sha256"],
+            {
+                "cofitok_hash_matches": cofitok_checkpoint_sha
+                == cofitok_provenance["checkpoint_sha256"],
+                "dense_hash_matches": dense_checkpoint_sha
+                == dense_provenance["checkpoint_sha256"],
+                "cofitok_step": cofitok_checkpoint["checkpoint_step"],
+                "dense_step": dense_checkpoint["checkpoint_step"],
             },
         ),
         _gate(

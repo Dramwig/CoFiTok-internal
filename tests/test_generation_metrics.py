@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import json
 import sys
 from types import SimpleNamespace
 
 from PIL import Image
 
-from scripts.evaluate_generation_metrics import calculate_metrics, find_images
+from scripts.evaluate_generation_metrics import (
+    calculate_metrics,
+    find_images,
+    validate_sampling_provenance,
+)
 
 
 def test_find_images_is_recursive_and_filters_extensions(tmp_path) -> None:
@@ -61,3 +66,59 @@ def test_calculate_metrics_uses_generated_as_precision_input(monkeypatch, tmp_pa
     assert calls[0]["prc"] is True
     assert calls[0]["samples_find_deep"] is True
     assert calls[0]["input2_cache_name"] == "real-v1"
+
+
+def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> None:
+    generated = tmp_path / "samples" / "prefix_8"
+    generated.mkdir(parents=True)
+    for index in range(2):
+        Image.new("RGB", (4, 4)).save(generated / f"{index:06d}.png")
+    report_path = generated.parent / "sampling_report.json"
+    report_path.write_text(
+        json.dumps(
+            {
+                "status": "completed",
+                "checkpoint": "/checkpoints/model.pt",
+                "checkpoint_sha256": "a" * 64,
+                "checkpoint_step": 50_000,
+                "weights": "ema",
+                "sampling": {"start_index": 0, "num_samples": 2},
+                "output_dirs": {"8": generated.resolve().as_posix()},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    provenance = validate_sampling_provenance(report_path, generated, find_images(generated))
+
+    assert provenance["selected_prefix_budget"] == 8
+    assert provenance["checkpoint_step"] == 50_000
+
+
+def test_validate_sampling_provenance_rejects_stale_extra_sample(tmp_path) -> None:
+    generated = tmp_path / "samples" / "prefix_8"
+    generated.mkdir(parents=True)
+    for index in range(3):
+        Image.new("RGB", (4, 4)).save(generated / f"{index:06d}.png")
+    report_path = generated.parent / "sampling_report.json"
+    report_path.write_text(
+        json.dumps(
+            {
+                "status": "completed",
+                "checkpoint": "/checkpoints/model.pt",
+                "checkpoint_sha256": "a" * 64,
+                "checkpoint_step": 50_000,
+                "weights": "ema",
+                "sampling": {"start_index": 0, "num_samples": 2},
+                "output_dirs": {"8": generated.resolve().as_posix()},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        validate_sampling_provenance(report_path, generated, find_images(generated))
+    except ValueError as error:
+        assert "does not match" in str(error)
+    else:
+        raise AssertionError("stale extra sample was accepted")

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 import torch
 
 from cofitok.diffusion.schedule import DiffusionSchedule
@@ -35,6 +37,28 @@ def _guidance_rescale(
     conditional_std = conditional.std(dim=dims, keepdim=True)
     rescaled = guided * (conditional_std / guided_std)
     return torch.lerp(guided, rescaled, amount)
+
+
+def _randn(
+    shape: tuple[int, ...],
+    *,
+    device: torch.device,
+    generator: torch.Generator | None,
+    sample_generators: Sequence[torch.Generator] | None,
+) -> torch.Tensor:
+    if sample_generators is None:
+        if generator is None:
+            raise ValueError("generator or sample_generators must be provided")
+        return torch.randn(shape, device=device, generator=generator)
+    if len(sample_generators) != shape[0]:
+        raise ValueError("sample_generators must match the batch dimension")
+    return torch.stack(
+        [
+            torch.randn(shape[1:], device=device, generator=sample_generator)
+            for sample_generator in sample_generators
+        ],
+        dim=0,
+    )
 
 
 @torch.no_grad()
@@ -78,7 +102,8 @@ def ddim_sample(
     eta: float,
     clip_x0: bool,
     device: torch.device,
-    generator: torch.Generator,
+    generator: torch.Generator | None = None,
+    sample_generators: Sequence[torch.Generator] | None = None,
     class_labels: torch.Tensor | None = None,
     guidance_scale: float = 1.0,
     guidance_rescale: float = 0.0,
@@ -88,7 +113,12 @@ def ddim_sample(
     if guidance_scale < 0.0:
         raise ValueError("guidance_scale must be non-negative")
     model.eval()
-    images = torch.randn(shape, device=device, generator=generator)
+    images = _randn(
+        shape,
+        device=device,
+        generator=generator,
+        sample_generators=sample_generators,
+    )
     timesteps = select_sampling_timesteps(schedule.num_train_timesteps, sample_steps)
     for index, timestep in enumerate(timesteps):
         previous = timesteps[index + 1] if index + 1 < len(timesteps) else -1
@@ -115,6 +145,10 @@ def ddim_sample(
         direction = torch.sqrt((1.0 - alpha_previous - sigma.square()).clamp_min(0.0))
         images = torch.sqrt(alpha_previous) * predicted_x0 + direction * epsilon
         if eta > 0.0:
-            images = images + sigma * torch.randn(images.shape, device=device, generator=generator)
+            images = images + sigma * _randn(
+                tuple(images.shape),
+                device=device,
+                generator=generator,
+                sample_generators=sample_generators,
+            )
     return images
-

@@ -17,6 +17,24 @@ cd "$PROJECT"
 export PYTHONPATH=src
 mkdir -p "$REPORT_ROOT"
 
+validate_training_report() {
+  python - "$1" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    report = json.load(handle)
+if report.get("training_complete") is not True:
+    raise SystemExit(f"training is incomplete: {sys.argv[1]}")
+if report.get("completed_steps") != report.get("target_steps"):
+    raise SystemExit(f"step mismatch: {sys.argv[1]}")
+if report.get("git", {}).get("dirty") is not False:
+    raise SystemExit(f"training used a dirty tracked worktree: {sys.argv[1]}")
+PY
+}
+
+validate_training_report "$COFITOK_RUN/training_report.json"
+validate_training_report "$DENSE_RUN/training_report.json"
 test -f "$COFITOK_CHECKPOINT"
 test -f "$DENSE_CHECKPOINT"
 
@@ -34,21 +52,23 @@ python scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/samples_50k_ddim250_cfg15" \
   --num-samples 50000 --batch-size 32 --sample-steps 250 \
-  --guidance-scale 1.5 --weights ema --precision bf16
+  --guidance-scale 1.5 --weights ema --precision bf16 --resume
 
 python scripts/generate_samples.py \
   --checkpoint "$DENSE_CHECKPOINT" \
   --output-dir "$DENSE_RUN/samples_50k_ddim250_cfg15" \
   --num-samples 50000 --batch-size 32 --sample-steps 250 \
-  --guidance-scale 1.5 --weights ema --precision bf16
+  --guidance-scale 1.5 --weights ema --precision bf16 --resume
 
 python scripts/evaluate_generation_metrics.py \
   --real-dir "$DATA" --generated-dir "$COFITOK_RUN/samples_50k_ddim250_cfg15/prefix_8" \
+  --sampling-report "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
   --output-dir "$COFITOK_RUN/samples_50k_ddim250_cfg15/metrics" \
   --cache-root "$EVAL_CACHE" --min-samples 50000
 
 python scripts/evaluate_generation_metrics.py \
   --real-dir "$DATA" --generated-dir "$DENSE_RUN/samples_50k_ddim250_cfg15/prefix_1" \
+  --sampling-report "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
   --output-dir "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics" \
   --cache-root "$EVAL_CACHE" --min-samples 50000
 
@@ -56,7 +76,7 @@ python scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/prefix_diagnostic_64_ddim250_cfg15" \
   --num-samples 64 --batch-size 16 --sample-steps 250 \
-  --prefix-budgets 1,2,4,8 --guidance-scale 1.5 --weights ema --precision bf16
+  --prefix-budgets 1,2,4,8 --guidance-scale 1.5 --weights ema --precision bf16 --resume
 
 python scripts/build_generation_gate_report.py \
   --cofitok-training "$COFITOK_RUN/training_report.json" \
@@ -66,4 +86,3 @@ python scripts/build_generation_gate_report.py \
   --cofitok-checkpoint-eval "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --output "$REPORT_ROOT/final_generation_gate.json" --min-samples 50000 --allow-fail
-

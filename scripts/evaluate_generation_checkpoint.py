@@ -12,7 +12,7 @@ from cofitok.data import build_dataloader
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.metrics import normalized_curve_auc
 from cofitok.models import CoFiTokTiny
-from cofitok.reporting import write_json_report
+from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
 from cofitok.training.runtime import autocast_context
 
@@ -284,6 +284,7 @@ def main() -> None:
         "schema_version": 1,
         "status": "completed",
         "checkpoint": checkpoint_path.resolve().as_posix(),
+        "checkpoint_sha256": file_sha256(checkpoint_path),
         "checkpoint_step": int(checkpoint["step"]),
         "weights": args.weights,
         "precision": args.precision,
@@ -304,4 +305,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -22,10 +22,21 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Production inference loads EMA by default and supports deterministic DDIM,
   classifier-free guidance, guidance rescaling, prefix budgets, and resumable
   numbered PNG export.
+- Every global sample index owns an independent RNG stream. The stream is
+  invariant to batch size and resume boundaries, and the same numbered sample
+  uses the same stream at every prefix budget. Prefix comparisons are therefore
+  paired rather than comparisons between unrelated initial noises.
+- Sampling writes an immutable checkpoint-and-protocol manifest before the
+  first image. `--resume` accepts only an exact manifest match, skips completed
+  numbered images, and regenerates missing images from their original streams.
 - Generation evaluation uses `torch-fidelity==0.4.x` with generated samples as
   input 1 and the recursive 50K ImageNet validation directory as input 2. One
   report records FID, Inception Score, precision, recall, exact image counts,
   package version, seed, cache name, and runtime.
+- Formal metric evaluation requires the corresponding `sampling_report.json`,
+  an exact zero-based numbered image set, and a valid checkpoint SHA256. The
+  promotion gate cross-checks that sample metrics and mechanism diagnostics use
+  the same checkpoint bytes and matched sampling protocol.
 
 ## Server paths
 
@@ -90,7 +101,7 @@ python scripts/evaluate_generation_metrics.py \
 The 10% post-training gate is encoded in
 `artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh`. It refuses partial
 or dirty-worktree training reports, generates matched 10K EMA samples at DDIM
-100 / CFG 1.5, evaluates both methods with the same cached real features, and
+100 / CFG 1.5 with manifest-checked resume, evaluates both methods with the same cached real features, and
 exports a 64-image CoFiTok prefix diagnostic at budgets 1/2/4/8.
 
 Full-scale execution is deliberately gated. The runbook
