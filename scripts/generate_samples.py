@@ -215,7 +215,7 @@ def main() -> None:
         "batch_size": args.batch_size,
         "sample_steps": args.sample_steps,
         "actual_timesteps": select_sampling_timesteps(
-            schedule.num_train_timesteps,
+            session.schedule.num_train_timesteps,
             args.sample_steps,
         ),
         "prefix_budgets": budgets,

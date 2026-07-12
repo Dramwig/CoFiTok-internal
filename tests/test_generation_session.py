@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
 
 import torch
 
@@ -19,6 +24,9 @@ from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
 from cofitok.training.checkpointing import checkpoint_integrity_path
 from scripts.infer_generation import run_inference
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _checkpoint(tmp_path):
@@ -163,3 +171,48 @@ def test_inference_cli_core_writes_atomic_provenance_report(tmp_path) -> None:
     for output in report["outputs"]:
         assert len(output["sha256"]) == 64
         assert (output_dir / output["filename"]).is_file()
+
+
+def test_formal_sampling_cli_runs_checkpoint_to_png_and_report(tmp_path) -> None:
+    checkpoint = _checkpoint(tmp_path)
+    output_dir = tmp_path / "formal_samples"
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(ROOT / "src")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/generate_samples.py"),
+            "--checkpoint",
+            str(checkpoint),
+            "--output-dir",
+            str(output_dir),
+            "--num-samples",
+            "1",
+            "--batch-size",
+            "1",
+            "--sample-steps",
+            "1",
+            "--prefix-budgets",
+            "2",
+            "--guidance-scale",
+            "1.0",
+            "--weights",
+            "ema",
+            "--precision",
+            "fp32",
+        ],
+        cwd=ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = json.loads((output_dir / "sampling_report.json").read_text(encoding="utf-8"))
+    assert report["status"] == "completed"
+    assert report["sampling"]["actual_timesteps"] == [0]
+    assert report["sample_sets"]["2"]["count"] == 1
+    assert len(report["sample_sets"]["2"]["sha256"]) == 64
+    assert (output_dir / "prefix_2/000000.png").is_file()
