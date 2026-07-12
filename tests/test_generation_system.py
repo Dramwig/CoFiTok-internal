@@ -1,12 +1,21 @@
+import json
 import random
 
 import numpy as np
+import pytest
 import torch
 
 from cofitok.configs import ModelConfig, load_config
 from cofitok.data.sampler import StatefulRandomSampler
 from cofitok.models import CoFiTokTiny, ScalableUNetTokenPredictor
-from cofitok.training.checkpointing import load_training_checkpoint, save_training_checkpoint
+from cofitok.training.checkpointing import (
+    checkpoint_integrity_path,
+    load_training_checkpoint,
+    prune_checkpoints,
+    resolve_latest_checkpoint,
+    save_training_checkpoint,
+    verify_training_checkpoint,
+)
 from cofitok.training.ema import ExponentialMovingAverage
 from cofitok.training.runtime import build_warmup_cosine_scheduler
 
@@ -132,6 +141,14 @@ def test_checkpoint_roundtrip_restores_all_training_and_rng_state(tmp_path) -> N
         config={"name": "test"},
         extra_state={"marker": 9},
     )
+    integrity = verify_training_checkpoint(path)
+    latest = json.loads((tmp_path / "latest.json").read_text(encoding="utf-8"))
+    assert integrity["checkpoint"] == path.name
+    assert integrity["checkpoint_bytes"] == path.stat().st_size
+    assert len(integrity["checkpoint_sha256"]) == 64
+    assert latest["checkpoint_sha256"] == integrity["checkpoint_sha256"]
+    assert latest["integrity_manifest"] == checkpoint_integrity_path(path).name
+    assert resolve_latest_checkpoint(tmp_path) == path
     expected = (random.random(), float(np.random.rand()), float(torch.rand(())))
 
     restored_model = CoFiTokTiny(_small_model_config())
@@ -159,3 +176,30 @@ def test_checkpoint_roundtrip_restores_all_training_and_rng_state(tmp_path) -> N
         assert torch.equal(original, restored)
     assert restored_scheduler.state_dict() == scheduler.state_dict()
     assert restored_ema.num_updates == ema.num_updates
+
+    latest["step"] = 2
+    (tmp_path / "latest.json").write_text(json.dumps(latest), encoding="utf-8")
+    with pytest.raises(ValueError, match="step does not match"):
+        resolve_latest_checkpoint(tmp_path)
+
+    checkpoint_bytes = bytearray(path.read_bytes())
+    checkpoint_bytes[len(checkpoint_bytes) // 2] ^= 1
+    path.write_bytes(checkpoint_bytes)
+    with pytest.raises(ValueError, match="SHA256 mismatch"):
+        verify_training_checkpoint(path)
+
+
+def test_prune_checkpoints_removes_matching_integrity_manifests(tmp_path) -> None:
+    old = tmp_path / "checkpoint_step_00000001.pt"
+    latest = tmp_path / "checkpoint_step_00000002.pt"
+    for path in (old, latest):
+        path.write_bytes(b"checkpoint")
+        checkpoint_integrity_path(path).write_text("{}\n", encoding="utf-8")
+
+    removed = prune_checkpoints(tmp_path, keep_last=1)
+
+    assert removed == [old]
+    assert not old.exists()
+    assert not checkpoint_integrity_path(old).exists()
+    assert latest.exists()
+    assert checkpoint_integrity_path(latest).exists()

@@ -4,12 +4,20 @@ from scripts.build_generation_gate_report import build_report
 
 
 def _training(parameters: int, token_count: int) -> dict:
+    checkpoint_sha256 = ("a" if token_count > 1 else "b") * 64
     return {
         "training_complete": True,
         "completed_steps": 50_000,
         "target_steps": 50_000,
         "parameter_count": parameters,
         "git": {"dirty": False, "revision": "abc"},
+        "latest_checkpoint": {
+            "checkpoint": "checkpoint_step_00050000.pt",
+            "checkpoint_bytes": 1_000_000,
+            "checkpoint_sha256": checkpoint_sha256,
+            "integrity_manifest": "checkpoint_step_00050000.pt.integrity.json",
+            "step": 50_000,
+        },
         "config": {
             "data": {"dataset": "imagenet_256_10pct"},
             "diffusion": {"schedule": "cosine"},
@@ -226,6 +234,30 @@ def test_full_generation_gate_holds_above_absolute_fid_limit() -> None:
     gate = next(gate for gate in report["gates"] if gate["name"] == "absolute_fid_quality")
     assert report["status"] == "fail"
     assert report["decision"] == "hold"
+    assert gate["passed"] is False
+
+
+def test_full_generation_gate_requires_training_checkpoint_integrity() -> None:
+    cofitok_training = _training(100_500, 8)
+    del cofitok_training["latest_checkpoint"]["checkpoint_sha256"]
+    report = build_report(
+        cofitok_training=cofitok_training,
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(19.0, 8, "a" * 64),
+        dense_generation=_generation(18.5, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+        stage="full",
+        max_absolute_fid=20.0,
+    )
+
+    gate = next(
+        gate for gate in report["gates"] if gate["name"] == "full_training_checkpoint_integrity"
+    )
+    assert report["status"] == "fail"
     assert gate["passed"] is False
 
 

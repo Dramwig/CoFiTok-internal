@@ -61,6 +61,20 @@ def _sampling_protocol(provenance: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _training_checkpoint_integrity_matches(
+    training: dict[str, Any],
+    sample_provenance: dict[str, Any],
+) -> bool:
+    latest = training.get("latest_checkpoint", {})
+    return (
+        int(latest.get("step", -1)) == int(training.get("target_steps", -2))
+        and int(latest.get("checkpoint_bytes", 0)) > 0
+        and len(str(latest.get("checkpoint_sha256", ""))) == 64
+        and latest.get("checkpoint_sha256") == sample_provenance.get("checkpoint_sha256")
+        and str(latest.get("integrity_manifest", "")).endswith(".integrity.json")
+    )
+
+
 def build_report(
     *,
     cofitok_training: dict[str, Any],
@@ -211,6 +225,19 @@ def build_report(
                 == dense_provenance["checkpoint_sha256"],
                 "cofitok_step": cofitok_checkpoint["checkpoint_step"],
                 "dense_step": dense_checkpoint["checkpoint_step"],
+            },
+        ),
+        _gate(
+            "full_training_checkpoint_integrity",
+            stage != "full"
+            or (
+                _training_checkpoint_integrity_matches(cofitok_training, cofitok_provenance)
+                and _training_checkpoint_integrity_matches(dense_training, dense_provenance)
+            ),
+            {
+                "enforced": stage == "full",
+                "cofitok_latest": cofitok_training.get("latest_checkpoint"),
+                "dense_latest": dense_training.get("latest_checkpoint"),
             },
         ),
         _gate(

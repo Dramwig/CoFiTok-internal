@@ -24,6 +24,7 @@ from cofitok.training import ExponentialMovingAverage, compute_losses
 from cofitok.training.checkpointing import (
     load_training_checkpoint,
     prune_checkpoints,
+    resolve_latest_checkpoint,
     save_training_checkpoint,
 )
 from cofitok.training.runtime import (
@@ -161,11 +162,7 @@ def _resolve_resume(output_dir: Path, requested: str) -> Path | None:
         return None
     if requested != "auto":
         return Path(requested)
-    pointer = output_dir / "latest.json"
-    if not pointer.exists():
-        raise FileNotFoundError(f"No automatic resume pointer at {pointer}")
-    payload = json.loads(pointer.read_text(encoding="utf-8"))
-    return output_dir / payload["checkpoint"]
+    return resolve_latest_checkpoint(output_dir)
 
 
 def _git_revision() -> dict[str, str | bool]:
