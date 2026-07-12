@@ -39,11 +39,22 @@ def test_scalable_predictor_keeps_conditioning_inside_tk() -> None:
 
     output = model(images, timesteps, class_labels=labels)
     unconditional = model(images, timesteps, class_labels=labels, force_unconditional=True)
+    explicit_unconditional = model(
+        images,
+        timesteps,
+        class_labels=torch.full_like(labels, model.config.num_classes),
+    )
 
     assert isinstance(model.predictor, ScalableUNetTokenPredictor)
     assert len(output.tokens) == 4
     assert output.epsilon.shape == images.shape
     assert not torch.equal(output.tokens[0], unconditional.tokens[0])
+    torch.testing.assert_close(
+        explicit_unconditional.epsilon,
+        unconditional.epsilon,
+        rtol=0.0,
+        atol=0.0,
+    )
     zero_components = model.synthesis.zero_components_like(output.tokens)
     assert all(torch.count_nonzero(component) == 0 for component in zero_components)
 

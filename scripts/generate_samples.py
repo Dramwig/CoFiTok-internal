@@ -26,6 +26,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--prefix-budgets", default="", help="Comma-separated token budgets; default K.")
     parser.add_argument("--guidance-scale", type=float, default=1.5)
     parser.add_argument("--guidance-rescale", type=float, default=0.0)
+    parser.add_argument(
+        "--cfg-batch-mode",
+        choices=["batched", "sequential"],
+        default="batched",
+        help="Evaluate conditional/unconditional CFG branches together or separately.",
+    )
     parser.add_argument("--eta", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--start-index", type=int, default=0)
@@ -166,6 +172,7 @@ def main() -> None:
         "prefix_budgets": budgets,
         "guidance_scale": args.guidance_scale,
         "guidance_rescale": args.guidance_rescale,
+        "cfg_batch_mode": args.cfg_batch_mode,
         "eta": args.eta,
         "seed": args.seed,
         "precision": args.precision,
@@ -221,6 +228,7 @@ def main() -> None:
                     class_labels=labels,
                     guidance_scale=args.guidance_scale,
                     guidance_rescale=args.guidance_rescale,
+                    cfg_batch_mode=args.cfg_batch_mode,
                 )
             _save_batch(
                 samples.cpu(),

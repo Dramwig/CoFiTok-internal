@@ -53,13 +53,13 @@ python scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/samples_gate10k_ddim100_cfg15" \
   --num-samples 10000 --batch-size 32 --sample-steps 100 \
-  --guidance-scale 1.5 --weights ema --precision bf16 --resume
+  --guidance-scale 1.5 --cfg-batch-mode batched --weights ema --precision bf16 --resume
 
 python scripts/generate_samples.py \
   --checkpoint "$DENSE_CHECKPOINT" \
   --output-dir "$DENSE_RUN/samples_gate10k_ddim100_cfg15" \
   --num-samples 10000 --batch-size 32 --sample-steps 100 \
-  --guidance-scale 1.5 --weights ema --precision bf16 --resume
+  --guidance-scale 1.5 --cfg-batch-mode batched --weights ema --precision bf16 --resume
 
 python scripts/evaluate_generation_metrics.py \
   --real-dir "$DATA" \
@@ -79,7 +79,8 @@ python scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/prefix_diagnostic_64_ddim100_cfg15" \
   --num-samples 64 --batch-size 16 --sample-steps 100 \
-  --prefix-budgets 1,2,4,8 --guidance-scale 1.5 --weights ema --precision bf16 --resume
+  --prefix-budgets 1,2,4,8 --guidance-scale 1.5 --cfg-batch-mode batched \
+  --weights ema --precision bf16 --resume
 
 python scripts/build_generation_gate_report.py \
   --cofitok-training "$COFITOK_RUN/training_report.json" \

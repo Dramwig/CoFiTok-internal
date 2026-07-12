@@ -71,22 +71,41 @@ def predict_epsilon(
     class_labels: torch.Tensor | None,
     guidance_scale: float,
     guidance_rescale: float,
+    cfg_batch_mode: str = "batched",
 ) -> torch.Tensor:
-    conditional = prefix_epsilon(
-        model(images, timesteps, class_labels=class_labels),
-        prefix_budget,
-    )
+    if cfg_batch_mode not in {"batched", "sequential"}:
+        raise ValueError("cfg_batch_mode must be batched or sequential")
+    if class_labels is not None and guidance_scale != 1.0 and cfg_batch_mode == "batched":
+        model_config = getattr(model, "config", None)
+        null_class = int(getattr(model_config, "num_classes", 0))
+        if null_class < 1:
+            raise ValueError("batched CFG requires a class-conditional model config")
+        joint_output = model(
+            torch.cat([images, images], dim=0),
+            torch.cat([timesteps, timesteps], dim=0),
+            class_labels=torch.cat(
+                [class_labels, torch.full_like(class_labels, null_class)],
+                dim=0,
+            ),
+        )
+        conditional, unconditional = prefix_epsilon(joint_output, prefix_budget).chunk(2)
+    else:
+        conditional = prefix_epsilon(
+            model(images, timesteps, class_labels=class_labels),
+            prefix_budget,
+        )
     if class_labels is None or guidance_scale == 1.0:
         return conditional
-    unconditional = prefix_epsilon(
-        model(
-            images,
-            timesteps,
-            class_labels=class_labels,
-            force_unconditional=True,
-        ),
-        prefix_budget,
-    )
+    if cfg_batch_mode == "sequential":
+        unconditional = prefix_epsilon(
+            model(
+                images,
+                timesteps,
+                class_labels=class_labels,
+                force_unconditional=True,
+            ),
+            prefix_budget,
+        )
     guided = unconditional + guidance_scale * (conditional - unconditional)
     return _guidance_rescale(guided, conditional, guidance_rescale)
 
@@ -107,11 +126,14 @@ def ddim_sample(
     class_labels: torch.Tensor | None = None,
     guidance_scale: float = 1.0,
     guidance_rescale: float = 0.0,
+    cfg_batch_mode: str = "batched",
 ) -> torch.Tensor:
     if eta < 0.0:
         raise ValueError("eta must be non-negative")
     if guidance_scale < 0.0:
         raise ValueError("guidance_scale must be non-negative")
+    if cfg_batch_mode not in {"batched", "sequential"}:
+        raise ValueError("cfg_batch_mode must be batched or sequential")
     model.eval()
     images = _randn(
         shape,
@@ -131,6 +153,7 @@ def ddim_sample(
             class_labels=class_labels,
             guidance_scale=guidance_scale,
             guidance_rescale=guidance_rescale,
+            cfg_batch_mode=cfg_batch_mode,
         )
         predicted_x0 = schedule.predict_x0_from_epsilon(images, epsilon, time_batch)
         if clip_x0:

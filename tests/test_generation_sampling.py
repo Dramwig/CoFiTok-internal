@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import torch
 
 from cofitok.configs import DiffusionConfig
-from cofitok.diffusion import DiffusionSchedule, ddim_sample
+from cofitok.diffusion import DiffusionSchedule, ddim_sample, predict_epsilon
 from cofitok.models.cofitok import CoFiTokOutput
 from scripts.generate_samples import (
     _prepare_sampling_manifest,
@@ -30,6 +32,32 @@ class _ZeroModel(torch.nn.Module):
             components=components,
             prefix_epsilons=prefixes,
             epsilon=zeros,
+        )
+
+
+class _ClassModel(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.calls = 0
+        self.config = SimpleNamespace(num_classes=5)
+
+    def forward(self, images, timesteps, class_labels=None, force_unconditional=False):
+        del timesteps
+        self.calls += 1
+        if force_unconditional:
+            values = torch.zeros(images.shape[0], device=images.device)
+        else:
+            values = torch.where(
+                class_labels == self.config.num_classes,
+                torch.zeros_like(class_labels),
+                class_labels + 1,
+            ).to(dtype=images.dtype)
+        epsilon = values.view(-1, 1, 1, 1).expand_as(images)
+        return CoFiTokOutput(
+            tokens=[epsilon],
+            components=[epsilon],
+            prefix_epsilons=[epsilon],
+            epsilon=epsilon,
         )
 
 
@@ -79,6 +107,39 @@ def test_prefix_budgets_share_the_same_initial_noise() -> None:
     _sample(first, start=11, count=3, budget=1)
     _sample(second, start=11, count=3, budget=2)
     torch.testing.assert_close(first.first_inputs[0], second.first_inputs[0], rtol=0.0, atol=0.0)
+
+
+def test_batched_cfg_matches_sequential_cfg_with_one_forward() -> None:
+    images = torch.randn(3, 1, 4, 4)
+    timesteps = torch.tensor([7, 6, 5])
+    labels = torch.tensor([0, 2, 4])
+    batched_model = _ClassModel()
+    sequential_model = _ClassModel()
+
+    batched = predict_epsilon(
+        batched_model,
+        images,
+        timesteps,
+        prefix_budget=1,
+        class_labels=labels,
+        guidance_scale=1.5,
+        guidance_rescale=0.0,
+        cfg_batch_mode="batched",
+    )
+    sequential = predict_epsilon(
+        sequential_model,
+        images,
+        timesteps,
+        prefix_budget=1,
+        class_labels=labels,
+        guidance_scale=1.5,
+        guidance_rescale=0.0,
+        cfg_batch_mode="sequential",
+    )
+
+    torch.testing.assert_close(batched, sequential, rtol=0.0, atol=0.0)
+    assert batched_model.calls == 1
+    assert sequential_model.calls == 2
 
 
 def test_sampling_manifest_allows_only_an_exact_resume(tmp_path) -> None:

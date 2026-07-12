@@ -22,6 +22,9 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Production inference loads EMA by default and supports deterministic DDIM,
   classifier-free guidance, guidance rescaling, prefix budgets, and resumable
   numbered PNG export.
+- Classifier-free guidance can evaluate conditional and unconditional branches
+  in one batch, with a sequential fallback. The selected execution mode is part
+  of the immutable sampling manifest and must match across compared methods.
 - Every global sample index owns an independent RNG stream. The stream is
   invariant to batch size and resume boundaries, and the same numbered sample
   uses the same stream at every prefix budget. Prefix comparisons are therefore
