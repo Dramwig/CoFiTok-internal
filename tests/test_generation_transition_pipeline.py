@@ -84,6 +84,9 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert deployer.index("conda activate pf-vlm") < deployer.index('python "$VALIDATOR"')
     assert "pgrep -af '[s]cripts/train_generation.py" in deployer
     assert "git bundle verify" in deployer
+    assert "git ls-files --others --exclude-standard" in deployer
+    assert "git ls-tree -r --name-only" in deployer
+    assert "untracked files would conflict with target revision" in deployer
     assert "git merge --ff-only FETCH_HEAD" in deployer
     assert "python -m pytest -q" in deployer
     assert "kill -0 \"$previous_pid\"" in deployer
@@ -92,6 +95,11 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert "bash -n \"$SUPERVISOR\"" in deployer
     assert "nohup bash \"$SUPERVISOR\"" in deployer
     assert "sleep 2" in deployer
+    assert "write_generation_deployment_receipt.py" in deployer
+    assert "generation_upgrade_deployment_receipt.json" in deployer
+    assert deployer.index("python -m pytest -q") < deployer.index(
+        "write_generation_deployment_receipt.py"
+    )
 
     pipeline = _read("artifacts/runbooks/generation_complete_pipeline_after_10pct.sh")
     assert "PINNED_10PCT_REVISION=781a01444fddbf0d48a427ba58bdeed50167b5be" in pipeline

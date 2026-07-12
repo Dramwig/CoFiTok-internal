@@ -178,13 +178,18 @@ The revision transition after the active 10% pair is also gated. Run
 `scripts/deploy_generation_posttraining_pipeline.ps1` locally only after both
 50K training reports are complete. It verifies the pinned remote revision,
 clean tracked files, completed reports, and absent training processes before a
-fast-forward-only bundle deployment. Remote tests and shell syntax checks must
-pass before it launches
+fast-forward-only bundle deployment. Before merge it rejects any remote
+untracked path that would become tracked by the target revision. Remote tests
+and shell syntax checks must pass, then an atomic receipt binds the bundle
+SHA256, validated 10% pair, pinned source revision, exact target revision, and
+clean tracked state before it launches
 `artifacts/runbooks/generation_complete_pipeline_after_10pct.sh`. That pipeline
 uses an exclusive lock and atomic stage status, runs the 10K promotion gate,
 the alternating full 300K queue, the formal 50K-sample evaluation, and both
 gate decisions in order. A held gate or interrupted stage is recorded as a
 failure rather than reported as generation readiness.
+The final completion audit requires the deployment receipt, so changing remote
+HEAD alone cannot prove a controlled revision transition.
 
 Both promotion decisions are provenance gates, not only metric thresholds.
 They require the CoFiTok and dense training reports to share the same

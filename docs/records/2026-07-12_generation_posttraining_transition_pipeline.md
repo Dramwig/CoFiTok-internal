@@ -31,12 +31,23 @@ The remote helper refuses deployment unless:
 - neither the matched runbook nor either 10% training command is still active;
 - the bundle resolves to the exact local target commit and can be applied with
   a fast-forward-only merge.
+- no remote untracked file has the same path as a file tracked by the target
+  revision; the helper computes this intersection before merge and reports all
+  conflicts without moving HEAD.
 
 After the fast-forward, the helper runs the full test suite and shell syntax
 checks before launching one background completion pipeline. If deployment was
 already fast-forwarded but validation or launch stopped, rerunning the same
 command resumes from the target revision. A live PID file makes a repeated
 command return successfully without launching a duplicate.
+
+After tests and shell checks pass, the helper atomically writes
+`generation_upgrade_deployment_receipt.json` under the generation output root.
+The receipt binds the pinned training revision, deployed target revision,
+upgrade bundle bytes/SHA256, training-pair validation SHA256, clean tracked Git
+state, and successful pytest/runbook verification. The final completion audit
+requires this receipt, so a merely changed remote HEAD is not accepted as
+evidence of a controlled transition.
 
 ## Completion pipeline
 

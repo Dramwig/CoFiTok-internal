@@ -265,6 +265,32 @@ def _kwargs() -> dict:
             parameters=100_000,
             checkpoint_sha="d" * 64,
         ),
+        "deployment_receipt": {
+            "schema_version": 1,
+            "status": "pass",
+            "expected_training_revision": TEN_REVISION,
+            "target_revision": FULL_REVISION,
+            "git": {
+                "revision": FULL_REVISION,
+                "branch": "scale/generative-system",
+                "tracked_dirty": False,
+            },
+            "bundle": {
+                "bytes": 1234,
+                "sha256": "e" * 64,
+                "heads": [FULL_REVISION],
+            },
+            "training_pair_validation": {
+                "status": "pass",
+                "expected_revision": TEN_REVISION,
+                "sha256": "f" * 64,
+            },
+            "verification": {
+                "pytest": "pass",
+                "runbook_syntax": "pass",
+                "untracked_target_conflicts": 0,
+            },
+        },
         "scaling_gate": _gate("scaling"),
         "cofitok_full_training": _training(
             steps=300_000,
@@ -301,7 +327,17 @@ def test_completion_audit_requires_every_large_scale_artifact() -> None:
     assert report["complete"] is True
     assert report["failed_checks"] == []
     assert report["missing_checks"] == []
-    assert len(report["checks"]) == 12
+    assert len(report["checks"]) == 13
+
+
+def test_completion_audit_requires_controlled_revision_transition() -> None:
+    kwargs = _kwargs()
+    kwargs["deployment_receipt"]["target_revision"] = "z" * 40
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["controlled_revision_transition"]
 
 
 def test_completion_audit_reports_missing_work_as_in_progress() -> None:

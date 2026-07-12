@@ -399,12 +399,61 @@ def _comparison_evidence(
     }
 
 
+def _deployment_transition_evidence(
+    receipt: dict[str, Any],
+    *,
+    expected_training_revision: str,
+    expected_target_revision: str,
+) -> dict[str, Any]:
+    if receipt.get("schema_version") != 1 or receipt.get("status") != "pass":
+        raise ValueError("generation deployment receipt did not pass")
+    if receipt.get("expected_training_revision") != expected_training_revision:
+        raise ValueError("deployment receipt training revision differs")
+    if receipt.get("target_revision") != expected_target_revision:
+        raise ValueError("deployment receipt target revision differs")
+    git = receipt.get("git", {})
+    if (
+        git.get("revision") != expected_target_revision
+        or git.get("branch") != "scale/generative-system"
+        or git.get("tracked_dirty") is not False
+    ):
+        raise ValueError("deployment receipt Git state is invalid")
+    bundle = receipt.get("bundle", {})
+    if (
+        int(bundle.get("bytes", 0)) < 1
+        or len(str(bundle.get("sha256", ""))) != 64
+        or expected_target_revision not in bundle.get("heads", [])
+    ):
+        raise ValueError("deployment receipt bundle integrity is invalid")
+    pair = receipt.get("training_pair_validation", {})
+    if (
+        pair.get("status") != "pass"
+        or pair.get("expected_revision") != expected_training_revision
+        or len(str(pair.get("sha256", ""))) != 64
+    ):
+        raise ValueError("deployment receipt training-pair binding is invalid")
+    verification = receipt.get("verification", {})
+    if verification != {
+        "pytest": "pass",
+        "runbook_syntax": "pass",
+        "untracked_target_conflicts": 0,
+    }:
+        raise ValueError("deployment receipt verification evidence is incomplete")
+    return {
+        "training_revision": expected_training_revision,
+        "target_revision": expected_target_revision,
+        "bundle_sha256": bundle["sha256"],
+        "training_pair_validation_sha256": pair["sha256"],
+    }
+
+
 def build_completion_audit(
     *,
     expected_10pct_revision: str,
     expected_full_revision: str,
     cofitok_10pct_training: dict[str, Any] | None,
     dense_10pct_training: dict[str, Any] | None,
+    deployment_receipt: dict[str, Any] | None,
     scaling_gate: dict[str, Any] | None,
     cofitok_full_training: dict[str, Any] | None,
     dense_full_training: dict[str, Any] | None,
@@ -433,6 +482,17 @@ def build_completion_audit(
                 dense_10pct_training,
                 expected_steps=50_000,
                 expected_revision=expected_10pct_revision,
+            ),
+        )
+    )
+    checks.append(
+        _check(
+            "controlled_revision_transition",
+            [deployment_receipt],
+            lambda: _deployment_transition_evidence(
+                deployment_receipt,
+                expected_training_revision=expected_10pct_revision,
+                expected_target_revision=expected_full_revision,
             ),
         )
     )
@@ -635,6 +695,9 @@ def main() -> None:
         expected_full_revision=args.expected_full_revision,
         cofitok_10pct_training=_read_optional(cofitok_10 / "training_report.json"),
         dense_10pct_training=_read_optional(dense_10 / "training_report.json"),
+        deployment_receipt=_read_optional(
+            output_root / "generation_upgrade_deployment_receipt.json"
+        ),
         scaling_gate=_read_optional(ten_root / "promotion_gate.json"),
         cofitok_full_training=_read_optional(cofitok_full / "training_report.json"),
         dense_full_training=_read_optional(dense_full / "training_report.json"),

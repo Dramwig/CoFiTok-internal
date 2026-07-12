@@ -18,6 +18,8 @@ LOG="$OUTPUT_ROOT/generation_completion_supervisor.log"
 PID_FILE="$OUTPUT_ROOT/generation_completion_supervisor.pid"
 COFITOK_REPORT="$OUTPUT_ROOT/imagenet256_10pct_cofitok_k8_50k_2026-07-12/training_report.json"
 DENSE_REPORT="$OUTPUT_ROOT/imagenet256_10pct_dense_50k_2026-07-12/training_report.json"
+PAIR_VALIDATION="$OUTPUT_ROOT/generation_10pct_pair_validation.json"
+DEPLOYMENT_RECEIPT="$OUTPUT_ROOT/generation_upgrade_deployment_receipt.json"
 
 cd "$PROJECT"
 source /root/miniconda3/etc/profile.d/conda.sh
@@ -42,10 +44,19 @@ if [[ ! -f "$VALIDATOR" ]]; then
   exit 74
 fi
 
-python "$VALIDATOR" \
-  --cofitok-training "$COFITOK_REPORT" \
-  --dense-training "$DENSE_REPORT" \
-  --expected-steps 50000 --expected-revision "$EXPECTED_COMMIT"
+mkdir -p "$OUTPUT_ROOT"
+pair_validation_temporary="${PAIR_VALIDATION}.tmp.$$"
+if python "$VALIDATOR" \
+    --cofitok-training "$COFITOK_REPORT" \
+    --dense-training "$DENSE_REPORT" \
+    --expected-steps 50000 --expected-revision "$EXPECTED_COMMIT" \
+    >"$pair_validation_temporary"; then
+  mv "$pair_validation_temporary" "$PAIR_VALIDATION"
+else
+  validation_exit_code=$?
+  rm -f "$pair_validation_temporary"
+  exit "$validation_exit_code"
+fi
 
 if pgrep -af '[s]cripts/train_generation.py.*configs/generation/imagenet256_10pct_' >/dev/null; then
   printf 'a 10%% generation training process is still active\n' >&2
@@ -56,7 +67,6 @@ if pgrep -af '[g]eneration_10pct_matched_50k_2026-07-12.sh' >/dev/null; then
   exit 69
 fi
 
-mkdir -p "$OUTPUT_ROOT"
 if [[ -f "$PID_FILE" ]]; then
   previous_pid="$(cat "$PID_FILE")"
   if [[ "$previous_pid" =~ ^[0-9]+$ ]] && kill -0 "$previous_pid" 2>/dev/null; then
@@ -75,6 +85,16 @@ if [[ "$current_commit" == "$EXPECTED_COMMIT" ]]; then
       "$fetched_commit" "$TARGET_COMMIT" >&2
     exit 70
   fi
+  mapfile -t untracked_conflicts < <(
+    comm -12 \
+      <(git ls-files --others --exclude-standard | LC_ALL=C sort) \
+      <(git ls-tree -r --name-only "$fetched_commit" | LC_ALL=C sort)
+  )
+  if (( ${#untracked_conflicts[@]} > 0 )); then
+    printf 'untracked files would conflict with target revision:\n' >&2
+    printf '  %s\n' "${untracked_conflicts[@]}" >&2
+    exit 76
+  fi
   git merge --ff-only FETCH_HEAD
   if [[ "$(git rev-parse HEAD)" != "$TARGET_COMMIT" ]]; then
     printf 'remote fast-forward did not reach target commit\n' >&2
@@ -91,6 +111,12 @@ bash -n artifacts/runbooks/generation_full_posteval_50k.sh
 bash -n artifacts/runbooks/generation_export_inference_artifacts.sh
 bash -n "$PIPELINE"
 bash -n "$SUPERVISOR"
+
+python scripts/write_generation_deployment_receipt.py \
+  --output "$DEPLOYMENT_RECEIPT" --bundle "$BUNDLE" \
+  --pair-validation "$PAIR_VALIDATION" \
+  --expected-training-revision "$EXPECTED_COMMIT" \
+  --target-revision "$TARGET_COMMIT"
 
 nohup bash "$SUPERVISOR" >"$LOG" 2>&1 </dev/null &
 supervisor_pid=$!

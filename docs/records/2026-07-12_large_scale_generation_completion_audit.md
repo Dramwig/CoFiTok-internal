@@ -20,6 +20,8 @@ The audit requires all of the following:
 
 - matched 10% ImageNet-256 CoFiTok/dense 50K training at pinned revision
   `781a01444fddbf0d48a427ba58bdeed50167b5be`;
+- a controlled fast-forward transition to the exact upgrade revision, bound to
+  the deployment bundle and validated 10% pair by SHA256 receipt;
 - a passing 10K scaling gate authorizing full ImageNet-256;
 - matched full ImageNet-256 CoFiTok/dense 300K training at the deployed upgrade
   revision;
