@@ -115,7 +115,10 @@ python scripts/build_generation_gate_report.py \
   --cofitok-checkpoint-eval "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --output "$REPORT_ROOT/final_generation_gate.json" --stage full \
-  --min-samples 50000 --max-absolute-fid 20.0 --allow-fail
+  --min-samples 50000 --max-absolute-fid 20.0 \
+  --min-precision 0.30 --min-recall 0.30 \
+  --max-precision-regression 0.05 --max-recall-regression 0.05 \
+  --allow-fail
 
 python scripts/build_large_scale_generation_comparison.py \
   --cofitok-training "$COFITOK_RUN/training_report.json" \

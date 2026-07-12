@@ -92,10 +92,15 @@ checkpoints: /root/autodl-tmp/CoFiTok/checkpoints/generation
    official FID plus IS/precision/recall, prefix diagnostics, and checkpoint
    hashes. Declare the system ready only if CoFiTok keeps its prefix-control
    advantage without a material endpoint generation regression against dense,
-   all distribution metrics are finite, and CoFiTok FID is at most 20.0.
+   all distribution metrics are finite and inside their mathematical ranges,
+   CoFiTok FID is at most 20.0, precision and recall are each at least 0.30,
+   and neither precision nor recall is more than 0.05 below matched dense.
 
 The 10% gate is an engineering and architecture decision point. It is not a
 replacement for the full-data result and must not overwrite locked paper tables.
+The precision/recall floors are conservative non-collapse readiness checks, not
+a generation-SOTA claim. The final completion audit binds FID/precision/recall
+back to the formal generation reports and rejects a gate with weaker thresholds.
 
 The full queue alternates CoFiTok and dense at 50K, 100K, 200K, and 300K
 milestones. At each matched point it produces 2,048 fixed-protocol EMA samples

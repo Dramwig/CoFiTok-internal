@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from scripts.build_generation_gate_report import build_report
 
 
@@ -439,5 +441,74 @@ def test_generation_gate_requires_complete_training_cost_accounting() -> None:
     )
 
     gate = next(gate for gate in report["gates"] if gate["name"] == "training_cost_accounting")
+    assert report["status"] == "fail"
+    assert gate["passed"] is False
+
+
+@pytest.mark.parametrize(
+    ("metric", "value"),
+    [
+        ("frechet_inception_distance", -1.0),
+        ("inception_score_mean", 0.0),
+        ("inception_score_std", -0.1),
+        ("precision", 1.1),
+        ("recall", -0.1),
+        ("recall", "not-a-number"),
+    ],
+)
+def test_generation_gate_rejects_finite_but_invalid_metric_ranges(metric, value) -> None:
+    cofitok = _generation(19.0, 8, "a" * 64)
+    cofitok["metrics"][metric] = value
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=_generation(19.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(
+        gate for gate in report["gates"] if gate["name"] == "distribution_metric_ranges"
+    )
+    assert report["status"] == "fail"
+    assert gate["passed"] is False
+
+
+@pytest.mark.parametrize(
+    ("precision", "recall"),
+    [(0.29, 0.40), (0.60, 0.29), (0.54, 0.40), (0.60, 0.34)],
+)
+def test_full_generation_gate_enforces_precision_recall_floor_and_retention(
+    precision, recall
+) -> None:
+    cofitok = _generation(19.0, 8, "a" * 64)
+    dense = _generation(19.0, 1, "b" * 64)
+    cofitok["metrics"]["precision"] = precision
+    cofitok["metrics"]["recall"] = recall
+    dense["metrics"]["precision"] = 0.60
+    dense["metrics"]["recall"] = 0.40
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=dense,
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+        stage="full",
+        max_absolute_fid=20.0,
+    )
+
+    gate = next(
+        gate
+        for gate in report["gates"]
+        if gate["name"] == "full_precision_recall_quality"
+    )
     assert report["status"] == "fail"
     assert gate["passed"] is False

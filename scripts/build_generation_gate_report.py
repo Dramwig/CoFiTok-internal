@@ -24,6 +24,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-fid-regression", type=float, default=0.05)
     parser.add_argument("--max-absolute-fid", type=float, default=100.0)
     parser.add_argument("--max-endpoint-regression", type=float, default=0.05)
+    parser.add_argument("--min-precision", type=float, default=0.30)
+    parser.add_argument("--min-recall", type=float, default=0.30)
+    parser.add_argument("--max-precision-regression", type=float, default=0.05)
+    parser.add_argument("--max-recall-regression", type=float, default=0.05)
     parser.add_argument("--allow-fail", action="store_true")
     return parser.parse_args()
 
@@ -44,7 +48,10 @@ def _quality_metrics(report: dict[str, Any]) -> dict[str, float | None]:
     values: dict[str, float | None] = {}
     for name in names:
         raw = report.get("metrics", {}).get(name)
-        value = float(raw) if raw is not None else None
+        try:
+            value = float(raw) if raw is not None else None
+        except (TypeError, ValueError):
+            value = None
         values[name] = value if value is not None and math.isfinite(value) else None
     return values
 
@@ -59,6 +66,26 @@ def _positive_finite(value: Any) -> bool:
     except (TypeError, ValueError):
         return False
     return math.isfinite(numeric) and numeric > 0.0
+
+
+def _distribution_metrics_valid(metrics: dict[str, float | None]) -> bool:
+    fid = metrics["frechet_inception_distance"]
+    inception_mean = metrics["inception_score_mean"]
+    inception_std = metrics["inception_score_std"]
+    precision = metrics["precision"]
+    recall = metrics["recall"]
+    return (
+        fid is not None
+        and fid >= 0.0
+        and inception_mean is not None
+        and inception_mean > 0.0
+        and inception_std is not None
+        and inception_std >= 0.0
+        and precision is not None
+        and 0.0 <= precision <= 1.0
+        and recall is not None
+        and 0.0 <= recall <= 1.0
+    )
 
 
 def _sampling_protocol(provenance: dict[str, Any]) -> dict[str, Any]:
@@ -97,11 +124,26 @@ def build_report(
     max_endpoint_regression: float,
     stage: str = "scaling",
     max_absolute_fid: float = 100.0,
+    min_precision: float = 0.30,
+    min_recall: float = 0.30,
+    max_precision_regression: float = 0.05,
+    max_recall_regression: float = 0.05,
 ) -> dict[str, Any]:
     if stage not in {"scaling", "full"}:
         raise ValueError("stage must be scaling or full")
     if not math.isfinite(max_absolute_fid) or max_absolute_fid <= 0.0:
         raise ValueError("max_absolute_fid must be finite and positive")
+    quality_thresholds = {
+        "min_precision": min_precision,
+        "min_recall": min_recall,
+        "max_precision_regression": max_precision_regression,
+        "max_recall_regression": max_recall_regression,
+    }
+    if any(
+        not math.isfinite(value) or not 0.0 <= value <= 1.0
+        for value in quality_thresholds.values()
+    ):
+        raise ValueError("precision/recall thresholds must be finite and in [0, 1]")
     cofitok_quality = _quality_metrics(cofitok_generation)
     dense_quality = _quality_metrics(dense_generation)
     cofitok_fid = cofitok_quality["frechet_inception_distance"]
@@ -225,6 +267,22 @@ def build_report(
             all(value is not None for value in cofitok_quality.values())
             and all(value is not None for value in dense_quality.values()),
             {"cofitok": cofitok_quality, "dense": dense_quality},
+        ),
+        _gate(
+            "distribution_metric_ranges",
+            _distribution_metrics_valid(cofitok_quality)
+            and _distribution_metrics_valid(dense_quality),
+            {
+                "cofitok": cofitok_quality,
+                "dense": dense_quality,
+                "valid_ranges": {
+                    "fid": ">= 0",
+                    "inception_score_mean": "> 0",
+                    "inception_score_std": ">= 0",
+                    "precision": "[0, 1]",
+                    "recall": "[0, 1]",
+                },
+            },
         ),
         _gate(
             "matched_sampling_provenance",
@@ -372,6 +430,30 @@ def build_report(
             {"cofitok_fid": cofitok_fid, "max_absolute_fid": max_absolute_fid},
         ),
         _gate(
+            "full_precision_recall_quality",
+            stage != "full"
+            or (
+                cofitok_quality["precision"] is not None
+                and dense_quality["precision"] is not None
+                and cofitok_quality["recall"] is not None
+                and dense_quality["recall"] is not None
+                and cofitok_quality["precision"] >= min_precision
+                and cofitok_quality["recall"] >= min_recall
+                and cofitok_quality["precision"]
+                >= dense_quality["precision"] - max_precision_regression
+                and cofitok_quality["recall"]
+                >= dense_quality["recall"] - max_recall_regression
+            ),
+            {
+                "enforced": stage == "full",
+                "cofitok_precision": cofitok_quality["precision"],
+                "dense_precision": dense_quality["precision"],
+                "cofitok_recall": cofitok_quality["recall"],
+                "dense_recall": dense_quality["recall"],
+                **quality_thresholds,
+            },
+        ),
+        _gate(
             "endpoint_within_tolerance",
             cofitok_endpoint <= dense_endpoint * (1.0 + max_endpoint_regression),
             {
@@ -421,6 +503,7 @@ def build_report(
             "max_fid_regression": max_fid_regression,
             "max_absolute_fid": max_absolute_fid,
             "max_endpoint_regression": max_endpoint_regression,
+            **quality_thresholds,
         },
         "gates": gates,
         "summary": {
@@ -456,6 +539,10 @@ def main() -> None:
         max_endpoint_regression=args.max_endpoint_regression,
         stage=args.stage,
         max_absolute_fid=args.max_absolute_fid,
+        min_precision=args.min_precision,
+        min_recall=args.min_recall,
+        max_precision_regression=args.max_precision_regression,
+        max_recall_regression=args.max_recall_regression,
     )
     write_json_report(Path(args.output), report)
     print(f"wrote {args.output}")

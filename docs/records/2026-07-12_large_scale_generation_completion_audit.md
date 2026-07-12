@@ -46,6 +46,13 @@ The audit requires all of the following:
 Milestone quality alerts are preserved as warnings because those 2,048-sample
 runs are trend diagnostics. They cannot override a failed final 50K gate.
 
+The final-gate check is structural and provenance-bound. It requires the
+absolute/relative FID, metric-range, precision/recall, endpoint, ordered-prefix,
+restricted-synthesis, shuffle, and training-checkpoint-integrity gates. Its
+thresholds may be stricter but not weaker than FID 20.0, precision/recall 0.30,
+and 0.05 relative regression limits. Reported FID/precision/recall must exactly
+match the formal 50K generation reports bound by checkpoint and sample-set SHA.
+
 ## Pipeline integration
 
 `generation_complete_pipeline_after_10pct.sh` runs the audit after the final

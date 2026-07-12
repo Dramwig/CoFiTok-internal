@@ -54,6 +54,21 @@ def _gate(stage: str) -> dict:
     )
     gates = [{"name": "all_evidence", "passed": True}]
     if stage == "full":
+        gates.extend(
+            {"name": name, "passed": True, "evidence": {}}
+            for name in (
+                "generation_metrics_complete",
+                "distribution_metric_ranges",
+                "fid_within_tolerance",
+                "absolute_fid_quality",
+                "full_precision_recall_quality",
+                "endpoint_within_tolerance",
+                "ordered_prefix_path",
+                "restricted_synthesis_contract",
+                "shuffle_mismatch",
+                "full_training_checkpoint_integrity",
+            )
+        )
         gates.append(
             {
                 "name": "matched_sampling_provenance",
@@ -71,6 +86,23 @@ def _gate(stage: str) -> dict:
         "status": "pass",
         "decision": decision,
         "gates": gates,
+        "thresholds": {
+            "max_fid_regression": 0.05,
+            "max_absolute_fid": 20.0,
+            "max_endpoint_regression": 0.05,
+            "min_precision": 0.30,
+            "min_recall": 0.30,
+            "max_precision_regression": 0.05,
+            "max_recall_regression": 0.05,
+        },
+        "summary": {
+            "cofitok_fid": 19.0,
+            "dense_fid": 19.0,
+            "cofitok_precision": 0.6,
+            "dense_precision": 0.6,
+            "cofitok_recall": 0.4,
+            "dense_recall": 0.4,
+        },
     }
 
 
@@ -119,6 +151,11 @@ def _generation(seed: str) -> dict:
     return {
         "status": "completed",
         "counts": {"generated_image_count": 50_000},
+        "metrics": {
+            "frechet_inception_distance": 19.0,
+            "precision": 0.6,
+            "recall": 0.4,
+        },
         "sample_provenance": {
             "checkpoint_step": 300_000,
             "weights": "ema",
@@ -366,6 +403,26 @@ def test_completion_audit_rejects_failed_final_gate() -> None:
     assert report["failed_checks"] == ["final_generation_gate"]
 
 
+def test_completion_audit_rejects_weakened_final_quality_threshold() -> None:
+    kwargs = _kwargs()
+    kwargs["final_gate"]["thresholds"]["max_absolute_fid"] = 100.0
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_generation_gate"]
+
+
+def test_completion_audit_rejects_unbound_final_quality_metrics() -> None:
+    kwargs = _kwargs()
+    kwargs["final_gate"]["summary"]["cofitok_recall"] = 0.31
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_generation_gate"]
+
+
 def test_completion_audit_rejects_incomplete_formal_sampling() -> None:
     kwargs = _kwargs()
     kwargs["cofitok_generation"]["sample_provenance"]["sampling_progress"][
@@ -380,7 +437,11 @@ def test_completion_audit_rejects_incomplete_formal_sampling() -> None:
 
 def test_completion_audit_rejects_stale_gate_and_comparison_provenance() -> None:
     kwargs = _kwargs()
-    gate_sampling = kwargs["final_gate"]["gates"][1]["evidence"]
+    gate_sampling = next(
+        row["evidence"]
+        for row in kwargs["final_gate"]["gates"]
+        if row["name"] == "matched_sampling_provenance"
+    )
     gate_sampling["cofitok_sample_set_sha256"] = "Z" * 64
     kwargs["comparison"]["matched_training_rows"][1]["checkpoint_sha256"] = "e" * 64
 

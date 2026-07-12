@@ -348,6 +348,47 @@ def _final_gate_evidence(
         stage="full",
         decision="large_scale_generation_ready",
     )
+    indexed_gates: dict[str, dict[str, Any]] = {}
+    for row in gate.get("gates", []):
+        name = str(row.get("name", ""))
+        if name in indexed_gates:
+            raise ValueError(f"final gate contains duplicate check: {name}")
+        indexed_gates[name] = row
+    required_quality_gates = {
+        "generation_metrics_complete",
+        "distribution_metric_ranges",
+        "fid_within_tolerance",
+        "absolute_fid_quality",
+        "full_precision_recall_quality",
+        "endpoint_within_tolerance",
+        "ordered_prefix_path",
+        "restricted_synthesis_contract",
+        "shuffle_mismatch",
+        "full_training_checkpoint_integrity",
+    }
+    missing_quality_gates = sorted(required_quality_gates - indexed_gates.keys())
+    if missing_quality_gates:
+        raise ValueError(
+            "final gate lacks required quality checks: " + ", ".join(missing_quality_gates)
+        )
+    thresholds = gate.get("thresholds", {})
+    required_thresholds = {
+        "max_fid_regression": ("max", 0.05),
+        "max_absolute_fid": ("max", 20.0),
+        "max_endpoint_regression": ("max", 0.05),
+        "min_precision": ("min", 0.30),
+        "min_recall": ("min", 0.30),
+        "max_precision_regression": ("max", 0.05),
+        "max_recall_regression": ("max", 0.05),
+    }
+    for name, (direction, boundary) in required_thresholds.items():
+        value = float(thresholds.get(name, math.nan))
+        if not math.isfinite(value):
+            raise ValueError(f"final gate threshold {name} is missing or non-finite")
+        if (direction == "max" and value > boundary) or (
+            direction == "min" and value < boundary
+        ):
+            raise ValueError(f"final gate threshold {name} is weaker than required")
     matches = [
         row.get("evidence", {})
         for row in gate.get("gates", [])
@@ -366,7 +407,26 @@ def _final_gate_evidence(
             "sample_set_sha256"
         ):
             raise ValueError(f"final gate {method} sample-set SHA256 differs")
+        metrics = generation_reports[method].get("metrics", {})
+        summary = gate.get("summary", {})
+        for metric, suffix in (
+            ("frechet_inception_distance", "fid"),
+            ("precision", "precision"),
+            ("recall", "recall"),
+        ):
+            gate_value = float(summary.get(f"{prefix}_{suffix}", math.nan))
+            report_value = float(metrics.get(metric, math.nan))
+            if (
+                not math.isfinite(gate_value)
+                or not math.isfinite(report_value)
+                or not math.isclose(gate_value, report_value, rel_tol=0.0, abs_tol=1e-12)
+            ):
+                raise ValueError(f"final gate {method} {metric} differs from sample metrics")
     evidence["sampling_provenance_bound"] = True
+    evidence["quality_metrics_bound"] = True
+    evidence["quality_thresholds"] = {
+        name: thresholds[name] for name in required_thresholds
+    }
     return evidence
 
 
