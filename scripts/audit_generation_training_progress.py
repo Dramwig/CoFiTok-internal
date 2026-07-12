@@ -63,11 +63,16 @@ def audit_progress(
     checkpoint_interval: int,
     grad_clip_norm: float = 1.0,
     evaluation_interval: int | None = None,
+    required_checkpoint_steps: list[int] | tuple[int, ...] = (),
 ) -> dict[str, Any]:
     if expected_steps < 1 or checkpoint_interval < 1 or grad_clip_norm <= 0.0:
         raise ValueError("expected_steps, checkpoint_interval, and grad_clip_norm must be positive")
     if evaluation_interval is not None and evaluation_interval < 1:
         raise ValueError("evaluation_interval must be positive when provided")
+    if list(required_checkpoint_steps) != sorted(set(required_checkpoint_steps)):
+        raise ValueError("required_checkpoint_steps must be sorted and unique")
+    if any(step < 1 or step > expected_steps for step in required_checkpoint_steps):
+        raise ValueError("required checkpoint step is outside the expected training range")
     root = Path(run_dir)
     rows = _read_metrics(root / "train_metrics.jsonl")
     issues = []
@@ -107,6 +112,16 @@ def audit_progress(
     )
 
     checkpoint_steps = _checkpoint_steps(root)
+    missing_required_checkpoints = [
+        step
+        for step in required_checkpoint_steps
+        if step <= last_step and step not in checkpoint_steps
+    ]
+    if missing_required_checkpoints:
+        issues.append(
+            "required checkpoints are missing: "
+            + ", ".join(str(step) for step in missing_required_checkpoints)
+        )
     latest = _latest_pointer(root)
     due_step = (last_step // checkpoint_interval) * checkpoint_interval
     checkpoint_status = "not_due"
@@ -197,6 +212,8 @@ def audit_progress(
             "interval": checkpoint_interval,
             "status": checkpoint_status,
             "steps": checkpoint_steps,
+            "required_steps": list(required_checkpoint_steps),
+            "missing_required_steps": missing_required_checkpoints,
             "latest": latest,
         },
         "issues": issues,
@@ -210,10 +227,20 @@ def main() -> None:
     parser.add_argument("--expected-steps", type=int, required=True)
     parser.add_argument("--checkpoint-interval", type=int, required=True)
     parser.add_argument("--evaluation-interval", type=int)
+    parser.add_argument(
+        "--required-checkpoint-steps",
+        default="",
+        help="Comma-separated checkpoint steps that must remain available once reached.",
+    )
     parser.add_argument("--grad-clip-norm", type=float, default=1.0)
     parser.add_argument("--output", required=True)
     parser.add_argument("--allow-invalid", action="store_true")
     args = parser.parse_args()
+    required_checkpoint_steps = [
+        int(value.strip())
+        for value in args.required_checkpoint_steps.split(",")
+        if value.strip()
+    ]
 
     report = audit_progress(
         args.run_dir,
@@ -221,6 +248,7 @@ def main() -> None:
         checkpoint_interval=args.checkpoint_interval,
         grad_clip_norm=args.grad_clip_norm,
         evaluation_interval=args.evaluation_interval,
+        required_checkpoint_steps=required_checkpoint_steps,
     )
     write_json_report(args.output, report)
     print(args.output)

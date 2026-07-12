@@ -104,6 +104,7 @@ class RuntimeConfig:
     checkpoint_interval: int = 1000
     evaluation_interval: int = 1000
     keep_last_checkpoints: int = 3
+    protected_checkpoint_steps: list[int] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

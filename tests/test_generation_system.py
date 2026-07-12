@@ -1,5 +1,6 @@
 import json
 import random
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -95,6 +96,15 @@ def test_full_generation_configs_keep_matched_runtime_and_checkpoint_cadence() -
     assert cofitok.runtime.steps == 300_000
     assert cofitok.runtime.checkpoint_interval == 5_000
     assert cofitok.runtime.keep_last_checkpoints == 3
+    assert cofitok.runtime.protected_checkpoint_steps == [50_000, 100_000, 200_000, 300_000]
+    assert dense.runtime.protected_checkpoint_steps == cofitok.runtime.protected_checkpoint_steps
+
+    runbook = Path("artifacts/runbooks/generation_full_matched_300k_after_gate.sh").read_text(
+        encoding="utf-8"
+    )
+    assert runbook.count("--required-checkpoint-steps 50000,100000,200000,300000") == 2
+    assert "cofitok_training_audit.json" in runbook
+    assert "dense_training_audit.json" in runbook
 
 
 def test_stateful_sampler_restores_consumed_not_prefetched_position() -> None:
@@ -204,6 +214,32 @@ def test_prune_checkpoints_removes_matching_integrity_manifests(tmp_path) -> Non
     assert not checkpoint_integrity_path(old).exists()
     assert latest.exists()
     assert checkpoint_integrity_path(latest).exists()
+
+
+def test_prune_checkpoints_keeps_protected_milestones_and_recent_recovery_points(
+    tmp_path,
+) -> None:
+    paths = []
+    for step in (50_000, 90_000, 95_000, 100_000, 105_000):
+        path = tmp_path / f"checkpoint_step_{step:08d}.pt"
+        path.write_bytes(b"checkpoint")
+        checkpoint_integrity_path(path).write_text("{}\n", encoding="utf-8")
+        paths.append(path)
+
+    removed = prune_checkpoints(
+        tmp_path,
+        keep_last=2,
+        protected_steps=[50_000, 100_000],
+    )
+
+    assert removed == paths[1:3]
+    assert {path.name for path in tmp_path.glob("checkpoint_step_*.pt")} == {
+        "checkpoint_step_00050000.pt",
+        "checkpoint_step_00100000.pt",
+        "checkpoint_step_00105000.pt",
+    }
+    assert not checkpoint_integrity_path(paths[1]).exists()
+    assert not checkpoint_integrity_path(paths[2]).exists()
 
 
 def test_legacy_checkpoint_integrity_backfill_preserves_checkpoint_bytes(tmp_path) -> None:

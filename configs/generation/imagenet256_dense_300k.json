@@ -49,7 +49,8 @@
     "allow_tf32": true,
     "checkpoint_interval": 5000,
     "evaluation_interval": 2000,
-    "keep_last_checkpoints": 3
+    "keep_last_checkpoints": 3,
+    "protected_checkpoint_steps": [50000, 100000, 200000, 300000]
   },
   "optimization": {
     "learning_rate": 0.0001,

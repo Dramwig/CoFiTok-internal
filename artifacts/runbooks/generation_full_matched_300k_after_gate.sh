@@ -122,3 +122,15 @@ done
 
 require_complete "$COFITOK_RUN/training_report.json"
 require_complete "$DENSE_RUN/training_report.json"
+
+python scripts/audit_generation_training_progress.py \
+  --run-dir "$COFITOK_RUN" --expected-steps 300000 \
+  --checkpoint-interval 5000 --evaluation-interval 2000 \
+  --required-checkpoint-steps 50000,100000,200000,300000 \
+  --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/cofitok_training_audit.json"
+
+python scripts/audit_generation_training_progress.py \
+  --run-dir "$DENSE_RUN" --expected-steps 300000 \
+  --checkpoint-interval 5000 --evaluation-interval 2000 \
+  --required-checkpoint-steps 50000,100000,200000,300000 \
+  --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/dense_training_audit.json"

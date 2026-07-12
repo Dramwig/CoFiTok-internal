@@ -120,3 +120,44 @@ def test_audit_accepts_complete_validation_logging(tmp_path) -> None:
 
     assert report["validation"]["logging_complete"] is True
     assert report["warnings"] == []
+
+
+def test_audit_requires_reached_protected_checkpoints(tmp_path) -> None:
+    _write_metrics(tmp_path, [1, 500, 1_000])
+    latest = tmp_path / "checkpoint_step_00001000.pt"
+    latest.write_bytes(b"checkpoint")
+    (tmp_path / "latest.json").write_text(
+        json.dumps({"checkpoint": latest.name, "step": 1_000}),
+        encoding="utf-8",
+    )
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=2_000,
+        checkpoint_interval=500,
+        required_checkpoint_steps=[500, 1_000, 2_000],
+    )
+
+    assert report["status"] == "invalid"
+    assert report["checkpoint"]["missing_required_steps"] == [500]
+    assert "required checkpoints are missing: 500" in report["issues"]
+
+
+def test_audit_does_not_require_future_protected_checkpoint(tmp_path) -> None:
+    _write_metrics(tmp_path, [1, 500])
+    checkpoint = tmp_path / "checkpoint_step_00000500.pt"
+    checkpoint.write_bytes(b"checkpoint")
+    (tmp_path / "latest.json").write_text(
+        json.dumps({"checkpoint": checkpoint.name, "step": 500}),
+        encoding="utf-8",
+    )
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=2_000,
+        checkpoint_interval=500,
+        required_checkpoint_steps=[500, 1_000, 2_000],
+    )
+
+    assert report["status"] == "healthy"
+    assert report["checkpoint"]["missing_required_steps"] == []

@@ -158,6 +158,13 @@ panel. D-AR, MAR, and ReTok remain a separate official-pretrained contextual
 panel because their training budgets and ADM evaluator differ; machine-readable
 policy explicitly forbids cross-panel numeric ranking.
 
+Full-training milestone checkpoints are reproducible assets, not disposable
+rolling saves. Both 300K configs protect 50K, 100K, 200K, and 300K while also
+retaining the newest three recovery checkpoints. The final full-training
+auditor fails if any reached protected checkpoint is absent, and integrity
+sidecars follow the same retention decision. See
+`docs/records/2026-07-12_generation_milestone_checkpoint_retention.md`.
+
 The revision transition after the active 10% pair is also gated. Run
 `scripts/deploy_generation_posttraining_pipeline.ps1` locally only after both
 50K training reports are complete. It verifies the pinned remote revision,

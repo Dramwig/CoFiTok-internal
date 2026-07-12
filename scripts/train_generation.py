@@ -81,6 +81,16 @@ def _validate_config(config: ExperimentConfig) -> None:
         raise ValueError("gradient_accumulation_steps must be positive")
     if config.runtime.precision not in {"fp32", "bf16", "fp16"}:
         raise ValueError("runtime.precision must be fp32, bf16, or fp16")
+    protected_steps = config.runtime.protected_checkpoint_steps
+    if protected_steps != sorted(set(protected_steps)):
+        raise ValueError("protected_checkpoint_steps must be sorted and unique")
+    if any(step < 1 or step > config.runtime.steps for step in protected_steps):
+        raise ValueError("protected checkpoint step is outside the configured training range")
+    if any(
+        step != config.runtime.steps and step % config.runtime.checkpoint_interval != 0
+        for step in protected_steps
+    ):
+        raise ValueError("protected checkpoint steps must align with checkpoint_interval")
 
 
 def _resolve_device(requested: str) -> torch.device:
@@ -463,7 +473,11 @@ def main() -> None:
                 metrics=last_metrics,
                 extra_state={"sampler": sampler.state_dict()},
             )
-            prune_checkpoints(output_dir, config.runtime.keep_last_checkpoints)
+            prune_checkpoints(
+                output_dir,
+                config.runtime.keep_last_checkpoints,
+                protected_steps=config.runtime.protected_checkpoint_steps,
+            )
         if stop.requested:
             break
 
