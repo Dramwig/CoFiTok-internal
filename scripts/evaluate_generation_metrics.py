@@ -110,10 +110,15 @@ def validate_sampling_provenance(
     checkpoint_sha256 = str(report["checkpoint_sha256"])
     if len(checkpoint_sha256) != 64:
         raise ValueError("Sampling report checkpoint SHA256 is malformed")
+    checkpoint_integrity_manifest = str(report.get("checkpoint_integrity_manifest", ""))
+    expected_integrity_name = f"{Path(report['checkpoint']).name}.integrity.json"
+    if Path(checkpoint_integrity_manifest).name != expected_integrity_name:
+        raise ValueError("Sampling report checkpoint integrity manifest is malformed")
     return {
         "report": report_path.resolve().as_posix(),
         "checkpoint": report["checkpoint"],
         "checkpoint_sha256": checkpoint_sha256,
+        "checkpoint_integrity_manifest": checkpoint_integrity_manifest,
         "checkpoint_step": int(report["checkpoint_step"]),
         "weights": report["weights"],
         "selected_prefix_budget": selected_budget,

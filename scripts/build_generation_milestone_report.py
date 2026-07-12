@@ -59,6 +59,10 @@ def _method_row(
         raise ValueError("mechanism checkpoint step does not match milestone")
     if provenance["checkpoint_sha256"] != checkpoint_eval["checkpoint_sha256"]:
         raise ValueError("generation and mechanism evaluation use different checkpoint bytes")
+    if provenance.get("checkpoint_integrity_manifest") != checkpoint_eval.get(
+        "checkpoint_integrity_manifest"
+    ):
+        raise ValueError("generation and mechanism evaluation use different integrity manifests")
     if provenance["weights"] != "ema" or checkpoint_eval["weights"] != "ema":
         raise ValueError("milestone evaluation must use EMA weights")
 
@@ -66,6 +70,7 @@ def _method_row(
     return {
         "checkpoint": provenance["checkpoint"],
         "checkpoint_sha256": provenance["checkpoint_sha256"],
+        "checkpoint_integrity_manifest": provenance["checkpoint_integrity_manifest"],
         "checkpoint_step": milestone_step,
         "sample_set_sha256": provenance["sample_set_sha256"],
         "selected_prefix_budget": int(provenance["selected_prefix_budget"]),

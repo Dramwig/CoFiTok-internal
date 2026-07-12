@@ -232,6 +232,12 @@ def build_report(
             == int(dense_training["config"]["model"]["token_count"])
             and len(str(cofitok_provenance["checkpoint_sha256"])) == 64
             and len(str(dense_provenance["checkpoint_sha256"])) == 64
+            and str(cofitok_provenance.get("checkpoint_integrity_manifest", "")).endswith(
+                ".pt.integrity.json"
+            )
+            and str(dense_provenance.get("checkpoint_integrity_manifest", "")).endswith(
+                ".pt.integrity.json"
+            )
             and len(str(cofitok_provenance.get("sample_set_sha256", ""))) == 64
             and len(str(dense_provenance.get("sample_set_sha256", ""))) == 64
             and cofitok_sampling.get("random_stream", {}).get("prefix_budgets_share_stream")
@@ -253,6 +259,12 @@ def build_report(
                 "dense_checkpoint_step": dense_provenance["checkpoint_step"],
                 "cofitok_checkpoint_sha256": cofitok_provenance["checkpoint_sha256"],
                 "dense_checkpoint_sha256": dense_provenance["checkpoint_sha256"],
+                "cofitok_checkpoint_integrity_manifest": cofitok_provenance.get(
+                    "checkpoint_integrity_manifest"
+                ),
+                "dense_checkpoint_integrity_manifest": dense_provenance.get(
+                    "checkpoint_integrity_manifest"
+                ),
                 "cofitok_prefix_budget": cofitok_provenance["selected_prefix_budget"],
                 "dense_prefix_budget": dense_provenance["selected_prefix_budget"],
                 "cofitok_image_shape": cofitok_sampling.get("image_shape"),
@@ -268,12 +280,24 @@ def build_report(
             and int(dense_checkpoint["checkpoint_step"])
             == int(dense_provenance["checkpoint_step"])
             and cofitok_checkpoint_sha == cofitok_provenance["checkpoint_sha256"]
-            and dense_checkpoint_sha == dense_provenance["checkpoint_sha256"],
+            and dense_checkpoint_sha == dense_provenance["checkpoint_sha256"]
+            and cofitok_checkpoint.get("checkpoint_integrity_manifest")
+            == cofitok_provenance.get("checkpoint_integrity_manifest")
+            and dense_checkpoint.get("checkpoint_integrity_manifest")
+            == dense_provenance.get("checkpoint_integrity_manifest"),
             {
                 "cofitok_hash_matches": cofitok_checkpoint_sha
                 == cofitok_provenance["checkpoint_sha256"],
                 "dense_hash_matches": dense_checkpoint_sha
                 == dense_provenance["checkpoint_sha256"],
+                "cofitok_integrity_manifest_matches": cofitok_checkpoint.get(
+                    "checkpoint_integrity_manifest"
+                )
+                == cofitok_provenance.get("checkpoint_integrity_manifest"),
+                "dense_integrity_manifest_matches": dense_checkpoint.get(
+                    "checkpoint_integrity_manifest"
+                )
+                == dense_provenance.get("checkpoint_integrity_manifest"),
                 "cofitok_step": cofitok_checkpoint["checkpoint_step"],
                 "dense_step": dense_checkpoint["checkpoint_step"],
             },

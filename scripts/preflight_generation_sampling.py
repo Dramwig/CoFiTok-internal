@@ -94,6 +94,7 @@ def run_sampling_preflight(
         "status": "running",
         "checkpoint": str(loaded.checkpoint_path),
         "checkpoint_sha256": loaded.checkpoint_sha256,
+        "checkpoint_integrity_manifest": str(loaded.checkpoint_integrity_manifest),
         "checkpoint_step": loaded.checkpoint_step,
         "weights": weights,
         "device": str(device),

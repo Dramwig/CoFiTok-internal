@@ -82,6 +82,7 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
                 "status": "completed",
                 "checkpoint": "/checkpoints/model.pt",
                 "checkpoint_sha256": "a" * 64,
+                "checkpoint_integrity_manifest": "/checkpoints/model.pt.integrity.json",
                 "checkpoint_step": 50_000,
                 "weights": "ema",
                 "sampling": {"start_index": 0, "num_samples": 2, "image_shape": [3, 4, 4]},
@@ -96,6 +97,7 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
 
     assert provenance["selected_prefix_budget"] == 8
     assert provenance["checkpoint_step"] == 50_000
+    assert provenance["checkpoint_integrity_manifest"].endswith("model.pt.integrity.json")
     assert provenance["image_shape"] == [3, 4, 4]
     assert provenance["sample_set_sha256"] == sample_sha256
 

@@ -274,6 +274,7 @@ def main() -> None:
         "status": "completed",
         "checkpoint": checkpoint_path.resolve().as_posix(),
         "checkpoint_sha256": loaded.checkpoint_sha256,
+        "checkpoint_integrity_manifest": loaded.checkpoint_integrity_manifest.as_posix(),
         "checkpoint_step": loaded.checkpoint_step,
         "weights": args.weights,
         "precision": args.precision,

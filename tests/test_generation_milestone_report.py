@@ -16,6 +16,7 @@ def _generation(*, sha: str, budget: int, fid: float, sample_steps: int = 50) ->
         "sample_provenance": {
             "checkpoint": f"/checkpoints/{sha[:4]}.pt",
             "checkpoint_sha256": sha,
+            "checkpoint_integrity_manifest": f"/checkpoints/{sha[:4]}.pt.integrity.json",
             "checkpoint_step": 50_000,
             "weights": "ema",
             "selected_prefix_budget": budget,
@@ -42,6 +43,7 @@ def _checkpoint_eval(*, sha: str, rank: int, zero: float = 0.0) -> dict:
     return {
         "status": "completed",
         "checkpoint_sha256": sha,
+        "checkpoint_integrity_manifest": f"/checkpoints/{sha[:4]}.pt.integrity.json",
         "checkpoint_step": 50_000,
         "weights": "ema",
         "metrics": {
@@ -115,6 +117,20 @@ def test_milestone_report_rejects_cross_checkpoint_evaluation() -> None:
             cofitok_generation=_generation(sha="a" * 64, budget=8, fid=20.0),
             dense_generation=_generation(sha="b" * 64, budget=1, fid=20.0),
             cofitok_checkpoint_eval=_checkpoint_eval(sha="e" * 64, rank=1),
+            dense_checkpoint_eval=_checkpoint_eval(sha="b" * 64, rank=1),
+            milestone_step=50_000,
+            expected_samples=2048,
+        )
+
+
+def test_milestone_report_rejects_cross_integrity_manifest_evaluation() -> None:
+    checkpoint = _checkpoint_eval(sha="a" * 64, rank=1)
+    checkpoint["checkpoint_integrity_manifest"] = "/checkpoints/other.pt.integrity.json"
+    with pytest.raises(ValueError, match="different integrity manifests"):
+        build_report(
+            cofitok_generation=_generation(sha="a" * 64, budget=8, fid=20.0),
+            dense_generation=_generation(sha="b" * 64, budget=1, fid=20.0),
+            cofitok_checkpoint_eval=checkpoint,
             dense_checkpoint_eval=_checkpoint_eval(sha="b" * 64, rank=1),
             milestone_step=50_000,
             expected_samples=2048,

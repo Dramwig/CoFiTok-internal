@@ -56,6 +56,7 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
         "sample_provenance": {
             "checkpoint": "/checkpoint.pt",
             "checkpoint_sha256": sha,
+            "checkpoint_integrity_manifest": "/checkpoints/checkpoint.pt.integrity.json",
             "checkpoint_step": 50_000,
             "weights": "ema",
             "sample_set_sha256": ("c" if token_count > 1 else "d") * 64,
@@ -83,6 +84,7 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
 def _checkpoint(endpoint: float, sha: str, rank: int = 1) -> dict:
     return {
         "checkpoint_sha256": sha,
+        "checkpoint_integrity_manifest": "/checkpoints/checkpoint.pt.integrity.json",
         "checkpoint_step": 50_000,
         "metrics": {
             "orders": {"ordered": {"endpoint_clean_mse": endpoint}},
@@ -257,6 +259,27 @@ def test_generation_gate_holds_when_mechanism_eval_uses_another_checkpoint() -> 
         cofitok_generation=_generation(20.0, 8, "a" * 64),
         dense_generation=_generation(20.0, 1, "b" * 64),
         cofitok_checkpoint=_checkpoint(0.1, "c" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(
+        gate for gate in report["gates"] if gate["name"] == "checkpoint_evaluation_provenance"
+    )
+    assert gate["passed"] is False
+
+
+def test_generation_gate_holds_when_mechanism_eval_uses_another_integrity_manifest() -> None:
+    checkpoint = _checkpoint(0.1, "a" * 64)
+    checkpoint["checkpoint_integrity_manifest"] = "/checkpoints/other.pt.integrity.json"
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(20.0, 8, "a" * 64),
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=checkpoint,
         dense_checkpoint=_checkpoint(0.1, "b" * 64),
         min_samples=10_000,
         max_fid_regression=0.05,

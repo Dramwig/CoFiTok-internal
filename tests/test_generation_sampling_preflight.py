@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 import torch
 
 from cofitok.configs import (
@@ -11,7 +12,9 @@ from cofitok.configs import (
     config_to_dict,
 )
 from cofitok.models import CoFiTokTiny
+from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
+from cofitok.training.checkpointing import checkpoint_integrity_path
 from scripts.preflight_generation_sampling import run_sampling_preflight
 
 
@@ -40,12 +43,24 @@ def _write_cpu_checkpoint(path) -> None:
     ema = ExponentialMovingAverage(model, warmup_steps=0)
     torch.save(
         {
+            "format_version": 1,
             "config": config_to_dict(config),
             "model": model.state_dict(),
             "ema": ema.state_dict(),
             "step": 17,
         },
         path,
+    )
+    write_json_report(
+        checkpoint_integrity_path(path),
+        {
+            "schema_version": 1,
+            "checkpoint": path.name,
+            "checkpoint_bytes": path.stat().st_size,
+            "checkpoint_sha256": file_sha256(path),
+            "checkpoint_format_version": 1,
+            "step": 17,
+        },
     )
 
 
@@ -66,6 +81,7 @@ def test_sampling_preflight_runs_shared_ema_cfg_path(tmp_path) -> None:
     assert report["status"] == "passed"
     assert report["checkpoint_step"] == 17
     assert len(report["checkpoint_sha256"]) == 64
+    assert report["checkpoint_integrity_manifest"].endswith("checkpoint.pt.integrity.json")
     assert report["request"]["effective_model_batch_size"] == 6
     assert report["request"]["forward_passes"] == 1
     assert report["result"]["output_shape"] == [3, 3, 8, 8]
@@ -103,3 +119,14 @@ def test_sampling_preflight_retains_checkpoint_provenance_on_forward_failure(
     assert len(report["checkpoint_sha256"]) == 64
     assert report["error_type"] == "RuntimeError"
     assert report["error"] == "CUDA out of memory"
+
+
+def test_sampling_preflight_rejects_checkpoint_bytes_that_fail_integrity(tmp_path) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    _write_cpu_checkpoint(checkpoint)
+    payload = bytearray(checkpoint.read_bytes())
+    payload[len(payload) // 2] ^= 1
+    checkpoint.write_bytes(payload)
+
+    with pytest.raises(ValueError, match="SHA256 mismatch"):
+        run_sampling_preflight(checkpoint, batch_size=1, precision="fp32")

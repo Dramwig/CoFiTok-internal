@@ -210,6 +210,14 @@ trajectory test requires uninterrupted and segmented-resume states to match
 exactly. See
 `docs/records/2026-07-12_generation_resume_metrics_reconciliation.md`.
 
+Inference has a strict checkpoint trust boundary. The shared generation loader
+must verify the adjacent integrity sidecar's filename, byte size, SHA256,
+format version, and step before deserializing or applying EMA/model weights.
+The resolved sidecar path is propagated through preflight, sampling, metrics,
+and gate provenance. Legacy 10% weights therefore require the migration stage;
+full checkpoints satisfy this contract at creation. See
+`docs/records/2026-07-12_generation_checkpoint_trust_boundary.md`.
+
 Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies
 strictly increasing finite metrics, resume-aware timing segments, checkpoint

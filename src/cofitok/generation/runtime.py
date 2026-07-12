@@ -8,8 +8,11 @@ from torch import nn
 
 from cofitok.configs import ExperimentConfig, config_from_dict
 from cofitok.models import CoFiTokTiny
-from cofitok.reporting import file_sha256
 from cofitok.training import ExponentialMovingAverage
+from cofitok.training.checkpointing import (
+    checkpoint_integrity_path,
+    verify_training_checkpoint,
+)
 
 
 @dataclass
@@ -19,6 +22,7 @@ class LoadedGenerationModel:
     device: torch.device
     checkpoint_path: Path
     checkpoint_sha256: str
+    checkpoint_integrity_manifest: Path
     checkpoint_step: int
     weights: str
 
@@ -33,8 +37,15 @@ def load_generation_model(
         raise ValueError("weights must be ema or model")
 
     path = Path(checkpoint_path)
-    checkpoint_sha256 = file_sha256(path)
+    integrity = verify_training_checkpoint(path)
+    checkpoint_sha256 = str(integrity["checkpoint_sha256"])
     checkpoint = torch.load(path, map_location="cpu", weights_only=False)
+    if int(checkpoint.get("format_version", -1)) != int(
+        integrity["checkpoint_format_version"]
+    ):
+        raise ValueError("Checkpoint payload format does not match integrity metadata")
+    if int(checkpoint.get("step", -1)) != int(integrity["step"]):
+        raise ValueError("Checkpoint payload step does not match integrity metadata")
     config = config_from_dict(checkpoint["config"])
     device = torch.device(config.runtime.device)
     if device.type == "cuda" and not torch.cuda.is_available():
@@ -67,6 +78,7 @@ def load_generation_model(
         device=device,
         checkpoint_path=path.resolve(),
         checkpoint_sha256=checkpoint_sha256,
+        checkpoint_integrity_manifest=checkpoint_integrity_path(path).resolve(),
         checkpoint_step=checkpoint_step,
         weights=weights,
     )
