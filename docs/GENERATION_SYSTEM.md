@@ -30,6 +30,11 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Production inference loads EMA by default and supports deterministic DDIM,
   classifier-free guidance, guidance rescaling, prefix budgets, and resumable
   numbered PNG export.
+- Formal post-evaluation runbooks first execute one real model forward with the
+  requested EMA/model weights, precision, prefix budget, batch size, and CFG
+  batching mode. The preflight records checkpoint SHA256, output finiteness,
+  latency, and CUDA baseline/peak memory, and fails before a sampling manifest
+  or partial image directory is created when the target inference shape OOMs.
 - Classifier-free guidance can evaluate conditional and unconditional branches
   in one batch, with a sequential fallback. The selected execution mode is part
   of the immutable sampling manifest and must match across compared methods.

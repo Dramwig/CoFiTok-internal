@@ -40,6 +40,18 @@ test -f "$COFITOK_CHECKPOINT"
 test -f "$DENSE_CHECKPOINT"
 test -f "$OFFICIAL_RELATED"
 
+python scripts/preflight_generation_sampling.py \
+  --checkpoint "$COFITOK_CHECKPOINT" \
+  --output "$COFITOK_RUN/sampling_preflight_50k_ddim250_cfg15.json" \
+  --batch-size 32 --prefix-budget 8 --guidance-scale 1.5 \
+  --cfg-batch-mode batched --weights ema --precision bf16
+
+python scripts/preflight_generation_sampling.py \
+  --checkpoint "$DENSE_CHECKPOINT" \
+  --output "$DENSE_RUN/sampling_preflight_50k_ddim250_cfg15.json" \
+  --batch-size 32 --prefix-budget 1 --guidance-scale 1.5 \
+  --cfg-batch-mode batched --weights ema --precision bf16
+
 python scripts/evaluate_generation_checkpoint.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/checkpoint_eval_ema_t500_1024" \

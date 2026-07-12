@@ -9,12 +9,10 @@ from pathlib import Path
 import torch
 from torchvision.utils import save_image
 
-from cofitok.configs import config_from_dict
 from cofitok.diffusion import DiffusionSchedule, ddim_sample, select_sampling_timesteps
+from cofitok.generation import load_generation_model
 from cofitok.image_integrity import is_valid_png, sample_set_sha256
-from cofitok.models import CoFiTokTiny
-from cofitok.reporting import file_sha256, write_json_report
-from cofitok.training import ExponentialMovingAverage
+from cofitok.reporting import write_json_report
 from cofitok.training.runtime import autocast_context
 
 
@@ -192,29 +190,18 @@ def main() -> None:
         raise ValueError("start-index must be non-negative")
     if args.resume and args.overwrite:
         raise ValueError("resume and overwrite are mutually exclusive")
-    checkpoint_path = Path(args.checkpoint)
-    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
-    config = config_from_dict(checkpoint["config"])
-    if config.runtime.device == "cuda" and not torch.cuda.is_available():
-        raise RuntimeError("CUDA checkpoint sampling requested but CUDA is unavailable")
-    device = torch.device(config.runtime.device)
-    model = CoFiTokTiny(config.model).to(device)
-    model.load_state_dict(checkpoint["model"], strict=True)
-    if args.weights == "ema":
-        ema = ExponentialMovingAverage(
-            model,
-            decay=config.optimization.ema_decay,
-            warmup_steps=config.optimization.ema_warmup_steps,
-        )
-        ema.load_state_dict(checkpoint["ema"])
-        ema.copy_to(model)
-    model.eval()
+    loaded = load_generation_model(args.checkpoint, weights=args.weights)
+    checkpoint_path = loaded.checkpoint_path
+    checkpoint_hash = loaded.checkpoint_sha256
+    checkpoint_step = loaded.checkpoint_step
+    config = loaded.config
+    device = loaded.device
+    model = loaded.model
     schedule = DiffusionSchedule(config.diffusion, device=device)
     budgets = _parse_budgets(args.prefix_budgets, config.model.token_count)
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     stop_index = args.start_index + args.num_samples
-    checkpoint_hash = file_sha256(checkpoint_path)
     sampling = {
         "num_samples": args.num_samples,
         "start_index": args.start_index,
@@ -256,7 +243,7 @@ def main() -> None:
         "schema_version": 1,
         "checkpoint": str(checkpoint_path.resolve()),
         "checkpoint_sha256": checkpoint_hash,
-        "checkpoint_step": int(checkpoint["step"]),
+        "checkpoint_step": checkpoint_step,
         "weights": args.weights,
         "sampling": sampling,
         "output_dirs": output_dirs,
@@ -333,7 +320,7 @@ def main() -> None:
         "status": "completed",
         "checkpoint": str(checkpoint_path.resolve()),
         "checkpoint_sha256": checkpoint_hash,
-        "checkpoint_step": int(checkpoint["step"]),
+        "checkpoint_step": checkpoint_step,
         "weights": args.weights,
         "sampling": sampling,
         "output_dirs": output_dirs,
