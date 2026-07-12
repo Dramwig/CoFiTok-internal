@@ -135,6 +135,8 @@ def test_formal_sampling_runbooks_select_one_shared_batch() -> None:
         assert "--max-memory-fraction 0.90" in runbook
         assert runbook.count('--batch-size "$SAMPLING_BATCH"') == 2
         assert runbook.count(f"--num-samples {sample_count}") == 2
+        assert "build_generation_visual_audit.py" in runbook
+        assert "--prefix-indices 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15" in runbook
 
 
 def test_stateful_sampler_restores_consumed_not_prefetched_position() -> None:

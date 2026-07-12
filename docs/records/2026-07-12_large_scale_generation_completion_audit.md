@@ -33,6 +33,8 @@ The audit requires all of the following:
   elapsed time;
 - a shared, revision/checkpoint-bound formal sampling batch selection that both
   50K sample reports actually use with batch-invariant random streams;
+- deterministic fixed-index CoFiTok/dense endpoint panels and a separate
+  `1/2/4/8` prefix-path panel bound to the formal checkpoint/sample-set hashes;
 - a passing final gate with decision `large_scale_generation_ready`;
 - the ready two-tier comparison containing the matched pair and three official
   contextual methods.

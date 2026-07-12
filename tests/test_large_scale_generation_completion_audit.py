@@ -182,6 +182,35 @@ def _sampling_runtime_selection() -> dict:
     }
 
 
+def _visual_audit() -> dict:
+    return {
+        "status": "completed",
+        "claim_policy": {"quantitative_metric": False},
+        "indices": [0, 1],
+        "prefix_indices": [0, 1],
+        "prefix_budgets": [1, 2, 4, 8],
+        "sources": {
+            "cofitok": {
+                "checkpoint_sha256": "a" * 64,
+                "sample_set_sha256": "A" * 64,
+            },
+            "dense_identity": {
+                "checkpoint_sha256": "b" * 64,
+                "sample_set_sha256": "B" * 64,
+            },
+        },
+        "statistics": {
+            "cofitok": {"exact_duplicate_count": 0, "pixel_std": 0.2},
+            "dense_identity": {"exact_duplicate_count": 0, "pixel_std": 0.3},
+        },
+        "panels": {
+            "cofitok": {"sha256": "c" * 64, "image_count": 2},
+            "dense_identity": {"sha256": "d" * 64, "image_count": 2},
+            "cofitok_prefix_paths": {"sha256": "e" * 64, "image_count": 8},
+        },
+    }
+
+
 def _kwargs() -> dict:
     return {
         "expected_10pct_revision": TEN_REVISION,
@@ -219,6 +248,7 @@ def _kwargs() -> dict:
         "dense_training_audit": _training_audit(),
         "runtime_selection": _runtime_selection(),
         "sampling_runtime_selection": _sampling_runtime_selection(),
+        "visual_audit": _visual_audit(),
         "milestones": {step: _milestone(step) for step in MILESTONE_STEPS},
         "cofitok_generation": _generation("a"),
         "dense_generation": _generation("b"),
@@ -234,7 +264,7 @@ def test_completion_audit_requires_every_large_scale_artifact() -> None:
     assert report["complete"] is True
     assert report["failed_checks"] == []
     assert report["missing_checks"] == []
-    assert len(report["checks"]) == 10
+    assert len(report["checks"]) == 11
 
 
 def test_completion_audit_reports_missing_work_as_in_progress() -> None:
@@ -322,6 +352,16 @@ def test_completion_audit_rejects_sampling_outside_stable_inference_api() -> Non
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == ["formal_50k_generation"]
+
+
+def test_completion_audit_rejects_visual_audit_from_stale_sample_set() -> None:
+    kwargs = _kwargs()
+    kwargs["visual_audit"]["sources"]["cofitok"]["sample_set_sha256"] = "Z" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deterministic_visual_quality_audit"]
 
 
 def test_completion_audit_preserves_nonblocking_milestone_alerts() -> None:

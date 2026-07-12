@@ -241,6 +241,44 @@ def _sampling_runtime_selection_evidence(
     }
 
 
+def _visual_audit_evidence(
+    report: dict[str, Any], generation_reports: dict[str, dict[str, Any]]
+) -> dict[str, Any]:
+    if report.get("status") != "completed":
+        raise ValueError("final deterministic visual audit is incomplete")
+    if report.get("claim_policy", {}).get("quantitative_metric") is not False:
+        raise ValueError("visual audit incorrectly claims quantitative metric status")
+    if report.get("prefix_budgets") != [1, 2, 4, 8]:
+        raise ValueError("visual audit lacks the required prefix budgets")
+    sources = report.get("sources", {})
+    for method in ("cofitok", "dense_identity"):
+        provenance = generation_reports[method].get("sample_provenance", {})
+        source = sources.get(method, {})
+        if source.get("checkpoint_sha256") != provenance.get("checkpoint_sha256"):
+            raise ValueError(f"visual audit {method} checkpoint SHA256 differs")
+        if source.get("sample_set_sha256") != provenance.get("sample_set_sha256"):
+            raise ValueError(f"visual audit {method} sample-set SHA256 differs")
+        statistics = report.get("statistics", {}).get(method, {})
+        if int(statistics.get("exact_duplicate_count", -1)) != 0:
+            raise ValueError(f"visual audit {method} contains exact duplicates")
+        pixel_std = float(statistics.get("pixel_std", math.nan))
+        if not math.isfinite(pixel_std) or pixel_std <= 0.0:
+            raise ValueError(f"visual audit {method} pixel variation is invalid")
+    panels = report.get("panels", {})
+    if set(panels) != {"cofitok", "dense_identity", "cofitok_prefix_paths"}:
+        raise ValueError("visual audit panel set is incomplete")
+    for name, panel in panels.items():
+        if len(str(panel.get("sha256", ""))) != 64 or int(
+            panel.get("image_count", 0)
+        ) < 1:
+            raise ValueError(f"visual audit panel {name} provenance is invalid")
+    return {
+        "indices": list(report.get("indices", [])),
+        "prefix_budgets": list(report["prefix_budgets"]),
+        "panel_sha256": {name: panel["sha256"] for name, panel in panels.items()},
+    }
+
+
 def _final_gate_evidence(
     gate: dict[str, Any], generation_reports: dict[str, dict[str, Any]]
 ) -> dict[str, Any]:
@@ -313,6 +351,7 @@ def build_completion_audit(
     dense_training_audit: dict[str, Any] | None,
     runtime_selection: dict[str, Any] | None,
     sampling_runtime_selection: dict[str, Any] | None,
+    visual_audit: dict[str, Any] | None,
     milestones: dict[int, dict[str, Any] | None],
     cofitok_generation: dict[str, Any] | None,
     dense_generation: dict[str, Any] | None,
@@ -430,6 +469,16 @@ def build_completion_audit(
     )
     checks.append(
         _check(
+            "deterministic_visual_quality_audit",
+            [visual_audit, cofitok_generation, dense_generation],
+            lambda: _visual_audit_evidence(
+                visual_audit,
+                {"cofitok": cofitok_generation, "dense_identity": dense_generation},
+            ),
+        )
+    )
+    checks.append(
+        _check(
             "final_generation_gate",
             [final_gate],
             lambda: _final_gate_evidence(
@@ -513,6 +562,7 @@ def main() -> None:
         sampling_runtime_selection=_read_optional(
             full_root / "sampling_runtime_selection.json"
         ),
+        visual_audit=_read_optional(full_root / "visual_audit/visual_audit_report.json"),
         milestones={
             step: _read_optional(full_root / "milestones" / f"step_{step:08d}.json")
             for step in MILESTONE_STEPS

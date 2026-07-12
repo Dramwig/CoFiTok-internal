@@ -96,6 +96,17 @@ python scripts/generate_samples.py \
   --prefix-budgets 1,2,4,8 --guidance-scale 1.5 --cfg-batch-mode batched \
   --weights ema --precision bf16 --resume
 
+python scripts/build_generation_visual_audit.py \
+  --cofitok-sampling-report "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
+  --dense-sampling-report "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
+  --prefix-sampling-report "$COFITOK_RUN/prefix_diagnostic_64_ddim250_cfg15/sampling_report.json" \
+  --cofitok-dir "$COFITOK_RUN/samples_50k_ddim250_cfg15/prefix_8" \
+  --dense-dir "$DENSE_RUN/samples_50k_ddim250_cfg15/prefix_1" \
+  --indices 0,1,2,3,250,251,1000,1001,10000,10001,25000,25001,49998,49999 \
+  --prefix-indices 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 \
+  --prefix-budgets 1,2,4,8 \
+  --output-dir "$REPORT_ROOT/visual_audit"
+
 python scripts/build_generation_gate_report.py \
   --cofitok-training "$COFITOK_RUN/training_report.json" \
   --dense-training "$DENSE_RUN/training_report.json" \
