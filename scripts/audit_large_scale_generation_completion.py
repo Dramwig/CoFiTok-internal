@@ -157,6 +157,7 @@ def _generation_evidence(
             raise ValueError(f"{method} formal generated sample count is not 50000")
         provenance = report.get("sample_provenance", {})
         progress = provenance.get("sampling_progress", {})
+        inference_api = provenance.get("sampling", {}).get("inference_api", {})
         if int(provenance.get("checkpoint_step", -1)) != 300_000:
             raise ValueError(f"{method} formal samples do not use the 300K checkpoint")
         if provenance.get("weights") != "ema":
@@ -178,6 +179,11 @@ def _generation_evidence(
             raise ValueError(f"{method} training and sampling integrity manifests differ")
         if progress.get("status") != "completed":
             raise ValueError(f"{method} formal sampling progress is incomplete")
+        if inference_api != {
+            "name": "cofitok.generation.GenerationSession",
+            "version": 1,
+        }:
+            raise ValueError(f"{method} formal sampling bypassed the stable inference API")
         if int(progress.get("completed_samples", -1)) != 50_000:
             raise ValueError(f"{method} formal sampling progress count mismatch")
         elapsed = float(progress.get("cumulative_elapsed_seconds", math.nan))

@@ -252,6 +252,13 @@ keep generated samples invariant to the selected batch. The final comparison
 reports batch, elapsed time, and realized throughput. See
 `docs/records/2026-07-12_generation_sampling_batch_selection.md`.
 
+Stable inference is exposed through `cofitok.generation.GenerationSession` and
+immutable `GenerationRequest` objects. The class/seed/prefix CLI and formal
+sampler share this implementation; both attach checkpoint integrity and exact
+protocol provenance. Final 50K evidence must declare inference API version 1.
+See `docs/INFERENCE.md` and
+`docs/records/2026-07-12_stable_generation_session.md`.
+
 Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies
 strictly increasing finite metrics, resume-aware timing segments, checkpoint

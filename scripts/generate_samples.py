@@ -9,8 +9,8 @@ from pathlib import Path
 import torch
 from torchvision.utils import save_image
 
-from cofitok.diffusion import DiffusionSchedule, ddim_sample, select_sampling_timesteps
-from cofitok.generation import load_generation_model
+from cofitok.diffusion import select_sampling_timesteps
+from cofitok.generation import GenerationRequest, GenerationSession
 from cofitok.image_integrity import is_valid_png, sample_set_sha256
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.sampling_progress import (
@@ -18,7 +18,6 @@ from cofitok.sampling_progress import (
     load_sampling_progress_state,
     write_sampling_progress,
 )
-from cofitok.training.runtime import autocast_context
 
 
 def parse_args() -> argparse.Namespace:
@@ -195,19 +194,22 @@ def main() -> None:
         raise ValueError("start-index must be non-negative")
     if args.resume and args.overwrite:
         raise ValueError("resume and overwrite are mutually exclusive")
-    loaded = load_generation_model(args.checkpoint, weights=args.weights)
+    session = GenerationSession.from_checkpoint(args.checkpoint, weights=args.weights)
+    loaded = session.loaded
     checkpoint_path = loaded.checkpoint_path
     checkpoint_hash = loaded.checkpoint_sha256
     checkpoint_step = loaded.checkpoint_step
     config = loaded.config
     device = loaded.device
-    model = loaded.model
-    schedule = DiffusionSchedule(config.diffusion, device=device)
     budgets = _parse_budgets(args.prefix_budgets, config.model.token_count)
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     stop_index = args.start_index + args.num_samples
     sampling = {
+        "inference_api": {
+            "name": "cofitok.generation.GenerationSession",
+            "version": 1,
+        },
         "num_samples": args.num_samples,
         "start_index": args.start_index,
         "batch_size": args.batch_size,
@@ -297,25 +299,28 @@ def main() -> None:
                     image_channels=config.model.image_channels,
                 ):
                     continue
-                generators = _sample_generators(args.seed, batch_start, count, device)
-                with torch.inference_mode(), autocast_context(device, args.precision):
-                    samples = ddim_sample(
-                        model,
-                        schedule,
-                        (count, config.model.image_channels, config.model.image_size, config.model.image_size),
-                        sample_steps=args.sample_steps,
-                        prefix_budget=budget,
-                        eta=args.eta,
-                        clip_x0=True,
-                        device=device,
-                        sample_generators=generators,
-                        class_labels=labels,
-                        guidance_scale=args.guidance_scale,
-                        guidance_rescale=args.guidance_rescale,
-                        cfg_batch_mode=args.cfg_batch_mode,
-                    )
+                class_labels = (
+                    tuple(int(value) for value in labels.detach().cpu().tolist())
+                    if labels is not None
+                    else None
+                )
+                request = GenerationRequest(
+                    seeds=tuple(
+                        _sample_seed(args.seed, index)
+                        for index in range(batch_start, batch_start + count)
+                    ),
+                    class_labels=class_labels,
+                    sample_steps=args.sample_steps,
+                    prefix_budget=budget,
+                    guidance_scale=args.guidance_scale,
+                    guidance_rescale=args.guidance_rescale,
+                    cfg_batch_mode=args.cfg_batch_mode,
+                    eta=args.eta,
+                    precision=args.precision,
+                )
+                samples = session.generate(request).images
                 _save_batch(
-                    samples.cpu(),
+                    samples,
                     budget_directory,
                     batch_start,
                     overwrite=args.overwrite,

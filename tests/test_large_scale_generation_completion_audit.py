@@ -132,6 +132,10 @@ def _generation(seed: str) -> dict:
             },
             "sampling": {
                 "batch_size": 64,
+                "inference_api": {
+                    "name": "cofitok.generation.GenerationSession",
+                    "version": 1,
+                },
                 "random_stream": {"batch_size_invariant": True},
             },
         },
@@ -308,6 +312,16 @@ def test_completion_audit_rejects_sampling_that_ignores_selected_batch() -> None
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == ["formal_sampling_runtime_selection"]
+
+
+def test_completion_audit_rejects_sampling_outside_stable_inference_api() -> None:
+    kwargs = _kwargs()
+    del kwargs["cofitok_generation"]["sample_provenance"]["sampling"]["inference_api"]
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["formal_50k_generation"]
 
 
 def test_completion_audit_preserves_nonblocking_milestone_alerts() -> None:
