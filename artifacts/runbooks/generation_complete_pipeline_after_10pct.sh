@@ -9,6 +9,7 @@ SCALING_GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50
 FINAL_GATE="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/final_generation_gate.json"
 COFITOK_10PCT="$OUTPUT_ROOT/imagenet256_10pct_cofitok_k8_50k_2026-07-12/training_report.json"
 DENSE_10PCT="$OUTPUT_ROOT/imagenet256_10pct_dense_50k_2026-07-12/training_report.json"
+PINNED_10PCT_REVISION=781a01444fddbf0d48a427ba58bdeed50167b5be
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -44,11 +45,11 @@ record_failure() {
 trap record_failure EXIT
 
 validate_completed_training_pair() {
-  python - "$COFITOK_10PCT" "$DENSE_10PCT" <<'PY'
+  python - "$COFITOK_10PCT" "$DENSE_10PCT" "$PINNED_10PCT_REVISION" <<'PY'
 import json
 import sys
 
-for path in sys.argv[1:]:
+for path in sys.argv[1:3]:
     with open(path, encoding="utf-8") as handle:
         report = json.load(handle)
     if report.get("training_complete") is not True:
@@ -57,6 +58,8 @@ for path in sys.argv[1:]:
         raise SystemExit(f"training did not finish exactly 50K steps: {path}")
     if report.get("git", {}).get("dirty") is not False:
         raise SystemExit(f"training used a dirty tracked worktree: {path}")
+    if report.get("git", {}).get("revision") != sys.argv[3]:
+        raise SystemExit(f"training report revision does not match the pinned queue: {path}")
 PY
 }
 

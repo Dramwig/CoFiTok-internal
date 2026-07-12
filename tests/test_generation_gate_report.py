@@ -10,7 +10,11 @@ def _training(parameters: int, token_count: int) -> dict:
         "completed_steps": 50_000,
         "target_steps": 50_000,
         "parameter_count": parameters,
-        "git": {"dirty": False, "revision": "abc"},
+        "git": {
+            "dirty": False,
+            "revision": "a" * 40,
+            "branch": "scale/generative-system",
+        },
         "latest_checkpoint": {
             "checkpoint": "checkpoint_step_00050000.pt",
             "checkpoint_bytes": 1_000_000,
@@ -30,8 +34,14 @@ def _training(parameters: int, token_count: int) -> dict:
 
 def _generation(fid: float, token_count: int, sha: str) -> dict:
     return {
+        "status": "completed",
+        "protocol": "torch_fidelity_directory_metrics",
         "implementation": {"package": "torch_fidelity", "version": "0.4.0"},
-        "counts": {"generated_image_count": 10_000},
+        "paths": {
+            "real_dir": "/datasets/imagenet_256/val",
+            "generated_dir": f"/samples/prefix_{token_count}",
+        },
+        "counts": {"real_image_count": 50_000, "generated_image_count": 10_000},
         "parameters": {"batch_size": 64, "seed": 2027},
         "metrics": {
             "frechet_inception_distance": fid,
@@ -53,12 +63,14 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
                 "batch_size": 32,
                 "sample_steps": 100,
                 "image_shape": [3, 256, 256],
+                "class_schedule": "balanced_modulo",
                 "prefix_budgets": [token_count],
                 "guidance_scale": 1.5,
                 "seed": 0,
                 "random_stream": {
                     "prefix_budgets_share_stream": True,
                     "batch_size_invariant": True,
+                    "resume_index_invariant": True,
                 },
             },
         },
@@ -125,6 +137,64 @@ def test_generation_gate_holds_on_unpaired_sampling_streams() -> None:
         cofitok_training=_training(100_500, 8),
         dense_training=_training(100_000, 1),
         cofitok_generation=cofitok,
+        dense_generation=dense,
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(gate for gate in report["gates"] if gate["name"] == "matched_sampling_provenance")
+    assert gate["passed"] is False
+
+
+def test_generation_gate_holds_on_mismatched_training_revision() -> None:
+    dense_training = _training(100_000, 1)
+    dense_training["git"]["revision"] = "b" * 40
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=dense_training,
+        cofitok_generation=_generation(20.0, 8, "a" * 64),
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(gate for gate in report["gates"] if gate["name"] == "matched_training_revision")
+    assert gate["passed"] is False
+
+
+def test_generation_gate_requires_exact_sample_count_and_shared_real_set() -> None:
+    dense = _generation(20.0, 1, "b" * 64)
+    dense["counts"]["generated_image_count"] = 10_001
+    dense["paths"]["real_dir"] = "/datasets/other/val"
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(20.0, 8, "a" * 64),
+        dense_generation=dense,
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(gate for gate in report["gates"] if gate["name"] == "matched_generation_protocol")
+    assert gate["passed"] is False
+
+
+def test_generation_gate_requires_balanced_class_schedule() -> None:
+    dense = _generation(20.0, 1, "b" * 64)
+    dense["sample_provenance"]["sampling"]["class_schedule"] = None
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(20.0, 8, "a" * 64),
         dense_generation=dense,
         cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
         dense_checkpoint=_checkpoint(0.1, "b" * 64),

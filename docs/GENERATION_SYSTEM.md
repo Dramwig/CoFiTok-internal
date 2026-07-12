@@ -170,6 +170,17 @@ the alternating full 300K queue, the formal 50K-sample evaluation, and both
 gate decisions in order. A held gate or interrupted stage is recorded as a
 failure rather than reported as generation readiness.
 
+Both promotion decisions are provenance gates, not only metric thresholds.
+They require the CoFiTok and dense training reports to share the same
+40-character `git.revision` on `scale/generative-system`, use the same real
+ImageNet-256 directory and evaluator, and contain exactly the requested 10K or
+50K generated samples. Formal class-conditional sampling must start at index
+zero, use balanced modulo labels and EMA weights, preserve per-sample random
+streams across batch-size/resume changes, and bind both checkpoint and sample
+bytes by SHA256. The transition-field correction and negative tests are
+recorded in
+`docs/records/2026-07-12_generation_gate_provenance_hardening.md`.
+
 Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies
 strictly increasing finite metrics, resume-aware timing segments, checkpoint

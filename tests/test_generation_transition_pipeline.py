@@ -74,7 +74,7 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert '"$current_commit" != "$TARGET_COMMIT"' in deployer
     assert '"$current_commit" == "$EXPECTED_COMMIT"' in deployer
     assert "training_complete" in deployer
-    assert "report.get(\"git\", {}).get(\"commit\")" in deployer
+    assert "report.get(\"git\", {}).get(\"revision\")" in deployer
     assert "pgrep -af '[s]cripts/train_generation.py" in deployer
     assert "git bundle verify" in deployer
     assert "git merge --ff-only FETCH_HEAD" in deployer
@@ -83,6 +83,10 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert "exit 0" in deployer
     assert "nohup bash \"$PIPELINE\"" in deployer
     assert "sleep 2" in deployer
+
+    pipeline = _read("artifacts/runbooks/generation_complete_pipeline_after_10pct.sh")
+    assert "PINNED_10PCT_REVISION=781a01444fddbf0d48a427ba58bdeed50167b5be" in pipeline
+    assert "report.get(\"git\", {}).get(\"revision\")" in pipeline
 
 
 def test_local_deployer_pins_current_training_revision_and_builds_bundle() -> None:

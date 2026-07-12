@@ -45,8 +45,8 @@ for path in sys.argv[1:3]:
         raise SystemExit(f"training is incomplete: {path}")
     if report.get("completed_steps") != 50_000 or report.get("target_steps") != 50_000:
         raise SystemExit(f"training did not finish exactly 50K steps: {path}")
-    if report.get("git", {}).get("commit") != sys.argv[3]:
-        raise SystemExit(f"training report commit does not match pinned revision: {path}")
+    if report.get("git", {}).get("revision") != sys.argv[3]:
+        raise SystemExit(f"training report revision does not match pinned revision: {path}")
     if report.get("git", {}).get("dirty") is not False:
         raise SystemExit(f"training used a dirty tracked worktree: {path}")
 PY

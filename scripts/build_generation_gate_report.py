@@ -132,6 +132,10 @@ def build_report(
     parameter_gap = (
         int(cofitok_training["parameter_count"]) - int(dense_training["parameter_count"])
     ) / int(dense_training["parameter_count"])
+    cofitok_revision = str(cofitok_training.get("git", {}).get("revision", ""))
+    dense_revision = str(dense_training.get("git", {}).get("revision", ""))
+    cofitok_branch = str(cofitok_training.get("git", {}).get("branch", ""))
+    dense_branch = str(dense_training.get("git", {}).get("branch", ""))
     matched_sections = all(
         cofitok_training["config"][section] == dense_training["config"][section]
         for section in ("data", "diffusion", "runtime", "optimization")
@@ -153,18 +157,46 @@ def build_report(
             },
         ),
         _gate(
+            "matched_training_revision",
+            len(cofitok_revision) == 40
+            and cofitok_revision == dense_revision
+            and cofitok_branch == dense_branch == "scale/generative-system",
+            {
+                "cofitok_revision": cofitok_revision,
+                "dense_revision": dense_revision,
+                "cofitok_branch": cofitok_branch,
+                "dense_branch": dense_branch,
+            },
+        ),
+        _gate(
             "matched_training_protocol",
             matched_sections and abs(parameter_gap) <= 0.02,
             {"matched_sections": matched_sections, "relative_parameter_gap": parameter_gap},
         ),
         _gate(
             "matched_generation_protocol",
-            generated_counts[0] == generated_counts[1]
-            and min(generated_counts) >= min_samples
+            cofitok_generation.get("status") == dense_generation.get("status") == "completed"
+            and cofitok_generation.get("protocol")
+            == dense_generation.get("protocol")
+            == "torch_fidelity_directory_metrics"
+            and cofitok_generation.get("paths", {}).get("real_dir")
+            == dense_generation.get("paths", {}).get("real_dir")
+            and int(cofitok_generation["counts"]["real_image_count"])
+            == int(dense_generation["counts"]["real_image_count"])
+            and int(cofitok_generation["counts"]["real_image_count"]) >= min_samples
+            and generated_counts == (min_samples, min_samples)
             and evaluator_pair[0] == evaluator_pair[1]
             and cofitok_generation["parameters"] == dense_generation["parameters"],
             {
                 "generated_counts": list(generated_counts),
+                "real_counts": [
+                    cofitok_generation["counts"]["real_image_count"],
+                    dense_generation["counts"]["real_image_count"],
+                ],
+                "real_dirs": [
+                    cofitok_generation.get("paths", {}).get("real_dir"),
+                    dense_generation.get("paths", {}).get("real_dir"),
+                ],
                 "cofitok_evaluator": evaluator_pair[0],
                 "dense_evaluator": evaluator_pair[1],
             },
@@ -194,6 +226,14 @@ def build_report(
             and cofitok_sampling.get("random_stream", {}).get("prefix_budgets_share_stream")
             is True
             and cofitok_sampling.get("random_stream", {}).get("batch_size_invariant") is True
+            and cofitok_sampling.get("random_stream", {}).get("resume_index_invariant") is True
+            and int(cofitok_sampling.get("start_index", -1)) == 0
+            and int(dense_sampling.get("start_index", -1)) == 0
+            and int(cofitok_sampling.get("num_samples", -1)) == min_samples
+            and int(dense_sampling.get("num_samples", -1)) == min_samples
+            and cofitok_sampling.get("class_schedule")
+            == dense_sampling.get("class_schedule")
+            == "balanced_modulo"
             and cofitok_sampling.get("image_shape") == cofitok_expected_shape
             and dense_sampling.get("image_shape") == dense_expected_shape,
             {
