@@ -92,3 +92,10 @@ The 10% post-training gate is encoded in
 or dirty-worktree training reports, generates matched 10K EMA samples at DDIM
 100 / CFG 1.5, evaluates both methods with the same cached real features, and
 exports a 64-image CoFiTok prefix diagnostic at budgets 1/2/4/8.
+
+Full-scale execution is deliberately gated. The runbook
+`artifacts/runbooks/generation_full_matched_300k_after_gate.sh` refuses to start
+unless the 10% promotion report passes. After both full-data 300K runs finish,
+`artifacts/runbooks/generation_full_posteval_50k.sh` produces matched 50K EMA
+samples at DDIM-250 / CFG 1.5, full generation metrics, checkpoint mechanism
+diagnostics, and the final large-scale gate report.
