@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+import pytest
 import torch
 
 from cofitok.configs import DiffusionConfig
@@ -11,6 +12,7 @@ from scripts.generate_samples import (
     _prepare_sampling_manifest,
     _sample_generators,
     _sample_seed,
+    _save_batch,
     _validate_numbered_output,
 )
 
@@ -189,3 +191,35 @@ def test_completed_sampling_report_requires_exact_numbered_output(tmp_path) -> N
         assert "extra=1" in str(error)
     else:
         raise AssertionError("extra stale image was accepted")
+
+
+def test_sample_png_is_published_only_after_encoding_completes(tmp_path, monkeypatch) -> None:
+    final_path = tmp_path / "000000.png"
+    calls = []
+
+    def fake_save_image(image, path, *, format):
+        del image
+        calls.append((path, format))
+        assert not final_path.exists()
+        path.write_bytes(b"complete-png")
+
+    monkeypatch.setattr("scripts.generate_samples.save_image", fake_save_image)
+    _save_batch(torch.zeros(1, 3, 4, 4), tmp_path, 0, overwrite=False, skip_existing=False)
+
+    assert final_path.read_bytes() == b"complete-png"
+    assert calls == [(tmp_path / ".000000.png.part", "png")]
+    assert not (tmp_path / ".000000.png.part").exists()
+
+
+def test_failed_png_encoding_leaves_no_published_or_partial_file(tmp_path, monkeypatch) -> None:
+    def failing_save_image(image, path, *, format):
+        del image, format
+        path.write_bytes(b"partial")
+        raise RuntimeError("encoding interrupted")
+
+    monkeypatch.setattr("scripts.generate_samples.save_image", failing_save_image)
+    with pytest.raises(RuntimeError, match="encoding interrupted"):
+        _save_batch(torch.zeros(1, 3, 4, 4), tmp_path, 0, overwrite=False, skip_existing=False)
+
+    assert not (tmp_path / "000000.png").exists()
+    assert not (tmp_path / ".000000.png.part").exists()

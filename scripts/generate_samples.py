@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 from pathlib import Path
 
@@ -88,7 +89,16 @@ def _save_batch(
             continue
         if path.exists() and not overwrite:
             raise FileExistsError(f"Refusing to overwrite existing sample {path}")
-        save_image((image.float().clamp(-1.0, 1.0) + 1.0) * 0.5, path)
+        temporary = path.with_name(f".{path.name}.part")
+        try:
+            save_image(
+                (image.float().clamp(-1.0, 1.0) + 1.0) * 0.5,
+                temporary,
+                format="png",
+            )
+            os.replace(temporary, path)
+        finally:
+            temporary.unlink(missing_ok=True)
 
 
 def _batch_complete(directory: Path, start: int, count: int) -> bool:

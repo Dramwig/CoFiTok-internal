@@ -32,6 +32,10 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Sampling writes an immutable checkpoint-and-protocol manifest before the
   first image. `--resume` accepts only an exact manifest match, skips completed
   numbered images, and regenerates missing images from their original streams.
+- Each PNG is encoded to a same-directory partial file and atomically published
+  only after encoding succeeds. JSON manifests and reports use the same atomic
+  replacement rule, so interruption cannot turn a partial file into apparent
+  completion or destroy the last valid report.
 - Generation evaluation uses `torch-fidelity==0.4.x` with generated samples as
   input 1 and the recursive 50K ImageNet validation directory as input 2. One
   report records FID, Inception Score, precision, recall, exact image counts,
