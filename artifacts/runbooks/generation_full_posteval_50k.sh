@@ -11,6 +11,8 @@ DENSE_CHECKPOINT="$DENSE_RUN/checkpoint_step_00300000.pt"
 EVAL_CACHE="$OUTPUT_ROOT/eval_cache/torch_fidelity"
 REPORT_ROOT="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k"
 OFFICIAL_RELATED="$PROJECT/artifacts/reports/baselines/official_related_methods_2026-07-11_final/official_related_methods_table.json"
+SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/imagenet256_full_50k_sampling"
+SAMPLING_SELECTION="$REPORT_ROOT/sampling_runtime_selection.json"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -40,17 +42,18 @@ test -f "$COFITOK_CHECKPOINT"
 test -f "$DENSE_CHECKPOINT"
 test -f "$OFFICIAL_RELATED"
 
-python scripts/preflight_generation_sampling.py \
-  --checkpoint "$COFITOK_CHECKPOINT" \
-  --output "$COFITOK_RUN/sampling_preflight_50k_ddim250_cfg15.json" \
-  --batch-size 32 --prefix-budget 8 --guidance-scale 1.5 \
-  --cfg-batch-mode batched --weights ema --precision bf16
-
-python scripts/preflight_generation_sampling.py \
-  --checkpoint "$DENSE_CHECKPOINT" \
-  --output "$DENSE_RUN/sampling_preflight_50k_ddim250_cfg15.json" \
-  --batch-size 32 --prefix-budget 1 --guidance-scale 1.5 \
-  --cfg-batch-mode batched --weights ema --precision bf16
+SAMPLING_BATCH="$(python scripts/select_generation_sampling_batch.py \
+  --cofitok-checkpoint "$COFITOK_CHECKPOINT" \
+  --dense-checkpoint "$DENSE_CHECKPOINT" \
+  --cofitok-prefix-budget 8 --dense-prefix-budget 1 \
+  --output-root "$SAMPLING_BENCHMARK_ROOT" --output "$SAMPLING_SELECTION" \
+  --candidates 16,32,64,128 --baseline-batch-size 32 \
+  --guidance-scale 1.5 --cfg-batch-mode batched --weights ema --precision bf16 \
+  --warmup-forwards 2 --measured-forwards 5 --max-memory-fraction 0.90)"
+if [[ ! "$SAMPLING_BATCH" =~ ^[0-9]+$ ]]; then
+  printf 'invalid selected sampling batch: %s\n' "$SAMPLING_BATCH" >&2
+  exit 1
+fi
 
 python scripts/evaluate_generation_checkpoint.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
@@ -65,13 +68,13 @@ python scripts/evaluate_generation_checkpoint.py \
 python scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/samples_50k_ddim250_cfg15" \
-  --num-samples 50000 --batch-size 32 --sample-steps 250 \
+  --num-samples 50000 --batch-size "$SAMPLING_BATCH" --sample-steps 250 \
   --guidance-scale 1.5 --cfg-batch-mode batched --weights ema --precision bf16 --resume
 
 python scripts/generate_samples.py \
   --checkpoint "$DENSE_CHECKPOINT" \
   --output-dir "$DENSE_RUN/samples_50k_ddim250_cfg15" \
-  --num-samples 50000 --batch-size 32 --sample-steps 250 \
+  --num-samples 50000 --batch-size "$SAMPLING_BATCH" --sample-steps 250 \
   --guidance-scale 1.5 --cfg-batch-mode batched --weights ema --precision bf16 --resume
 
 python scripts/evaluate_generation_metrics.py \

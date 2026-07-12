@@ -38,7 +38,11 @@ def _generation(fid: float, checkpoint_sha: str, sample_sha: str) -> dict:
         "sample_provenance": {
             "checkpoint_sha256": checkpoint_sha,
             "sample_set_sha256": sample_sha,
-            "sampling": {"sample_steps": 250, "guidance_scale": 1.5},
+            "sampling": {
+                "sample_steps": 250,
+                "guidance_scale": 1.5,
+                "batch_size": 64,
+            },
             "sampling_progress": {
                 "status": "completed",
                 "completed_samples": 50_000,
@@ -120,9 +124,11 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     assert report["matched_training_rows"][0]["training_images_seen"] == 19_200_000
     assert report["matched_training_rows"][0]["peak_vram_bytes"] == 24 * 1024**3
     assert report["matched_training_rows"][0]["sampling_images_per_second"] == 5.0
+    assert report["matched_training_rows"][0]["sample_batch_size"] == 64
     assert "not a direct ranking" in render_markdown(report)
     assert "VRAM GiB" in render_markdown(report)
     assert "sample img/s" in render_markdown(report)
+    assert "sample batch" in render_markdown(report)
     assert "matched_training_direct" in render_csv(report)
     assert "official_pretrained_contextual" in render_csv(report)
 

@@ -31,6 +31,8 @@ The audit requires all of the following:
 - paired formal 50K DDIM-250 EMA generation with completed atomic sampling
   progress, checkpoint/sample SHA256, integrity sidecars, and positive sampling
   elapsed time;
+- a shared, revision/checkpoint-bound formal sampling batch selection that both
+  50K sample reports actually use with batch-invariant random streams;
 - a passing final gate with decision `large_scale_generation_ready`;
 - the ready two-tier comparison containing the matched pair and three official
   contextual methods.

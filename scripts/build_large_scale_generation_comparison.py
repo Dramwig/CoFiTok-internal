@@ -60,6 +60,7 @@ def _matched_row(
         "training_images_per_second": training_cost["images_per_second"],
         "peak_vram_bytes": training_cost["peak_vram_bytes"],
         "sample_count": sample_count,
+        "sample_batch_size": int(sampling["batch_size"]),
         "sampling_elapsed_seconds": sampling_elapsed_seconds,
         "sampling_images_per_second": sample_count / sampling_elapsed_seconds,
         "sampling_invocations": int(sampling_progress["invocation"]),
@@ -226,12 +227,12 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "## Matched training (direct comparison)",
         "",
-        "| method | params | steps | eff. batch | train images | train h | train img/s | VRAM GiB | samples | sample h | sample img/s | FID | IS | precision | recall |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| method | params | steps | eff. batch | train images | train h | train img/s | VRAM GiB | samples | sample batch | sample h | sample img/s | FID | IS | precision | recall |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for row in report["matched_training_rows"]:
         lines.append(
-            "| {method} | {params} | {steps} | {batch} | {train_images} | {hours} | {throughput} | {vram} | {samples} | {sample_hours} | {sample_throughput} | {fid} | {iscore} | {precision} | {recall} |".format(
+            "| {method} | {params} | {steps} | {batch} | {train_images} | {hours} | {throughput} | {vram} | {samples} | {sample_batch} | {sample_hours} | {sample_throughput} | {fid} | {iscore} | {precision} | {recall} |".format(
                 method=row["method"],
                 params=row["parameter_count"],
                 steps=row["training_steps"],
@@ -241,6 +242,7 @@ def render_markdown(report: dict[str, Any]) -> str:
                 throughput=_fmt(row["training_images_per_second"]),
                 vram=_fmt(row["peak_vram_bytes"] / (1024**3)),
                 samples=row["sample_count"],
+                sample_batch=row["sample_batch_size"],
                 sample_hours=_fmt(row["sampling_elapsed_seconds"] / 3600.0),
                 sample_throughput=_fmt(row["sampling_images_per_second"]),
                 fid=_fmt(row["fid"]),
@@ -295,6 +297,7 @@ def render_csv(report: dict[str, Any]) -> str:
         "training_images_per_second",
         "peak_vram_bytes",
         "sample_count",
+        "sample_batch_size",
         "sampling_elapsed_seconds",
         "sampling_images_per_second",
         "sampling_invocations",

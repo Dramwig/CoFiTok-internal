@@ -191,6 +191,50 @@ def _generation_evidence(
     return evidence
 
 
+def _sampling_runtime_selection_evidence(
+    selection: dict[str, Any],
+    generation_reports: dict[str, dict[str, Any]],
+    *,
+    expected_revision: str,
+) -> dict[str, Any]:
+    if selection.get("status") != "selected":
+        raise ValueError("formal sampling runtime selection is incomplete")
+    if selection.get("git_revision") != expected_revision:
+        raise ValueError("sampling runtime selection revision differs from full training")
+    policy = selection.get("policy", {})
+    if policy.get("shared_candidate_required") is not True:
+        raise ValueError("sampling runtime selection is not shared")
+    if policy.get("batch_size_invariant_random_stream_required") is not True:
+        raise ValueError("sampling selection omits batch-invariant random streams")
+    batch_size = int(selection.get("selected", {}).get("batch_size", -1))
+    if batch_size < 1:
+        raise ValueError("selected formal sampling batch is invalid")
+    identities = selection.get("checkpoints", {})
+    for method in ("cofitok", "dense_identity"):
+        provenance = generation_reports[method].get("sample_provenance", {})
+        if identities.get(method, {}).get("sha256") != provenance.get(
+            "checkpoint_sha256"
+        ):
+            raise ValueError(f"{method} sampling selection checkpoint SHA256 differs")
+        if int(identities.get(method, {}).get("step", -1)) != 300_000:
+            raise ValueError(f"{method} sampling selection checkpoint is not step 300K")
+        if int(provenance.get("sampling", {}).get("batch_size", -1)) != batch_size:
+            raise ValueError(f"{method} formal generation ignored selected sampling batch")
+        random_stream = provenance.get("sampling", {}).get("random_stream", {})
+        if random_stream.get("batch_size_invariant") is not True:
+            raise ValueError(f"{method} formal sampling random stream is batch-dependent")
+    return {
+        "batch_size": batch_size,
+        "estimated_speedup_over_baseline": float(
+            selection["selected"]["estimated_speedup_over_baseline"]
+        ),
+        "checkpoint_sha256": {
+            method: identities[method]["sha256"]
+            for method in ("cofitok", "dense_identity")
+        },
+    }
+
+
 def _final_gate_evidence(
     gate: dict[str, Any], generation_reports: dict[str, dict[str, Any]]
 ) -> dict[str, Any]:
@@ -262,6 +306,7 @@ def build_completion_audit(
     cofitok_training_audit: dict[str, Any] | None,
     dense_training_audit: dict[str, Any] | None,
     runtime_selection: dict[str, Any] | None,
+    sampling_runtime_selection: dict[str, Any] | None,
     milestones: dict[int, dict[str, Any] | None],
     cofitok_generation: dict[str, Any] | None,
     dense_generation: dict[str, Any] | None,
@@ -368,6 +413,17 @@ def build_completion_audit(
     )
     checks.append(
         _check(
+            "formal_sampling_runtime_selection",
+            [sampling_runtime_selection, cofitok_generation, dense_generation],
+            lambda: _sampling_runtime_selection_evidence(
+                sampling_runtime_selection,
+                {"cofitok": cofitok_generation, "dense_identity": dense_generation},
+                expected_revision=expected_full_revision,
+            ),
+        )
+    )
+    checks.append(
+        _check(
             "final_generation_gate",
             [final_gate],
             lambda: _final_gate_evidence(
@@ -448,6 +504,9 @@ def main() -> None:
         cofitok_training_audit=_read_optional(full_root / "cofitok_training_audit.json"),
         dense_training_audit=_read_optional(full_root / "dense_training_audit.json"),
         runtime_selection=_read_optional(full_root / "runtime_selection.json"),
+        sampling_runtime_selection=_read_optional(
+            full_root / "sampling_runtime_selection.json"
+        ),
         milestones={
             step: _read_optional(full_root / "milestones" / f"step_{step:08d}.json")
             for step in MILESTONE_STEPS

@@ -124,6 +124,19 @@ def test_full_generation_configs_keep_matched_runtime_and_checkpoint_cadence() -
     assert preflight["matched_optimization"]["gradient_accumulation_steps"] == 4
 
 
+def test_formal_sampling_runbooks_select_one_shared_batch() -> None:
+    for path, sample_count in (
+        ("artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh", "10000"),
+        ("artifacts/runbooks/generation_full_posteval_50k.sh", "50000"),
+    ):
+        runbook = Path(path).read_text(encoding="utf-8")
+        assert "select_generation_sampling_batch.py" in runbook
+        assert "--candidates 16,32,64,128" in runbook
+        assert "--max-memory-fraction 0.90" in runbook
+        assert runbook.count('--batch-size "$SAMPLING_BATCH"') == 2
+        assert runbook.count(f"--num-samples {sample_count}") == 2
+
+
 def test_stateful_sampler_restores_consumed_not_prefetched_position() -> None:
     dataset = list(range(20))
     sampler = StatefulRandomSampler(dataset, seed=7)

@@ -89,6 +89,27 @@ def test_sampling_preflight_runs_shared_ema_cfg_path(tmp_path) -> None:
     assert report["result"]["cuda_memory_after_forward"] is None
 
 
+def test_sampling_preflight_measures_warm_and_repeated_forwards(tmp_path) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    _write_cpu_checkpoint(checkpoint)
+
+    report = run_sampling_preflight(
+        checkpoint,
+        batch_size=2,
+        guidance_scale=1.5,
+        precision="fp32",
+        warmup_forwards=1,
+        measured_forwards=2,
+    )
+
+    assert report["status"] == "passed"
+    assert report["request"]["warmup_forwards"] == 1
+    assert report["request"]["measured_forwards"] == 2
+    assert len(report["result"]["durations_seconds"]) == 2
+    assert report["result"]["mean_forward_seconds"] > 0.0
+    assert report["result"]["output_images_per_second"] > 0.0
+
+
 def test_sampling_preflight_rejects_invalid_prefix_before_forward(tmp_path) -> None:
     checkpoint = tmp_path / "checkpoint.pt"
     _write_cpu_checkpoint(checkpoint)

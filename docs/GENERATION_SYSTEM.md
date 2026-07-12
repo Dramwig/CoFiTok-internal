@@ -244,6 +244,14 @@ and accumulation are applied to every full-training segment and verified again
 by the completion audit. See
 `docs/records/2026-07-12_generation_training_runtime_selection.md`.
 
+Formal 10K and 50K sampling also selects one shared batch from
+`16,32,64,128`. Both checkpoints run repeated synchronized EMA/CFG forwards;
+eligible candidates must pass for both methods below 90% VRAM, and selection
+maximizes the slower method's output-images/second. Per-index random streams
+keep generated samples invariant to the selected batch. The final comparison
+reports batch, elapsed time, and realized throughput. See
+`docs/records/2026-07-12_generation_sampling_batch_selection.md`.
+
 Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies
 strictly increasing finite metrics, resume-aware timing segments, checkpoint

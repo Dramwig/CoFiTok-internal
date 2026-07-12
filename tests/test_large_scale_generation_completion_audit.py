@@ -130,6 +130,10 @@ def _generation(seed: str) -> dict:
                 "completed_samples": 50_000,
                 "cumulative_elapsed_seconds": 10_000.0,
             },
+            "sampling": {
+                "batch_size": 64,
+                "random_stream": {"batch_size_invariant": True},
+            },
         },
     }
 
@@ -152,6 +156,25 @@ def _comparison() -> dict:
             },
         ],
         "official_context_rows": [{}, {}, {}],
+    }
+
+
+def _sampling_runtime_selection() -> dict:
+    return {
+        "status": "selected",
+        "git_revision": FULL_REVISION,
+        "policy": {
+            "shared_candidate_required": True,
+            "batch_size_invariant_random_stream_required": True,
+        },
+        "selected": {
+            "batch_size": 64,
+            "estimated_speedup_over_baseline": 1.4,
+        },
+        "checkpoints": {
+            "cofitok": {"sha256": "a" * 64, "step": 300_000},
+            "dense_identity": {"sha256": "b" * 64, "step": 300_000},
+        },
     }
 
 
@@ -191,6 +214,7 @@ def _kwargs() -> dict:
         "cofitok_training_audit": _training_audit(),
         "dense_training_audit": _training_audit(),
         "runtime_selection": _runtime_selection(),
+        "sampling_runtime_selection": _sampling_runtime_selection(),
         "milestones": {step: _milestone(step) for step in MILESTONE_STEPS},
         "cofitok_generation": _generation("a"),
         "dense_generation": _generation("b"),
@@ -206,7 +230,7 @@ def test_completion_audit_requires_every_large_scale_artifact() -> None:
     assert report["complete"] is True
     assert report["failed_checks"] == []
     assert report["missing_checks"] == []
-    assert len(report["checks"]) == 9
+    assert len(report["checks"]) == 10
 
 
 def test_completion_audit_reports_missing_work_as_in_progress() -> None:
@@ -274,6 +298,16 @@ def test_completion_audit_rejects_training_that_ignores_selected_runtime() -> No
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == ["full_runtime_selection"]
+
+
+def test_completion_audit_rejects_sampling_that_ignores_selected_batch() -> None:
+    kwargs = _kwargs()
+    kwargs["dense_generation"]["sample_provenance"]["sampling"]["batch_size"] = 32
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["formal_sampling_runtime_selection"]
 
 
 def test_completion_audit_preserves_nonblocking_milestone_alerts() -> None:

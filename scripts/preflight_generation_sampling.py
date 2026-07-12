@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import gc
+import statistics
 import time
 from pathlib import Path
 from typing import Any
@@ -27,6 +28,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--cfg-batch-mode", choices=["batched", "sequential"], default="batched")
     parser.add_argument("--weights", choices=["ema", "model"], default="ema")
     parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
+    parser.add_argument("--warmup-forwards", type=int, default=0)
+    parser.add_argument("--measured-forwards", type=int, default=1)
     return parser.parse_args()
 
 
@@ -51,6 +54,8 @@ def run_sampling_preflight(
     cfg_batch_mode: str = "batched",
     weights: str = "ema",
     precision: str = "bf16",
+    warmup_forwards: int = 0,
+    measured_forwards: int = 1,
 ) -> dict[str, Any]:
     if batch_size < 1:
         raise ValueError("batch-size must be positive")
@@ -60,6 +65,8 @@ def run_sampling_preflight(
         raise ValueError("cfg-batch-mode must be batched or sequential")
     if precision not in {"fp32", "bf16", "fp16"}:
         raise ValueError("precision must be fp32, bf16, or fp16")
+    if warmup_forwards < 0 or measured_forwards < 1:
+        raise ValueError("sampling preflight forward counts are invalid")
 
     loaded = load_generation_model(checkpoint, weights=weights)
     model = loaded.model
@@ -116,29 +123,53 @@ def run_sampling_preflight(
             "cfg_batch_mode": cfg_batch_mode,
             "class_conditional": class_labels is not None,
             "timestep": config.diffusion.num_train_timesteps - 1,
+            "warmup_forwards": warmup_forwards,
+            "measured_forwards": measured_forwards,
         },
     }
     try:
         if device.type == "cuda":
             torch.cuda.synchronize(device)
-            torch.cuda.reset_peak_memory_stats(device)
-        baseline_memory = _cuda_memory(device)
-        started = time.perf_counter()
         with torch.inference_mode(), autocast_context(device, precision):
-            epsilon = predict_epsilon(
-                model,
-                images,
-                timesteps,
-                prefix_budget=budget,
-                class_labels=class_labels,
-                guidance_scale=guidance_scale,
-                guidance_rescale=guidance_rescale,
-                cfg_batch_mode=cfg_batch_mode,
-            )
-        output_finite = bool(torch.isfinite(epsilon).all().item())
+            for _ in range(warmup_forwards):
+                epsilon = predict_epsilon(
+                    model,
+                    images,
+                    timesteps,
+                    prefix_budget=budget,
+                    class_labels=class_labels,
+                    guidance_scale=guidance_scale,
+                    guidance_rescale=guidance_rescale,
+                    cfg_batch_mode=cfg_batch_mode,
+                )
         if device.type == "cuda":
             torch.cuda.synchronize(device)
-        elapsed_seconds = time.perf_counter() - started
+            torch.cuda.reset_peak_memory_stats(device)
+        baseline_memory = _cuda_memory(device)
+        durations = []
+        for _ in range(measured_forwards):
+            if device.type == "cuda":
+                torch.cuda.synchronize(device)
+            started = time.perf_counter()
+            with torch.inference_mode(), autocast_context(device, precision):
+                epsilon = predict_epsilon(
+                    model,
+                    images,
+                    timesteps,
+                    prefix_budget=budget,
+                    class_labels=class_labels,
+                    guidance_scale=guidance_scale,
+                    guidance_rescale=guidance_rescale,
+                    cfg_batch_mode=cfg_batch_mode,
+                )
+            if device.type == "cuda":
+                torch.cuda.synchronize(device)
+            durations.append(time.perf_counter() - started)
+        output_finite = bool(torch.isfinite(epsilon).all().item())
+        elapsed_seconds = sum(durations)
+        mean_forward_seconds = statistics.fmean(durations)
+        sorted_durations = sorted(durations)
+        p95_index = max(0, (95 * len(sorted_durations) + 99) // 100 - 1)
         peak_memory = _cuda_memory(device)
         if not output_finite:
             raise RuntimeError("sampling preflight produced non-finite epsilon values")
@@ -148,11 +179,24 @@ def run_sampling_preflight(
             status="passed",
             result={
                 "elapsed_seconds": elapsed_seconds,
+                "mean_forward_seconds": mean_forward_seconds,
+                "median_forward_seconds": statistics.median(durations),
+                "p95_forward_seconds": sorted_durations[p95_index],
+                "durations_seconds": durations,
+                "output_images_per_second": batch_size / mean_forward_seconds,
+                "effective_model_images_per_second": (
+                    effective_batch_size / mean_forward_seconds
+                ),
                 "output_shape": list(epsilon.shape),
                 "output_dtype": str(epsilon.dtype),
                 "output_finite": output_finite,
                 "cuda_memory_before_forward": baseline_memory,
                 "cuda_memory_after_forward": peak_memory,
+                "device_total_memory_bytes": (
+                    torch.cuda.get_device_properties(device).total_memory
+                    if device.type == "cuda"
+                    else 0
+                ),
             },
         )
     except Exception as error:
@@ -185,6 +229,8 @@ def main() -> None:
             cfg_batch_mode=args.cfg_batch_mode,
             weights=args.weights,
             precision=args.precision,
+            warmup_forwards=args.warmup_forwards,
+            measured_forwards=args.measured_forwards,
         )
     except Exception as error:
         report = {
@@ -199,6 +245,8 @@ def main() -> None:
                 "guidance_rescale": args.guidance_rescale,
                 "cfg_batch_mode": args.cfg_batch_mode,
                 "weights": args.weights,
+                "warmup_forwards": args.warmup_forwards,
+                "measured_forwards": args.measured_forwards,
             },
             "error_type": type(error).__name__,
             "error": str(error),
