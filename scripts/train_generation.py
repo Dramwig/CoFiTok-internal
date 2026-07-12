@@ -20,7 +20,12 @@ from cofitok.data import StatefulRandomSampler, build_dataloader, build_dataset
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import write_json_report
-from cofitok.training import ExponentialMovingAverage, compute_losses
+from cofitok.training import (
+    ExponentialMovingAverage,
+    compute_losses,
+    ensure_fresh_training_output,
+    reconcile_metrics_for_resume,
+)
 from cofitok.training.checkpointing import (
     load_training_checkpoint,
     prune_checkpoints,
@@ -120,6 +125,20 @@ def _next_batch(
     images = batch[0] if isinstance(batch, (list, tuple)) else batch
     sampler.mark_consumed(int(images.shape[0]))
     return batch, iterator
+
+
+def _advance_eval_iterator(
+    loader: DataLoader,
+    iterator: object,
+    batches: int,
+) -> object:
+    for _ in range(batches):
+        try:
+            next(iterator)
+        except StopIteration:
+            iterator = iter(loader)
+            next(iterator)
+    return iterator
 
 
 def _move_batch(
@@ -232,6 +251,12 @@ def main() -> None:
             ),
         )
     _validate_config(config)
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    metrics_path = output_dir / "train_metrics.jsonl"
+    resume_path = _resolve_resume(output_dir, args.resume)
+    if resume_path is None:
+        ensure_fresh_training_output(output_dir)
     stop = StopController()
     signal.signal(signal.SIGTERM, stop.request)
     signal.signal(signal.SIGINT, stop.request)
@@ -243,8 +268,6 @@ def main() -> None:
         torch.backends.cudnn.benchmark = config.runtime.cudnn_benchmark
     torch.set_float32_matmul_precision("high")
 
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
     train_loader, sampler = _build_train_loader(config)
     eval_loader = build_dataloader(
         config.data,
@@ -252,8 +275,6 @@ def main() -> None:
         drop_last=False,
         generator=torch.Generator().manual_seed(config.runtime.seed + 97),
     )
-    train_iterator = iter(train_loader)
-    eval_iterator = iter(eval_loader)
 
     base_model = CoFiTokTiny(config.model).to(device)
     optimizer = torch.optim.AdamW(
@@ -276,7 +297,7 @@ def main() -> None:
     )
     schedule = DiffusionSchedule(config.diffusion, device=device)
     start_step = 0
-    resume_path = _resolve_resume(output_dir, args.resume)
+    metrics_resume_reconciliation = None
     if resume_path is not None:
         checkpoint = load_training_checkpoint(
             resume_path,
@@ -293,7 +314,18 @@ def main() -> None:
         if sampler_state is None:
             raise ValueError("production checkpoint is missing sampler state")
         sampler.load_state_dict(sampler_state)
-        train_iterator = iter(train_loader)
+        metrics_resume_reconciliation = reconcile_metrics_for_resume(
+            metrics_path,
+            resume_step=start_step,
+        )
+
+    train_iterator = iter(train_loader)
+    eval_iterator = iter(eval_loader)
+    eval_iterator = _advance_eval_iterator(
+        eval_loader,
+        eval_iterator,
+        start_step // config.runtime.evaluation_interval,
+    )
 
     model: torch.nn.Module = base_model
     if config.runtime.compile_model:
@@ -313,10 +345,10 @@ def main() -> None:
             parameter.numel() for parameter in base_model.parameters() if parameter.requires_grad
         ),
         "resume": str(resume_path) if resume_path is not None else None,
+        "metrics_resume_reconciliation": metrics_resume_reconciliation,
     }
     write_json_report(output_dir / "run_manifest.json", manifest)
 
-    metrics_path = output_dir / "train_metrics.jsonl"
     training_start = time.time()
     last_metrics: dict[str, float | int] = {}
     completed_step = start_step
@@ -384,7 +416,8 @@ def main() -> None:
             "elapsed_seconds": time.time() - training_start,
         }
         if not stop.requested and (
-            step % config.runtime.evaluation_interval == 0 or step == loop_end
+            step % config.runtime.evaluation_interval == 0
+            or step == config.runtime.steps
         ):
             try:
                 eval_batch = next(eval_iterator)

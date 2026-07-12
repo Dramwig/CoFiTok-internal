@@ -181,6 +181,19 @@ bytes by SHA256. The transition-field correction and negative tests are
 recorded in
 `docs/records/2026-07-12_generation_gate_provenance_hardening.md`.
 
+Exact training recovery also covers the append-only metrics history. On
+`--resume`, `cofitok.training.metrics.reconcile_metrics_for_resume` keeps the
+latest row for each step at or before the durable checkpoint, archives
+checkpoint-ahead or superseded rows with a content-addressed SHA256, and
+atomically rewrites canonical JSONL before training continues. The result is
+bound into the resumed run manifest. A fresh invocation refuses any output
+directory containing prior training state. Train/eval iterators are created
+after RNG and sampler restoration, and the deterministic validation iterator
+is advanced to the batch implied by the restored optimizer step. A CPU
+trajectory test requires uninterrupted and segmented-resume states to match
+exactly. See
+`docs/records/2026-07-12_generation_resume_metrics_reconciliation.md`.
+
 Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies
 strictly increasing finite metrics, resume-aware timing segments, checkpoint
