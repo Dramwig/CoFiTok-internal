@@ -312,10 +312,17 @@ def build_dataloader(
     config: DataConfig,
     split: str = "train",
     drop_last: bool | None = None,
+    generator: torch.Generator | None = None,
 ) -> DataLoader[Any]:
     dataset = build_dataset(config, split=split)
     if drop_last is None:
         drop_last = split == "train"
+    worker_options: dict[str, Any] = {}
+    if config.num_workers > 0:
+        worker_options = {
+            "persistent_workers": config.persistent_workers,
+            "prefetch_factor": config.prefetch_factor,
+        }
     return DataLoader(
         dataset,
         batch_size=config.batch_size,
@@ -323,4 +330,6 @@ def build_dataloader(
         num_workers=config.num_workers,
         pin_memory=torch.cuda.is_available(),
         drop_last=drop_last,
+        generator=generator,
+        **worker_options,
     )

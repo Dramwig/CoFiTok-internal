@@ -306,18 +306,22 @@ def _denoise_path_losses(
     timesteps: torch.Tensor,
     progress_power: float,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    target_x0s = _denoise_path_prefix_targets(
-        schedule,
-        noisy_images,
-        clean_images,
-        timesteps,
-        count=len(output.prefix_epsilons),
-        progress_power=progress_power,
-    )
-    target_prefix_epsilons = [
-        _target_prefix_epsilon(schedule, noisy_images, target_x0, timesteps)
-        for target_x0 in target_x0s
-    ]
+    spatial_targets = _prefix_targets(clean_images, len(output.prefix_epsilons))
+    power = max(progress_power, 1e-6)
+    # The denoise path starts at epsilon=0 and is linear in x0. Construct
+    # targets directly in epsilon space to avoid catastrophic cancellation at
+    # the near-zero terminal alpha of cosine schedules.
+    target_prefix_epsilons = []
+    for index, spatial_target in enumerate(spatial_targets):
+        progress = ((index + 1) / len(spatial_targets)) ** power
+        target_prefix_epsilons.append(
+            progress * _target_prefix_epsilon(
+                schedule,
+                noisy_images,
+                spatial_target,
+                timesteps,
+            )
+        )
     prefix_losses = [
         F.mse_loss(prefix_epsilon, target_prefix)
         for prefix_epsilon, target_prefix in zip(output.prefix_epsilons, target_prefix_epsilons)

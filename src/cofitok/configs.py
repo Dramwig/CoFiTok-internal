@@ -15,6 +15,8 @@ class DataConfig:
     batch_size: int = 4
     num_workers: int = 0
     class_conditional: bool = False
+    persistent_workers: bool = False
+    prefetch_factor: int = 2
 
 
 @dataclass(frozen=True)
@@ -23,6 +25,7 @@ class DiffusionConfig:
     beta_start: float = 1e-4
     beta_end: float = 2e-2
     prediction_target: str = "epsilon"
+    schedule_type: str = "linear"
 
 
 @dataclass(frozen=True)
@@ -43,6 +46,14 @@ class ModelConfig:
     synthesis_active_token_channels: list[int] = field(default_factory=list)
     deep_synthesis_hidden_channels: int = 0
     deep_synthesis_depth: int = 3
+    predictor_channel_multipliers: list[int] = field(default_factory=lambda: [1, 2, 4, 4])
+    predictor_num_res_blocks: int = 2
+    predictor_attention_resolutions: list[int] = field(default_factory=lambda: [32, 16])
+    predictor_num_heads: int = 4
+    predictor_dropout: float = 0.0
+    predictor_gradient_checkpointing: bool = False
+    num_classes: int = 0
+    class_dropout_prob: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -86,6 +97,12 @@ class RuntimeConfig:
     seed: int = 13
     device: str = "cpu"
     steps: int = 1
+    precision: str = "fp32"
+    compile_model: bool = False
+    allow_tf32: bool = True
+    checkpoint_interval: int = 1000
+    evaluation_interval: int = 1000
+    keep_last_checkpoints: int = 3
 
 
 @dataclass(frozen=True)
@@ -96,6 +113,11 @@ class OptimizationConfig:
     grad_clip_norm: float = 1.0
     log_interval: int = 10
     visualization_count: int = 8
+    gradient_accumulation_steps: int = 1
+    warmup_steps: int = 0
+    min_learning_rate: float = 0.0
+    ema_decay: float = 0.9999
+    ema_warmup_steps: int = 2000
 
 
 @dataclass(frozen=True)
@@ -145,6 +167,10 @@ def _build_config(raw: dict[str, Any]) -> ExperimentConfig:
 def load_config(path: str | Path) -> ExperimentConfig:
     with Path(path).open("r", encoding="utf-8") as handle:
         raw = json.load(handle)
+    return _build_config(raw)
+
+
+def config_from_dict(raw: dict[str, Any]) -> ExperimentConfig:
     return _build_config(raw)
 
 

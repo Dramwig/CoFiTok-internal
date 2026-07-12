@@ -89,3 +89,11 @@ uv sync
 ```
 
 如果项目还没有 `pyproject.toml`，先按实际代码骨架补齐，再创建环境。正式 diffusion 训练、批量采样、FID / LPIPS 评估和大规模数据处理都放到 `pro6000`。
+
+## 当前生成系统分支
+
+- 锁定论文状态：`paper-evidence-locked`，初始提交 `88c3aab`。
+- 当前升级分支：`scale/generative-system`。所有 generation-scale 代码、配置和记录只提交到该分支。
+- 新输出根目录：`/root/autodl-tmp/CoFiTok/checkpoints/generation/`；不得覆盖旧 checkpoint、论文表或 2026-07-11 locked artifacts。
+- 训练和晋级门槛以 `docs/GENERATION_SYSTEM.md` 为准；10% 数据结果只作升级 gate，full ImageNet-256 matched training + 50K sample evaluation 才能证明大规模生成闭环完成。
+- class label、timestep 和 CFG dropout 只允许进入 `T_k`；`S_k` 继续严格保持 current-token-only 与 `S_k(0)=0`。

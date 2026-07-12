@@ -8,13 +8,24 @@ from cofitok.configs import DiffusionConfig
 class DiffusionSchedule:
     def __init__(self, config: DiffusionConfig, device: torch.device | str) -> None:
         self.config = config
-        betas = torch.linspace(
-            config.beta_start,
-            config.beta_end,
-            config.num_train_timesteps,
-            dtype=torch.float32,
-            device=device,
-        )
+        if config.schedule_type == "linear":
+            betas = torch.linspace(
+                config.beta_start,
+                config.beta_end,
+                config.num_train_timesteps,
+                dtype=torch.float32,
+                device=device,
+            )
+        elif config.schedule_type == "cosine":
+            steps = config.num_train_timesteps + 1
+            values = torch.linspace(0, config.num_train_timesteps, steps, device=device)
+            cumulative = torch.cos(
+                ((values / config.num_train_timesteps + 0.008) / 1.008) * torch.pi * 0.5
+            ).pow(2)
+            cumulative = cumulative / cumulative[0]
+            betas = (1.0 - cumulative[1:] / cumulative[:-1]).clamp(1e-4, 0.999)
+        else:
+            raise ValueError(f"Unknown diffusion schedule_type: {config.schedule_type}")
         alphas = 1.0 - betas
         alphas_cumprod = torch.cumprod(alphas, dim=0)
         self.betas = betas

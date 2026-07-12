@@ -4,6 +4,7 @@ import torch
 from torch import nn
 
 from cofitok.models.blocks import ConvNormAct, TimestepEmbedder, group_norm_groups
+from cofitok.models.scalable_unet import ScalableUNetTokenPredictor
 
 
 class TinyTokenPredictor(nn.Module):
@@ -42,7 +43,16 @@ class TinyTokenPredictor(nn.Module):
         else:
             self.feedback = nn.ModuleList()
 
-    def forward(self, noisy_images: torch.Tensor, timesteps: torch.Tensor) -> list[torch.Tensor]:
+    def forward(
+        self,
+        noisy_images: torch.Tensor,
+        timesteps: torch.Tensor,
+        class_labels: torch.Tensor | None = None,
+        force_unconditional: bool = False,
+    ) -> list[torch.Tensor]:
+        del force_unconditional
+        if class_labels is not None:
+            raise ValueError("TinyTokenPredictor does not support class conditioning")
         hidden = self.input_proj(noisy_images)
         time_embedding = self.time_embed(timesteps).view(timesteps.shape[0], -1, 1, 1)
         hidden = hidden + time_embedding
@@ -143,7 +153,16 @@ class MultiScaleTokenPredictor(nn.Module):
             state = block(state)
         return state
 
-    def forward(self, noisy_images: torch.Tensor, timesteps: torch.Tensor) -> list[torch.Tensor]:
+    def forward(
+        self,
+        noisy_images: torch.Tensor,
+        timesteps: torch.Tensor,
+        class_labels: torch.Tensor | None = None,
+        force_unconditional: bool = False,
+    ) -> list[torch.Tensor]:
+        del force_unconditional
+        if class_labels is not None:
+            raise ValueError("MultiScaleTokenPredictor does not support class conditioning")
         state = self._encode(noisy_images, timesteps)
         tokens = []
         for index, head in enumerate(self.token_heads):
@@ -163,6 +182,15 @@ def build_token_predictor(
     depth: int,
     use_feedback: bool = True,
     multiscale_levels: int = 2,
+    image_size: int = 32,
+    channel_multipliers: list[int] | None = None,
+    num_res_blocks: int = 2,
+    attention_resolutions: list[int] | None = None,
+    num_heads: int = 4,
+    dropout: float = 0.0,
+    gradient_checkpointing: bool = False,
+    num_classes: int = 0,
+    class_dropout_prob: float = 0.0,
 ) -> nn.Module:
     if predictor_type in {"tiny", "tiny_conv"}:
         return TinyTokenPredictor(
@@ -182,5 +210,22 @@ def build_token_predictor(
             depth=depth,
             use_feedback=use_feedback,
             levels=multiscale_levels,
+        )
+    if predictor_type in {"scalable_unet", "adm_unet", "generation_unet"}:
+        return ScalableUNetTokenPredictor(
+            image_channels=image_channels,
+            image_size=image_size,
+            token_count=token_count,
+            token_channels=token_channels,
+            base_channels=base_channels,
+            channel_multipliers=channel_multipliers or [1, 2, 4, 4],
+            num_res_blocks=num_res_blocks,
+            attention_resolutions=attention_resolutions or [],
+            num_heads=num_heads,
+            dropout=dropout,
+            use_feedback=use_feedback,
+            gradient_checkpointing=gradient_checkpointing,
+            num_classes=num_classes,
+            class_dropout_prob=class_dropout_prob,
         )
     raise ValueError(f"Unknown predictor_type: {predictor_type}")

@@ -33,6 +33,15 @@ class CoFiTokTiny(nn.Module):
             depth=config.predictor_depth,
             use_feedback=config.predictor_use_feedback,
             multiscale_levels=config.predictor_multiscale_levels,
+            image_size=config.image_size,
+            channel_multipliers=config.predictor_channel_multipliers,
+            num_res_blocks=config.predictor_num_res_blocks,
+            attention_resolutions=config.predictor_attention_resolutions,
+            num_heads=config.predictor_num_heads,
+            dropout=config.predictor_dropout,
+            gradient_checkpointing=config.predictor_gradient_checkpointing,
+            num_classes=config.num_classes,
+            class_dropout_prob=config.class_dropout_prob,
         )
         self.synthesis = build_synthesis_bank(
             synthesis_mode=config.synthesis_mode,
@@ -47,8 +56,19 @@ class CoFiTokTiny(nn.Module):
             deep_depth=config.deep_synthesis_depth,
         )
 
-    def forward(self, noisy_images: torch.Tensor, timesteps: torch.Tensor) -> CoFiTokOutput:
-        tokens = self.predictor(noisy_images, timesteps)
+    def forward(
+        self,
+        noisy_images: torch.Tensor,
+        timesteps: torch.Tensor,
+        class_labels: torch.Tensor | None = None,
+        force_unconditional: bool = False,
+    ) -> CoFiTokOutput:
+        tokens = self.predictor(
+            noisy_images,
+            timesteps,
+            class_labels=class_labels,
+            force_unconditional=force_unconditional,
+        )
         components = self.synthesis(tokens)
         prefix_epsilons = []
         running = torch.zeros_like(components[0])

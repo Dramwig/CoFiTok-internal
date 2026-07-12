@@ -1,0 +1,74 @@
+{
+  "name": "imagenet256_10pct_cofitok_k8_generation_50k",
+  "data": {
+    "dataset": "imagenet_256_10pct",
+    "root": "/root/autodl-tmp/CoFiTok/datasets",
+    "image_size": 256,
+    "channels": 3,
+    "batch_size": 8,
+    "num_workers": 8,
+    "class_conditional": true,
+    "persistent_workers": true,
+    "prefetch_factor": 2
+  },
+  "diffusion": {
+    "num_train_timesteps": 1000,
+    "schedule_type": "cosine",
+    "prediction_target": "epsilon"
+  },
+  "model": {
+    "image_channels": 3,
+    "image_size": 256,
+    "token_count": 8,
+    "token_channels": 64,
+    "base_channels": 128,
+    "predictor_type": "scalable_unet",
+    "predictor_use_feedback": true,
+    "predictor_channel_multipliers": [1, 2, 3, 4],
+    "predictor_num_res_blocks": 2,
+    "predictor_attention_resolutions": [32, 16],
+    "predictor_num_heads": 8,
+    "predictor_dropout": 0.0,
+    "predictor_gradient_checkpointing": true,
+    "num_classes": 1000,
+    "class_dropout_prob": 0.1,
+    "synthesis_mode": "restricted",
+    "synthesis_kernel_size": 3,
+    "gamma_mode": "learned_scalar",
+    "synthesis_active_token_channels": [8, 16, 24, 32, 40, 48, 56, 64]
+  },
+  "loss": {
+    "epsilon_weight": 1.0,
+    "prefix_weight": 0.0,
+    "monotonic_weight": 0.0,
+    "zero_token_weight": 0.01,
+    "denoise_path_prefix_weight": 0.05,
+    "denoise_path_component_weight": 0.1,
+    "denoise_path_progress_power": 1.5
+  },
+  "runtime": {
+    "seed": 2027,
+    "device": "cuda",
+    "steps": 50000,
+    "precision": "bf16",
+    "compile_model": false,
+    "allow_tf32": true,
+    "checkpoint_interval": 5000,
+    "evaluation_interval": 1000,
+    "keep_last_checkpoints": 3
+  },
+  "optimization": {
+    "learning_rate": 0.0001,
+    "min_learning_rate": 0.00001,
+    "warmup_steps": 1000,
+    "weight_decay": 0.01,
+    "betas": [0.9, 0.99],
+    "grad_clip_norm": 1.0,
+    "gradient_accumulation_steps": 8,
+    "ema_decay": 0.9999,
+    "ema_warmup_steps": 2000,
+    "log_interval": 50,
+    "visualization_count": 8
+  }
+}
+
