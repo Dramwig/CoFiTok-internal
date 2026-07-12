@@ -25,6 +25,9 @@ def _training(
         "completed_steps": steps,
         "target_steps": steps,
         "parameter_count": parameters,
+        "elapsed_seconds": 100_000.0,
+        "peak_vram_bytes": 24 * 1024**3,
+        "final_metrics": {"samples_seen": steps * 64},
         "git": {
             "dirty": False,
             "revision": revision,
@@ -39,7 +42,7 @@ def _training(
         "config": {
             "data": {"dataset": dataset, "batch_size": 16},
             "diffusion": {"schedule_type": "cosine"},
-            "runtime": {"precision": "bf16"},
+            "runtime": {"precision": "bf16", "device": "cuda"},
             "optimization": {"gradient_accumulation_steps": 4},
             "model": {"token_count": 8 if parameters > 100_000 else 1},
         },
@@ -156,6 +159,7 @@ def _generation(seed: str) -> dict:
             "precision": 0.6,
             "recall": 0.4,
         },
+        "implementation": {"package": "torch_fidelity", "version": "0.4.0"},
         "sample_provenance": {
             "checkpoint_step": 300_000,
             "weights": "ema",
@@ -169,6 +173,8 @@ def _generation(seed: str) -> dict:
             },
             "sampling": {
                 "batch_size": 64,
+                "sample_steps": 250,
+                "guidance_scale": 1.5,
                 "inference_api": {
                     "name": "cofitok.generation.GenerationSession",
                     "version": 1,
@@ -179,24 +185,112 @@ def _generation(seed: str) -> dict:
     }
 
 
+def _official_related() -> dict:
+    rows = []
+    for alias, method, fid in (
+        ("d_ar", "D-AR", 2.6281),
+        ("mar", "MAR", 2.3385),
+        ("retok", "ReTok", 2.2189),
+    ):
+        rows.append(
+            {
+                "alias": alias,
+                "method": method,
+                "dataset": "imagenet_256",
+                "resolution": 256,
+                "status": "completed_eval_only_50k",
+                "sample_count": 50_000,
+                "fid": fid,
+                "inception_score": 200.0,
+                "precision": 0.8,
+                "recall": 0.6,
+                "protocol": "official pretrained eval-only",
+                "paper_table_role": "secondary related-method only",
+                "metrics_txt": f"/{alias}.txt",
+            }
+        )
+    return {"schema_version": 1, "rows": rows}
+
+
 def _comparison() -> dict:
+    official = _official_related()
     return {
+        "schema_version": 2,
         "status": "ready",
+        "comparison_policy": {
+            "primary_direct_tier": "matched_training_direct",
+            "external_context_tier": "official_pretrained_contextual",
+            "cross_tier_numeric_ranking_allowed": False,
+        },
+        "official_context_source": {
+            "path": "/reports/official_related_methods_table.json",
+            "sha256": "9" * 64,
+            "schema_version": 1,
+        },
         "matched_training_rows": [
             {
                 "method": "CoFiTok K=8",
+                "comparison_tier": "matched_training_direct",
+                "directly_comparable_to_cofitok": True,
+                "dataset": "imagenet_256",
+                "resolution": 256,
+                "training_steps": 300_000,
+                "parameter_count": 100_500,
+                "effective_batch_size": 64,
+                "training_images_seen": 19_200_000,
+                "training_elapsed_seconds": 100_000.0,
+                "training_images_per_second": 192.0,
+                "peak_vram_bytes": 24 * 1024**3,
                 "sample_count": 50_000,
+                "sample_batch_size": 64,
+                "sampling_elapsed_seconds": 10_000.0,
+                "sampling_images_per_second": 5.0,
                 "checkpoint_sha256": "a" * 64,
                 "sample_set_sha256": "A" * 64,
             },
             {
                 "method": "Dense identity",
+                "comparison_tier": "matched_training_direct",
+                "directly_comparable_to_cofitok": True,
+                "dataset": "imagenet_256",
+                "resolution": 256,
+                "training_steps": 300_000,
+                "parameter_count": 100_000,
+                "effective_batch_size": 64,
+                "training_images_seen": 19_200_000,
+                "training_elapsed_seconds": 100_000.0,
+                "training_images_per_second": 192.0,
+                "peak_vram_bytes": 24 * 1024**3,
                 "sample_count": 50_000,
+                "sample_batch_size": 64,
+                "sampling_elapsed_seconds": 10_000.0,
+                "sampling_images_per_second": 5.0,
                 "checkpoint_sha256": "b" * 64,
                 "sample_set_sha256": "B" * 64,
             },
         ],
-        "official_context_rows": [{}, {}, {}],
+        "official_context_rows": [
+            {
+                "alias": row["alias"],
+                "method": row["method"],
+                "comparison_tier": "official_pretrained_contextual",
+                "directly_comparable_to_cofitok": False,
+                "dataset": row["dataset"],
+                "resolution": row["resolution"],
+                "training_steps": None,
+                "parameter_count": None,
+                "sample_count": row["sample_count"],
+                "fid": row["fid"],
+                "inception_score": row["inception_score"],
+                "precision": row["precision"],
+                "recall": row["recall"],
+                "protocol_note": row["protocol"],
+                "source_metrics": row["metrics_txt"],
+                "source_status": row["status"],
+                "paper_table_role": row["paper_table_role"],
+            }
+            for row in official["rows"]
+        ],
     }
 
 
@@ -354,6 +448,8 @@ def _kwargs() -> dict:
         "dense_generation": _generation("b"),
         "final_gate": _gate("full"),
         "comparison": _comparison(),
+        "official_related": _official_related(),
+        "official_related_sha256": "9" * 64,
     }
 
 
@@ -389,6 +485,7 @@ def test_completion_audit_reports_missing_work_as_in_progress() -> None:
         "full_matched_training",
         "full_runtime_selection",
         "formal_50k_generation",
+        "final_comparison_report",
     ]
 
 
@@ -454,6 +551,46 @@ def test_completion_audit_rejects_stale_gate_and_comparison_provenance() -> None
     ]
 
 
+def test_completion_audit_rejects_mislabeled_official_context() -> None:
+    kwargs = _kwargs()
+    kwargs["comparison"]["official_context_rows"][0]["method"] = "MAR"
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_comparison_report"]
+
+
+def test_completion_audit_rejects_unbound_official_context_source() -> None:
+    kwargs = _kwargs()
+    kwargs["comparison"]["official_context_source"]["sha256"] = "8" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_comparison_report"]
+
+
+def test_completion_audit_rejects_cross_tier_ranking_policy() -> None:
+    kwargs = _kwargs()
+    kwargs["comparison"]["comparison_policy"]["cross_tier_numeric_ranking_allowed"] = True
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_comparison_report"]
+
+
+def test_completion_audit_rejects_misreported_matched_compute() -> None:
+    kwargs = _kwargs()
+    kwargs["comparison"]["matched_training_rows"][0]["training_images_seen"] -= 1
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_comparison_report"]
+
+
 def test_completion_audit_rejects_training_that_ignores_selected_runtime() -> None:
     kwargs = _kwargs()
     kwargs["runtime_selection"]["selected"].update(
@@ -475,7 +612,10 @@ def test_completion_audit_rejects_sampling_that_ignores_selected_batch() -> None
     report = build_completion_audit(**kwargs)
 
     assert report["status"] == "failed"
-    assert report["failed_checks"] == ["formal_sampling_runtime_selection"]
+    assert report["failed_checks"] == [
+        "formal_sampling_runtime_selection",
+        "final_comparison_report",
+    ]
 
 
 def test_completion_audit_rejects_sampling_outside_stable_inference_api() -> None:

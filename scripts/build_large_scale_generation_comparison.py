@@ -5,14 +5,15 @@ import csv
 import io
 import json
 import math
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from cofitok.generation_cost import training_cost_summary
-from cofitok.reporting import write_json_report, write_text_report
+from cofitok.reporting import file_sha256, write_json_report, write_text_report
 
 
 EXTERNAL_ALIASES = {"d_ar", "mar", "retok"}
+EXTERNAL_METHODS = {"d_ar": "D-AR", "mar": "MAR", "retok": "ReTok"}
 
 
 def _read(path: str | Path) -> dict[str, Any]:
@@ -78,12 +79,17 @@ def _matched_row(
 
 
 def _external_rows(official: dict[str, Any]) -> list[dict[str, Any]]:
+    if official.get("schema_version") != 1:
+        raise ValueError("unsupported official related-method table schema")
     rows = official.get("rows", [])
     aliases = {str(row.get("alias")) for row in rows}
     if aliases != EXTERNAL_ALIASES:
         raise ValueError(f"official related-method aliases do not match: {sorted(aliases)}")
     output = []
     for row in rows:
+        alias = str(row.get("alias"))
+        if row.get("method") != EXTERNAL_METHODS[alias]:
+            raise ValueError(f"official baseline method identity mismatch: {alias}")
         if row.get("status") != "completed_eval_only_50k":
             raise ValueError(f"official baseline is incomplete: {row.get('alias')}")
         if row.get("paper_table_role") != "secondary related-method only":
@@ -98,8 +104,19 @@ def _external_rows(official: dict[str, Any]) -> list[dict[str, Any]]:
         }
         if not all(math.isfinite(value) for value in metrics.values()):
             raise ValueError(f"official baseline metrics are non-finite: {row.get('alias')}")
+        if (
+            metrics["fid"] < 0.0
+            or metrics["inception_score"] <= 0.0
+            or not 0.0 <= metrics["precision"] <= 1.0
+            or not 0.0 <= metrics["recall"] <= 1.0
+        ):
+            raise ValueError(f"official baseline metrics are out of range: {row.get('alias')}")
+        metrics_txt = str(row.get("metrics_txt", ""))
+        if not PurePosixPath(metrics_txt).is_absolute() or not metrics_txt.endswith(".txt"):
+            raise ValueError(f"official baseline metrics source is invalid: {row.get('alias')}")
         output.append(
             {
+                "alias": alias,
                 "method": row["method"],
                 "comparison_tier": "official_pretrained_contextual",
                 "directly_comparable_to_cofitok": False,
@@ -118,7 +135,11 @@ def _external_rows(official: dict[str, Any]) -> list[dict[str, Any]]:
                 "checkpoint_sha256": None,
                 "sample_set_sha256": None,
                 "protocol_note": row["protocol"],
-                "source_metrics": row.get("metrics_txt"),
+                "source_metrics": metrics_txt,
+                "source_npz": row.get("npz"),
+                "source_kind": row.get("source_kind"),
+                "source_status": row["status"],
+                "paper_table_role": row["paper_table_role"],
             }
         )
     return output
@@ -143,7 +164,11 @@ def build_report(
     dense_generation: dict[str, Any],
     final_gate: dict[str, Any],
     official_related: dict[str, Any],
+    official_source_path: str,
+    official_source_sha256: str,
 ) -> dict[str, Any]:
+    if len(official_source_sha256) != 64:
+        raise ValueError("official related-method source SHA256 is malformed")
     if final_gate.get("stage") != "full":
         raise ValueError("large-scale comparison requires a full-stage gate report")
     matched = [
@@ -187,7 +212,7 @@ def build_report(
         and final_gate.get("decision") == "large_scale_generation_ready"
     )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "ready" if ready else "hold",
         "final_gate": {
             "status": final_gate.get("status"),
@@ -201,6 +226,11 @@ def build_report(
                 "External rows use official pretrained checkpoints and the ADM TensorFlow "
                 "evaluator; CoFiTok and dense use matched training plus torch-fidelity."
             ),
+        },
+        "official_context_source": {
+            "path": official_source_path,
+            "sha256": official_source_sha256,
+            "schema_version": official_related.get("schema_version"),
         },
         "matched_training_rows": matched,
         "official_context_rows": external,
@@ -333,6 +363,8 @@ def main() -> None:
         dense_generation=_read(args.dense_generation),
         final_gate=_read(args.final_gate),
         official_related=_read(args.official_related),
+        official_source_path=Path(args.official_related).resolve().as_posix(),
+        official_source_sha256=file_sha256(args.official_related),
     )
     output_dir = Path(args.output_dir)
     write_json_report(output_dir / "large_scale_generation_comparison.json", report)

@@ -108,6 +108,8 @@ def _report(official: dict | None = None, gate: dict | None = None) -> dict:
         dense_generation=_generation(11.8, "b" * 64, "d" * 64),
         final_gate=gate or _gate(),
         official_related=official or _official(),
+        official_source_path="/reports/official_related_methods_table.json",
+        official_source_sha256="e" * 64,
     )
 
 
@@ -120,6 +122,12 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     assert report["comparison_policy"]["cross_tier_numeric_ranking_allowed"] is False
     assert all(row["directly_comparable_to_cofitok"] for row in report["matched_training_rows"])
     assert not any(row["directly_comparable_to_cofitok"] for row in report["official_context_rows"])
+    assert {row["alias"] for row in report["official_context_rows"]} == {
+        "d_ar",
+        "mar",
+        "retok",
+    }
+    assert report["official_context_source"]["sha256"] == "e" * 64
     assert report["matched_training_rows"][0]["effective_batch_size"] == 64
     assert report["matched_training_rows"][0]["training_images_seen"] == 19_200_000
     assert report["matched_training_rows"][0]["peak_vram_bytes"] == 24 * 1024**3
@@ -165,4 +173,22 @@ def test_comparison_rejects_incomplete_sampling_progress() -> None:
             dense_generation=_generation(11.8, "b" * 64, "d" * 64),
             final_gate=_gate(),
             official_related=_official(),
+            official_source_path="/reports/official_related_methods_table.json",
+            official_source_sha256="e" * 64,
         )
+
+
+def test_comparison_rejects_external_method_identity_mismatch() -> None:
+    official = _official()
+    official["rows"][0]["method"] = "MAR"
+
+    with pytest.raises(ValueError, match="method identity mismatch"):
+        _report(official=official)
+
+
+def test_comparison_rejects_external_metric_out_of_range() -> None:
+    official = _official()
+    official["rows"][0]["precision"] = 1.1
+
+    with pytest.raises(ValueError, match="metrics are out of range"):
+        _report(official=official)

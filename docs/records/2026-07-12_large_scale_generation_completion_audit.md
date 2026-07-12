@@ -41,7 +41,8 @@ The audit requires all of the following:
   300K checkpoint and proven by real-forward preflight plus short DDIM PNG smoke;
 - a passing final gate with decision `large_scale_generation_ready`;
 - the ready two-tier comparison containing the matched pair and three official
-  contextual methods.
+  contextual methods, with direct compute fields recomputed from training and
+  sampling reports and official rows bound to the locked source table SHA256.
 
 Milestone quality alerts are preserved as warnings because those 2,048-sample
 runs are trend diagnostics. They cannot override a failed final 50K gate.

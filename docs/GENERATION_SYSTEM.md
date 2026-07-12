@@ -161,7 +161,12 @@ diagnostics, the final large-scale gate report, and a two-tier strong-baseline
 comparison. CoFiTok versus `dense_identity` is the direct matched-training
 panel. D-AR, MAR, and ReTok remain a separate official-pretrained contextual
 panel because their training budgets and ADM evaluator differ; machine-readable
-policy explicitly forbids cross-panel numeric ranking.
+policy explicitly forbids cross-panel numeric ranking. The comparison binds the
+tracked official table by SHA256 and preserves alias, method identity, eval-only
+status, protocol, source metrics path, and table role. The completion audit
+recomputes direct training/sampling cost fields and cross-checks every contextual
+row against that source table. See
+`docs/records/2026-07-12_generation_baseline_comparison_provenance.md`.
 
 Full-training milestone checkpoints are reproducible assets, not disposable
 rolling saves. Both 300K configs protect 50K, 100K, 200K, and 300K while also

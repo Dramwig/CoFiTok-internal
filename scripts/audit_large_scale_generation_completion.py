@@ -6,7 +6,8 @@ import math
 from pathlib import Path
 from typing import Any, Callable
 
-from cofitok.reporting import write_json_report
+from cofitok.generation_cost import training_cost_summary
+from cofitok.reporting import file_sha256, write_json_report
 
 try:
     from scripts.validate_generation_training_pair import validate_training_pair
@@ -431,15 +432,32 @@ def _final_gate_evidence(
 
 
 def _comparison_evidence(
-    report: dict[str, Any], generation_reports: dict[str, dict[str, Any]]
+    report: dict[str, Any],
+    generation_reports: dict[str, dict[str, Any]],
+    training_reports: dict[str, dict[str, Any]],
+    official_related: dict[str, Any],
+    official_related_sha256: str,
 ) -> dict[str, Any]:
+    if report.get("schema_version") != 2:
+        raise ValueError("large-scale comparison schema is stale")
     if report.get("status") != "ready":
         raise ValueError("large-scale comparison is not ready")
     rows = report.get("matched_training_rows", [])
     if len(rows) != 2 or any(int(row.get("sample_count", -1)) != 50_000 for row in rows):
         raise ValueError("large-scale comparison lacks the matched 50K pair")
-    if len(report.get("official_context_rows", [])) != 3:
-        raise ValueError("large-scale comparison lacks official contextual rows")
+    policy = report.get("comparison_policy", {})
+    if policy.get("primary_direct_tier") != "matched_training_direct":
+        raise ValueError("comparison primary tier is not matched training")
+    if policy.get("external_context_tier") != "official_pretrained_contextual":
+        raise ValueError("comparison external tier is mislabeled")
+    if policy.get("cross_tier_numeric_ranking_allowed") is not False:
+        raise ValueError("comparison incorrectly permits cross-tier numeric ranking")
+    source = report.get("official_context_source", {})
+    if (
+        source.get("sha256") != official_related_sha256
+        or source.get("schema_version") != 1
+    ):
+        raise ValueError("comparison official-context source binding differs")
     indexed = {row.get("method"): row for row in rows}
     expected = {
         "CoFiTok K=8": generation_reports["cofitok"]["sample_provenance"],
@@ -447,15 +465,110 @@ def _comparison_evidence(
     }
     if set(indexed) != set(expected):
         raise ValueError("large-scale comparison method identities differ")
+    method_keys = {"CoFiTok K=8": "cofitok", "Dense identity": "dense_identity"}
     for method, provenance in expected.items():
         row = indexed[method]
+        key = method_keys[method]
+        training = training_reports[key]
+        cost = training_cost_summary(training)
+        if cost["valid"] is not True:
+            raise ValueError(f"comparison {method} source training cost is invalid")
+        if (
+            row.get("comparison_tier") != "matched_training_direct"
+            or row.get("directly_comparable_to_cofitok") is not True
+            or row.get("dataset") != "imagenet_256"
+            or int(row.get("resolution", -1)) != 256
+            or int(row.get("training_steps", -1)) != 300_000
+            or int(row.get("sample_count", -1)) != 50_000
+        ):
+            raise ValueError(f"comparison {method} matched protocol metadata differs")
         if row.get("checkpoint_sha256") != provenance.get("checkpoint_sha256"):
             raise ValueError(f"comparison {method} checkpoint SHA256 differs")
         if row.get("sample_set_sha256") != provenance.get("sample_set_sha256"):
             raise ValueError(f"comparison {method} sample-set SHA256 differs")
+        expected_exact = {
+            "parameter_count": int(training["parameter_count"]),
+            "effective_batch_size": int(cost["effective_batch_size"]),
+            "training_images_seen": int(cost["samples_seen"]),
+            "peak_vram_bytes": int(cost["peak_vram_bytes"]),
+        }
+        for field, value in expected_exact.items():
+            if int(row.get(field, -1)) != value:
+                raise ValueError(f"comparison {method} {field} differs from training report")
+        expected_float = {
+            "training_elapsed_seconds": float(cost["elapsed_seconds"]),
+            "training_images_per_second": float(cost["images_per_second"]),
+        }
+        sampling_progress = generation_reports[key]["sample_provenance"][
+            "sampling_progress"
+        ]
+        sampling = generation_reports[key]["sample_provenance"]["sampling"]
+        sampling_elapsed = float(sampling_progress["cumulative_elapsed_seconds"])
+        expected_exact["sample_batch_size"] = int(sampling["batch_size"])
+        if int(row.get("sample_batch_size", -1)) != expected_exact["sample_batch_size"]:
+            raise ValueError(f"comparison {method} sampling batch differs")
+        expected_float.update(
+            {
+                "sampling_elapsed_seconds": sampling_elapsed,
+                "sampling_images_per_second": 50_000 / sampling_elapsed,
+            }
+        )
+        for field, value in expected_float.items():
+            if not math.isclose(
+                float(row.get(field, math.nan)),
+                value,
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ):
+                raise ValueError(f"comparison {method} {field} differs from source evidence")
+    official_rows = official_related.get("rows", [])
+    expected_aliases = {"d_ar": "D-AR", "mar": "MAR", "retok": "ReTok"}
+    if official_related.get("schema_version") != 1:
+        raise ValueError("official contextual source schema differs")
+    source_index = {row.get("alias"): row for row in official_rows}
+    report_index = {
+        row.get("alias"): row for row in report.get("official_context_rows", [])
+    }
+    if set(source_index) != set(report_index) or set(source_index) != set(expected_aliases):
+        raise ValueError("comparison official contextual method identities differ")
+    metric_names = ("fid", "inception_score", "precision", "recall")
+    for alias, expected_method in expected_aliases.items():
+        source_row = source_index[alias]
+        row = report_index[alias]
+        if (
+            source_row.get("method") != expected_method
+            or row.get("method") != expected_method
+            or row.get("comparison_tier") != "official_pretrained_contextual"
+            or row.get("directly_comparable_to_cofitok") is not False
+            or row.get("dataset") != source_row.get("dataset")
+            or source_row.get("dataset") != "imagenet_256"
+            or int(row.get("resolution", -1)) != int(source_row.get("resolution", -2))
+            or int(source_row.get("resolution", -1)) != 256
+            or int(row.get("sample_count", -1)) != int(source_row.get("sample_count", -2))
+            or int(source_row.get("sample_count", -1)) != 50_000
+            or row.get("training_steps") is not None
+            or row.get("parameter_count") is not None
+            or row.get("source_status") != source_row.get("status")
+            or source_row.get("status") != "completed_eval_only_50k"
+            or row.get("paper_table_role") != source_row.get("paper_table_role")
+            or source_row.get("paper_table_role") != "secondary related-method only"
+            or row.get("protocol_note") != source_row.get("protocol")
+            or row.get("source_metrics") != source_row.get("metrics_txt")
+        ):
+            raise ValueError(f"comparison official contextual metadata differs: {alias}")
+        for metric in metric_names:
+            if not math.isclose(
+                float(row.get(metric, math.nan)),
+                float(source_row.get(metric, math.nan)),
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ):
+                raise ValueError(f"comparison official contextual metric differs: {alias}/{metric}")
     return {
         "matched_methods": [row["method"] for row in rows],
-        "official_context_count": 3,
+        "official_context_methods": sorted(expected_aliases),
+        "official_context_source_sha256": official_related_sha256,
+        "cross_tier_numeric_ranking_allowed": False,
     }
 
 
@@ -528,6 +641,8 @@ def build_completion_audit(
     dense_generation: dict[str, Any] | None,
     final_gate: dict[str, Any] | None,
     comparison: dict[str, Any] | None,
+    official_related: dict[str, Any] | None,
+    official_related_sha256: str | None,
 ) -> dict[str, Any]:
     if len(expected_10pct_revision) != 40 or len(expected_full_revision) != 40:
         raise ValueError("completion audit requires full 40-character revisions")
@@ -692,10 +807,22 @@ def build_completion_audit(
     checks.append(
         _check(
             "final_comparison_report",
-            [comparison],
+            [
+                comparison,
+                official_related,
+                official_related_sha256,
+                cofitok_full_training,
+                dense_full_training,
+            ],
             lambda: _comparison_evidence(
                 comparison,
                 {"cofitok": cofitok_generation, "dense_identity": dense_generation},
+                {
+                    "cofitok": cofitok_full_training,
+                    "dense_identity": dense_full_training,
+                },
+                official_related,
+                official_related_sha256,
             ),
         )
     )
@@ -749,6 +876,11 @@ def main() -> None:
     dense_10 = output_root / "imagenet256_10pct_dense_50k_2026-07-12"
     cofitok_full = output_root / "imagenet256_full_cofitok_k8_300k"
     dense_full = output_root / "imagenet256_full_dense_300k"
+    official_related_path = (
+        project
+        / "artifacts/reports/baselines/official_related_methods_2026-07-11_final"
+        / "official_related_methods_table.json"
+    )
 
     audit = build_completion_audit(
         expected_10pct_revision=args.expected_10pct_revision,
@@ -803,6 +935,10 @@ def main() -> None:
         final_gate=_read_optional(full_root / "final_generation_gate.json"),
         comparison=_read_optional(
             full_root / "comparison/large_scale_generation_comparison.json"
+        ),
+        official_related=_read_optional(official_related_path),
+        official_related_sha256=(
+            file_sha256(official_related_path) if official_related_path.is_file() else None
         ),
     )
     write_json_report(args.output, audit)
