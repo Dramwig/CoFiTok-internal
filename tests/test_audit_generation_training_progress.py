@@ -78,3 +78,45 @@ def test_audit_uses_latest_elapsed_segment_after_resume(tmp_path) -> None:
     assert report["status"] == "healthy"
     assert report["current_segment_start_step"] == 550
     assert report["seconds_per_step"] == 2.0
+
+
+def test_audit_warns_when_scheduled_validation_is_not_logged(tmp_path) -> None:
+    _write_metrics(tmp_path, [1, 100, 200])
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=1_000,
+        checkpoint_interval=500,
+        evaluation_interval=100,
+    )
+
+    assert report["status"] == "healthy"
+    assert report["validation"] == {
+        "configured_interval": 100,
+        "event_count": 0,
+        "expected_event_count": 2,
+        "logging_complete": False,
+    }
+    assert len(report["warnings"]) == 1
+
+
+def test_audit_accepts_complete_validation_logging(tmp_path) -> None:
+    _write_metrics(tmp_path, [1, 100, 200])
+    metrics_path = tmp_path / "train_metrics.jsonl"
+    rows = [json.loads(line) for line in metrics_path.read_text(encoding="utf-8").splitlines()]
+    rows[1]["validation_epsilon_mse"] = 0.09
+    rows[2]["validation_epsilon_mse"] = 0.08
+    metrics_path.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=1_000,
+        checkpoint_interval=500,
+        evaluation_interval=100,
+    )
+
+    assert report["validation"]["logging_complete"] is True
+    assert report["warnings"] == []

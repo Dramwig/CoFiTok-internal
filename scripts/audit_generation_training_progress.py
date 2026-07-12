@@ -62,12 +62,16 @@ def audit_progress(
     expected_steps: int,
     checkpoint_interval: int,
     grad_clip_norm: float = 1.0,
+    evaluation_interval: int | None = None,
 ) -> dict[str, Any]:
     if expected_steps < 1 or checkpoint_interval < 1 or grad_clip_norm <= 0.0:
         raise ValueError("expected_steps, checkpoint_interval, and grad_clip_norm must be positive")
+    if evaluation_interval is not None and evaluation_interval < 1:
+        raise ValueError("evaluation_interval must be positive when provided")
     root = Path(run_dir)
     rows = _read_metrics(root / "train_metrics.jsonl")
     issues = []
+    warnings = []
     steps = [int(row.get("step", -1)) for row in rows]
     if any(current <= previous for previous, current in zip(steps, steps[1:])):
         issues.append("metrics steps are not strictly increasing")
@@ -137,6 +141,18 @@ def audit_progress(
             issues.append("training report completed_steps does not match metrics")
 
     recent = rows[-min(len(rows), 10) :]
+    validation_event_count = sum("validation_epsilon_mse" in row for row in rows)
+    expected_validation_events = (
+        last_step // evaluation_interval if evaluation_interval is not None else None
+    )
+    if (
+        expected_validation_events is not None
+        and validation_event_count < expected_validation_events
+    ):
+        warnings.append(
+            "validation metrics are missing from train_metrics.jsonl; legacy revisions "
+            "may evaluate after emitting the log row"
+        )
     complete = (
         training_report is not None
         and training_report.get("training_complete") is True
@@ -167,7 +183,16 @@ def audit_progress(
                 float(row["grad_norm"]) > grad_clip_norm for row in rows
             ),
         },
-        "validation_event_count": sum("validation_epsilon_mse" in row for row in rows),
+        "validation_event_count": validation_event_count,
+        "validation": {
+            "configured_interval": evaluation_interval,
+            "event_count": validation_event_count,
+            "expected_event_count": expected_validation_events,
+            "logging_complete": (
+                expected_validation_events is None
+                or validation_event_count >= expected_validation_events
+            ),
+        },
         "checkpoint": {
             "interval": checkpoint_interval,
             "status": checkpoint_status,
@@ -175,6 +200,7 @@ def audit_progress(
             "latest": latest,
         },
         "issues": issues,
+        "warnings": warnings,
     }
 
 
@@ -183,6 +209,7 @@ def main() -> None:
     parser.add_argument("--run-dir", required=True)
     parser.add_argument("--expected-steps", type=int, required=True)
     parser.add_argument("--checkpoint-interval", type=int, required=True)
+    parser.add_argument("--evaluation-interval", type=int)
     parser.add_argument("--grad-clip-norm", type=float, default=1.0)
     parser.add_argument("--output", required=True)
     parser.add_argument("--allow-invalid", action="store_true")
@@ -193,6 +220,7 @@ def main() -> None:
         expected_steps=args.expected_steps,
         checkpoint_interval=args.checkpoint_interval,
         grad_clip_norm=args.grad_clip_norm,
+        evaluation_interval=args.evaluation_interval,
     )
     write_json_report(args.output, report)
     print(args.output)
