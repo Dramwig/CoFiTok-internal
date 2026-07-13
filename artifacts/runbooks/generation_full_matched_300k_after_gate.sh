@@ -29,15 +29,8 @@ python scripts/validate_generation_configs.py \
   --stage full \
   --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/config_recipe.json"
 
-python - "$GATE" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], encoding="utf-8") as handle:
-    gate = json.load(handle)
-if gate.get("status") != "pass" or gate.get("decision") != "promote_to_full_imagenet256":
-    raise SystemExit("10% generation gate did not authorize full ImageNet-256 training")
-PY
+python scripts/validate_generation_gate_report.py \
+  --gate "$GATE" --stage scaling
 
 python scripts/check_generation_storage_capacity.py \
   --path "$OUTPUT_ROOT" \

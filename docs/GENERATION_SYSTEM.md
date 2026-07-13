@@ -132,7 +132,10 @@ checkpoints: /root/autodl-tmp/CoFiTok/checkpoints/generation
    stable gradients, recorded throughput, and a restart from checkpoint.
 3. Scaling gate: matched 50K-step CoFiTok and dense runs on
    `imagenet_256_10pct`; generate at least 10K EMA samples per method and compute
-   FID under one real-image directory and evaluator version.
+   FID under one real-image directory and evaluator version. Promotion requires
+   CoFiTok FID at most 100.0, no more than 5% FID or endpoint-MSE regression
+   against dense, ordered-prefix rank 1, exact zero-token synthesis, and a
+   shuffled-token mismatch.
 4. Full gate: matched 300K-step runs on full `imagenet_256`, 50K EMA samples,
    official FID plus IS/precision/recall, prefix diagnostics, and checkpoint
    hashes. Declare the system ready only if CoFiTok keeps its prefix-control
@@ -146,6 +149,12 @@ replacement for the full-data result and must not overwrite locked paper tables.
 The precision/recall floors are conservative non-collapse readiness checks, not
 a generation-SOTA claim. The final completion audit binds FID/precision/recall
 back to the formal generation reports and rejects a gate with weaker thresholds.
+Before either authorization is consumed, `validate_generation_gate_report.py`
+also requires the complete named gate set, rejects duplicate or failed checks,
+recomputes the core inequalities from the report summary, and cross-checks the
+FID, endpoint, ordering, zero-token, shuffle, and full precision/recall evidence.
+The 300K runbook and completion audit call this same contract, so editing only a
+gate's status or decision cannot authorize an expensive downstream stage.
 
 The full queue alternates CoFiTok and dense at 50K, 100K, 200K, and 300K
 milestones. At each matched point it produces 2,048 fixed-protocol EMA samples

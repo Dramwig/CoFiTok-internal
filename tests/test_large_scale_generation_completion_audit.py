@@ -13,6 +13,7 @@ from cofitok.data.provenance import (
     dataset_provenance_identity_sha256,
 )
 from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
+from cofitok.generation_gate import REQUIRED_GENERATION_GATES
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
     build_completion_audit,
@@ -137,85 +138,82 @@ def _gate(stage: str) -> dict:
         else "large_scale_generation_ready"
     )
     environment_sha = runtime_environment_sha256(_runtime_environment())
-    gates = [{"name": "all_evidence", "passed": True}]
-    if stage == "full":
-        gates.extend(
-            {
-                "name": name,
-                "passed": True,
-                "evidence": (
-                    {
-                        "cofitok": {
-                            "sha256": environment_sha
-                        },
-                        "dense_identity": {
-                            "sha256": environment_sha
-                        },
-                    }
-                    if name
-                    in {
-                        "matched_sampling_runtime_environment",
-                        "matched_evaluator_runtime_environment",
-                    }
-                    else (
-                        {
-                            method: {
-                                "valid": True,
-                                "digest_schema": "cofitok_image_tree_sha256_v1",
-                                "sha256": REAL_SET_SHA,
-                                "root": "/datasets/imagenet_256/validation",
-                                "image_count": 50_000,
-                                "real_cache_name": (
-                                    "imagenet256_val__cofitok_" + REAL_SET_SHA[:16]
-                                ),
-                            }
-                            for method in ("cofitok", "dense_identity")
-                        }
-                        if name == "matched_real_set_provenance"
-                        else {}
-                    )
-                ),
+    gates = [{"name": "all_evidence", "passed": True, "evidence": {}}]
+    for name in sorted(REQUIRED_GENERATION_GATES[stage]):
+        evidence = {}
+        if name in {
+            "matched_sampling_runtime_environment",
+            "matched_evaluator_runtime_environment",
+        }:
+            evidence = {
+                "cofitok": {"sha256": environment_sha},
+                "dense_identity": {"sha256": environment_sha},
             }
-            for name in (
-                "generation_metrics_complete",
-                "matched_real_set_provenance",
-                "formal_sampling_protocol",
-                "matched_sampling_code_provenance",
-                "matched_sampling_runtime_environment",
-                "matched_evaluator_code_provenance",
-                "matched_evaluator_runtime_environment",
-                "matched_checkpoint_evaluator_code_provenance",
-                "distribution_metric_ranges",
-                "fid_within_tolerance",
-                "absolute_fid_quality",
-                "full_precision_recall_quality",
-                "endpoint_within_tolerance",
-                "ordered_prefix_path",
-                "restricted_synthesis_contract",
-                "shuffle_mismatch",
-                "full_training_checkpoint_integrity",
-            )
-        )
-        gates.append(
-            {
-                "name": "matched_sampling_provenance",
-                "passed": True,
-                "evidence": {
-                    "cofitok_checkpoint_sha256": "a" * 64,
-                    "dense_checkpoint_sha256": "b" * 64,
-                    "cofitok_sample_set_sha256": "A" * 64,
-                    "dense_sample_set_sha256": "B" * 64,
-                },
+        elif name == "matched_real_set_provenance":
+            evidence = {
+                method: {
+                    "valid": True,
+                    "digest_schema": "cofitok_image_tree_sha256_v1",
+                    "sha256": REAL_SET_SHA,
+                    "root": "/datasets/imagenet_256/validation",
+                    "image_count": 50_000,
+                    "real_cache_name": "imagenet256_val__cofitok_" + REAL_SET_SHA[:16],
+                }
+                for method in ("cofitok", "dense_identity")
             }
-        )
+        elif name == "matched_sampling_provenance":
+            evidence = {
+                "cofitok_checkpoint_sha256": "a" * 64,
+                "dense_checkpoint_sha256": "b" * 64,
+                "cofitok_sample_set_sha256": "A" * 64,
+                "dense_sample_set_sha256": "B" * 64,
+            }
+        elif name == "fid_within_tolerance":
+            evidence = {
+                "cofitok_fid": 19.0,
+                "dense_fid": 19.0,
+                "max_regression": 0.05,
+            }
+        elif name == "absolute_fid_quality":
+            evidence = {
+                "cofitok_fid": 19.0,
+                "max_absolute_fid": 100.0 if stage == "scaling" else 20.0,
+            }
+        elif name == "endpoint_within_tolerance":
+            evidence = {
+                "cofitok_endpoint_mse": 0.1,
+                "dense_endpoint_mse": 0.1,
+                "max_regression": 0.05,
+            }
+        elif name == "ordered_prefix_path":
+            evidence = {"rank": 1, "order_count": 24}
+        elif name == "restricted_synthesis_contract":
+            evidence = {"zero_token_max_abs": 0.0}
+        elif name == "shuffle_mismatch":
+            evidence = {"shuffled_to_ordered_endpoint_ratio": 1.2}
+        elif name == "full_precision_recall_quality":
+            evidence = {
+                "enforced": True,
+                "cofitok_precision": 0.6,
+                "dense_precision": 0.6,
+                "cofitok_recall": 0.4,
+                "dense_recall": 0.4,
+                "min_precision": 0.30,
+                "min_recall": 0.30,
+                "max_precision_regression": 0.05,
+                "max_recall_regression": 0.05,
+            }
+        gates.append({"name": name, "passed": True, "evidence": evidence})
     return {
+        "schema_version": 1,
         "stage": stage,
         "status": "pass",
         "decision": decision,
         "gates": gates,
         "thresholds": {
+            "min_samples": 10_000 if stage == "scaling" else 50_000,
             "max_fid_regression": 0.05,
-            "max_absolute_fid": 20.0,
+            "max_absolute_fid": 100.0 if stage == "scaling" else 20.0,
             "max_endpoint_regression": 0.05,
             "min_precision": 0.30,
             "min_recall": 0.30,
@@ -229,6 +227,10 @@ def _gate(stage: str) -> dict:
             "dense_precision": 0.6,
             "cofitok_recall": 0.4,
             "dense_recall": 0.4,
+            "cofitok_endpoint_mse": 0.1,
+            "dense_endpoint_mse": 0.1,
+            "ordered_rank": 1,
+            "order_count": 24,
         },
     }
 
@@ -1113,6 +1115,30 @@ def test_completion_audit_rejects_weakened_final_quality_threshold() -> None:
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == ["final_generation_gate"]
+
+
+def test_completion_audit_rejects_weakened_scaling_quality_threshold() -> None:
+    kwargs = _kwargs()
+    kwargs["scaling_gate"]["thresholds"]["max_absolute_fid"] = 100.1
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["scaling_promotion_gate"]
+
+
+def test_completion_audit_rejects_incomplete_scaling_gate_contract() -> None:
+    kwargs = _kwargs()
+    kwargs["scaling_gate"]["gates"] = [
+        row
+        for row in kwargs["scaling_gate"]["gates"]
+        if row["name"] != "absolute_fid_quality"
+    ]
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["scaling_promotion_gate"]
 
 
 def test_completion_audit_rejects_unbound_final_quality_metrics() -> None:

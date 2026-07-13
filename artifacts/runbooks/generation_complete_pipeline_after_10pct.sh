@@ -58,19 +58,9 @@ validate_completed_training_pair() {
 
 validate_gate() {
   local gate_path="$1"
-  local expected_decision="$2"
-  python - "$gate_path" "$expected_decision" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], encoding="utf-8") as handle:
-    gate = json.load(handle)
-if gate.get("status") != "pass" or gate.get("decision") != sys.argv[2]:
-    raise SystemExit(
-        f"gate did not pass: status={gate.get('status')!r}, "
-        f"decision={gate.get('decision')!r}, expected={sys.argv[2]!r}"
-    )
-PY
+  local stage="$2"
+  python scripts/validate_generation_gate_report.py \
+    --gate "$gate_path" --stage "$stage"
 }
 
 write_status running "validating the completed 10% matched training pair"
@@ -84,7 +74,7 @@ fi
 
 STAGE=promotion_gate
 write_status running "checking authorization for full ImageNet-256 training"
-validate_gate "$SCALING_GATE" promote_to_full_imagenet256
+validate_gate "$SCALING_GATE" scaling
 
 STAGE=full_training
 write_status running "running alternating matched full ImageNet-256 300K training"
@@ -98,7 +88,7 @@ fi
 
 STAGE=final_gate
 write_status running "checking the large-scale generation readiness gate"
-validate_gate "$FINAL_GATE" large_scale_generation_ready
+validate_gate "$FINAL_GATE" full
 
 STAGE=inference_export
 write_status running "exporting and smoke-testing deployable EMA artifacts"

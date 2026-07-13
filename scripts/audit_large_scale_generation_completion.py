@@ -11,6 +11,7 @@ from cofitok.data.provenance import validate_dataset_provenance
 from cofitok.generation import sampling_protocol_contract
 from cofitok.generation.artifact import verify_inference_artifact
 from cofitok.generation_cost import training_cost_summary
+from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training.checkpointing import (
@@ -74,14 +75,10 @@ def _check(
 def _gate_evidence(
     gate: dict[str, Any], *, stage: str, decision: str
 ) -> dict[str, Any]:
-    if gate.get("stage") != stage:
-        raise ValueError(f"expected {stage} gate stage")
-    if gate.get("status") != "pass" or gate.get("decision") != decision:
+    evidence = validate_generation_gate_authorization(gate, expected_stage=stage)
+    if evidence["decision"] != decision:
         raise ValueError(f"{stage} gate did not authorize {decision}")
-    failed = [row.get("name") for row in gate.get("gates", []) if row.get("passed") is not True]
-    if failed:
-        raise ValueError(f"{stage} gate contains failed checks: {', '.join(map(str, failed))}")
-    return {"decision": decision, "gate_count": len(gate.get("gates", []))}
+    return evidence
 
 
 def _training_audit_evidence(audits: dict[str, dict[str, Any]]) -> dict[str, Any]:
