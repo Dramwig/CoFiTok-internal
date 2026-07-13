@@ -7,11 +7,12 @@ import os
 import subprocess
 import sys
 import time
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
 from cofitok.environment import runtime_environment_sha256
-from cofitok.reporting import write_json_report
+from cofitok.reporting import git_provenance, write_json_report
 from cofitok.training.checkpointing import checkpoint_integrity_path
 
 
@@ -55,6 +56,7 @@ def select_sampling_batch(
         raise ValueError("max_memory_fraction must be between zero and one")
     eligible = []
     normalized = []
+    matched_environment_shas = []
     for row in candidates:
         candidate = dict(row)
         batch_size = int(candidate.get("batch_size", -1))
@@ -102,6 +104,8 @@ def select_sampling_batch(
             reasons.append("matched_checkpoint_step_mismatch")
         if len(environment_shas) == 2 and environment_shas[0] != environment_shas[1]:
             reasons.append("matched_sampling_environment_mismatch")
+        if len(environment_shas) == 2 and environment_shas[0] == environment_shas[1]:
+            matched_environment_shas.append(environment_shas[0])
         candidate["runtime_environment_sha256"] = (
             environment_shas[0]
             if len(environment_shas) == 2 and environment_shas[0] == environment_shas[1]
@@ -118,6 +122,8 @@ def select_sampling_batch(
         normalized.append(candidate)
         if candidate["eligible"]:
             eligible.append(candidate)
+    if len(set(matched_environment_shas)) > 1:
+        raise ValueError("runtime environment changed across sampling candidates")
     if not eligible:
         raise ValueError("no shared generation sampling batch passed")
     baseline = next(
@@ -162,6 +168,176 @@ def select_sampling_batch(
 def _read(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def _sampling_state(output_dirs: list[Path]) -> dict[str, Any]:
+    outputs = []
+    for output_dir in output_dirs:
+        if output_dir.exists() and not output_dir.is_dir():
+            raise ValueError(f"sampling output path is not a directory: {output_dir}")
+        entries = (
+            sorted(item.name for item in output_dir.iterdir())
+            if output_dir.is_dir()
+            else []
+        )
+        outputs.append(
+            {
+                "path": output_dir.as_posix(),
+                "started": bool(entries),
+                "entry_count": len(entries),
+                "entries_preview": entries[:20],
+            }
+        )
+    return {
+        "started": any(output["started"] for output in outputs),
+        "outputs": outputs,
+    }
+
+
+def _sampling_selection_lock(
+    *,
+    output_dirs: list[Path],
+    candidates: list[int],
+    baseline_batch_size: int,
+    max_memory_fraction: float,
+    cofitok_prefix_budget: int,
+    dense_prefix_budget: int,
+    guidance_scale: float,
+    guidance_rescale: float,
+    cfg_batch_mode: str,
+    weights: str,
+    precision: str,
+    warmup_forwards: int,
+    measured_forwards: int,
+    git: dict[str, Any],
+    checkpoints: dict[str, Any],
+    benchmark_root: Path,
+) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "mode": "freeze_on_sampling_state",
+        "sampling_output_dirs": [path.as_posix() for path in output_dirs],
+        "candidates": list(candidates),
+        "baseline_batch_size": baseline_batch_size,
+        "max_memory_fraction": max_memory_fraction,
+        "protocol": {
+            "cofitok_prefix_budget": cofitok_prefix_budget,
+            "dense_prefix_budget": dense_prefix_budget,
+            "guidance_scale": guidance_scale,
+            "guidance_rescale": guidance_rescale,
+            "cfg_batch_mode": cfg_batch_mode,
+            "weights": weights,
+            "precision": precision,
+            "warmup_forwards": warmup_forwards,
+            "measured_forwards": measured_forwards,
+        },
+        "git": {
+            "revision": git["revision"],
+            "branch": git["branch"],
+            "tracked_dirty": False,
+        },
+        "checkpoints": deepcopy(checkpoints),
+        "benchmark_root": benchmark_root.as_posix(),
+    }
+
+
+def validate_frozen_sampling_selection(
+    selection: dict[str, Any],
+    *,
+    expected_lock: dict[str, Any],
+) -> int:
+    if selection.get("schema_version") != 1 or selection.get("status") != "selected":
+        raise ValueError("frozen sampling selection is incomplete or unsupported")
+    if selection.get("selection_lock") != expected_lock:
+        raise ValueError("frozen sampling selection lock changed")
+    if selection.get("git_revision") != expected_lock["git"]["revision"]:
+        raise ValueError("frozen sampling selection revision changed")
+    if selection.get("checkpoints") != expected_lock["checkpoints"]:
+        raise ValueError("frozen sampling selection checkpoint identity changed")
+    if selection.get("benchmark_root") != expected_lock["benchmark_root"]:
+        raise ValueError("frozen sampling selection benchmark root changed")
+
+    candidates = selection.get("candidates")
+    if not isinstance(candidates, list):
+        raise ValueError("frozen sampling selection candidates are malformed")
+    observed_candidates = [int(row.get("batch_size", -1)) for row in candidates]
+    if observed_candidates != expected_lock["candidates"]:
+        raise ValueError("frozen sampling selection candidate set changed")
+
+    protocol = expected_lock["protocol"]
+    revision = expected_lock["git"]["revision"]
+    branch = expected_lock["git"]["branch"]
+    identities = expected_lock["checkpoints"]
+    for candidate, batch_size in zip(candidates, observed_candidates, strict=True):
+        methods = candidate.get("methods")
+        if not isinstance(methods, dict):
+            raise ValueError("frozen sampling preflight methods are malformed")
+        for method, prefix_budget in (
+            ("cofitok", protocol["cofitok_prefix_budget"]),
+            ("dense_identity", protocol["dense_prefix_budget"]),
+        ):
+            report = methods.get(method)
+            if not isinstance(report, dict):
+                raise ValueError(f"frozen {method} sampling preflight is missing")
+            if report.get("status") != "passed":
+                continue
+            if report.get("git", {}).get("branch") != branch or not _preflight_matches(
+                report,
+                checkpoint_identity=identities[method],
+                expected_revision=revision,
+                batch_size=batch_size,
+                prefix_budget=int(prefix_budget),
+                guidance_scale=float(protocol["guidance_scale"]),
+                guidance_rescale=float(protocol["guidance_rescale"]),
+                cfg_batch_mode=str(protocol["cfg_batch_mode"]),
+                weights=str(protocol["weights"]),
+                precision=str(protocol["precision"]),
+                warmup_forwards=int(protocol["warmup_forwards"]),
+                measured_forwards=int(protocol["measured_forwards"]),
+            ):
+                raise ValueError(
+                    f"frozen {method} batch {batch_size} sampling preflight changed"
+                )
+
+    recomputed = select_sampling_batch(
+        deepcopy(candidates),
+        baseline_batch_size=int(expected_lock["baseline_batch_size"]),
+        max_memory_fraction=float(expected_lock["max_memory_fraction"]),
+    )
+    for key in (
+        "schema_version",
+        "status",
+        "policy",
+        "selected",
+        "runtime_environment_sha256",
+        "candidates",
+    ):
+        if selection.get(key) != recomputed.get(key):
+            raise ValueError(f"frozen sampling selection {key} is not reproducible")
+    return int(recomputed["selected"]["batch_size"])
+
+
+def reuse_sampling_selection_after_sampling_start(
+    *,
+    selection_path: Path,
+    output_dirs: list[Path],
+    expected_lock: dict[str, Any],
+) -> int | None:
+    state = _sampling_state(output_dirs)
+    if not state["started"]:
+        return None
+    if not selection_path.is_file():
+        started = [
+            output["path"] for output in state["outputs"] if output["started"]
+        ]
+        raise FileNotFoundError(
+            "sampling state exists without a frozen batch selection: "
+            + ", ".join(started)
+        )
+    return validate_frozen_sampling_selection(
+        _read(selection_path),
+        expected_lock=expected_lock,
+    )
 
 
 def _checkpoint_identity(path: Path) -> dict[str, Any]:
@@ -211,7 +387,10 @@ def _preflight_matches(
         and git.get("revision") == expected_revision
         and git.get("tracked_dirty") is False
         and _validated_runtime_environment_sha(report) is not None
+        and report.get("checkpoint") == checkpoint_identity["path"]
         and report.get("checkpoint_sha256") == checkpoint_identity["sha256"]
+        and report.get("checkpoint_integrity_manifest")
+        == checkpoint_identity["integrity_manifest"]
         and int(report.get("checkpoint_step", -1)) == checkpoint_identity["step"]
         and int(request.get("batch_size", -1)) == batch_size
         and int(request.get("prefix_budget", -1)) == prefix_budget
@@ -330,16 +509,6 @@ def _run_preflight(
     }
 
 
-def _git_revision(project_root: Path) -> str:
-    return subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=project_root,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Select one shared, memory-safe batch for matched generation sampling."
@@ -350,6 +519,15 @@ def main() -> None:
     parser.add_argument("--dense-prefix-budget", type=int, required=True)
     parser.add_argument("--output-root", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--sampling-output-dir",
+        action="append",
+        required=True,
+        help=(
+            "Formal sampling output directory to protect; repeat for both matched "
+            "methods. Any existing sampling state freezes the selection."
+        ),
+    )
     parser.add_argument("--candidates", default="16,32,64,128")
     parser.add_argument("--baseline-batch-size", type=int, default=32)
     parser.add_argument("--guidance-scale", type=float, default=1.5)
@@ -371,8 +549,19 @@ def main() -> None:
     cofitok_checkpoint = Path(args.cofitok_checkpoint).resolve()
     dense_checkpoint = Path(args.dense_checkpoint).resolve()
     output_root = Path(args.output_root).resolve()
+    output_path = Path(args.output).resolve()
+    sampling_output_dirs = [
+        Path(value).resolve() for value in args.sampling_output_dir
+    ]
+    if len(sampling_output_dirs) != 2 or len(set(sampling_output_dirs)) != 2:
+        raise ValueError(
+            "exactly two distinct matched sampling output directories are required"
+        )
     preflight_script = (project_root / args.preflight_script).resolve()
-    revision = _git_revision(project_root)
+    git = git_provenance(project_root)
+    if git["tracked_dirty"]:
+        raise ValueError("sampling batch selection requires a clean tracked worktree")
+    revision = str(git["revision"])
     candidates = parse_candidates(
         args.candidates,
         baseline_batch_size=args.baseline_batch_size,
@@ -381,6 +570,33 @@ def main() -> None:
         "cofitok": _checkpoint_identity(cofitok_checkpoint),
         "dense_identity": _checkpoint_identity(dense_checkpoint),
     }
+    selection_lock = _sampling_selection_lock(
+        output_dirs=sampling_output_dirs,
+        candidates=candidates,
+        baseline_batch_size=args.baseline_batch_size,
+        max_memory_fraction=args.max_memory_fraction,
+        cofitok_prefix_budget=args.cofitok_prefix_budget,
+        dense_prefix_budget=args.dense_prefix_budget,
+        guidance_scale=args.guidance_scale,
+        guidance_rescale=args.guidance_rescale,
+        cfg_batch_mode=args.cfg_batch_mode,
+        weights=args.weights,
+        precision=args.precision,
+        warmup_forwards=args.warmup_forwards,
+        measured_forwards=args.measured_forwards,
+        git=git,
+        checkpoints=identities,
+        benchmark_root=output_root,
+    )
+    reused = reuse_sampling_selection_after_sampling_start(
+        selection_path=output_path,
+        output_dirs=sampling_output_dirs,
+        expected_lock=selection_lock,
+    )
+    if reused is not None:
+        print(reused)
+        return
+
     rows = []
     for batch_size in candidates:
         rows.append(
@@ -436,7 +652,8 @@ def main() -> None:
     selection["git_revision"] = revision
     selection["checkpoints"] = identities
     selection["benchmark_root"] = output_root.as_posix()
-    write_json_report(args.output, selection)
+    selection["selection_lock"] = selection_lock
+    write_json_report(output_path, selection)
     print(selection["selected"]["batch_size"])
 
 

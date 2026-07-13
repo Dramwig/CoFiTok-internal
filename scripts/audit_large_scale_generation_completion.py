@@ -28,6 +28,11 @@ except ModuleNotFoundError:
     from validate_generation_training_pair import validate_training_pair
 
 try:
+    from scripts.select_generation_sampling_batch import select_sampling_batch
+except ModuleNotFoundError:
+    from select_generation_sampling_batch import select_sampling_batch
+
+try:
     from scripts.write_generation_deployment_receipt import (
         bundle_prerequisites,
         pytest_junit_summary,
@@ -612,6 +617,8 @@ def _sampling_runtime_selection_evidence(
     *,
     expected_revision: str,
 ) -> dict[str, Any]:
+    if selection.get("schema_version") != 1:
+        raise ValueError("formal sampling runtime selection schema is unsupported")
     if selection.get("status") != "selected":
         raise ValueError("formal sampling runtime selection is incomplete")
     if selection.get("git_revision") != expected_revision:
@@ -621,12 +628,75 @@ def _sampling_runtime_selection_evidence(
         raise ValueError("sampling runtime selection is not shared")
     if policy.get("batch_size_invariant_random_stream_required") is not True:
         raise ValueError("sampling selection omits batch-invariant random streams")
+    selection_lock = selection.get("selection_lock")
+    expected_candidates = [16, 32, 64, 128]
+    expected_benchmark_root = (
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
+        "runtime_preflight/imagenet256_full_50k_sampling"
+    )
+    expected_output_dirs = [
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
+        "imagenet256_full_cofitok_k8_300k/samples_50k_ddim250_cfg15",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
+        "imagenet256_full_dense_300k/samples_50k_ddim250_cfg15",
+    ]
+    expected_protocol = {
+        "cofitok_prefix_budget": 8,
+        "dense_prefix_budget": 1,
+        "guidance_scale": 1.5,
+        "guidance_rescale": 0.0,
+        "cfg_batch_mode": "batched",
+        "weights": "ema",
+        "precision": "bf16",
+        "warmup_forwards": 2,
+        "measured_forwards": 5,
+    }
+    if not isinstance(selection_lock, dict) or (
+        selection_lock.get("schema_version") != 1
+        or selection_lock.get("mode") != "freeze_on_sampling_state"
+        or selection_lock.get("sampling_output_dirs") != expected_output_dirs
+        or selection_lock.get("candidates") != expected_candidates
+        or selection_lock.get("baseline_batch_size") != 32
+        or selection_lock.get("max_memory_fraction") != 0.9
+        or selection_lock.get("protocol") != expected_protocol
+        or selection_lock.get("benchmark_root") != expected_benchmark_root
+    ):
+        raise ValueError("formal sampling runtime selection lock differs")
+    if selection_lock.get("git") != {
+        "revision": expected_revision,
+        "branch": "scale/generative-system",
+        "tracked_dirty": False,
+    }:
+        raise ValueError("formal sampling selection lock Git state differs")
+    if selection.get("benchmark_root") != expected_benchmark_root:
+        raise ValueError("formal sampling selection benchmark root differs")
+    identities = selection.get("checkpoints", {})
+    if selection_lock.get("checkpoints") != identities:
+        raise ValueError("formal sampling selection lock checkpoints differ")
+    candidates = selection.get("candidates", [])
+    if [int(row.get("batch_size", -1)) for row in candidates] != expected_candidates:
+        raise ValueError("formal sampling candidate set differs")
+    recomputed = select_sampling_batch(
+        copy.deepcopy(candidates),
+        baseline_batch_size=32,
+        max_memory_fraction=0.9,
+    )
+    for key in (
+        "schema_version",
+        "status",
+        "policy",
+        "selected",
+        "runtime_environment_sha256",
+        "candidates",
+    ):
+        if selection.get(key) != recomputed.get(key):
+            raise ValueError(f"formal sampling selection {key} is not reproducible")
     batch_size = int(selection.get("selected", {}).get("batch_size", -1))
     if batch_size < 1:
         raise ValueError("selected formal sampling batch is invalid")
     selected_candidates = [
         row
-        for row in selection.get("candidates", [])
+        for row in candidates
         if int(row.get("batch_size", -1)) == batch_size
     ]
     if (
@@ -642,10 +712,52 @@ def _sampling_runtime_selection_evidence(
             or selected_git.get("tracked_dirty") is not False
         ):
             raise ValueError(f"{method} selected sampling preflight revision differs")
-    identities = selection.get("checkpoints", {})
     selected_environment_sha = selection.get("runtime_environment_sha256")
     if len(str(selected_environment_sha)) != 64:
         raise ValueError("sampling selection runtime environment SHA256 is malformed")
+    observed_preflight_environment_shas = set()
+    for candidate in candidates:
+        candidate_batch = int(candidate["batch_size"])
+        for method, prefix_budget in (("cofitok", 8), ("dense_identity", 1)):
+            preflight = candidate.get("methods", {}).get(method, {})
+            if preflight.get("status") != "passed":
+                continue
+            preflight_environment = preflight.get("runtime_environment")
+            if not isinstance(preflight_environment, dict):
+                raise ValueError(f"{method} sampling preflight environment is missing")
+            preflight_environment_sha = runtime_environment_sha256(
+                preflight_environment
+            )
+            observed_preflight_environment_shas.add(preflight_environment_sha)
+            request = preflight.get("request", {})
+            git = preflight.get("git", {})
+            if (
+                preflight.get("runtime_environment_sha256")
+                != preflight_environment_sha
+                or git.get("revision") != expected_revision
+                or git.get("branch") != "scale/generative-system"
+                or git.get("tracked_dirty") is not False
+                or preflight.get("checkpoint_sha256")
+                != identities.get(method, {}).get("sha256")
+                or preflight.get("checkpoint")
+                != identities.get(method, {}).get("path")
+                or preflight.get("checkpoint_integrity_manifest")
+                != identities.get(method, {}).get("integrity_manifest")
+                or int(preflight.get("checkpoint_step", -1)) != 300_000
+                or preflight.get("weights") != "ema"
+                or int(request.get("batch_size", -1)) != candidate_batch
+                or int(request.get("prefix_budget", -1)) != prefix_budget
+                or float(request.get("guidance_scale", math.nan)) != 1.5
+                or float(request.get("guidance_rescale", math.nan)) != 0.0
+                or request.get("cfg_batch_mode") != "batched"
+                or request.get("precision") != "bf16"
+                or int(request.get("warmup_forwards", -1)) != 2
+                or int(request.get("measured_forwards", -1)) != 5
+            ):
+                raise ValueError(f"{method} sampling preflight contract differs")
+    if observed_preflight_environment_shas != {selected_environment_sha}:
+        raise ValueError("sampling preflight environment changed across candidates")
+
     for method in ("cofitok", "dense_identity"):
         selected_method = selected_methods.get(method, {})
         selected_method_environment = selected_method.get("runtime_environment")

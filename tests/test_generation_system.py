@@ -188,6 +188,7 @@ def test_formal_sampling_runbooks_select_one_shared_batch() -> None:
         assert "select_generation_sampling_batch.py" in runbook
         assert "--candidates 16,32,64,128" in runbook
         assert "--max-memory-fraction 0.90" in runbook
+        assert runbook.count("--sampling-output-dir") == 2
         assert "git diff --quiet" in runbook
         assert "git diff --cached --quiet" in runbook
         assert runbook.count('--batch-size "$SAMPLING_BATCH"') == 2

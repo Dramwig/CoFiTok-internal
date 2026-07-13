@@ -64,6 +64,8 @@ SAMPLING_BATCH="$(python scripts/select_generation_sampling_batch.py \
   --dense-checkpoint "$DENSE_CHECKPOINT" \
   --cofitok-prefix-budget 8 --dense-prefix-budget 1 \
   --output-root "$SAMPLING_BENCHMARK_ROOT" --output "$SAMPLING_SELECTION" \
+  --sampling-output-dir "$COFITOK_RUN/samples_gate10k_ddim100_cfg15" \
+  --sampling-output-dir "$DENSE_RUN/samples_gate10k_ddim100_cfg15" \
   --candidates 16,32,64,128 --baseline-batch-size 32 \
   --guidance-scale 1.5 --cfg-batch-mode batched --weights ema --precision bf16 \
   --warmup-forwards 2 --measured-forwards 5 --max-memory-fraction 0.90)"

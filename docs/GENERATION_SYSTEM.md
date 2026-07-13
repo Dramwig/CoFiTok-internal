@@ -425,8 +425,14 @@ eligible candidates must pass for both methods below 90% VRAM, and selection
 maximizes the slower method's output-images/second. Both methods must also expose
 the same canonical sampling environment; the selected fingerprint is bound to
 the formal generation reports. Per-index random streams keep generated samples
-invariant to the selected batch. The final comparison reports batch, elapsed
-time, and realized throughput. See
+invariant to the selected batch. Once either matched formal output directory
+contains sampling state, the selector becomes read-only: it must reproduce and
+reuse the original selection rather than rerun preflights or rewrite the report.
+The lock binds both output paths, all candidates, both checkpoint identities,
+the full EMA/bf16/CFG measurement protocol, clean Git state, and benchmark root.
+Successful preflights from different runtime environments cannot participate in
+one ranking. The final comparison reports batch, elapsed time, and realized
+throughput. See
 `docs/records/2026-07-12_generation_sampling_batch_selection.md`.
 
 Stable inference is exposed through `cofitok.generation.GenerationSession` and

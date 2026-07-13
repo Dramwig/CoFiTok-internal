@@ -23,6 +23,7 @@ from scripts.audit_large_scale_generation_completion import (
     build_completion_audit,
 )
 from scripts.build_generation_milestone_report import expected_source_report_suffixes
+from scripts.select_generation_sampling_batch import select_sampling_batch
 from cofitok.environment import runtime_environment_sha256
 
 
@@ -815,47 +816,108 @@ def _comparison_source_verification() -> dict:
 def _sampling_runtime_selection() -> dict:
     runtime_environment = _runtime_environment()
     environment_sha = runtime_environment_sha256(runtime_environment)
-    return {
-        "status": "selected",
-        "git_revision": FULL_REVISION,
-        "runtime_environment_sha256": environment_sha,
-        "policy": {
-            "shared_candidate_required": True,
-            "batch_size_invariant_random_stream_required": True,
+    checkpoints = {
+        "cofitok": {
+            "path": "/checkpoints/cofitok.pt",
+            "sha256": "a" * 64,
+            "step": 300_000,
+            "integrity_manifest": "/checkpoints/cofitok.pt.integrity.json",
         },
-        "selected": {
-            "batch_size": 64,
-            "estimated_speedup_over_baseline": 1.4,
-        },
-        "candidates": [
-            {
-                "batch_size": 64,
-                "eligible": True,
-                "methods": {
-                    "cofitok": {
-                        "runtime_environment": runtime_environment,
-                        "runtime_environment_sha256": environment_sha,
-                        "git": {
-                            "revision": FULL_REVISION,
-                            "tracked_dirty": False,
-                        }
-                    },
-                    "dense_identity": {
-                        "runtime_environment": runtime_environment,
-                        "runtime_environment_sha256": environment_sha,
-                        "git": {
-                            "revision": FULL_REVISION,
-                            "tracked_dirty": False,
-                        }
-                    },
-                },
-            }
-        ],
-        "checkpoints": {
-            "cofitok": {"sha256": "a" * 64, "step": 300_000},
-            "dense_identity": {"sha256": "b" * 64, "step": 300_000},
+        "dense_identity": {
+            "path": "/checkpoints/dense.pt",
+            "sha256": "b" * 64,
+            "step": 300_000,
+            "integrity_manifest": "/checkpoints/dense.pt.integrity.json",
         },
     }
+    candidates = []
+    for batch_size, throughput in ((16, 30.0), (32, 50.0), (64, 70.0), (128, 65.0)):
+        methods = {}
+        for method, prefix_budget in (("cofitok", 8), ("dense_identity", 1)):
+            methods[method] = {
+                "status": "passed",
+                "checkpoint": checkpoints[method]["path"],
+                "checkpoint_sha256": checkpoints[method]["sha256"],
+                "checkpoint_integrity_manifest": checkpoints[method][
+                    "integrity_manifest"
+                ],
+                "checkpoint_step": 300_000,
+                "weights": "ema",
+                "runtime_environment": copy.deepcopy(runtime_environment),
+                "runtime_environment_sha256": environment_sha,
+                "git": {
+                    "revision": FULL_REVISION,
+                    "branch": "scale/generative-system",
+                    "tracked_dirty": False,
+                },
+                "request": {
+                    "batch_size": batch_size,
+                    "effective_model_batch_size": batch_size * 2,
+                    "prefix_budget": prefix_budget,
+                    "token_count": prefix_budget,
+                    "precision": "bf16",
+                    "guidance_scale": 1.5,
+                    "guidance_rescale": 0.0,
+                    "cfg_batch_mode": "batched",
+                    "warmup_forwards": 2,
+                    "measured_forwards": 5,
+                },
+                "result": {
+                    "output_images_per_second": throughput,
+                    "cuda_memory_after_forward": {
+                        "peak_allocated_bytes": 50_000,
+                    },
+                    "device_total_memory_bytes": 100_000,
+                },
+            }
+        candidates.append({"batch_size": batch_size, "methods": methods})
+    selection = select_sampling_batch(
+        candidates,
+        baseline_batch_size=32,
+        max_memory_fraction=0.9,
+    )
+    benchmark_root = (
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
+        "runtime_preflight/imagenet256_full_50k_sampling"
+    )
+    selection_lock = {
+        "schema_version": 1,
+        "mode": "freeze_on_sampling_state",
+        "sampling_output_dirs": [
+            "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
+            "imagenet256_full_cofitok_k8_300k/samples_50k_ddim250_cfg15",
+            "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
+            "imagenet256_full_dense_300k/samples_50k_ddim250_cfg15",
+        ],
+        "candidates": [16, 32, 64, 128],
+        "baseline_batch_size": 32,
+        "max_memory_fraction": 0.9,
+        "protocol": {
+            "cofitok_prefix_budget": 8,
+            "dense_prefix_budget": 1,
+            "guidance_scale": 1.5,
+            "guidance_rescale": 0.0,
+            "cfg_batch_mode": "batched",
+            "weights": "ema",
+            "precision": "bf16",
+            "warmup_forwards": 2,
+            "measured_forwards": 5,
+        },
+        "git": {
+            "revision": FULL_REVISION,
+            "branch": "scale/generative-system",
+            "tracked_dirty": False,
+        },
+        "checkpoints": checkpoints,
+        "benchmark_root": benchmark_root,
+    }
+    selection.update(
+        git_revision=FULL_REVISION,
+        checkpoints=checkpoints,
+        benchmark_root=benchmark_root,
+        selection_lock=selection_lock,
+    )
+    return selection
 
 
 def _visual_audit() -> dict:
@@ -1709,6 +1771,47 @@ def test_completion_audit_rejects_stale_selected_sampling_preflight() -> None:
     kwargs = _kwargs()
     selected = kwargs["sampling_runtime_selection"]["candidates"][0]
     selected["methods"]["cofitok"]["git"]["revision"] = "0" * 40
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["formal_sampling_runtime_selection"]
+
+
+def test_completion_audit_rejects_sampling_selection_lock_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["sampling_runtime_selection"]["selection_lock"]["protocol"][
+        "measured_forwards"
+    ] = 6
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["formal_sampling_runtime_selection"]
+
+
+def test_completion_audit_rejects_nonselected_preflight_environment_drift() -> None:
+    kwargs = _kwargs()
+    candidate = kwargs["sampling_runtime_selection"]["candidates"][0]
+    for method in ("cofitok", "dense_identity"):
+        preflight = candidate["methods"][method]
+        preflight["runtime_environment"]["device"]["name"] = "another-gpu"
+        preflight["runtime_environment_sha256"] = runtime_environment_sha256(
+            preflight["runtime_environment"]
+        )
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["formal_sampling_runtime_selection"]
+
+
+def test_completion_audit_rejects_preflight_integrity_path_drift() -> None:
+    kwargs = _kwargs()
+    preflight = kwargs["sampling_runtime_selection"]["candidates"][0]["methods"][
+        "cofitok"
+    ]
+    preflight["checkpoint_integrity_manifest"] = "/checkpoints/other.integrity.json"
 
     report = build_completion_audit(**kwargs)
 

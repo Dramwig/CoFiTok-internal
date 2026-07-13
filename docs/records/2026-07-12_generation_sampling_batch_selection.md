@@ -37,12 +37,24 @@ A candidate is eligible only when:
 
 The shared selected batch maximizes the lower throughput of the two methods.
 OOM or inadequate headroom makes a candidate ineligible. The two methods can
-never receive different formal sampling batches.
+never receive different formal sampling batches. Successfully completed
+candidates must also share one runtime-environment SHA across the entire
+ranking; two internally matched candidates from different environments cannot
+be compared for speed.
 
 The selector runs for the 10K promotion sample sets and again for the final 50K
 sample sets, because the checkpoints and available memory profile differ. The
 2,048-sample milestone diagnostics remain fixed at batch 32, and the small
 prefix diagnostic remains batch 16.
+
+The selector is state-aware. Before either matched formal output directory has
+state, it may run or refresh preflights and atomically publish the selection.
+After either directory contains a manifest, progress report, PNG, or any other
+sampling state, it may only validate and return the frozen selection. The lock
+binds both output paths, the ordered candidate set, baseline and memory policy,
+both checkpoint identities, both prefix budgets, guidance/CFG/weights/precision,
+warmup and measured-forward counts, clean branch/revision, and benchmark root.
+Missing or drifted selection evidence fails before a preflight model load.
 
 ## Completion evidence
 
@@ -63,3 +75,6 @@ training revision and `scale/generative-system` branch. This prevents a clean
 selector preflight from masking later uncommitted inference-code changes.
 The same chain prevents a cached preflight from masking a later interpreter,
 package lock, CUDA driver, GPU, or backend-setting change.
+
+Restart-boundary hardening and adversarial verification are recorded in
+`2026-07-14_generation_sampling_batch_selection_freeze.md`.
