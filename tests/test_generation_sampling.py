@@ -64,6 +64,26 @@ class _ClassModel(torch.nn.Module):
         )
 
 
+class _OracleX0Model(torch.nn.Module):
+    def __init__(self, schedule: DiffusionSchedule, target_x0: torch.Tensor) -> None:
+        super().__init__()
+        self.schedule = schedule
+        self.target_x0 = target_x0
+
+    def forward(self, images, timesteps, class_labels=None, force_unconditional=False):
+        del class_labels, force_unconditional
+        alpha = self.schedule.sqrt_alphas_cumprod[timesteps].view(-1, 1, 1, 1)
+        sigma = self.schedule.sqrt_one_minus_alphas_cumprod[timesteps].view(-1, 1, 1, 1)
+        target = self.target_x0.expand_as(images)
+        epsilon = (images - alpha * target) / sigma
+        return CoFiTokOutput(
+            tokens=[epsilon],
+            components=[epsilon],
+            prefix_epsilons=[epsilon],
+            epsilon=epsilon,
+        )
+
+
 def _sample(
     model: torch.nn.Module,
     *,
@@ -110,6 +130,31 @@ def test_prefix_budgets_share_the_same_initial_noise() -> None:
     _sample(first, start=11, count=3, budget=1)
     _sample(second, start=11, count=3, budget=2)
     torch.testing.assert_close(first.first_inputs[0], second.first_inputs[0], rtol=0.0, atol=0.0)
+
+
+@pytest.mark.parametrize("eta", [0.0, 0.5])
+def test_ddim_oracle_epsilon_reconstructs_x0(eta: float) -> None:
+    device = torch.device("cpu")
+    schedule = DiffusionSchedule(
+        DiffusionConfig(num_train_timesteps=32, schedule_type="cosine"),
+        device=device,
+    )
+    target = torch.linspace(-0.8, 0.8, 16).reshape(1, 1, 4, 4)
+    model = _OracleX0Model(schedule, target)
+
+    sampled = ddim_sample(
+        model,
+        schedule,
+        tuple(target.shape),
+        sample_steps=7,
+        prefix_budget=1,
+        eta=eta,
+        clip_x0=False,
+        device=device,
+        generator=torch.Generator(device=device).manual_seed(29),
+    )
+
+    torch.testing.assert_close(sampled, target, rtol=1e-5, atol=1e-5)
 
 
 def test_batched_cfg_matches_sequential_cfg_with_one_forward() -> None:

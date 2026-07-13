@@ -72,6 +72,10 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   immutable manifest's complete sampling dictionary, and the resolved timestep
   list must equal the shared scheduler's exact selection. Both methods being
   identically misconfigured is therefore a named gate failure, not a match.
+- The DDIM recurrence also has a closed-form oracle regression test. An epsilon
+  predictor constructed from a fixed known `x0` must recover that image after a
+  strided trajectory for both deterministic DDIM and nonzero `eta`; this checks
+  the update equation independently of a learned model or report schema.
 - Each PNG is encoded to a same-directory partial file and atomically published
   only after encoding succeeds. JSON manifests and reports use the same atomic
   replacement rule, so interruption cannot turn a partial file into apparent
