@@ -103,6 +103,7 @@ def test_supervisor_runbook_is_bounded_locked_and_uses_structured_classifier() -
     assert "write_generation_supervisor_status.py" in runbook
     assert "attempt<=MAX_ATTEMPTS" in runbook
     assert "delay > 900" in runbook
+    assert 'sleep "$delay" 8>&-' in runbook
     assert 'bash "$PIPELINE"' in runbook
     assert "promotion_gate" not in runbook
     assert "final_gate" not in runbook

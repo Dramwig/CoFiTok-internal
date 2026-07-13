@@ -53,3 +53,8 @@ idempotent.
 The supervisor does not survive a server power cycle by itself. After a power
 cycle, rerunning the same pinned deploy command is safe; it finds existing
 artifacts and resumes through the same bounded policy.
+
+The retry-delay child explicitly closes the supervisor lock descriptor. If the
+supervisor is interrupted during exponential backoff, an orphaned `sleep`
+cannot retain the lock and delay immediate recovery. Pipeline and training
+children continue to inherit the lock intentionally while useful work is live.

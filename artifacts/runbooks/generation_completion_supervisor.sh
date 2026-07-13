@@ -85,7 +85,8 @@ for (( attempt=1; attempt<=MAX_ATTEMPTS; attempt++ )); do
   write_status retrying "retrying recoverable pipeline stage" \
     "$attempt" "$pipeline_stage" "$pipeline_status" \
     --child-exit-code "$child_exit_code" --next-retry-seconds "$delay"
-  sleep "$delay"
+  # An orphaned retry delay must not retain the supervisor lock.
+  sleep "$delay" 8>&-
 done
 
 exit 1
