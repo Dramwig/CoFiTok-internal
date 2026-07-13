@@ -65,15 +65,16 @@ the authoritative compressed 10% revision, and the full-training revision.
 
 - Core implementation commit: `35d21c3c153ea655778a8e490e7410619aa8f1d4`.
 - Native-sidecar post-eval fix: `9cfecade12c9e2bb3786d3ae842f203b56ce993e`.
+- Guarded deployment waiter: `24c2154baeadca8c25b0125d89fe5ddbf4732903`.
 - Prerequisite-aware bundle from pinned `781a01444fddbf0d48a427ba58bdeed50167b5be`:
-  `476,888` bytes, SHA256
-  `5625218f7de1bc9bd8700745fb73b677bcb80bdf058d52f9d20dbccbb4fa05fd`.
-- Full local suite: `571/571` pass.
+  `479,615` bytes, SHA256
+  `fecc6053c5108e0295e2ac4f2fb0515277b05e2a7ec34d0bdcc82ce5b0e63efc`.
+- Full local suite: `572/572` pass.
 - Production scaling config preflight: pass.
 - Production full config preflight: pass.
-- Isolated Linux target-revision suite: `571/571` pass, 0 failures/errors/skips.
-- Target-tracked Linux runbooks: `40/40` `bash -n` pass.
-- Bounded deployment conflict scan: 160 target-added paths, 0 conflicts.
+- Isolated Linux target-revision suite: `572/572` pass, 0 failures/errors/skips.
+- Target-tracked Linux runbooks: `41/41` `bash -n` pass.
+- Bounded deployment conflict scan: 164 target-added paths, 0 conflicts.
 - Formal worktree HEAD remained pinned and tracked-clean after verification.
 - Tests cover variable token channels/shapes, fixed upsampling to image space,
   per-token compression, nondecreasing capacity, legacy recipe compatibility,
@@ -106,7 +107,7 @@ Evidence SHA256 values, in the order above:
 ```text
 compressed_scaling_config_preflight.json: recorded in the implementation commit
 compressed_full_config_preflight.json: recorded in the implementation commit
-compressed_token_linux_pytest.xml: 397a1846eb965811b1bee50d1a6082f6308b19ce688ab1b526159c1757275ff7
-compressed_token_linux_runbook_syntax.json: 9c60474645c25e3b929b91b5d993a3abfc98bfc18f870f23bc30dfbe886f22e4
-compressed_token_deployment_conflicts.json: 051e7da3f4d5da564d6cfdfbf9c25e032c65ef9b86251c9078ca2371ccddd7f5
+compressed_token_linux_pytest.xml: 50503c095f8f1ab897aae812e9ccf108d8892e7c3f8455f71de73b35cf178f1f
+compressed_token_linux_runbook_syntax.json: 98ba0fa936922024e6447549a802a6abe69f68751272e5fdc19de2825e818cbb
+compressed_token_deployment_conflicts.json: ed1b7f196cdacd5162836a0622452aa1bc510b9b3581c8bd56a1e78f888cfd8f
 ```
