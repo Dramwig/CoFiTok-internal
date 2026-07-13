@@ -11,6 +11,7 @@ import numpy as np
 import torch
 from torch import nn
 
+from cofitok.data.provenance import validate_dataset_provenance
 from cofitok.environment import (
     runtime_environment_mismatch_paths,
     runtime_environment_sha256,
@@ -93,6 +94,9 @@ def verify_training_checkpoint(path: str | Path) -> dict[str, Any]:
     runtime_environment_sha = integrity.get("runtime_environment_sha256")
     if runtime_environment_sha is not None and len(str(runtime_environment_sha)) != 64:
         raise ValueError("Checkpoint runtime environment SHA256 is malformed")
+    dataset_identity_sha = integrity.get("dataset_identity_sha256")
+    if dataset_identity_sha is not None and len(str(dataset_identity_sha)) != 64:
+        raise ValueError("Checkpoint dataset identity SHA256 is malformed")
     git_keys = {"git_revision", "git_branch", "git_dirty"}
     present_git_keys = git_keys & integrity.keys()
     if present_git_keys and present_git_keys != git_keys:
@@ -264,6 +268,19 @@ def save_training_checkpoint(
         if declared_sha is not None and declared_sha != runtime_environment_sha:
             raise ValueError("runtime environment SHA256 differs from checkpoint state")
         resolved_extra_state["runtime_environment_sha256"] = runtime_environment_sha
+    dataset_provenance = resolved_extra_state.get("dataset_provenance")
+    dataset_identity_sha = None
+    if dataset_provenance is not None:
+        if not isinstance(dataset_provenance, Mapping):
+            raise ValueError("dataset checkpoint provenance must be a mapping")
+        if dataset_provenance.get("formal") is True:
+            config_data = config.get("data")
+            if not isinstance(config_data, Mapping) or not config_data.get("dataset"):
+                raise ValueError("formal dataset checkpoint lacks a config dataset alias")
+            dataset_identity_sha = validate_dataset_provenance(
+                dataset_provenance,
+                expected_dataset=str(config_data["dataset"]),
+            )["identity_sha256"]
     payload = {
         "format_version": CHECKPOINT_FORMAT_VERSION,
         "step": step,
@@ -295,6 +312,8 @@ def save_training_checkpoint(
     }
     if runtime_environment_sha is not None:
         integrity["runtime_environment_sha256"] = runtime_environment_sha
+    if dataset_identity_sha is not None:
+        integrity["dataset_identity_sha256"] = dataset_identity_sha
     if git_provenance is not None:
         integrity.update(
             {
@@ -325,6 +344,7 @@ def load_training_checkpoint(
     expected_config: Mapping[str, Any] | None = None,
     expected_runtime_environment: Mapping[str, Any] | None = None,
     expected_git_provenance: Mapping[str, Any] | None = None,
+    expected_dataset_provenance: Mapping[str, Any] | None = None,
     map_location: str | torch.device = "cpu",
 ) -> dict[str, Any]:
     integrity = None
@@ -343,6 +363,27 @@ def load_training_checkpoint(
             }
             if expected_git_provenance != integrity_git:
                 raise ValueError("Checkpoint Git provenance differs from expected revision")
+    expected_dataset_identity_sha = None
+    if expected_dataset_provenance is not None and expected_dataset_provenance.get(
+        "formal"
+    ) is True:
+        expected_config_data = (
+            expected_config.get("data") if isinstance(expected_config, Mapping) else None
+        )
+        if not isinstance(expected_config_data, Mapping) or not expected_config_data.get(
+            "dataset"
+        ):
+            raise ValueError("formal expected dataset provenance requires a config alias")
+        expected_dataset_identity_sha = validate_dataset_provenance(
+            expected_dataset_provenance,
+            expected_dataset=str(expected_config_data["dataset"]),
+        )["identity_sha256"]
+        if integrity is None or integrity.get(
+            "dataset_identity_sha256"
+        ) != expected_dataset_identity_sha:
+            raise ValueError(
+                "Checkpoint dataset identity differs from expected provenance"
+            )
     checkpoint = torch.load(path, map_location=map_location, weights_only=False)
     if checkpoint.get("format_version") != CHECKPOINT_FORMAT_VERSION:
         raise ValueError(f"Unsupported checkpoint format: {checkpoint.get('format_version')}")
@@ -403,6 +444,44 @@ def load_training_checkpoint(
             }
             if dict(checkpoint_git) != integrity_git:
                 raise ValueError("Checkpoint Git provenance differs from integrity metadata")
+    if expected_dataset_provenance is not None:
+        extra_state = checkpoint.get("extra_state")
+        if not isinstance(extra_state, Mapping):
+            raise ValueError("Checkpoint is missing exact-resume extra state")
+        checkpoint_dataset = extra_state.get("dataset_provenance")
+        if not isinstance(checkpoint_dataset, Mapping):
+            raise ValueError("Checkpoint is missing its dataset provenance")
+        mismatches = _config_mismatch_paths(
+            expected_dataset_provenance,
+            checkpoint_dataset,
+            path="dataset_provenance",
+        )
+        if mismatches:
+            preview = ", ".join(mismatches[:8])
+            raise ValueError(f"Checkpoint dataset provenance mismatch at: {preview}")
+        if expected_dataset_identity_sha is not None:
+            checkpoint_config = checkpoint.get("config")
+            checkpoint_data = (
+                checkpoint_config.get("data")
+                if isinstance(checkpoint_config, Mapping)
+                else None
+            )
+            if not isinstance(checkpoint_data, Mapping):
+                raise ValueError("Checkpoint formal dataset config is missing")
+            checkpoint_identity_sha = validate_dataset_provenance(
+                checkpoint_dataset,
+                expected_dataset=str(checkpoint_data.get("dataset", "")),
+            )["identity_sha256"]
+            if checkpoint_identity_sha != expected_dataset_identity_sha:
+                raise ValueError(
+                    "Checkpoint payload dataset identity differs from expected provenance"
+                )
+            if integrity is not None and integrity.get(
+                "dataset_identity_sha256"
+            ) != checkpoint_identity_sha:
+                raise ValueError(
+                    "Checkpoint dataset identity differs from integrity metadata"
+                )
     if integrity is not None:
         if int(checkpoint.get("step", -1)) != int(integrity["step"]):
             raise ValueError("Checkpoint payload step does not match integrity metadata")

@@ -52,7 +52,8 @@ validate_completed_training_pair() {
     --cofitok-training "$COFITOK_10PCT" \
     --dense-training "$DENSE_10PCT" \
     --expected-steps 50000 --expected-revision "$PINNED_10PCT_REVISION" \
-    --expected-recipe-stage scaling
+    --expected-recipe-stage scaling \
+    --allow-legacy-missing-dataset-provenance
 }
 
 validate_gate() {

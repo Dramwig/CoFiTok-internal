@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 from typing import Any
 
+from cofitok.data.provenance import validate_dataset_provenance
 from cofitok.generation_pair import MATCHED_CONFIG_SECTIONS, generation_pair_contract
 from cofitok.generation_recipe import generation_training_recipe_contract
 
@@ -23,6 +24,7 @@ def _validate_report(
     expected_revision: str,
     expected_branch: str,
     expected_dataset: str,
+    allow_legacy_missing_dataset_provenance: bool,
 ) -> dict[str, Any]:
     if report.get("training_complete") is not True:
         raise ValueError(f"{label} training is incomplete")
@@ -49,6 +51,26 @@ def _validate_report(
         raise ValueError(f"{label} latest checkpoint is not {expected_checkpoint}")
     if int(latest.get("step", -1)) != expected_steps:
         raise ValueError(f"{label} latest checkpoint step does not match training completion")
+    dataset_provenance = report.get("dataset_provenance")
+    provenance_evidence = None
+    legacy_warning = None
+    if dataset_provenance is None:
+        if not allow_legacy_missing_dataset_provenance:
+            raise ValueError(f"{label} training lacks formal dataset provenance")
+        legacy_warning = "pinned legacy training report lacks embedded dataset provenance"
+    else:
+        if not isinstance(dataset_provenance, dict):
+            raise ValueError(f"{label} dataset provenance is malformed")
+        provenance_evidence = validate_dataset_provenance(
+            dataset_provenance,
+            expected_dataset=expected_dataset,
+        )
+        if latest.get("dataset_identity_sha256") != provenance_evidence[
+            "identity_sha256"
+        ]:
+            raise ValueError(
+                f"{label} checkpoint pointer lacks the training dataset identity"
+            )
     return {
         "completed_steps": completed_steps,
         "revision": git["revision"],
@@ -56,6 +78,8 @@ def _validate_report(
         "dataset": expected_dataset,
         "parameter_count": parameter_count,
         "latest_checkpoint": expected_checkpoint,
+        "dataset_provenance": provenance_evidence,
+        "dataset_provenance_warning": legacy_warning,
     }
 
 
@@ -69,6 +93,7 @@ def validate_training_pair(
     expected_dataset: str = "imagenet_256_10pct",
     max_parameter_gap: float = 0.02,
     expected_recipe_stage: str | None = None,
+    allow_legacy_missing_dataset_provenance: bool = False,
 ) -> dict[str, Any]:
     if expected_steps < 1:
         raise ValueError("expected_steps must be positive")
@@ -83,6 +108,7 @@ def validate_training_pair(
         expected_revision=expected_revision,
         expected_branch=expected_branch,
         expected_dataset=expected_dataset,
+        allow_legacy_missing_dataset_provenance=allow_legacy_missing_dataset_provenance,
     )
     validated_dense = _validate_report(
         dense,
@@ -91,7 +117,19 @@ def validate_training_pair(
         expected_revision=expected_revision,
         expected_branch=expected_branch,
         expected_dataset=expected_dataset,
+        allow_legacy_missing_dataset_provenance=allow_legacy_missing_dataset_provenance,
     )
+    provenance_states = {
+        validated_cofitok["dataset_provenance"] is None,
+        validated_dense["dataset_provenance"] is None,
+    }
+    if len(provenance_states) != 1:
+        raise ValueError("matched training pair mixes legacy and bound dataset provenance")
+    if validated_cofitok["dataset_provenance"] is not None and (
+        validated_cofitok["dataset_provenance"]["identity_sha256"]
+        != validated_dense["dataset_provenance"]["identity_sha256"]
+    ):
+        raise ValueError("matched training pair used different dataset identities")
     pair_contract = generation_pair_contract(cofitok["config"], dense["config"])
     if not pair_contract["valid"]:
         raise ValueError("training pair contract failed: " + "; ".join(pair_contract["issues"]))
@@ -116,7 +154,7 @@ def validate_training_pair(
             f"training pair parameter gap {parameter_gap:.6f} exceeds {max_parameter_gap:.6f}"
         )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "pass",
         "expected_steps": expected_steps,
         "expected_revision": expected_revision,
@@ -125,6 +163,12 @@ def validate_training_pair(
         "matched_config_sections": list(MATCHED_CONFIG_SECTIONS),
         "pair_contract": pair_contract,
         "training_recipe": recipe_contract,
+        "legacy_dataset_provenance_allowed": allow_legacy_missing_dataset_provenance,
+        "dataset_identity_sha256": (
+            None
+            if validated_cofitok["dataset_provenance"] is None
+            else validated_cofitok["dataset_provenance"]["identity_sha256"]
+        ),
         "relative_parameter_gap": parameter_gap,
         "max_parameter_gap": max_parameter_gap,
         "cofitok": validated_cofitok,
@@ -144,6 +188,11 @@ def main() -> None:
     parser.add_argument("--expected-dataset", default="imagenet_256_10pct")
     parser.add_argument("--max-parameter-gap", type=float, default=0.02)
     parser.add_argument("--expected-recipe-stage", choices=("scaling", "full"))
+    parser.add_argument(
+        "--allow-legacy-missing-dataset-provenance",
+        action="store_true",
+        help="Allow both pinned legacy reports to omit dataset provenance.",
+    )
     args = parser.parse_args()
     report = validate_training_pair(
         _read(args.cofitok_training),
@@ -154,6 +203,9 @@ def main() -> None:
         expected_dataset=args.expected_dataset,
         max_parameter_gap=args.max_parameter_gap,
         expected_recipe_stage=args.expected_recipe_stage,
+        allow_legacy_missing_dataset_provenance=(
+            args.allow_legacy_missing_dataset_provenance
+        ),
     )
     print(json.dumps(report, indent=2, sort_keys=True))
 

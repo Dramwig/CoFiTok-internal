@@ -23,6 +23,14 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Production training uses bf16, gradient accumulation, gradient clipping,
   cosine LR, EMA, isolated DataLoader RNG, atomic checkpoints, retention, and
   exact model/optimizer/scheduler/RNG/sampler recovery.
+- Formal data identity is verified before model construction by rehashing the
+  authoritative ImageNet metadata manifest and checking its byte count plus
+  train/validation sizes against the recorded dataset condition. The resulting
+  identity SHA is embedded in the run manifest, runtime benchmark, checkpoint
+  payload, integrity sidecar, latest pointer, and training report. Full 300K
+  resume and matched-pair validation fail before weight deserialization when
+  this identity changes. Only both pinned legacy 10% reports may omit it via an
+  explicit compatibility flag; mixed legacy/bound pairs are invalid.
 - Exact resume also requires the fully resolved current training config to
   equal the config embedded in the checkpoint before any model, EMA, optimizer,
   scheduler, scaler, or RNG state is restored. Changes such as micro-batch or
@@ -427,6 +435,15 @@ state. Git revision, branch, and tracked state are bound at the same checkpoint
 trust boundary. The final audit requires identical CoFiTok/dense environment SHA
 values and checkpoint pointers from the clean deployed revision.
 See `docs/records/2026-07-13_generation_runtime_environment_fingerprint.md`.
+
+The same pre-deserialization boundary binds formal dataset provenance. The
+full ImageNet-256 manifest must remain exactly `405,484,553` bytes with SHA256
+`9a2eec642f0d56162bffaafed84a41267f22abfc9feff4cf41fed9f6881173f0`,
+and loaders must resolve `1,281,167` train plus `50,000` validation images. The
+10% identity is retained for the next rerun, while the active pinned queue is
+reported as an explicit legacy exception rather than retroactively claiming
+evidence it did not record. See
+`docs/records/2026-07-13_generation_dataset_provenance.md`.
 
 After the final gate, both methods export separate EMA-only deployment
 artifacts. Their type-specific sidecars are verified before deserialization;

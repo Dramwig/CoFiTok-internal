@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from cofitok.configs import config_to_dict, load_config
+from cofitok.data.provenance import validate_dataset_provenance
 from cofitok.environment import runtime_environment_sha256
 from cofitok.reporting import file_sha256, write_json_report
 
@@ -26,6 +27,26 @@ def _validated_runtime_environment_sha(report: dict[str, Any]) -> str | None:
         return None
     actual = runtime_environment_sha256(environment)
     return actual if report.get("runtime_environment_sha256") == actual else None
+
+
+def _validated_dataset_identity_sha(report: dict[str, Any]) -> str | None:
+    provenance = report.get("dataset_provenance")
+    if not isinstance(provenance, dict):
+        return None
+    config = report.get("config")
+    config_data = config.get("data") if isinstance(config, dict) else None
+    expected_dataset = (
+        str(config_data.get("dataset", ""))
+        if isinstance(config_data, dict) and config_data.get("dataset")
+        else str(provenance.get("dataset", ""))
+    )
+    try:
+        return validate_dataset_provenance(
+            provenance,
+            expected_dataset=expected_dataset,
+        )["identity_sha256"]
+    except (TypeError, ValueError):
+        return None
 
 
 def parse_candidates(value: str, *, expected_effective_batch: int) -> list[tuple[int, int]]:
@@ -58,6 +79,8 @@ def select_runtime_candidate(
     normalized = []
     environment_provenance_issues = []
     observed_method_environment_shas = []
+    dataset_provenance_issues = []
+    observed_method_dataset_shas = []
     for row in candidates:
         candidate = dict(row)
         methods = candidate.get("methods", {})
@@ -65,6 +88,7 @@ def select_runtime_candidate(
         scores = []
         memory_fractions = []
         environment_shas = []
+        dataset_shas = []
         for method in ("cofitok", "dense_identity"):
             report = methods.get(method, {})
             if report.get("status") != "completed":
@@ -80,6 +104,14 @@ def select_runtime_candidate(
             else:
                 environment_shas.append(environment_sha)
                 observed_method_environment_shas.append(environment_sha)
+            dataset_sha = _validated_dataset_identity_sha(report)
+            if dataset_sha is None:
+                reason = f"{method}_invalid_dataset_provenance"
+                reasons.append(reason)
+                dataset_provenance_issues.append(reason)
+            else:
+                dataset_shas.append(dataset_sha)
+                observed_method_dataset_shas.append(dataset_sha)
             seconds = float(report.get("mean_optimizer_step_seconds", math.nan))
             throughput = float(report.get("images_per_second", math.nan))
             if not math.isfinite(seconds) or seconds <= 0.0:
@@ -102,9 +134,17 @@ def select_runtime_candidate(
             environment_provenance_issues.append(
                 "matched_runtime_environment_mismatch"
             )
+        if len(dataset_shas) == 2 and len(set(dataset_shas)) != 1:
+            reasons.append("matched_dataset_identity_mismatch")
+            dataset_provenance_issues.append("matched_dataset_identity_mismatch")
         candidate["runtime_environment_sha256"] = (
             environment_shas[0]
             if len(environment_shas) == 2 and len(set(environment_shas)) == 1
+            else None
+        )
+        candidate["dataset_identity_sha256"] = (
+            dataset_shas[0]
+            if len(dataset_shas) == 2 and len(set(dataset_shas)) == 1
             else None
         )
         candidate["eligible"] = not reasons
@@ -121,11 +161,19 @@ def select_runtime_candidate(
             "runtime benchmark environment provenance failed: "
             + ", ".join(sorted(set(environment_provenance_issues)))
         )
+    if dataset_provenance_issues:
+        raise ValueError(
+            "runtime benchmark dataset provenance failed: "
+            + ", ".join(sorted(set(dataset_provenance_issues)))
+        )
     observed_environment_shas = {
         str(value) for value in observed_method_environment_shas
     }
     if len(observed_environment_shas) > 1:
         raise ValueError("runtime environment changed across benchmark candidates")
+    observed_dataset_shas = {str(value) for value in observed_method_dataset_shas}
+    if len(observed_dataset_shas) > 1:
+        raise ValueError("dataset identity changed across benchmark candidates")
     if not eligible:
         raise ValueError("no shared generation runtime candidate passed")
     selected = min(
@@ -150,7 +198,7 @@ def select_runtime_candidate(
         selected["selection_score_seconds"]
     )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "selected",
         "policy": {
             "shared_candidate_required": True,
@@ -169,6 +217,7 @@ def select_runtime_candidate(
             "estimated_speedup_over_16x4": speedup,
         },
         "runtime_environment_sha256": selected["runtime_environment_sha256"],
+        "dataset_identity_sha256": selected["dataset_identity_sha256"],
         "candidates": normalized,
     }
 
@@ -217,6 +266,7 @@ def _benchmark_matches(
         and report.get("git", {}).get("revision") == expected_revision
         and report.get("git", {}).get("dirty") is False
         and _validated_runtime_environment_sha(report) is not None
+        and _validated_dataset_identity_sha(report) is not None
         and int(report.get("benchmark_steps", -1)) == benchmark_steps
         and int(report.get("warmup_steps", -1)) == warmup_steps
         and report.get("checkpoint_written") is False

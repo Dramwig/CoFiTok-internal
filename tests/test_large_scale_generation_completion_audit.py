@@ -8,6 +8,10 @@ from pathlib import Path
 
 from cofitok.diffusion import select_sampling_timesteps
 from cofitok.configs import config_to_dict, load_config
+from cofitok.data.provenance import (
+    FORMAL_GENERATION_DATASETS,
+    dataset_provenance_identity_sha256,
+)
 from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
@@ -53,6 +57,26 @@ def _runtime_environment() -> dict:
     }
 
 
+def _dataset_provenance(dataset: str) -> dict:
+    spec = FORMAL_GENERATION_DATASETS[dataset]
+    report = {
+        "schema_version": 1,
+        "status": "pass",
+        "formal": True,
+        "dataset": dataset,
+        "dataset_root": f"/root/autodl-tmp/CoFiTok/datasets/{dataset}",
+        "manifest": {
+            "relative_path": "metadata/image_manifest.jsonl",
+            "bytes": spec.manifest_bytes,
+            "sha256": spec.manifest_sha256,
+        },
+        "splits": {"train": spec.train_images, "val": spec.val_images},
+        "issues": [],
+    }
+    report["identity_sha256"] = dataset_provenance_identity_sha256(report)
+    return report
+
+
 def _training(
     *, steps: int, dataset: str, revision: str, parameters: int, checkpoint_sha: str
 ) -> dict:
@@ -71,6 +95,7 @@ def _training(
             if cofitok_method
             else "imagenet256_dense_300k.json"
         )
+    dataset_provenance = _dataset_provenance(dataset)
     return {
         "training_complete": True,
         "completed_steps": steps,
@@ -96,10 +121,12 @@ def _training(
             "git_revision": revision,
             "git_branch": "scale/generative-system",
             "git_dirty": False,
+            "dataset_identity_sha256": dataset_provenance["identity_sha256"],
         },
         "config": config_to_dict(
             load_config(ROOT / "configs/generation" / config_name)
         ),
+        "dataset_provenance": dataset_provenance,
     }
 
 
@@ -222,6 +249,8 @@ def _training_audit() -> dict:
 def _runtime_selection() -> dict:
     environment = _runtime_environment()
     environment_sha = runtime_environment_sha256(environment)
+    dataset_provenance = _dataset_provenance("imagenet_256")
+    dataset_sha = dataset_provenance["identity_sha256"]
     benchmark = {
         "status": "completed",
         "git": {
@@ -231,11 +260,14 @@ def _runtime_selection() -> dict:
         },
         "runtime_environment": environment,
         "runtime_environment_sha256": environment_sha,
+        "dataset_provenance": dataset_provenance,
     }
     return {
+        "schema_version": 2,
         "status": "selected",
         "git_revision": FULL_REVISION,
         "runtime_environment_sha256": environment_sha,
+        "dataset_identity_sha256": dataset_sha,
         "selected": {
             "micro_batch_size": 16,
             "gradient_accumulation_steps": 4,
@@ -249,6 +281,7 @@ def _runtime_selection() -> dict:
                 "effective_batch_size": 64,
                 "eligible": True,
                 "runtime_environment_sha256": environment_sha,
+                "dataset_identity_sha256": dataset_sha,
                 "methods": {
                     "cofitok": copy.deepcopy(benchmark),
                     "dense_identity": copy.deepcopy(benchmark),
@@ -1236,6 +1269,21 @@ def test_completion_audit_rejects_identically_weakened_full_recipe() -> None:
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == ["full_matched_training"]
+
+
+def test_completion_audit_rejects_missing_full_dataset_provenance() -> None:
+    kwargs = _kwargs()
+    for key in ("cofitok_full_training", "dense_full_training"):
+        kwargs[key].pop("dataset_provenance")
+        kwargs[key]["latest_checkpoint"].pop("dataset_identity_sha256")
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == [
+        "full_matched_training",
+        "full_runtime_selection",
+    ]
 
 
 def test_completion_audit_rejects_sampling_that_ignores_selected_batch() -> None:

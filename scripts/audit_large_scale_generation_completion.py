@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from cofitok.environment import runtime_environment_sha256
+from cofitok.data.provenance import validate_dataset_provenance
 from cofitok.generation import sampling_protocol_contract
 from cofitok.generation.artifact import verify_inference_artifact
 from cofitok.generation_cost import training_cost_summary
@@ -244,6 +245,8 @@ def _runtime_selection_evidence(
     *,
     expected_revision: str,
 ) -> dict[str, Any]:
+    if selection.get("schema_version") != 2:
+        raise ValueError("full training runtime selection schema is unsupported")
     if selection.get("status") != "selected":
         raise ValueError("full training runtime selection is incomplete")
     if selection.get("git_revision") != expected_revision:
@@ -270,6 +273,9 @@ def _runtime_selection_evidence(
     selected_environment_sha = str(selection.get("runtime_environment_sha256", ""))
     if len(selected_environment_sha) != 64:
         raise ValueError("selected full runtime environment SHA256 is malformed")
+    selected_dataset_sha = str(selection.get("dataset_identity_sha256", ""))
+    if len(selected_dataset_sha) != 64:
+        raise ValueError("selected full runtime dataset identity SHA256 is malformed")
     for candidate in selection.get("candidates", []):
         completed_methods = 0
         for method in ("cofitok", "dense_identity"):
@@ -279,6 +285,7 @@ def _runtime_selection_evidence(
             completed_methods += 1
             environment = benchmark.get("runtime_environment")
             git = benchmark.get("git", {})
+            provenance = benchmark.get("dataset_provenance")
             if (
                 not isinstance(environment, dict)
                 or runtime_environment_sha256(environment)
@@ -289,6 +296,11 @@ def _runtime_selection_evidence(
                 raise ValueError(
                     f"{method} training benchmark environment differs"
                 )
+            if not isinstance(provenance, dict) or validate_dataset_provenance(
+                provenance,
+                expected_dataset="imagenet_256",
+            )["identity_sha256"] != selected_dataset_sha:
+                raise ValueError(f"{method} training benchmark dataset differs")
             if (
                 git.get("revision") != expected_revision
                 or git.get("branch") != "scale/generative-system"
@@ -301,6 +313,11 @@ def _runtime_selection_evidence(
             != selected_environment_sha
         ):
             raise ValueError("training benchmark candidate environment differs")
+        if (
+            completed_methods == 2
+            and candidate.get("dataset_identity_sha256") != selected_dataset_sha
+        ):
+            raise ValueError("training benchmark candidate dataset differs")
     for method, report in training_reports.items():
         config = report.get("config", {})
         if int(config.get("data", {}).get("batch_size", -1)) != micro_batch:
@@ -316,6 +333,12 @@ def _runtime_selection_evidence(
             raise ValueError(f"{method} training did not use selected accumulation")
         if report.get("runtime_environment_sha256") != selected_environment_sha:
             raise ValueError(f"{method} training environment differs from runtime selection")
+        provenance = report.get("dataset_provenance")
+        if not isinstance(provenance, dict) or validate_dataset_provenance(
+            provenance,
+            expected_dataset="imagenet_256",
+        )["identity_sha256"] != selected_dataset_sha:
+            raise ValueError(f"{method} training dataset differs from runtime selection")
     return {
         "micro_batch_size": micro_batch,
         "gradient_accumulation_steps": accumulation,
@@ -324,6 +347,7 @@ def _runtime_selection_evidence(
             selected["estimated_speedup_over_16x4"]
         ),
         "runtime_environment_sha256": selected_environment_sha,
+        "dataset_identity_sha256": selected_dataset_sha,
     }
 
 
@@ -1355,6 +1379,7 @@ def build_completion_audit(
                 expected_steps=50_000,
                 expected_revision=expected_10pct_revision,
                 expected_recipe_stage="scaling",
+                allow_legacy_missing_dataset_provenance=True,
             ),
         )
     )

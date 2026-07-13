@@ -17,7 +17,12 @@ from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
 
 from cofitok.configs import ExperimentConfig, config_to_dict, load_config
-from cofitok.data import StatefulRandomSampler, build_dataloader, build_dataset
+from cofitok.data import (
+    StatefulRandomSampler,
+    build_dataloader,
+    build_dataset,
+    capture_dataset_provenance,
+)
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.environment import (
     capture_runtime_environment,
@@ -332,6 +337,16 @@ def main() -> None:
         drop_last=False,
         generator=torch.Generator().manual_seed(config.runtime.seed + 97),
     )
+    dataset_provenance = capture_dataset_provenance(
+        config.data,
+        train_images=len(train_loader.dataset),
+        val_images=len(eval_loader.dataset),
+    )
+    if dataset_provenance.get("status") == "fail":
+        raise ValueError(
+            "formal dataset provenance failed: "
+            + "; ".join(dataset_provenance.get("issues", []))
+        )
 
     base_model = CoFiTokTiny(config.model).to(device)
     optimizer = torch.optim.AdamW(
@@ -369,6 +384,7 @@ def main() -> None:
             expected_config=config_to_dict(config),
             expected_runtime_environment=runtime_environment,
             expected_git_provenance=git_provenance,
+            expected_dataset_provenance=dataset_provenance,
             map_location=device,
         )
         start_step = int(checkpoint["step"])
@@ -412,6 +428,7 @@ def main() -> None:
         "device_name": torch.cuda.get_device_name(device) if device.type == "cuda" else "cpu",
         "runtime_environment": runtime_environment,
         "runtime_environment_sha256": runtime_environment_sha,
+        "dataset_provenance": dataset_provenance,
         "parameter_count": sum(parameter.numel() for parameter in base_model.parameters()),
         "trainable_parameter_count": sum(
             parameter.numel() for parameter in base_model.parameters() if parameter.requires_grad
@@ -562,6 +579,7 @@ def main() -> None:
                     "git": git_provenance,
                     "runtime_environment": runtime_environment,
                     "runtime_environment_sha256": runtime_environment_sha,
+                    "dataset_provenance": dataset_provenance,
                     "cumulative_elapsed_seconds": (
                         cumulative_elapsed_before_segment + segment_elapsed_seconds
                     ),
@@ -600,6 +618,7 @@ def main() -> None:
             "runtime_environment_sha256": manifest[
                 "runtime_environment_sha256"
             ],
+            "dataset_provenance": manifest["dataset_provenance"],
             "device": manifest["device"],
             "device_name": manifest["device_name"],
             "parameter_count": manifest["parameter_count"],

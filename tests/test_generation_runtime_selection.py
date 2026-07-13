@@ -1,13 +1,39 @@
 from __future__ import annotations
 
+import copy
+
 import pytest
 
+from cofitok.data.provenance import (
+    FORMAL_GENERATION_DATASETS,
+    dataset_provenance_identity_sha256,
+)
 from cofitok.environment import runtime_environment_sha256
 from scripts.select_generation_training_runtime import (
     _benchmark_matches,
     parse_candidates,
     select_runtime_candidate,
 )
+
+
+def _dataset_provenance() -> dict:
+    spec = FORMAL_GENERATION_DATASETS["imagenet_256"]
+    report = {
+        "schema_version": 1,
+        "status": "pass",
+        "formal": True,
+        "dataset": "imagenet_256",
+        "dataset_root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256",
+        "manifest": {
+            "relative_path": "metadata/image_manifest.jsonl",
+            "bytes": spec.manifest_bytes,
+            "sha256": spec.manifest_sha256,
+        },
+        "splits": {"train": spec.train_images, "val": spec.val_images},
+        "issues": [],
+    }
+    report["identity_sha256"] = dataset_provenance_identity_sha256(report)
+    return report
 
 
 def _method(seconds: float, *, peak_fraction: float = 0.5) -> dict:
@@ -20,6 +46,7 @@ def _method(seconds: float, *, peak_fraction: float = 0.5) -> dict:
         "status": "completed",
         "runtime_environment": environment,
         "runtime_environment_sha256": runtime_environment_sha256(environment),
+        "dataset_provenance": _dataset_provenance(),
         "effective_batch_size": 64,
         "mean_optimizer_step_seconds": seconds,
         "images_per_second": 64 / seconds,
@@ -65,7 +92,9 @@ def test_selector_minimizes_worst_method_runtime() -> None:
     assert report["selected"]["gradient_accumulation_steps"] == 2
     assert report["selected"]["selection_score_seconds"] == 2.0
     assert report["selected"]["estimated_speedup_over_16x4"] == 1.25
+    assert report["schema_version"] == 2
     assert len(report["runtime_environment_sha256"]) == 64
+    assert len(report["dataset_identity_sha256"]) == 64
 
 
 def test_selector_rejects_oom_or_insufficient_memory_headroom() -> None:
@@ -148,6 +177,27 @@ def test_selector_rejects_invalid_or_drifted_runtime_environment() -> None:
                     {"status": "failed", "failure_type": "cuda_oom"},
                     changed_dense,
                 ),
+            ],
+            expected_effective_batch=64,
+            max_memory_fraction=0.9,
+        )
+
+
+def test_selector_rejects_dataset_identity_drift() -> None:
+    changed_cofitok = _method(2.0)
+    changed_cofitok["dataset_provenance"]["dataset_root"] += "_copy"
+    changed_cofitok["dataset_provenance"]["identity_sha256"] = (
+        dataset_provenance_identity_sha256(
+            changed_cofitok["dataset_provenance"]
+        )
+    )
+    changed_dense = copy.deepcopy(changed_cofitok)
+
+    with pytest.raises(ValueError, match="dataset identity changed"):
+        select_runtime_candidate(
+            [
+                _candidate(16, 4, _method(2.5), _method(2.4)),
+                _candidate(32, 2, changed_cofitok, changed_dense),
             ],
             expected_effective_batch=64,
             max_memory_fraction=0.9,

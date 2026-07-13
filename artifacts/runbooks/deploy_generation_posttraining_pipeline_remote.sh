@@ -75,6 +75,7 @@ if PYTHONPATH="$validator_pythonpath" python "$validator" \
     --dense-training "$DENSE_REPORT" \
     --expected-steps 50000 --expected-revision "$EXPECTED_COMMIT" \
     --expected-recipe-stage scaling \
+    --allow-legacy-missing-dataset-provenance \
     >"$pair_validation_temporary"; then
   mv "$pair_validation_temporary" "$PAIR_VALIDATION"
 else
