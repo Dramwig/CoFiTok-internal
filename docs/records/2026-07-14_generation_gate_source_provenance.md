@@ -43,3 +43,16 @@ Tests cover six-source construction, authoritative suffix rejection, byte-level
 tampering, source-only acceptance of a quality hold, transition-runbook reuse,
 and terminal scaling/final verification drift. Full local and isolated Linux
 suite counts are recorded after final validation.
+
+- implementation commit: `e34e523223e9e04399b6032638e9b6ad0356dfc3`;
+- complete local suite: `563/563` passed;
+- complete isolated Linux suite in the real sibling-`paper/` layout: `563/563`
+  passed;
+- tracked Linux runbook syntax audit: `40/40` passed;
+- formal remote target-added-path scan: `152` paths, `0` conflicts;
+- pinned `781a01444fddbf0d48a427ba58bdeed50167b5be` to implementation
+  bundle: `426,122` bytes, SHA256
+  `3af69c5726cec701191db75caec172fbc6fa3d87f6d7074cd0742cda09ead087`;
+- formal remote HEAD remained pinned at
+  `781a01444fddbf0d48a427ba58bdeed50167b5be` with a clean tracked
+  worktree before and after verification.
