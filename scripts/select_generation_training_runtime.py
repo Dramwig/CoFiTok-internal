@@ -8,14 +8,17 @@ import re
 import subprocess
 import sys
 import time
+from copy import deepcopy
 from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
+import torch
+
 from cofitok.configs import config_to_dict, load_config
 from cofitok.data.provenance import validate_dataset_provenance
-from cofitok.environment import runtime_environment_sha256
-from cofitok.reporting import file_sha256, write_json_report
+from cofitok.environment import capture_runtime_environment, runtime_environment_sha256
+from cofitok.reporting import file_sha256, git_provenance, write_json_report
 
 
 CANDIDATE_PATTERN = re.compile(r"^(?P<micro>[1-9][0-9]*)x(?P<accum>[1-9][0-9]*)$")
@@ -235,6 +238,205 @@ def _expected_config(path: Path, micro_batch: int, accumulation: int) -> dict[st
     return config_to_dict(config)
 
 
+def _training_state(run_dirs: list[Path]) -> dict[str, Any]:
+    runs = []
+    for run_dir in run_dirs:
+        if run_dir.exists() and not run_dir.is_dir():
+            raise ValueError(f"training run path is not a directory: {run_dir}")
+        entries = sorted(item.name for item in run_dir.iterdir()) if run_dir.is_dir() else []
+        runs.append(
+            {
+                "path": run_dir.as_posix(),
+                "started": bool(entries),
+                "entry_count": len(entries),
+                "entries_preview": entries[:20],
+            }
+        )
+    return {"started": any(run["started"] for run in runs), "runs": runs}
+
+
+def _selection_contract(
+    *,
+    run_dirs: list[Path],
+    candidates: list[tuple[int, int]],
+    expected_effective_batch: int,
+    benchmark_steps: int,
+    warmup_steps: int,
+    max_memory_fraction: float,
+    target_steps: int,
+    revision: str,
+    branch: str,
+    config_sha256: dict[str, str],
+    benchmark_root: Path,
+) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "mode": "freeze_on_training_state",
+        "training_run_dirs": [path.as_posix() for path in run_dirs],
+        "candidates": [
+            {
+                "micro_batch_size": micro_batch,
+                "gradient_accumulation_steps": accumulation,
+            }
+            for micro_batch, accumulation in candidates
+        ],
+        "expected_effective_batch_size": expected_effective_batch,
+        "benchmark_steps": benchmark_steps,
+        "warmup_steps": warmup_steps,
+        "max_memory_fraction": max_memory_fraction,
+        "training_target_steps": target_steps,
+        "git": {
+            "revision": revision,
+            "branch": branch,
+            "tracked_dirty": False,
+        },
+        "config_sha256": dict(config_sha256),
+        "benchmark_root": benchmark_root.as_posix(),
+    }
+
+
+def _current_runtime_environment_sha(
+    config_path: Path,
+    *,
+    project_root: Path,
+) -> str:
+    config = load_config(config_path)
+    device = torch.device(config.runtime.device)
+    if device.type == "cuda" and not torch.cuda.is_available():
+        raise RuntimeError("CUDA is unavailable for formal runtime selection")
+    if device.type == "cuda":
+        torch.backends.cuda.matmul.allow_tf32 = config.runtime.allow_tf32
+        torch.backends.cudnn.allow_tf32 = config.runtime.allow_tf32
+        torch.backends.cudnn.benchmark = config.runtime.cudnn_benchmark
+    torch.set_float32_matmul_precision("high")
+    environment = capture_runtime_environment(device, project_root=project_root)
+    return runtime_environment_sha256(environment)
+
+
+def validate_frozen_runtime_selection(
+    selection: dict[str, Any],
+    *,
+    expected_contract: dict[str, Any],
+    cofitok_config: Path,
+    dense_config: Path,
+    current_runtime_environment_sha256: str,
+) -> tuple[int, int]:
+    if selection.get("schema_version") != 2 or selection.get("status") != "selected":
+        raise ValueError("frozen runtime selection is incomplete or unsupported")
+    if selection.get("selection_lock") != expected_contract:
+        raise ValueError("frozen runtime selection contract changed")
+    if selection.get("git_revision") != expected_contract["git"]["revision"]:
+        raise ValueError("frozen runtime selection revision changed")
+    if selection.get("config_sha256") != expected_contract["config_sha256"]:
+        raise ValueError("frozen runtime selection config identity changed")
+    if selection.get("benchmark_root") != expected_contract["benchmark_root"]:
+        raise ValueError("frozen runtime selection benchmark root changed")
+    if selection.get("runtime_environment_sha256") != current_runtime_environment_sha256:
+        raise ValueError("current runtime environment differs from frozen selection")
+
+    candidates = selection.get("candidates")
+    if not isinstance(candidates, list):
+        raise ValueError("frozen runtime selection candidates are malformed")
+    observed_pairs = [
+        (
+            int(candidate.get("micro_batch_size", -1)),
+            int(candidate.get("gradient_accumulation_steps", -1)),
+        )
+        for candidate in candidates
+    ]
+    expected_pairs = [
+        (
+            int(candidate["micro_batch_size"]),
+            int(candidate["gradient_accumulation_steps"]),
+        )
+        for candidate in expected_contract["candidates"]
+    ]
+    if observed_pairs != expected_pairs:
+        raise ValueError("frozen runtime selection candidate set changed")
+
+    revision = expected_contract["git"]["revision"]
+    benchmark_steps = int(expected_contract["benchmark_steps"])
+    warmup_steps = int(expected_contract["warmup_steps"])
+    for candidate, (micro_batch, accumulation) in zip(
+        candidates, observed_pairs, strict=True
+    ):
+        methods = candidate.get("methods")
+        if not isinstance(methods, dict):
+            raise ValueError("frozen runtime benchmark methods are malformed")
+        for method, config_path in (
+            ("cofitok", cofitok_config),
+            ("dense_identity", dense_config),
+        ):
+            report = methods.get(method)
+            if not isinstance(report, dict):
+                raise ValueError(f"frozen {method} benchmark is missing")
+            if report.get("status") != "completed":
+                continue
+            if not _benchmark_matches(
+                report,
+                expected_config=_expected_config(
+                    config_path, micro_batch, accumulation
+                ),
+                expected_revision=revision,
+                benchmark_steps=benchmark_steps,
+                warmup_steps=warmup_steps,
+            ):
+                raise ValueError(
+                    f"frozen {method} {micro_batch}x{accumulation} benchmark changed"
+                )
+
+    recomputed = select_runtime_candidate(
+        deepcopy(candidates),
+        expected_effective_batch=int(
+            expected_contract["expected_effective_batch_size"]
+        ),
+        max_memory_fraction=float(expected_contract["max_memory_fraction"]),
+    )
+    for key in (
+        "schema_version",
+        "status",
+        "policy",
+        "selected",
+        "runtime_environment_sha256",
+        "dataset_identity_sha256",
+        "candidates",
+    ):
+        if selection.get(key) != recomputed.get(key):
+            raise ValueError(f"frozen runtime selection {key} is not reproducible")
+    selected = recomputed["selected"]
+    return (
+        int(selected["micro_batch_size"]),
+        int(selected["gradient_accumulation_steps"]),
+    )
+
+
+def reuse_runtime_selection_after_training_start(
+    *,
+    selection_path: Path,
+    run_dirs: list[Path],
+    expected_contract: dict[str, Any],
+    cofitok_config: Path,
+    dense_config: Path,
+    current_runtime_environment_sha256: str,
+) -> tuple[int, int] | None:
+    state = _training_state(run_dirs)
+    if not state["started"]:
+        return None
+    if not selection_path.is_file():
+        started = [run["path"] for run in state["runs"] if run["started"]]
+        raise FileNotFoundError(
+            "training state exists without a frozen runtime selection: "
+            + ", ".join(started)
+        )
+    return validate_frozen_runtime_selection(
+        _read(selection_path),
+        expected_contract=expected_contract,
+        cofitok_config=cofitok_config,
+        dense_config=dense_config,
+        current_runtime_environment_sha256=current_runtime_environment_sha256,
+    )
+
+
 def _read(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
@@ -364,16 +566,6 @@ def _run_benchmark(
     return report
 
 
-def _git_revision(project_root: Path) -> str:
-    return subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=project_root,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Select a shared, memory-safe runtime for matched full generation training."
@@ -382,6 +574,15 @@ def main() -> None:
     parser.add_argument("--dense-config", required=True)
     parser.add_argument("--output-root", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--training-run-dir",
+        action="append",
+        required=True,
+        help=(
+            "Formal training run directory to protect; repeat for both matched methods. "
+            "Any existing run state freezes the selection."
+        ),
+    )
     parser.add_argument("--candidates", default="16x4,32x2,64x1")
     parser.add_argument("--effective-batch-size", type=int, default=64)
     parser.add_argument("--benchmark-steps", type=int, default=8)
@@ -398,12 +599,56 @@ def main() -> None:
     cofitok_config = Path(args.cofitok_config).resolve()
     dense_config = Path(args.dense_config).resolve()
     output_root = Path(args.output_root).resolve()
+    output_path = Path(args.output).resolve()
+    run_dirs = [Path(value).resolve() for value in args.training_run_dir]
+    if len(run_dirs) != 2 or len(set(run_dirs)) != 2:
+        raise ValueError("exactly two distinct matched training run directories are required")
     train_script = (project_root / args.train_script).resolve()
-    revision = _git_revision(project_root)
+    git = git_provenance(project_root)
+    if git["tracked_dirty"]:
+        raise ValueError("runtime selection requires a clean tracked worktree")
+    revision = str(git["revision"])
     candidates = parse_candidates(
         args.candidates,
         expected_effective_batch=args.effective_batch_size,
     )
+    cofitok_base = load_config(cofitok_config)
+    dense_base = load_config(dense_config)
+    if cofitok_base.runtime.steps != dense_base.runtime.steps:
+        raise ValueError("matched runtime configs have different training horizons")
+    config_sha256 = {
+        "cofitok": file_sha256(cofitok_config),
+        "dense_identity": file_sha256(dense_config),
+    }
+    selection_contract = _selection_contract(
+        run_dirs=run_dirs,
+        candidates=candidates,
+        expected_effective_batch=args.effective_batch_size,
+        benchmark_steps=args.benchmark_steps,
+        warmup_steps=args.warmup_steps,
+        max_memory_fraction=args.max_memory_fraction,
+        target_steps=cofitok_base.runtime.steps,
+        revision=revision,
+        branch=str(git["branch"]),
+        config_sha256=config_sha256,
+        benchmark_root=output_root,
+    )
+    current_environment_sha = _current_runtime_environment_sha(
+        cofitok_config,
+        project_root=project_root,
+    )
+    reused = reuse_runtime_selection_after_training_start(
+        selection_path=output_path,
+        run_dirs=run_dirs,
+        expected_contract=selection_contract,
+        cofitok_config=cofitok_config,
+        dense_config=dense_config,
+        current_runtime_environment_sha256=current_environment_sha,
+    )
+    if reused is not None:
+        print(f"{reused[0]} {reused[1]}")
+        return
+
     rows = []
     for micro_batch, accumulation in candidates:
         rows.append(
@@ -447,12 +692,12 @@ def main() -> None:
         max_memory_fraction=args.max_memory_fraction,
     )
     selection["git_revision"] = revision
-    selection["config_sha256"] = {
-        "cofitok": file_sha256(cofitok_config),
-        "dense_identity": file_sha256(dense_config),
-    }
+    selection["config_sha256"] = config_sha256
     selection["benchmark_root"] = output_root.as_posix()
-    write_json_report(args.output, selection)
+    selection["selection_lock"] = selection_contract
+    if selection["runtime_environment_sha256"] != current_environment_sha:
+        raise ValueError("runtime benchmark environment differs from selector environment")
+    write_json_report(output_path, selection)
     selected = selection["selected"]
     print(
         f"{selected['micro_batch_size']} "

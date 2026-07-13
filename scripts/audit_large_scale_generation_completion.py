@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import math
 import subprocess
@@ -272,6 +273,55 @@ def _runtime_selection_evidence(
         raise ValueError("full training runtime selection is incomplete")
     if selection.get("git_revision") != expected_revision:
         raise ValueError("runtime selection revision differs from full training")
+    selection_lock = selection.get("selection_lock")
+    expected_candidates = [
+        {"micro_batch_size": 16, "gradient_accumulation_steps": 4},
+        {"micro_batch_size": 32, "gradient_accumulation_steps": 2},
+        {"micro_batch_size": 64, "gradient_accumulation_steps": 1},
+    ]
+    expected_run_dirs = [
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_full_cofitok_k8_300k",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_full_dense_300k",
+    ]
+    expected_benchmark_root = (
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
+        "runtime_preflight/full_imagenet256_300k"
+    )
+    if not isinstance(selection_lock, dict):
+        raise ValueError("full runtime selection lock is missing")
+    if (
+        selection_lock.get("schema_version") != 1
+        or selection_lock.get("mode") != "freeze_on_training_state"
+        or selection_lock.get("training_run_dirs") != expected_run_dirs
+        or selection_lock.get("candidates") != expected_candidates
+        or selection_lock.get("expected_effective_batch_size") != 64
+        or selection_lock.get("benchmark_steps") != 8
+        or selection_lock.get("warmup_steps") != 2
+        or selection_lock.get("max_memory_fraction") != 0.9
+        or selection_lock.get("training_target_steps") != 300_000
+        or selection_lock.get("benchmark_root") != expected_benchmark_root
+    ):
+        raise ValueError("full runtime selection lock contract differs")
+    lock_git = selection_lock.get("git", {})
+    if lock_git != {
+        "revision": expected_revision,
+        "branch": "scale/generative-system",
+        "tracked_dirty": False,
+    }:
+        raise ValueError("full runtime selection lock Git state differs")
+    config_sha256 = selection.get("config_sha256")
+    if (
+        not isinstance(config_sha256, dict)
+        or selection_lock.get("config_sha256") != config_sha256
+        or set(config_sha256) != {"cofitok", "dense_identity"}
+        or any(
+            not isinstance(value, str) or len(value) != 64
+            for value in config_sha256.values()
+        )
+    ):
+        raise ValueError("full runtime selection config identity differs")
+    if selection.get("benchmark_root") != expected_benchmark_root:
+        raise ValueError("full runtime selection benchmark root differs")
     selected = selection.get("selected", {})
     micro_batch = int(selected.get("micro_batch_size", -1))
     accumulation = int(selected.get("gradient_accumulation_steps", -1))
@@ -280,9 +330,21 @@ def _runtime_selection_evidence(
         raise ValueError("selected full runtime is invalid")
     if micro_batch * accumulation != effective_batch:
         raise ValueError("selected full runtime changes effective batch")
+    candidates = selection.get("candidates", [])
+    observed_candidates = [
+        {
+            "micro_batch_size": int(row.get("micro_batch_size", -1)),
+            "gradient_accumulation_steps": int(
+                row.get("gradient_accumulation_steps", -1)
+            ),
+        }
+        for row in candidates
+    ]
+    if observed_candidates != expected_candidates:
+        raise ValueError("full runtime benchmark candidate set differs")
     selected_candidates = [
         row
-        for row in selection.get("candidates", [])
+        for row in candidates
         if int(row.get("micro_batch_size", -1)) == micro_batch
         and int(row.get("gradient_accumulation_steps", -1)) == accumulation
     ]
@@ -297,7 +359,14 @@ def _runtime_selection_evidence(
     selected_dataset_sha = str(selection.get("dataset_identity_sha256", ""))
     if len(selected_dataset_sha) != 64:
         raise ValueError("selected full runtime dataset identity SHA256 is malformed")
-    for candidate in selection.get("candidates", []):
+    for candidate in candidates:
+        candidate_micro_batch = int(candidate["micro_batch_size"])
+        candidate_accumulation = int(candidate["gradient_accumulation_steps"])
+        if (
+            int(candidate.get("effective_batch_size", -1)) != 64
+            or candidate_micro_batch * candidate_accumulation != 64
+        ):
+            raise ValueError("training benchmark candidate changes effective batch")
         completed_methods = 0
         for method in ("cofitok", "dense_identity"):
             benchmark = candidate.get("methods", {}).get(method, {})
@@ -307,6 +376,20 @@ def _runtime_selection_evidence(
             environment = benchmark.get("runtime_environment")
             git = benchmark.get("git", {})
             provenance = benchmark.get("dataset_provenance")
+            expected_config = copy.deepcopy(training_reports[method].get("config", {}))
+            expected_config.setdefault("data", {})["batch_size"] = candidate_micro_batch
+            expected_config.setdefault("optimization", {})[
+                "gradient_accumulation_steps"
+            ] = candidate_accumulation
+            if benchmark.get("config") != expected_config:
+                raise ValueError(f"{method} training benchmark config differs")
+            if (
+                int(benchmark.get("effective_batch_size", -1)) != 64
+                or int(benchmark.get("benchmark_steps", -1)) != 8
+                or int(benchmark.get("warmup_steps", -1)) != 2
+                or benchmark.get("checkpoint_written") is not False
+            ):
+                raise ValueError(f"{method} training benchmark contract differs")
             if (
                 not isinstance(environment, dict)
                 or runtime_environment_sha256(environment)
@@ -340,6 +423,8 @@ def _runtime_selection_evidence(
         ):
             raise ValueError("training benchmark candidate dataset differs")
     for method, report in training_reports.items():
+        if int(report.get("target_steps", -1)) != 300_000:
+            raise ValueError(f"{method} training horizon differs from runtime selection")
         config = report.get("config", {})
         if int(config.get("data", {}).get("batch_size", -1)) != micro_batch:
             raise ValueError(f"{method} training did not use selected microbatch")

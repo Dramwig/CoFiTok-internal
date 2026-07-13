@@ -15,6 +15,7 @@ from cofitok.data.provenance import (
 from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
 from cofitok.generation_gate import REQUIRED_GENERATION_GATES
 from cofitok.generation_authorization import build_generation_gate_binding
+from cofitok.reporting import file_sha256
 from cofitok.training.authorization import build_generation_training_authorization
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
@@ -299,21 +300,95 @@ def _runtime_selection() -> dict:
     environment_sha = runtime_environment_sha256(environment)
     dataset_provenance = _dataset_provenance("imagenet_256")
     dataset_sha = dataset_provenance["identity_sha256"]
-    benchmark = {
-        "status": "completed",
+    config_paths = {
+        "cofitok": ROOT / "configs/generation/imagenet256_cofitok_k8_300k.json",
+        "dense_identity": ROOT / "configs/generation/imagenet256_dense_300k.json",
+    }
+    config_sha256 = {
+        method: file_sha256(path) for method, path in config_paths.items()
+    }
+    candidates = []
+    for index, (micro_batch, accumulation) in enumerate(
+        ((16, 4), (32, 2), (64, 1))
+    ):
+        methods = {}
+        for method, path in config_paths.items():
+            config = config_to_dict(load_config(path))
+            config["data"]["batch_size"] = micro_batch
+            config["optimization"][
+                "gradient_accumulation_steps"
+            ] = accumulation
+            seconds = 2.0 + index * 0.25
+            methods[method] = {
+                "status": "completed",
+                "git": {
+                    "revision": FULL_REVISION,
+                    "branch": "scale/generative-system",
+                    "dirty": False,
+                },
+                "config": config,
+                "runtime_environment": copy.deepcopy(environment),
+                "runtime_environment_sha256": environment_sha,
+                "dataset_provenance": copy.deepcopy(dataset_provenance),
+                "effective_batch_size": 64,
+                "benchmark_steps": 8,
+                "warmup_steps": 2,
+                "checkpoint_written": False,
+                "mean_optimizer_step_seconds": seconds,
+                "images_per_second": 64 / seconds,
+                "peak_vram_bytes": 50_000,
+                "device_total_memory_bytes": 100_000,
+            }
+        candidates.append(
+            {
+                "micro_batch_size": micro_batch,
+                "gradient_accumulation_steps": accumulation,
+                "effective_batch_size": 64,
+                "eligible": True,
+                "ineligible_reasons": [],
+                "selection_score_seconds": 2.0 + index * 0.25,
+                "max_memory_fraction": 0.5,
+                "runtime_environment_sha256": environment_sha,
+                "dataset_identity_sha256": dataset_sha,
+                "methods": methods,
+            }
+        )
+    benchmark_root = (
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
+        "runtime_preflight/full_imagenet256_300k"
+    )
+    selection_lock = {
+        "schema_version": 1,
+        "mode": "freeze_on_training_state",
+        "training_run_dirs": [
+            "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_full_cofitok_k8_300k",
+            "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_full_dense_300k",
+        ],
+        "candidates": [
+            {"micro_batch_size": 16, "gradient_accumulation_steps": 4},
+            {"micro_batch_size": 32, "gradient_accumulation_steps": 2},
+            {"micro_batch_size": 64, "gradient_accumulation_steps": 1},
+        ],
+        "expected_effective_batch_size": 64,
+        "benchmark_steps": 8,
+        "warmup_steps": 2,
+        "max_memory_fraction": 0.9,
+        "training_target_steps": 300_000,
         "git": {
             "revision": FULL_REVISION,
             "branch": "scale/generative-system",
-            "dirty": False,
+            "tracked_dirty": False,
         },
-        "runtime_environment": environment,
-        "runtime_environment_sha256": environment_sha,
-        "dataset_provenance": dataset_provenance,
+        "config_sha256": config_sha256,
+        "benchmark_root": benchmark_root,
     }
     return {
         "schema_version": 2,
         "status": "selected",
         "git_revision": FULL_REVISION,
+        "config_sha256": config_sha256,
+        "benchmark_root": benchmark_root,
+        "selection_lock": selection_lock,
         "runtime_environment_sha256": environment_sha,
         "dataset_identity_sha256": dataset_sha,
         "selected": {
@@ -322,20 +397,7 @@ def _runtime_selection() -> dict:
             "effective_batch_size": 64,
             "estimated_speedup_over_16x4": 1.0,
         },
-        "candidates": [
-            {
-                "micro_batch_size": 16,
-                "gradient_accumulation_steps": 4,
-                "effective_batch_size": 64,
-                "eligible": True,
-                "runtime_environment_sha256": environment_sha,
-                "dataset_identity_sha256": dataset_sha,
-                "methods": {
-                    "cofitok": copy.deepcopy(benchmark),
-                    "dense_identity": copy.deepcopy(benchmark),
-                },
-            }
-        ],
+        "candidates": candidates,
     }
 
 
@@ -1586,7 +1648,33 @@ def test_completion_audit_rejects_identically_weakened_full_recipe() -> None:
     report = build_completion_audit(**kwargs)
 
     assert report["status"] == "failed"
-    assert report["failed_checks"] == ["full_matched_training"]
+    assert report["failed_checks"] == [
+        "full_matched_training",
+        "full_runtime_selection",
+    ]
+
+
+def test_completion_audit_rejects_runtime_selection_lock_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["runtime_selection"]["selection_lock"]["benchmark_steps"] = 9
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["full_runtime_selection"]
+
+
+def test_completion_audit_rejects_runtime_benchmark_config_drift() -> None:
+    kwargs = _kwargs()
+    benchmark = kwargs["runtime_selection"]["candidates"][1]["methods"][
+        "cofitok"
+    ]
+    benchmark["config"]["runtime"]["steps"] = 299_999
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["full_runtime_selection"]
 
 
 def test_completion_audit_rejects_missing_full_dataset_provenance() -> None:

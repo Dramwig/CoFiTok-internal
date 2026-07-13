@@ -53,6 +53,20 @@ reports are reusable only under the same clean Git revision, resolved config,
 benchmark horizon, and canonical environment. The final completion audit
 recomputes every completed benchmark fingerprint and verifies the binding.
 
+Selection is frozen as soon as either formal 300K run directory contains any
+training state. On later runbook invocations the selector must find the original
+`runtime_selection.json`, validate its complete lock contract, reproduce the
+selection from the embedded benchmark evidence, and return the same pair without
+reading or rewriting benchmark caches. The lock covers both run paths, the three
+candidate pairs, effective batch, benchmark and training horizons, clean branch
+and revision, both config SHA256 values, benchmark root, dataset identity, and
+runtime environment. Existing training state without that report fails closed.
+
+The terminal completion audit independently requires this lock and reconstructs
+each completed candidate's expected config from the final method training
+report, changing only microbatch and accumulation for that candidate. It also
+requires the exact 8-step/2-warmup checkpoint-free benchmark contract.
+
 ## Evidence boundary
 
 This procedure optimizes execution packing only. It does not tune model quality,
@@ -62,3 +76,5 @@ quality results.
 
 The environment hardening implementation and adversarial tests are recorded in
 `2026-07-13_generation_training_runtime_selection_environment.md`.
+The restart-boundary hardening is recorded in
+`2026-07-13_generation_runtime_selection_freeze.md`.

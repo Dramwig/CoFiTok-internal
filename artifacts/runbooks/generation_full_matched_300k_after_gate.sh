@@ -45,6 +45,7 @@ runtime_selected="$(python scripts/select_generation_training_runtime.py \
   --cofitok-config configs/generation/imagenet256_cofitok_k8_300k.json \
   --dense-config configs/generation/imagenet256_dense_300k.json \
   --output-root "$RUNTIME_BENCHMARK_ROOT" --output "$RUNTIME_SELECTION" \
+  --training-run-dir "$COFITOK_RUN" --training-run-dir "$DENSE_RUN" \
   --candidates 16x4,32x2,64x1 --effective-batch-size 64 \
   --benchmark-steps 8 --warmup-steps 2 --max-memory-fraction 0.90)"
 read -r SELECTED_MICRO_BATCH SELECTED_ACCUMULATION <<<"$runtime_selected"

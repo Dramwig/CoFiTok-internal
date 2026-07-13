@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import copy
+import json
+from pathlib import Path
 
 import pytest
 
@@ -9,11 +11,20 @@ from cofitok.data.provenance import (
     dataset_provenance_identity_sha256,
 )
 from cofitok.environment import runtime_environment_sha256
+from cofitok.reporting import file_sha256
 from scripts.select_generation_training_runtime import (
     _benchmark_matches,
+    _expected_config,
+    _selection_contract,
     parse_candidates,
+    reuse_runtime_selection_after_training_start,
     select_runtime_candidate,
+    validate_frozen_runtime_selection,
 )
+
+
+ROOT = Path(__file__).resolve().parents[1]
+REVISION = "a" * 40
 
 
 def _dataset_provenance() -> dict:
@@ -62,6 +73,70 @@ def _candidate(micro: int, accumulation: int, cofitok: dict, dense: dict) -> dic
         "effective_batch_size": micro * accumulation,
         "methods": {"cofitok": cofitok, "dense_identity": dense},
     }
+
+
+def _frozen_selection(tmp_path: Path) -> tuple[dict, dict, list[Path], Path, Path]:
+    cofitok_config = ROOT / "configs/generation/imagenet256_cofitok_k8_300k.json"
+    dense_config = ROOT / "configs/generation/imagenet256_dense_300k.json"
+    run_dirs = [(tmp_path / "cofitok").resolve(), (tmp_path / "dense").resolve()]
+    candidates = [(16, 4), (32, 2), (64, 1)]
+    rows = []
+    for index, (micro_batch, accumulation) in enumerate(candidates):
+        methods = {}
+        for method, config_path in (
+            ("cofitok", cofitok_config),
+            ("dense_identity", dense_config),
+        ):
+            report = _method(2.0 + index * 0.25)
+            report.update(
+                config=_expected_config(config_path, micro_batch, accumulation),
+                git={
+                    "revision": REVISION,
+                    "branch": "scale/generative-system",
+                    "dirty": False,
+                },
+                benchmark_steps=8,
+                warmup_steps=2,
+                checkpoint_written=False,
+            )
+            methods[method] = report
+        rows.append(
+            _candidate(
+                micro_batch,
+                accumulation,
+                methods["cofitok"],
+                methods["dense_identity"],
+            )
+        )
+    selection = select_runtime_candidate(
+        rows,
+        expected_effective_batch=64,
+        max_memory_fraction=0.9,
+    )
+    config_sha256 = {
+        "cofitok": file_sha256(cofitok_config),
+        "dense_identity": file_sha256(dense_config),
+    }
+    contract = _selection_contract(
+        run_dirs=run_dirs,
+        candidates=candidates,
+        expected_effective_batch=64,
+        benchmark_steps=8,
+        warmup_steps=2,
+        max_memory_fraction=0.9,
+        target_steps=300_000,
+        revision=REVISION,
+        branch="scale/generative-system",
+        config_sha256=config_sha256,
+        benchmark_root=(tmp_path / "benchmarks").resolve(),
+    )
+    selection.update(
+        git_revision=REVISION,
+        config_sha256=config_sha256,
+        benchmark_root=contract["benchmark_root"],
+        selection_lock=contract,
+    )
+    return selection, contract, run_dirs, cofitok_config, dense_config
 
 
 def test_parse_candidates_preserves_effective_batch_and_baseline() -> None:
@@ -239,3 +314,79 @@ def test_benchmark_cache_requires_clean_git_and_valid_environment() -> None:
         benchmark_steps=8,
         warmup_steps=2,
     )
+
+
+def test_frozen_selection_is_reused_without_rebenchmarking_after_training_starts(
+    tmp_path: Path,
+) -> None:
+    selection, contract, run_dirs, cofitok_config, dense_config = _frozen_selection(
+        tmp_path
+    )
+    selection_path = tmp_path / "runtime_selection.json"
+    selection_path.write_text(json.dumps(selection), encoding="utf-8")
+    for run_dir in run_dirs:
+        run_dir.mkdir()
+
+    assert (
+        reuse_runtime_selection_after_training_start(
+            selection_path=selection_path,
+            run_dirs=run_dirs,
+            expected_contract=contract,
+            cofitok_config=cofitok_config,
+            dense_config=dense_config,
+            current_runtime_environment_sha256=selection[
+                "runtime_environment_sha256"
+            ],
+        )
+        is None
+    )
+
+    (run_dirs[0] / "train_metrics.jsonl").write_text("{}\n", encoding="ascii")
+    original = selection_path.read_bytes()
+    assert reuse_runtime_selection_after_training_start(
+        selection_path=selection_path,
+        run_dirs=run_dirs,
+        expected_contract=contract,
+        cofitok_config=cofitok_config,
+        dense_config=dense_config,
+        current_runtime_environment_sha256=selection["runtime_environment_sha256"],
+    ) == (16, 4)
+    assert selection_path.read_bytes() == original
+
+
+def test_training_state_without_selection_fails_before_benchmark(tmp_path: Path) -> None:
+    _, contract, run_dirs, cofitok_config, dense_config = _frozen_selection(tmp_path)
+    run_dirs[0].mkdir()
+    (run_dirs[0] / "checkpoint_step_00050000.pt").write_bytes(b"checkpoint")
+
+    with pytest.raises(FileNotFoundError, match="without a frozen runtime selection"):
+        reuse_runtime_selection_after_training_start(
+            selection_path=tmp_path / "missing.json",
+            run_dirs=run_dirs,
+            expected_contract=contract,
+            cofitok_config=cofitok_config,
+            dense_config=dense_config,
+            current_runtime_environment_sha256="0" * 64,
+        )
+
+
+@pytest.mark.parametrize("drift", ["contract", "candidate", "environment"])
+def test_frozen_selection_rejects_resume_drift(tmp_path: Path, drift: str) -> None:
+    selection, contract, _, cofitok_config, dense_config = _frozen_selection(tmp_path)
+    current_environment = selection["runtime_environment_sha256"]
+    if drift == "contract":
+        contract = copy.deepcopy(contract)
+        contract["benchmark_steps"] = 9
+    elif drift == "candidate":
+        selection["candidates"][0]["micro_batch_size"] = 8
+    else:
+        current_environment = "f" * 64
+
+    with pytest.raises(ValueError, match="frozen|environment"):
+        validate_frozen_runtime_selection(
+            selection,
+            expected_contract=contract,
+            cofitok_config=cofitok_config,
+            dense_config=dense_config,
+            current_runtime_environment_sha256=current_environment,
+        )

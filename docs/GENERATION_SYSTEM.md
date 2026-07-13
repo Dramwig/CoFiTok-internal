@@ -392,7 +392,14 @@ and accumulation are applied to every full-training segment. Every completed
 benchmark records the canonical Python/PyTorch/CUDA/GPU/project-lock runtime
 environment; all candidates, both methods, and the subsequent full training
 reports must share one exact environment SHA. Cached benchmark reuse and the
-completion audit both reject environment or tracked-Git drift. See
+completion audit both reject environment or tracked-Git drift. The selector is
+also state-aware: before either formal run contains training state it may build
+or refresh the shared selection, but once either run directory is non-empty it
+only validates and reuses the existing report. That frozen report binds both
+run paths, all three candidates, the 300K horizon, benchmark horizon, config
+SHA256 values, clean branch/revision, dataset identity, and runtime environment.
+A missing or drifted report fails before any benchmark subprocess or model load.
+See
 `docs/records/2026-07-12_generation_training_runtime_selection.md`.
 
 The full ImageNet-256 pair also uses the same per-image random horizontal flip
