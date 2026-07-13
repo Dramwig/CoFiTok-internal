@@ -11,7 +11,14 @@ from torchvision.utils import save_image
 
 from cofitok.diffusion import select_sampling_timesteps
 from cofitok.environment import capture_runtime_environment, runtime_environment_sha256
-from cofitok.generation import GenerationRequest, GenerationSession
+from cofitok.generation import (
+    INFERENCE_API,
+    SAMPLING_MANIFEST_SCHEMA_VERSION,
+    SAMPLING_PROTOCOL_SCHEMA,
+    SAMPLING_REPORT_SCHEMA_VERSION,
+    GenerationRequest,
+    GenerationSession,
+)
 from cofitok.image_integrity import is_valid_png, sample_set_sha256
 from cofitok.reporting import file_sha256, git_provenance, write_json_report
 from cofitok.sampling_progress import (
@@ -216,14 +223,14 @@ def main() -> None:
     stop_index = args.start_index + args.num_samples
     code_git = git_provenance(PROJECT_ROOT)
     sampling = {
-        "inference_api": {
-            "name": "cofitok.generation.GenerationSession",
-            "version": 1,
-        },
+        "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+        "inference_api": INFERENCE_API,
+        "sampler": "ddim",
         "num_samples": args.num_samples,
         "start_index": args.start_index,
         "batch_size": args.batch_size,
         "sample_steps": args.sample_steps,
+        "num_train_timesteps": session.schedule.num_train_timesteps,
         "actual_timesteps": select_sampling_timesteps(
             session.schedule.num_train_timesteps,
             args.sample_steps,
@@ -233,6 +240,7 @@ def main() -> None:
         "guidance_rescale": args.guidance_rescale,
         "cfg_batch_mode": args.cfg_batch_mode,
         "eta": args.eta,
+        "clip_x0": True,
         "seed": args.seed,
         "precision": args.precision,
         "image_shape": [
@@ -257,7 +265,7 @@ def main() -> None:
         str(budget): str((output_dir / f"prefix_{budget}").resolve()) for budget in budgets
     }
     manifest = {
-        "schema_version": 2,
+        "schema_version": SAMPLING_MANIFEST_SCHEMA_VERSION,
         "git": code_git,
         "runtime_environment": runtime_environment,
         "runtime_environment_sha256": runtime_environment_sha,
@@ -329,6 +337,7 @@ def main() -> None:
                     guidance_rescale=args.guidance_rescale,
                     cfg_batch_mode=args.cfg_batch_mode,
                     eta=args.eta,
+                    clip_x0=True,
                     precision=args.precision,
                 )
                 samples = session.generate(request).images
@@ -379,7 +388,7 @@ def main() -> None:
             sample_sets=sample_sets,
         )
         report = {
-            "schema_version": 5,
+            "schema_version": SAMPLING_REPORT_SCHEMA_VERSION,
             "status": "completed",
             "git": code_git,
             "runtime_environment": runtime_environment,

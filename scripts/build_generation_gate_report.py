@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from cofitok.environment import runtime_environment_sha256
+from cofitok.generation import sampling_protocol_contract
 from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_pair import generation_pair_contract
 from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
@@ -228,6 +229,20 @@ def build_report(
     dense_real_set = _real_set_identity(dense_generation)
     cofitok_model_config = cofitok_training["config"]["model"]
     dense_model_config = dense_training["config"]["model"]
+    cofitok_sampling_contract = sampling_protocol_contract(
+        cofitok_sampling,
+        stage=stage,
+        expected_num_train_timesteps=int(
+            cofitok_training["config"]["diffusion"]["num_train_timesteps"]
+        ),
+    )
+    dense_sampling_contract = sampling_protocol_contract(
+        dense_sampling,
+        stage=stage,
+        expected_num_train_timesteps=int(
+            dense_training["config"]["diffusion"]["num_train_timesteps"]
+        ),
+    )
     cofitok_expected_shape = [
         int(cofitok_model_config["image_channels"]),
         int(cofitok_model_config["image_size"]),
@@ -458,6 +473,16 @@ def build_report(
                 "dense_sample_set_sha256": dense_provenance.get("sample_set_sha256"),
                 "cofitok_sampling_progress": cofitok_provenance.get("sampling_progress"),
                 "dense_sampling_progress": dense_provenance.get("sampling_progress"),
+            },
+        ),
+        _gate(
+            "formal_sampling_protocol",
+            cofitok_sampling_contract["valid"] is True
+            and dense_sampling_contract["valid"] is True,
+            {
+                "stage": stage,
+                "cofitok": cofitok_sampling_contract,
+                "dense_identity": dense_sampling_contract,
             },
         ),
         _gate(

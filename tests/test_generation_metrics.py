@@ -8,6 +8,12 @@ import pytest
 from PIL import Image
 
 from cofitok.environment import runtime_environment_sha256
+from cofitok.generation import (
+    INFERENCE_API,
+    SAMPLING_MANIFEST_SCHEMA_VERSION,
+    SAMPLING_PROTOCOL_SCHEMA,
+    SAMPLING_REPORT_SCHEMA_VERSION,
+)
 from cofitok.image_integrity import image_tree_sha256, sample_set_sha256
 from cofitok.reporting import file_sha256
 from scripts.evaluate_generation_metrics import (
@@ -17,6 +23,27 @@ from scripts.evaluate_generation_metrics import (
     find_images,
     validate_sampling_provenance,
 )
+
+
+def _minimal_sampling(count: int) -> dict:
+    return {
+        "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+        "inference_api": INFERENCE_API,
+        "sampler": "ddim",
+        "start_index": 0,
+        "num_samples": count,
+        "sample_steps": 1,
+        "num_train_timesteps": 4,
+        "actual_timesteps": [0],
+        "guidance_scale": 1.0,
+        "guidance_rescale": 0.0,
+        "cfg_batch_mode": "batched",
+        "eta": 0.0,
+        "clip_x0": True,
+        "precision": "fp32",
+        "image_shape": [3, 4, 4],
+        "prefix_budgets": [8],
+    }
 
 
 def test_find_images_is_recursive_and_filters_extensions(tmp_path) -> None:
@@ -111,20 +138,47 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path, monk
     report_path = generated.parent / "sampling_report.json"
     sample_sha256 = sample_set_sha256(find_images(generated))
     sampling = {
+        "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+        "inference_api": INFERENCE_API,
+        "sampler": "ddim",
         "start_index": 0,
         "num_samples": 2,
+        "sample_steps": 1,
+        "num_train_timesteps": 4,
+        "actual_timesteps": [0],
+        "guidance_scale": 1.0,
+        "guidance_rescale": 0.0,
+        "cfg_batch_mode": "batched",
+        "eta": 0.0,
+        "clip_x0": True,
+        "precision": "fp32",
         "image_shape": [3, 4, 4],
         "prefix_budgets": [8],
     }
     sample_sets = {"8": {"count": 2, "sha256": sample_sha256}}
     runtime_environment = {"schema_version": 1, "device": {"type": "cpu"}}
     runtime_environment_sha = runtime_environment_sha256(runtime_environment)
+    git = {
+        "revision": "a" * 40,
+        "branch": "scale/generative-system",
+        "tracked_dirty": False,
+    }
+    output_dirs = {"8": generated.resolve().as_posix()}
     manifest_path = generated.parent / "sampling_manifest.json"
     manifest_path.write_text(
         json.dumps(
             {
+                "schema_version": SAMPLING_MANIFEST_SCHEMA_VERSION,
+                "git": git,
                 "runtime_environment": runtime_environment,
                 "runtime_environment_sha256": runtime_environment_sha,
+                "checkpoint": "/checkpoints/model.pt",
+                "checkpoint_sha256": "a" * 64,
+                "checkpoint_integrity_manifest": "/checkpoints/model.pt.integrity.json",
+                "checkpoint_step": 50_000,
+                "weights": "ema",
+                "sampling": sampling,
+                "output_dirs": output_dirs,
             }
         ),
         encoding="utf-8",
@@ -134,6 +188,7 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path, monk
     progress_path.write_text(
         json.dumps(
             {
+                "schema_version": SAMPLING_REPORT_SCHEMA_VERSION,
                 "status": "completed",
                 "sampling_manifest_sha256": manifest_sha256,
                 "completed_samples": 2,
@@ -148,12 +203,9 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path, monk
     report_path.write_text(
         json.dumps(
             {
+                "schema_version": SAMPLING_REPORT_SCHEMA_VERSION,
                 "status": "completed",
-                "git": {
-                    "revision": "a" * 40,
-                    "branch": "scale/generative-system",
-                    "tracked_dirty": False,
-                },
+                "git": git,
                 "runtime_environment": runtime_environment,
                 "runtime_environment_sha256": runtime_environment_sha,
                 "checkpoint": "/checkpoints/model.pt",
@@ -164,7 +216,7 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path, monk
                 "sampling": sampling,
                 "sampling_manifest_sha256": manifest_sha256,
                 "sampling_progress": progress_path.resolve().as_posix(),
-                "output_dirs": {"8": generated.resolve().as_posix()},
+                "output_dirs": output_dirs,
                 "sample_sets": sample_sets,
             }
         ),
@@ -245,6 +297,13 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path, monk
     sampling_report["runtime_environment_sha256"] = runtime_environment_sha
     report_path.write_text(json.dumps(sampling_report), encoding="utf-8")
 
+    sampling_report["sampling"]["clip_x0"] = False
+    report_path.write_text(json.dumps(sampling_report), encoding="utf-8")
+    with pytest.raises(ValueError, match="sampling differs from immutable manifest"):
+        validate_sampling_provenance(report_path, generated, find_images(generated))
+    sampling_report["sampling"]["clip_x0"] = True
+    report_path.write_text(json.dumps(sampling_report), encoding="utf-8")
+
     sampling_manifest_text = manifest_path.read_text(encoding="utf-8")
     sampling_manifest = json.loads(sampling_manifest_text)
     sampling_manifest["runtime_environment"]["device"]["type"] = "cuda"
@@ -281,12 +340,13 @@ def test_validate_sampling_provenance_rejects_stale_extra_sample(tmp_path) -> No
     report_path.write_text(
         json.dumps(
             {
+                "schema_version": SAMPLING_REPORT_SCHEMA_VERSION,
                 "status": "completed",
                 "checkpoint": "/checkpoints/model.pt",
                 "checkpoint_sha256": "a" * 64,
                 "checkpoint_step": 50_000,
                 "weights": "ema",
-                "sampling": {"start_index": 0, "num_samples": 2, "image_shape": [3, 4, 4]},
+                "sampling": _minimal_sampling(2),
                 "output_dirs": {"8": generated.resolve().as_posix()},
                 "sample_sets": {"8": {"count": 2, "sha256": "b" * 64}},
             }
@@ -310,12 +370,13 @@ def test_validate_sampling_provenance_rejects_corrupt_png(tmp_path) -> None:
     report_path.write_text(
         json.dumps(
             {
+                "schema_version": SAMPLING_REPORT_SCHEMA_VERSION,
                 "status": "completed",
                 "checkpoint": "/checkpoints/model.pt",
                 "checkpoint_sha256": "a" * 64,
                 "checkpoint_step": 50_000,
                 "weights": "ema",
-                "sampling": {"start_index": 0, "num_samples": 1, "image_shape": [3, 4, 4]},
+                "sampling": _minimal_sampling(1),
                 "output_dirs": {"8": generated.resolve().as_posix()},
                 "sample_sets": {"8": {"count": 1, "sha256": "b" * 64}},
             }
@@ -339,12 +400,13 @@ def test_validate_sampling_provenance_rejects_sample_set_digest_mismatch(tmp_pat
     report_path.write_text(
         json.dumps(
             {
+                "schema_version": SAMPLING_REPORT_SCHEMA_VERSION,
                 "status": "completed",
                 "checkpoint": "/checkpoints/model.pt",
                 "checkpoint_sha256": "a" * 64,
                 "checkpoint_step": 50_000,
                 "weights": "ema",
-                "sampling": {"start_index": 0, "num_samples": 1, "image_shape": [3, 4, 4]},
+                "sampling": _minimal_sampling(1),
                 "output_dirs": {"8": generated.resolve().as_posix()},
                 "sample_sets": {"8": {"count": 1, "sha256": "b" * 64}},
             }

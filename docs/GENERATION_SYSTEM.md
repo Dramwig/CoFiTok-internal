@@ -57,13 +57,21 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   paired rather than comparisons between unrelated initial noises.
 - Sampling writes an immutable checkpoint-and-protocol manifest before the
   first image, including revision/branch/tracked-dirty code provenance and the
-  actual sampling process runtime-environment fingerprint. Manifest schema v2
-  and completed report schema v5 carry the full canonical environment and SHA.
+  actual sampling process runtime-environment fingerprint. Manifest schema v3
+  and completed report schema v6 carry the full canonical environment and SHA.
   `--resume` accepts only an exact manifest match, skips completed numbered
   images, and regenerates missing images from their original streams. Metrics,
   promotion/final gates, and completion audit preserve and validate code and
   environment provenance; formal post-evaluation runbooks also fail early on
   tracked dirt. Environment drift therefore cannot silently resume an old set.
+- Formal sampling is identified by `cofitok_ddim_sampling_v1`. The scaling gate
+  requires deterministic DDIM-100 and the full gate requires deterministic
+  DDIM-250; both require EMA, CFG 1.5 with zero guidance rescale, batched CFG,
+  `eta=0`, `clip_x0=true`, bf16, seed zero, balanced-modulo classes, and the
+  batch/resume-invariant per-index random stream. The report must reproduce the
+  immutable manifest's complete sampling dictionary, and the resolved timestep
+  list must equal the shared scheduler's exact selection. Both methods being
+  identically misconfigured is therefore a named gate failure, not a match.
 - Each PNG is encoded to a same-directory partial file and atomically published
   only after encoding succeeds. JSON manifests and reports use the same atomic
   replacement rule, so interruption cannot turn a partial file into apparent
@@ -300,7 +308,7 @@ the pinned 10% pair and promotion gate, full matched 300K pair, training audits,
 all four milestones, formal paired 50K sampling, final gate, and final comparison.
 The formal pair is accepted only when its real-set tree digest, content-addressed
 cache key, and evaluator environment are identical and bound through the gate
-and comparison schema v3.
+and comparison schema v4, including the exact formal sampling protocol fields.
 Missing evidence is `in_progress`, contradictory evidence is `failed`, and only
 the full chain is `complete`. See
 `docs/records/2026-07-12_large_scale_generation_completion_audit.md`.

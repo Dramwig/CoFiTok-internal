@@ -2,6 +2,12 @@ from __future__ import annotations
 
 import pytest
 
+from cofitok.diffusion import select_sampling_timesteps
+from cofitok.generation import (
+    INFERENCE_API,
+    SAMPLING_PROTOCOL_SCHEMA,
+    sampling_protocol_contract,
+)
 from scripts.build_large_scale_generation_comparison import (
     build_report,
     render_csv,
@@ -18,6 +24,7 @@ def _training(parameters: int, token_count: int) -> dict:
         "final_metrics": {"samples_seen": 19_200_000},
         "config": {
             "data": {"dataset": "imagenet_256", "batch_size": 16},
+            "diffusion": {"num_train_timesteps": 1000},
             "runtime": {"device": "cuda"},
             "optimization": {"gradient_accumulation_steps": 4},
             "model": {"image_size": 256, "token_count": token_count},
@@ -25,7 +32,40 @@ def _training(parameters: int, token_count: int) -> dict:
     }
 
 
-def _generation(fid: float, checkpoint_sha: str, sample_sha: str) -> dict:
+def _sampling(token_count: int) -> dict:
+    return {
+        "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+        "inference_api": INFERENCE_API,
+        "sampler": "ddim",
+        "num_samples": 50_000,
+        "start_index": 0,
+        "batch_size": 64,
+        "sample_steps": 250,
+        "num_train_timesteps": 1000,
+        "actual_timesteps": select_sampling_timesteps(1000, 250),
+        "prefix_budgets": [token_count],
+        "guidance_scale": 1.5,
+        "guidance_rescale": 0.0,
+        "cfg_batch_mode": "batched",
+        "eta": 0.0,
+        "clip_x0": True,
+        "seed": 0,
+        "precision": "bf16",
+        "class_schedule": "balanced_modulo",
+        "random_stream": {
+            "prefix_budgets_share_stream": True,
+            "batch_size_invariant": True,
+            "resume_index_invariant": True,
+        },
+    }
+
+
+def _generation(
+    fid: float,
+    checkpoint_sha: str,
+    sample_sha: str,
+    token_count: int,
+) -> dict:
     return {
         "counts": {"real_image_count": 50_000, "generated_image_count": 50_000},
         "implementation": {"package": "torch_fidelity", "version": "0.4.0"},
@@ -44,11 +84,8 @@ def _generation(fid: float, checkpoint_sha: str, sample_sha: str) -> dict:
         "sample_provenance": {
             "checkpoint_sha256": checkpoint_sha,
             "sample_set_sha256": sample_sha,
-            "sampling": {
-                "sample_steps": 250,
-                "guidance_scale": 1.5,
-                "batch_size": 64,
-            },
+            "weights": "ema",
+            "sampling": _sampling(token_count),
             "sampling_progress": {
                 "status": "completed",
                 "completed_samples": 50_000,
@@ -87,6 +124,12 @@ def _official() -> dict:
 
 
 def _gate(status: str = "pass") -> dict:
+    cofitok_contract = sampling_protocol_contract(
+        _sampling(8), stage="full", expected_num_train_timesteps=1000
+    )
+    dense_contract = sampling_protocol_contract(
+        _sampling(1), stage="full", expected_num_train_timesteps=1000
+    )
     return {
         "stage": "full",
         "status": status,
@@ -95,6 +138,7 @@ def _gate(status: str = "pass") -> dict:
         "gates": [
             {
                 "name": "matched_sampling_provenance",
+                "passed": True,
                 "evidence": {
                     "cofitok_checkpoint_sha256": "a" * 64,
                     "dense_checkpoint_sha256": "b" * 64,
@@ -104,6 +148,7 @@ def _gate(status: str = "pass") -> dict:
             },
             {
                 "name": "matched_real_set_provenance",
+                "passed": True,
                 "evidence": {
                     method: {
                         "digest_schema": "cofitok_image_tree_sha256_v1",
@@ -111,6 +156,15 @@ def _gate(status: str = "pass") -> dict:
                         "image_count": 50_000,
                     }
                     for method in ("cofitok", "dense_identity")
+                },
+            },
+            {
+                "name": "formal_sampling_protocol",
+                "passed": True,
+                "evidence": {
+                    "stage": "full",
+                    "cofitok": cofitok_contract,
+                    "dense_identity": dense_contract,
                 },
             },
         ],
@@ -121,8 +175,8 @@ def _report(official: dict | None = None, gate: dict | None = None) -> dict:
     return build_report(
         cofitok_training=_training(62_950_800, 8),
         dense_training=_training(62_824_707, 1),
-        cofitok_generation=_generation(12.0, "a" * 64, "c" * 64),
-        dense_generation=_generation(11.8, "b" * 64, "d" * 64),
+        cofitok_generation=_generation(12.0, "a" * 64, "c" * 64, 8),
+        dense_generation=_generation(11.8, "b" * 64, "d" * 64, 1),
         final_gate=gate or _gate(),
         official_related=official or _official(),
         official_source_path="/reports/official_related_methods_table.json",
@@ -134,7 +188,7 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     report = _report()
 
     assert report["status"] == "ready"
-    assert report["schema_version"] == 3
+    assert report["schema_version"] == 4
     assert len(report["matched_training_rows"]) == 2
     assert len(report["official_context_rows"]) == 3
     assert report["comparison_policy"]["cross_tier_numeric_ranking_allowed"] is False
@@ -151,6 +205,8 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     assert report["matched_training_rows"][0]["peak_vram_bytes"] == 24 * 1024**3
     assert report["matched_training_rows"][0]["sampling_images_per_second"] == 5.0
     assert report["matched_training_rows"][0]["sample_batch_size"] == 64
+    assert report["matched_training_rows"][0]["clip_x0"] is True
+    assert report["matched_training_rows"][0]["sampling_seed"] == 0
     assert report["matched_training_rows"][0]["real_set_sha256"] == "e" * 64
     assert "not a direct ranking" in render_markdown(report)
     assert "VRAM GiB" in render_markdown(report)
@@ -165,14 +221,14 @@ def test_comparison_preserves_hold_decision() -> None:
 
 
 def test_comparison_rejects_mismatched_real_set() -> None:
-    dense = _generation(11.8, "b" * 64, "d" * 64)
+    dense = _generation(11.8, "b" * 64, "d" * 64, 1)
     dense["real_set"]["sha256"] = "8" * 64
 
     with pytest.raises(ValueError, match="different real sets"):
         build_report(
             cofitok_training=_training(62_950_800, 8),
             dense_training=_training(62_824_707, 1),
-            cofitok_generation=_generation(12.0, "a" * 64, "c" * 64),
+            cofitok_generation=_generation(12.0, "a" * 64, "c" * 64, 8),
             dense_generation=dense,
             final_gate=_gate(),
             official_related=_official(),
@@ -198,7 +254,7 @@ def test_comparison_rejects_gate_from_another_sample_set() -> None:
 
 
 def test_comparison_rejects_incomplete_sampling_progress() -> None:
-    generation = _generation(12.0, "a" * 64, "c" * 64)
+    generation = _generation(12.0, "a" * 64, "c" * 64, 8)
     generation["sample_provenance"]["sampling_progress"]["status"] = "running"
 
     with pytest.raises(ValueError, match="sampling progress is incomplete"):
@@ -206,7 +262,7 @@ def test_comparison_rejects_incomplete_sampling_progress() -> None:
             cofitok_training=_training(62_950_800, 8),
             dense_training=_training(62_824_707, 1),
             cofitok_generation=generation,
-            dense_generation=_generation(11.8, "b" * 64, "d" * 64),
+            dense_generation=_generation(11.8, "b" * 64, "d" * 64, 1),
             final_gate=_gate(),
             official_related=_official(),
             official_source_path="/reports/official_related_methods_table.json",
@@ -228,3 +284,22 @@ def test_comparison_rejects_external_metric_out_of_range() -> None:
 
     with pytest.raises(ValueError, match="metrics are out of range"):
         _report(official=official)
+
+
+def test_comparison_rejects_matched_weakened_sampling_protocol() -> None:
+    cofitok = _generation(12.0, "a" * 64, "c" * 64, 8)
+    dense = _generation(11.8, "b" * 64, "d" * 64, 1)
+    cofitok["sample_provenance"]["sampling"]["clip_x0"] = False
+    dense["sample_provenance"]["sampling"]["clip_x0"] = False
+
+    with pytest.raises(ValueError, match="formal sampling protocol is invalid"):
+        build_report(
+            cofitok_training=_training(62_950_800, 8),
+            dense_training=_training(62_824_707, 1),
+            cofitok_generation=cofitok,
+            dense_generation=dense,
+            final_gate=_gate(),
+            official_related=_official(),
+            official_source_path="/reports/official_related_methods_table.json",
+            official_source_sha256="e" * 64,
+        )

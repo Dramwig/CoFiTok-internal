@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from cofitok.environment import runtime_environment_sha256
+from cofitok.generation import sampling_protocol_contract
 from cofitok.generation.artifact import verify_inference_artifact
 from cofitok.generation_cost import training_cost_summary
 from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
@@ -335,9 +336,24 @@ def _generation_evidence(
             (IMAGE_TREE_DIGEST_SCHEMA, real_set_sha, real_root, real_count, real_cache_name)
         )
         provenance = report.get("sample_provenance", {})
+        sampling = provenance.get("sampling", {})
+        sampling_contract = sampling_protocol_contract(
+            sampling,
+            stage="full",
+            expected_num_train_timesteps=int(
+                training_reports[method]["config"]["diffusion"][
+                    "num_train_timesteps"
+                ]
+            ),
+        )
+        if sampling_contract["valid"] is not True:
+            raise ValueError(
+                f"{method} formal sampling protocol is invalid: "
+                + ", ".join(sampling_contract["issues"])
+            )
         git = provenance.get("git", {})
         progress = provenance.get("sampling_progress", {})
-        inference_api = provenance.get("sampling", {}).get("inference_api", {})
+        inference_api = sampling.get("inference_api", {})
         sampling_environment = provenance.get("runtime_environment")
         if not isinstance(sampling_environment, dict):
             raise ValueError(f"{method} formal sampling environment is missing")
@@ -392,6 +408,7 @@ def _generation_evidence(
             "runtime_environment_sha256": sampling_environment_sha,
             "evaluator_runtime_environment_sha256": evaluator_environment_sha,
             "real_set_sha256": real_set_sha,
+            "sampling_protocol_contract": sampling_contract,
         }
     if len(sampling_environment_shas) != 1:
         raise ValueError("formal matched methods used different sampling environments")
@@ -661,6 +678,7 @@ def _final_gate_evidence(
     required_quality_gates = {
         "generation_metrics_complete",
         "matched_real_set_provenance",
+        "formal_sampling_protocol",
         "matched_sampling_code_provenance",
         "matched_sampling_runtime_environment",
         "matched_evaluator_code_provenance",
@@ -796,7 +814,7 @@ def _comparison_evidence(
     official_related: dict[str, Any],
     official_related_sha256: str,
 ) -> dict[str, Any]:
-    if report.get("schema_version") != 3:
+    if report.get("schema_version") != 4:
         raise ValueError("large-scale comparison schema is stale")
     if report.get("status") != "ready":
         raise ValueError("large-scale comparison is not ready")
@@ -845,6 +863,33 @@ def _comparison_evidence(
         if row.get("sample_set_sha256") != provenance.get("sample_set_sha256"):
             raise ValueError(f"comparison {method} sample-set SHA256 differs")
         generation = generation_reports[key]
+        sampling = provenance.get("sampling", {})
+        if row.get("weights") != provenance.get("weights"):
+            raise ValueError(f"comparison {method} weights differ from formal sampling")
+        protocol_fields = {
+            "sampling_protocol_schema": "protocol_schema",
+            "sampling_inference_api": "inference_api",
+            "sampler": "sampler",
+            "num_train_timesteps": "num_train_timesteps",
+            "sample_steps": "sample_steps",
+            "actual_timesteps": "actual_timesteps",
+            "guidance_scale": "guidance_scale",
+            "guidance_rescale": "guidance_rescale",
+            "cfg_batch_mode": "cfg_batch_mode",
+            "eta": "eta",
+            "clip_x0": "clip_x0",
+            "sampling_precision": "precision",
+            "sampling_seed": "seed",
+            "sampling_start_index": "start_index",
+            "class_schedule": "class_schedule",
+            "prefix_budgets": "prefix_budgets",
+            "sampling_random_stream": "random_stream",
+        }
+        for row_field, sampling_field in protocol_fields.items():
+            if row.get(row_field) != sampling.get(sampling_field):
+                raise ValueError(
+                    f"comparison {method} {row_field} differs from formal sampling"
+                )
         generation_real_set = generation.get("real_set", {})
         if (
             row.get("real_set_digest_schema")

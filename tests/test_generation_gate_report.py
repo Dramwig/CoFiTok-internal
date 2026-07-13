@@ -5,6 +5,8 @@ import copy
 import pytest
 
 from cofitok.environment import runtime_environment_sha256
+from cofitok.diffusion import select_sampling_timesteps
+from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
 from scripts.build_generation_gate_report import build_report
 
 
@@ -32,7 +34,7 @@ def _training(parameters: int, token_count: int) -> dict:
         },
         "config": {
             "data": {"dataset": "imagenet_256_10pct", "batch_size": 16},
-            "diffusion": {"schedule": "cosine"},
+            "diffusion": {"schedule": "cosine", "num_train_timesteps": 1000},
             "runtime": {"steps": 50_000, "device": "cuda"},
             "optimization": {"batch": 64, "gradient_accumulation_steps": 4},
             "model": {
@@ -122,15 +124,25 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
                 "cumulative_elapsed_seconds": 100.0,
             },
             "sampling": {
+                "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+                "inference_api": INFERENCE_API,
+                "sampler": "ddim",
                 "num_samples": 10_000,
                 "start_index": 0,
                 "batch_size": 32,
                 "sample_steps": 100,
+                "num_train_timesteps": 1000,
+                "actual_timesteps": select_sampling_timesteps(1000, 100),
                 "image_shape": [3, 256, 256],
                 "class_schedule": "balanced_modulo",
                 "prefix_budgets": [token_count],
                 "guidance_scale": 1.5,
+                "guidance_rescale": 0.0,
+                "cfg_batch_mode": "batched",
+                "eta": 0.0,
+                "clip_x0": True,
                 "seed": 0,
+                "precision": "bf16",
                 "random_stream": {
                     "prefix_budgets_share_stream": True,
                     "batch_size_invariant": True,
@@ -139,6 +151,17 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
             },
         },
     }
+
+
+def _full_generation(fid: float, token_count: int, sha: str) -> dict:
+    report = _generation(fid, token_count, sha)
+    report["counts"]["generated_image_count"] = 50_000
+    report["sample_provenance"]["sampling_progress"]["completed_samples"] = 50_000
+    sampling = report["sample_provenance"]["sampling"]
+    sampling["num_samples"] = 50_000
+    sampling["sample_steps"] = 250
+    sampling["actual_timesteps"] = select_sampling_timesteps(1000, 250)
+    return report
 
 
 def _checkpoint(endpoint: float, sha: str, rank: int = 1) -> dict:
@@ -217,6 +240,31 @@ def test_generation_gate_holds_on_unpaired_sampling_streams() -> None:
 
     gate = next(gate for gate in report["gates"] if gate["name"] == "matched_sampling_provenance")
     assert gate["passed"] is False
+
+
+def test_generation_gate_rejects_matched_but_weakened_formal_sampling() -> None:
+    cofitok = _generation(20.0, 8, "a" * 64)
+    dense = _generation(20.0, 1, "b" * 64)
+    cofitok["sample_provenance"]["sampling"]["clip_x0"] = False
+    dense["sample_provenance"]["sampling"]["clip_x0"] = False
+
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=dense,
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(
+        gate for gate in report["gates"] if gate["name"] == "formal_sampling_protocol"
+    )
+    assert gate["passed"] is False
+    assert report["status"] == "fail"
 
 
 def test_generation_gate_rejects_mismatched_sampling_environment() -> None:
@@ -572,11 +620,11 @@ def test_full_generation_gate_uses_ready_decision_and_absolute_fid() -> None:
     report = build_report(
         cofitok_training=_training(100_500, 8),
         dense_training=_training(100_000, 1),
-        cofitok_generation=_generation(19.0, 8, "a" * 64),
-        dense_generation=_generation(18.5, 1, "b" * 64),
+        cofitok_generation=_full_generation(19.0, 8, "a" * 64),
+        dense_generation=_full_generation(18.5, 1, "b" * 64),
         cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
         dense_checkpoint=_checkpoint(0.1, "b" * 64),
-        min_samples=10_000,
+        min_samples=50_000,
         max_fid_regression=0.05,
         max_endpoint_regression=0.05,
         stage="full",
@@ -592,11 +640,11 @@ def test_full_generation_gate_holds_above_absolute_fid_limit() -> None:
     report = build_report(
         cofitok_training=_training(100_500, 8),
         dense_training=_training(100_000, 1),
-        cofitok_generation=_generation(20.5, 8, "a" * 64),
-        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_generation=_full_generation(20.5, 8, "a" * 64),
+        dense_generation=_full_generation(20.0, 1, "b" * 64),
         cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
         dense_checkpoint=_checkpoint(0.1, "b" * 64),
-        min_samples=10_000,
+        min_samples=50_000,
         max_fid_regression=0.05,
         max_endpoint_regression=0.05,
         stage="full",
@@ -615,11 +663,11 @@ def test_full_generation_gate_requires_training_checkpoint_integrity() -> None:
     report = build_report(
         cofitok_training=cofitok_training,
         dense_training=_training(100_000, 1),
-        cofitok_generation=_generation(19.0, 8, "a" * 64),
-        dense_generation=_generation(18.5, 1, "b" * 64),
+        cofitok_generation=_full_generation(19.0, 8, "a" * 64),
+        dense_generation=_full_generation(18.5, 1, "b" * 64),
         cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
         dense_checkpoint=_checkpoint(0.1, "b" * 64),
-        min_samples=10_000,
+        min_samples=50_000,
         max_fid_regression=0.05,
         max_endpoint_regression=0.05,
         stage="full",
@@ -712,8 +760,8 @@ def test_generation_gate_rejects_finite_but_invalid_metric_ranges(metric, value)
 def test_full_generation_gate_enforces_precision_recall_floor_and_retention(
     precision, recall
 ) -> None:
-    cofitok = _generation(19.0, 8, "a" * 64)
-    dense = _generation(19.0, 1, "b" * 64)
+    cofitok = _full_generation(19.0, 8, "a" * 64)
+    dense = _full_generation(19.0, 1, "b" * 64)
     cofitok["metrics"]["precision"] = precision
     cofitok["metrics"]["recall"] = recall
     dense["metrics"]["precision"] = 0.60
@@ -725,7 +773,7 @@ def test_full_generation_gate_enforces_precision_recall_floor_and_retention(
         dense_generation=dense,
         cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
         dense_checkpoint=_checkpoint(0.1, "b" * 64),
-        min_samples=10_000,
+        min_samples=50_000,
         max_fid_regression=0.05,
         max_endpoint_regression=0.05,
         stage="full",

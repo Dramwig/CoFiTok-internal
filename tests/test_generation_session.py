@@ -213,7 +213,13 @@ def test_formal_sampling_cli_runs_checkpoint_to_png_and_report(tmp_path) -> None
     report = json.loads((output_dir / "sampling_report.json").read_text(encoding="utf-8"))
     assert report["status"] == "completed"
     assert report["sampling"]["actual_timesteps"] == [0]
-    assert report["schema_version"] == 5
+    assert report["schema_version"] == 6
+    assert report["sampling"]["protocol_schema"] == "cofitok_ddim_sampling_v1"
+    assert report["sampling"]["sampler"] == "ddim"
+    assert report["sampling"]["num_train_timesteps"] == 4
+    assert report["sampling"]["clip_x0"] is True
+    manifest = json.loads((output_dir / "sampling_manifest.json").read_text(encoding="utf-8"))
+    assert manifest["schema_version"] == 3
     assert report["runtime_environment"]["schema_version"] == 1
     assert len(report["runtime_environment_sha256"]) == 64
     assert report["sample_sets"]["2"]["count"] == 1

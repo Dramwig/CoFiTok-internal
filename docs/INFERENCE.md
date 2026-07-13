@@ -68,10 +68,19 @@ its payload and sidecar both bind the source training revision and environment.
 ## Formal sampling
 
 `generate_samples.py` uses the same `GenerationSession`; its immutable sampling
-manifest identifies API version 1. Sampling manifest schema v2 and completed
-report schema v5 also bind the actual Python/PyTorch/CUDA/GPU/project-lock
+manifest identifies API version 1 and protocol `cofitok_ddim_sampling_v1`.
+Sampling manifest schema v3 and completed report schema v6 also bind the exact
+sampler, train/sample timestep counts and resolved timestep list, CFG scale and
+rescale, CFG batching, eta, `x0` clipping, precision, random-stream policy, and
+the actual Python/PyTorch/CUDA/GPU/project-lock
 environment. Exact resume rejects any environment drift. Formal metrics, the
 matched-batch selector, quality gates, and the completion audit recompute and
 cross-check that fingerprint, and reject 50K evidence that bypasses this API or
 uses different CoFiTok/dense environments. Batch sampling additionally provides
 atomic progress, exact resume, numbered PNG validation, and sample-set SHA256.
+
+The scaling protocol is EMA DDIM-100; the final full-data protocol is EMA
+DDIM-250. Both use CFG 1.5, zero guidance rescale, batched CFG, `eta=0`,
+`clip_x0=true`, bf16, seed zero, balanced-modulo classes, and per-index random
+streams invariant to batch size and resume boundaries. These are formal
+evidence requirements, not only CLI defaults.

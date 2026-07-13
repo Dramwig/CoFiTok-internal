@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from cofitok.diffusion import select_sampling_timesteps
+from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
     build_completion_audit,
@@ -82,7 +84,10 @@ def _training(
         },
         "config": {
             "data": {"dataset": dataset, "batch_size": 16},
-            "diffusion": {"schedule_type": "cosine"},
+            "diffusion": {
+                "schedule_type": "cosine",
+                "num_train_timesteps": 1000,
+            },
             "runtime": {"precision": "bf16", "device": "cuda"},
             "optimization": {"gradient_accumulation_steps": 4},
             "model": {
@@ -156,6 +161,7 @@ def _gate(stage: str) -> dict:
             for name in (
                 "generation_metrics_complete",
                 "matched_real_set_provenance",
+                "formal_sampling_protocol",
                 "matched_sampling_code_provenance",
                 "matched_sampling_runtime_environment",
                 "matched_evaluator_code_provenance",
@@ -298,14 +304,29 @@ def _generation(seed: str) -> dict:
                 "cumulative_elapsed_seconds": 10_000.0,
             },
             "sampling": {
+                "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+                "inference_api": INFERENCE_API,
+                "sampler": "ddim",
+                "num_samples": 50_000,
                 "batch_size": 64,
                 "sample_steps": 250,
+                "num_train_timesteps": 1000,
+                "actual_timesteps": select_sampling_timesteps(1000, 250),
                 "guidance_scale": 1.5,
-                "inference_api": {
-                    "name": "cofitok.generation.GenerationSession",
-                    "version": 1,
+                "guidance_rescale": 0.0,
+                "cfg_batch_mode": "batched",
+                "eta": 0.0,
+                "clip_x0": True,
+                "precision": "bf16",
+                "seed": 0,
+                "start_index": 0,
+                "class_schedule": "balanced_modulo",
+                "prefix_budgets": [8 if seed == "a" else 1],
+                "random_stream": {
+                    "prefix_budgets_share_stream": True,
+                    "batch_size_invariant": True,
+                    "resume_index_invariant": True,
                 },
-                "random_stream": {"batch_size_invariant": True},
             },
         },
     }
@@ -341,7 +362,7 @@ def _official_related() -> dict:
 def _comparison() -> dict:
     official = _official_related()
     return {
-        "schema_version": 3,
+        "schema_version": 4,
         "status": "ready",
         "comparison_policy": {
             "primary_direct_tier": "matched_training_direct",
@@ -371,6 +392,28 @@ def _comparison() -> dict:
                 "sample_batch_size": 64,
                 "sampling_elapsed_seconds": 10_000.0,
                 "sampling_images_per_second": 5.0,
+                "weights": "ema",
+                "sampling_protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+                "sampling_inference_api": INFERENCE_API,
+                "sampler": "ddim",
+                "num_train_timesteps": 1000,
+                "sample_steps": 250,
+                "actual_timesteps": select_sampling_timesteps(1000, 250),
+                "guidance_scale": 1.5,
+                "guidance_rescale": 0.0,
+                "cfg_batch_mode": "batched",
+                "eta": 0.0,
+                "clip_x0": True,
+                "sampling_precision": "bf16",
+                "sampling_seed": 0,
+                "sampling_start_index": 0,
+                "class_schedule": "balanced_modulo",
+                "prefix_budgets": [8],
+                "sampling_random_stream": {
+                    "prefix_budgets_share_stream": True,
+                    "batch_size_invariant": True,
+                    "resume_index_invariant": True,
+                },
                 "checkpoint_sha256": "a" * 64,
                 "sample_set_sha256": "A" * 64,
                 "real_set_digest_schema": "cofitok_image_tree_sha256_v1",
@@ -397,6 +440,28 @@ def _comparison() -> dict:
                 "sample_batch_size": 64,
                 "sampling_elapsed_seconds": 10_000.0,
                 "sampling_images_per_second": 5.0,
+                "weights": "ema",
+                "sampling_protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+                "sampling_inference_api": INFERENCE_API,
+                "sampler": "ddim",
+                "num_train_timesteps": 1000,
+                "sample_steps": 250,
+                "actual_timesteps": select_sampling_timesteps(1000, 250),
+                "guidance_scale": 1.5,
+                "guidance_rescale": 0.0,
+                "cfg_batch_mode": "batched",
+                "eta": 0.0,
+                "clip_x0": True,
+                "sampling_precision": "bf16",
+                "sampling_seed": 0,
+                "sampling_start_index": 0,
+                "class_schedule": "balanced_modulo",
+                "prefix_budgets": [1],
+                "sampling_random_stream": {
+                    "prefix_budgets_share_stream": True,
+                    "batch_size_invariant": True,
+                    "resume_index_invariant": True,
+                },
                 "checkpoint_sha256": "b" * 64,
                 "sample_set_sha256": "B" * 64,
                 "real_set_digest_schema": "cofitok_image_tree_sha256_v1",
@@ -877,6 +942,19 @@ def test_completion_audit_rejects_incomplete_formal_sampling() -> None:
     assert report["failed_checks"] == ["formal_50k_generation"]
 
 
+def test_completion_audit_rejects_matched_weakened_sampling_protocol() -> None:
+    kwargs = _kwargs()
+    for key in ("cofitok_generation", "dense_generation"):
+        kwargs[key]["sample_provenance"]["sampling"]["clip_x0"] = False
+    for row in kwargs["comparison"]["matched_training_rows"]:
+        row["clip_x0"] = False
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["formal_50k_generation"]
+
+
 def test_completion_audit_rejects_stale_gate_and_comparison_provenance() -> None:
     kwargs = _kwargs()
     gate_sampling = next(
@@ -1057,7 +1135,10 @@ def test_completion_audit_rejects_sampling_outside_stable_inference_api() -> Non
     report = build_completion_audit(**kwargs)
 
     assert report["status"] == "failed"
-    assert report["failed_checks"] == ["formal_50k_generation"]
+    assert report["failed_checks"] == [
+        "formal_50k_generation",
+        "final_comparison_report",
+    ]
 
 
 def test_completion_audit_rejects_visual_audit_from_stale_sample_set() -> None:

@@ -32,3 +32,10 @@ and a dense formal environment that diverges after selection.
 This provenance is separate from the training-checkpoint environment and the
 EMA deployment artifact source environment. All three are required: training
 reproducibility, actual formal-sampling fairness, and deployable-model identity.
+
+## Superseded artifact versions
+
+The later formal sampling protocol contract upgrades the immutable manifest to
+schema v3 and the completed report to schema v6. Those versions retain this
+runtime-environment contract and additionally bind the complete DDIM/CFG/clipping
+protocol. See `2026-07-13_formal_sampling_protocol_contract.md`.

@@ -8,6 +8,7 @@ import math
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from cofitok.generation import sampling_protocol_contract
 from cofitok.generation_cost import training_cost_summary
 from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
 from cofitok.reporting import file_sha256, write_json_report, write_text_report
@@ -85,8 +86,24 @@ def _matched_row(
         "precision": _finite_metric(generation, "precision"),
         "recall": _finite_metric(generation, "recall"),
         "evaluator": generation["implementation"],
+        "weights": provenance["weights"],
+        "sampling_protocol_schema": sampling["protocol_schema"],
+        "sampling_inference_api": sampling["inference_api"],
+        "sampler": sampling["sampler"],
+        "num_train_timesteps": int(sampling["num_train_timesteps"]),
         "sample_steps": int(sampling["sample_steps"]),
+        "actual_timesteps": sampling["actual_timesteps"],
         "guidance_scale": float(sampling["guidance_scale"]),
+        "guidance_rescale": float(sampling["guidance_rescale"]),
+        "cfg_batch_mode": sampling["cfg_batch_mode"],
+        "eta": float(sampling["eta"]),
+        "clip_x0": sampling["clip_x0"],
+        "sampling_precision": sampling["precision"],
+        "sampling_seed": int(sampling["seed"]),
+        "sampling_start_index": int(sampling["start_index"]),
+        "class_schedule": sampling["class_schedule"],
+        "prefix_budgets": sampling["prefix_budgets"],
+        "sampling_random_stream": sampling["random_stream"],
         "checkpoint_sha256": provenance["checkpoint_sha256"],
         "sample_set_sha256": provenance["sample_set_sha256"],
         "real_set_digest_schema": real_set.get("digest_schema"),
@@ -165,14 +182,12 @@ def _external_rows(official: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _gate_evidence(final_gate: dict[str, Any], name: str) -> dict[str, Any]:
-    matches = [
-        gate.get("evidence", {})
-        for gate in final_gate.get("gates", [])
-        if gate.get("name") == name
-    ]
+    matches = [gate for gate in final_gate.get("gates", []) if gate.get("name") == name]
     if len(matches) != 1:
         raise ValueError(f"final gate is missing unique evidence for {name}")
-    return matches[0]
+    if matches[0].get("passed") is not True:
+        raise ValueError(f"final gate evidence did not pass for {name}")
+    return matches[0].get("evidence", {})
 
 
 def build_report(
@@ -190,6 +205,28 @@ def build_report(
         raise ValueError("official related-method source SHA256 is malformed")
     if final_gate.get("stage") != "full":
         raise ValueError("large-scale comparison requires a full-stage gate report")
+    formal_contracts = {
+        "cofitok": sampling_protocol_contract(
+            cofitok_generation["sample_provenance"]["sampling"],
+            stage="full",
+            expected_num_train_timesteps=int(
+                cofitok_training["config"]["diffusion"]["num_train_timesteps"]
+            ),
+        ),
+        "dense_identity": sampling_protocol_contract(
+            dense_generation["sample_provenance"]["sampling"],
+            stage="full",
+            expected_num_train_timesteps=int(
+                dense_training["config"]["diffusion"]["num_train_timesteps"]
+            ),
+        ),
+    }
+    for method, contract in formal_contracts.items():
+        if contract["valid"] is not True:
+            raise ValueError(
+                f"{method} formal sampling protocol is invalid: "
+                + ", ".join(contract["issues"])
+            )
     matched = [
         _matched_row("CoFiTok K=8", cofitok_training, cofitok_generation),
         _matched_row("Dense identity", dense_training, dense_generation),
@@ -198,6 +235,10 @@ def build_report(
         raise ValueError("matched methods used different evaluator implementations")
     if matched[0]["sample_count"] != matched[1]["sample_count"]:
         raise ValueError("matched methods used different sample counts")
+    if matched[0]["sample_count"] != 50_000:
+        raise ValueError("matched methods did not use the formal 50K sample count")
+    if any(row["weights"] != "ema" for row in matched):
+        raise ValueError("matched methods did not use EMA weights")
     if (
         matched[0]["real_set_digest_schema"] != matched[1]["real_set_digest_schema"]
         or matched[0]["real_set_sha256"] != matched[1]["real_set_sha256"]
@@ -221,6 +262,14 @@ def build_report(
         ):
             raise ValueError(f"final gate {key} does not match generation metrics")
     sampling_evidence = _gate_evidence(final_gate, "matched_sampling_provenance")
+    formal_protocol_evidence = _gate_evidence(final_gate, "formal_sampling_protocol")
+    if (
+        formal_protocol_evidence.get("stage") != "full"
+        or formal_protocol_evidence.get("cofitok") != formal_contracts["cofitok"]
+        or formal_protocol_evidence.get("dense_identity")
+        != formal_contracts["dense_identity"]
+    ):
+        raise ValueError("final gate formal sampling protocol does not match sources")
     expected_provenance = (
         (
             "cofitok",
@@ -251,7 +300,7 @@ def build_report(
         and final_gate.get("decision") == "large_scale_generation_ready"
     )
     return {
-        "schema_version": 3,
+        "schema_version": 4,
         "status": "ready" if ready else "hold",
         "final_gate": {
             "status": final_gate.get("status"),
@@ -371,6 +420,20 @@ def render_csv(report: dict[str, Any]) -> str:
         "sampling_elapsed_seconds",
         "sampling_images_per_second",
         "sampling_invocations",
+        "weights",
+        "sampling_protocol_schema",
+        "sampler",
+        "num_train_timesteps",
+        "sample_steps",
+        "guidance_scale",
+        "guidance_rescale",
+        "cfg_batch_mode",
+        "eta",
+        "clip_x0",
+        "sampling_precision",
+        "sampling_seed",
+        "sampling_start_index",
+        "class_schedule",
         "fid",
         "inception_score",
         "precision",

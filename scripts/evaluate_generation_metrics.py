@@ -10,6 +10,11 @@ from typing import Any
 import torch
 
 from cofitok.environment import capture_runtime_environment, runtime_environment_sha256
+from cofitok.generation import (
+    SAMPLING_MANIFEST_SCHEMA_VERSION,
+    SAMPLING_REPORT_SCHEMA_VERSION,
+    sampling_protocol_contract,
+)
 from cofitok.image_integrity import (
     IMAGE_TREE_DIGEST_SCHEMA,
     image_tree_sha256,
@@ -75,9 +80,16 @@ def validate_sampling_provenance(
         raise FileNotFoundError(f"Sampling report does not exist: {report_path}")
     with report_path.open("r", encoding="utf-8") as handle:
         report = json.load(handle)
+    if int(report.get("schema_version", -1)) != SAMPLING_REPORT_SCHEMA_VERSION:
+        raise ValueError("Sampling report schema is unsupported")
     if report.get("status") != "completed":
         raise ValueError(f"Sampling report is not complete: {report_path}")
     sampling = report["sampling"]
+    protocol_contract = sampling_protocol_contract(sampling)
+    if protocol_contract["valid"] is not True:
+        raise ValueError(
+            "Sampling protocol is invalid: " + ", ".join(protocol_contract["issues"])
+        )
     if int(sampling["start_index"]) != 0:
         raise ValueError("Formal generation metrics require a sample set starting at index zero")
     expected_count = int(sampling["num_samples"])
@@ -146,12 +158,26 @@ def validate_sampling_provenance(
     if not sampling_manifest_path.is_file():
         raise FileNotFoundError("Sampling manifest is missing beside the sampling report")
     sampling_manifest = json.loads(sampling_manifest_path.read_text(encoding="utf-8"))
+    if int(sampling_manifest.get("schema_version", -1)) != SAMPLING_MANIFEST_SCHEMA_VERSION:
+        raise ValueError("Sampling manifest schema is unsupported")
     if (
         sampling_manifest.get("runtime_environment") != runtime_environment
         or sampling_manifest.get("runtime_environment_sha256")
         != sampling_environment_sha
     ):
         raise ValueError("Sampling manifest runtime environment differs from report")
+    for field in (
+        "git",
+        "checkpoint",
+        "checkpoint_sha256",
+        "checkpoint_integrity_manifest",
+        "checkpoint_step",
+        "weights",
+        "sampling",
+        "output_dirs",
+    ):
+        if sampling_manifest.get(field) != report.get(field):
+            raise ValueError(f"Sampling report {field} differs from immutable manifest")
     sampling_manifest_sha256 = file_sha256(sampling_manifest_path)
     if report.get("sampling_manifest_sha256") != sampling_manifest_sha256:
         raise ValueError("Sampling report does not match the immutable sampling manifest")
@@ -191,6 +217,7 @@ def validate_sampling_provenance(
             "cumulative_elapsed_seconds": float(progress["cumulative_elapsed_seconds"]),
         },
         "sampling": sampling,
+        "sampling_protocol_contract": protocol_contract,
     }
 
 

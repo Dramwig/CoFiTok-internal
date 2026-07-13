@@ -34,3 +34,7 @@ and the final comparison independently.
 Tests cover digest order invariance, byte mutation, out-of-root rejection,
 content-addressed cache construction, a real tiny metrics-report path, and
 CoFiTok/dense provenance drift at every downstream boundary.
+
+The later formal sampling protocol contract advances the comparison to schema
+v4. It preserves these real-set and evaluator fields and adds exact DDIM/CFG/
+clipping protocol provenance to each matched row.
