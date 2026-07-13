@@ -10,6 +10,7 @@ from cofitok.environment import runtime_environment_sha256
 from cofitok.data.provenance import validate_dataset_provenance
 from cofitok.generation import sampling_protocol_contract
 from cofitok.generation.artifact import verify_inference_artifact
+from cofitok.generation_authorization import validate_generation_gate_binding
 from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
@@ -632,8 +633,10 @@ def _inference_export_evidence(
     artifact_files: dict[str, dict[str, Any]],
     generation_reports: dict[str, dict[str, Any]],
     training_reports: dict[str, dict[str, Any]],
+    final_gate: dict[str, Any],
 ) -> dict[str, Any]:
     evidence = {}
+    release_authorizations = {}
     for method, expected_smoke_count in (("cofitok", 4), ("dense_identity", 2)):
         export = exports[f"{method}_export"]
         preflight = exports[f"{method}_preflight"]
@@ -649,6 +652,17 @@ def _inference_export_evidence(
             raise ValueError(
                 f"{method} full training authorization is missing from export provenance"
             )
+        release_authorization = export.get("release_authorization")
+        if not isinstance(release_authorization, dict):
+            raise ValueError(
+                f"{method} inference artifact lacks final release authorization"
+            )
+        validate_generation_gate_binding(
+            release_authorization,
+            expected_stage="full",
+            expected_gate=final_gate,
+        )
+        release_authorizations[method] = release_authorization
         if export.get("status") != "completed" or export.get("verified") is not True:
             raise ValueError(f"{method} inference export is incomplete")
         if export.get("weights") != "ema_export":
@@ -700,6 +714,8 @@ def _inference_export_evidence(
             != expected_git
             or verified_file.get("source_training_authorization")
             != expected_authorization
+            or verified_file.get("release_authorization")
+            != release_authorization
         ):
             raise ValueError(f"{method} inference artifact bytes differ from report")
         if preflight.get("status") != "passed":
@@ -720,6 +736,8 @@ def _inference_export_evidence(
             or preflight.get("source_git") != expected_git
             or preflight.get("training_authorization")
             != expected_authorization
+            or preflight.get("release_authorization")
+            != release_authorization
         ):
             raise ValueError(f"{method} export preflight source identity differs")
         checkpoint = smoke.get("checkpoint", {})
@@ -741,6 +759,8 @@ def _inference_export_evidence(
             or checkpoint.get("source_git") != expected_git
             or checkpoint.get("training_authorization")
             != expected_authorization
+            or checkpoint.get("release_authorization")
+            != release_authorization
         ):
             raise ValueError(f"{method} export smoke source identity differs")
         if any(len(str(row.get("sha256", ""))) != 64 for row in smoke.get("outputs", [])):
@@ -753,8 +773,11 @@ def _inference_export_evidence(
             "source_runtime_environment_sha256": expected_environment_sha,
             "source_git": expected_git,
             "training_authorization": expected_authorization,
+            "release_authorization": release_authorization,
             "smoke_output_count": expected_smoke_count,
         }
+    if release_authorizations["cofitok"] != release_authorizations["dense_identity"]:
+        raise ValueError("CoFiTok and dense artifacts used different release authorizations")
     return evidence
 
 
@@ -1607,6 +1630,7 @@ def build_completion_audit(
                 inference_artifact_files.get("dense_identity"),
                 cofitok_full_training,
                 dense_full_training,
+                final_gate,
             ],
             lambda: _inference_export_evidence(
                 inference_exports,
@@ -1616,6 +1640,7 @@ def build_completion_audit(
                     "cofitok": cofitok_full_training,
                     "dense_identity": dense_full_training,
                 },
+                final_gate,
             ),
         )
     )

@@ -7,6 +7,7 @@ COFITOK_CHECKPOINT="$OUTPUT_ROOT/imagenet256_full_cofitok_k8_300k/checkpoint_ste
 DENSE_CHECKPOINT="$OUTPUT_ROOT/imagenet256_full_dense_300k/checkpoint_step_00300000.pt"
 EXPORT_ROOT="$OUTPUT_ROOT/exports/imagenet256_full_300k"
 REPORT_ROOT="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/exports"
+FINAL_GATE="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/final_generation_gate.json"
 COFITOK_ARTIFACT="$EXPORT_ROOT/cofitok_k8_ema_inference.pt"
 DENSE_ARTIFACT="$EXPORT_ROOT/dense_identity_ema_inference.pt"
 
@@ -18,13 +19,16 @@ mkdir -p "$EXPORT_ROOT" "$REPORT_ROOT"
 
 test -f "$COFITOK_CHECKPOINT"
 test -f "$DENSE_CHECKPOINT"
+test -f "$FINAL_GATE"
 
 python scripts/export_generation_inference_artifact.py \
   --checkpoint "$COFITOK_CHECKPOINT" --output "$COFITOK_ARTIFACT" \
+  --release-gate "$FINAL_GATE" \
   --report "$REPORT_ROOT/cofitok_export_report.json"
 
 python scripts/export_generation_inference_artifact.py \
   --checkpoint "$DENSE_CHECKPOINT" --output "$DENSE_ARTIFACT" \
+  --release-gate "$FINAL_GATE" \
   --report "$REPORT_ROOT/dense_export_report.json"
 
 python scripts/preflight_generation_sampling.py \

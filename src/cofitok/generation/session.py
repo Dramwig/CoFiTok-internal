@@ -157,6 +157,7 @@ class GenerationSession:
             ),
             "source_git": self.loaded.source_git_provenance,
             "training_authorization": self.loaded.training_authorization,
+            "release_authorization": self.loaded.release_authorization,
             "device": str(self.device),
             "request": {
                 "seeds": list(request.seeds),

@@ -15,6 +15,7 @@ from cofitok.generation.artifact import (
     INFERENCE_ARTIFACT_TYPE,
     verify_inference_artifact,
 )
+from cofitok.generation_authorization import validate_generation_gate_binding
 from cofitok.models import CoFiTokTiny
 from cofitok.training import ExponentialMovingAverage
 from cofitok.training.authorization import (
@@ -42,6 +43,7 @@ class LoadedGenerationModel:
     source_runtime_environment_sha256: str | None
     source_git_provenance: dict[str, Any] | None
     training_authorization: dict[str, Any] | None
+    release_authorization: dict[str, Any] | None
 
 
 def load_generation_model(
@@ -81,6 +83,7 @@ def load_generation_model(
     if int(checkpoint.get("step", -1)) != int(integrity["step"]):
         raise ValueError("Checkpoint payload step does not match integrity metadata")
     training_authorization = None
+    release_authorization = None
     if not is_inference_artifact:
         training_authorization = validate_checkpoint_training_authorization(
             checkpoint,
@@ -134,6 +137,22 @@ def load_generation_model(
                 )
             validate_generation_training_authorization(payload_authorization)
             training_authorization = dict(payload_authorization)
+        payload_release = checkpoint.get("release_authorization")
+        integrity_release = integrity.get("release_authorization")
+        if payload_release != integrity_release:
+            raise ValueError(
+                "Inference artifact release authorization mismatch"
+            )
+        if payload_release is not None:
+            if not isinstance(payload_release, Mapping):
+                raise ValueError(
+                    "Inference artifact release authorization is malformed"
+                )
+            validate_generation_gate_binding(
+                payload_release,
+                expected_stage="full",
+            )
+            release_authorization = dict(payload_release)
     elif weights == "ema":
         if "ema" not in checkpoint:
             raise KeyError("EMA weights are missing from the checkpoint")
@@ -176,4 +195,5 @@ def load_generation_model(
         source_runtime_environment_sha256=source_runtime_environment_sha256,
         source_git_provenance=source_git_provenance,
         training_authorization=training_authorization,
+        release_authorization=release_authorization,
     )

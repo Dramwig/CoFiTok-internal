@@ -14,6 +14,7 @@ from cofitok.data.provenance import (
 )
 from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
 from cofitok.generation_gate import REQUIRED_GENERATION_GATES
+from cofitok.generation_authorization import build_generation_gate_binding
 from cofitok.training.authorization import build_generation_training_authorization
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
@@ -89,6 +90,19 @@ def _full_training_authorization() -> dict:
         ),
         gate_bytes=10_000,
         gate_sha256="9" * 64,
+    )
+
+
+def _full_release_authorization() -> dict:
+    return build_generation_gate_binding(
+        _gate("full"),
+        expected_stage="full",
+        gate_path=(
+            "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/"
+            "generation/imagenet256_full_matched_300k/final_generation_gate.json"
+        ),
+        gate_bytes=20_000,
+        gate_sha256="8" * 64,
     )
 
 
@@ -900,6 +914,7 @@ def _inference_exports() -> dict:
     output = {}
     environment_sha = runtime_environment_sha256(_runtime_environment())
     training_authorization = _full_training_authorization()
+    release_authorization = _full_release_authorization()
     source_git = {
         "dirty": False,
         "revision": FULL_REVISION,
@@ -925,6 +940,7 @@ def _inference_exports() -> dict:
             "source_training_authorization": copy.deepcopy(
                 training_authorization
             ),
+            "release_authorization": copy.deepcopy(release_authorization),
             "artifact_sha256": artifact_sha,
             "artifact_bytes": 400,
             "artifact": artifact,
@@ -939,6 +955,7 @@ def _inference_exports() -> dict:
             "source_runtime_environment_sha256": environment_sha,
             "source_git": dict(source_git),
             "training_authorization": copy.deepcopy(training_authorization),
+            "release_authorization": copy.deepcopy(release_authorization),
         }
         output[f"{method}_smoke"] = {
             "status": "completed",
@@ -951,6 +968,9 @@ def _inference_exports() -> dict:
                 "source_git": dict(source_git),
                 "training_authorization": copy.deepcopy(
                     training_authorization
+                ),
+                "release_authorization": copy.deepcopy(
+                    release_authorization
                 ),
             },
             "outputs": [{"sha256": str(index) * 64} for index in range(1, count + 1)],
@@ -996,6 +1016,7 @@ def _inference_artifact_files() -> dict:
     output = {}
     environment_sha = runtime_environment_sha256(_runtime_environment())
     training_authorization = _full_training_authorization()
+    release_authorization = _full_release_authorization()
     for method, source_sha, artifact_sha in (
         ("cofitok", "a" * 64, "f" * 64),
         ("dense_identity", "b" * 64, "9" * 64),
@@ -1018,6 +1039,7 @@ def _inference_artifact_files() -> dict:
             "source_training_authorization": copy.deepcopy(
                 training_authorization
             ),
+            "release_authorization": copy.deepcopy(release_authorization),
             "step": 300_000,
         }
     return output
@@ -1155,7 +1177,10 @@ def test_completion_audit_rejects_failed_final_gate() -> None:
     report = build_completion_audit(**kwargs)
 
     assert report["status"] == "failed"
-    assert report["failed_checks"] == ["final_generation_gate"]
+    assert report["failed_checks"] == [
+        "deployable_ema_inference_artifacts",
+        "final_generation_gate",
+    ]
 
 
 def test_completion_audit_rejects_weakened_final_quality_threshold() -> None:
@@ -1165,7 +1190,10 @@ def test_completion_audit_rejects_weakened_final_quality_threshold() -> None:
     report = build_completion_audit(**kwargs)
 
     assert report["status"] == "failed"
-    assert report["failed_checks"] == ["final_generation_gate"]
+    assert report["failed_checks"] == [
+        "deployable_ema_inference_artifacts",
+        "final_generation_gate",
+    ]
 
 
 def test_completion_audit_rejects_weakened_scaling_quality_threshold() -> None:
@@ -1205,7 +1233,10 @@ def test_completion_audit_rejects_unbound_final_quality_metrics() -> None:
     report = build_completion_audit(**kwargs)
 
     assert report["status"] == "failed"
-    assert report["failed_checks"] == ["final_generation_gate"]
+    assert report["failed_checks"] == [
+        "deployable_ema_inference_artifacts",
+        "final_generation_gate",
+    ]
 
 
 def test_completion_audit_requires_named_code_provenance_gates() -> None:
@@ -1219,7 +1250,10 @@ def test_completion_audit_requires_named_code_provenance_gates() -> None:
     report = build_completion_audit(**kwargs)
 
     assert report["status"] == "failed"
-    assert report["failed_checks"] == ["final_generation_gate"]
+    assert report["failed_checks"] == [
+        "deployable_ema_inference_artifacts",
+        "final_generation_gate",
+    ]
 
 
 def test_completion_audit_rejects_incomplete_formal_sampling() -> None:
@@ -1261,6 +1295,7 @@ def test_completion_audit_rejects_stale_gate_and_comparison_provenance() -> None
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == [
+        "deployable_ema_inference_artifacts",
         "final_generation_gate",
         "final_comparison_report",
     ]
@@ -1688,6 +1723,55 @@ def test_completion_audit_rejects_inference_preflight_authorization_drift() -> N
     kwargs["inference_exports"]["cofitok_preflight"][
         "training_authorization"
     ]["gate_identity_sha256"] = "d" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_rejects_inference_artifact_release_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_artifact_files"]["dense_identity"][
+        "release_authorization"
+    ]["gate_identity_sha256"] = "d" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_rejects_inference_preflight_release_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_exports"]["cofitok_preflight"][
+        "release_authorization"
+    ]["gate_identity_sha256"] = "d" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_rejects_different_release_gate_files() -> None:
+    kwargs = _kwargs()
+    dense_release_locations = (
+        kwargs["inference_exports"]["dense_identity_export"][
+            "release_authorization"
+        ],
+        kwargs["inference_exports"]["dense_identity_preflight"][
+            "release_authorization"
+        ],
+        kwargs["inference_exports"]["dense_identity_smoke"]["checkpoint"][
+            "release_authorization"
+        ],
+        kwargs["inference_artifact_files"]["dense_identity"][
+            "release_authorization"
+        ],
+    )
+    for release in dense_release_locations:
+        release["gate_sha256"] = "7" * 64
 
     report = build_completion_audit(**kwargs)
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 import torch
@@ -20,6 +21,7 @@ from cofitok.generation import (
     export_ema_inference_artifact,
     verify_inference_artifact,
 )
+from cofitok.generation_gate import REQUIRED_GENERATION_GATES
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
@@ -52,6 +54,101 @@ def _training_authorization(tmp_path) -> dict:
             "max_endpoint_regression": 0.05,
         },
     }
+
+
+def _full_gate() -> dict:
+    summary = {
+        "cofitok_fid": 19.5,
+        "dense_fid": 19.0,
+        "cofitok_endpoint_mse": 0.104,
+        "dense_endpoint_mse": 0.1,
+        "cofitok_precision": 0.35,
+        "dense_precision": 0.36,
+        "cofitok_recall": 0.34,
+        "dense_recall": 0.35,
+        "ordered_rank": 1,
+        "order_count": 24,
+    }
+    thresholds = {
+        "min_samples": 50_000,
+        "max_fid_regression": 0.05,
+        "max_absolute_fid": 20.0,
+        "max_endpoint_regression": 0.05,
+        "min_precision": 0.30,
+        "min_recall": 0.30,
+        "max_precision_regression": 0.05,
+        "max_recall_regression": 0.05,
+    }
+
+    def evidence(name: str) -> dict:
+        if name == "fid_within_tolerance":
+            return {
+                "cofitok_fid": summary["cofitok_fid"],
+                "dense_fid": summary["dense_fid"],
+                "max_regression": thresholds["max_fid_regression"],
+            }
+        if name == "absolute_fid_quality":
+            return {
+                "cofitok_fid": summary["cofitok_fid"],
+                "max_absolute_fid": thresholds["max_absolute_fid"],
+            }
+        if name == "endpoint_within_tolerance":
+            return {
+                "cofitok_endpoint_mse": summary["cofitok_endpoint_mse"],
+                "dense_endpoint_mse": summary["dense_endpoint_mse"],
+                "max_regression": thresholds["max_endpoint_regression"],
+            }
+        if name == "ordered_prefix_path":
+            return {
+                "rank": summary["ordered_rank"],
+                "order_count": summary["order_count"],
+            }
+        if name == "restricted_synthesis_contract":
+            return {"zero_token_max_abs": 0.0}
+        if name == "shuffle_mismatch":
+            return {"shuffled_to_ordered_endpoint_ratio": 1.2}
+        if name == "full_precision_recall_quality":
+            return {
+                "enforced": True,
+                **{
+                    key: thresholds[key]
+                    for key in (
+                        "min_precision",
+                        "min_recall",
+                        "max_precision_regression",
+                        "max_recall_regression",
+                    )
+                },
+                **{
+                    key: summary[key]
+                    for key in (
+                        "cofitok_precision",
+                        "dense_precision",
+                        "cofitok_recall",
+                        "dense_recall",
+                    )
+                },
+            }
+        return {}
+
+    return {
+        "schema_version": 1,
+        "stage": "full",
+        "status": "pass",
+        "decision": "large_scale_generation_ready",
+        "thresholds": thresholds,
+        "gates": [
+            {"name": name, "passed": True, "evidence": evidence(name)}
+            for name in sorted(REQUIRED_GENERATION_GATES["full"])
+        ],
+        "summary": summary,
+    }
+
+
+def _release_gate_path(tmp_path):
+    path = tmp_path / "final_generation_gate.json"
+    path.write_text(json.dumps(_full_gate(), sort_keys=True), encoding="utf-8")
+    return path
 
 
 def _training_checkpoint(
@@ -141,19 +238,28 @@ def _training_checkpoint(
 def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     source = _training_checkpoint(tmp_path, include_authorization=True)
     artifact = tmp_path / "cofitok_ema_inference.pt"
+    release_gate = _release_gate_path(tmp_path)
 
-    report = export_ema_inference_artifact(source, artifact)
-    reused = export_ema_inference_artifact(source, artifact)
+    report = export_ema_inference_artifact(
+        source,
+        artifact,
+        release_gate=release_gate,
+    )
+    reused = export_ema_inference_artifact(
+        source,
+        artifact,
+        release_gate=release_gate,
+    )
 
     assert report["status"] == "completed"
-    assert report["schema_version"] == 3
+    assert report["schema_version"] == 4
     assert report["weights"] == "ema_export"
     assert report["verified"] is True
     assert report["artifact_bytes"] < report["source_checkpoint_bytes"]
     assert reused["reused"] is True
     verified = verify_inference_artifact(artifact)
-    assert verified["schema_version"] == 3
-    assert verified["artifact_format_version"] == 3
+    assert verified["schema_version"] == 4
+    assert verified["artifact_format_version"] == 4
     assert verified["artifact_sha256"] == report["artifact_sha256"]
     assert report["source_runtime_environment_sha256"] == SOURCE_ENVIRONMENT_SHA
     assert report["source_git"] == SOURCE_GIT
@@ -162,6 +268,11 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     )
     assert verified["source_training_authorization"] == _training_authorization(
         tmp_path
+    )
+    assert report["release_authorization"] == verified["release_authorization"]
+    assert report["release_authorization"]["stage"] == "full"
+    assert report["release_authorization"]["decision"] == (
+        "large_scale_generation_ready"
     )
 
     request = GenerationRequest(
@@ -194,6 +305,9 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     assert export_result.metadata["training_authorization"] == (
         _training_authorization(tmp_path)
     )
+    assert export_result.metadata["release_authorization"] == report[
+        "release_authorization"
+    ]
     preflight = run_sampling_preflight(
         artifact,
         batch_size=1,
@@ -205,6 +319,9 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     assert preflight["training_authorization"] == _training_authorization(
         tmp_path
     )
+    assert preflight["release_authorization"] == report[
+        "release_authorization"
+    ]
 
 
 def test_ema_export_rejects_source_without_deployment_provenance(tmp_path) -> None:
@@ -248,7 +365,11 @@ def test_inference_artifact_rejects_source_sidecar_drift(tmp_path) -> None:
 def test_inference_artifact_rejects_training_authorization_drift(tmp_path) -> None:
     source = _training_checkpoint(tmp_path, include_authorization=True)
     artifact = tmp_path / "cofitok_ema_inference.pt"
-    export_ema_inference_artifact(source, artifact)
+    export_ema_inference_artifact(
+        source,
+        artifact,
+        release_gate=_release_gate_path(tmp_path),
+    )
     integrity_path = checkpoint_integrity_path(artifact)
     integrity = json.loads(integrity_path.read_text(encoding="utf-8"))
     integrity["source_training_authorization"][
@@ -263,7 +384,12 @@ def test_inference_artifact_rejects_training_authorization_drift(tmp_path) -> No
 def test_export_reuse_rejects_source_authorization_drift(tmp_path) -> None:
     source = _training_checkpoint(tmp_path, include_authorization=True)
     artifact = tmp_path / "cofitok_ema_inference.pt"
-    export_ema_inference_artifact(source, artifact)
+    release_gate = _release_gate_path(tmp_path)
+    export_ema_inference_artifact(
+        source,
+        artifact,
+        release_gate=release_gate,
+    )
     source_integrity_path = checkpoint_integrity_path(source)
     source_integrity = json.loads(
         source_integrity_path.read_text(encoding="utf-8")
@@ -272,4 +398,70 @@ def test_export_reuse_rejects_source_authorization_drift(tmp_path) -> None:
     write_json_report(source_integrity_path, source_integrity)
 
     with pytest.raises(ValueError, match="authorization differs"):
-        export_ema_inference_artifact(source, artifact)
+        export_ema_inference_artifact(
+            source,
+            artifact,
+            release_gate=release_gate,
+        )
+
+
+def test_formal_inference_export_requires_release_gate(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path, include_authorization=True)
+
+    with pytest.raises(ValueError, match="requires a full release gate"):
+        export_ema_inference_artifact(
+            source,
+            tmp_path / "unauthorized_inference.pt",
+        )
+
+
+def test_inference_artifact_rejects_release_authorization_drift(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path, include_authorization=True)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    export_ema_inference_artifact(
+        source,
+        artifact,
+        release_gate=_release_gate_path(tmp_path),
+    )
+    integrity_path = checkpoint_integrity_path(artifact)
+    integrity = json.loads(integrity_path.read_text(encoding="utf-8"))
+    integrity["release_authorization"]["gate_identity_sha256"] = "d" * 64
+    write_json_report(integrity_path, integrity)
+
+    with pytest.raises(ValueError, match="release authorization mismatch"):
+        GenerationSession.from_checkpoint(artifact, weights="ema")
+
+
+def test_export_reuse_rejects_changed_release_gate(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path, include_authorization=True)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    release_gate = _release_gate_path(tmp_path)
+    export_ema_inference_artifact(
+        source,
+        artifact,
+        release_gate=release_gate,
+    )
+    changed_gate = _full_gate()
+    changed_gate["gates"].append(
+        {"name": "additional_release_audit", "passed": True, "evidence": {}}
+    )
+    release_gate.write_text(
+        json.dumps(changed_gate, sort_keys=True),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="release authorization differs"):
+        export_ema_inference_artifact(
+            source,
+            artifact,
+            release_gate=release_gate,
+        )
+
+
+def test_formal_export_runbook_binds_full_release_gate() -> None:
+    runbook = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts/runbooks/generation_export_inference_artifacts.sh"
+    ).read_text(encoding="utf-8")
+
+    assert runbook.count('--release-gate "$FINAL_GATE"') == 2

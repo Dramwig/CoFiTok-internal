@@ -124,6 +124,7 @@ def run_sampling_preflight(
         ),
         "source_git": loaded.source_git_provenance,
         "training_authorization": loaded.training_authorization,
+        "release_authorization": loaded.release_authorization,
         "device": str(device),
         "torch_version": torch.__version__,
         "request": {

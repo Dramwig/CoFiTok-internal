@@ -14,8 +14,17 @@ def main() -> None:
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--report", required=True)
+    parser.add_argument(
+        "--release-gate",
+        default="",
+        help="Passing full generation gate required for a formal deployment artifact.",
+    )
     args = parser.parse_args()
-    report = export_ema_inference_artifact(args.checkpoint, args.output)
+    report = export_ema_inference_artifact(
+        args.checkpoint,
+        args.output,
+        release_gate=args.release_gate or None,
+    )
     write_json_report(Path(args.report), report)
     print(args.report)
 

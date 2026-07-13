@@ -14,7 +14,8 @@ state which promotion gate authorized its weights.
 
 ## Contract
 
-Inference artifact payload and integrity schemas are version 3. A formal export
+Inference artifact payload and integrity schemas introduced this binding in
+version 3. A formal export
 copies the complete source `training_authorization` into both the artifact
 payload and its adjacent integrity sidecar. The export report, stable generation
 loader, `GenerationSession` metadata, real-forward preflight, and inference CLI
@@ -45,3 +46,7 @@ Tests cover a real tiny training checkpoint with authorization, EMA export,
 artifact reuse, exact sample equivalence, stable session metadata, real-forward
 preflight propagation, artifact-sidecar authorization drift, source-sidecar
 reuse drift, and terminal completion failures for artifact or preflight drift.
+
+Artifact schema v4 subsequently adds the independent final quality release
+authorization; see
+`docs/records/2026-07-13_inference_artifact_final_release_authorization.md`.
