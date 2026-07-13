@@ -43,6 +43,12 @@ validate_training_report "$DENSE_RUN/training_report.json"
 test -f "$COFITOK_CHECKPOINT"
 test -f "$DENSE_CHECKPOINT"
 
+python scripts/check_generation_storage_capacity.py \
+  --path "$OUTPUT_ROOT" \
+  --output "$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/storage_preflight.json" \
+  --stage 10pct_posteval --checkpoint-count 0 --sample-count 20256 \
+  --estimated-sample-kib 256 --additional-gib 16 --safety-margin-gib 32
+
 python scripts/migrate_generation_checkpoint_integrity.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --training-report "$COFITOK_RUN/training_report.json" \

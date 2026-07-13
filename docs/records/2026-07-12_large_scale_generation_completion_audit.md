@@ -22,6 +22,9 @@ The audit requires all of the following:
   `781a01444fddbf0d48a427ba58bdeed50167b5be`;
 - a controlled fast-forward transition to the exact upgrade revision, bound to
   the deployment bundle and validated 10% pair by SHA256 receipt;
+- passing storage-capacity preflights for 10K post-evaluation, full 300K
+  training, and formal 50K post-evaluation, all bound to the clean deployed
+  revision and the generation filesystem with non-weakened reserves;
 - a passing 10K scaling gate authorizing full ImageNet-256;
 - matched full ImageNet-256 CoFiTok/dense 300K training at the deployed upgrade
   revision;

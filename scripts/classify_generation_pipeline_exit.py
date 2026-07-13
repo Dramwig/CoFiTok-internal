@@ -12,6 +12,7 @@ RETRYABLE_STAGES = {
     "full_posteval",
     "inference_export",
 }
+NONRETRYABLE_CAPACITY_EXIT = 78
 
 
 def classify_pipeline_exit(
@@ -22,6 +23,9 @@ def classify_pipeline_exit(
     if exit_code == 0 and status == "pass" and stage == "complete":
         decision = "pass"
         reason = "pipeline_completed"
+    elif exit_code == NONRETRYABLE_CAPACITY_EXIT:
+        decision = "stop"
+        reason = "insufficient_storage_capacity"
     elif stage in RETRYABLE_STAGES and status in {"running", "failed"}:
         decision = "retry"
         reason = "recoverable_stage_exit"

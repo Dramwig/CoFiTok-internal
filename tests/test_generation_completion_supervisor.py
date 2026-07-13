@@ -32,6 +32,15 @@ def test_supervisor_never_retries_scientific_or_completion_gates() -> None:
         assert report["decision"] == "stop"
 
 
+def test_supervisor_never_retries_storage_capacity_failure() -> None:
+    report = classify_pipeline_exit(
+        {"stage": "full_training", "status": "failed"}, exit_code=78
+    )
+
+    assert report["decision"] == "stop"
+    assert report["reason"] == "insufficient_storage_capacity"
+
+
 def test_supervisor_requires_pipeline_pass_and_complete_stage() -> None:
     assert classify_pipeline_exit(
         {"stage": "complete", "status": "pass"}, exit_code=0

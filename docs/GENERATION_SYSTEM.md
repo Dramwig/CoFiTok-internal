@@ -342,6 +342,13 @@ immediately. Existing gates and fully paired milestones are evidence-driven
 skip points, with protected checkpoint/sidecar checks before milestone reuse.
 See `docs/records/2026-07-12_generation_completion_supervisor.md`.
 
+Before 10K promotion evaluation, full 300K training, and formal 50K evaluation,
+the runbooks also perform a structured storage-capacity preflight. It reserves
+space for conservative checkpoint copies, planned PNGs, evaluator caches, and a
+safety margin; insufficient capacity exits non-retryably before large artifacts
+are created. See
+`docs/records/2026-07-13_generation_storage_capacity_preflight.md`.
+
 After the final gate, both methods export separate EMA-only deployment
 artifacts. Their type-specific sidecars are verified before deserialization;
 source training checkpoint SHA, step, artifact SHA/bytes, real-forward preflight,

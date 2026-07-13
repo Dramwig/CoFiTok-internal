@@ -8,11 +8,17 @@ COFITOK_RUN="$OUTPUT_ROOT/imagenet256_full_cofitok_k8_300k"
 DENSE_RUN="$OUTPUT_ROOT/imagenet256_full_dense_300k"
 RUNTIME_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/full_imagenet256_300k"
 RUNTIME_SELECTION="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/runtime_selection.json"
+REFERENCE_COFITOK="$OUTPUT_ROOT/imagenet256_10pct_cofitok_k8_50k_2026-07-12/checkpoint_step_00050000.pt"
+REFERENCE_DENSE="$OUTPUT_ROOT/imagenet256_10pct_dense_50k_2026-07-12/checkpoint_step_00050000.pt"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
 cd "$PROJECT"
 export PYTHONPATH=src
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  printf 'full matched 300K training requires a clean tracked worktree\n' >&2
+  exit 66
+fi
 
 python - "$GATE" <<'PY'
 import json
@@ -23,6 +29,15 @@ with open(sys.argv[1], encoding="utf-8") as handle:
 if gate.get("status") != "pass" or gate.get("decision") != "promote_to_full_imagenet256":
     raise SystemExit("10% generation gate did not authorize full ImageNet-256 training")
 PY
+
+python scripts/check_generation_storage_capacity.py \
+  --path "$OUTPUT_ROOT" \
+  --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/storage_preflight_training.json" \
+  --stage full_training \
+  --reference-checkpoint "$REFERENCE_COFITOK" \
+  --reference-checkpoint "$REFERENCE_DENSE" \
+  --checkpoint-count 16 --sample-count 16384 \
+  --estimated-sample-kib 256 --additional-gib 16 --safety-margin-gib 64
 
 runtime_selected="$(python scripts/select_generation_training_runtime.py \
   --cofitok-config configs/generation/imagenet256_cofitok_k8_300k.json \

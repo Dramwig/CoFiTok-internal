@@ -24,6 +24,7 @@ ENTRYPOINTS = {
     "build_generation_milestone_report.py",
     "build_generation_visual_audit.py",
     "build_large_scale_generation_comparison.py",
+    "check_generation_storage_capacity.py",
     "evaluate_generation_checkpoint.py",
     "evaluate_generation_metrics.py",
     "export_generation_inference_artifact.py",

@@ -46,6 +46,12 @@ test -f "$COFITOK_CHECKPOINT"
 test -f "$DENSE_CHECKPOINT"
 test -f "$OFFICIAL_RELATED"
 
+python scripts/check_generation_storage_capacity.py \
+  --path "$OUTPUT_ROOT" \
+  --output "$REPORT_ROOT/storage_preflight_posteval.json" \
+  --stage full_posteval --checkpoint-count 0 --sample-count 100256 \
+  --estimated-sample-kib 256 --additional-gib 16 --safety-margin-gib 64
+
 SAMPLING_BATCH="$(python scripts/select_generation_sampling_batch.py \
   --cofitok-checkpoint "$COFITOK_CHECKPOINT" \
   --dense-checkpoint "$DENSE_CHECKPOINT" \

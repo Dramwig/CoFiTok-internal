@@ -27,6 +27,8 @@ The structured classifier retries only:
 It never retries `preconditions`, `promotion_gate`, `final_gate`,
 `completion_audit`, or unknown stages. These may represent scientific failure,
 provenance conflict, or an unsafe state and therefore require inspection.
+Storage-capacity preflight failure uses exit code `78` and is likewise
+non-retryable until an operator has inspected or expanded the project filesystem.
 
 ## Idempotency
 

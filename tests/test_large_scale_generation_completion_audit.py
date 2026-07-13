@@ -397,6 +397,52 @@ def _visual_audit() -> dict:
     }
 
 
+def _storage_preflights() -> dict:
+    requirements = {
+        "10pct_posteval": (0, 20_256, 32),
+        "full_training": (16, 16_384, 64),
+        "full_posteval": (0, 100_256, 64),
+    }
+    reports = {}
+    for stage, (checkpoint_count, sample_count, safety_gib) in requirements.items():
+        checkpoint_bytes = 1_000 if checkpoint_count else 0
+        checkpoint_reserve = checkpoint_count * checkpoint_bytes
+        sample_reserve = sample_count * 256 * 1024
+        additional = 16 * 1024**3
+        safety = safety_gib * 1024**3
+        required = checkpoint_reserve + sample_reserve + additional + safety
+        free = required + 1024**3
+        reports[stage] = {
+            "role": "generation_storage_capacity_preflight",
+            "stage": stage,
+            "status": "pass",
+            "git": {
+                "revision": FULL_REVISION,
+                "branch": "scale/generative-system",
+                "tracked_dirty": False,
+            },
+            "filesystem": {
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
+                "total_bytes": free + 2 * 1024**3,
+                "used_bytes": 1024**3,
+                "free_bytes": free,
+            },
+            "plan": {
+                "checkpoint_count": checkpoint_count,
+                "checkpoint_bytes_each": checkpoint_bytes,
+                "checkpoint_reserve_bytes": checkpoint_reserve,
+                "sample_count": sample_count,
+                "estimated_sample_bytes_each": 256 * 1024,
+                "sample_reserve_bytes": sample_reserve,
+                "additional_bytes": additional,
+                "safety_margin_bytes": safety,
+                "required_free_bytes": required,
+            },
+            "headroom_bytes": free - required,
+        }
+    return reports
+
+
 def _inference_exports() -> dict:
     output = {}
     for method, source_sha, artifact_sha, count in (
@@ -477,6 +523,8 @@ def _kwargs() -> dict:
                 "untracked_target_conflicts": 0,
             },
         },
+        "storage_preflights": _storage_preflights(),
+        "expected_storage_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
         "scaling_gate": _gate("scaling"),
         "cofitok_full_training": _training(
             steps=300_000,
@@ -515,7 +563,7 @@ def test_completion_audit_requires_every_large_scale_artifact() -> None:
     assert report["complete"] is True
     assert report["failed_checks"] == []
     assert report["missing_checks"] == []
-    assert len(report["checks"]) == 13
+    assert len(report["checks"]) == 14
 
 
 def test_completion_audit_requires_controlled_revision_transition() -> None:
@@ -748,6 +796,26 @@ def test_completion_audit_rejects_visual_audit_from_dirty_code() -> None:
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == ["deterministic_visual_quality_audit"]
+
+
+def test_completion_audit_rejects_weakened_storage_safety_margin() -> None:
+    kwargs = _kwargs()
+    report = kwargs["storage_preflights"]["full_posteval"]
+    report["plan"]["safety_margin_bytes"] = 1
+    report["plan"]["required_free_bytes"] = (
+        report["plan"]["checkpoint_reserve_bytes"]
+        + report["plan"]["sample_reserve_bytes"]
+        + report["plan"]["additional_bytes"]
+        + report["plan"]["safety_margin_bytes"]
+    )
+    report["headroom_bytes"] = (
+        report["filesystem"]["free_bytes"] - report["plan"]["required_free_bytes"]
+    )
+
+    completion = build_completion_audit(**kwargs)
+
+    assert completion["status"] == "failed"
+    assert completion["failed_checks"] == ["generation_storage_capacity"]
 
 
 def test_completion_audit_rejects_export_from_stale_training_checkpoint() -> None:

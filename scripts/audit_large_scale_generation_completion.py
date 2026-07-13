@@ -17,6 +17,8 @@ except ModuleNotFoundError:
 
 PINNED_10PCT_REVISION = "781a01444fddbf0d48a427ba58bdeed50167b5be"
 MILESTONE_STEPS = (50_000, 100_000, 200_000, 300_000)
+GIB = 1024**3
+KIB = 1024
 
 
 def _check(
@@ -667,6 +669,97 @@ def _deployment_transition_evidence(
     }
 
 
+def _storage_capacity_evidence(
+    reports: dict[str, dict[str, Any]],
+    *,
+    expected_revision: str,
+    expected_path: str,
+) -> dict[str, Any]:
+    requirements = {
+        "10pct_posteval": {
+            "checkpoint_count": 0,
+            "sample_count": 20_256,
+            "additional_bytes": 16 * GIB,
+            "safety_margin_bytes": 32 * GIB,
+        },
+        "full_training": {
+            "checkpoint_count": 16,
+            "sample_count": 16_384,
+            "additional_bytes": 16 * GIB,
+            "safety_margin_bytes": 64 * GIB,
+        },
+        "full_posteval": {
+            "checkpoint_count": 0,
+            "sample_count": 100_256,
+            "additional_bytes": 16 * GIB,
+            "safety_margin_bytes": 64 * GIB,
+        },
+    }
+    if set(reports) != set(requirements):
+        raise ValueError("storage capacity report set is incomplete")
+
+    evidence = {}
+    normalized_expected_path = expected_path.replace("\\", "/").rstrip("/")
+    for stage, minimums in requirements.items():
+        report = reports[stage]
+        if (
+            report.get("role") != "generation_storage_capacity_preflight"
+            or report.get("stage") != stage
+            or report.get("status") != "pass"
+        ):
+            raise ValueError(f"storage capacity report is invalid for {stage}")
+        git = report.get("git", {})
+        if (
+            git.get("revision") != expected_revision
+            or git.get("branch") != "scale/generative-system"
+            or git.get("tracked_dirty") is not False
+        ):
+            raise ValueError(f"storage capacity Git provenance is invalid for {stage}")
+        filesystem = report.get("filesystem", {})
+        observed_path = str(filesystem.get("path", "")).replace("\\", "/").rstrip("/")
+        if observed_path != normalized_expected_path:
+            raise ValueError(f"storage capacity path differs for {stage}")
+        plan = report.get("plan", {})
+        if int(plan.get("estimated_sample_bytes_each", -1)) < 256 * KIB:
+            raise ValueError(f"storage sample-size estimate was weakened for {stage}")
+        for key, minimum in minimums.items():
+            if int(plan.get(key, -1)) < minimum:
+                raise ValueError(f"storage capacity reserve {key} was weakened for {stage}")
+        if stage == "full_training" and int(plan.get("checkpoint_bytes_each", 0)) < 1:
+            raise ValueError("full-training storage plan lacks measured checkpoint bytes")
+        checkpoint_reserve = int(plan.get("checkpoint_count", -1)) * int(
+            plan.get("checkpoint_bytes_each", -1)
+        )
+        sample_reserve = int(plan.get("sample_count", -1)) * int(
+            plan.get("estimated_sample_bytes_each", -1)
+        )
+        if checkpoint_reserve != int(plan.get("checkpoint_reserve_bytes", -2)):
+            raise ValueError(f"storage checkpoint reserve arithmetic differs for {stage}")
+        if sample_reserve != int(plan.get("sample_reserve_bytes", -2)):
+            raise ValueError(f"storage sample reserve arithmetic differs for {stage}")
+        required = (
+            checkpoint_reserve
+            + sample_reserve
+            + int(plan.get("additional_bytes", -1))
+            + int(plan.get("safety_margin_bytes", -1))
+        )
+        total = int(filesystem.get("total_bytes", -1))
+        used = int(filesystem.get("used_bytes", -1))
+        free = int(filesystem.get("free_bytes", -1))
+        if total < 1 or used < 0 or free < 0 or used + free > total:
+            raise ValueError(f"storage filesystem usage is invalid for {stage}")
+        if required != int(plan.get("required_free_bytes", -2)) or required < 1:
+            raise ValueError(f"storage capacity arithmetic differs for {stage}")
+        if free < required or int(report.get("headroom_bytes", -1)) != free - required:
+            raise ValueError(f"storage capacity headroom is invalid for {stage}")
+        evidence[stage] = {
+            "free_bytes": free,
+            "required_free_bytes": required,
+            "headroom_bytes": free - required,
+        }
+    return evidence
+
+
 def build_completion_audit(
     *,
     expected_10pct_revision: str,
@@ -674,6 +767,8 @@ def build_completion_audit(
     cofitok_10pct_training: dict[str, Any] | None,
     dense_10pct_training: dict[str, Any] | None,
     deployment_receipt: dict[str, Any] | None,
+    storage_preflights: dict[str, dict[str, Any] | None],
+    expected_storage_path: str,
     scaling_gate: dict[str, Any] | None,
     cofitok_full_training: dict[str, Any] | None,
     dense_full_training: dict[str, Any] | None,
@@ -715,6 +810,17 @@ def build_completion_audit(
                 deployment_receipt,
                 expected_training_revision=expected_10pct_revision,
                 expected_target_revision=expected_full_revision,
+            ),
+        )
+    )
+    checks.append(
+        _check(
+            "generation_storage_capacity",
+            list(storage_preflights.values()),
+            lambda: _storage_capacity_evidence(
+                storage_preflights,
+                expected_revision=expected_full_revision,
+                expected_path=expected_storage_path,
             ),
         )
     )
@@ -939,6 +1045,16 @@ def main() -> None:
         deployment_receipt=_read_optional(
             output_root / "generation_upgrade_deployment_receipt.json"
         ),
+        storage_preflights={
+            "10pct_posteval": _read_optional(ten_root / "storage_preflight.json"),
+            "full_training": _read_optional(
+                full_root / "storage_preflight_training.json"
+            ),
+            "full_posteval": _read_optional(
+                full_root / "storage_preflight_posteval.json"
+            ),
+        },
+        expected_storage_path=output_root.as_posix(),
         scaling_gate=_read_optional(ten_root / "promotion_gate.json"),
         cofitok_full_training=_read_optional(cofitok_full / "training_report.json"),
         dense_full_training=_read_optional(dense_full / "training_report.json"),
