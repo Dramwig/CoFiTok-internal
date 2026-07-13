@@ -17,6 +17,7 @@ class DataConfig:
     class_conditional: bool = False
     persistent_workers: bool = False
     prefetch_factor: int = 2
+    random_horizontal_flip_prob: float = 0.0
 
 
 @dataclass(frozen=True)

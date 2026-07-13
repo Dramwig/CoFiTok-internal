@@ -313,6 +313,14 @@ and accumulation are applied to every full-training segment and verified again
 by the completion audit. See
 `docs/records/2026-07-12_generation_training_runtime_selection.md`.
 
+The full ImageNet-256 pair also uses the same per-image random horizontal flip
+probability of `0.5`. Augmentation happens on the normalized device batch before
+noise and timestep sampling, using the training process PyTorch RNG that is
+already captured by exact-resume checkpoints. Validation remains deterministic
+and unaugmented. The pinned 10% legacy pair keeps its resolved default of `0.0`,
+so this upgrade does not alter the active training protocol. See
+`docs/records/2026-07-13_generation_exact_resume_horizontal_flip.md`.
+
 Formal 10K and 50K sampling also selects one shared batch from
 `16,32,64,128`. Both checkpoints run repeated synchronized EMA/CFG forwards;
 eligible candidates must pass for both methods below 90% VRAM, and selection

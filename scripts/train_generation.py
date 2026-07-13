@@ -93,6 +93,8 @@ def _validate_config(config: ExperimentConfig) -> None:
         raise ValueError("production training currently supports epsilon prediction only")
     if config.data.class_conditional != (config.model.num_classes > 0):
         raise ValueError("data.class_conditional and model.num_classes must agree")
+    if not 0.0 <= config.data.random_horizontal_flip_prob <= 1.0:
+        raise ValueError("data.random_horizontal_flip_prob must be between 0 and 1")
     if config.optimization.gradient_accumulation_steps < 1:
         raise ValueError("gradient_accumulation_steps must be positive")
     if config.runtime.precision not in {"fp32", "bf16", "fp16"}:
@@ -184,6 +186,19 @@ def _move_batch(
     if labels is None:
         raise ValueError("class-conditional training batch is missing labels")
     return images, labels.to(device=device, dtype=torch.long, non_blocking=True)
+
+
+def _augment_training_images(images: torch.Tensor, flip_probability: float) -> torch.Tensor:
+    if flip_probability <= 0.0:
+        return images
+    flipped = images.flip(dims=(-1,))
+    if flip_probability >= 1.0:
+        return flipped
+    flip_mask = torch.rand(
+        (images.shape[0], 1, 1, 1),
+        device=images.device,
+    ) < flip_probability
+    return torch.where(flip_mask, flipped, images)
 
 
 def _optimizer_groups(model: torch.nn.Module, weight_decay: float) -> list[dict[str, object]]:
@@ -429,6 +444,10 @@ def main() -> None:
         for _ in range(accumulation):
             batch, train_iterator = _next_batch(train_loader, sampler, train_iterator)
             clean, labels = _move_batch(batch, device, config.data.class_conditional)
+            clean = _augment_training_images(
+                clean,
+                config.data.random_horizontal_flip_prob,
+            )
             micro_samples += clean.shape[0]
             noise = torch.randn_like(clean)
             timesteps = schedule.sample_timesteps(clean.shape[0], device=device)

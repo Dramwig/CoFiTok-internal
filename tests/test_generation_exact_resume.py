@@ -5,12 +5,16 @@ import json
 import subprocess
 import sys
 from collections.abc import Mapping, Sequence
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pytest
 import torch
+
+from cofitok.configs import config_from_dict, load_config
+from scripts.train_generation import _augment_training_images, _validate_config
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,6 +24,7 @@ CONFIG = ROOT / "configs/generation/smoke_random_cpu.json"
 def _run(
     output: Path,
     *extra: str,
+    config: Path = CONFIG,
     environment_overrides: dict[str, str] | None = None,
 ) -> None:
     environment = dict(os.environ)
@@ -30,7 +35,7 @@ def _run(
             sys.executable,
             str(ROOT / "scripts/train_generation.py"),
             "--config",
-            str(CONFIG),
+            str(config),
             "--output-dir",
             str(output),
             *extra,
@@ -62,11 +67,15 @@ def _assert_nested_equal(left: Any, right: Any) -> None:
 
 
 def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> None:
+    config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    config["data"]["random_horizontal_flip_prob"] = 0.5
+    config_path = tmp_path / "smoke_random_cpu_flip.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
     uninterrupted = tmp_path / "uninterrupted"
     resumed = tmp_path / "resumed"
-    _run(uninterrupted)
-    _run(resumed, "--stop-after-steps", "1")
-    _run(resumed, "--resume", "auto")
+    _run(uninterrupted, config=config_path)
+    _run(resumed, "--stop-after-steps", "1", config=config_path)
+    _run(resumed, "--resume", "auto", config=config_path)
 
     uninterrupted_checkpoint = torch.load(
         uninterrupted / "checkpoint_step_00000002.pt",
@@ -100,6 +109,41 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
         for line in (resumed / "train_metrics.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert steps == [1, 2]
+
+
+def test_training_horizontal_flip_probability_boundaries_and_rng_restore() -> None:
+    images = torch.arange(8 * 3 * 2 * 4, dtype=torch.float32).reshape(8, 3, 2, 4)
+
+    assert _augment_training_images(images, 0.0) is images
+    assert torch.equal(_augment_training_images(images, 1.0), images.flip(dims=(-1,)))
+
+    torch.manual_seed(2027)
+    rng_state = torch.get_rng_state()
+    first = _augment_training_images(images, 0.5)
+    torch.set_rng_state(rng_state)
+    restored = _augment_training_images(images, 0.5)
+
+    assert torch.equal(first, restored)
+    changed = (first != images).flatten(1).any(dim=1)
+    assert changed.any()
+    assert (~changed).any()
+
+
+def test_legacy_config_defaults_to_no_random_horizontal_flip() -> None:
+    config = config_from_dict({"data": {"dataset": "random"}})
+    assert config.data.random_horizontal_flip_prob == 0.0
+
+
+@pytest.mark.parametrize("probability", [-0.01, 1.01, float("nan")])
+def test_training_rejects_invalid_horizontal_flip_probability(probability: float) -> None:
+    config = load_config(CONFIG)
+    invalid = replace(
+        config,
+        data=replace(config.data, random_horizontal_flip_prob=probability),
+    )
+
+    with pytest.raises(ValueError, match="random_horizontal_flip_prob"):
+        _validate_config(invalid)
 
 
 @pytest.mark.parametrize(

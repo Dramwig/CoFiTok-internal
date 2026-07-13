@@ -94,6 +94,7 @@ def test_full_generation_configs_keep_matched_runtime_and_checkpoint_cadence() -
     assert cofitok.diffusion == dense.diffusion
     assert cofitok.runtime == dense.runtime
     assert cofitok.optimization == dense.optimization
+    assert cofitok.data.random_horizontal_flip_prob == 0.5
     assert cofitok.runtime.steps == 300_000
     assert cofitok.runtime.checkpoint_interval == 5_000
     assert cofitok.runtime.keep_last_checkpoints == 3
