@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
+import tempfile
 from pathlib import Path, PurePosixPath
 
 
@@ -104,6 +106,27 @@ def find_untracked_target_conflicts(
     }
 
 
+def _write_json_atomic(path: str | Path, report: dict) -> None:
+    destination = Path(path).resolve()
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        dir=destination.parent,
+        prefix=f".{destination.name}.",
+        suffix=".tmp",
+        text=True,
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            json.dump(report, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, destination)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Check only target-added paths for remote untracked conflicts."
@@ -111,12 +134,15 @@ def main() -> None:
     parser.add_argument("--repository", required=True)
     parser.add_argument("--current-commit", required=True)
     parser.add_argument("--target-commit", required=True)
+    parser.add_argument("--output")
     args = parser.parse_args()
     report = find_untracked_target_conflicts(
         args.repository,
         current_commit=args.current_commit,
         target_commit=args.target_commit,
     )
+    if args.output:
+        _write_json_atomic(args.output, report)
     print(json.dumps(report, sort_keys=True))
     if report["conflict_count"]:
         raise SystemExit(CONFLICT_EXIT_CODE)

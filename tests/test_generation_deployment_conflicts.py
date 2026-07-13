@@ -43,9 +43,14 @@ def _repository(tmp_path: Path, target_path: str) -> tuple[Path, str, str]:
     return repository, current, target
 
 
-def _check(repository: Path, current: str, target: str) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [
+def _check(
+    repository: Path,
+    current: str,
+    target: str,
+    *,
+    output: Path | None = None,
+) -> subprocess.CompletedProcess:
+    arguments = [
             sys.executable,
             str(CHECKER),
             "--repository",
@@ -54,7 +59,11 @@ def _check(repository: Path, current: str, target: str) -> subprocess.CompletedP
             current,
             "--target-commit",
             target,
-        ],
+        ]
+    if output is not None:
+        arguments.extend(("--output", str(output)))
+    return subprocess.run(
+        arguments,
         check=False,
         capture_output=True,
         text=True,
@@ -77,6 +86,16 @@ def test_checker_ignores_unrelated_untracked_artifact_trees(tmp_path) -> None:
     assert report["conflicts"] == []
 
 
+def test_checker_atomically_persists_pass_report(tmp_path) -> None:
+    repository, current, target = _repository(tmp_path, "src/new_module.py")
+    output = tmp_path / "reports" / "conflict_scan.json"
+
+    result = _check(repository, current, target, output=output)
+
+    assert result.returncode == 0
+    assert json.loads(output.read_text(encoding="utf-8")) == json.loads(result.stdout)
+
+
 @pytest.mark.parametrize(
     ("target_path", "blocking_path"),
     (
@@ -94,9 +113,11 @@ def test_checker_rejects_exact_and_parent_path_conflicts(
     blocker.parent.mkdir(parents=True, exist_ok=True)
     blocker.write_text("untracked blocker\n", encoding="ascii")
 
-    result = _check(repository, current, target)
+    output = tmp_path / "conflict_scan.json"
+    result = _check(repository, current, target, output=output)
     report = json.loads(result.stdout)
 
     assert result.returncode == 76
     assert report["status"] == "conflict"
     assert report["conflicts"] == [blocking_path]
+    assert json.loads(output.read_text(encoding="utf-8")) == report

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import subprocess
 from pathlib import Path
 from typing import Any, Callable
 
@@ -24,6 +25,21 @@ try:
     from scripts.validate_generation_training_pair import validate_training_pair
 except ModuleNotFoundError:
     from validate_generation_training_pair import validate_training_pair
+
+try:
+    from scripts.write_generation_deployment_receipt import (
+        pytest_junit_summary,
+        validate_conflict_scan,
+        validate_pytest_summary,
+        validate_runbook_syntax,
+    )
+except ModuleNotFoundError:
+    from write_generation_deployment_receipt import (
+        pytest_junit_summary,
+        validate_conflict_scan,
+        validate_pytest_summary,
+        validate_runbook_syntax,
+    )
 
 try:
     from scripts.build_generation_milestone_report import (
@@ -1179,8 +1195,9 @@ def _deployment_transition_evidence(
     *,
     expected_training_revision: str,
     expected_target_revision: str,
+    verification_files: dict[str, dict[str, Any] | None],
 ) -> dict[str, Any]:
-    if receipt.get("schema_version") != 1 or receipt.get("status") != "pass":
+    if receipt.get("schema_version") != 2 or receipt.get("status") != "pass":
         raise ValueError("generation deployment receipt did not pass")
     if receipt.get("expected_training_revision") != expected_training_revision:
         raise ValueError("deployment receipt training revision differs")
@@ -1200,6 +1217,16 @@ def _deployment_transition_evidence(
         or expected_target_revision not in bundle.get("heads", [])
     ):
         raise ValueError("deployment receipt bundle integrity is invalid")
+    bundle_source = verification_files.get("bundle")
+    if bundle_source is None or bundle_source.get("status") != "verified":
+        raise ValueError("deployment bundle source is missing or invalid")
+    if (
+        bundle.get("path") != bundle_source.get("path")
+        or bundle.get("bytes") != bundle_source.get("bytes")
+        or bundle.get("sha256") != bundle_source.get("sha256")
+        or sorted(bundle.get("heads", [])) != bundle_source.get("heads")
+    ):
+        raise ValueError("deployment bundle source binding differs")
     pair = receipt.get("training_pair_validation", {})
     if (
         pair.get("status") != "pass"
@@ -1208,17 +1235,66 @@ def _deployment_transition_evidence(
     ):
         raise ValueError("deployment receipt training-pair binding is invalid")
     verification = receipt.get("verification", {})
-    if verification != {
-        "pytest": "pass",
-        "runbook_syntax": "pass",
-        "untracked_target_conflicts": 0,
-    }:
-        raise ValueError("deployment receipt verification evidence is incomplete")
+    expected_sources = {
+        "pytest": "pytest",
+        "runbook_syntax": "runbook_syntax",
+        "untracked_target_conflicts": "conflict_scan",
+    }
+    verified_sources = {}
+    for receipt_name, source_name in expected_sources.items():
+        binding = verification.get(receipt_name, {})
+        observed = verification_files.get(source_name)
+        if observed is None or observed.get("status") != "verified":
+            raise ValueError(f"deployment {source_name} source is missing or invalid")
+        if (
+            binding.get("path") != observed.get("path")
+            or binding.get("bytes") != observed.get("bytes")
+            or binding.get("sha256") != observed.get("sha256")
+        ):
+            raise ValueError(f"deployment {source_name} source binding differs")
+        verified_sources[source_name] = observed
+
+    conflict_scan = verified_sources["conflict_scan"].get("content", {})
+    validate_conflict_scan(
+        conflict_scan,
+        expected_training_revision=expected_training_revision,
+        target_revision=expected_target_revision,
+    )
+    conflict_binding = verification["untracked_target_conflicts"]
+    if (
+        conflict_binding.get("status") != "pass"
+        or conflict_binding.get("conflict_count") != 0
+        or conflict_binding.get("target_added_path_count")
+        != conflict_scan.get("target_added_path_count")
+    ):
+        raise ValueError("deployment conflict scan receipt summary differs")
+
+    runbook_syntax = verified_sources["runbook_syntax"].get("content", {})
+    checked_count = validate_runbook_syntax(
+        runbook_syntax, target_revision=expected_target_revision
+    )
+    runbook_binding = verification["runbook_syntax"]
+    if (
+        runbook_binding.get("status") != "pass"
+        or runbook_binding.get("checked_count") != checked_count
+    ):
+        raise ValueError("deployment runbook receipt summary differs")
+
+    pytest_summary = verified_sources["pytest"].get("summary", {})
+    validate_pytest_summary(pytest_summary)
+    pytest_binding = verification["pytest"]
+    for key in ("status", "tests", "failures", "errors", "skipped"):
+        if pytest_binding.get(key) != pytest_summary.get(key):
+            raise ValueError("deployment pytest receipt summary differs")
     return {
         "training_revision": expected_training_revision,
         "target_revision": expected_target_revision,
         "bundle_sha256": bundle["sha256"],
         "training_pair_validation_sha256": pair["sha256"],
+        "pytest_sha256": verified_sources["pytest"]["sha256"],
+        "runbook_syntax_sha256": verified_sources["runbook_syntax"]["sha256"],
+        "conflict_scan_sha256": verified_sources["conflict_scan"]["sha256"],
+        "runbook_count": checked_count,
     }
 
 
@@ -1380,6 +1456,7 @@ def build_completion_audit(
     cofitok_10pct_training: dict[str, Any] | None,
     dense_10pct_training: dict[str, Any] | None,
     deployment_receipt: dict[str, Any] | None,
+    deployment_verification_files: dict[str, dict[str, Any] | None],
     storage_preflights: dict[str, dict[str, Any] | None],
     expected_storage_path: str,
     full_training_monitor: dict[str, Any] | None,
@@ -1430,6 +1507,7 @@ def build_completion_audit(
                 deployment_receipt,
                 expected_training_revision=expected_10pct_revision,
                 expected_target_revision=expected_full_revision,
+                verification_files=deployment_verification_files,
             ),
         )
     )
@@ -1704,6 +1782,77 @@ def _read_optional(path: Path) -> dict[str, Any] | None:
         return json.load(handle)
 
 
+def _verify_deployment_json_source(path: Path) -> dict[str, Any] | None:
+    if not path.is_file():
+        return None
+    try:
+        content = _read_optional(path)
+        if not isinstance(content, dict):
+            raise ValueError("deployment verification JSON must contain an object")
+        return {
+            "status": "verified",
+            "path": path.resolve().as_posix(),
+            "bytes": path.stat().st_size,
+            "sha256": file_sha256(path),
+            "content": content,
+        }
+    except (OSError, TypeError, ValueError, json.JSONDecodeError) as error:
+        return {
+            "status": "invalid",
+            "path": path.resolve().as_posix(),
+            "error": str(error),
+        }
+
+
+def _verify_deployment_pytest_source(path: Path) -> dict[str, Any] | None:
+    if not path.is_file():
+        return None
+    try:
+        return {
+            "status": "verified",
+            "path": path.resolve().as_posix(),
+            "bytes": path.stat().st_size,
+            "sha256": file_sha256(path),
+            "summary": pytest_junit_summary(path),
+        }
+    except (OSError, TypeError, ValueError) as error:
+        return {
+            "status": "invalid",
+            "path": path.resolve().as_posix(),
+            "error": str(error),
+        }
+
+
+def _verify_deployment_bundle_source(path: Path) -> dict[str, Any] | None:
+    if not path.is_file():
+        return None
+    try:
+        result = subprocess.run(
+            ["git", "bundle", "list-heads", path.as_posix()],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        heads = sorted(
+            {line.split()[0] for line in result.stdout.splitlines() if line.split()}
+        )
+        if not heads:
+            raise ValueError("deployment bundle has no advertised heads")
+        return {
+            "status": "verified",
+            "path": path.resolve().as_posix(),
+            "bytes": path.stat().st_size,
+            "sha256": file_sha256(path),
+            "heads": heads,
+        }
+    except (OSError, subprocess.CalledProcessError, ValueError) as error:
+        return {
+            "status": "invalid",
+            "path": path.resolve().as_posix(),
+            "error": str(error),
+        }
+
+
 def _verify_milestone_sources_optional(
     report: dict[str, Any] | None,
 ) -> dict[str, Any] | None:
@@ -1799,15 +1948,32 @@ def main() -> None:
     }
     comparison_path = full_root / "comparison/large_scale_generation_comparison.json"
     comparison = _read_optional(comparison_path)
+    deployment_receipt = _read_optional(
+        output_root / "generation_upgrade_deployment_receipt.json"
+    )
 
     audit = build_completion_audit(
         expected_10pct_revision=args.expected_10pct_revision,
         expected_full_revision=args.expected_full_revision,
         cofitok_10pct_training=_read_optional(cofitok_10 / "training_report.json"),
         dense_10pct_training=_read_optional(dense_10 / "training_report.json"),
-        deployment_receipt=_read_optional(
-            output_root / "generation_upgrade_deployment_receipt.json"
-        ),
+        deployment_receipt=deployment_receipt,
+        deployment_verification_files={
+            "bundle": _verify_deployment_bundle_source(
+                output_root
+                / "deployment"
+                / f"cofitok-generation-upgrade-{args.expected_full_revision}.bundle"
+            ),
+            "conflict_scan": _verify_deployment_json_source(
+                output_root / "generation_upgrade_conflict_scan.json"
+            ),
+            "runbook_syntax": _verify_deployment_json_source(
+                output_root / "generation_upgrade_runbook_syntax.json"
+            ),
+            "pytest": _verify_deployment_pytest_source(
+                output_root / "generation_upgrade_pytest.xml"
+            ),
+        },
         storage_preflights={
             "10pct_posteval": _read_optional(ten_root / "storage_preflight.json"),
             "full_training": _read_optional(

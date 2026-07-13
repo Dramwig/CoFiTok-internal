@@ -19,6 +19,11 @@ COFITOK_REPORT="$OUTPUT_ROOT/imagenet256_10pct_cofitok_k8_50k_2026-07-12/trainin
 DENSE_REPORT="$OUTPUT_ROOT/imagenet256_10pct_dense_50k_2026-07-12/training_report.json"
 PAIR_VALIDATION="$OUTPUT_ROOT/generation_10pct_pair_validation.json"
 DEPLOYMENT_RECEIPT="$OUTPUT_ROOT/generation_upgrade_deployment_receipt.json"
+CONFLICT_REPORT="$OUTPUT_ROOT/generation_upgrade_conflict_scan.json"
+RUNBOOK_SYNTAX_REPORT="$OUTPUT_ROOT/generation_upgrade_runbook_syntax.json"
+PYTEST_REPORT="$OUTPUT_ROOT/generation_upgrade_pytest.xml"
+DEPLOYMENT_EVIDENCE_ROOT="$OUTPUT_ROOT/deployment"
+ARCHIVED_BUNDLE="$DEPLOYMENT_EVIDENCE_ROOT/cofitok-generation-upgrade-${TARGET_COMMIT}.bundle"
 
 cd "$PROJECT"
 source /root/miniconda3/etc/profile.d/conda.sh
@@ -71,7 +76,7 @@ else
   validator_pythonpath="src"
 fi
 
-mkdir -p "$OUTPUT_ROOT"
+mkdir -p "$OUTPUT_ROOT" "$DEPLOYMENT_EVIDENCE_ROOT"
 pair_validation_temporary="${PAIR_VALIDATION}.tmp.$$"
 if PYTHONPATH="$validator_pythonpath" python "$validator" \
     --cofitok-training "$COFITOK_REPORT" \
@@ -109,27 +114,42 @@ if [[ "$current_commit" == "$EXPECTED_COMMIT" ]]; then
   python "$conflict_checker" \
     --repository "$PROJECT" \
     --current-commit "$current_commit" \
-    --target-commit "$fetched_commit"
+    --target-commit "$fetched_commit" \
+    --output "$CONFLICT_REPORT"
   git merge --ff-only FETCH_HEAD
   if [[ "$(git rev-parse HEAD)" != "$TARGET_COMMIT" ]]; then
     printf 'remote fast-forward did not reach target commit\n' >&2
     exit 71
   fi
+elif [[ ! -f "$CONFLICT_REPORT" ]]; then
+  printf 'target revision is active but the original conflict report is missing: %s\n' \
+    "$CONFLICT_REPORT" >&2
+  exit 77
 fi
 
 export PYTHONPATH=src
-python -m pytest -q
-bash -n artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh
-bash -n artifacts/runbooks/generation_full_milestone_eval.sh
-bash -n artifacts/runbooks/generation_full_matched_300k_after_gate.sh
-bash -n artifacts/runbooks/generation_full_posteval_50k.sh
-bash -n artifacts/runbooks/generation_export_inference_artifacts.sh
-bash -n "$PIPELINE"
-bash -n "$SUPERVISOR"
+pytest_temporary="${PYTEST_REPORT}.tmp.$$"
+if python -m pytest -q --junitxml "$pytest_temporary"; then
+  mv "$pytest_temporary" "$PYTEST_REPORT"
+else
+  pytest_exit_code=$?
+  rm -f "$pytest_temporary"
+  exit "$pytest_exit_code"
+fi
+python scripts/check_generation_runbook_syntax.py \
+  --project-root "$PROJECT" --output "$RUNBOOK_SYNTAX_REPORT"
+
+bundle_temporary="${ARCHIVED_BUNDLE}.tmp.$$"
+cp -- "$BUNDLE" "$bundle_temporary"
+mv "$bundle_temporary" "$ARCHIVED_BUNDLE"
+git bundle verify "$ARCHIVED_BUNDLE"
 
 python scripts/write_generation_deployment_receipt.py \
-  --output "$DEPLOYMENT_RECEIPT" --bundle "$BUNDLE" \
+  --output "$DEPLOYMENT_RECEIPT" --bundle "$ARCHIVED_BUNDLE" \
   --pair-validation "$PAIR_VALIDATION" \
+  --conflict-scan "$CONFLICT_REPORT" \
+  --runbook-syntax "$RUNBOOK_SYNTAX_REPORT" \
+  --pytest-report "$PYTEST_REPORT" \
   --expected-training-revision "$EXPECTED_COMMIT" \
   --target-revision "$TARGET_COMMIT"
 

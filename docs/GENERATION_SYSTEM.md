@@ -273,16 +273,25 @@ untracked path that would become tracked by the target revision. The collision
 guard derives only paths added between pinned and target revisions, queries
 untracked state with those bounded pathspecs, and checks untracked file/symlink
 parent blockers; historical artifact trees are never enumerated wholesale.
-Remote tests and shell syntax checks must pass, then an atomic receipt binds the bundle
-SHA256, validated 10% pair, pinned source revision, exact target revision, and
+Remote tests and shell syntax checks must pass, then an atomic schema-v2 receipt
+binds the validated 10% pair, pinned source revision, exact target revision, and
 clean tracked state before it launches
 `artifacts/runbooks/generation_complete_pipeline_after_10pct.sh`. That pipeline
 uses an exclusive lock and atomic stage status, runs the 10K promotion gate,
 the alternating full 300K queue, the formal 50K-sample evaluation, and both
 gate decisions in order. A held gate or interrupted stage is recorded as a
 failure rather than reported as generation readiness.
-The final completion audit requires the deployment receipt, so changing remote
-HEAD alone cannot prove a controlled revision transition.
+The transition bundle is atomically archived under
+`checkpoints/generation/deployment/` instead of relying on `/tmp`. The receipt
+binds its bytes, SHA256, and advertised target head. It also binds three durable
+source reports: the bounded pre-merge conflict JSON, a JUnit XML from the full
+remote pytest suite, and a JSON report that enumerates every target-tracked
+shell runbook with `git ls-files` and checks each with `bash -n`. The final
+completion audit reopens and rehashes all four source files, revalidates their
+content, and rejects a changed byte, omitted runbook, summary mismatch, or
+missing archived bundle. Changing remote HEAD or editing the receipt alone
+therefore cannot prove a controlled revision transition. See
+`docs/records/2026-07-13_generation_deployment_evidence_provenance.md`.
 The local bundle is prerequisite-aware: it advertises only the upgrade HEAD
 and excludes history reachable from the pinned training commit. The local
 deployer verifies the single advertised head before transfer, while the remote

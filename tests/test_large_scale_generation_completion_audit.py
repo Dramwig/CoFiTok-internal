@@ -18,6 +18,7 @@ from cofitok.generation_authorization import build_generation_gate_binding
 from cofitok.training.authorization import build_generation_training_authorization
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
+    _verify_deployment_bundle_source,
     build_completion_audit,
 )
 from scripts.build_generation_milestone_report import expected_source_report_suffixes
@@ -1045,7 +1046,126 @@ def _inference_artifact_files() -> dict:
     return output
 
 
+def _deployment_transition() -> tuple[dict, dict]:
+    bundle_path = f"/outputs/deployment/cofitok-generation-upgrade-{FULL_REVISION}.bundle"
+    conflict_path = "/outputs/generation_upgrade_conflict_scan.json"
+    runbook_path = "/outputs/generation_upgrade_runbook_syntax.json"
+    pytest_path = "/outputs/generation_upgrade_pytest.xml"
+    conflict_scan = {
+        "schema_version": 1,
+        "status": "pass",
+        "current_commit": TEN_REVISION,
+        "target_commit": FULL_REVISION,
+        "target_added_path_count": 145,
+        "conflict_count": 0,
+        "conflicts": [],
+    }
+    runbook_syntax = {
+        "schema_version": 1,
+        "role": "generation_runbook_syntax_check",
+        "status": "pass",
+        "enumeration": "git_ls_files",
+        "discovered_count": 2,
+        "checked_count": 2,
+        "failed_count": 0,
+        "runbooks": [
+            "artifacts/runbooks/a.sh",
+            "artifacts/runbooks/b.sh",
+        ],
+        "failures": [],
+        "git": {
+            "revision": FULL_REVISION,
+            "branch": "scale/generative-system",
+            "tracked_dirty": False,
+        },
+    }
+    pytest_summary = {
+        "status": "pass",
+        "tests": 530,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+    }
+    receipt = {
+        "schema_version": 2,
+        "status": "pass",
+        "expected_training_revision": TEN_REVISION,
+        "target_revision": FULL_REVISION,
+        "git": {
+            "revision": FULL_REVISION,
+            "branch": "scale/generative-system",
+            "tracked_dirty": False,
+        },
+        "bundle": {
+            "path": bundle_path,
+            "bytes": 1234,
+            "sha256": "e" * 64,
+            "heads": [FULL_REVISION],
+        },
+        "training_pair_validation": {
+            "status": "pass",
+            "expected_revision": TEN_REVISION,
+            "sha256": "f" * 64,
+        },
+        "verification": {
+            "pytest": {
+                "path": pytest_path,
+                "bytes": 300,
+                "sha256": "3" * 64,
+                **pytest_summary,
+            },
+            "runbook_syntax": {
+                "path": runbook_path,
+                "bytes": 200,
+                "sha256": "2" * 64,
+                "status": "pass",
+                "checked_count": 2,
+            },
+            "untracked_target_conflicts": {
+                "path": conflict_path,
+                "bytes": 100,
+                "sha256": "1" * 64,
+                "status": "pass",
+                "target_added_path_count": 145,
+                "conflict_count": 0,
+            },
+        },
+    }
+    sources = {
+        "bundle": {
+            "status": "verified",
+            "path": bundle_path,
+            "bytes": 1234,
+            "sha256": "e" * 64,
+            "heads": [FULL_REVISION],
+        },
+        "conflict_scan": {
+            "status": "verified",
+            "path": conflict_path,
+            "bytes": 100,
+            "sha256": "1" * 64,
+            "content": conflict_scan,
+        },
+        "runbook_syntax": {
+            "status": "verified",
+            "path": runbook_path,
+            "bytes": 200,
+            "sha256": "2" * 64,
+            "content": runbook_syntax,
+        },
+        "pytest": {
+            "status": "verified",
+            "path": pytest_path,
+            "bytes": 300,
+            "sha256": "3" * 64,
+            "summary": pytest_summary,
+        },
+    }
+    return receipt, sources
+
+
 def _kwargs() -> dict:
+    deployment_receipt, deployment_verification_files = _deployment_transition()
     return {
         "expected_10pct_revision": TEN_REVISION,
         "expected_full_revision": FULL_REVISION,
@@ -1063,32 +1183,8 @@ def _kwargs() -> dict:
             parameters=100_000,
             checkpoint_sha="d" * 64,
         ),
-        "deployment_receipt": {
-            "schema_version": 1,
-            "status": "pass",
-            "expected_training_revision": TEN_REVISION,
-            "target_revision": FULL_REVISION,
-            "git": {
-                "revision": FULL_REVISION,
-                "branch": "scale/generative-system",
-                "tracked_dirty": False,
-            },
-            "bundle": {
-                "bytes": 1234,
-                "sha256": "e" * 64,
-                "heads": [FULL_REVISION],
-            },
-            "training_pair_validation": {
-                "status": "pass",
-                "expected_revision": TEN_REVISION,
-                "sha256": "f" * 64,
-            },
-            "verification": {
-                "pytest": "pass",
-                "runbook_syntax": "pass",
-                "untracked_target_conflicts": 0,
-            },
-        },
+        "deployment_receipt": deployment_receipt,
+        "deployment_verification_files": deployment_verification_files,
         "storage_preflights": _storage_preflights(),
         "expected_storage_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
         "full_training_monitor": _full_training_monitor(),
@@ -1147,6 +1243,92 @@ def test_completion_audit_requires_controlled_revision_transition() -> None:
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == ["controlled_revision_transition"]
+
+
+def test_completion_audit_rehashes_deployment_verification_sources() -> None:
+    kwargs = _kwargs()
+    kwargs["deployment_verification_files"]["pytest"]["sha256"] = "0" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["controlled_revision_transition"]
+
+
+def test_completion_audit_rehashes_archived_deployment_bundle() -> None:
+    kwargs = _kwargs()
+    kwargs["deployment_verification_files"]["bundle"]["sha256"] = "0" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["controlled_revision_transition"]
+
+
+def test_completion_audit_revalidates_conflict_source_content() -> None:
+    kwargs = _kwargs()
+    conflict = kwargs["deployment_verification_files"]["conflict_scan"]["content"]
+    conflict["status"] = "conflict"
+    conflict["conflict_count"] = 1
+    conflict["conflicts"] = ["src/cofitok/new.py"]
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["controlled_revision_transition"]
+
+
+def test_completion_audit_verifies_archived_bundle_bytes_and_head(tmp_path) -> None:
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    subprocess.run(
+        ["git", "init", "-b", "scale/generative-system"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.email", "cofitok@example.invalid"],
+        cwd=repository,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "CoFiTok Test"],
+        cwd=repository,
+        check=True,
+    )
+    (repository / "tracked.txt").write_text("target\n", encoding="ascii")
+    subprocess.run(["git", "add", "tracked.txt"], cwd=repository, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "target"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+    )
+    revision = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    bundle = tmp_path / "deployment.bundle"
+    subprocess.run(
+        ["git", "bundle", "create", str(bundle), "HEAD"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+    )
+
+    verified = _verify_deployment_bundle_source(bundle)
+
+    assert verified["status"] == "verified"
+    assert verified["heads"] == [revision]
+    bundle.write_bytes(bundle.read_bytes()[:-1])
+    tampered = _verify_deployment_bundle_source(bundle)
+    assert tampered["status"] == "verified"
+    assert tampered["sha256"] != verified["sha256"]
+    assert tampered["bytes"] == verified["bytes"] - 1
 
 
 def test_completion_audit_reports_missing_work_as_in_progress() -> None:

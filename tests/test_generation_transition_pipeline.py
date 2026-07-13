@@ -117,20 +117,36 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert 'python "$conflict_checker"' in deployer
     assert '--current-commit "$current_commit"' in deployer
     assert '--target-commit "$fetched_commit"' in deployer
+    assert '--output "$CONFLICT_REPORT"' in deployer
     assert deployer.index('python "$conflict_checker"') < deployer.index(
         "git merge --ff-only FETCH_HEAD"
     )
     assert "git merge --ff-only FETCH_HEAD" in deployer
-    assert "python -m pytest -q" in deployer
+    assert "python -m pytest -q --junitxml" in deployer
+    assert "generation_upgrade_pytest.xml" in deployer
+    assert "check_generation_runbook_syntax.py" in deployer
+    assert '--output "$RUNBOOK_SYNTAX_REPORT"' in deployer
+    assert "generation_upgrade_runbook_syntax.json" in deployer
+    assert "generation_upgrade_conflict_scan.json" in deployer
+    assert "DEPLOYMENT_EVIDENCE_ROOT" in deployer
+    assert "ARCHIVED_BUNDLE" in deployer
+    assert 'cp -- "$BUNDLE" "$bundle_temporary"' in deployer
+    assert 'git bundle verify "$ARCHIVED_BUNDLE"' in deployer
     assert "kill -0 \"$previous_pid\"" in deployer
     assert "exit 0" in deployer
     assert "generation_completion_supervisor.sh" in deployer
-    assert "bash -n \"$SUPERVISOR\"" in deployer
     assert "nohup bash \"$SUPERVISOR\"" in deployer
     assert "sleep 2" in deployer
     assert "write_generation_deployment_receipt.py" in deployer
     assert "generation_upgrade_deployment_receipt.json" in deployer
+    assert '--conflict-scan "$CONFLICT_REPORT"' in deployer
+    assert '--runbook-syntax "$RUNBOOK_SYNTAX_REPORT"' in deployer
+    assert '--pytest-report "$PYTEST_REPORT"' in deployer
+    assert '--bundle "$ARCHIVED_BUNDLE"' in deployer
     assert deployer.index("python -m pytest -q") < deployer.index(
+        "check_generation_runbook_syntax.py"
+    )
+    assert deployer.index("check_generation_runbook_syntax.py") < deployer.index(
         "write_generation_deployment_receipt.py"
     )
 

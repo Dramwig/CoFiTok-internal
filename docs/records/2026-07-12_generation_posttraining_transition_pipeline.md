@@ -39,19 +39,30 @@ The remote helper refuses deployment unless:
   revisions plus parent file/symlink blockers, then reports all conflicts without
   moving HEAD. This bounded scan does not enumerate unrelated historical outputs.
 
-After the fast-forward, the helper runs the full test suite and shell syntax
-checks before launching one background completion pipeline. If deployment was
+After the fast-forward, the helper runs the full test suite and syntax-checks
+every target-tracked shell runbook before launching one background completion
+pipeline. If deployment was
 already fast-forwarded but validation or launch stopped, rerunning the same
 command resumes from the target revision. A live PID file makes a repeated
 command return successfully without launching a duplicate.
 
 After tests and shell checks pass, the helper atomically writes
-`generation_upgrade_deployment_receipt.json` under the generation output root.
-The receipt binds the pinned training revision, deployed target revision,
-upgrade bundle bytes/SHA256, training-pair validation SHA256, clean tracked Git
-state, and successful pytest/runbook verification. The final completion audit
-requires this receipt, so a merely changed remote HEAD is not accepted as
-evidence of a controlled transition.
+`generation_upgrade_deployment_receipt.json` schema v2 under the generation
+output root. The verified upgrade bundle is first atomically copied from `/tmp`
+to `checkpoints/generation/deployment/`, where it remains available after a
+reboot. The receipt binds the pinned training revision, deployed target
+revision, archived bundle bytes/SHA256/advertised head, training-pair validation
+SHA256, clean tracked Git state, and three source artifacts:
+
+- `generation_upgrade_conflict_scan.json`, written before fast-forward;
+- `generation_upgrade_pytest.xml`, the full remote JUnit result;
+- `generation_upgrade_runbook_syntax.json`, whose `git ls-files` enumeration
+  proves that every target-tracked shell runbook was checked.
+
+The final completion audit reopens and rehashes the archived bundle and all
+three reports, reruns their semantic validators, and compares each summary with
+the receipt. A changed byte, missing report, partial runbook list, or merely
+changed remote HEAD is not accepted as a controlled transition.
 
 ## Completion pipeline
 
