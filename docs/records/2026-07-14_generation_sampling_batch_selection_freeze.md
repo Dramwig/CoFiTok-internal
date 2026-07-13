@@ -48,4 +48,15 @@ candidate.
 Focused tests cover empty-state selection, read-only partial-sample reuse,
 missing-lock failure, candidate/checkpoint/protocol drift, cross-candidate
 environment drift, terminal lock tampering, and non-selected preflight drift.
-Full local and isolated Linux suite counts are recorded after final validation.
+
+- implementation commit: `459250b0aed0137353263bac0eef4734bf0fe036`;
+- complete local suite: `558/558` passed;
+- complete isolated Linux suite in the real sibling-`paper/` layout: `558/558`
+  passed;
+- tracked Linux runbook syntax audit: `40/40` passed;
+- formal remote target-added-path scan: `150` paths, `0` conflicts;
+- pinned `781a01444fddbf0d48a427ba58bdeed50167b5be` to implementation
+  bundle: `427,363` bytes, SHA256
+  `b9e21bc005dad4f8271e8bcb786222f99c1003e1fd72d0195cf2731336d48bfe`;
+- formal remote HEAD remained pinned at `781a01444fddbf0d48a427ba58bdeed50167b5be`
+  with a clean tracked worktree before and after verification.
