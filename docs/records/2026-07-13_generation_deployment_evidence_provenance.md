@@ -50,3 +50,21 @@ complete local suite passes `541/541`; a real local CLI run also proved that a
 missing Bash runtime is captured as a structured 40-path failure report instead
 of crashing the evidence writer. Linux is the authoritative shell-syntax
 environment for deployment.
+
+The implementation commit is
+`91095b907862b5fe72b7dff2196e2b76b046f3cd`. Its prerequisite-aware bundle
+from pinned `781a01444fddbf0d48a427ba58bdeed50167b5be` is `425,496` bytes with
+SHA256 `3471000b2fc5954d6bc54da3d27fad5552416c873886211d2be945ac4795f7c7`;
+it advertises only the implementation commit and declares the pinned revision
+as its prerequisite.
+
+The server verified and fetched the bundle objects without moving the formal
+worktree. An initial `/tmp/CoFiTok-internal` rehearsal correctly exposed four
+paper-layout test failures because those tests require the real sibling
+`paper/` directory. Repeating in an isolated `CoFiTok-internal + sibling paper`
+layout passed the complete Linux suite `541/541`. The real syntax auditor found
+`40` target-tracked shell runbooks, checked all `40`, and reported zero
+failures. The bounded scanner then checked the formal remote's large untracked
+tree against the implementation target: `148` target-added paths, zero
+conflicts, and `0.054` seconds elapsed. The formal worktree remained at pinned
+`781a01444fddbf0d48a427ba58bdeed50167b5be` with clean tracked status.
