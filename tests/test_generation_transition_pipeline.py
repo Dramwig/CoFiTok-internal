@@ -214,4 +214,6 @@ def test_legacy_pair_deployment_waiter_is_bounded_locked_and_fail_closed() -> No
     assert "completed_steps" in waiter
     assert 'sleep "$POLL_SECONDS" 7>&-' in waiter
     assert 'bash "$DEPLOY_HELPER" "$BUNDLE" "$EXPECTED_COMMIT" "$TARGET_COMMIT"' in waiter
+    assert "verified deployment helper failed with exit code" in waiter
+    assert "deployment_exit_code=$?" in waiter
     assert waiter.index("pair_complete") < waiter.rindex('bash "$DEPLOY_HELPER"')

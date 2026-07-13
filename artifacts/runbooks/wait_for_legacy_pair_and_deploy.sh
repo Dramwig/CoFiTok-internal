@@ -144,10 +144,18 @@ while true; do
       write_status waiting "reports complete; waiting for legacy processes to exit" "$elapsed"
     else
       write_status deploying "legacy pair complete; invoking verified deployment" "$elapsed"
-      bash "$DEPLOY_HELPER" "$BUNDLE" "$EXPECTED_COMMIT" "$TARGET_COMMIT"
-      now="$(date +%s)"
-      write_status pass "deployment completed and supervisor launched" "$(( now - started ))"
-      exit 0
+      if bash "$DEPLOY_HELPER" "$BUNDLE" "$EXPECTED_COMMIT" "$TARGET_COMMIT"; then
+        now="$(date +%s)"
+        write_status pass "deployment completed and supervisor launched" "$(( now - started ))"
+        exit 0
+      else
+        deployment_exit_code=$?
+        now="$(date +%s)"
+        write_status failed \
+          "verified deployment helper failed with exit code ${deployment_exit_code}" \
+          "$(( now - started ))"
+        exit "$deployment_exit_code"
+      fi
     fi
   else
     write_status waiting "waiting for both legacy 50K training reports" "$elapsed"

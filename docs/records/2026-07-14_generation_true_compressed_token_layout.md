@@ -92,7 +92,9 @@ Monitor failure, timeout, revision drift, dirty tracked files, incomplete report
 or a mismatched bundle stops deployment. It does not touch the formal worktree
 while the legacy pair is active. The polling sleep closes the inherited lock
 descriptor, so an interrupted waiter cannot leave an orphaned sleep holding the
-deployment lock and blocking immediate recovery.
+deployment lock and blocking immediate recovery. A nonzero deployment-helper
+exit is captured explicitly and atomically changes waiter state from `deploying`
+to `failed` with the original exit code; it cannot leave a stale deploying state.
 
 Machine-readable evidence:
 
