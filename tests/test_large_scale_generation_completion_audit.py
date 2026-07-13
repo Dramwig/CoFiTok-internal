@@ -23,12 +23,13 @@ from cofitok.generation import (
 )
 from cofitok.generation_gate import REQUIRED_GENERATION_GATES
 from cofitok.generation_authorization import build_generation_gate_binding
-from cofitok.image_integrity import sample_set_sha256
+from cofitok.image_integrity import image_tree_sha256, sample_set_sha256
 from cofitok.reporting import file_sha256
 from cofitok.training.authorization import build_generation_training_authorization
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
     _verify_deployment_bundle_source,
+    _verify_formal_real_set_files,
     _verify_formal_sample_files,
     _verify_inference_smoke_outputs,
     build_completion_audit,
@@ -647,6 +648,16 @@ def _formal_sample_files() -> dict:
             "sampling_progress_sha256": "3" * 64,
         }
     return output
+
+
+def _formal_real_set_files() -> dict:
+    return {
+        "status": "verified",
+        "real_dir": "/datasets/imagenet_256/validation",
+        "image_count": 50_000,
+        "digest_schema": "cofitok_image_tree_sha256_v1",
+        "real_set_sha256": REAL_SET_SHA,
+    }
 
 
 def _official_related() -> dict:
@@ -1472,6 +1483,7 @@ def _kwargs() -> dict:
         "cofitok_generation": _generation("a"),
         "dense_generation": _generation("b"),
         "formal_sample_files": _formal_sample_files(),
+        "formal_real_set_files": _formal_real_set_files(),
         "final_gate": final_gate,
         "final_gate_source_verification": _gate_source_verification(final_gate),
         "comparison": _comparison(),
@@ -1752,6 +1764,20 @@ def test_completion_audit_rejects_missing_or_tampered_formal_sample_files() -> N
         "status": "invalid",
         "generated_dir": kwargs["cofitok_generation"]["paths"]["generated_dir"],
         "error": "formal sample-set SHA256 differs from metrics provenance",
+    }
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["formal_50k_generation"]
+
+
+def test_completion_audit_rejects_tampered_formal_real_set_files() -> None:
+    kwargs = _kwargs()
+    kwargs["formal_real_set_files"] = {
+        "status": "invalid",
+        "real_dir": kwargs["cofitok_generation"]["paths"]["real_dir"],
+        "error": "formal real-set report differs from physical image tree",
     }
 
     report = build_completion_audit(**kwargs)
@@ -2346,6 +2372,71 @@ def test_formal_sample_file_verifier_rejects_missing_numbered_png(tmp_path) -> N
     assert verified is not None
     assert verified["status"] == "invalid"
     assert "numbered PNG set differs" in verified["error"]
+
+
+def _write_formal_real_set_fixture(tmp_path: Path) -> tuple[dict[str, dict], Path]:
+    real_dir = tmp_path / "imagenet_val"
+    for class_index in range(2):
+        class_dir = real_dir / f"class_{class_index:04d}"
+        class_dir.mkdir(parents=True)
+        Image.new("RGB", (8, 8), (class_index * 50, 10, 20)).save(
+            class_dir / f"image_{class_index:04d}.jpg"
+        )
+    images = sorted(real_dir.rglob("*.jpg"))
+    real_sha = image_tree_sha256(images, root=real_dir)
+    reports = {}
+    for method in ("cofitok", "dense_identity"):
+        reports[method] = {
+            "paths": {"real_dir": real_dir.resolve().as_posix()},
+            "counts": {"real_image_count": 2},
+            "real_set": {
+                "digest_schema": "cofitok_image_tree_sha256_v1",
+                "sha256": real_sha,
+                "root": real_dir.resolve().as_posix(),
+                "image_count": 2,
+            },
+        }
+    return reports, real_dir
+
+
+def test_formal_real_set_verifier_rehashes_physical_tree(tmp_path) -> None:
+    reports, real_dir = _write_formal_real_set_fixture(tmp_path)
+
+    verified = _verify_formal_real_set_files(
+        reports,
+        expected_real_dir=real_dir,
+        expected_count=2,
+    )
+
+    assert verified is not None
+    assert verified["status"] == "verified"
+    assert verified["real_set_sha256"] == reports["cofitok"]["real_set"]["sha256"]
+    Image.new("RGB", (8, 8), (255, 0, 0)).save(
+        real_dir / "class_0000/image_0000.jpg"
+    )
+    tampered = _verify_formal_real_set_files(
+        reports,
+        expected_real_dir=real_dir,
+        expected_count=2,
+    )
+    assert tampered is not None
+    assert tampered["status"] == "invalid"
+    assert "physical image tree" in tampered["error"]
+
+
+def test_formal_real_set_verifier_rejects_unsupported_files(tmp_path) -> None:
+    reports, real_dir = _write_formal_real_set_fixture(tmp_path)
+    (real_dir / "notes.txt").write_text("unexpected", encoding="utf-8")
+
+    verified = _verify_formal_real_set_files(
+        reports,
+        expected_real_dir=real_dir,
+        expected_count=2,
+    )
+
+    assert verified is not None
+    assert verified["status"] == "invalid"
+    assert "unsupported file" in verified["error"]
 
 
 def test_inference_smoke_file_verifier_rehashes_and_decodes_pngs(tmp_path) -> None:

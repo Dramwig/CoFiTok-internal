@@ -22,7 +22,11 @@ from cofitok.generation_authorization import validate_generation_gate_binding
 from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.generation_gate_sources import verify_generation_gate_source_reports
-from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA, sample_set_sha256
+from cofitok.image_integrity import (
+    IMAGE_TREE_DIGEST_SCHEMA,
+    image_tree_sha256,
+    sample_set_sha256,
+)
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
@@ -83,6 +87,10 @@ PINNED_10PCT_REVISION = "781a01444fddbf0d48a427ba58bdeed50167b5be"
 MILESTONE_STEPS = (50_000, 100_000, 200_000, 300_000)
 GIB = 1024**3
 KIB = 1024
+FORMAL_REAL_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
+FORMAL_IMAGENET256_REAL_DIR = Path(
+    "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val"
+)
 
 
 def _check(
@@ -624,13 +632,113 @@ def _verify_formal_sample_files(
     }
 
 
+def _verify_formal_real_set_files(
+    reports: dict[str, dict[str, Any] | None],
+    *,
+    expected_real_dir: str | Path,
+    expected_count: int = 50_000,
+) -> dict[str, Any] | None:
+    if any(report is None for report in reports.values()):
+        return None
+    declared_real_dir = Path(expected_real_dir)
+    real_dir = declared_real_dir.resolve()
+
+    def collect_image_tree() -> tuple[list[Path], tuple[str, ...]]:
+        entries = list(real_dir.rglob("*"))
+        symlinks = [entry for entry in entries if entry.is_symlink()]
+        if symlinks:
+            raise ValueError(f"formal real set contains a symlink: {symlinks[0]}")
+        non_files = [
+            entry for entry in entries if not entry.is_dir() and not entry.is_file()
+        ]
+        if non_files:
+            raise ValueError(f"formal real set contains a non-file entry: {non_files[0]}")
+        unsupported = [
+            entry
+            for entry in entries
+            if entry.is_file()
+            and entry.suffix.lower() not in FORMAL_REAL_IMAGE_EXTENSIONS
+        ]
+        if unsupported:
+            raise ValueError(
+                f"formal real set contains an unsupported file: {unsupported[0]}"
+            )
+        images = sorted(
+            (
+                entry
+                for entry in entries
+                if entry.is_file()
+                and entry.suffix.lower() in FORMAL_REAL_IMAGE_EXTENSIONS
+            ),
+            key=lambda path: path.relative_to(real_dir).as_posix(),
+        )
+        relative_paths = tuple(
+            path.relative_to(real_dir).as_posix() for path in images
+        )
+        return images, relative_paths
+
+    try:
+        if expected_count < 1:
+            raise ValueError("formal real-set image count must be positive")
+        if declared_real_dir.is_symlink() or not real_dir.is_dir():
+            raise ValueError(f"formal real-set directory is invalid: {real_dir}")
+        images, relative_paths = collect_image_tree()
+        if len(images) != expected_count:
+            raise ValueError(
+                f"formal real-set image count is {len(images)}, expected {expected_count}"
+            )
+        actual_sha = image_tree_sha256(images, root=real_dir)
+        _, relative_paths_after = collect_image_tree()
+        if relative_paths_after != relative_paths:
+            raise RuntimeError("formal real-set membership changed while hashing")
+        for method, report in reports.items():
+            if report is None:
+                raise ValueError(f"{method} formal real-set report is missing")
+            reported_real_set = report.get("real_set", {})
+            if (
+                Path(str(report.get("paths", {}).get("real_dir", ""))).resolve()
+                != real_dir
+                or Path(str(reported_real_set.get("root", ""))).resolve()
+                != real_dir
+                or reported_real_set.get("root") != real_dir.as_posix()
+                or reported_real_set.get("digest_schema")
+                != IMAGE_TREE_DIGEST_SCHEMA
+                or int(reported_real_set.get("image_count", -1)) != expected_count
+                or int(report.get("counts", {}).get("real_image_count", -1))
+                != expected_count
+                or reported_real_set.get("sha256") != actual_sha
+            ):
+                raise ValueError(
+                    f"{method} formal real-set report differs from physical image tree"
+                )
+    except (OSError, RuntimeError, TypeError, ValueError) as error:
+        return {
+            "status": "invalid",
+            "real_dir": real_dir.as_posix(),
+            "error": str(error),
+        }
+    return {
+        "status": "verified",
+        "real_dir": real_dir.as_posix(),
+        "image_count": expected_count,
+        "digest_schema": IMAGE_TREE_DIGEST_SCHEMA,
+        "real_set_sha256": actual_sha,
+    }
+
+
 def _generation_evidence(
     reports: dict[str, dict[str, Any]],
     training_reports: dict[str, dict[str, Any]],
     sample_files: dict[str, dict[str, Any]],
+    real_set_files: dict[str, Any],
     *,
     expected_revision: str,
 ) -> dict[str, Any]:
+    if real_set_files.get("status") != "verified":
+        raise ValueError(
+            "formal real-set files are invalid: "
+            f"{real_set_files.get('error', 'verification failed')}"
+        )
     evidence = {}
     sampling_environment_shas = set()
     evaluator_environment_shas = set()
@@ -667,6 +775,10 @@ def _generation_evidence(
             or real_count != 50_000
             or real_set.get("root") != real_root
             or not real_cache_name.endswith(f"__cofitok_{real_set_sha[:16]}")
+            or real_set_files.get("digest_schema") != IMAGE_TREE_DIGEST_SCHEMA
+            or real_set_files.get("real_set_sha256") != real_set_sha
+            or real_set_files.get("real_dir") != real_root
+            or int(real_set_files.get("image_count", -1)) != real_count
         ):
             raise ValueError(f"{method} formal real-set provenance is invalid")
         real_set_identities.add(
@@ -758,6 +870,12 @@ def _generation_evidence(
             "runtime_environment_sha256": sampling_environment_sha,
             "evaluator_runtime_environment_sha256": evaluator_environment_sha,
             "real_set_sha256": real_set_sha,
+            "real_set_physical_verification": {
+                "digest_schema": real_set_files["digest_schema"],
+                "image_count": real_set_files["image_count"],
+                "real_dir": real_set_files["real_dir"],
+                "sha256": real_set_files["real_set_sha256"],
+            },
             "sampling_protocol_contract": sampling_contract,
             "sampling_report_sha256": verified_samples["sampling_report_sha256"],
             "sampling_manifest_sha256": verified_samples[
@@ -1978,6 +2096,7 @@ def build_completion_audit(
     cofitok_generation: dict[str, Any] | None,
     dense_generation: dict[str, Any] | None,
     formal_sample_files: dict[str, dict[str, Any] | None],
+    formal_real_set_files: dict[str, Any] | None,
     final_gate: dict[str, Any] | None,
     final_gate_source_verification: dict[str, Any] | None,
     comparison: dict[str, Any] | None,
@@ -2169,6 +2288,7 @@ def build_completion_audit(
                 dense_generation,
                 formal_sample_files.get("cofitok"),
                 formal_sample_files.get("dense_identity"),
+                formal_real_set_files,
                 cofitok_full_training,
                 dense_full_training,
             ],
@@ -2179,6 +2299,7 @@ def build_completion_audit(
                     "dense_identity": dense_full_training,
                 },
                 formal_sample_files,
+                formal_real_set_files,
                 expected_revision=expected_full_revision,
             ),
         )
@@ -2620,6 +2741,13 @@ def main() -> None:
                 ),
             ),
         },
+        formal_real_set_files=_verify_formal_real_set_files(
+            {
+                "cofitok": cofitok_generation,
+                "dense_identity": dense_generation,
+            },
+            expected_real_dir=FORMAL_IMAGENET256_REAL_DIR,
+        ),
         final_gate=final_gate,
         final_gate_source_verification=_verify_gate_sources_optional(final_gate),
         comparison=comparison,

@@ -48,8 +48,13 @@ The audit requires all of the following:
   elapsed time, plus canonical and identical actual sampling environments. The
   terminal audit re-enumerates and rehashes both physical 50K numbered PNG sets
   and revalidates their sampling report, immutable manifest, and progress files;
-- content-addressed real ImageNet validation trees, derived torch-fidelity cache
-  keys, and canonical evaluator environments identical across both methods;
+- a physical rehash of the fixed ImageNet-256 validation directory
+  `/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val`: the terminal
+  audit requires exactly 50,000 supported image files, rejects symlinks and
+  unsupported files, confirms tree membership is unchanged across hashing,
+  and matches the resulting content-addressed tree digest to both formal
+  metrics reports and their derived torch-fidelity cache keys. Canonical
+  evaluator environments must also be identical across both methods;
 - a shared, revision/checkpoint-bound formal sampling batch selection that both
   50K sample reports actually use with batch-invariant random streams and the
   same runtime-environment fingerprint;
