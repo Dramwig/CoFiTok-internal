@@ -66,3 +66,20 @@ An automated trajectory test also compares an uninterrupted two-step CPU run
 against a one-step checkpoint plus exact resume. Model, EMA, optimizer,
 scheduler, Python/NumPy/Torch RNG, sampler state, losses, gradient norm, LR,
 and validation MSE are bitwise/equality identical at step 2.
+
+## Exact config identity
+
+Checkpoint payloads already stored the fully resolved training config, but the
+loader previously restored state without comparing it to the current config.
+That left a silent path for changing data, optimization, runtime, diffusion, or
+model settings across a nominally exact resume whenever tensor shapes remained
+compatible.
+
+`load_training_checkpoint` now accepts the expected resolved config and checks
+recursive field equality immediately after integrity verification and payload
+deserialization, before loading model, EMA, optimizer, scheduler, scaler, or
+RNG state. `train_generation.py` always supplies its current resolved config.
+Errors name the mismatched dotted field paths. Integration tests prove that
+unchanged segmented training remains exact while changes to either
+`data.batch_size` or `optimization.gradient_accumulation_steps` fail before
+advancing `latest.json` or publishing a later checkpoint.

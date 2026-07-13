@@ -338,6 +338,7 @@ def main() -> None:
             scheduler=scheduler,
             scaler=scaler,
             restore_rng=True,
+            expected_config=config_to_dict(config),
             map_location=device,
         )
         start_step = int(checkpoint["step"])

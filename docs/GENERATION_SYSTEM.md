@@ -16,6 +16,11 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Production training uses bf16, gradient accumulation, gradient clipping,
   cosine LR, EMA, isolated DataLoader RNG, atomic checkpoints, retention, and
   exact model/optimizer/scheduler/RNG/sampler recovery.
+- Exact resume also requires the fully resolved current training config to
+  equal the config embedded in the checkpoint before any model, EMA, optimizer,
+  scheduler, scaler, or RNG state is restored. Changes such as micro-batch or
+  gradient accumulation fail with named config paths instead of silently
+  changing the training trajectory.
 - Every new checkpoint has an atomic integrity sidecar containing byte count,
   SHA256, step, and payload format. `latest.json` is bound to the same metadata;
   automatic resume verifies the pointer, sidecar, file bytes, payload step, and

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import pytest
 import torch
 
 
@@ -94,6 +95,31 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
         for line in (resumed / "train_metrics.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert steps == [1, 2]
+
+
+@pytest.mark.parametrize(
+    ("override", "mismatch_path"),
+    [
+        (("--micro-batch-size", "1"), "config.data.batch_size"),
+        (
+            ("--gradient-accumulation-steps", "1"),
+            "config.optimization.gradient_accumulation_steps",
+        ),
+    ],
+)
+def test_resume_rejects_changed_training_config_before_advancing(
+    tmp_path, override: tuple[str, str], mismatch_path: str
+) -> None:
+    output = tmp_path / mismatch_path.replace(".", "_")
+    _run(output, "--stop-after-steps", "1")
+
+    with pytest.raises(subprocess.CalledProcessError) as error:
+        _run(output, "--resume", "auto", *override)
+
+    assert f"Checkpoint config mismatch at: {mismatch_path}" in error.value.stderr
+    latest = json.loads((output / "latest.json").read_text(encoding="utf-8"))
+    assert latest["step"] == 1
+    assert not (output / "checkpoint_step_00000002.pt").exists()
 
 
 def test_runtime_benchmark_executes_training_without_checkpoint(tmp_path) -> None:

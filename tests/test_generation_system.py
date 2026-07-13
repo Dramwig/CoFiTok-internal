@@ -221,12 +221,28 @@ def test_checkpoint_roundtrip_restores_all_training_and_rng_state(tmp_path) -> N
         min_learning_rate=1e-4,
     )
     restored_ema = ExponentialMovingAverage(restored_model, decay=0.5)
+    pristine_parameters = [
+        parameter.detach().clone() for parameter in restored_model.parameters()
+    ]
+    with pytest.raises(ValueError, match=r"config\.name"):
+        load_training_checkpoint(
+            path,
+            model=restored_model,
+            expected_config={"name": "changed"},
+            restore_rng=False,
+        )
+    for pristine, current in zip(
+        pristine_parameters, restored_model.parameters(), strict=True
+    ):
+        assert torch.equal(pristine, current)
+
     checkpoint = load_training_checkpoint(
         path,
         model=restored_model,
         ema=restored_ema,
         optimizer=restored_optimizer,
         scheduler=restored_scheduler,
+        expected_config={"name": "test"},
     )
     actual = (random.random(), float(np.random.rand()), float(torch.rand(())))
 

@@ -19,6 +19,26 @@ CHECKPOINT_FORMAT_VERSION = 1
 CHECKPOINT_INTEGRITY_VERSION = 1
 
 
+def _config_mismatch_paths(
+    expected: Any,
+    actual: Any,
+    *,
+    path: str = "config",
+) -> list[str]:
+    if isinstance(expected, Mapping) and isinstance(actual, Mapping):
+        mismatches = []
+        for key in sorted(set(expected) | set(actual), key=str):
+            child = f"{path}.{key}"
+            if key not in expected or key not in actual:
+                mismatches.append(child)
+                continue
+            mismatches.extend(
+                _config_mismatch_paths(expected[key], actual[key], path=child)
+            )
+        return mismatches
+    return [] if expected == actual else [path]
+
+
 def checkpoint_integrity_path(path: str | Path) -> Path:
     checkpoint = Path(path)
     return checkpoint.with_name(f"{checkpoint.name}.integrity.json")
@@ -228,6 +248,7 @@ def load_training_checkpoint(
     scaler: torch.amp.GradScaler | None = None,
     restore_rng: bool = True,
     verify_integrity: bool = True,
+    expected_config: Mapping[str, Any] | None = None,
     map_location: str | torch.device = "cpu",
 ) -> dict[str, Any]:
     integrity = None
@@ -236,6 +257,16 @@ def load_training_checkpoint(
     checkpoint = torch.load(path, map_location=map_location, weights_only=False)
     if checkpoint.get("format_version") != CHECKPOINT_FORMAT_VERSION:
         raise ValueError(f"Unsupported checkpoint format: {checkpoint.get('format_version')}")
+    if expected_config is not None:
+        checkpoint_config = checkpoint.get("config")
+        if not isinstance(checkpoint_config, Mapping):
+            raise ValueError("Checkpoint is missing its exact-resume config")
+        mismatches = _config_mismatch_paths(expected_config, checkpoint_config)
+        if mismatches:
+            preview = ", ".join(mismatches[:8])
+            if len(mismatches) > 8:
+                preview += f", ... ({len(mismatches)} fields)"
+            raise ValueError(f"Checkpoint config mismatch at: {preview}")
     if integrity is not None:
         if int(checkpoint.get("step", -1)) != int(integrity["step"]):
             raise ValueError("Checkpoint payload step does not match integrity metadata")
