@@ -156,6 +156,7 @@ class GenerationSession:
                 self.loaded.source_runtime_environment_sha256
             ),
             "source_git": self.loaded.source_git_provenance,
+            "training_authorization": self.loaded.training_authorization,
             "device": str(self.device),
             "request": {
                 "seeds": list(request.seeds),

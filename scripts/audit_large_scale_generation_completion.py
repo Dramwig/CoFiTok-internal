@@ -644,6 +644,11 @@ def _inference_export_evidence(
             "runtime_environment_sha256"
         )
         expected_git = source_training.get("git")
+        expected_authorization = source_training.get("training_authorization")
+        if not isinstance(expected_authorization, dict):
+            raise ValueError(
+                f"{method} full training authorization is missing from export provenance"
+            )
         if export.get("status") != "completed" or export.get("verified") is not True:
             raise ValueError(f"{method} inference export is incomplete")
         if export.get("weights") != "ema_export":
@@ -658,6 +663,8 @@ def _inference_export_evidence(
             export.get("source_runtime_environment_sha256")
             != expected_environment_sha
             or export.get("source_git") != expected_git
+            or export.get("source_training_authorization")
+            != expected_authorization
         ):
             raise ValueError(f"{method} inference export source provenance differs")
         artifact_sha = str(export.get("artifact_sha256", ""))
@@ -691,6 +698,8 @@ def _inference_export_evidence(
                 "dirty": verified_file.get("source_git_dirty"),
             }
             != expected_git
+            or verified_file.get("source_training_authorization")
+            != expected_authorization
         ):
             raise ValueError(f"{method} inference artifact bytes differ from report")
         if preflight.get("status") != "passed":
@@ -709,6 +718,8 @@ def _inference_export_evidence(
             preflight.get("source_runtime_environment_sha256")
             != expected_environment_sha
             or preflight.get("source_git") != expected_git
+            or preflight.get("training_authorization")
+            != expected_authorization
         ):
             raise ValueError(f"{method} export preflight source identity differs")
         checkpoint = smoke.get("checkpoint", {})
@@ -728,6 +739,8 @@ def _inference_export_evidence(
             checkpoint.get("source_runtime_environment_sha256")
             != expected_environment_sha
             or checkpoint.get("source_git") != expected_git
+            or checkpoint.get("training_authorization")
+            != expected_authorization
         ):
             raise ValueError(f"{method} export smoke source identity differs")
         if any(len(str(row.get("sha256", ""))) != 64 for row in smoke.get("outputs", [])):
@@ -739,6 +752,7 @@ def _inference_export_evidence(
             "source_checkpoint_bytes": source_bytes,
             "source_runtime_environment_sha256": expected_environment_sha,
             "source_git": expected_git,
+            "training_authorization": expected_authorization,
             "smoke_output_count": expected_smoke_count,
         }
     return evidence

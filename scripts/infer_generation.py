@@ -173,6 +173,7 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
                 "source_checkpoint_sha256",
                 "source_runtime_environment_sha256",
                 "source_git",
+                "training_authorization",
             )
         },
         "request": {

@@ -79,6 +79,19 @@ def _dataset_provenance(dataset: str) -> dict:
     return report
 
 
+def _full_training_authorization() -> dict:
+    return build_generation_training_authorization(
+        _gate("scaling"),
+        gate_path=(
+            "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/"
+            "generation/imagenet256_10pct_matched_50k_2026-07-12/"
+            "promotion_gate.json"
+        ),
+        gate_bytes=10_000,
+        gate_sha256="9" * 64,
+    )
+
+
 def _training(
     *, steps: int, dataset: str, revision: str, parameters: int, checkpoint_sha: str
 ) -> dict:
@@ -100,16 +113,7 @@ def _training(
     dataset_provenance = _dataset_provenance(dataset)
     training_authorization = None
     if dataset == "imagenet_256":
-        training_authorization = build_generation_training_authorization(
-            _gate("scaling"),
-            gate_path=(
-                "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/"
-                "generation/imagenet256_10pct_matched_50k_2026-07-12/"
-                "promotion_gate.json"
-            ),
-            gate_bytes=10_000,
-            gate_sha256="9" * 64,
-        )
+        training_authorization = _full_training_authorization()
     latest = {
         "checkpoint": f"checkpoint_step_{steps:08d}.pt",
         "step": steps,
@@ -895,6 +899,7 @@ def _full_training_monitor() -> dict:
 def _inference_exports() -> dict:
     output = {}
     environment_sha = runtime_environment_sha256(_runtime_environment())
+    training_authorization = _full_training_authorization()
     source_git = {
         "dirty": False,
         "revision": FULL_REVISION,
@@ -917,6 +922,9 @@ def _inference_exports() -> dict:
             "source_checkpoint_bytes": 1_000,
             "source_runtime_environment_sha256": environment_sha,
             "source_git": dict(source_git),
+            "source_training_authorization": copy.deepcopy(
+                training_authorization
+            ),
             "artifact_sha256": artifact_sha,
             "artifact_bytes": 400,
             "artifact": artifact,
@@ -930,6 +938,7 @@ def _inference_exports() -> dict:
             "source_checkpoint_sha256": source_sha,
             "source_runtime_environment_sha256": environment_sha,
             "source_git": dict(source_git),
+            "training_authorization": copy.deepcopy(training_authorization),
         }
         output[f"{method}_smoke"] = {
             "status": "completed",
@@ -940,6 +949,9 @@ def _inference_exports() -> dict:
                 "source_checkpoint_sha256": source_sha,
                 "source_runtime_environment_sha256": environment_sha,
                 "source_git": dict(source_git),
+                "training_authorization": copy.deepcopy(
+                    training_authorization
+                ),
             },
             "outputs": [{"sha256": str(index) * 64} for index in range(1, count + 1)],
         }
@@ -949,15 +961,7 @@ def _inference_exports() -> dict:
 def _full_checkpoint_files() -> dict:
     output = {}
     environment_sha = runtime_environment_sha256(_runtime_environment())
-    authorization = build_generation_training_authorization(
-        _gate("scaling"),
-        gate_path=(
-            "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/"
-            "imagenet256_10pct_matched_50k_2026-07-12/promotion_gate.json"
-        ),
-        gate_bytes=10_000,
-        gate_sha256="9" * 64,
-    )
+    authorization = _full_training_authorization()
     for method, run, checkpoint_sha in (
         ("cofitok", "imagenet256_full_cofitok_k8_300k", "a" * 64),
         ("dense_identity", "imagenet256_full_dense_300k", "b" * 64),
@@ -991,6 +995,7 @@ def _full_checkpoint_files() -> dict:
 def _inference_artifact_files() -> dict:
     output = {}
     environment_sha = runtime_environment_sha256(_runtime_environment())
+    training_authorization = _full_training_authorization()
     for method, source_sha, artifact_sha in (
         ("cofitok", "a" * 64, "f" * 64),
         ("dense_identity", "b" * 64, "9" * 64),
@@ -1010,6 +1015,9 @@ def _inference_artifact_files() -> dict:
             "source_git_revision": FULL_REVISION,
             "source_git_branch": "scale/generative-system",
             "source_git_dirty": False,
+            "source_training_authorization": copy.deepcopy(
+                training_authorization
+            ),
             "step": 300_000,
         }
     return output
@@ -1607,7 +1615,10 @@ def test_completion_audit_rejects_full_training_authorization_drift() -> None:
     completion = build_completion_audit(**kwargs)
 
     assert completion["status"] == "failed"
-    assert completion["failed_checks"] == ["full_matched_training"]
+    assert completion["failed_checks"] == [
+        "full_matched_training",
+        "deployable_ema_inference_artifacts",
+    ]
 
 
 def test_completion_audit_rejects_checkpoint_authorization_sidecar_drift() -> None:
@@ -1653,6 +1664,30 @@ def test_completion_audit_rejects_corrupted_inference_artifact_bytes() -> None:
         "path": "/corrupted/dense_identity_ema_inference.pt",
         "error": "Inference artifact SHA256 mismatch",
     }
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_rejects_inference_artifact_authorization_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_artifact_files"]["dense_identity"][
+        "source_training_authorization"
+    ]["gate_identity_sha256"] = "d" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_rejects_inference_preflight_authorization_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_exports"]["cofitok_preflight"][
+        "training_authorization"
+    ]["gate_identity_sha256"] = "d" * 64
 
     report = build_completion_audit(**kwargs)
 

@@ -170,4 +170,4 @@ def validate_checkpoint_training_authorization(
         raise ValueError(
             "Checkpoint payload training authorization differs from integrity metadata"
         )
-    return evidence
+    return dict(payload_authorization)

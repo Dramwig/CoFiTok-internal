@@ -472,11 +472,13 @@ evidence it did not record. See
 After the final gate, both methods export separate EMA-only deployment
 artifacts. Their type-specific sidecars are verified before deserialization;
 source training checkpoint SHA, runtime-environment SHA, Git identity, step,
-artifact SHA/bytes, real-forward preflight, and short DDIM smoke PNGs are required
-by completion. Artifact schema v2 propagates the source identity through the
-loader, session, preflight, and inference report. These artifacts are smaller
+scaling-gate training authorization, artifact SHA/bytes, real-forward preflight,
+and short DDIM smoke PNGs are required by completion. Artifact schema v3
+propagates the source identity and complete authorization through the payload,
+sidecar, export report, loader, session, preflight, and inference report. These artifacts are smaller
 inference copies and never replace exact-resume training checkpoints. See
-`docs/records/2026-07-12_deployable_ema_inference_artifact.md`.
+`docs/records/2026-07-12_deployable_ema_inference_artifact.md` and
+`docs/records/2026-07-13_inference_artifact_authorization_provenance.md`.
 
 The terminal completion audit does not trust those JSON reports alone. It
 rehashes both physical step-300K exact-resume checkpoints through their

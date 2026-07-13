@@ -17,7 +17,10 @@ from cofitok.generation.artifact import (
 )
 from cofitok.models import CoFiTokTiny
 from cofitok.training import ExponentialMovingAverage
-from cofitok.training.authorization import validate_checkpoint_training_authorization
+from cofitok.training.authorization import (
+    validate_checkpoint_training_authorization,
+    validate_generation_training_authorization,
+)
 from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
     verify_training_checkpoint,
@@ -38,6 +41,7 @@ class LoadedGenerationModel:
     source_checkpoint_sha256: str | None
     source_runtime_environment_sha256: str | None
     source_git_provenance: dict[str, Any] | None
+    training_authorization: dict[str, Any] | None
 
 
 def load_generation_model(
@@ -76,8 +80,12 @@ def load_generation_model(
         raise ValueError("Checkpoint payload format does not match integrity metadata")
     if int(checkpoint.get("step", -1)) != int(integrity["step"]):
         raise ValueError("Checkpoint payload step does not match integrity metadata")
+    training_authorization = None
     if not is_inference_artifact:
-        validate_checkpoint_training_authorization(checkpoint, integrity)
+        training_authorization = validate_checkpoint_training_authorization(
+            checkpoint,
+            integrity,
+        )
     config = config_from_dict(checkpoint["config"])
     device = torch.device(config.runtime.device)
     if device.type == "cuda" and not torch.cuda.is_available():
@@ -111,6 +119,21 @@ def load_generation_model(
         }
         if source_git_provenance != integrity_git:
             raise ValueError("Inference artifact source Git provenance mismatch")
+        payload_authorization = checkpoint["source"].get(
+            "training_authorization"
+        )
+        integrity_authorization = integrity.get("source_training_authorization")
+        if payload_authorization != integrity_authorization:
+            raise ValueError(
+                "Inference artifact source training authorization mismatch"
+            )
+        if payload_authorization is not None:
+            if not isinstance(payload_authorization, Mapping):
+                raise ValueError(
+                    "Inference artifact source training authorization is malformed"
+                )
+            validate_generation_training_authorization(payload_authorization)
+            training_authorization = dict(payload_authorization)
     elif weights == "ema":
         if "ema" not in checkpoint:
             raise KeyError("EMA weights are missing from the checkpoint")
@@ -152,4 +175,5 @@ def load_generation_model(
         source_checkpoint_sha256=source_checkpoint_sha256,
         source_runtime_environment_sha256=source_runtime_environment_sha256,
         source_git_provenance=source_git_provenance,
+        training_authorization=training_authorization,
     )

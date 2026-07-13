@@ -12,7 +12,10 @@ from cofitok.configs import config_from_dict
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
-from cofitok.training.authorization import validate_checkpoint_training_authorization
+from cofitok.training.authorization import (
+    validate_checkpoint_training_authorization,
+    validate_generation_training_authorization,
+)
 from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
     verify_training_checkpoint,
@@ -20,8 +23,8 @@ from cofitok.training.checkpointing import (
 
 
 INFERENCE_ARTIFACT_TYPE = "cofitok_generation_inference"
-INFERENCE_ARTIFACT_FORMAT_VERSION = 2
-INFERENCE_ARTIFACT_INTEGRITY_VERSION = 2
+INFERENCE_ARTIFACT_FORMAT_VERSION = 3
+INFERENCE_ARTIFACT_INTEGRITY_VERSION = 3
 
 
 def _source_checkpoint_provenance(
@@ -47,6 +50,32 @@ def _source_checkpoint_provenance(
     return {
         "runtime_environment_sha256": runtime_environment_sha,
         "git": git,
+    }
+
+
+def _validated_training_authorization(
+    value: Any,
+) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Mapping):
+        raise ValueError("Inference artifact training authorization is malformed")
+    validate_generation_training_authorization(value)
+    return dict(value)
+
+
+def _authorization_integrity_fields(
+    authorization: Mapping[str, Any],
+) -> dict[str, Any]:
+    evidence = validate_generation_training_authorization(authorization)
+    return {
+        "authorization_stage": evidence["stage"],
+        "authorization_decision": evidence["decision"],
+        "authorization_gate_bytes": evidence["gate_bytes"],
+        "authorization_gate_sha256": evidence["gate_sha256"],
+        "authorization_gate_identity_sha256": evidence[
+            "gate_identity_sha256"
+        ],
     }
 
 
@@ -87,6 +116,9 @@ def verify_inference_artifact(path: str | Path) -> dict[str, Any]:
         or not isinstance(integrity.get("source_git_dirty"), bool)
     ):
         raise ValueError("Inference artifact source Git provenance is malformed")
+    _validated_training_authorization(
+        integrity.get("source_training_authorization")
+    )
     return integrity
 
 
@@ -113,8 +145,23 @@ def export_ema_inference_artifact(
             != source_provenance["git"]
         ):
             raise ValueError("Existing inference artifact source provenance differs")
+        existing_authorization = _validated_training_authorization(
+            existing.get("source_training_authorization")
+        )
+        source_has_authorization = "authorization_stage" in source_integrity
+        if (existing_authorization is None) != (not source_has_authorization):
+            raise ValueError("Existing inference artifact authorization differs")
+        if existing_authorization is not None:
+            expected_fields = _authorization_integrity_fields(
+                existing_authorization
+            )
+            if any(
+                source_integrity.get(key) != value
+                for key, value in expected_fields.items()
+            ):
+                raise ValueError("Existing inference artifact authorization differs")
         return {
-            "schema_version": 2,
+            "schema_version": 3,
             "status": "completed",
             "reused": True,
             "source_checkpoint": source_path.resolve().as_posix(),
@@ -124,6 +171,7 @@ def export_ema_inference_artifact(
                 "runtime_environment_sha256"
             ],
             "source_git": source_provenance["git"],
+            "source_training_authorization": existing_authorization,
             "artifact": target.resolve().as_posix(),
             "artifact_integrity_manifest": checkpoint_integrity_path(target).resolve().as_posix(),
             "artifact_sha256": existing["artifact_sha256"],
@@ -136,7 +184,10 @@ def export_ema_inference_artifact(
     checkpoint = torch.load(source_path, map_location="cpu", weights_only=False)
     if int(checkpoint.get("step", -1)) != int(source_integrity["step"]):
         raise ValueError("Training checkpoint step differs from integrity metadata")
-    validate_checkpoint_training_authorization(checkpoint, source_integrity)
+    source_training_authorization = validate_checkpoint_training_authorization(
+        checkpoint,
+        source_integrity,
+    )
     extra_state = checkpoint.get("extra_state")
     if not isinstance(extra_state, Mapping):
         raise ValueError("Training checkpoint lacks deployment provenance state")
@@ -173,6 +224,7 @@ def export_ema_inference_artifact(
                 "runtime_environment_sha256"
             ],
             "git": source_provenance["git"],
+            "training_authorization": source_training_authorization,
         },
     }
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -201,11 +253,12 @@ def export_ema_inference_artifact(
         "source_git_revision": source_provenance["git"]["revision"],
         "source_git_branch": source_provenance["git"]["branch"],
         "source_git_dirty": source_provenance["git"]["dirty"],
+        "source_training_authorization": source_training_authorization,
     }
     write_json_report(checkpoint_integrity_path(target), integrity)
     verified = verify_inference_artifact(target)
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "status": "completed",
         "reused": False,
         "source_checkpoint": source_path.resolve().as_posix(),
@@ -215,6 +268,7 @@ def export_ema_inference_artifact(
             "runtime_environment_sha256"
         ],
         "source_git": source_provenance["git"],
+        "source_training_authorization": source_training_authorization,
         "artifact": target.resolve().as_posix(),
         "artifact_integrity_manifest": checkpoint_integrity_path(target).resolve().as_posix(),
         "artifact_sha256": verified["artifact_sha256"],

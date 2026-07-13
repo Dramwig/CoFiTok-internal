@@ -24,6 +24,7 @@ from cofitok.models import CoFiTokTiny
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
 from cofitok.training.checkpointing import checkpoint_integrity_path
+from scripts.preflight_generation_sampling import run_sampling_preflight
 
 
 SOURCE_ENVIRONMENT_SHA = "e" * 64
@@ -34,7 +35,31 @@ SOURCE_GIT = {
 }
 
 
-def _training_checkpoint(tmp_path, *, include_provenance: bool = True):
+def _training_authorization(tmp_path) -> dict:
+    return {
+        "schema_version": 1,
+        "status": "pass",
+        "stage": "scaling",
+        "decision": "promote_to_full_imagenet256",
+        "gate_path": (tmp_path / "promotion_gate.json").resolve().as_posix(),
+        "gate_bytes": 12_345,
+        "gate_sha256": "b" * 64,
+        "gate_identity_sha256": "c" * 64,
+        "validated_thresholds": {
+            "min_samples": 10_000.0,
+            "max_fid_regression": 0.05,
+            "max_absolute_fid": 100.0,
+            "max_endpoint_regression": 0.05,
+        },
+    }
+
+
+def _training_checkpoint(
+    tmp_path,
+    *,
+    include_provenance: bool = True,
+    include_authorization: bool = False,
+):
     config = ExperimentConfig(
         name="inference_export_cpu",
         data=DataConfig(image_size=8, channels=3),
@@ -75,6 +100,10 @@ def _training_checkpoint(tmp_path, *, include_provenance: bool = True):
             "runtime_environment_sha256": SOURCE_ENVIRONMENT_SHA,
             "git": SOURCE_GIT,
         }
+        if include_authorization:
+            payload["extra_state"]["training_authorization"] = (
+                _training_authorization(tmp_path)
+            )
     torch.save(payload, path)
     integrity = {
         "schema_version": 1,
@@ -91,6 +120,17 @@ def _training_checkpoint(tmp_path, *, include_provenance: bool = True):
             git_branch=SOURCE_GIT["branch"],
             git_dirty=SOURCE_GIT["dirty"],
         )
+        if include_authorization:
+            authorization = _training_authorization(tmp_path)
+            integrity.update(
+                authorization_stage=authorization["stage"],
+                authorization_decision=authorization["decision"],
+                authorization_gate_bytes=authorization["gate_bytes"],
+                authorization_gate_sha256=authorization["gate_sha256"],
+                authorization_gate_identity_sha256=authorization[
+                    "gate_identity_sha256"
+                ],
+            )
     write_json_report(
         checkpoint_integrity_path(path),
         integrity,
@@ -99,24 +139,30 @@ def _training_checkpoint(tmp_path, *, include_provenance: bool = True):
 
 
 def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
-    source = _training_checkpoint(tmp_path)
+    source = _training_checkpoint(tmp_path, include_authorization=True)
     artifact = tmp_path / "cofitok_ema_inference.pt"
 
     report = export_ema_inference_artifact(source, artifact)
     reused = export_ema_inference_artifact(source, artifact)
 
     assert report["status"] == "completed"
-    assert report["schema_version"] == 2
+    assert report["schema_version"] == 3
     assert report["weights"] == "ema_export"
     assert report["verified"] is True
     assert report["artifact_bytes"] < report["source_checkpoint_bytes"]
     assert reused["reused"] is True
     verified = verify_inference_artifact(artifact)
-    assert verified["schema_version"] == 2
-    assert verified["artifact_format_version"] == 2
+    assert verified["schema_version"] == 3
+    assert verified["artifact_format_version"] == 3
     assert verified["artifact_sha256"] == report["artifact_sha256"]
     assert report["source_runtime_environment_sha256"] == SOURCE_ENVIRONMENT_SHA
     assert report["source_git"] == SOURCE_GIT
+    assert report["source_training_authorization"] == _training_authorization(
+        tmp_path
+    )
+    assert verified["source_training_authorization"] == _training_authorization(
+        tmp_path
+    )
 
     request = GenerationRequest(
         seeds=(9,),
@@ -145,6 +191,20 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
         == SOURCE_ENVIRONMENT_SHA
     )
     assert export_result.metadata["source_git"] == SOURCE_GIT
+    assert export_result.metadata["training_authorization"] == (
+        _training_authorization(tmp_path)
+    )
+    preflight = run_sampling_preflight(
+        artifact,
+        batch_size=1,
+        prefix_budget=2,
+        guidance_scale=1.0,
+        precision="fp32",
+    )
+    assert preflight["status"] == "passed"
+    assert preflight["training_authorization"] == _training_authorization(
+        tmp_path
+    )
 
 
 def test_ema_export_rejects_source_without_deployment_provenance(tmp_path) -> None:
@@ -183,3 +243,33 @@ def test_inference_artifact_rejects_source_sidecar_drift(tmp_path) -> None:
 
     with pytest.raises(ValueError, match="source Git provenance mismatch"):
         GenerationSession.from_checkpoint(artifact, weights="ema")
+
+
+def test_inference_artifact_rejects_training_authorization_drift(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path, include_authorization=True)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    export_ema_inference_artifact(source, artifact)
+    integrity_path = checkpoint_integrity_path(artifact)
+    integrity = json.loads(integrity_path.read_text(encoding="utf-8"))
+    integrity["source_training_authorization"][
+        "gate_identity_sha256"
+    ] = "d" * 64
+    write_json_report(integrity_path, integrity)
+
+    with pytest.raises(ValueError, match="training authorization mismatch"):
+        GenerationSession.from_checkpoint(artifact, weights="ema")
+
+
+def test_export_reuse_rejects_source_authorization_drift(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path, include_authorization=True)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    export_ema_inference_artifact(source, artifact)
+    source_integrity_path = checkpoint_integrity_path(source)
+    source_integrity = json.loads(
+        source_integrity_path.read_text(encoding="utf-8")
+    )
+    source_integrity["authorization_gate_identity_sha256"] = "d" * 64
+    write_json_report(source_integrity_path, source_integrity)
+
+    with pytest.raises(ValueError, match="authorization differs"):
+        export_ema_inference_artifact(source, artifact)

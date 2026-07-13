@@ -123,6 +123,7 @@ def run_sampling_preflight(
             loaded.source_runtime_environment_sha256
         ),
         "source_git": loaded.source_git_provenance,
+        "training_authorization": loaded.training_authorization,
         "device": str(device),
         "torch_version": torch.__version__,
         "request": {

@@ -19,25 +19,27 @@ These files are for inference only and cannot resume training.
 
 ## Format and trust boundary
 
-Artifact type `cofitok_generation_inference`, format version 2, contains only:
+Artifact type `cofitok_generation_inference`, current format version 3, contains only:
 
 - resolved experiment config;
 - EMA-applied model state;
 - training step;
 - source checkpoint path/SHA/format provenance;
 - source training runtime-environment SHA256 and Git revision/branch/dirty state.
+- source scaling-gate training authorization when exported from formal full training.
 
 The adjacent integrity sidecar binds artifact filename, byte size, SHA256,
-format, step, source training-checkpoint SHA256, environment SHA, and Git
-identity. `load_generation_model`
+format, step, source training-checkpoint SHA256, environment SHA, Git identity,
+and the complete source training authorization. `load_generation_model`
 reads the sidecar type before deserialization and dispatches to either the exact
 training-checkpoint verifier or the inference-artifact verifier. An artifact can
 only be requested as EMA; `weights=model` fails closed.
 
 Export uses an fsynced temporary file followed by atomic replacement, then writes
 and re-verifies the integrity sidecar. Re-running export reuses an existing
-verified artifact only when its source SHA, environment, and Git identity all
-match exactly. Export from an unprovenanced checkpoint is rejected.
+verified artifact only when its source SHA, environment, Git identity, and
+authorization all match exactly. Export from an unprovenanced checkpoint is
+rejected.
 
 ## Final verification
 
@@ -48,8 +50,8 @@ real-forward preflights, and performs short DDIM class-conditional inference:
 - dense: seeds 0/1 at prefix budget 1 (two PNGs).
 
 Every smoke PNG is atomically published and hashed. Completion requires export
-size to be smaller than its training checkpoint, source SHA/environment/Git
-agreement with the full training report, artifact/preflight/smoke identity
+size to be smaller than its training checkpoint, source SHA/environment/Git/
+authorization agreement with the full training report, artifact/preflight/smoke identity
 agreement, exported-EMA load, and the exact expected smoke output counts.
 
 The terminal audit also opens the fixed deployment paths and runs the artifact
