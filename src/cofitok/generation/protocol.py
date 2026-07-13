@@ -21,8 +21,8 @@ def sampling_protocol_contract(
     stage: str | None = None,
     expected_num_train_timesteps: int | None = None,
 ) -> dict[str, Any]:
-    if stage not in {None, "scaling", "full"}:
-        raise ValueError("stage must be scaling, full, or None")
+    if stage not in {None, "milestone", "scaling", "full"}:
+        raise ValueError("stage must be milestone, scaling, full, or None")
     issues: list[str] = []
     if sampling.get("protocol_schema") != SAMPLING_PROTOCOL_SCHEMA:
         issues.append("protocol_schema")
@@ -70,10 +70,20 @@ def sampling_protocol_contract(
         if num_train_timesteps != expected_num_train_timesteps:
             issues.append("matched_num_train_timesteps")
     if stage is not None:
+        stage_samples = {
+            "milestone": 2_048,
+            "scaling": 10_000,
+            "full": 50_000,
+        }
+        stage_steps = {
+            "milestone": 50,
+            "scaling": 100,
+            "full": 250,
+        }
         expected.update(
             {
-                "num_samples": 10_000 if stage == "scaling" else 50_000,
-                "sample_steps": 100 if stage == "scaling" else 250,
+                "num_samples": stage_samples[stage],
+                "sample_steps": stage_steps[stage],
                 "guidance_scale": 1.5,
                 "guidance_rescale": 0.0,
                 "cfg_batch_mode": "batched",
@@ -85,6 +95,8 @@ def sampling_protocol_contract(
                 "class_schedule": "balanced_modulo",
             }
         )
+        if stage == "milestone":
+            expected["batch_size"] = 32
         for field, expected_value in expected.items():
             if field in {
                 "protocol_schema",

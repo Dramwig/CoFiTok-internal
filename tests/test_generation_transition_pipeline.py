@@ -69,6 +69,14 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
     assert "FINAL_VISUAL_AUDIT" in runbook
     assert "generation_export_inference_artifacts.sh" in runbook
 
+    full_training = _read(
+        "artifacts/runbooks/generation_full_matched_300k_after_gate.sh"
+    )
+    assert full_training.count("validate_generation_milestone_report.py") == 2
+    assert full_training.index("build_generation_milestone_report.py") < (
+        full_training.rindex("validate_generation_milestone_report.py")
+    )
+
 
 def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None:
     deployer = _read(

@@ -13,12 +13,14 @@ from cofitok.generation import (
 
 
 def _sampling(stage: str) -> dict:
-    sample_steps = 100 if stage == "scaling" else 250
+    sample_steps = {"milestone": 50, "scaling": 100, "full": 250}[stage]
     return {
         "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
         "inference_api": INFERENCE_API,
         "sampler": "ddim",
-        "num_samples": 10_000 if stage == "scaling" else 50_000,
+        "num_samples": {"milestone": 2_048, "scaling": 10_000, "full": 50_000}[
+            stage
+        ],
         "start_index": 0,
         "batch_size": 32,
         "sample_steps": sample_steps,
@@ -41,7 +43,7 @@ def _sampling(stage: str) -> dict:
     }
 
 
-@pytest.mark.parametrize("stage", ["scaling", "full"])
+@pytest.mark.parametrize("stage", ["milestone", "scaling", "full"])
 def test_formal_sampling_protocol_accepts_exact_stage_contract(stage: str) -> None:
     contract = sampling_protocol_contract(
         _sampling(stage),

@@ -139,6 +139,13 @@ These milestone reports are explicitly non-claim diagnostics: they expose
 severe quality or ordering regressions before another long segment consumes GPU
 time, but they never replace the final 50K DDIM-250 evaluation.
 
+Milestone report schema v2 binds the CoFiTok/dense generation-metrics and
+checkpoint-evaluation source reports by authoritative method/step path, byte
+count, and SHA256. A milestone is skipped on resume only after those four files
+are rehashed and the EMA DDIM-50/CFG 1.5/bf16/fixed-stream contract is
+revalidated. The final completion audit repeats the source and protocol checks;
+a stale aggregate JSON cannot prove that a milestone completed.
+
 ## Commands
 
 ```bash

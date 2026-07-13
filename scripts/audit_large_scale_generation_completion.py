@@ -22,6 +22,17 @@ try:
 except ModuleNotFoundError:
     from validate_generation_training_pair import validate_training_pair
 
+try:
+    from scripts.build_generation_milestone_report import (
+        validate_milestone_report,
+        verify_milestone_source_reports,
+    )
+except ModuleNotFoundError:
+    from build_generation_milestone_report import (
+        validate_milestone_report,
+        verify_milestone_source_reports,
+    )
+
 
 PINNED_10PCT_REVISION = "781a01444fddbf0d48a427ba58bdeed50167b5be"
 MILESTONE_STEPS = (50_000, 100_000, 200_000, 300_000)
@@ -307,32 +318,19 @@ def _runtime_selection_evidence(
 
 def _milestone_evidence(
     milestones: dict[int, dict[str, Any]],
+    source_verifications: dict[int, dict[str, Any]],
 ) -> tuple[dict[str, Any], list[str]]:
     evidence = {}
     warnings = []
     for step in MILESTONE_STEPS:
         report = milestones[step]
-        if report.get("status") != "completed":
-            raise ValueError(f"milestone {step} is incomplete")
-        if int(report.get("milestone_step", -1)) != step:
-            raise ValueError(f"milestone {step} step mismatch")
-        if int(report.get("expected_samples", -1)) != 2_048:
-            raise ValueError(f"milestone {step} sample count mismatch")
-        methods = report.get("methods", {})
-        if set(methods) != {"cofitok", "dense_identity"}:
-            raise ValueError(f"milestone {step} method pair mismatch")
-        for method, row in methods.items():
-            if int(row.get("checkpoint_step", -1)) != step:
-                raise ValueError(f"milestone {step} {method} checkpoint mismatch")
-            if int(row.get("sample_count", -1)) != 2_048:
-                raise ValueError(f"milestone {step} {method} samples mismatch")
-        alerts = list(report.get("quality_alerts", []))
-        warnings.extend(f"milestone_{step}:{alert}" for alert in alerts)
-        evidence[str(step)] = {
-            "quality_alerts": alerts,
-            "cofitok_fid": float(methods["cofitok"]["fid"]),
-            "dense_fid": float(methods["dense_identity"]["fid"]),
-        }
+        step_evidence, step_warnings = validate_milestone_report(
+            report,
+            expected_step=step,
+            source_verification=source_verifications[step],
+        )
+        warnings.extend(step_warnings)
+        evidence[str(step)] = step_evidence
     return evidence, warnings
 
 
@@ -1258,6 +1256,7 @@ def build_completion_audit(
     inference_exports: dict[str, dict[str, Any] | None],
     inference_artifact_files: dict[str, dict[str, Any] | None],
     milestones: dict[int, dict[str, Any] | None],
+    milestone_source_verifications: dict[int, dict[str, Any] | None],
     cofitok_generation: dict[str, Any] | None,
     dense_generation: dict[str, Any] | None,
     final_gate: dict[str, Any] | None,
@@ -1408,12 +1407,18 @@ def build_completion_audit(
         )
     )
 
-    milestone_payloads = [milestones.get(step) for step in MILESTONE_STEPS]
+    milestone_payloads = [milestones.get(step) for step in MILESTONE_STEPS] + [
+        milestone_source_verifications.get(step) for step in MILESTONE_STEPS
+    ]
     milestone_warnings: list[str] = []
 
     def validate_milestones() -> dict[str, Any]:
         evidence, warnings = _milestone_evidence(
-            {step: milestones[step] for step in MILESTONE_STEPS}
+            {step: milestones[step] for step in MILESTONE_STEPS},
+            {
+                step: milestone_source_verifications[step]
+                for step in MILESTONE_STEPS
+            },
         )
         milestone_warnings.extend(warnings)
         return evidence
@@ -1551,6 +1556,17 @@ def _read_optional(path: Path) -> dict[str, Any] | None:
         return json.load(handle)
 
 
+def _verify_milestone_sources_optional(
+    report: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    if report is None:
+        return None
+    try:
+        return verify_milestone_source_reports(report)
+    except (OSError, KeyError, TypeError, ValueError) as error:
+        return {"status": "invalid", "error": str(error)}
+
+
 def _verify_checkpoint_file(path: Path) -> dict[str, Any]:
     try:
         integrity = verify_training_checkpoint(path)
@@ -1614,6 +1630,14 @@ def main() -> None:
         / "artifacts/reports/baselines/official_related_methods_2026-07-11_final"
         / "official_related_methods_table.json"
     )
+    milestones = {
+        step: _read_optional(full_root / "milestones" / f"step_{step:08d}.json")
+        for step in MILESTONE_STEPS
+    }
+    milestone_source_verifications = {
+        step: _verify_milestone_sources_optional(report)
+        for step, report in milestones.items()
+    }
 
     audit = build_completion_audit(
         expected_10pct_revision=args.expected_10pct_revision,
@@ -1684,10 +1708,8 @@ def main() -> None:
                 / "exports/imagenet256_full_300k/dense_identity_ema_inference.pt"
             ),
         },
-        milestones={
-            step: _read_optional(full_root / "milestones" / f"step_{step:08d}.json")
-            for step in MILESTONE_STEPS
-        },
+        milestones=milestones,
+        milestone_source_verifications=milestone_source_verifications,
         cofitok_generation=_read_optional(
             cofitok_full
             / "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"

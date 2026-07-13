@@ -36,6 +36,7 @@ ENTRYPOINTS = {
     "select_generation_sampling_batch.py",
     "select_generation_training_runtime.py",
     "train_generation.py",
+    "validate_generation_milestone_report.py",
     "validate_generation_training_pair.py",
     "write_generation_pipeline_status.py",
 }

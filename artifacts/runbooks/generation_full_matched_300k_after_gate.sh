@@ -206,20 +206,8 @@ paired_milestone_complete() {
       return 1
     fi
   done
-  python - "$report" "$step" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], encoding="utf-8") as handle:
-    report = json.load(handle)
-expected = int(sys.argv[2])
-if report.get("status") != "completed":
-    raise SystemExit(1)
-if int(report.get("milestone_step", -1)) != expected:
-    raise SystemExit(1)
-if int(report.get("expected_samples", -1)) != 2048:
-    raise SystemExit(1)
-PY
+  python scripts/validate_generation_milestone_report.py \
+    --report "$report" --expected-step "$step" >/dev/null
 }
 
 evaluate_milestone() {
@@ -248,6 +236,9 @@ build_paired_milestone() {
     --dense-checkpoint-eval "$dense_milestone/checkpoint_eval/checkpoint_evaluation_report.json" \
     --milestone-step "$step" --expected-samples 2048 \
     --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/milestones/$step_tag.json"
+  python scripts/validate_generation_milestone_report.py \
+    --report "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/milestones/$step_tag.json" \
+    --expected-step "$step" >/dev/null
 }
 
 start_full_monitor

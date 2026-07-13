@@ -1,8 +1,44 @@
 from __future__ import annotations
 
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
-from scripts.build_generation_milestone_report import build_report
+from cofitok.diffusion import select_sampling_timesteps
+from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
+from scripts.build_generation_milestone_report import (
+    build_report,
+    expected_source_report_suffixes,
+    source_report_identity,
+    validate_milestone_report,
+    verify_milestone_source_reports,
+)
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _source_reports() -> dict:
+    suffixes = expected_source_report_suffixes(50_000)
+    return {
+        name: {
+            "path": f"/root/outputs/{suffixes[name]}",
+            "bytes": 100 + index,
+            "sha256": str(index + 1) * 64,
+        }
+        for index, name in enumerate(
+            (
+                "cofitok_generation",
+                "dense_generation",
+                "cofitok_checkpoint_eval",
+                "dense_checkpoint_eval",
+            )
+        )
+    }
 
 
 def _generation(*, sha: str, budget: int, fid: float, sample_steps: int = 50) -> dict:
@@ -22,18 +58,30 @@ def _generation(*, sha: str, budget: int, fid: float, sample_steps: int = 50) ->
             "selected_prefix_budget": budget,
             "sample_set_sha256": ("c" if budget > 1 else "d") * 64,
             "sampling": {
+                "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+                "inference_api": INFERENCE_API,
+                "sampler": "ddim",
                 "num_samples": 2048,
                 "start_index": 0,
                 "batch_size": 32,
                 "sample_steps": sample_steps,
+                "num_train_timesteps": 1000,
+                "actual_timesteps": select_sampling_timesteps(1000, sample_steps),
                 "prefix_budgets": [budget],
                 "guidance_scale": 1.5,
                 "guidance_rescale": 0.0,
                 "cfg_batch_mode": "batched",
                 "eta": 0.0,
+                "clip_x0": True,
                 "seed": 0,
                 "precision": "bf16",
                 "image_shape": [3, 256, 256],
+                "class_schedule": "balanced_modulo",
+                "random_stream": {
+                    "prefix_budgets_share_stream": True,
+                    "batch_size_invariant": True,
+                    "resume_index_invariant": True,
+                },
             },
         },
     }
@@ -67,6 +115,7 @@ def test_milestone_report_binds_matched_checkpoint_and_sampling_protocol() -> No
         dense_generation=_generation(sha="b" * 64, budget=1, fid=20.0),
         cofitok_checkpoint_eval=_checkpoint_eval(sha="a" * 64, rank=1),
         dense_checkpoint_eval=_checkpoint_eval(sha="b" * 64, rank=1),
+        source_reports=_source_reports(),
         milestone_step=50_000,
         expected_samples=2048,
     )
@@ -84,6 +133,7 @@ def test_milestone_report_surfaces_quality_alerts_without_becoming_formal_gate()
         dense_generation=_generation(sha="b" * 64, budget=1, fid=20.0),
         cofitok_checkpoint_eval=_checkpoint_eval(sha="a" * 64, rank=2, zero=0.1),
         dense_checkpoint_eval=_checkpoint_eval(sha="b" * 64, rank=1),
+        source_reports=_source_reports(),
         milestone_step=50_000,
         expected_samples=2048,
     )
@@ -95,7 +145,7 @@ def test_milestone_report_surfaces_quality_alerts_without_becoming_formal_gate()
 
 
 def test_milestone_report_rejects_protocol_drift() -> None:
-    with pytest.raises(ValueError, match="protocols are not matched"):
+    with pytest.raises(ValueError, match="sampling protocol is invalid"):
         build_report(
             cofitok_generation=_generation(sha="a" * 64, budget=8, fid=20.0),
             dense_generation=_generation(
@@ -106,6 +156,7 @@ def test_milestone_report_rejects_protocol_drift() -> None:
             ),
             cofitok_checkpoint_eval=_checkpoint_eval(sha="a" * 64, rank=1),
             dense_checkpoint_eval=_checkpoint_eval(sha="b" * 64, rank=1),
+            source_reports=_source_reports(),
             milestone_step=50_000,
             expected_samples=2048,
         )
@@ -118,6 +169,7 @@ def test_milestone_report_rejects_cross_checkpoint_evaluation() -> None:
             dense_generation=_generation(sha="b" * 64, budget=1, fid=20.0),
             cofitok_checkpoint_eval=_checkpoint_eval(sha="e" * 64, rank=1),
             dense_checkpoint_eval=_checkpoint_eval(sha="b" * 64, rank=1),
+            source_reports=_source_reports(),
             milestone_step=50_000,
             expected_samples=2048,
         )
@@ -132,6 +184,63 @@ def test_milestone_report_rejects_cross_integrity_manifest_evaluation() -> None:
             dense_generation=_generation(sha="b" * 64, budget=1, fid=20.0),
             cofitok_checkpoint_eval=checkpoint,
             dense_checkpoint_eval=_checkpoint_eval(sha="b" * 64, rank=1),
+            source_reports=_source_reports(),
             milestone_step=50_000,
             expected_samples=2048,
         )
+
+
+def test_milestone_report_revalidates_content_addressed_sources(tmp_path) -> None:
+    source_reports = {}
+    for name, suffix in expected_source_report_suffixes(50_000).items():
+        path = tmp_path / suffix
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"name": name}), encoding="utf-8")
+        source_reports[name] = source_report_identity(path)
+    report = build_report(
+        cofitok_generation=_generation(sha="a" * 64, budget=8, fid=20.0),
+        dense_generation=_generation(sha="b" * 64, budget=1, fid=20.0),
+        cofitok_checkpoint_eval=_checkpoint_eval(sha="a" * 64, rank=1),
+        dense_checkpoint_eval=_checkpoint_eval(sha="b" * 64, rank=1),
+        source_reports=source_reports,
+        milestone_step=50_000,
+        expected_samples=2048,
+    )
+
+    verification = verify_milestone_source_reports(report)
+    evidence, warnings = validate_milestone_report(
+        report,
+        expected_step=50_000,
+        source_verification=verification,
+    )
+    assert warnings == []
+    assert evidence["source_report_sha256"] == {
+        name: identity["sha256"] for name, identity in source_reports.items()
+    }
+
+    report_path = tmp_path / "milestone.json"
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(ROOT / "src")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/validate_generation_milestone_report.py"),
+            "--report",
+            str(report_path),
+            "--expected-step",
+            "50000",
+        ],
+        cwd=ROOT,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+
+    (tmp_path / expected_source_report_suffixes(50_000)["cofitok_generation"]).write_text(
+        "changed", encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="changed after binding"):
+        verify_milestone_source_reports(report)

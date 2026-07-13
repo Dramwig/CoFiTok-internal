@@ -12,6 +12,7 @@ from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
     build_completion_audit,
 )
+from scripts.build_generation_milestone_report import expected_source_report_suffixes
 from cofitok.environment import runtime_environment_sha256
 
 
@@ -268,17 +269,105 @@ def _runtime_selection() -> dict:
 
 
 def _milestone(step: int, alerts: list[str] | None = None) -> dict:
-    row = {
-        "checkpoint_step": step,
-        "sample_count": 2_048,
-        "fid": 20.0,
+    alerts = alerts or []
+    source_suffixes = expected_source_report_suffixes(step)
+    source_reports = {
+        name: {
+            "path": f"/root/outputs/{source_suffixes[name]}",
+            "bytes": 100 + index,
+            "sha256": str(index + 1) * 64,
+        }
+        for index, name in enumerate(
+            (
+                "cofitok_generation",
+                "dense_generation",
+                "cofitok_checkpoint_eval",
+                "dense_checkpoint_eval",
+            )
+        )
     }
+
+    def row(method: str, budget: int, sha: str, fid: float) -> dict:
+        sampling = {
+            "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+            "inference_api": INFERENCE_API,
+            "sampler": "ddim",
+            "num_samples": 2_048,
+            "start_index": 0,
+            "batch_size": 32,
+            "sample_steps": 50,
+            "num_train_timesteps": 1_000,
+            "actual_timesteps": select_sampling_timesteps(1_000, 50),
+            "prefix_budgets": [budget],
+            "guidance_scale": 1.5,
+            "guidance_rescale": 0.0,
+            "cfg_batch_mode": "batched",
+            "eta": 0.0,
+            "clip_x0": True,
+            "seed": 0,
+            "precision": "bf16",
+            "image_shape": [3, 256, 256],
+            "class_schedule": "balanced_modulo",
+            "random_stream": {
+                "prefix_budgets_share_stream": True,
+                "batch_size_invariant": True,
+                "resume_index_invariant": True,
+            },
+            "sample_set_digest": {
+                "algorithm": "sha256",
+                "framing": "filename_utf8_nul_file_bytes_nul",
+            },
+        }
+        return {
+            "checkpoint": f"/checkpoints/{method}_{step}.pt",
+            "checkpoint_sha256": sha,
+            "checkpoint_integrity_manifest": f"/checkpoints/{method}_{step}.pt.integrity.json",
+            "checkpoint_step": step,
+            "weights": "ema",
+            "sample_set_sha256": ("c" if budget > 1 else "d") * 64,
+            "selected_prefix_budget": budget,
+            "sample_count": 2_048,
+            "fid": fid,
+            "inception_score": 4.0,
+            "endpoint_clean_mse": 0.1,
+            "prefix_path_mse_auc": 0.2,
+            "ordered_rank_by_path_auc": 1,
+            "order_count": 5 if budget > 1 else 1,
+            "zero_token_max_abs": 0.0,
+            "shuffled_to_ordered_endpoint_ratio": 1.5,
+            "sampling": sampling,
+        }
+
+    cofitok_fid = (
+        30.0
+        if "cofitok_fid_more_than_25pct_above_dense" in alerts
+        else 20.0
+    )
     return {
+        "schema_version": 2,
         "status": "completed",
+        "role": "training_quality_trend_only",
+        "claim_policy": {"formal_generation_claim_allowed": False},
         "milestone_step": step,
         "expected_samples": 2_048,
-        "methods": {"cofitok": row, "dense_identity": dict(row)},
-        "quality_alerts": alerts or [],
+        "source_reports": source_reports,
+        "methods": {
+            "cofitok": row("cofitok", 8, "a" * 64, cofitok_fid),
+            "dense_identity": row("dense", 1, "b" * 64, 20.0),
+        },
+        "matched_comparison": {
+            "fid_relative_change": (cofitok_fid - 20.0) / 20.0,
+            "endpoint_clean_mse_relative_change": 0.0,
+        },
+        "quality_alerts": alerts,
+        "quality_alert": bool(alerts),
+    }
+
+
+def _milestone_source_verification(step: int) -> dict:
+    return {
+        "status": "verified",
+        "source_reports": copy.deepcopy(_milestone(step)["source_reports"]),
     }
 
 
@@ -862,6 +951,9 @@ def _kwargs() -> dict:
         "inference_exports": _inference_exports(),
         "inference_artifact_files": _inference_artifact_files(),
         "milestones": {step: _milestone(step) for step in MILESTONE_STEPS},
+        "milestone_source_verifications": {
+            step: _milestone_source_verification(step) for step in MILESTONE_STEPS
+        },
         "cofitok_generation": _generation("a"),
         "dense_generation": _generation("b"),
         "final_gate": _gate("full"),
@@ -1341,6 +1433,30 @@ def test_completion_audit_preserves_nonblocking_milestone_alerts() -> None:
     assert report["warnings"] == [
         "milestone_50000:cofitok_fid_more_than_25pct_above_dense"
     ]
+
+
+def test_completion_audit_rejects_milestone_source_report_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["milestone_source_verifications"][50_000]["source_reports"][
+        "cofitok_generation"
+    ]["sha256"] = "f" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["full_milestone_evaluations"]
+
+
+def test_completion_audit_rejects_milestone_sampling_protocol_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["milestones"][50_000]["methods"]["cofitok"]["sampling"][
+        "guidance_scale"
+    ] = 2.0
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["full_milestone_evaluations"]
 
 
 def test_completion_audit_direct_cli_reports_in_progress(tmp_path) -> None:
