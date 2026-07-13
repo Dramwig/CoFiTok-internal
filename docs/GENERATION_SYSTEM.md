@@ -319,7 +319,10 @@ the pinned 10% pair and promotion gate, full matched 300K pair, training audits,
 all four milestones, formal paired 50K sampling, final gate, and final comparison.
 The formal pair is accepted only when its real-set tree digest, content-addressed
 cache key, and evaluator environment are identical and bound through the gate
-and comparison schema v4, including the exact formal sampling protocol fields.
+and comparison schema v5, including the exact formal sampling protocol fields.
+The comparison binds both training reports, both 50K metrics reports, and the
+final gate by authoritative path, byte count, and SHA256; the completion audit
+rereads those files before accepting any displayed metric or cost field.
 Missing evidence is `in_progress`, contradictory evidence is `failed`, and only
 the full chain is `complete`. See
 `docs/records/2026-07-12_large_scale_generation_completion_audit.md`.

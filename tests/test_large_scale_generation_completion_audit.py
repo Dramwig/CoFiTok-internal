@@ -396,6 +396,7 @@ def _generation(seed: str) -> dict:
         },
         "metrics": {
             "frechet_inception_distance": 19.0,
+            "inception_score_mean": 30.0,
             "precision": 0.6,
             "recall": 0.4,
         },
@@ -417,6 +418,7 @@ def _generation(seed: str) -> dict:
                 "status": "completed",
                 "completed_samples": 50_000,
                 "cumulative_elapsed_seconds": 10_000.0,
+                "invocation": 1,
             },
             "sampling": {
                 "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
@@ -477,8 +479,12 @@ def _official_related() -> dict:
 def _comparison() -> dict:
     official = _official_related()
     return {
-        "schema_version": 4,
+        "schema_version": 5,
         "status": "ready",
+        "final_gate": {
+            "status": "pass",
+            "decision": "large_scale_generation_ready",
+        },
         "comparison_policy": {
             "primary_direct_tier": "matched_training_direct",
             "external_context_tier": "official_pretrained_contextual",
@@ -489,6 +495,7 @@ def _comparison() -> dict:
             "sha256": "9" * 64,
             "schema_version": 1,
         },
+        "source_reports": _comparison_source_reports(),
         "matched_training_rows": [
             {
                 "method": "CoFiTok K=8",
@@ -507,6 +514,12 @@ def _comparison() -> dict:
                 "sample_batch_size": 64,
                 "sampling_elapsed_seconds": 10_000.0,
                 "sampling_images_per_second": 5.0,
+                "sampling_invocations": 1,
+                "fid": 19.0,
+                "inception_score": 30.0,
+                "precision": 0.6,
+                "recall": 0.4,
+                "evaluator": {"package": "torch_fidelity", "version": "0.4.0"},
                 "weights": "ema",
                 "sampling_protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
                 "sampling_inference_api": INFERENCE_API,
@@ -537,6 +550,7 @@ def _comparison() -> dict:
                 "evaluator_runtime_environment_sha256": runtime_environment_sha256(
                     _runtime_environment()
                 ),
+                "protocol_note": "Same data, backbone family, optimizer, steps, and evaluator.",
             },
             {
                 "method": "Dense identity",
@@ -555,6 +569,12 @@ def _comparison() -> dict:
                 "sample_batch_size": 64,
                 "sampling_elapsed_seconds": 10_000.0,
                 "sampling_images_per_second": 5.0,
+                "sampling_invocations": 1,
+                "fid": 19.0,
+                "inception_score": 30.0,
+                "precision": 0.6,
+                "recall": 0.4,
+                "evaluator": {"package": "torch_fidelity", "version": "0.4.0"},
                 "weights": "ema",
                 "sampling_protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
                 "sampling_inference_api": INFERENCE_API,
@@ -585,6 +605,7 @@ def _comparison() -> dict:
                 "evaluator_runtime_environment_sha256": runtime_environment_sha256(
                     _runtime_environment()
                 ),
+                "protocol_note": "Same data, backbone family, optimizer, steps, and evaluator.",
             },
         ],
         "official_context_rows": [
@@ -602,6 +623,10 @@ def _comparison() -> dict:
                 "inception_score": row["inception_score"],
                 "precision": row["precision"],
                 "recall": row["recall"],
+                "evaluator": {
+                    "package": "ADM TensorFlow evaluation graph",
+                    "version": "pinned baseline protocol",
+                },
                 "protocol_note": row["protocol"],
                 "source_metrics": row["metrics_txt"],
                 "source_status": row["status"],
@@ -609,6 +634,48 @@ def _comparison() -> dict:
             }
             for row in official["rows"]
         ],
+        "matched_summary": {
+            "cofitok_minus_dense_fid": 0.0,
+            "cofitok_relative_fid": 0.0,
+        },
+    }
+
+
+def _comparison_source_reports() -> dict:
+    root = "/root/autodl-tmp/CoFiTok"
+    return {
+        "cofitok_training": {
+            "path": f"{root}/checkpoints/generation/imagenet256_full_cofitok_k8_300k/training_report.json",
+            "bytes": 100,
+            "sha256": "1" * 64,
+        },
+        "dense_training": {
+            "path": f"{root}/checkpoints/generation/imagenet256_full_dense_300k/training_report.json",
+            "bytes": 100,
+            "sha256": "2" * 64,
+        },
+        "cofitok_generation": {
+            "path": f"{root}/checkpoints/generation/imagenet256_full_cofitok_k8_300k/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json",
+            "bytes": 100,
+            "sha256": "3" * 64,
+        },
+        "dense_generation": {
+            "path": f"{root}/checkpoints/generation/imagenet256_full_dense_300k/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json",
+            "bytes": 100,
+            "sha256": "4" * 64,
+        },
+        "final_gate": {
+            "path": f"{root}/CoFiTok-internal/artifacts/reports/generation/imagenet256_full_matched_300k/final_generation_gate.json",
+            "bytes": 100,
+            "sha256": "5" * 64,
+        },
+    }
+
+
+def _comparison_source_verification() -> dict:
+    return {
+        "status": "verified",
+        "source_reports": _comparison_source_reports(),
     }
 
 
@@ -958,6 +1025,7 @@ def _kwargs() -> dict:
         "dense_generation": _generation("b"),
         "final_gate": _gate("full"),
         "comparison": _comparison(),
+        "comparison_source_verification": _comparison_source_verification(),
         "official_related": _official_related(),
         "official_related_sha256": "9" * 64,
     }
@@ -1105,6 +1173,29 @@ def test_completion_audit_rejects_mislabeled_official_context() -> None:
 def test_completion_audit_rejects_unbound_official_context_source() -> None:
     kwargs = _kwargs()
     kwargs["comparison"]["official_context_source"]["sha256"] = "8" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_comparison_report"]
+
+
+def test_completion_audit_rejects_changed_matched_comparison_source() -> None:
+    kwargs = _kwargs()
+    kwargs["comparison_source_verification"] = {
+        "status": "invalid",
+        "error": "comparison source report changed after binding: cofitok_generation",
+    }
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_comparison_report"]
+
+
+def test_completion_audit_rejects_misreported_matched_quality_metric() -> None:
+    kwargs = _kwargs()
+    kwargs["comparison"]["matched_training_rows"][0]["precision"] = 0.7
 
     report = build_completion_audit(**kwargs)
 

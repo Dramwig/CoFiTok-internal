@@ -32,7 +32,7 @@ reject unsupported or divergent artifacts before computing distribution scores.
 
 The promotion/final report adds `formal_sampling_protocol`. The completion audit
 independently revalidates each full 50K report against its training diffusion
-configuration, requires that named gate, and verifies comparison schema v4 rows
+configuration, requires that named gate, and verifies comparison schema v5 rows
 against the source sampling dictionaries. A stale gate or a comparison assembled
 from altered protocol fields cannot certify completion.
 

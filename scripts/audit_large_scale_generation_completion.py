@@ -33,6 +33,17 @@ except ModuleNotFoundError:
         verify_milestone_source_reports,
     )
 
+try:
+    from scripts.build_large_scale_generation_comparison import (
+        COMPARISON_REPORT_SCHEMA_VERSION,
+        verify_comparison_source_reports,
+    )
+except ModuleNotFoundError:
+    from build_large_scale_generation_comparison import (
+        COMPARISON_REPORT_SCHEMA_VERSION,
+        verify_comparison_source_reports,
+    )
+
 
 PINNED_10PCT_REVISION = "781a01444fddbf0d48a427ba58bdeed50167b5be"
 MILESTONE_STEPS = (50_000, 100_000, 200_000, 300_000)
@@ -859,11 +870,22 @@ def _comparison_evidence(
     training_reports: dict[str, dict[str, Any]],
     official_related: dict[str, Any],
     official_related_sha256: str,
+    source_verification: dict[str, Any],
 ) -> dict[str, Any]:
-    if report.get("schema_version") != 4:
+    if report.get("schema_version") != COMPARISON_REPORT_SCHEMA_VERSION:
         raise ValueError("large-scale comparison schema is stale")
     if report.get("status") != "ready":
         raise ValueError("large-scale comparison is not ready")
+    if report.get("final_gate") != {
+        "status": "pass",
+        "decision": "large_scale_generation_ready",
+    }:
+        raise ValueError("comparison final-gate decision differs")
+    if (
+        source_verification.get("status") != "verified"
+        or source_verification.get("source_reports") != report.get("source_reports")
+    ):
+        raise ValueError("comparison source-report verification differs")
     rows = report.get("matched_training_rows", [])
     if len(rows) != 2 or any(int(row.get("sample_count", -1)) != 50_000 for row in rows):
         raise ValueError("large-scale comparison lacks the matched 50K pair")
@@ -902,6 +924,8 @@ def _comparison_evidence(
             or int(row.get("resolution", -1)) != 256
             or int(row.get("training_steps", -1)) != 300_000
             or int(row.get("sample_count", -1)) != 50_000
+            or row.get("protocol_note")
+            != "Same data, backbone family, optimizer, steps, and evaluator."
         ):
             raise ValueError(f"comparison {method} matched protocol metadata differs")
         if row.get("checkpoint_sha256") != provenance.get("checkpoint_sha256"):
@@ -949,6 +973,8 @@ def _comparison_evidence(
             "runtime_environment_sha256"
         ):
             raise ValueError(f"comparison {method} evaluator environment differs")
+        if row.get("evaluator") != generation.get("implementation"):
+            raise ValueError(f"comparison {method} evaluator implementation differs")
         expected_exact = {
             "parameter_count": int(training["parameter_count"]),
             "effective_batch_size": int(cost["effective_batch_size"]),
@@ -970,6 +996,10 @@ def _comparison_evidence(
         expected_exact["sample_batch_size"] = int(sampling["batch_size"])
         if int(row.get("sample_batch_size", -1)) != expected_exact["sample_batch_size"]:
             raise ValueError(f"comparison {method} sampling batch differs")
+        if int(row.get("sampling_invocations", -1)) != int(
+            sampling_progress.get("invocation", -2)
+        ):
+            raise ValueError(f"comparison {method} sampling invocation differs")
         expected_float.update(
             {
                 "sampling_elapsed_seconds": sampling_elapsed,
@@ -984,6 +1014,22 @@ def _comparison_evidence(
                 abs_tol=1e-12,
             ):
                 raise ValueError(f"comparison {method} {field} differs from source evidence")
+        metric_fields = {
+            "fid": "frechet_inception_distance",
+            "inception_score": "inception_score_mean",
+            "precision": "precision",
+            "recall": "recall",
+        }
+        for row_field, source_field in metric_fields.items():
+            if not math.isclose(
+                float(row.get(row_field, math.nan)),
+                float(generation["metrics"].get(source_field, math.nan)),
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ):
+                raise ValueError(
+                    f"comparison {method} {row_field} differs from generation metrics"
+                )
     official_rows = official_related.get("rows", [])
     expected_aliases = {"d_ar": "D-AR", "mar": "MAR", "retok": "ReTok"}
     if official_related.get("schema_version") != 1:
@@ -1017,6 +1063,17 @@ def _comparison_evidence(
             or source_row.get("paper_table_role") != "secondary related-method only"
             or row.get("protocol_note") != source_row.get("protocol")
             or row.get("source_metrics") != source_row.get("metrics_txt")
+            or row.get("source_npz") != source_row.get("npz")
+            or row.get("source_kind") != source_row.get("source_kind")
+            or row.get("sample_steps") is not None
+            or row.get("guidance_scale") is not None
+            or row.get("checkpoint_sha256") is not None
+            or row.get("sample_set_sha256") is not None
+            or row.get("evaluator")
+            != {
+                "package": "ADM TensorFlow evaluation graph",
+                "version": "pinned baseline protocol",
+            }
         ):
             raise ValueError(f"comparison official contextual metadata differs: {alias}")
         for metric in metric_names:
@@ -1027,10 +1084,29 @@ def _comparison_evidence(
                 abs_tol=1e-12,
             ):
                 raise ValueError(f"comparison official contextual metric differs: {alias}/{metric}")
+    cofitok_row = indexed["CoFiTok K=8"]
+    dense_row = indexed["Dense identity"]
+    expected_summary = {
+        "cofitok_minus_dense_fid": cofitok_row["fid"] - dense_row["fid"],
+        "cofitok_relative_fid": cofitok_row["fid"] / dense_row["fid"] - 1.0,
+    }
+    summary = report.get("matched_summary", {})
+    for field, expected_value in expected_summary.items():
+        if not math.isclose(
+            float(summary.get(field, math.nan)),
+            expected_value,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ):
+            raise ValueError(f"comparison matched summary differs: {field}")
     return {
         "matched_methods": [row["method"] for row in rows],
         "official_context_methods": sorted(expected_aliases),
         "official_context_source_sha256": official_related_sha256,
+        "source_report_sha256": {
+            name: identity["sha256"]
+            for name, identity in report["source_reports"].items()
+        },
         "cross_tier_numeric_ranking_allowed": False,
     }
 
@@ -1261,6 +1337,7 @@ def build_completion_audit(
     dense_generation: dict[str, Any] | None,
     final_gate: dict[str, Any] | None,
     comparison: dict[str, Any] | None,
+    comparison_source_verification: dict[str, Any] | None,
     official_related: dict[str, Any] | None,
     official_related_sha256: str | None,
 ) -> dict[str, Any]:
@@ -1513,6 +1590,7 @@ def build_completion_audit(
             "final_comparison_report",
             [
                 comparison,
+                comparison_source_verification,
                 official_related,
                 official_related_sha256,
                 cofitok_full_training,
@@ -1527,6 +1605,7 @@ def build_completion_audit(
                 },
                 official_related,
                 official_related_sha256,
+                comparison_source_verification,
             ),
         )
     )
@@ -1563,6 +1642,17 @@ def _verify_milestone_sources_optional(
         return None
     try:
         return verify_milestone_source_reports(report)
+    except (OSError, KeyError, TypeError, ValueError) as error:
+        return {"status": "invalid", "error": str(error)}
+
+
+def _verify_comparison_sources_optional(
+    report: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    if report is None:
+        return None
+    try:
+        return verify_comparison_source_reports(report)
     except (OSError, KeyError, TypeError, ValueError) as error:
         return {"status": "invalid", "error": str(error)}
 
@@ -1638,6 +1728,8 @@ def main() -> None:
         step: _verify_milestone_sources_optional(report)
         for step, report in milestones.items()
     }
+    comparison_path = full_root / "comparison/large_scale_generation_comparison.json"
+    comparison = _read_optional(comparison_path)
 
     audit = build_completion_audit(
         expected_10pct_revision=args.expected_10pct_revision,
@@ -1719,9 +1811,8 @@ def main() -> None:
             / "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
         ),
         final_gate=_read_optional(full_root / "final_generation_gate.json"),
-        comparison=_read_optional(
-            full_root / "comparison/large_scale_generation_comparison.json"
-        ),
+        comparison=comparison,
+        comparison_source_verification=_verify_comparison_sources_optional(comparison),
         official_related=_read_optional(official_related_path),
         official_related_sha256=(
             file_sha256(official_related_path) if official_related_path.is_file() else None

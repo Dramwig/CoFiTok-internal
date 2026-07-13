@@ -38,3 +38,7 @@ CoFiTok/dense provenance drift at every downstream boundary.
 The later formal sampling protocol contract advances the comparison to schema
 v4. It preserves these real-set and evaluator fields and adds exact DDIM/CFG/
 clipping protocol provenance to each matched row.
+
+The later comparison source-provenance hardening advances the schema to v5.
+It preserves all v4 fields and content-addresses the matched training, metrics,
+and final-gate source reports.

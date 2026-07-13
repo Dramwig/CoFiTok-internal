@@ -12,6 +12,8 @@ from scripts.build_large_scale_generation_comparison import (
     build_report,
     render_csv,
     render_markdown,
+    source_report_identity,
+    verify_comparison_source_reports,
 )
 
 
@@ -123,6 +125,37 @@ def _official() -> dict:
     return {"schema_version": 1, "rows": rows}
 
 
+def _source_reports() -> dict:
+    root = "/root/autodl-tmp/CoFiTok"
+    return {
+        "cofitok_training": {
+            "path": f"{root}/checkpoints/generation/imagenet256_full_cofitok_k8_300k/training_report.json",
+            "bytes": 100,
+            "sha256": "1" * 64,
+        },
+        "dense_training": {
+            "path": f"{root}/checkpoints/generation/imagenet256_full_dense_300k/training_report.json",
+            "bytes": 100,
+            "sha256": "2" * 64,
+        },
+        "cofitok_generation": {
+            "path": f"{root}/checkpoints/generation/imagenet256_full_cofitok_k8_300k/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json",
+            "bytes": 100,
+            "sha256": "3" * 64,
+        },
+        "dense_generation": {
+            "path": f"{root}/checkpoints/generation/imagenet256_full_dense_300k/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json",
+            "bytes": 100,
+            "sha256": "4" * 64,
+        },
+        "final_gate": {
+            "path": f"{root}/CoFiTok-internal/artifacts/reports/generation/imagenet256_full_matched_300k/final_generation_gate.json",
+            "bytes": 100,
+            "sha256": "5" * 64,
+        },
+    }
+
+
 def _gate(status: str = "pass") -> dict:
     cofitok_contract = sampling_protocol_contract(
         _sampling(8), stage="full", expected_num_train_timesteps=1000
@@ -181,6 +214,7 @@ def _report(official: dict | None = None, gate: dict | None = None) -> dict:
         official_related=official or _official(),
         official_source_path="/reports/official_related_methods_table.json",
         official_source_sha256="e" * 64,
+        source_reports=_source_reports(),
     )
 
 
@@ -188,7 +222,8 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     report = _report()
 
     assert report["status"] == "ready"
-    assert report["schema_version"] == 4
+    assert report["schema_version"] == 5
+    assert report["source_reports"] == _source_reports()
     assert len(report["matched_training_rows"]) == 2
     assert len(report["official_context_rows"]) == 3
     assert report["comparison_policy"]["cross_tier_numeric_ranking_allowed"] is False
@@ -234,6 +269,7 @@ def test_comparison_rejects_mismatched_real_set() -> None:
             official_related=_official(),
             official_source_path="/reports/official_related_methods_table.json",
             official_source_sha256="e" * 64,
+            source_reports=_source_reports(),
         )
 
 
@@ -267,6 +303,7 @@ def test_comparison_rejects_incomplete_sampling_progress() -> None:
             official_related=_official(),
             official_source_path="/reports/official_related_methods_table.json",
             official_source_sha256="e" * 64,
+            source_reports=_source_reports(),
         )
 
 
@@ -302,4 +339,54 @@ def test_comparison_rejects_matched_weakened_sampling_protocol() -> None:
             official_related=_official(),
             official_source_path="/reports/official_related_methods_table.json",
             official_source_sha256="e" * 64,
+            source_reports=_source_reports(),
         )
+
+
+def test_comparison_rejects_out_of_range_matched_metrics() -> None:
+    cofitok = _generation(12.0, "a" * 64, "c" * 64, 8)
+    cofitok["metrics"]["precision"] = 1.1
+
+    with pytest.raises(ValueError, match="distribution metrics are out of range"):
+        build_report(
+            cofitok_training=_training(62_950_800, 8),
+            dense_training=_training(62_824_707, 1),
+            cofitok_generation=cofitok,
+            dense_generation=_generation(11.8, "b" * 64, "d" * 64, 1),
+            final_gate=_gate(),
+            official_related=_official(),
+            official_source_path="/reports/official_related_methods_table.json",
+            official_source_sha256="e" * 64,
+            source_reports=_source_reports(),
+        )
+
+
+def test_comparison_source_verification_detects_changed_file(tmp_path) -> None:
+    paths = {
+        "cofitok_training": tmp_path
+        / "imagenet256_full_cofitok_k8_300k/training_report.json",
+        "dense_training": tmp_path
+        / "imagenet256_full_dense_300k/training_report.json",
+        "cofitok_generation": tmp_path
+        / "imagenet256_full_cofitok_k8_300k/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json",
+        "dense_generation": tmp_path
+        / "imagenet256_full_dense_300k/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json",
+        "final_gate": tmp_path
+        / "artifacts/reports/generation/imagenet256_full_matched_300k/final_generation_gate.json",
+    }
+    for path in paths.values():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('{"status":"completed"}\n', encoding="utf-8")
+    report = {
+        "source_reports": {
+            name: source_report_identity(path) for name, path in paths.items()
+        }
+    }
+
+    assert verify_comparison_source_reports(report)["status"] == "verified"
+
+    paths["cofitok_generation"].write_text(
+        '{"status":"changed"}\n', encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="changed after binding: cofitok_generation"):
+        verify_comparison_source_reports(report)

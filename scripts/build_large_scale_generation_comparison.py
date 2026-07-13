@@ -16,6 +16,25 @@ from cofitok.reporting import file_sha256, write_json_report, write_text_report
 
 EXTERNAL_ALIASES = {"d_ar", "mar", "retok"}
 EXTERNAL_METHODS = {"d_ar": "D-AR", "mar": "MAR", "retok": "ReTok"}
+COMPARISON_REPORT_SCHEMA_VERSION = 5
+SOURCE_REPORT_SUFFIXES = {
+    "cofitok_training": (
+        "imagenet256_full_cofitok_k8_300k/training_report.json"
+    ),
+    "dense_training": "imagenet256_full_dense_300k/training_report.json",
+    "cofitok_generation": (
+        "imagenet256_full_cofitok_k8_300k/samples_50k_ddim250_cfg15/metrics/"
+        "generation_metrics_report.json"
+    ),
+    "dense_generation": (
+        "imagenet256_full_dense_300k/samples_50k_ddim250_cfg15/metrics/"
+        "generation_metrics_report.json"
+    ),
+    "final_gate": (
+        "artifacts/reports/generation/imagenet256_full_matched_300k/"
+        "final_generation_gate.json"
+    ),
+}
 
 
 def _read(path: str | Path) -> dict[str, Any]:
@@ -23,11 +42,71 @@ def _read(path: str | Path) -> dict[str, Any]:
         return json.load(handle)
 
 
+def source_report_identity(path: str | Path) -> dict[str, Any]:
+    source = Path(path).resolve()
+    if not source.is_file():
+        raise FileNotFoundError(f"comparison source report does not exist: {source}")
+    return {
+        "path": source.as_posix(),
+        "bytes": source.stat().st_size,
+        "sha256": file_sha256(source),
+    }
+
+
+def _validate_source_report_identities(
+    source_reports: dict[str, dict[str, Any]],
+) -> None:
+    if set(source_reports) != set(SOURCE_REPORT_SUFFIXES):
+        raise ValueError("comparison source-report set is incomplete")
+    for name, expected_suffix in SOURCE_REPORT_SUFFIXES.items():
+        identity = source_reports[name]
+        path = str(identity.get("path", "")).replace("\\", "/")
+        sha256 = str(identity.get("sha256", ""))
+        if (
+            not path.endswith(expected_suffix)
+            or int(identity.get("bytes", 0)) < 1
+            or len(sha256) != 64
+            or any(character not in "0123456789abcdef" for character in sha256)
+        ):
+            raise ValueError(f"comparison source-report identity is invalid: {name}")
+
+
+def verify_comparison_source_reports(report: dict[str, Any]) -> dict[str, Any]:
+    source_reports = report.get("source_reports")
+    if not isinstance(source_reports, dict):
+        raise ValueError("comparison report is missing source-report identities")
+    _validate_source_report_identities(source_reports)
+    verified = {}
+    for name, expected in source_reports.items():
+        actual = source_report_identity(expected["path"])
+        if actual != expected:
+            raise ValueError(f"comparison source report changed after binding: {name}")
+        verified[name] = actual
+    return {"status": "verified", "source_reports": verified}
+
+
 def _finite_metric(report: dict[str, Any], key: str) -> float:
     value = float(report["metrics"][key])
     if not math.isfinite(value):
         raise ValueError(f"generation metric {key} is not finite")
     return value
+
+
+def _distribution_metrics(report: dict[str, Any]) -> dict[str, float]:
+    metrics = {
+        "fid": _finite_metric(report, "frechet_inception_distance"),
+        "inception_score": _finite_metric(report, "inception_score_mean"),
+        "precision": _finite_metric(report, "precision"),
+        "recall": _finite_metric(report, "recall"),
+    }
+    if (
+        metrics["fid"] < 0.0
+        or metrics["inception_score"] <= 0.0
+        or not 0.0 <= metrics["precision"] <= 1.0
+        or not 0.0 <= metrics["recall"] <= 1.0
+    ):
+        raise ValueError("generation distribution metrics are out of range")
+    return metrics
 
 
 def _matched_row(
@@ -63,6 +142,7 @@ def _matched_row(
         raise ValueError(f"{method} sampling progress is incomplete")
     if int(sampling_progress.get("completed_samples", -1)) != sample_count:
         raise ValueError(f"{method} sampling progress count does not match metrics")
+    distribution_metrics = _distribution_metrics(generation)
     return {
         "method": method,
         "comparison_tier": "matched_training_direct",
@@ -81,10 +161,7 @@ def _matched_row(
         "sampling_elapsed_seconds": sampling_elapsed_seconds,
         "sampling_images_per_second": sample_count / sampling_elapsed_seconds,
         "sampling_invocations": int(sampling_progress["invocation"]),
-        "fid": _finite_metric(generation, "frechet_inception_distance"),
-        "inception_score": _finite_metric(generation, "inception_score_mean"),
-        "precision": _finite_metric(generation, "precision"),
-        "recall": _finite_metric(generation, "recall"),
+        **distribution_metrics,
         "evaluator": generation["implementation"],
         "weights": provenance["weights"],
         "sampling_protocol_schema": sampling["protocol_schema"],
@@ -200,11 +277,13 @@ def build_report(
     official_related: dict[str, Any],
     official_source_path: str,
     official_source_sha256: str,
+    source_reports: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     if len(official_source_sha256) != 64:
         raise ValueError("official related-method source SHA256 is malformed")
     if final_gate.get("stage") != "full":
         raise ValueError("large-scale comparison requires a full-stage gate report")
+    _validate_source_report_identities(source_reports)
     formal_contracts = {
         "cofitok": sampling_protocol_contract(
             cofitok_generation["sample_provenance"]["sampling"],
@@ -300,7 +379,7 @@ def build_report(
         and final_gate.get("decision") == "large_scale_generation_ready"
     )
     return {
-        "schema_version": 4,
+        "schema_version": COMPARISON_REPORT_SCHEMA_VERSION,
         "status": "ready" if ready else "hold",
         "final_gate": {
             "status": final_gate.get("status"),
@@ -320,6 +399,7 @@ def build_report(
             "sha256": official_source_sha256,
             "schema_version": official_related.get("schema_version"),
         },
+        "source_reports": source_reports,
         "matched_training_rows": matched,
         "official_context_rows": external,
         "matched_summary": {
@@ -462,15 +542,25 @@ def main() -> None:
     parser.add_argument("--output-dir", required=True)
     args = parser.parse_args()
 
+    source_paths = {
+        "cofitok_training": Path(args.cofitok_training),
+        "dense_training": Path(args.dense_training),
+        "cofitok_generation": Path(args.cofitok_generation),
+        "dense_generation": Path(args.dense_generation),
+        "final_gate": Path(args.final_gate),
+    }
     report = build_report(
-        cofitok_training=_read(args.cofitok_training),
-        dense_training=_read(args.dense_training),
-        cofitok_generation=_read(args.cofitok_generation),
-        dense_generation=_read(args.dense_generation),
-        final_gate=_read(args.final_gate),
+        cofitok_training=_read(source_paths["cofitok_training"]),
+        dense_training=_read(source_paths["dense_training"]),
+        cofitok_generation=_read(source_paths["cofitok_generation"]),
+        dense_generation=_read(source_paths["dense_generation"]),
+        final_gate=_read(source_paths["final_gate"]),
         official_related=_read(args.official_related),
         official_source_path=Path(args.official_related).resolve().as_posix(),
         official_source_sha256=file_sha256(args.official_related),
+        source_reports={
+            name: source_report_identity(path) for name, path in source_paths.items()
+        },
     )
     output_dir = Path(args.output_dir)
     write_json_report(output_dir / "large_scale_generation_comparison.json", report)

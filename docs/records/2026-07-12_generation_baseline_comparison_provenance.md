@@ -19,7 +19,7 @@ reported metrics use the pinned ADM TensorFlow baseline protocol rather than the
 matched torch-fidelity evaluator. The comparison policy therefore sets
 `cross_tier_numeric_ranking_allowed=false`.
 
-Comparison schema version 3 binds the tracked
+Comparison schema version 5 binds the tracked
 `official_related_methods_table.json` bytes by SHA256 and preserves each row's
 alias, exact method identity, eval-only status, secondary-only table role,
 protocol, metric source path, and distribution metrics. The final completion
@@ -28,3 +28,9 @@ metrics, and independently recomputes every direct compute field from training
 and sampling reports. Empty contextual placeholders, mislabeled rows, edited
 metrics, stale source tables, unmatched real data/evaluator environments, and
 cross-tier ranking policies all fail closed.
+
+Schema v5 also binds the two full training reports, two formal 50K metrics
+reports, and final generation gate by authoritative path, byte count, and
+SHA256. Completion rereads all five files and independently verifies matched
+FID, IS, precision, recall, evaluator identity, sampling invocation count,
+derived FID summary, training cost, sampling cost, and protocol provenance.
