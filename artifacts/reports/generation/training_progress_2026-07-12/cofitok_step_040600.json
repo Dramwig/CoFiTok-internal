@@ -1,0 +1,84 @@
+{
+  "checkpoint": {
+    "interval": 5000,
+    "latest": {
+      "checkpoint": "checkpoint_step_00040000.pt",
+      "step": 40000
+    },
+    "latest_integrity": {
+      "checkpoint": "checkpoint_step_00040000.pt",
+      "checkpoint_bytes": 1008218658,
+      "checkpoint_sha256": "f3af056d3a6945567fcef24c951efbd7e168ec97ec7611a64a4feb33dc16121f",
+      "integrity_manifest": null,
+      "policy": "legacy_compute",
+      "status": "legacy_computed",
+      "step": 40000
+    },
+    "missing_required_steps": [],
+    "required_steps": [],
+    "status": "available",
+    "steps": [
+      30000,
+      35000,
+      40000
+    ]
+  },
+  "current_segment_start_step": 1,
+  "eta_seconds": 22499.76054818681,
+  "expected_steps": 50000,
+  "gradient_clipping": {
+    "configured_max_norm": 1.0,
+    "logged_norm_semantics": "pre_clip_total_norm",
+    "observed_max_pre_clip_norm": 8.16974925994873,
+    "pre_clip_exceedance_count": 5
+  },
+  "issues": [],
+  "last_step": 40600,
+  "latest_metrics": {
+    "component_decorrelation": 0.0,
+    "denoise_path_component": 0.00372990604955703,
+    "denoise_path_prefix": 0.006056688842363656,
+    "elapsed_seconds": 97180.5798420906,
+    "ema_decay": 0.9999,
+    "energy_budget": 0.0,
+    "epsilon": 0.031848520040512085,
+    "epsilon_band_component": 0.0,
+    "epsilon_band_prefix": 0.0,
+    "grad_norm": 0.029649319127202034,
+    "group_residual": 0.0,
+    "learning_rate": 1.7927944796992523e-05,
+    "monotonic": 0.0,
+    "prefix": 0.0,
+    "residual_component": 0.0,
+    "sampled_budget": 0.0,
+    "sampled_component": 0.0,
+    "sampled_prefix": 0.0,
+    "samples_seen": 2598400,
+    "step": 40600,
+    "tail_floor": 0.0,
+    "total": 0.03252434637397528,
+    "zero_token": 0.0
+  },
+  "metric_row_count": 813,
+  "progress_fraction": 0.812,
+  "recent_mean": {
+    "epsilon": 0.030930349649861456,
+    "grad_norm": 0.03448837399482727,
+    "total": 0.03161084782332182
+  },
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_cofitok_k8_50k_2026-07-12",
+  "schema_version": 2,
+  "seconds_per_step": 2.393591547679448,
+  "status": "healthy",
+  "validation": {
+    "configured_interval": 1000,
+    "event_count": 0,
+    "expected_event_count": 40,
+    "logging_complete": false
+  },
+  "validation_event_count": 0,
+  "warnings": [
+    "latest legacy checkpoint has no integrity manifest; size and SHA256 were computed read-only and must be bound by post-training migration",
+    "validation metrics are missing from train_metrics.jsonl; legacy revisions may evaluate after emitting the log row"
+  ]
+}
