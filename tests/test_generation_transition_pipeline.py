@@ -212,5 +212,6 @@ def test_legacy_pair_deployment_waiter_is_bounded_locked_and_fail_closed() -> No
     assert "monitor_failed" in waiter
     assert "training_complete" in waiter
     assert "completed_steps" in waiter
+    assert 'sleep "$POLL_SECONDS" 7>&-' in waiter
     assert 'bash "$DEPLOY_HELPER" "$BUNDLE" "$EXPECTED_COMMIT" "$TARGET_COMMIT"' in waiter
     assert waiter.index("pair_complete") < waiter.rindex('bash "$DEPLOY_HELPER"')

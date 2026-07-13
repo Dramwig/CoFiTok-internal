@@ -152,5 +152,6 @@ while true; do
   else
     write_status waiting "waiting for both legacy 50K training reports" "$elapsed"
   fi
-  sleep "$POLL_SECONDS"
+  # Do not let an orphaned sleep retain the deployment lock if the waiter dies.
+  sleep "$POLL_SECONDS" 7>&-
 done

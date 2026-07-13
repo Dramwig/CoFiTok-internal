@@ -90,7 +90,9 @@ the authoritative monitor, requires both exact 50K reports and no remaining
 legacy training/runbook process, then invokes the existing fail-closed deployer.
 Monitor failure, timeout, revision drift, dirty tracked files, incomplete reports,
 or a mismatched bundle stops deployment. It does not touch the formal worktree
-while the legacy pair is active.
+while the legacy pair is active. The polling sleep closes the inherited lock
+descriptor, so an interrupted waiter cannot leave an orphaned sleep holding the
+deployment lock and blocking immediate recovery.
 
 Machine-readable evidence:
 
