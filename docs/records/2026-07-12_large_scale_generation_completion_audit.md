@@ -45,7 +45,9 @@ The audit requires all of the following:
 - all four paired 2,048-sample DDIM-50 milestone reports;
 - paired formal 50K DDIM-250 EMA generation with completed atomic sampling
   progress, checkpoint/sample SHA256, integrity sidecars, and positive sampling
-  elapsed time, plus canonical and identical actual sampling environments;
+  elapsed time, plus canonical and identical actual sampling environments. The
+  terminal audit re-enumerates and rehashes both physical 50K numbered PNG sets
+  and revalidates their sampling report, immutable manifest, and progress files;
 - content-addressed real ImageNet validation trees, derived torch-fidelity cache
   keys, and canonical evaluator environments identical across both methods;
 - a shared, revision/checkpoint-bound formal sampling batch selection that both

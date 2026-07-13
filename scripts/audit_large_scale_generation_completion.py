@@ -12,13 +12,17 @@ from PIL import Image
 
 from cofitok.environment import runtime_environment_sha256
 from cofitok.data.provenance import validate_dataset_provenance
-from cofitok.generation import sampling_protocol_contract
+from cofitok.generation import (
+    SAMPLING_MANIFEST_SCHEMA_VERSION,
+    SAMPLING_REPORT_SCHEMA_VERSION,
+    sampling_protocol_contract,
+)
 from cofitok.generation.artifact import verify_inference_artifact
 from cofitok.generation_authorization import validate_generation_gate_binding
 from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.generation_gate_sources import verify_generation_gate_source_reports
-from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
+from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA, sample_set_sha256
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
@@ -494,9 +498,136 @@ def _milestone_evidence(
     return evidence, warnings
 
 
+def _verify_formal_sample_files(
+    report: dict[str, Any] | None,
+    *,
+    expected_generated_dir: str | Path,
+    expected_count: int = 50_000,
+) -> dict[str, Any] | None:
+    if report is None:
+        return None
+    declared_generated_dir = Path(expected_generated_dir)
+    generated_dir = declared_generated_dir.resolve()
+    try:
+        if expected_count < 1:
+            raise ValueError("formal sample count must be positive")
+        if declared_generated_dir.is_symlink() or not generated_dir.is_dir():
+            raise ValueError(f"formal sample directory is invalid: {generated_dir}")
+        if Path(str(report.get("paths", {}).get("generated_dir", ""))).resolve() != generated_dir:
+            raise ValueError("formal metrics generated directory differs")
+        entries = list(generated_dir.iterdir())
+        if any(entry.is_symlink() or not entry.is_file() for entry in entries):
+            raise ValueError("formal sample directory contains a non-file or symlink")
+        expected_names = {f"{index:06d}.png" for index in range(expected_count)}
+        if {entry.name for entry in entries} != expected_names:
+            raise ValueError("formal sample directory numbered PNG set differs")
+        sample_paths = sorted(entries, key=lambda path: path.name)
+        actual_sha = sample_set_sha256(sample_paths)
+        provenance = report.get("sample_provenance", {})
+        if actual_sha != provenance.get("sample_set_sha256"):
+            raise ValueError("formal sample-set SHA256 differs from metrics provenance")
+
+        sampling_root = generated_dir.parent
+        sampling_report_path = sampling_root / "sampling_report.json"
+        provenance_report = Path(str(provenance.get("report", ""))).resolve()
+        if provenance_report != sampling_report_path.resolve() or not sampling_report_path.is_file():
+            raise ValueError("formal sampling report is missing or outside the sample run")
+        sampling_report = json.loads(sampling_report_path.read_text(encoding="utf-8"))
+        sampling = provenance.get("sampling", {})
+        budgets = sampling.get("prefix_budgets", [])
+        if not isinstance(budgets, list) or len(budgets) != 1:
+            raise ValueError("formal sampling report must select exactly one prefix budget")
+        budget = str(int(budgets[0]))
+        if (
+            int(sampling_report.get("schema_version", -1))
+            != SAMPLING_REPORT_SCHEMA_VERSION
+            or sampling_report.get("status") != "completed"
+            or sampling_report.get("sampling") != sampling
+            or Path(str(sampling_report.get("output_dirs", {}).get(budget, ""))).resolve()
+            != generated_dir
+            or sampling_report.get("sample_sets", {}).get(budget)
+            != {"count": expected_count, "sha256": actual_sha}
+        ):
+            raise ValueError("formal sampling report differs from generated files")
+        for field in (
+            "git",
+            "runtime_environment",
+            "runtime_environment_sha256",
+            "checkpoint",
+            "checkpoint_sha256",
+            "checkpoint_integrity_manifest",
+            "checkpoint_step",
+            "weights",
+        ):
+            if sampling_report.get(field) != provenance.get(field):
+                raise ValueError(f"formal sampling report {field} differs from metrics provenance")
+
+        manifest_path = sampling_root / "sampling_manifest.json"
+        if not manifest_path.is_file():
+            raise ValueError("formal immutable sampling manifest is missing")
+        manifest_sha = file_sha256(manifest_path)
+        if sampling_report.get("sampling_manifest_sha256") != manifest_sha:
+            raise ValueError("formal sampling manifest SHA256 differs")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if int(manifest.get("schema_version", -1)) != SAMPLING_MANIFEST_SCHEMA_VERSION:
+            raise ValueError("formal sampling manifest schema is unsupported")
+        for field in (
+            "git",
+            "runtime_environment",
+            "runtime_environment_sha256",
+            "checkpoint",
+            "checkpoint_sha256",
+            "checkpoint_integrity_manifest",
+            "checkpoint_step",
+            "weights",
+            "sampling",
+            "output_dirs",
+        ):
+            if manifest.get(field) != sampling_report.get(field):
+                raise ValueError(f"formal sampling manifest {field} differs from report")
+
+        progress_path = sampling_root / "sampling_progress.json"
+        if (
+            Path(str(sampling_report.get("sampling_progress", ""))).resolve()
+            != progress_path.resolve()
+            or Path(str(provenance.get("sampling_progress", {}).get("report", ""))).resolve()
+            != progress_path.resolve()
+            or not progress_path.is_file()
+        ):
+            raise ValueError("formal sampling progress is missing or outside the sample run")
+        progress = json.loads(progress_path.read_text(encoding="utf-8"))
+        if (
+            int(progress.get("schema_version", -1)) != 1
+            or progress.get("status") != "completed"
+            or progress.get("sampling_manifest_sha256") != manifest_sha
+            or int(progress.get("completed_samples", -1)) != expected_count
+            or progress.get("sample_sets") != sampling_report.get("sample_sets")
+        ):
+            raise ValueError("formal sampling progress differs from completed sample set")
+    except (json.JSONDecodeError, KeyError, OSError, TypeError, ValueError) as error:
+        return {
+            "status": "invalid",
+            "generated_dir": generated_dir.as_posix(),
+            "error": str(error),
+        }
+    return {
+        "status": "verified",
+        "generated_dir": generated_dir.as_posix(),
+        "sample_count": expected_count,
+        "sample_set_sha256": actual_sha,
+        "sampling_report": sampling_report_path.resolve().as_posix(),
+        "sampling_report_sha256": file_sha256(sampling_report_path),
+        "sampling_manifest": manifest_path.resolve().as_posix(),
+        "sampling_manifest_sha256": manifest_sha,
+        "sampling_progress": progress_path.resolve().as_posix(),
+        "sampling_progress_sha256": file_sha256(progress_path),
+    }
+
+
 def _generation_evidence(
     reports: dict[str, dict[str, Any]],
     training_reports: dict[str, dict[str, Any]],
+    sample_files: dict[str, dict[str, Any]],
     *,
     expected_revision: str,
 ) -> dict[str, Any]:
@@ -607,6 +738,19 @@ def _generation_evidence(
         elapsed = float(progress.get("cumulative_elapsed_seconds", math.nan))
         if not math.isfinite(elapsed) or elapsed <= 0.0:
             raise ValueError(f"{method} formal sampling elapsed time is invalid")
+        verified_samples = sample_files[method]
+        if (
+            verified_samples.get("status") != "verified"
+            or int(verified_samples.get("sample_count", -1)) != 50_000
+            or verified_samples.get("sample_set_sha256")
+            != provenance.get("sample_set_sha256")
+            or verified_samples.get("generated_dir")
+            != report.get("paths", {}).get("generated_dir")
+        ):
+            raise ValueError(
+                f"{method} formal sample files are invalid: "
+                f"{verified_samples.get('error', 'verification failed')}"
+            )
         evidence[method] = {
             "checkpoint_sha256": provenance["checkpoint_sha256"],
             "sample_set_sha256": provenance["sample_set_sha256"],
@@ -615,6 +759,13 @@ def _generation_evidence(
             "evaluator_runtime_environment_sha256": evaluator_environment_sha,
             "real_set_sha256": real_set_sha,
             "sampling_protocol_contract": sampling_contract,
+            "sampling_report_sha256": verified_samples["sampling_report_sha256"],
+            "sampling_manifest_sha256": verified_samples[
+                "sampling_manifest_sha256"
+            ],
+            "sampling_progress_sha256": verified_samples[
+                "sampling_progress_sha256"
+            ],
         }
     if len(sampling_environment_shas) != 1:
         raise ValueError("formal matched methods used different sampling environments")
@@ -864,9 +1015,10 @@ def _verify_inference_smoke_outputs(
 ) -> dict[str, Any] | None:
     if report is None:
         return None
-    root = Path(expected_root).resolve()
+    declared_root = Path(expected_root)
+    root = declared_root.resolve()
     try:
-        if not root.is_dir():
+        if declared_root.is_symlink() or not root.is_dir():
             raise ValueError(f"inference smoke directory is missing: {root}")
         rows = report.get("outputs")
         if not isinstance(rows, list) or int(report.get("output_count", -1)) != len(rows):
@@ -1825,6 +1977,7 @@ def build_completion_audit(
     milestone_source_verifications: dict[int, dict[str, Any] | None],
     cofitok_generation: dict[str, Any] | None,
     dense_generation: dict[str, Any] | None,
+    formal_sample_files: dict[str, dict[str, Any] | None],
     final_gate: dict[str, Any] | None,
     final_gate_source_verification: dict[str, Any] | None,
     comparison: dict[str, Any] | None,
@@ -2014,6 +2167,8 @@ def build_completion_audit(
             [
                 cofitok_generation,
                 dense_generation,
+                formal_sample_files.get("cofitok"),
+                formal_sample_files.get("dense_identity"),
                 cofitok_full_training,
                 dense_full_training,
             ],
@@ -2023,6 +2178,7 @@ def build_completion_audit(
                     "cofitok": cofitok_full_training,
                     "dense_identity": dense_full_training,
                 },
+                formal_sample_files,
                 expected_revision=expected_full_revision,
             ),
         )
@@ -2354,6 +2510,14 @@ def main() -> None:
             full_root / "exports/dense_export_inference_smoke.json"
         ),
     }
+    cofitok_generation = _read_optional(
+        cofitok_full
+        / "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
+    )
+    dense_generation = _read_optional(
+        dense_full
+        / "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
+    )
 
     audit = build_completion_audit(
         expected_deployment_source_revision=args.expected_deployment_source_revision,
@@ -2440,14 +2604,22 @@ def main() -> None:
         },
         milestones=milestones,
         milestone_source_verifications=milestone_source_verifications,
-        cofitok_generation=_read_optional(
-            cofitok_full
-            / "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
-        ),
-        dense_generation=_read_optional(
-            dense_full
-            / "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
-        ),
+        cofitok_generation=cofitok_generation,
+        dense_generation=dense_generation,
+        formal_sample_files={
+            "cofitok": _verify_formal_sample_files(
+                cofitok_generation,
+                expected_generated_dir=(
+                    cofitok_full / "samples_50k_ddim250_cfg15/prefix_8"
+                ),
+            ),
+            "dense_identity": _verify_formal_sample_files(
+                dense_generation,
+                expected_generated_dir=(
+                    dense_full / "samples_50k_ddim250_cfg15/prefix_1"
+                ),
+            ),
+        },
         final_gate=final_gate,
         final_gate_source_verification=_verify_gate_sources_optional(final_gate),
         comparison=comparison,

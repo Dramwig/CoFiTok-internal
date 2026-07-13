@@ -27,7 +27,7 @@ Exceptions publish `failed` with the last durable completed count. Abrupt
 process death leaves the last atomic `running` update; rerunning with the same
 manifest resumes from valid PNG batches.
 
-`sampling_report.json` is schema version 4 and includes the manifest SHA,
+`sampling_report.json` is schema version 6 and includes the manifest SHA,
 progress path, invocation elapsed time, and cumulative elapsed time. It is
 written before progress transitions to `completed`, so a crash cannot expose a
 completed progress state without a sampling report.
@@ -50,6 +50,14 @@ running/failed progress file.
 The gate additionally requires finite positive cumulative sampling time. The
 final large-scale comparison publishes sampling elapsed time, throughput, and
 invocation count alongside training cost and generation quality.
+
+The terminal completion audit does not rely only on these historical JSON
+claims. It re-enumerates the exact `000000.png` through `049999.png` set for
+each formal method, rejects symlinks or extra/missing entries, recomputes the
+sample-set SHA256 from the physical bytes, and reopens the sampling report,
+immutable manifest, and completed progress files. Their schemas, hashes,
+checkpoint/runtime/Git identity, selected output directory, prefix budget, and
+sample-set digests must still agree before completion can pass.
 
 ## Verification
 

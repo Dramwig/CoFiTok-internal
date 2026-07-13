@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import os
 import subprocess
 import sys
@@ -14,14 +15,21 @@ from cofitok.data.provenance import (
     FORMAL_GENERATION_DATASETS,
     dataset_provenance_identity_sha256,
 )
-from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
+from cofitok.generation import (
+    INFERENCE_API,
+    SAMPLING_MANIFEST_SCHEMA_VERSION,
+    SAMPLING_PROTOCOL_SCHEMA,
+    SAMPLING_REPORT_SCHEMA_VERSION,
+)
 from cofitok.generation_gate import REQUIRED_GENERATION_GATES
 from cofitok.generation_authorization import build_generation_gate_binding
+from cofitok.image_integrity import sample_set_sha256
 from cofitok.reporting import file_sha256
 from cofitok.training.authorization import build_generation_training_authorization
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
     _verify_deployment_bundle_source,
+    _verify_formal_sample_files,
     _verify_inference_smoke_outputs,
     build_completion_audit,
 )
@@ -530,6 +538,14 @@ def _milestone_source_verification(step: int) -> dict:
 def _generation(seed: str) -> dict:
     runtime_environment = _runtime_environment()
     environment_sha = runtime_environment_sha256(runtime_environment)
+    run = (
+        "imagenet256_full_cofitok_k8_300k"
+        if seed == "a"
+        else "imagenet256_full_dense_300k"
+    )
+    budget = 8 if seed == "a" else 1
+    sampling_root = f"/outputs/{run}/samples_50k_ddim250_cfg15"
+    generated_dir = f"{sampling_root}/prefix_{budget}"
     return {
         "status": "completed",
         "git": {
@@ -539,7 +555,10 @@ def _generation(seed: str) -> dict:
         },
         "runtime_environment": copy.deepcopy(runtime_environment),
         "runtime_environment_sha256": environment_sha,
-        "paths": {"real_dir": "/datasets/imagenet_256/validation"},
+        "paths": {
+            "real_dir": "/datasets/imagenet_256/validation",
+            "generated_dir": generated_dir,
+        },
         "counts": {"real_image_count": 50_000, "generated_image_count": 50_000},
         "real_set": {
             "digest_schema": "cofitok_image_tree_sha256_v1",
@@ -558,6 +577,7 @@ def _generation(seed: str) -> dict:
         },
         "implementation": {"package": "torch_fidelity", "version": "0.4.0"},
         "sample_provenance": {
+            "report": f"{sampling_root}/sampling_report.json",
             "runtime_environment": runtime_environment,
             "runtime_environment_sha256": environment_sha,
             "git": {
@@ -567,10 +587,12 @@ def _generation(seed: str) -> dict:
             },
             "checkpoint_step": 300_000,
             "weights": "ema",
+            "checkpoint": f"/outputs/{run}/checkpoint_step_00300000.pt",
             "checkpoint_sha256": seed * 64,
             "sample_set_sha256": seed.upper() * 64,
             "checkpoint_integrity_manifest": "/run/checkpoint_step_00300000.pt.integrity.json",
             "sampling_progress": {
+                "report": f"{sampling_root}/sampling_progress.json",
                 "status": "completed",
                 "completed_samples": 50_000,
                 "cumulative_elapsed_seconds": 10_000.0,
@@ -594,7 +616,7 @@ def _generation(seed: str) -> dict:
                 "seed": 0,
                 "start_index": 0,
                 "class_schedule": "balanced_modulo",
-                "prefix_budgets": [8 if seed == "a" else 1],
+                "prefix_budgets": [budget],
                 "random_stream": {
                     "prefix_budgets_share_stream": True,
                     "batch_size_invariant": True,
@@ -603,6 +625,28 @@ def _generation(seed: str) -> dict:
             },
         },
     }
+
+
+def _formal_sample_files() -> dict:
+    output = {}
+    for method, seed in (("cofitok", "a"), ("dense_identity", "b")):
+        generation = _generation(seed)
+        provenance = generation["sample_provenance"]
+        output[method] = {
+            "status": "verified",
+            "generated_dir": generation["paths"]["generated_dir"],
+            "sample_count": 50_000,
+            "sample_set_sha256": provenance["sample_set_sha256"],
+            "sampling_report": provenance["report"],
+            "sampling_report_sha256": "1" * 64,
+            "sampling_manifest": str(
+                Path(provenance["report"]).with_name("sampling_manifest.json")
+            ),
+            "sampling_manifest_sha256": "2" * 64,
+            "sampling_progress": provenance["sampling_progress"]["report"],
+            "sampling_progress_sha256": "3" * 64,
+        }
+    return output
 
 
 def _official_related() -> dict:
@@ -1427,6 +1471,7 @@ def _kwargs() -> dict:
         },
         "cofitok_generation": _generation("a"),
         "dense_generation": _generation("b"),
+        "formal_sample_files": _formal_sample_files(),
         "final_gate": final_gate,
         "final_gate_source_verification": _gate_source_verification(final_gate),
         "comparison": _comparison(),
@@ -1694,6 +1739,20 @@ def test_completion_audit_rejects_incomplete_formal_sampling() -> None:
     kwargs["cofitok_generation"]["sample_provenance"]["sampling_progress"][
         "completed_samples"
     ] = 49_999
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["formal_50k_generation"]
+
+
+def test_completion_audit_rejects_missing_or_tampered_formal_sample_files() -> None:
+    kwargs = _kwargs()
+    kwargs["formal_sample_files"]["cofitok"] = {
+        "status": "invalid",
+        "generated_dir": kwargs["cofitok_generation"]["paths"]["generated_dir"],
+        "error": "formal sample-set SHA256 differs from metrics provenance",
+    }
 
     report = build_completion_audit(**kwargs)
 
@@ -2166,6 +2225,127 @@ def test_completion_audit_rejects_checkpoint_authorization_sidecar_drift() -> No
 
     assert completion["status"] == "failed"
     assert completion["failed_checks"] == ["reproducible_full_checkpoint_files"]
+
+
+def _write_formal_sample_fixture(tmp_path: Path) -> tuple[dict, Path]:
+    sampling_root = tmp_path / "samples"
+    generated = sampling_root / "prefix_2"
+    generated.mkdir(parents=True)
+    paths = []
+    for index in range(2):
+        path = generated / f"{index:06d}.png"
+        Image.new("RGB", (8, 8), (index * 30, 10, 20)).save(path)
+        paths.append(path)
+    sample_sha = sample_set_sha256(paths)
+    runtime_environment = _runtime_environment()
+    environment_sha = runtime_environment_sha256(runtime_environment)
+    git = {
+        "revision": FULL_REVISION,
+        "branch": "scale/generative-system",
+        "tracked_dirty": False,
+    }
+    sampling = {"prefix_budgets": [2], "num_samples": 2}
+    output_dirs = {"2": generated.resolve().as_posix()}
+    checkpoint = (tmp_path / "checkpoint.pt").resolve().as_posix()
+    fields = {
+        "git": git,
+        "runtime_environment": runtime_environment,
+        "runtime_environment_sha256": environment_sha,
+        "checkpoint": checkpoint,
+        "checkpoint_sha256": "a" * 64,
+        "checkpoint_integrity_manifest": f"{checkpoint}.integrity.json",
+        "checkpoint_step": 300_000,
+        "weights": "ema",
+        "sampling": sampling,
+        "output_dirs": output_dirs,
+    }
+    manifest_path = sampling_root / "sampling_manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {"schema_version": SAMPLING_MANIFEST_SCHEMA_VERSION, **fields},
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    manifest_sha = file_sha256(manifest_path)
+    sample_sets = {"2": {"count": 2, "sha256": sample_sha}}
+    progress_path = sampling_root / "sampling_progress.json"
+    progress_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "status": "completed",
+                "sampling_manifest_sha256": manifest_sha,
+                "completed_samples": 2,
+                "sample_sets": sample_sets,
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    sampling_report_path = sampling_root / "sampling_report.json"
+    sampling_report_path.write_text(
+        json.dumps(
+            {
+                "schema_version": SAMPLING_REPORT_SCHEMA_VERSION,
+                "status": "completed",
+                **fields,
+                "sampling_manifest_sha256": manifest_sha,
+                "sampling_progress": progress_path.resolve().as_posix(),
+                "sample_sets": sample_sets,
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    report = {
+        "paths": {"generated_dir": generated.resolve().as_posix()},
+        "sample_provenance": {
+            "report": sampling_report_path.resolve().as_posix(),
+            **{key: value for key, value in fields.items() if key != "output_dirs"},
+            "sample_set_sha256": sample_sha,
+            "sampling_progress": {"report": progress_path.resolve().as_posix()},
+        },
+    }
+    return report, generated
+
+
+def test_formal_sample_file_verifier_rehashes_sample_tree_and_sources(tmp_path) -> None:
+    report, generated = _write_formal_sample_fixture(tmp_path)
+
+    verified = _verify_formal_sample_files(
+        report,
+        expected_generated_dir=generated,
+        expected_count=2,
+    )
+
+    assert verified is not None
+    assert verified["status"] == "verified"
+    assert verified["sample_count"] == 2
+    Image.new("RGB", (8, 8), (255, 0, 0)).save(generated / "000000.png")
+    tampered = _verify_formal_sample_files(
+        report,
+        expected_generated_dir=generated,
+        expected_count=2,
+    )
+    assert tampered is not None
+    assert tampered["status"] == "invalid"
+    assert "sample-set SHA256 differs" in tampered["error"]
+
+
+def test_formal_sample_file_verifier_rejects_missing_numbered_png(tmp_path) -> None:
+    report, generated = _write_formal_sample_fixture(tmp_path)
+    (generated / "000001.png").unlink()
+
+    verified = _verify_formal_sample_files(
+        report,
+        expected_generated_dir=generated,
+        expected_count=2,
+    )
+
+    assert verified is not None
+    assert verified["status"] == "invalid"
+    assert "numbered PNG set differs" in verified["error"]
 
 
 def test_inference_smoke_file_verifier_rehashes_and_decodes_pngs(tmp_path) -> None:
