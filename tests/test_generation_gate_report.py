@@ -56,6 +56,11 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
     return {
         "status": "completed",
         "protocol": "torch_fidelity_directory_metrics",
+        "git": {
+            "revision": "a" * 40,
+            "branch": "scale/generative-system",
+            "tracked_dirty": False,
+        },
         "implementation": {"package": "torch_fidelity", "version": "0.4.0"},
         "paths": {
             "real_dir": "/datasets/imagenet_256/val",
@@ -221,6 +226,29 @@ def test_generation_gate_rejects_dirty_sampling_code() -> None:
         gate
         for gate in report["gates"]
         if gate["name"] == "matched_sampling_code_provenance"
+    )
+    assert gate["passed"] is False
+
+
+def test_generation_gate_rejects_dirty_evaluator_code() -> None:
+    cofitok = _generation(20.0, 8, "a" * 64)
+    cofitok["git"]["tracked_dirty"] = True
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(
+        gate
+        for gate in report["gates"]
+        if gate["name"] == "matched_evaluator_code_provenance"
     )
     assert gate["passed"] is False
 

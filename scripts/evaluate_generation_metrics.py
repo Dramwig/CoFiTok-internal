@@ -10,10 +10,11 @@ from typing import Any
 import torch
 
 from cofitok.image_integrity import is_valid_png, sample_set_sha256
-from cofitok.reporting import file_sha256, write_json_report
+from cofitok.reporting import file_sha256, git_provenance, write_json_report
 
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg"}
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def parse_args() -> argparse.Namespace:
@@ -222,6 +223,7 @@ def main() -> None:
         generated_dir,
         generated_images,
     )
+    evaluator_git = git_provenance(PROJECT_ROOT)
     cuda = torch.cuda.is_available() and not args.cpu
     start = time.time()
     metrics, version = calculate_metrics(
@@ -239,6 +241,7 @@ def main() -> None:
         "schema_version": 1,
         "status": "completed",
         "protocol": "torch_fidelity_directory_metrics",
+        "git": evaluator_git,
         "implementation": {
             "package": "torch_fidelity",
             "version": version,

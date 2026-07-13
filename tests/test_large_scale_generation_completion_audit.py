@@ -78,6 +78,8 @@ def _gate(stage: str) -> dict:
             {"name": name, "passed": True, "evidence": {}}
             for name in (
                 "generation_metrics_complete",
+                "matched_sampling_code_provenance",
+                "matched_evaluator_code_provenance",
                 "distribution_metric_ranges",
                 "fid_within_tolerance",
                 "absolute_fid_quality",
@@ -170,6 +172,11 @@ def _milestone(step: int, alerts: list[str] | None = None) -> dict:
 def _generation(seed: str) -> dict:
     return {
         "status": "completed",
+        "git": {
+            "revision": FULL_REVISION,
+            "branch": "scale/generative-system",
+            "tracked_dirty": False,
+        },
         "counts": {"generated_image_count": 50_000},
         "metrics": {
             "frechet_inception_distance": 19.0,
@@ -562,6 +569,20 @@ def test_completion_audit_rejects_unbound_final_quality_metrics() -> None:
     assert report["failed_checks"] == ["final_generation_gate"]
 
 
+def test_completion_audit_requires_named_code_provenance_gates() -> None:
+    kwargs = _kwargs()
+    kwargs["final_gate"]["gates"] = [
+        gate
+        for gate in kwargs["final_gate"]["gates"]
+        if gate["name"] != "matched_evaluator_code_provenance"
+    ]
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_generation_gate"]
+
+
 def test_completion_audit_rejects_incomplete_formal_sampling() -> None:
     kwargs = _kwargs()
     kwargs["cofitok_generation"]["sample_provenance"]["sampling_progress"][
@@ -676,6 +697,16 @@ def test_completion_audit_rejects_dirty_formal_sampling_code() -> None:
     kwargs["cofitok_generation"]["sample_provenance"]["git"][
         "tracked_dirty"
     ] = True
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["formal_50k_generation"]
+
+
+def test_completion_audit_rejects_dirty_formal_evaluator_code() -> None:
+    kwargs = _kwargs()
+    kwargs["dense_generation"]["git"]["tracked_dirty"] = True
 
     report = build_completion_audit(**kwargs)
 

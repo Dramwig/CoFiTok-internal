@@ -156,6 +156,13 @@ def _generation_evidence(
     for method, report in reports.items():
         if report.get("status") != "completed":
             raise ValueError(f"{method} formal generation metrics are incomplete")
+        evaluator_git = report.get("git", {})
+        if (
+            evaluator_git.get("revision") != expected_revision
+            or evaluator_git.get("branch") != "scale/generative-system"
+            or evaluator_git.get("tracked_dirty") is not False
+        ):
+            raise ValueError(f"{method} formal evaluator code provenance is invalid")
         if int(report.get("counts", {}).get("generated_image_count", -1)) != 50_000:
             raise ValueError(f"{method} formal generated sample count is not 50000")
         provenance = report.get("sample_provenance", {})
@@ -384,6 +391,8 @@ def _final_gate_evidence(
         indexed_gates[name] = row
     required_quality_gates = {
         "generation_metrics_complete",
+        "matched_sampling_code_provenance",
+        "matched_evaluator_code_provenance",
         "distribution_metric_ranges",
         "fid_within_tolerance",
         "absolute_fid_quality",

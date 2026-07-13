@@ -165,6 +165,10 @@ def build_report(
         cofitok_generation["implementation"],
         dense_generation["implementation"],
     )
+    evaluator_git_pair = (
+        cofitok_generation.get("git", {}),
+        dense_generation.get("git", {}),
+    )
     cofitok_provenance = cofitok_generation["sample_provenance"]
     dense_provenance = dense_generation["sample_provenance"]
     cofitok_sampling = _sampling_protocol(cofitok_provenance)
@@ -269,6 +273,23 @@ def build_report(
             all(value is not None for value in cofitok_quality.values())
             and all(value is not None for value in dense_quality.values()),
             {"cofitok": cofitok_quality, "dense": dense_quality},
+        ),
+        _gate(
+            "matched_evaluator_code_provenance",
+            len(str(evaluator_git_pair[0].get("revision", ""))) == 40
+            and evaluator_git_pair[0] == evaluator_git_pair[1]
+            and evaluator_git_pair[0].get("branch") == "scale/generative-system"
+            and evaluator_git_pair[0].get("tracked_dirty") is False
+            and (
+                stage != "full"
+                or evaluator_git_pair[0].get("revision") == cofitok_revision
+            ),
+            {
+                "stage": stage,
+                "cofitok": evaluator_git_pair[0],
+                "dense_identity": evaluator_git_pair[1],
+                "full_training_revision": cofitok_revision if stage == "full" else None,
+            },
         ),
         _gate(
             "distribution_metric_ranges",

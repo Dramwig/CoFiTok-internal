@@ -33,9 +33,16 @@ protocol.
   exact zero-based numbered PNG set.
 - Carry checkpoint SHA256, step, EMA/model selection, selected prefix budget,
   and sampling parameters into the metrics report.
+- Bind revision, branch, and tracked-dirty state independently for the sampler
+  and the torch-fidelity evaluator. The immutable sample manifest carries the
+  sampler state; the metrics report carries evaluator state and preserves the
+  sampler state under `sample_provenance`.
 - Require the promotion gate to match sampling protocols and cross-check the
   checkpoint hash used by generation metrics against the checkpoint hash used
   by mechanism diagnostics.
+- Require promotion/final gates to reject mismatched or dirty sampler/evaluator
+  code. Full completion additionally binds both to the full training revision,
+  and refuses a final gate missing either named code-provenance check.
 - Validate both completed clean training reports before starting the full 50K
   sample evaluation runbook.
 
