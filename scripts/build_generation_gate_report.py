@@ -169,6 +169,8 @@ def build_report(
     dense_provenance = dense_generation["sample_provenance"]
     cofitok_sampling = _sampling_protocol(cofitok_provenance)
     dense_sampling = _sampling_protocol(dense_provenance)
+    cofitok_sampling_git = cofitok_provenance.get("git", {})
+    dense_sampling_git = dense_provenance.get("git", {})
     cofitok_model_config = cofitok_training["config"]["model"]
     dense_model_config = dense_training["config"]["model"]
     cofitok_expected_shape = [
@@ -363,6 +365,20 @@ def build_report(
                 "dense_sample_set_sha256": dense_provenance.get("sample_set_sha256"),
                 "cofitok_sampling_progress": cofitok_provenance.get("sampling_progress"),
                 "dense_sampling_progress": dense_provenance.get("sampling_progress"),
+            },
+        ),
+        _gate(
+            "matched_sampling_code_provenance",
+            len(str(cofitok_sampling_git.get("revision", ""))) == 40
+            and cofitok_sampling_git == dense_sampling_git
+            and cofitok_sampling_git.get("branch") == "scale/generative-system"
+            and cofitok_sampling_git.get("tracked_dirty") is False
+            and (stage != "full" or cofitok_sampling_git.get("revision") == cofitok_revision),
+            {
+                "stage": stage,
+                "cofitok": cofitok_sampling_git,
+                "dense_identity": dense_sampling_git,
+                "full_training_revision": cofitok_revision if stage == "full" else None,
             },
         ),
         _gate(

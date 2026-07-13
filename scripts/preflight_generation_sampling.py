@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import gc
 import statistics
-import subprocess
 import time
 from pathlib import Path
 from typing import Any
@@ -12,21 +11,11 @@ import torch
 
 from cofitok.diffusion import predict_epsilon
 from cofitok.generation import load_generation_model
-from cofitok.reporting import write_json_report
+from cofitok.reporting import git_provenance, write_json_report
 from cofitok.training.runtime import autocast_context
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-
-
-def _git_revision() -> str:
-    return subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=PROJECT_ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
 
 
 def parse_args() -> argparse.Namespace:
@@ -113,7 +102,7 @@ def run_sampling_preflight(
     report = {
         "schema_version": 1,
         "status": "running",
-        "git_revision": _git_revision(),
+        "git": git_provenance(PROJECT_ROOT),
         "checkpoint": str(loaded.checkpoint_path),
         "checkpoint_sha256": loaded.checkpoint_sha256,
         "checkpoint_integrity_manifest": str(loaded.checkpoint_integrity_manifest),
@@ -254,7 +243,7 @@ def main() -> None:
         report = {
             "schema_version": 1,
             "status": "failed",
-            "git_revision": _git_revision(),
+            "git": git_provenance(PROJECT_ROOT),
             "checkpoint": str(Path(args.checkpoint).resolve()),
             "request": {
                 "batch_size": args.batch_size,

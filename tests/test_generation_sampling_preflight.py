@@ -85,13 +85,14 @@ def test_sampling_preflight_runs_shared_ema_cfg_path(tmp_path) -> None:
     )
 
     assert report["status"] == "passed"
-    assert report["git_revision"] == subprocess.run(
+    assert report["git"]["revision"] == subprocess.run(
         ["git", "rev-parse", "HEAD"],
         cwd=ROOT,
         check=True,
         capture_output=True,
         text=True,
     ).stdout.strip()
+    assert isinstance(report["git"]["tracked_dirty"], bool)
     assert report["checkpoint_step"] == 17
     assert len(report["checkpoint_sha256"]) == 64
     assert report["checkpoint_integrity_manifest"].endswith("checkpoint.pt.integrity.json")

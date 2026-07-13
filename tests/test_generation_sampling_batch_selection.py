@@ -118,7 +118,11 @@ def test_sampling_selector_rejects_mismatched_protocol_or_checkpoint() -> None:
 def test_sampling_preflight_cache_requires_exact_git_revision() -> None:
     report = _method(32, 50.0)
     report.update(
-        git_revision="a" * 40,
+        git={
+            "revision": "a" * 40,
+            "branch": "scale/generative-system",
+            "tracked_dirty": False,
+        },
         checkpoint_sha256="b" * 64,
     )
     expected = {
@@ -137,4 +141,8 @@ def test_sampling_preflight_cache_requires_exact_git_revision() -> None:
 
     assert _preflight_matches(report, **expected)
     expected["expected_revision"] = "c" * 40
+    assert not _preflight_matches(report, **expected)
+
+    expected["expected_revision"] = "a" * 40
+    report["git"]["tracked_dirty"] = True
     assert not _preflight_matches(report, **expected)

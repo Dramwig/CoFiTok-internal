@@ -15,7 +15,10 @@ by one formal-evaluation script.
 Formal sampling manifests identify
 `cofitok.generation.GenerationSession@1`. The final completion audit requires
 that API marker, so a separate or stale inference path cannot silently provide
-the paper-scale generation evidence.
+the paper-scale generation evidence. The immutable manifest and completed
+sampling report also bind the inference worktree revision, branch, and tracked
+dirty state; downstream metrics and gates preserve this provenance and reject
+dirty or wrong-revision formal samples.
 
 CPU tests prove repeat requests are bit-identical, model-specific class/token
 validation is fail-closed, the CLI writes all prefix outputs and hashes, and the

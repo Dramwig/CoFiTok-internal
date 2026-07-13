@@ -43,10 +43,10 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Formal post-evaluation runbooks first execute one real model forward with the
   requested EMA/model weights, precision, prefix budget, batch size, and CFG
   batching mode. The preflight records checkpoint SHA256, output finiteness,
-  inference-code Git revision, latency, and CUDA baseline/peak memory, and fails
-  before a sampling manifest or partial image directory is created when the
-  target inference shape OOMs. Runtime selection never reuses a preflight from
-  another revision.
+  inference-code Git revision/branch/tracked-dirty state, latency, and CUDA
+  baseline/peak memory, and fails before a sampling manifest or partial image
+  directory is created when the target inference shape OOMs. Runtime selection
+  never reuses a preflight from another revision or a dirty worktree.
 - Classifier-free guidance can evaluate conditional and unconditional branches
   in one batch, with a sequential fallback. The selected execution mode is part
   of the immutable sampling manifest and must match across compared methods.
@@ -55,8 +55,11 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   uses the same stream at every prefix budget. Prefix comparisons are therefore
   paired rather than comparisons between unrelated initial noises.
 - Sampling writes an immutable checkpoint-and-protocol manifest before the
-  first image. `--resume` accepts only an exact manifest match, skips completed
-  numbered images, and regenerates missing images from their original streams.
+  first image, including revision/branch/tracked-dirty code provenance.
+  `--resume` accepts only an exact manifest match, skips completed numbered
+  images, and regenerates missing images from their original streams. Metrics,
+  promotion/final gates, and completion audit preserve and validate that code
+  provenance; formal post-evaluation runbooks also fail early on tracked dirt.
 - Each PNG is encoded to a same-directory partial file and atomically published
   only after encoding succeeds. JSON manifests and reports use the same atomic
   replacement rule, so interruption cannot turn a partial file into apparent

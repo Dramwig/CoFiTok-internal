@@ -4,6 +4,7 @@ import json
 import sys
 from types import SimpleNamespace
 
+import pytest
 from PIL import Image
 
 from cofitok.image_integrity import sample_set_sha256
@@ -106,6 +107,11 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
         json.dumps(
             {
                 "status": "completed",
+                "git": {
+                    "revision": "a" * 40,
+                    "branch": "scale/generative-system",
+                    "tracked_dirty": False,
+                },
                 "checkpoint": "/checkpoints/model.pt",
                 "checkpoint_sha256": "a" * 64,
                 "checkpoint_integrity_manifest": "/checkpoints/model.pt.integrity.json",
@@ -124,11 +130,20 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
     provenance = validate_sampling_provenance(report_path, generated, find_images(generated))
 
     assert provenance["selected_prefix_budget"] == 8
+    assert provenance["git"]["tracked_dirty"] is False
     assert provenance["checkpoint_step"] == 50_000
     assert provenance["checkpoint_integrity_manifest"].endswith("model.pt.integrity.json")
     assert provenance["image_shape"] == [3, 4, 4]
     assert provenance["sample_set_sha256"] == sample_sha256
     assert provenance["sampling_progress"]["status"] == "completed"
+
+    sampling_report = json.loads(report_path.read_text(encoding="utf-8"))
+    sampling_git = sampling_report.pop("git")
+    report_path.write_text(json.dumps(sampling_report), encoding="utf-8")
+    with pytest.raises(ValueError, match="Git revision"):
+        validate_sampling_provenance(report_path, generated, find_images(generated))
+    sampling_report["git"] = sampling_git
+    report_path.write_text(json.dumps(sampling_report), encoding="utf-8")
 
     progress = json.loads(progress_path.read_text(encoding="utf-8"))
     progress["status"] = "running"

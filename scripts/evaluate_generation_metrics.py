@@ -107,6 +107,11 @@ def validate_sampling_provenance(
     actual_sample_sha256 = sample_set_sha256(generated_images)
     if actual_sample_sha256 != expected_sample_sha256:
         raise ValueError("Generated sample-set SHA256 does not match the sampling report")
+    git = report.get("git", {})
+    if len(str(git.get("revision", ""))) != 40:
+        raise ValueError("Sampling report Git revision is malformed")
+    if not isinstance(git.get("tracked_dirty"), bool):
+        raise ValueError("Sampling report tracked-dirty state is missing")
     checkpoint_sha256 = str(report["checkpoint_sha256"])
     if len(checkpoint_sha256) != 64:
         raise ValueError("Sampling report checkpoint SHA256 is malformed")
@@ -142,6 +147,7 @@ def validate_sampling_provenance(
         "checkpoint_integrity_manifest": checkpoint_integrity_manifest,
         "checkpoint_step": int(report["checkpoint_step"]),
         "weights": report["weights"],
+        "git": git,
         "selected_prefix_budget": selected_budget,
         "image_shape": image_shape,
         "sample_set_sha256": actual_sample_sha256,

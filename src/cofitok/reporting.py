@@ -3,11 +3,31 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import subprocess
 import tempfile
 from pathlib import Path
 from typing import Any
 
 import torch
+
+
+def git_provenance(project_root: str | Path) -> dict[str, str | bool]:
+    root = Path(project_root).resolve()
+
+    def git(*args: str) -> str:
+        return subprocess.run(
+            ["git", *args],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+
+    return {
+        "revision": git("rev-parse", "HEAD"),
+        "branch": git("branch", "--show-current"),
+        "tracked_dirty": bool(git("status", "--porcelain", "--untracked-files=no")),
+    }
 
 
 def file_sha256(path: str | Path, chunk_size: int = 8 * 1024 * 1024) -> str:

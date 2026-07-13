@@ -178,6 +178,11 @@ def _generation(seed: str) -> dict:
         },
         "implementation": {"package": "torch_fidelity", "version": "0.4.0"},
         "sample_provenance": {
+            "git": {
+                "revision": FULL_REVISION,
+                "branch": "scale/generative-system",
+                "tracked_dirty": False,
+            },
             "checkpoint_step": 300_000,
             "weights": "ema",
             "checkpoint_sha256": seed * 64,
@@ -328,8 +333,18 @@ def _sampling_runtime_selection() -> dict:
                 "batch_size": 64,
                 "eligible": True,
                 "methods": {
-                    "cofitok": {"git_revision": FULL_REVISION},
-                    "dense_identity": {"git_revision": FULL_REVISION},
+                    "cofitok": {
+                        "git": {
+                            "revision": FULL_REVISION,
+                            "tracked_dirty": False,
+                        }
+                    },
+                    "dense_identity": {
+                        "git": {
+                            "revision": FULL_REVISION,
+                            "tracked_dirty": False,
+                        }
+                    },
                 },
             }
         ],
@@ -648,12 +663,24 @@ def test_completion_audit_rejects_sampling_that_ignores_selected_batch() -> None
 def test_completion_audit_rejects_stale_selected_sampling_preflight() -> None:
     kwargs = _kwargs()
     selected = kwargs["sampling_runtime_selection"]["candidates"][0]
-    selected["methods"]["cofitok"]["git_revision"] = "0" * 40
+    selected["methods"]["cofitok"]["git"]["revision"] = "0" * 40
 
     report = build_completion_audit(**kwargs)
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == ["formal_sampling_runtime_selection"]
+
+
+def test_completion_audit_rejects_dirty_formal_sampling_code() -> None:
+    kwargs = _kwargs()
+    kwargs["cofitok_generation"]["sample_provenance"]["git"][
+        "tracked_dirty"
+    ] = True
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["formal_50k_generation"]
 
 
 def test_completion_audit_rejects_sampling_outside_stable_inference_api() -> None:

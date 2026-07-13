@@ -149,6 +149,8 @@ def _milestone_evidence(
 def _generation_evidence(
     reports: dict[str, dict[str, Any]],
     training_reports: dict[str, dict[str, Any]],
+    *,
+    expected_revision: str,
 ) -> dict[str, Any]:
     evidence = {}
     for method, report in reports.items():
@@ -157,12 +159,19 @@ def _generation_evidence(
         if int(report.get("counts", {}).get("generated_image_count", -1)) != 50_000:
             raise ValueError(f"{method} formal generated sample count is not 50000")
         provenance = report.get("sample_provenance", {})
+        git = provenance.get("git", {})
         progress = provenance.get("sampling_progress", {})
         inference_api = provenance.get("sampling", {}).get("inference_api", {})
         if int(provenance.get("checkpoint_step", -1)) != 300_000:
             raise ValueError(f"{method} formal samples do not use the 300K checkpoint")
         if provenance.get("weights") != "ema":
             raise ValueError(f"{method} formal samples do not use EMA weights")
+        if (
+            git.get("revision") != expected_revision
+            or git.get("branch") != "scale/generative-system"
+            or git.get("tracked_dirty") is not False
+        ):
+            raise ValueError(f"{method} formal sampling code provenance is invalid")
         if len(str(provenance.get("checkpoint_sha256", ""))) != 64:
             raise ValueError(f"{method} checkpoint SHA256 is malformed")
         if len(str(provenance.get("sample_set_sha256", ""))) != 64:
@@ -228,7 +237,11 @@ def _sampling_runtime_selection_evidence(
         raise ValueError("selected formal sampling candidate evidence is invalid")
     selected_methods = selected_candidates[0].get("methods", {})
     for method in ("cofitok", "dense_identity"):
-        if selected_methods.get(method, {}).get("git_revision") != expected_revision:
+        selected_git = selected_methods.get(method, {}).get("git", {})
+        if (
+            selected_git.get("revision") != expected_revision
+            or selected_git.get("tracked_dirty") is not False
+        ):
             raise ValueError(f"{method} selected sampling preflight revision differs")
     identities = selection.get("checkpoints", {})
     for method in ("cofitok", "dense_identity"):
@@ -764,6 +777,7 @@ def build_completion_audit(
                     "cofitok": cofitok_full_training,
                     "dense_identity": dense_full_training,
                 },
+                expected_revision=expected_full_revision,
             ),
         )
     )

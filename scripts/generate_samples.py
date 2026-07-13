@@ -12,12 +12,15 @@ from torchvision.utils import save_image
 from cofitok.diffusion import select_sampling_timesteps
 from cofitok.generation import GenerationRequest, GenerationSession
 from cofitok.image_integrity import is_valid_png, sample_set_sha256
-from cofitok.reporting import file_sha256, write_json_report
+from cofitok.reporting import file_sha256, git_provenance, write_json_report
 from cofitok.sampling_progress import (
     build_sampling_progress,
     load_sampling_progress_state,
     write_sampling_progress,
 )
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def parse_args() -> argparse.Namespace:
@@ -205,6 +208,7 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     stop_index = args.start_index + args.num_samples
+    code_git = git_provenance(PROJECT_ROOT)
     sampling = {
         "inference_api": {
             "name": "cofitok.generation.GenerationSession",
@@ -248,6 +252,7 @@ def main() -> None:
     }
     manifest = {
         "schema_version": 1,
+        "git": code_git,
         "checkpoint": str(checkpoint_path.resolve()),
         "checkpoint_sha256": checkpoint_hash,
         "checkpoint_integrity_manifest": str(loaded.checkpoint_integrity_manifest),
@@ -368,6 +373,7 @@ def main() -> None:
         report = {
             "schema_version": 4,
             "status": "completed",
+            "git": code_git,
             "checkpoint": str(checkpoint_path.resolve()),
             "checkpoint_sha256": checkpoint_hash,
             "checkpoint_integrity_manifest": str(loaded.checkpoint_integrity_manifest),

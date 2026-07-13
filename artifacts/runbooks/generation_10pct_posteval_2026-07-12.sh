@@ -16,6 +16,10 @@ source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
 cd "$PROJECT"
 export PYTHONPATH=src
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  printf 'formal 10%% post-evaluation requires a clean tracked worktree\n' >&2
+  exit 66
+fi
 
 validate_training_report() {
   python - "$1" <<'PY'

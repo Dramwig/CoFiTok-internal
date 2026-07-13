@@ -182,9 +182,11 @@ def _preflight_matches(
     measured_forwards: int,
 ) -> bool:
     request = report.get("request", {})
+    git = report.get("git", {})
     return (
         report.get("status") == "passed"
-        and report.get("git_revision") == expected_revision
+        and git.get("revision") == expected_revision
+        and git.get("tracked_dirty") is False
         and report.get("checkpoint_sha256") == checkpoint_identity["sha256"]
         and int(report.get("checkpoint_step", -1)) == checkpoint_identity["step"]
         and int(request.get("batch_size", -1)) == batch_size
