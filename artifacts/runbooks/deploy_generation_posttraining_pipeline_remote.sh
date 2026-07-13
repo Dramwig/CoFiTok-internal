@@ -59,12 +59,15 @@ if [[ "$current_commit" == "$EXPECTED_COMMIT" ]]; then
   prevalidation_root="$(mktemp -d /tmp/cofitok-generation-prevalidation.XXXXXX)"
   git archive "$TARGET_COMMIT" -- \
     scripts/validate_generation_training_pair.py \
+    scripts/check_generation_deployment_conflicts.py \
     src/cofitok | tar -x -C "$prevalidation_root"
   validator="$prevalidation_root/scripts/validate_generation_training_pair.py"
+  conflict_checker="$prevalidation_root/scripts/check_generation_deployment_conflicts.py"
   validator_pythonpath="$prevalidation_root/src"
 else
   fetched_commit="$TARGET_COMMIT"
   validator="scripts/validate_generation_training_pair.py"
+  conflict_checker="scripts/check_generation_deployment_conflicts.py"
   validator_pythonpath="src"
 fi
 
@@ -103,16 +106,10 @@ if [[ -f "$PID_FILE" ]]; then
 fi
 
 if [[ "$current_commit" == "$EXPECTED_COMMIT" ]]; then
-  mapfile -t untracked_conflicts < <(
-    comm -12 \
-      <(git ls-files --others --exclude-standard | LC_ALL=C sort) \
-      <(git ls-tree -r --name-only "$fetched_commit" | LC_ALL=C sort)
-  )
-  if (( ${#untracked_conflicts[@]} > 0 )); then
-    printf 'untracked files would conflict with target revision:\n' >&2
-    printf '  %s\n' "${untracked_conflicts[@]}" >&2
-    exit 76
-  fi
+  python "$conflict_checker" \
+    --repository "$PROJECT" \
+    --current-commit "$current_commit" \
+    --target-commit "$fetched_commit"
   git merge --ff-only FETCH_HEAD
   if [[ "$(git rev-parse HEAD)" != "$TARGET_COMMIT" ]]; then
     printf 'remote fast-forward did not reach target commit\n' >&2

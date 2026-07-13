@@ -35,8 +35,9 @@ The remote helper refuses deployment unless:
 - the bundle resolves to the exact local target commit and can be applied with
   a fast-forward-only merge.
 - no remote untracked file has the same path as a file tracked by the target
-  revision; the helper computes this intersection before merge and reports all
-  conflicts without moving HEAD.
+  revision; the helper checks only paths newly tracked between pinned and target
+  revisions plus parent file/symlink blockers, then reports all conflicts without
+  moving HEAD. This bounded scan does not enumerate unrelated historical outputs.
 
 After the fast-forward, the helper runs the full test suite and shell syntax
 checks before launching one background completion pipeline. If deployment was
@@ -96,3 +97,8 @@ tree as `PYTHONPATH`. The full package is required because importing a submodule
 first executes the target package `__init__` and its imports. Fetching adds
 objects but does not move HEAD; only a successful pair validation can reach the
 existing untracked-conflict check and fast-forward merge.
+
+The original full `git ls-files --others` intersection became operationally
+unbounded as historical artifact trees grew. It was replaced by the target-path
+scanner documented in
+`docs/records/2026-07-13_bounded_deployment_conflict_scan.md`.

@@ -269,8 +269,11 @@ The revision transition after the active 10% pair is also gated. Run
 50K training reports are complete. It verifies the pinned remote revision,
 clean tracked files, completed reports, and absent training processes before a
 fast-forward-only bundle deployment. Before merge it rejects any remote
-untracked path that would become tracked by the target revision. Remote tests
-and shell syntax checks must pass, then an atomic receipt binds the bundle
+untracked path that would become tracked by the target revision. The collision
+guard derives only paths added between pinned and target revisions, queries
+untracked state with those bounded pathspecs, and checks untracked file/symlink
+parent blockers; historical artifact trees are never enumerated wholesale.
+Remote tests and shell syntax checks must pass, then an atomic receipt binds the bundle
 SHA256, validated 10% pair, pinned source revision, exact target revision, and
 clean tracked state before it launches
 `artifacts/runbooks/generation_complete_pipeline_after_10pct.sh`. That pipeline
@@ -288,11 +291,13 @@ This preserves the same fast-forward trust boundary without retransmitting the
 repository's full historical object graph.
 Before moving HEAD, the remote helper fetches only the verified bundle objects
 and extracts the target revision's training-pair validator and complete
-`src/cofitok/` package with `git archive` into a temporary isolated Python
+`src/cofitok/` package plus the bounded collision checker with `git archive`
+into a temporary isolated Python
 path. Pre-deployment validation therefore runs the exact target code
 even though the worktree is still pinned to the legacy training revision. The
 temporary tree is removed on exit, and a failed validation never merges the
 target revision.
+See `docs/records/2026-07-13_bounded_deployment_conflict_scan.md`.
 
 While the pinned legacy 10% pair runs, a separate read-only monitor may be
 launched from `/tmp` without changing the training revision. It atomically

@@ -113,9 +113,13 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     ) < deployer.index("git merge --ff-only FETCH_HEAD")
     assert "pgrep -af '[s]cripts/train_generation.py" in deployer
     assert "git bundle verify" in deployer
-    assert "git ls-files --others --exclude-standard" in deployer
-    assert "git ls-tree -r --name-only" in deployer
-    assert "untracked files would conflict with target revision" in deployer
+    assert "scripts/check_generation_deployment_conflicts.py" in deployer
+    assert 'python "$conflict_checker"' in deployer
+    assert '--current-commit "$current_commit"' in deployer
+    assert '--target-commit "$fetched_commit"' in deployer
+    assert deployer.index('python "$conflict_checker"') < deployer.index(
+        "git merge --ff-only FETCH_HEAD"
+    )
     assert "git merge --ff-only FETCH_HEAD" in deployer
     assert "python -m pytest -q" in deployer
     assert "kill -0 \"$previous_pid\"" in deployer
