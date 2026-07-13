@@ -61,14 +61,40 @@ the authoritative compressed 10% revision, and the full-training revision.
 
 ## Verification
 
-- Full local suite: pass.
+- Implementation commit: `35d21c3c153ea655778a8e490e7410619aa8f1d4`.
+- Prerequisite-aware bundle from pinned `781a01444fddbf0d48a427ba58bdeed50167b5be`:
+  `457,725` bytes, SHA256
+  `ca06e6077b5a6b8b0f411ec160a78c0f2a36fb3a48cd0765f7ee7b30847bef16`.
+- Full local suite: `571/571` pass.
 - Production scaling config preflight: pass.
 - Production full config preflight: pass.
-- Modified Linux runbooks: `bash -n` pass on `pro6000` via isolated `/tmp`
-  copies; formal worktree HEAD remained pinned.
+- Isolated Linux target-revision suite: `571/571` pass, 0 failures/errors/skips.
+- Target-tracked Linux runbooks: `40/40` `bash -n` pass.
+- Bounded deployment conflict scan: 160 target-added paths, 0 conflicts.
+- Formal worktree HEAD remained pinned and tracked-clean after verification.
 - Tests cover variable token channels/shapes, fixed upsampling to image space,
   per-token compression, nondecreasing capacity, legacy recipe compatibility,
   matched parameter bounds, pipeline stage ordering, and completion provenance.
 
 At record time the pinned legacy CoFiTok run was complete and the matched dense
 run remained healthy. No remote revision or active training process was changed.
+
+Machine-readable evidence:
+
+```text
+artifacts/reports/generation/compressed_scaling_config_preflight.json
+artifacts/reports/generation/compressed_full_config_preflight.json
+artifacts/reports/generation/compressed_token_linux_pytest.xml
+artifacts/reports/generation/compressed_token_linux_runbook_syntax.json
+artifacts/reports/generation/compressed_token_deployment_conflicts.json
+```
+
+Evidence SHA256 values, in the order above:
+
+```text
+compressed_scaling_config_preflight.json: recorded in the implementation commit
+compressed_full_config_preflight.json: recorded in the implementation commit
+compressed_token_linux_pytest.xml: 2ed4a2c400e98ff42ab2549d8b51fe82609b6ec2f2cba825af8655be99d2354e
+compressed_token_linux_runbook_syntax.json: 43ec21f1a56e2390954495b7697678556d1c800544ff07b8baf897ab25d92963
+compressed_token_deployment_conflicts.json: aed468dc7a1a315a88de92eddd92586cae10838ad3b68a9ce1b58c401bf19a4c
+```

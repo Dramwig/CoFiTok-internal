@@ -1,0 +1,11 @@
+{
+  "conflict_count": 0,
+  "conflicts": [],
+  "current_commit": "781a01444fddbf0d48a427ba58bdeed50167b5be",
+  "pathspec_chunk_size": 256,
+  "repository": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+  "schema_version": 1,
+  "status": "pass",
+  "target_added_path_count": 160,
+  "target_commit": "35d21c3c153ea655778a8e490e7410619aa8f1d4"
+}
