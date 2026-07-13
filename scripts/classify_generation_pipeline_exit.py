@@ -7,6 +7,7 @@ from typing import Any
 
 
 RETRYABLE_STAGES = {
+    "scaling_training",
     "posteval_10pct",
     "full_training",
     "full_posteval",

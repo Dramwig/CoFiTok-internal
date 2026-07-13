@@ -1698,8 +1698,16 @@ def build_completion_audit(
     comparison_source_verification: dict[str, Any] | None,
     official_related: dict[str, Any] | None,
     official_related_sha256: str | None,
+    expected_deployment_source_revision: str | None = None,
 ) -> dict[str, Any]:
-    if len(expected_10pct_revision) != 40 or len(expected_full_revision) != 40:
+    deployment_source_revision = (
+        expected_deployment_source_revision or expected_10pct_revision
+    )
+    if (
+        len(expected_10pct_revision) != 40
+        or len(expected_full_revision) != 40
+        or len(deployment_source_revision) != 40
+    ):
         raise ValueError("completion audit requires full 40-character revisions")
 
     checks = []
@@ -1713,7 +1721,7 @@ def build_completion_audit(
                 expected_steps=50_000,
                 expected_revision=expected_10pct_revision,
                 expected_recipe_stage="scaling",
-                allow_legacy_missing_dataset_provenance=True,
+                allow_legacy_missing_dataset_provenance=False,
             ),
         )
     )
@@ -1723,7 +1731,7 @@ def build_completion_audit(
             [deployment_receipt],
             lambda: _deployment_transition_evidence(
                 deployment_receipt,
-                expected_training_revision=expected_10pct_revision,
+                expected_training_revision=deployment_source_revision,
                 expected_target_revision=expected_full_revision,
                 verification_files=deployment_verification_files,
             ),
@@ -1985,6 +1993,7 @@ def build_completion_audit(
         "status": "complete" if complete else ("failed" if failed else "in_progress"),
         "complete": complete,
         "expected_revisions": {
+            "deployment_source": deployment_source_revision,
             "ten_percent_training": expected_10pct_revision,
             "full_training": expected_full_revision,
         },
@@ -2150,7 +2159,11 @@ def main() -> None:
         "--output-root",
         default="/root/autodl-tmp/CoFiTok/checkpoints/generation",
     )
-    parser.add_argument("--expected-10pct-revision", default=PINNED_10PCT_REVISION)
+    parser.add_argument(
+        "--expected-deployment-source-revision",
+        default=PINNED_10PCT_REVISION,
+    )
+    parser.add_argument("--expected-10pct-revision", required=True)
     parser.add_argument("--expected-full-revision", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--allow-incomplete", action="store_true")
@@ -2159,10 +2172,10 @@ def main() -> None:
     project = Path(args.project_root).resolve()
     output_root = Path(args.output_root).resolve()
     report_root = project / "artifacts/reports/generation"
-    ten_root = report_root / "imagenet256_10pct_matched_50k_2026-07-12"
+    ten_root = report_root / "imagenet256_10pct_compressed_matched_50k"
     full_root = report_root / "imagenet256_full_matched_300k"
-    cofitok_10 = output_root / "imagenet256_10pct_cofitok_k8_50k_2026-07-12"
-    dense_10 = output_root / "imagenet256_10pct_dense_50k_2026-07-12"
+    cofitok_10 = output_root / "imagenet256_10pct_compressed_cofitok_k8_50k"
+    dense_10 = output_root / "imagenet256_10pct_compressed_dense_50k"
     cofitok_full = output_root / "imagenet256_full_cofitok_k8_300k"
     dense_full = output_root / "imagenet256_full_dense_300k"
     official_related_path = (
@@ -2187,6 +2200,7 @@ def main() -> None:
     )
 
     audit = build_completion_audit(
+        expected_deployment_source_revision=args.expected_deployment_source_revision,
         expected_10pct_revision=args.expected_10pct_revision,
         expected_full_revision=args.expected_full_revision,
         cofitok_10pct_training=_read_optional(cofitok_10 / "training_report.json"),

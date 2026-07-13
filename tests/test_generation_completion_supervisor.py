@@ -12,7 +12,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_supervisor_classifies_only_recoverable_execution_stages_for_retry() -> None:
-    for stage in ("posteval_10pct", "full_training", "full_posteval", "inference_export"):
+    for stage in (
+        "scaling_training",
+        "posteval_10pct",
+        "full_training",
+        "full_posteval",
+        "inference_export",
+    ):
         report = classify_pipeline_exit(
             {"stage": stage, "status": "failed"}, exit_code=137
         )

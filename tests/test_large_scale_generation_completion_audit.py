@@ -89,7 +89,7 @@ def _full_training_authorization() -> dict:
         _gate("scaling"),
         gate_path=(
             "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/"
-            "generation/imagenet256_10pct_matched_50k_2026-07-12/"
+            "generation/imagenet256_10pct_compressed_matched_50k/"
             "promotion_gate.json"
         ),
         gate_bytes=10_000,
@@ -118,9 +118,9 @@ def _training(
     cofitok_method = parameters > 100_000
     if dataset == "imagenet_256_10pct":
         config_name = (
-            "imagenet256_10pct_cofitok_k8_50k.json"
+            "imagenet256_10pct_compressed_cofitok_k8_50k.json"
             if cofitok_method
-            else "imagenet256_10pct_dense_50k.json"
+            else "imagenet256_10pct_compressed_dense_50k.json"
         )
     else:
         config_name = (
@@ -1314,19 +1314,20 @@ def _kwargs() -> dict:
     scaling_gate = _gate("scaling")
     final_gate = _gate("full")
     return {
-        "expected_10pct_revision": TEN_REVISION,
+        "expected_deployment_source_revision": TEN_REVISION,
+        "expected_10pct_revision": FULL_REVISION,
         "expected_full_revision": FULL_REVISION,
         "cofitok_10pct_training": _training(
             steps=50_000,
             dataset="imagenet_256_10pct",
-            revision=TEN_REVISION,
+            revision=FULL_REVISION,
             parameters=100_500,
             checkpoint_sha="c" * 64,
         ),
         "dense_10pct_training": _training(
             steps=50_000,
             dataset="imagenet_256_10pct",
-            revision=TEN_REVISION,
+            revision=FULL_REVISION,
             parameters=100_000,
             checkpoint_sha="d" * 64,
         ),
@@ -2272,8 +2273,10 @@ def test_completion_audit_direct_cli_reports_in_progress(tmp_path) -> None:
             str(ROOT),
             "--output-root",
             str(output_root),
-            "--expected-full-revision",
-            FULL_REVISION,
+                "--expected-full-revision",
+                FULL_REVISION,
+                "--expected-10pct-revision",
+                FULL_REVISION,
             "--output",
             str(output),
             "--allow-incomplete",

@@ -5,13 +5,13 @@ PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
 STATUS="$OUTPUT_ROOT/generation_complete_pipeline_after_10pct.status.json"
 LOCK="$OUTPUT_ROOT/generation_complete_pipeline_after_10pct.lock"
-SCALING_GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/promotion_gate.json"
+SCALING_GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_compressed_matched_50k/promotion_gate.json"
 FINAL_GATE="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/final_generation_gate.json"
 FINAL_COMPARISON="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/comparison/large_scale_generation_comparison.json"
 FINAL_VISUAL_AUDIT="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/visual_audit/visual_audit_report.json"
-COFITOK_10PCT="$OUTPUT_ROOT/imagenet256_10pct_cofitok_k8_50k_2026-07-12/training_report.json"
-DENSE_10PCT="$OUTPUT_ROOT/imagenet256_10pct_dense_50k_2026-07-12/training_report.json"
-PINNED_10PCT_REVISION=781a01444fddbf0d48a427ba58bdeed50167b5be
+COFITOK_10PCT="$OUTPUT_ROOT/imagenet256_10pct_compressed_cofitok_k8_50k/training_report.json"
+DENSE_10PCT="$OUTPUT_ROOT/imagenet256_10pct_compressed_dense_50k/training_report.json"
+DEPLOYMENT_SOURCE_REVISION=781a01444fddbf0d48a427ba58bdeed50167b5be
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -51,9 +51,8 @@ validate_completed_training_pair() {
   python scripts/validate_generation_training_pair.py \
     --cofitok-training "$COFITOK_10PCT" \
     --dense-training "$DENSE_10PCT" \
-    --expected-steps 50000 --expected-revision "$PINNED_10PCT_REVISION" \
-    --expected-recipe-stage scaling \
-    --allow-legacy-missing-dataset-provenance
+    --expected-steps 50000 --expected-revision "$FULL_REVISION" \
+    --expected-recipe-stage scaling
 }
 
 validate_gate() {
@@ -70,7 +69,11 @@ gate_sources_match() {
     --gate "$gate_path" --stage "$stage" --sources-only >/dev/null
 }
 
-write_status running "validating the completed 10% matched training pair"
+STAGE=scaling_training
+write_status running "training the authoritative compressed 10% matched pair"
+bash artifacts/runbooks/generation_10pct_matched_50k_2026-07-12.sh
+
+write_status running "validating the authoritative compressed 10% matched pair"
 validate_completed_training_pair
 
 if [[ ! -f "$SCALING_GATE" ]] || ! gate_sources_match "$SCALING_GATE" scaling; then
@@ -106,7 +109,8 @@ STAGE=completion_audit
 write_status running "auditing all required large-scale generation evidence"
 python scripts/audit_large_scale_generation_completion.py \
   --project-root "$PROJECT" --output-root "$OUTPUT_ROOT" \
-  --expected-10pct-revision "$PINNED_10PCT_REVISION" \
+  --expected-deployment-source-revision "$DEPLOYMENT_SOURCE_REVISION" \
+  --expected-10pct-revision "$FULL_REVISION" \
   --expected-full-revision "$FULL_REVISION" \
   --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/completion_audit.json"
 

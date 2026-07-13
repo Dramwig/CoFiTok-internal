@@ -42,6 +42,8 @@ class CoFiTokTiny(nn.Module):
             gradient_checkpointing=config.predictor_gradient_checkpointing,
             num_classes=config.num_classes,
             class_dropout_prob=config.class_dropout_prob,
+            token_channel_schedule=config.token_channel_schedule,
+            token_spatial_strides=config.token_spatial_strides,
         )
         self.synthesis = build_synthesis_bank(
             synthesis_mode=config.synthesis_mode,
@@ -50,8 +52,10 @@ class CoFiTokTiny(nn.Module):
             image_channels=config.image_channels,
             kernel_size=config.synthesis_kernel_size,
             gamma_mode=config.gamma_mode,
+            token_channel_schedule=config.token_channel_schedule,
             token_strides=config.synthesis_token_strides,
             active_token_channels=config.synthesis_active_token_channels,
+            output_size=config.image_size,
             deep_hidden_channels=config.deep_synthesis_hidden_channels,
             deep_depth=config.deep_synthesis_depth,
         )

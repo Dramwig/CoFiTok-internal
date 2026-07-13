@@ -108,9 +108,19 @@ def _contains_suspicious_constant_name(module: Any) -> list[str]:
 def _zero_token_max_abs(model: Any, config: ExperimentConfig, spatial_size: int) -> float:
     import torch
 
+    from cofitok.token_layout import resolve_token_layout
+
+    layout = resolve_token_layout(
+        image_size=config.model.image_size,
+        image_channels=config.model.image_channels,
+        token_count=config.model.token_count,
+        token_channels=config.model.token_channels,
+        token_channel_schedule=config.model.token_channel_schedule,
+        token_spatial_strides=config.model.token_spatial_strides,
+    )
     tokens = [
-        torch.zeros(2, config.model.token_channels, spatial_size, spatial_size)
-        for _ in range(config.model.token_count)
+        torch.zeros(2, channels, max(1, spatial_size // stride), max(1, spatial_size // stride))
+        for channels, stride in zip(layout.channels, layout.spatial_strides)
     ]
     with torch.no_grad():
         components = model.synthesis(tokens)
@@ -147,6 +157,8 @@ def _static_source_contract() -> dict[str, Any]:
 
 
 def _static_config_contract(config: ExperimentConfig) -> dict[str, Any]:
+    from cofitok.token_layout import resolve_token_layout, token_layout_summary
+
     if config.model.token_count < 1:
         raise AssertionError("token_count must be >= 1")
     if config.model.token_channels < 1:
@@ -163,12 +175,21 @@ def _static_config_contract(config: ExperimentConfig) -> dict[str, Any]:
         raise AssertionError("token stride schedule must match token_count")
     if any(value < 1 for value in strides):
         raise AssertionError("token stride values must be >= 1")
+    layout = resolve_token_layout(
+        image_size=config.model.image_size,
+        image_channels=config.model.image_channels,
+        token_count=config.model.token_count,
+        token_channels=config.model.token_channels,
+        token_channel_schedule=config.model.token_channel_schedule,
+        token_spatial_strides=config.model.token_spatial_strides,
+    )
     return {
         "token_count": config.model.token_count,
         "token_channels": config.model.token_channels,
         "kernel_size": config.model.synthesis_kernel_size,
         "active_token_channels": active,
         "token_strides": strides,
+        "token_layout": token_layout_summary(layout),
     }
 
 

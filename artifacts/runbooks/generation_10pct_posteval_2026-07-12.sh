@@ -4,13 +4,14 @@ set -euo pipefail
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 DATA=/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
-COFITOK_RUN="$OUTPUT_ROOT/imagenet256_10pct_cofitok_k8_50k_2026-07-12"
-DENSE_RUN="$OUTPUT_ROOT/imagenet256_10pct_dense_50k_2026-07-12"
+COFITOK_RUN="$OUTPUT_ROOT/imagenet256_10pct_compressed_cofitok_k8_50k"
+DENSE_RUN="$OUTPUT_ROOT/imagenet256_10pct_compressed_dense_50k"
 COFITOK_CHECKPOINT="$COFITOK_RUN/checkpoint_step_00050000.pt"
 DENSE_CHECKPOINT="$DENSE_RUN/checkpoint_step_00050000.pt"
 EVAL_CACHE="$OUTPUT_ROOT/eval_cache/torch_fidelity"
 SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/imagenet256_10pct_gate10k_sampling"
-SAMPLING_SELECTION="$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/sampling_runtime_selection.json"
+SCALING_REPORT_ROOT="$PROJECT/artifacts/reports/generation/imagenet256_10pct_compressed_matched_50k"
+SAMPLING_SELECTION="$SCALING_REPORT_ROOT/sampling_runtime_selection.json"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -45,7 +46,7 @@ test -f "$DENSE_CHECKPOINT"
 
 python scripts/check_generation_storage_capacity.py \
   --path "$OUTPUT_ROOT" \
-  --output "$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/storage_preflight.json" \
+  --output "$SCALING_REPORT_ROOT/storage_preflight.json" \
   --stage 10pct_posteval --checkpoint-count 0 --sample-count 20256 \
   --estimated-sample-kib 256 --additional-gib 16 --safety-margin-gib 32
 
@@ -128,7 +129,7 @@ python scripts/build_generation_visual_audit.py \
   --indices 0,1,2,3,250,251,1000,1001,5000,5001,9998,9999 \
   --prefix-indices 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 \
   --prefix-budgets 1,2,4,8 \
-  --output-dir "$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/visual_audit"
+  --output-dir "$SCALING_REPORT_ROOT/visual_audit"
 
 python scripts/build_generation_gate_report.py \
   --cofitok-training "$COFITOK_RUN/training_report.json" \
@@ -137,5 +138,5 @@ python scripts/build_generation_gate_report.py \
   --dense-generation "$DENSE_RUN/samples_gate10k_ddim100_cfg15/metrics/generation_metrics_report.json" \
   --cofitok-checkpoint-eval "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
-  --output "$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/promotion_gate.json" \
+  --output "$SCALING_REPORT_ROOT/promotion_gate.json" \
   --stage scaling --min-samples 10000 --max-absolute-fid 100.0 --allow-fail

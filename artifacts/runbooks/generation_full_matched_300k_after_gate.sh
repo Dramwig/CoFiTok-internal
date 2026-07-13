@@ -3,13 +3,13 @@ set -euo pipefail
 
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
-GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/promotion_gate.json"
+GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_compressed_matched_50k/promotion_gate.json"
 COFITOK_RUN="$OUTPUT_ROOT/imagenet256_full_cofitok_k8_300k"
 DENSE_RUN="$OUTPUT_ROOT/imagenet256_full_dense_300k"
 RUNTIME_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/full_imagenet256_300k"
 RUNTIME_SELECTION="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/runtime_selection.json"
-REFERENCE_COFITOK="$OUTPUT_ROOT/imagenet256_10pct_cofitok_k8_50k_2026-07-12/checkpoint_step_00050000.pt"
-REFERENCE_DENSE="$OUTPUT_ROOT/imagenet256_10pct_dense_50k_2026-07-12/checkpoint_step_00050000.pt"
+REFERENCE_COFITOK="$OUTPUT_ROOT/imagenet256_10pct_compressed_cofitok_k8_50k/checkpoint_step_00050000.pt"
+REFERENCE_DENSE="$OUTPUT_ROOT/imagenet256_10pct_compressed_dense_50k/checkpoint_step_00050000.pt"
 MONITOR_REPORT="$OUTPUT_ROOT/generation_full_matched_300k_monitor.json"
 MONITOR_LOG="$OUTPUT_ROOT/generation_full_matched_300k_monitor.log"
 MONITOR_PID_FILE="$OUTPUT_ROOT/generation_full_matched_300k_monitor.pid"

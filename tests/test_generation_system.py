@@ -10,6 +10,7 @@ import torch
 from cofitok.configs import ModelConfig, load_config
 from cofitok.data.sampler import StatefulRandomSampler
 from cofitok.models import CoFiTokTiny, ScalableUNetTokenPredictor
+from cofitok.token_layout import compressed_token_layout_issues, resolve_token_layout
 from cofitok.training.checkpointing import (
     backfill_training_checkpoint_integrity,
     checkpoint_integrity_path,
@@ -73,6 +74,55 @@ def test_scalable_predictor_keeps_conditioning_inside_tk() -> None:
     assert all(torch.count_nonzero(component) == 0 for component in zero_components)
 
 
+def test_scalable_predictor_emits_true_multiscale_variable_channel_tokens() -> None:
+    config = replace(
+        _small_model_config(),
+        token_channel_schedule=[2, 2, 4, 4],
+        token_spatial_strides=[4, 2, 2, 1],
+        synthesis_active_token_channels=[],
+    )
+    model = CoFiTokTiny(config).eval()
+    images = torch.randn(2, 3, 16, 16)
+    timesteps = torch.tensor([2, 3])
+    labels = torch.tensor([1, 2])
+
+    output = model(images, timesteps, class_labels=labels)
+
+    assert [tuple(token.shape[1:]) for token in output.tokens] == [
+        (2, 4, 4),
+        (2, 8, 8),
+        (4, 8, 8),
+        (4, 16, 16),
+    ]
+    assert all(component.shape == images.shape for component in output.components)
+    assert [head.out_channels for head in model.predictor.token_heads] == [2, 2, 4, 4]
+    assert [layer.in_channels for layer in model.predictor.feedback] == [2, 2, 4]
+    torch.nn.functional.mse_loss(output.epsilon, torch.randn_like(images)).backward()
+    assert all(
+        head.weight.grad is not None and torch.count_nonzero(head.weight.grad) > 0
+        for head in model.predictor.token_heads
+    )
+
+
+def test_production_compressed_layout_is_strictly_smaller_per_token() -> None:
+    config = load_config(
+        "configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json"
+    )
+    layout = resolve_token_layout(
+        image_size=config.model.image_size,
+        image_channels=config.model.image_channels,
+        token_count=config.model.token_count,
+        token_channels=config.model.token_channels,
+        token_channel_schedule=config.model.token_channel_schedule,
+        token_spatial_strides=config.model.token_spatial_strides,
+    )
+
+    assert compressed_token_layout_issues(layout) == []
+    assert layout.spatial_sizes == (16, 16, 32, 32, 64, 64, 128, 256)
+    assert layout.scalar_counts == (1024, 1024, 8192, 8192, 32768, 32768, 65536, 131072)
+    assert all(count < layout.dense_scalar_count for count in layout.scalar_counts)
+
+
 @pytest.mark.parametrize("synthesis_mode", ["restricted", "dense_identity"])
 def test_scalable_generation_heads_start_at_zero_and_receive_gradient(
     synthesis_mode: str,
@@ -125,6 +175,21 @@ def test_generation_configs_form_a_matched_backbone_pair() -> None:
     assert cofitok.model.predictor_channel_multipliers == dense.model.predictor_channel_multipliers
     assert cofitok.model.synthesis_mode == "restricted"
     assert dense.model.synthesis_mode == "dense_identity"
+
+
+def test_compressed_generation_configs_form_authoritative_scaling_pair() -> None:
+    cofitok = load_config(
+        "configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json"
+    )
+    dense = load_config(
+        "configs/generation/imagenet256_10pct_compressed_dense_50k.json"
+    )
+
+    preflight = validate_pair(cofitok, dense, max_parameter_gap=0.02)
+
+    assert preflight["status"] == "pass", preflight["mismatches"]
+    assert preflight["training_recipe"]["stage"] == "scaling"
+    assert preflight["training_recipe"]["token_layout"]["issues"] == []
 
 
 def test_full_generation_configs_keep_matched_runtime_and_checkpoint_cadence() -> None:

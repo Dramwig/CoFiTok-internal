@@ -42,6 +42,25 @@ def test_validate_configs_accepts_restricted_contract(tmp_path: Path) -> None:
     assert result["results"][0]["evidence"]["mode"] == "static"
 
 
+def test_validate_configs_accepts_true_compressed_token_layout(tmp_path: Path) -> None:
+    path = tmp_path / "compressed.json"
+    payload = _base_config("compressed_contract")
+    payload["model"].update(
+        {
+            "predictor_type": "scalable_unet",
+            "token_channel_schedule": [2, 2],
+            "token_spatial_strides": [4, 1],
+        }
+    )
+    _write_config(path, payload)
+
+    result = validate_configs([path], spatial_size=16, static_only=True)
+
+    layout = result["results"][0]["evidence"]["token_layout"]
+    assert layout["channels"] == [2, 2]
+    assert layout["spatial_sizes"] == [4, 16]
+
+
 def test_validate_configs_records_deep_synthesis_as_ablation(tmp_path: Path) -> None:
     path = tmp_path / "deep.json"
     payload = _base_config("deep_ablation", synthesis_mode="deep_decoder")

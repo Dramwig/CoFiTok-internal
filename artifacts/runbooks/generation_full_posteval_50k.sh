@@ -13,7 +13,7 @@ REPORT_ROOT="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k
 OFFICIAL_RELATED="$PROJECT/artifacts/reports/baselines/official_related_methods_2026-07-11_final/official_related_methods_table.json"
 SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/imagenet256_full_50k_sampling"
 SAMPLING_SELECTION="$REPORT_ROOT/sampling_runtime_selection.json"
-SCALING_GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/promotion_gate.json"
+SCALING_GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_compressed_matched_50k/promotion_gate.json"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm

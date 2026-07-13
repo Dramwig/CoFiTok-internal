@@ -19,8 +19,8 @@ def test_checked_in_scaling_and_full_recipes_pass() -> None:
     for stage, cofitok_name, dense_name in (
         (
             "scaling",
-            "imagenet256_10pct_cofitok_k8_50k.json",
-            "imagenet256_10pct_dense_50k.json",
+            "imagenet256_10pct_compressed_cofitok_k8_50k.json",
+            "imagenet256_10pct_compressed_dense_50k.json",
         ),
         (
             "full",
@@ -70,10 +70,23 @@ def test_scaling_recipe_accepts_pinned_legacy_implicit_defaults() -> None:
     for config in (cofitok, dense):
         config["data"].pop("random_horizontal_flip_prob")
         config["runtime"].pop("protected_checkpoint_steps")
+        config["model"].pop("token_channel_schedule")
+        config["model"].pop("token_spatial_strides")
+
+    contract = generation_training_recipe_contract(cofitok, dense, stage="legacy_scaling")
+
+    assert contract["valid"] is True, contract["issues"]
+
+
+def test_compressed_recipe_rejects_a_dense_sized_token() -> None:
+    cofitok = _config("imagenet256_10pct_compressed_cofitok_k8_50k.json")
+    dense = _config("imagenet256_10pct_compressed_dense_50k.json")
+    cofitok["model"]["token_channel_schedule"][-1] = 3
 
     contract = generation_training_recipe_contract(cofitok, dense, stage="scaling")
 
-    assert contract["valid"] is True, contract["issues"]
+    assert contract["valid"] is False
+    assert any("not smaller than the dense field" in issue for issue in contract["issues"])
 
 
 def test_recipe_rejects_identically_weakened_matched_pair() -> None:

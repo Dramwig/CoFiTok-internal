@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import Any
 
 from cofitok.generation_pair import generation_pair_contract
+from cofitok.token_layout import resolve_token_layout, token_layout_summary
 
 
 GENERATION_TRAINING_RECIPE_SCHEMA = "cofitok_generation_training_recipe_v1"
-RECIPE_STAGES = {"scaling", "full"}
+RECIPE_STAGES = {"legacy_scaling", "scaling", "full"}
 ALLOWED_RUNTIME_BATCHES = {(16, 4), (32, 2), (64, 1)}
 
 
@@ -41,7 +42,9 @@ def infer_generation_training_stage(
         for config in (cofitok_config, dense_config)
     }
     if identities == {("imagenet_256_10pct", 50_000)}:
-        return "scaling"
+        schedule = _path_value(cofitok_config, "model.token_channel_schedule", [])
+        strides = _path_value(cofitok_config, "model.token_spatial_strides", [])
+        return "scaling" if schedule and strides else "legacy_scaling"
     if identities == {("imagenet_256", 300_000)}:
         return "full"
     raise ValueError(f"cannot infer formal generation training stage: {sorted(identities)}")
@@ -92,8 +95,25 @@ def _expected_shared(stage: str) -> dict[str, Any]:
     }
 
 
-def _expected_method(method: str) -> dict[str, Any]:
+def _expected_method(method: str, stage: str) -> dict[str, Any]:
     if method == "cofitok":
+        if stage != "legacy_scaling":
+            return {
+                "model.token_count": 8,
+                "model.token_channels": 8,
+                "model.token_channel_schedule": [4, 4, 8, 8, 8, 8, 4, 2],
+                "model.token_spatial_strides": [16, 16, 8, 8, 4, 4, 2, 1],
+                "model.predictor_use_feedback": True,
+                "model.synthesis_mode": "restricted",
+                "model.synthesis_kernel_size": 3,
+                "model.gamma_mode": "learned_scalar",
+                "model.synthesis_active_token_channels": [],
+                "model.synthesis_token_strides": [],
+                "loss.epsilon_weight": 1.0,
+                "loss.denoise_path_prefix_weight": 0.05,
+                "loss.denoise_path_component_weight": 0.1,
+                "loss.denoise_path_progress_power": 1.5,
+            }
         return {
             "model.token_count": 8,
             "model.token_channels": 64,
@@ -107,13 +127,21 @@ def _expected_method(method: str) -> dict[str, Any]:
             "loss.denoise_path_component_weight": 0.1,
             "loss.denoise_path_progress_power": 1.5,
         }
-    return {
+    dense_expected = {
         "model.token_count": 1,
         "model.token_channels": 3,
         "model.predictor_use_feedback": False,
         "model.synthesis_mode": "dense_identity",
         "loss.epsilon_weight": 1.0,
     }
+    if stage != "legacy_scaling":
+        dense_expected.update(
+            {
+                "model.token_channel_schedule": [],
+                "model.token_spatial_strides": [],
+            }
+        )
+    return dense_expected
 
 
 def _unexpected_auxiliary_losses(
@@ -159,7 +187,7 @@ def generation_training_recipe_contract(
             observed[method][path] = actual
             if actual != expected:
                 issues.append(f"{method}.{path}: expected {expected!r}, got {actual!r}")
-        for path, expected in _expected_method(method).items():
+        for path, expected in _expected_method(method, stage).items():
             actual = _path_value(config, path)
             observed[method][path] = actual
             if actual != expected:
@@ -199,6 +227,20 @@ def generation_training_recipe_contract(
                 f"{(micro_batch, accumulation)!r} (effective {effective_batch})"
             )
 
+    token_layout = None
+    if stage != "legacy_scaling":
+        model = cofitok_config.get("model", {})
+        layout = resolve_token_layout(
+            image_size=int(model.get("image_size", 0)),
+            image_channels=int(model.get("image_channels", 0)),
+            token_count=int(model.get("token_count", 0)),
+            token_channels=int(model.get("token_channels", 0)),
+            token_channel_schedule=model.get("token_channel_schedule", []),
+            token_spatial_strides=model.get("token_spatial_strides", []),
+        )
+        token_layout = token_layout_summary(layout)
+        issues.extend(f"compressed_token_layout: {issue}" for issue in token_layout["issues"])
+
     return {
         "schema": GENERATION_TRAINING_RECIPE_SCHEMA,
         "stage": stage,
@@ -209,4 +251,5 @@ def generation_training_recipe_contract(
         "effective_batches": effective_batches,
         "observed": observed,
         "pair_contract": pair_contract,
+        "token_layout": token_layout,
     }

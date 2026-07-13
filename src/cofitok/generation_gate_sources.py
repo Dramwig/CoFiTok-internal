@@ -9,27 +9,27 @@ from cofitok.reporting import file_sha256
 GATE_SOURCE_SUFFIXES = {
     "scaling": {
         "cofitok_training": (
-            "checkpoints/generation/imagenet256_10pct_cofitok_k8_50k_2026-07-12/"
+            "checkpoints/generation/imagenet256_10pct_compressed_cofitok_k8_50k/"
             "training_report.json"
         ),
         "dense_training": (
-            "checkpoints/generation/imagenet256_10pct_dense_50k_2026-07-12/"
+            "checkpoints/generation/imagenet256_10pct_compressed_dense_50k/"
             "training_report.json"
         ),
         "cofitok_generation": (
-            "checkpoints/generation/imagenet256_10pct_cofitok_k8_50k_2026-07-12/"
+            "checkpoints/generation/imagenet256_10pct_compressed_cofitok_k8_50k/"
             "samples_gate10k_ddim100_cfg15/metrics/generation_metrics_report.json"
         ),
         "dense_generation": (
-            "checkpoints/generation/imagenet256_10pct_dense_50k_2026-07-12/"
+            "checkpoints/generation/imagenet256_10pct_compressed_dense_50k/"
             "samples_gate10k_ddim100_cfg15/metrics/generation_metrics_report.json"
         ),
         "cofitok_checkpoint_eval": (
-            "checkpoints/generation/imagenet256_10pct_cofitok_k8_50k_2026-07-12/"
+            "checkpoints/generation/imagenet256_10pct_compressed_cofitok_k8_50k/"
             "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
         ),
         "dense_checkpoint_eval": (
-            "checkpoints/generation/imagenet256_10pct_dense_50k_2026-07-12/"
+            "checkpoints/generation/imagenet256_10pct_compressed_dense_50k/"
             "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
         ),
     },

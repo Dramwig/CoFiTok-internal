@@ -43,6 +43,8 @@ class ModelConfig:
     synthesis_mode: str = "restricted"
     synthesis_kernel_size: int = 3
     gamma_mode: str = "learned_scalar"
+    token_channel_schedule: list[int] = field(default_factory=list)
+    token_spatial_strides: list[int] = field(default_factory=list)
     synthesis_token_strides: list[int] = field(default_factory=list)
     synthesis_active_token_channels: list[int] = field(default_factory=list)
     deep_synthesis_hidden_channels: int = 0

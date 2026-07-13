@@ -79,6 +79,29 @@ def test_synthesis_bank_supports_active_token_channels() -> None:
     assert [module.active_token_channels for module in bank.synthesizers] == [4, 8, 16, 16]
 
 
+def test_synthesis_bank_upsamples_variable_channel_tokens_to_image_space() -> None:
+    bank = RestrictedSynthesisBank(
+        token_count=4,
+        token_channels=8,
+        image_channels=3,
+        kernel_size=3,
+        gamma_mode="learned_scalar",
+        token_channel_schedule=[2, 2, 4, 4],
+        output_size=16,
+    )
+    tokens = [
+        torch.randn(2, 2, 4, 4),
+        torch.randn(2, 2, 8, 8),
+        torch.randn(2, 4, 8, 8),
+        torch.randn(2, 4, 16, 16),
+    ]
+
+    components = bank(tokens)
+
+    assert all(component.shape == (2, 3, 16, 16) for component in components)
+    assert [module.proj.in_channels for module in bank.synthesizers] == [2, 2, 4, 4]
+
+
 def test_deep_synthesis_ablation_has_bias_and_nonlinearity() -> None:
     module = DeepSynthesis(token_channels=8, image_channels=3, hidden_channels=12, depth=3)
 

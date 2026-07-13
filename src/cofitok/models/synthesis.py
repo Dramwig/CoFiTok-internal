@@ -63,11 +63,13 @@ class RestrictedSynthesis(nn.Module):
         gamma_mode: str = "learned_scalar",
         token_stride: int = 1,
         active_token_channels: int | None = None,
+        output_size: int | None = None,
     ) -> None:
         super().__init__()
         active_token_channels = _validate_token_layout(token_channels, token_stride, active_token_channels)
         self.token_stride = token_stride
         self.active_token_channels = active_token_channels
+        self.output_size = output_size
         self.register_buffer(
             "token_channel_mask",
             _make_token_channel_mask(token_channels, active_token_channels),
@@ -95,7 +97,15 @@ class RestrictedSynthesis(nn.Module):
             original_size = token.shape[-2:]
             token = F.avg_pool2d(token, kernel_size=self.token_stride, stride=self.token_stride, ceil_mode=True)
             token = F.interpolate(token, size=original_size, mode="bilinear", align_corners=False)
-        return self.gamma.view(1, 1, 1, 1) * self.local(self.proj(token))
+        projected = self.proj(token)
+        if self.output_size is not None and projected.shape[-2:] != (self.output_size, self.output_size):
+            projected = F.interpolate(
+                projected,
+                size=(self.output_size, self.output_size),
+                mode="bilinear",
+                align_corners=False,
+            )
+        return self.gamma.view(1, 1, 1, 1) * self.local(projected)
 
 
 class DeepSynthesis(nn.Module):
@@ -115,6 +125,7 @@ class DeepSynthesis(nn.Module):
         active_token_channels: int | None = None,
         hidden_channels: int = 0,
         depth: int = 3,
+        output_size: int | None = None,
     ) -> None:
         super().__init__()
         if depth < 2:
@@ -122,6 +133,7 @@ class DeepSynthesis(nn.Module):
         active_token_channels = _validate_token_layout(token_channels, token_stride, active_token_channels)
         self.token_stride = token_stride
         self.active_token_channels = active_token_channels
+        self.output_size = output_size
         self.register_buffer(
             "token_channel_mask",
             _make_token_channel_mask(token_channels, active_token_channels),
@@ -156,7 +168,15 @@ class DeepSynthesis(nn.Module):
             original_size = token.shape[-2:]
             token = F.avg_pool2d(token, kernel_size=self.token_stride, stride=self.token_stride, ceil_mode=True)
             token = F.interpolate(token, size=original_size, mode="bilinear", align_corners=False)
-        return self.gamma.view(1, 1, 1, 1) * self.net(token)
+        component = self.net(token)
+        if self.output_size is not None and component.shape[-2:] != (self.output_size, self.output_size):
+            component = F.interpolate(
+                component,
+                size=(self.output_size, self.output_size),
+                mode="bilinear",
+                align_corners=False,
+            )
+        return self.gamma.view(1, 1, 1, 1) * component
 
 
 class RestrictedSynthesisBank(nn.Module):
@@ -169,26 +189,44 @@ class RestrictedSynthesisBank(nn.Module):
         gamma_mode: str,
         token_strides: list[int] | None = None,
         active_token_channels: list[int] | None = None,
+        token_channel_schedule: list[int] | None = None,
+        output_size: int | None = None,
     ) -> None:
         super().__init__()
         token_strides = _normalize_per_token_values(token_strides, token_count, 1, "token strides")
         active_token_channels = _normalize_per_token_values(
-            active_token_channels,
+            active_token_channels or token_channel_schedule,
             token_count,
             token_channels,
             "active channel values",
         )
+        token_channels_per_token = _normalize_per_token_values(
+            token_channel_schedule,
+            token_count,
+            token_channels,
+            "token channel values",
+        )
+        if token_channel_schedule and active_token_channels != token_channels_per_token:
+            raise ValueError(
+                "active_token_channels must be omitted or equal token_channel_schedule "
+                "for variable-channel tokens"
+            )
         self.synthesizers = nn.ModuleList(
             [
                 RestrictedSynthesis(
-                    token_channels=token_channels,
+                    token_channels=channels,
                     image_channels=image_channels,
                     kernel_size=kernel_size,
                     gamma_mode=gamma_mode,
                     token_stride=token_stride,
                     active_token_channels=active_channels,
+                    output_size=output_size,
                 )
-                for token_stride, active_channels in zip(token_strides, active_token_channels)
+                for token_stride, active_channels, channels in zip(
+                    token_strides,
+                    active_token_channels,
+                    token_channels_per_token,
+                )
             ]
         )
 
@@ -213,19 +251,32 @@ class DeepSynthesisBank(nn.Module):
         active_token_channels: list[int] | None = None,
         hidden_channels: int = 0,
         depth: int = 3,
+        token_channel_schedule: list[int] | None = None,
+        output_size: int | None = None,
     ) -> None:
         super().__init__()
         token_strides = _normalize_per_token_values(token_strides, token_count, 1, "token strides")
         active_token_channels = _normalize_per_token_values(
-            active_token_channels,
+            active_token_channels or token_channel_schedule,
             token_count,
             token_channels,
             "active channel values",
         )
+        token_channels_per_token = _normalize_per_token_values(
+            token_channel_schedule,
+            token_count,
+            token_channels,
+            "token channel values",
+        )
+        if token_channel_schedule and active_token_channels != token_channels_per_token:
+            raise ValueError(
+                "active_token_channels must be omitted or equal token_channel_schedule "
+                "for variable-channel tokens"
+            )
         self.synthesizers = nn.ModuleList(
             [
                 DeepSynthesis(
-                    token_channels=token_channels,
+                    token_channels=channels,
                     image_channels=image_channels,
                     kernel_size=kernel_size,
                     gamma_mode=gamma_mode,
@@ -233,8 +284,13 @@ class DeepSynthesisBank(nn.Module):
                     active_token_channels=active_channels,
                     hidden_channels=hidden_channels,
                     depth=depth,
+                    output_size=output_size,
                 )
-                for token_stride, active_channels in zip(token_strides, active_token_channels)
+                for token_stride, active_channels, channels in zip(
+                    token_strides,
+                    active_token_channels,
+                    token_channels_per_token,
+                )
             ]
         )
 
@@ -286,6 +342,8 @@ def build_synthesis_bank(
     active_token_channels: list[int] | None = None,
     deep_hidden_channels: int = 0,
     deep_depth: int = 3,
+    token_channel_schedule: list[int] | None = None,
+    output_size: int | None = None,
 ) -> nn.Module:
     if synthesis_mode in {"dense", "dense_identity", "monolithic_dense"}:
         return DenseIdentitySynthesisBank(
@@ -302,6 +360,8 @@ def build_synthesis_bank(
             gamma_mode=gamma_mode,
             token_strides=token_strides,
             active_token_channels=active_token_channels,
+            token_channel_schedule=token_channel_schedule,
+            output_size=output_size,
         )
     if synthesis_mode in {"deep", "deep_decoder", "unrestricted"}:
         return DeepSynthesisBank(
@@ -314,5 +374,7 @@ def build_synthesis_bank(
             active_token_channels=active_token_channels,
             hidden_channels=deep_hidden_channels,
             depth=deep_depth,
+            token_channel_schedule=token_channel_schedule,
+            output_size=output_size,
         )
     raise ValueError(f"Unknown synthesis_mode: {synthesis_mode}")

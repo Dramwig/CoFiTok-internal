@@ -13,6 +13,8 @@ FACTORIZATION_MODEL_FIELDS = {
     "gamma_mode",
     "synthesis_token_strides",
     "synthesis_active_token_channels",
+    "token_channel_schedule",
+    "token_spatial_strides",
     "deep_synthesis_hidden_channels",
     "deep_synthesis_depth",
 }

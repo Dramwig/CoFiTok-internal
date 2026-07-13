@@ -50,7 +50,7 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
     assert "trap record_failure EXIT" in runbook
     assert "scripts/validate_generation_training_pair.py" in runbook
     assert "--expected-steps 50000" in runbook
-    assert "--allow-legacy-missing-dataset-provenance" in runbook
+    assert "--allow-legacy-missing-dataset-provenance" not in runbook
     assert runbook.count("validate_generation_gate_report.py") == 2
     assert runbook.count('validate_gate "$') == 2
     assert '--gate "$gate_path" --stage "$stage"' in runbook
@@ -60,6 +60,7 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
     assert 'gate_sources_match "$FINAL_GATE" full' in runbook
     assert "--sources-only" in runbook
     ordered_markers = [
+        "STAGE=scaling_training",
         "STAGE=posteval_10pct",
         "STAGE=promotion_gate",
         "STAGE=full_training",
@@ -103,7 +104,7 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert "mktemp -d /tmp/cofitok-generation-prevalidation" in deployer
     assert "trap cleanup_prevalidation EXIT" in deployer
     assert '--expected-revision "$EXPECTED_COMMIT"' in deployer
-    assert "--expected-recipe-stage scaling" in deployer
+    assert "--expected-recipe-stage legacy_scaling" in deployer
     assert "--allow-legacy-missing-dataset-provenance" in deployer
     assert deployer.index("git fetch \"$BUNDLE\" HEAD") < deployer.index(
         'PYTHONPATH="$validator_pythonpath" python "$validator"'
@@ -160,10 +161,14 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     )
 
     pipeline = _read("artifacts/runbooks/generation_complete_pipeline_after_10pct.sh")
-    assert "PINNED_10PCT_REVISION=781a01444fddbf0d48a427ba58bdeed50167b5be" in pipeline
+    assert "DEPLOYMENT_SOURCE_REVISION=781a01444fddbf0d48a427ba58bdeed50167b5be" in pipeline
     assert "validate_generation_training_pair.py" in pipeline
     assert "--expected-recipe-stage scaling" in pipeline
-    assert "--allow-legacy-missing-dataset-provenance" in pipeline
+    assert "--allow-legacy-missing-dataset-provenance" not in pipeline
+    assert "generation_10pct_matched_50k_2026-07-12.sh" in pipeline
+    assert '--expected-revision "$FULL_REVISION"' in pipeline
+    assert '--expected-deployment-source-revision "$DEPLOYMENT_SOURCE_REVISION"' in pipeline
+    assert '--expected-10pct-revision "$FULL_REVISION"' in pipeline
     assert "audit_large_scale_generation_completion.py" in pipeline
     assert '--expected-full-revision "$FULL_REVISION"' in pipeline
 

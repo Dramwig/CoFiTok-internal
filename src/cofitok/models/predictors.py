@@ -191,7 +191,15 @@ def build_token_predictor(
     gradient_checkpointing: bool = False,
     num_classes: int = 0,
     class_dropout_prob: float = 0.0,
+    token_channel_schedule: list[int] | None = None,
+    token_spatial_strides: list[int] | None = None,
 ) -> nn.Module:
+    if (token_channel_schedule or token_spatial_strides) and predictor_type not in {
+        "scalable_unet",
+        "adm_unet",
+        "generation_unet",
+    }:
+        raise ValueError("compressed token layouts require the scalable U-Net predictor")
     if predictor_type in {"tiny", "tiny_conv"}:
         return TinyTokenPredictor(
             image_channels=image_channels,
@@ -227,5 +235,7 @@ def build_token_predictor(
             gradient_checkpointing=gradient_checkpointing,
             num_classes=num_classes,
             class_dropout_prob=class_dropout_prob,
+            token_channel_schedule=token_channel_schedule,
+            token_spatial_strides=token_spatial_strides,
         )
     raise ValueError(f"Unknown predictor_type: {predictor_type}")

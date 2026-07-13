@@ -11,6 +11,13 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   CFG dropout, and optional activation checkpointing.
 - `RestrictedSynthesisBank` remains the default `S_k`. Every `S_k` receives only
   its current token, is bias-free and linear/local, and preserves `S_k(0)=0`.
+- Authoritative scaling/full CoFiTok uses true variable-shape token fields:
+  spatial strides `[16,16,8,8,4,4,2,1]` and channel counts
+  `[4,4,8,8,8,8,4,2]`. Token scalar capacities increase from `1,024` to
+  `131,072`, while a dense RGB epsilon field has `196,608` scalars. Each token
+  is therefore strictly compressed. `T_k` pools before each variable-channel
+  head, feeds back only that emitted token, and `S_k` performs fixed bilinear
+  upsampling before its shallow local linear convolution.
 - The dense control uses the identical U-Net and training protocol with one
   direct `dense_identity` epsilon head.
 - Formal scaling and full-data training additionally pass
@@ -29,8 +36,9 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   identity SHA is embedded in the run manifest, runtime benchmark, checkpoint
   payload, integrity sidecar, latest pointer, and training report. Full 300K
   resume and matched-pair validation fail before weight deserialization when
-  this identity changes. Only both pinned legacy 10% reports may omit it via an
-  explicit compatibility flag; mixed legacy/bound pairs are invalid.
+  this identity changes. The pinned legacy 10% reports may omit it only while
+  authorizing the code transition; they cannot authorize full-data training.
+  The authoritative compressed 10% rerun requires bound provenance.
 - Exact resume also requires the fully resolved current training config to
   equal the config embedded in the checkpoint before any model, EMA, optimizer,
   scheduler, scaler, or RNG state is restored. Changes such as micro-batch or
@@ -41,11 +49,11 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   automatic resume verifies the pointer, sidecar, file bytes, payload step, and
   payload format before restoring state. Full readiness additionally requires
   the final training hash to match the checkpoint used for sampling.
-- The active 10% matched queue predates integrity sidecars. Its post-evaluation
-  runbook therefore performs a one-time legacy migration: load and validate the
-  final payload's exact-resume fields, hash the immutable checkpoint bytes, add
-  the sidecar, and atomically bind `latest.json` plus `training_report.json` to
-  that hash. It never rewrites the checkpoint payload.
+- The active pinned 10% matched queue predates integrity sidecars and the true
+  compressed-token layout. It is retained as immutable legacy evidence and a
+  deployment prerequisite only. After deployment, a fresh same-revision
+  compressed CoFiTok/dense 50K pair creates native integrity sidecars and is the
+  only 10% pair eligible for promotion sampling and the scaling gate.
 - Full 300K runs checkpoint every 5K optimizer steps and retain the latest
   three states, matching the 10% gate cadence while bounding recovery loss on
   the multi-day full-data queue.
@@ -269,8 +277,8 @@ from equal steps. Checkpoints carry cumulative elapsed time and peak VRAM across
 segmented resumes. `cofitok.generation_cost.training_cost_summary` validates
 effective batch and exact images seen, then exposes training hours,
 images/second, and peak memory in the final JSON/Markdown/CSV comparison. The
-full paired-config preflight confirms 62,950,800 vs 62,824,707 parameters
-(+0.200706%). See
+full paired-config preflight confirms 62,837,576 vs 62,824,707 parameters
+(+0.020484%). See
 `docs/records/2026-07-12_generation_matched_compute_accounting.md`.
 `cofitok.generation_pair.generation_pair_contract` additionally compares every
 shared resolved model field, all data/diffusion/runtime/optimization fields,
@@ -290,13 +298,14 @@ guard derives only paths added between pinned and target revisions, queries
 untracked state with those bounded pathspecs, and checks untracked file/symlink
 parent blockers; historical artifact trees are never enumerated wholesale.
 Remote tests and shell syntax checks must pass, then an atomic schema-v2 receipt
-binds the validated 10% pair, pinned source revision, exact target revision, and
+binds the validated legacy 10% pair, pinned source revision, exact target revision, and
 clean tracked state before it launches
 `artifacts/runbooks/generation_complete_pipeline_after_10pct.sh`. That pipeline
-uses an exclusive lock and atomic stage status, runs the 10K promotion gate,
-the alternating full 300K queue, the formal 50K-sample evaluation, and both
-gate decisions in order. A held gate or interrupted stage is recorded as a
-failure rather than reported as generation readiness.
+uses an exclusive lock and atomic stage status, first trains and validates a
+fresh compressed 10% matched pair on the deployed revision, then runs its 10K
+promotion gate, the alternating full 300K queue, the formal 50K-sample
+evaluation, and both gate decisions in order. A held gate or interrupted stage
+is recorded as a failure rather than reported as generation readiness.
 The transition bundle is atomically archived under
 `checkpoints/generation/deployment/` instead of relying on `/tmp`. The receipt
 binds its bytes, SHA256, advertised target head, and exact pinned prerequisite.

@@ -248,7 +248,10 @@ def main() -> None:
     parser.add_argument("--expected-branch", default="scale/generative-system")
     parser.add_argument("--expected-dataset", default="imagenet_256_10pct")
     parser.add_argument("--max-parameter-gap", type=float, default=0.02)
-    parser.add_argument("--expected-recipe-stage", choices=("scaling", "full"))
+    parser.add_argument(
+        "--expected-recipe-stage",
+        choices=("legacy_scaling", "scaling", "full"),
+    )
     parser.add_argument(
         "--allow-legacy-missing-dataset-provenance",
         action="store_true",

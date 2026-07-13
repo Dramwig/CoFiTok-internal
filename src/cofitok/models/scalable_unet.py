@@ -9,6 +9,7 @@ from torch import nn
 from torch.utils.checkpoint import checkpoint
 
 from cofitok.models.blocks import TimestepEmbedder, group_norm_groups
+from cofitok.token_layout import resolve_token_layout
 
 
 class ConditionedResBlock(nn.Module):
@@ -136,6 +137,8 @@ class ScalableUNetTokenPredictor(nn.Module):
         gradient_checkpointing: bool,
         num_classes: int,
         class_dropout_prob: float,
+        token_channel_schedule: Sequence[int] | None = None,
+        token_spatial_strides: Sequence[int] | None = None,
     ) -> None:
         super().__init__()
         if not channel_multipliers:
@@ -151,6 +154,14 @@ class ScalableUNetTokenPredictor(nn.Module):
         self.num_classes = num_classes
         self.class_dropout_prob = class_dropout_prob
         self.null_class = num_classes
+        self.token_layout = resolve_token_layout(
+            image_size=image_size,
+            image_channels=image_channels,
+            token_count=token_count,
+            token_channels=token_channels,
+            token_channel_schedule=token_channel_schedule,
+            token_spatial_strides=token_spatial_strides,
+        )
 
         embedding_channels = 4 * base_channels
         self.input_proj = nn.Conv2d(image_channels, base_channels, kernel_size=3, padding=1)
@@ -218,14 +229,20 @@ class ScalableUNetTokenPredictor(nn.Module):
         self.decoder_resolutions = decoder_resolutions
         self.output_norm = nn.GroupNorm(group_norm_groups(current_channels, maximum=32), current_channels)
         self.token_heads = nn.ModuleList(
-            [nn.Conv2d(current_channels, token_channels, kernel_size=1) for _ in range(token_count)]
+            [
+                nn.Conv2d(current_channels, output_channels, kernel_size=1)
+                for output_channels in self.token_layout.channels
+            ]
         )
         for head in self.token_heads:
             nn.init.zeros_(head.weight)
             nn.init.zeros_(head.bias)
         self.feedback = (
             nn.ModuleList(
-                [nn.Conv2d(token_channels, current_channels, kernel_size=1) for _ in range(token_count - 1)]
+                [
+                    nn.Conv2d(input_channels, current_channels, kernel_size=1)
+                    for input_channels in self.token_layout.channels[:-1]
+                ]
             )
             if use_feedback
             else nn.ModuleList()
@@ -295,8 +312,19 @@ class ScalableUNetTokenPredictor(nn.Module):
         state = F.silu(self.output_norm(hidden))
         tokens = []
         for index, head in enumerate(self.token_heads):
-            token = head(state)
+            stride = self.token_layout.spatial_strides[index]
+            token_state = (
+                F.avg_pool2d(state, kernel_size=stride, stride=stride)
+                if stride > 1
+                else state
+            )
+            token = head(token_state)
             tokens.append(token)
             if self.use_feedback and index < len(self.feedback):
-                state = state + self.feedback[index](token)
+                feedback_token = (
+                    F.interpolate(token, size=state.shape[-2:], mode="bilinear", align_corners=False)
+                    if token.shape[-2:] != state.shape[-2:]
+                    else token
+                )
+                state = state + self.feedback[index](feedback_token)
         return tokens
