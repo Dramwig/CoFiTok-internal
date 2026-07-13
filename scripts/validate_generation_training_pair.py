@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from cofitok.generation_pair import MATCHED_CONFIG_SECTIONS, generation_pair_contract
+from cofitok.generation_recipe import generation_training_recipe_contract
 
 
 def _read(path: str | Path) -> dict[str, Any]:
@@ -67,6 +68,7 @@ def validate_training_pair(
     expected_branch: str = "scale/generative-system",
     expected_dataset: str = "imagenet_256_10pct",
     max_parameter_gap: float = 0.02,
+    expected_recipe_stage: str | None = None,
 ) -> dict[str, Any]:
     if expected_steps < 1:
         raise ValueError("expected_steps must be positive")
@@ -93,6 +95,18 @@ def validate_training_pair(
     pair_contract = generation_pair_contract(cofitok["config"], dense["config"])
     if not pair_contract["valid"]:
         raise ValueError("training pair contract failed: " + "; ".join(pair_contract["issues"]))
+    recipe_contract = None
+    if expected_recipe_stage is not None:
+        recipe_contract = generation_training_recipe_contract(
+            cofitok["config"],
+            dense["config"],
+            stage=expected_recipe_stage,
+        )
+        if recipe_contract["valid"] is not True:
+            raise ValueError(
+                "training recipe contract failed: "
+                + "; ".join(recipe_contract["issues"])
+            )
     dense_parameters = validated_dense["parameter_count"]
     parameter_gap = (
         validated_cofitok["parameter_count"] - dense_parameters
@@ -110,6 +124,7 @@ def validate_training_pair(
         "expected_dataset": expected_dataset,
         "matched_config_sections": list(MATCHED_CONFIG_SECTIONS),
         "pair_contract": pair_contract,
+        "training_recipe": recipe_contract,
         "relative_parameter_gap": parameter_gap,
         "max_parameter_gap": max_parameter_gap,
         "cofitok": validated_cofitok,
@@ -128,6 +143,7 @@ def main() -> None:
     parser.add_argument("--expected-branch", default="scale/generative-system")
     parser.add_argument("--expected-dataset", default="imagenet_256_10pct")
     parser.add_argument("--max-parameter-gap", type=float, default=0.02)
+    parser.add_argument("--expected-recipe-stage", choices=("scaling", "full"))
     args = parser.parse_args()
     report = validate_training_pair(
         _read(args.cofitok_training),
@@ -137,6 +153,7 @@ def main() -> None:
         expected_branch=args.expected_branch,
         expected_dataset=args.expected_dataset,
         max_parameter_gap=args.max_parameter_gap,
+        expected_recipe_stage=args.expected_recipe_stage,
     )
     print(json.dumps(report, indent=2, sort_keys=True))
 

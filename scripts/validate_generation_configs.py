@@ -5,6 +5,10 @@ from dataclasses import asdict
 from pathlib import Path
 
 from cofitok.configs import ExperimentConfig, load_config
+from cofitok.generation_recipe import (
+    generation_training_recipe_contract,
+    infer_generation_training_stage,
+)
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import write_json_report
 
@@ -31,6 +35,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dense-config", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--max-parameter-gap", type=float, default=0.02)
+    parser.add_argument("--stage", choices=("scaling", "full"))
     return parser.parse_args()
 
 
@@ -43,6 +48,7 @@ def validate_pair(
     cofitok: ExperimentConfig,
     dense: ExperimentConfig,
     max_parameter_gap: float,
+    stage: str | None = None,
 ) -> dict[str, object]:
     mismatches = []
     for section in ("data", "diffusion", "runtime", "optimization"):
@@ -63,6 +69,19 @@ def validate_pair(
     relative_gap = (cofitok_parameters - dense_parameters) / dense_parameters
     if abs(relative_gap) > max_parameter_gap:
         mismatches.append("parameter_gap")
+    cofitok_config = asdict(cofitok)
+    dense_config = asdict(dense)
+    resolved_stage = stage or infer_generation_training_stage(
+        cofitok_config,
+        dense_config,
+    )
+    recipe = generation_training_recipe_contract(
+        cofitok_config,
+        dense_config,
+        stage=resolved_stage,
+    )
+    if recipe["valid"] is not True:
+        mismatches.append("training_recipe")
     return {
         "status": "pass" if not mismatches else "fail",
         "mismatches": mismatches,
@@ -80,6 +99,7 @@ def validate_pair(
         },
         "relative_parameter_gap": relative_gap,
         "max_parameter_gap": max_parameter_gap,
+        "training_recipe": recipe,
         "matched_backbone": {field: getattr(cofitok.model, field) for field in BACKBONE_FIELDS},
         "matched_data": asdict(cofitok.data),
         "matched_diffusion": asdict(cofitok.diffusion),
@@ -94,6 +114,7 @@ def main() -> None:
         load_config(args.cofitok_config),
         load_config(args.dense_config),
         args.max_parameter_gap,
+        stage=args.stage,
     )
     write_json_report(Path(args.output), report)
     print(f"wrote {args.output}")

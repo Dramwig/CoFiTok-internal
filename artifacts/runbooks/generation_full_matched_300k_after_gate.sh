@@ -23,6 +23,12 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   exit 66
 fi
 
+python scripts/validate_generation_configs.py \
+  --cofitok-config configs/generation/imagenet256_cofitok_k8_300k.json \
+  --dense-config configs/generation/imagenet256_dense_300k.json \
+  --stage full \
+  --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/config_recipe.json"
+
 python - "$GATE" <<'PY'
 import json
 import sys

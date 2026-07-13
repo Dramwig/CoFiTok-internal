@@ -13,6 +13,13 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   its current token, is bias-free and linear/local, and preserves `S_k(0)=0`.
 - The dense control uses the identical U-Net and training protocol with one
   direct `dense_identity` epsilon head.
+- Formal scaling and full-data training additionally pass
+  `cofitok_generation_training_recipe_v1`. This contract prevents a matched
+  pair from passing fairness checks after both methods are identically weakened:
+  it locks the ImageNet stage, diffusion horizon/target, U-Net capacity,
+  class-dropout CFG training, bf16/TF32 runtime, effective batch 64, optimizer,
+  EMA, checkpoint cadence, and CoFiTok denoise-path objective. Runtime selection
+  may change micro-batch and accumulation only while their product remains 64.
 - Production training uses bf16, gradient accumulation, gradient clipping,
   cosine LR, EMA, isolated DataLoader RNG, atomic checkpoints, retention, and
   exact model/optimizer/scheduler/RNG/sampler recovery.
@@ -112,7 +119,7 @@ checkpoints: /root/autodl-tmp/CoFiTok/checkpoints/generation
 ## Promotion gates
 
 1. Code gate: full tests, CPU exact-resume smoke, CUDA bf16 smoke, zero-token
-   contract, and matched parameter audit pass.
+   contract, matched parameter audit, and formal training-recipe contract pass.
 2. Data gate: 10 real ImageNet-256 optimizer steps complete with finite losses,
    stable gradients, recorded throughput, and a restart from checkpoint.
 3. Scaling gate: matched 50K-step CoFiTok and dense runs on

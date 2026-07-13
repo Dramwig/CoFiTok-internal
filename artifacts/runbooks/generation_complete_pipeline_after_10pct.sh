@@ -51,7 +51,8 @@ validate_completed_training_pair() {
   python scripts/validate_generation_training_pair.py \
     --cofitok-training "$COFITOK_10PCT" \
     --dense-training "$DENSE_10PCT" \
-    --expected-steps 50000 --expected-revision "$PINNED_10PCT_REVISION"
+    --expected-steps 50000 --expected-revision "$PINNED_10PCT_REVISION" \
+    --expected-recipe-stage scaling
 }
 
 validate_gate() {

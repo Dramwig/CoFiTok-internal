@@ -149,6 +149,9 @@ def test_full_generation_configs_keep_matched_runtime_and_checkpoint_cadence() -
     assert "cofitok_training_audit.json" in runbook
     assert "dense_training_audit.json" in runbook
     assert "select_generation_training_runtime.py" in runbook
+    assert "validate_generation_configs.py" in runbook
+    assert "--stage full" in runbook
+    assert "config_recipe.json" in runbook
     assert "--candidates 16x4,32x2,64x1" in runbook
     assert "SELECTED_MICRO_BATCH * SELECTED_ACCUMULATION != 64" in runbook
     assert '--micro-batch-size "$SELECTED_MICRO_BATCH"' in runbook

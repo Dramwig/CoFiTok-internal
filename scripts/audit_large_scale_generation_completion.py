@@ -1354,6 +1354,7 @@ def build_completion_audit(
                 dense_10pct_training,
                 expected_steps=50_000,
                 expected_revision=expected_10pct_revision,
+                expected_recipe_stage="scaling",
             ),
         )
     )
@@ -1411,6 +1412,7 @@ def build_completion_audit(
                 expected_steps=300_000,
                 expected_revision=expected_full_revision,
                 expected_dataset="imagenet_256",
+                expected_recipe_stage="full",
             ),
         )
     )

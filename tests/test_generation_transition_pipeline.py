@@ -94,6 +94,7 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert "mktemp -d /tmp/cofitok-generation-prevalidation" in deployer
     assert "trap cleanup_prevalidation EXIT" in deployer
     assert '--expected-revision "$EXPECTED_COMMIT"' in deployer
+    assert "--expected-recipe-stage scaling" in deployer
     assert deployer.index("git fetch \"$BUNDLE\" HEAD") < deployer.index(
         'PYTHONPATH="$validator_pythonpath" python "$validator"'
     )
@@ -125,6 +126,7 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     pipeline = _read("artifacts/runbooks/generation_complete_pipeline_after_10pct.sh")
     assert "PINNED_10PCT_REVISION=781a01444fddbf0d48a427ba58bdeed50167b5be" in pipeline
     assert "validate_generation_training_pair.py" in pipeline
+    assert "--expected-recipe-stage scaling" in pipeline
     assert "audit_large_scale_generation_completion.py" in pipeline
     assert '--expected-full-revision "$FULL_REVISION"' in pipeline
 

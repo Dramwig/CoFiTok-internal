@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from cofitok.diffusion import select_sampling_timesteps
+from cofitok.configs import config_to_dict, load_config
 from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
@@ -57,6 +58,19 @@ def _training(
 ) -> dict:
     runtime_environment = _runtime_environment()
     environment_sha = runtime_environment_sha256(runtime_environment)
+    cofitok_method = parameters > 100_000
+    if dataset == "imagenet_256_10pct":
+        config_name = (
+            "imagenet256_10pct_cofitok_k8_50k.json"
+            if cofitok_method
+            else "imagenet256_10pct_dense_50k.json"
+        )
+    else:
+        config_name = (
+            "imagenet256_cofitok_k8_300k.json"
+            if cofitok_method
+            else "imagenet256_dense_300k.json"
+        )
     return {
         "training_complete": True,
         "completed_steps": steps,
@@ -83,33 +97,9 @@ def _training(
             "git_branch": "scale/generative-system",
             "git_dirty": False,
         },
-        "config": {
-            "data": {"dataset": dataset, "batch_size": 16},
-            "diffusion": {
-                "schedule_type": "cosine",
-                "num_train_timesteps": 1000,
-            },
-            "runtime": {"precision": "bf16", "device": "cuda"},
-            "optimization": {"gradient_accumulation_steps": 4},
-            "model": {
-                "token_count": 8 if parameters > 100_000 else 1,
-                "token_channels": 64 if parameters > 100_000 else 3,
-                "image_channels": 3,
-                "image_size": 256,
-                "base_channels": 128,
-                "predictor_type": "scalable_unet",
-                "predictor_use_feedback": parameters > 100_000,
-                "num_classes": 1000,
-                "class_dropout_prob": 0.1,
-                "synthesis_mode": (
-                    "restricted" if parameters > 100_000 else "dense_identity"
-                ),
-            },
-            "loss": {
-                "epsilon_weight": 1.0,
-                "denoise_path_component_weight": 0.1 if parameters > 100_000 else 0.0,
-            },
-        },
+        "config": config_to_dict(
+            load_config(ROOT / "configs/generation" / config_name)
+        ),
     }
 
 
@@ -1235,6 +1225,17 @@ def test_completion_audit_rejects_training_that_ignores_selected_runtime() -> No
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == ["full_runtime_selection"]
+
+
+def test_completion_audit_rejects_identically_weakened_full_recipe() -> None:
+    kwargs = _kwargs()
+    for key in ("cofitok_full_training", "dense_full_training"):
+        kwargs[key]["config"]["optimization"]["ema_decay"] = 0.9
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["full_matched_training"]
 
 
 def test_completion_audit_rejects_sampling_that_ignores_selected_batch() -> None:

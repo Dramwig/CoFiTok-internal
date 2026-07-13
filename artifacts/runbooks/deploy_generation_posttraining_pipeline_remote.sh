@@ -74,6 +74,7 @@ if PYTHONPATH="$validator_pythonpath" python "$validator" \
     --cofitok-training "$COFITOK_REPORT" \
     --dense-training "$DENSE_REPORT" \
     --expected-steps 50000 --expected-revision "$EXPECTED_COMMIT" \
+    --expected-recipe-stage scaling \
     >"$pair_validation_temporary"; then
   mv "$pair_validation_temporary" "$PAIR_VALIDATION"
 else

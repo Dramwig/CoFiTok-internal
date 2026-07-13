@@ -29,3 +29,9 @@ to differ. Tests resolve both checked-in 10% and full configurations through the
 real config loader before validating them, so defaults omitted from JSON are
 also covered. Negative tests change shared class dropout and dense auxiliary
 losses and require both the pre-deployment validator and scientific gate to hold.
+
+The later formal training-recipe contract complements this fairness boundary.
+Pair equality alone cannot detect both methods being identically weakened;
+`cofitok_generation_training_recipe_v1` therefore locks the quality-critical
+scaling/full settings before training and revalidates them from completed
+training reports.

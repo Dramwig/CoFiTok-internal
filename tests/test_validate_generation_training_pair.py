@@ -4,6 +4,7 @@ import copy
 
 import pytest
 
+from cofitok.configs import config_to_dict, load_config
 from scripts.validate_generation_training_pair import validate_training_pair
 
 
@@ -11,6 +12,11 @@ REVISION = "a" * 40
 
 
 def _report(*, parameters: int, token_count: int) -> dict:
+    config_name = (
+        "configs/generation/imagenet256_10pct_cofitok_k8_50k.json"
+        if token_count > 1
+        else "configs/generation/imagenet256_10pct_dense_50k.json"
+    )
     return {
         "training_complete": True,
         "completed_steps": 50_000,
@@ -25,34 +31,7 @@ def _report(*, parameters: int, token_count: int) -> dict:
             "checkpoint": "checkpoint_step_00050000.pt",
             "step": 50_000,
         },
-        "config": {
-            "data": {"dataset": "imagenet_256_10pct", "batch_size": 16},
-            "diffusion": {"schedule_type": "cosine"},
-            "runtime": {"steps": 50_000},
-            "optimization": {"gradient_accumulation_steps": 4},
-            "model": {
-                "image_channels": 3,
-                "image_size": 256,
-                "token_count": token_count,
-                "token_channels": 64 if token_count > 1 else 3,
-                "base_channels": 128,
-                "predictor_type": "scalable_unet",
-                "predictor_use_feedback": token_count > 1,
-                "predictor_channel_multipliers": [1, 2, 3, 4],
-                "predictor_num_res_blocks": 2,
-                "predictor_attention_resolutions": [32, 16],
-                "predictor_num_heads": 8,
-                "predictor_dropout": 0.0,
-                "predictor_gradient_checkpointing": True,
-                "num_classes": 1000,
-                "class_dropout_prob": 0.1,
-                "synthesis_mode": "restricted" if token_count > 1 else "dense_identity",
-            },
-            "loss": {
-                "epsilon_weight": 1.0,
-                "denoise_path_component_weight": 0.1 if token_count > 1 else 0.0,
-            },
-        },
+        "config": config_to_dict(load_config(config_name)),
     }
 
 
@@ -66,6 +45,22 @@ def test_validator_accepts_completed_matched_pair() -> None:
 
     assert report["status"] == "pass"
     assert report["relative_parameter_gap"] == pytest.approx(0.005)
+
+
+def test_validator_rejects_identically_weakened_recipe() -> None:
+    cofitok = _report(parameters=100_500, token_count=8)
+    dense = _report(parameters=100_000, token_count=1)
+    for report in (cofitok, dense):
+        report["config"]["optimization"]["ema_decay"] = 0.9
+
+    with pytest.raises(ValueError, match="training recipe contract failed.*ema_decay"):
+        validate_training_pair(
+            cofitok,
+            dense,
+            expected_steps=50_000,
+            expected_revision=REVISION,
+            expected_recipe_stage="scaling",
+        )
 
 
 @pytest.mark.parametrize(
