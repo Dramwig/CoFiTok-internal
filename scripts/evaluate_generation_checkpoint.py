@@ -13,8 +13,11 @@ from cofitok.diffusion import DiffusionSchedule
 from cofitok.generation import load_generation_model
 from cofitok.metrics import normalized_curve_auc
 from cofitok.models import CoFiTokTiny
-from cofitok.reporting import write_json_report
+from cofitok.reporting import git_provenance, write_json_report
 from cofitok.training.runtime import autocast_context
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def parse_args() -> argparse.Namespace:
@@ -255,6 +258,7 @@ def main() -> None:
     schedule = DiffusionSchedule(config.diffusion, device=device)
     loader = build_dataloader(config.data, split="val", drop_last=False)
     orders = component_orders(config.model.token_count, args.random_orders, args.seed)
+    evaluator_git = git_provenance(PROJECT_ROOT)
     start = time.time()
     metrics = evaluate(
         model=model,
@@ -272,6 +276,7 @@ def main() -> None:
     report = {
         "schema_version": 1,
         "status": "completed",
+        "git": evaluator_git,
         "checkpoint": checkpoint_path.resolve().as_posix(),
         "checkpoint_sha256": loaded.checkpoint_sha256,
         "checkpoint_integrity_manifest": loaded.checkpoint_integrity_manifest.as_posix(),

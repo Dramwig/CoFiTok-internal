@@ -157,6 +157,10 @@ def build_report(
     )
     cofitok_checkpoint_sha = str(cofitok_checkpoint["checkpoint_sha256"])
     dense_checkpoint_sha = str(dense_checkpoint["checkpoint_sha256"])
+    checkpoint_evaluator_git_pair = (
+        cofitok_checkpoint.get("git", {}),
+        dense_checkpoint.get("git", {}),
+    )
     generated_counts = (
         int(cofitok_generation["counts"]["generated_image_count"]),
         int(dense_generation["counts"]["generated_image_count"]),
@@ -429,6 +433,25 @@ def build_report(
                 == dense_provenance.get("checkpoint_integrity_manifest"),
                 "cofitok_step": cofitok_checkpoint["checkpoint_step"],
                 "dense_step": dense_checkpoint["checkpoint_step"],
+            },
+        ),
+        _gate(
+            "matched_checkpoint_evaluator_code_provenance",
+            len(str(checkpoint_evaluator_git_pair[0].get("revision", ""))) == 40
+            and checkpoint_evaluator_git_pair[0] == checkpoint_evaluator_git_pair[1]
+            and checkpoint_evaluator_git_pair[0].get("branch")
+            == "scale/generative-system"
+            and checkpoint_evaluator_git_pair[0].get("tracked_dirty") is False
+            and (
+                stage != "full"
+                or checkpoint_evaluator_git_pair[0].get("revision")
+                == cofitok_revision
+            ),
+            {
+                "stage": stage,
+                "cofitok": checkpoint_evaluator_git_pair[0],
+                "dense_identity": checkpoint_evaluator_git_pair[1],
+                "full_training_revision": cofitok_revision if stage == "full" else None,
             },
         ),
         _gate(

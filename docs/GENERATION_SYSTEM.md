@@ -245,8 +245,10 @@ They require the CoFiTok and dense training reports to share the same
 ImageNet-256 directory and evaluator, and contain exactly the requested 10K or
 50K generated samples. Both metrics reports must also bind the same clean
 evaluator revision/branch; at full scale it must equal the full training and
-sampling revision. Formal class-conditional sampling must start at index zero,
-use balanced modulo labels and EMA weights, preserve per-sample random streams
+sampling revision. Ordered-prefix/zero/shuffle checkpoint diagnostics carry an
+independent mechanism-evaluator Git state under the same matched clean/full
+revision rules. Formal class-conditional sampling must start at index zero, use
+balanced modulo labels and EMA weights, preserve per-sample random streams
 across batch-size/resume changes, and bind both checkpoint and sample bytes by
 SHA256. The transition-field correction and negative tests are
 recorded in

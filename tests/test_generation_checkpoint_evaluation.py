@@ -1,12 +1,78 @@
 from __future__ import annotations
 
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
 import torch
 
+from cofitok.configs import (
+    DataConfig,
+    ExperimentConfig,
+    ModelConfig,
+    OptimizationConfig,
+    RuntimeConfig,
+    config_to_dict,
+)
+from cofitok.models import CoFiTokTiny
+from cofitok.reporting import file_sha256, write_json_report
+from cofitok.training import ExponentialMovingAverage
+from cofitok.training.checkpointing import checkpoint_integrity_path
 from scripts.evaluate_generation_checkpoint import (
     component_orders,
     prefix_tensors,
     spatial_prefix_targets,
 )
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _write_cpu_checkpoint(path: Path) -> None:
+    config = ExperimentConfig(
+        name="checkpoint_evaluation_cpu",
+        data=DataConfig(image_size=8, channels=3, batch_size=2),
+        model=ModelConfig(
+            image_channels=3,
+            image_size=8,
+            token_count=2,
+            token_channels=4,
+            base_channels=8,
+            predictor_type="scalable_unet",
+            predictor_channel_multipliers=[1],
+            predictor_num_res_blocks=1,
+            predictor_attention_resolutions=[],
+            predictor_num_heads=1,
+            synthesis_active_token_channels=[2, 4],
+        ),
+        runtime=RuntimeConfig(device="cpu", precision="fp32"),
+        optimization=OptimizationConfig(ema_warmup_steps=0),
+    )
+    model = CoFiTokTiny(config.model)
+    ema = ExponentialMovingAverage(model, warmup_steps=0)
+    torch.save(
+        {
+            "format_version": 1,
+            "config": config_to_dict(config),
+            "model": model.state_dict(),
+            "ema": ema.state_dict(),
+            "step": 17,
+        },
+        path,
+    )
+    write_json_report(
+        checkpoint_integrity_path(path),
+        {
+            "schema_version": 1,
+            "checkpoint": path.name,
+            "checkpoint_bytes": path.stat().st_size,
+            "checkpoint_sha256": file_sha256(path),
+            "checkpoint_format_version": 1,
+            "step": 17,
+        },
+    )
 
 
 def test_component_orders_are_deterministic_and_deduplicated() -> None:
@@ -35,3 +101,51 @@ def test_spatial_prefix_targets_end_at_clean_image() -> None:
     assert len(targets) == 4
     assert torch.equal(targets[-1], clean)
     assert targets[0].shape == clean.shape
+
+
+def test_checkpoint_evaluator_cli_records_git_provenance(tmp_path) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    output = tmp_path / "evaluation"
+    _write_cpu_checkpoint(checkpoint)
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(ROOT / "src")
+
+    subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/evaluate_generation_checkpoint.py"),
+            "--checkpoint",
+            str(checkpoint),
+            "--output-dir",
+            str(output),
+            "--num-images",
+            "2",
+            "--timestep",
+            "1",
+            "--random-orders",
+            "1",
+            "--weights",
+            "ema",
+            "--precision",
+            "fp32",
+        ],
+        cwd=ROOT,
+        env=environment,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    report = json.loads(
+        (output / "checkpoint_evaluation_report.json").read_text(encoding="utf-8")
+    )
+    revision = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+    assert report["status"] == "completed"
+    assert report["git"]["revision"] == revision
+    assert isinstance(report["git"]["tracked_dirty"], bool)

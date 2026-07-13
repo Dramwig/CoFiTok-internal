@@ -80,6 +80,7 @@ def _gate(stage: str) -> dict:
                 "generation_metrics_complete",
                 "matched_sampling_code_provenance",
                 "matched_evaluator_code_provenance",
+                "matched_checkpoint_evaluator_code_provenance",
                 "distribution_metric_ranges",
                 "fid_within_tolerance",
                 "absolute_fid_quality",
