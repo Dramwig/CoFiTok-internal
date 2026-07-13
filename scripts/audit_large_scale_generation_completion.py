@@ -33,6 +33,13 @@ except ModuleNotFoundError:
     from select_generation_sampling_batch import select_sampling_batch
 
 try:
+    from scripts.build_generation_gate_report import (
+        verify_generation_gate_source_reports,
+    )
+except ModuleNotFoundError:
+    from build_generation_gate_report import verify_generation_gate_source_reports
+
+try:
     from scripts.write_generation_deployment_receipt import (
         bundle_prerequisites,
         pytest_junit_summary,
@@ -98,11 +105,22 @@ def _check(
 
 
 def _gate_evidence(
-    gate: dict[str, Any], *, stage: str, decision: str
+    gate: dict[str, Any],
+    source_verification: dict[str, Any],
+    *,
+    stage: str,
+    decision: str,
 ) -> dict[str, Any]:
     evidence = validate_generation_gate_authorization(gate, expected_stage=stage)
     if evidence["decision"] != decision:
         raise ValueError(f"{stage} gate did not authorize {decision}")
+    if (
+        source_verification.get("status") != "verified"
+        or source_verification.get("stage") != stage
+        or source_verification.get("source_reports") != gate.get("source_reports")
+    ):
+        raise ValueError(f"{stage} gate source-report verification differs")
+    evidence["source_reports"] = source_verification["source_reports"]
     return evidence
 
 
@@ -997,10 +1015,13 @@ def _inference_export_evidence(
 
 
 def _final_gate_evidence(
-    gate: dict[str, Any], generation_reports: dict[str, dict[str, Any]]
+    gate: dict[str, Any],
+    generation_reports: dict[str, dict[str, Any]],
+    source_verification: dict[str, Any],
 ) -> dict[str, Any]:
     evidence = _gate_evidence(
         gate,
+        source_verification,
         stage="full",
         decision="large_scale_generation_ready",
     )
@@ -1663,6 +1684,7 @@ def build_completion_audit(
     full_training_monitor: dict[str, Any] | None,
     full_checkpoint_files: dict[str, dict[str, Any] | None],
     scaling_gate: dict[str, Any] | None,
+    scaling_gate_source_verification: dict[str, Any] | None,
     cofitok_full_training: dict[str, Any] | None,
     dense_full_training: dict[str, Any] | None,
     cofitok_training_audit: dict[str, Any] | None,
@@ -1677,6 +1699,7 @@ def build_completion_audit(
     cofitok_generation: dict[str, Any] | None,
     dense_generation: dict[str, Any] | None,
     final_gate: dict[str, Any] | None,
+    final_gate_source_verification: dict[str, Any] | None,
     comparison: dict[str, Any] | None,
     comparison_source_verification: dict[str, Any] | None,
     official_related: dict[str, Any] | None,
@@ -1737,9 +1760,10 @@ def build_completion_audit(
     checks.append(
         _check(
             "scaling_promotion_gate",
-            [scaling_gate],
+            [scaling_gate, scaling_gate_source_verification],
             lambda: _gate_evidence(
                 scaling_gate,
+                scaling_gate_source_verification,
                 stage="scaling",
                 decision="promote_to_full_imagenet256",
             ),
@@ -1926,10 +1950,11 @@ def build_completion_audit(
     checks.append(
         _check(
             "final_generation_gate",
-            [final_gate],
+            [final_gate, final_gate_source_verification],
             lambda: _final_gate_evidence(
                 final_gate,
                 {"cofitok": cofitok_generation, "dense_identity": dense_generation},
+                final_gate_source_verification,
             ),
         )
     )
@@ -2077,6 +2102,17 @@ def _verify_comparison_sources_optional(
         return {"status": "invalid", "error": str(error)}
 
 
+def _verify_gate_sources_optional(
+    gate: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    if gate is None:
+        return None
+    try:
+        return verify_generation_gate_source_reports(gate)
+    except (OSError, KeyError, TypeError, ValueError) as error:
+        return {"status": "invalid", "error": str(error)}
+
+
 def _verify_checkpoint_file(path: Path) -> dict[str, Any]:
     try:
         integrity = verify_training_checkpoint(path)
@@ -2150,6 +2186,8 @@ def main() -> None:
     }
     comparison_path = full_root / "comparison/large_scale_generation_comparison.json"
     comparison = _read_optional(comparison_path)
+    scaling_gate = _read_optional(ten_root / "promotion_gate.json")
+    final_gate = _read_optional(full_root / "final_generation_gate.json")
     deployment_receipt = _read_optional(
         output_root / "generation_upgrade_deployment_receipt.json"
     )
@@ -2197,7 +2235,10 @@ def main() -> None:
                 dense_full / "checkpoint_step_00300000.pt"
             ),
         },
-        scaling_gate=_read_optional(ten_root / "promotion_gate.json"),
+        scaling_gate=scaling_gate,
+        scaling_gate_source_verification=_verify_gate_sources_optional(
+            scaling_gate
+        ),
         cofitok_full_training=_read_optional(cofitok_full / "training_report.json"),
         dense_full_training=_read_optional(dense_full / "training_report.json"),
         cofitok_training_audit=_read_optional(full_root / "cofitok_training_audit.json"),
@@ -2247,7 +2288,8 @@ def main() -> None:
             dense_full
             / "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
         ),
-        final_gate=_read_optional(full_root / "final_generation_gate.json"),
+        final_gate=final_gate,
+        final_gate_source_verification=_verify_gate_sources_optional(final_gate),
         comparison=comparison,
         comparison_source_verification=_verify_comparison_sources_optional(comparison),
         official_related=_read_optional(official_related_path),

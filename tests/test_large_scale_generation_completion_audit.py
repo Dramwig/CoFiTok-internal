@@ -23,6 +23,7 @@ from scripts.audit_large_scale_generation_completion import (
     build_completion_audit,
 )
 from scripts.build_generation_milestone_report import expected_source_report_suffixes
+from scripts.build_generation_gate_report import GATE_SOURCE_SUFFIXES
 from scripts.select_generation_sampling_batch import select_sampling_batch
 from cofitok.environment import runtime_environment_sha256
 
@@ -280,6 +281,24 @@ def _gate(stage: str) -> dict:
             "ordered_rank": 1,
             "order_count": 24,
         },
+        "source_reports": {
+            name: {
+                "path": f"/root/autodl-tmp/CoFiTok/{suffix}",
+                "bytes": 100 + index,
+                "sha256": str(index + 1) * 64,
+            }
+            for index, (name, suffix) in enumerate(
+                GATE_SOURCE_SUFFIXES[stage].items()
+            )
+        },
+    }
+
+
+def _gate_source_verification(gate: dict) -> dict:
+    return {
+        "status": "verified",
+        "stage": gate["stage"],
+        "source_reports": copy.deepcopy(gate["source_reports"]),
     }
 
 
@@ -1292,6 +1311,8 @@ def _deployment_transition() -> tuple[dict, dict]:
 
 def _kwargs() -> dict:
     deployment_receipt, deployment_verification_files = _deployment_transition()
+    scaling_gate = _gate("scaling")
+    final_gate = _gate("full")
     return {
         "expected_10pct_revision": TEN_REVISION,
         "expected_full_revision": FULL_REVISION,
@@ -1315,7 +1336,10 @@ def _kwargs() -> dict:
         "expected_storage_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
         "full_training_monitor": _full_training_monitor(),
         "full_checkpoint_files": _full_checkpoint_files(),
-        "scaling_gate": _gate("scaling"),
+        "scaling_gate": scaling_gate,
+        "scaling_gate_source_verification": _gate_source_verification(
+            scaling_gate
+        ),
         "cofitok_full_training": _training(
             steps=300_000,
             dataset="imagenet_256",
@@ -1343,7 +1367,8 @@ def _kwargs() -> dict:
         },
         "cofitok_generation": _generation("a"),
         "dense_generation": _generation("b"),
-        "final_gate": _gate("full"),
+        "final_gate": final_gate,
+        "final_gate_source_verification": _gate_source_verification(final_gate),
         "comparison": _comparison(),
         "comparison_source_verification": _comparison_source_verification(),
         "official_related": _official_related(),
@@ -1531,6 +1556,30 @@ def test_completion_audit_rejects_weakened_scaling_quality_threshold() -> None:
         "scaling_promotion_gate",
         "full_matched_training",
     ]
+
+
+def test_completion_audit_rejects_scaling_gate_source_verification_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["scaling_gate_source_verification"]["source_reports"][
+        "cofitok_generation"
+    ]["sha256"] = "0" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["scaling_promotion_gate"]
+
+
+def test_completion_audit_rejects_final_gate_source_verification_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["final_gate_source_verification"]["source_reports"][
+        "dense_checkpoint_eval"
+    ]["bytes"] += 1
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_generation_gate"]
 
 
 def test_completion_audit_rejects_incomplete_scaling_gate_contract() -> None:

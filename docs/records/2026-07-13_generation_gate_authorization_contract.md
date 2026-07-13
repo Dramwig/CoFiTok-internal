@@ -35,6 +35,13 @@ runbooks. Both `generation_complete_pipeline_after_10pct.sh` and
 large-scale completion auditor imports the same validator for both scaling and
 full gates.
 
+Formal CLI-generated gates additionally bind their six training/generation/
+checkpoint-evaluation source reports by path, bytes, and SHA256. Source-only
+verification is intentionally separate from scientific authorization: stale or
+missing source evidence reruns the recoverable post-evaluation stage, while a
+source-valid `hold` remains a terminal scientific decision. See
+`2026-07-14_generation_gate_source_provenance.md`.
+
 ## Verification
 
 Focused gate, runbook CLI, transition, and completion-audit tests pass. Negative

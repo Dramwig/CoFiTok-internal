@@ -51,11 +51,14 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
     assert "scripts/validate_generation_training_pair.py" in runbook
     assert "--expected-steps 50000" in runbook
     assert "--allow-legacy-missing-dataset-provenance" in runbook
-    assert runbook.count("validate_generation_gate_report.py") == 1
+    assert runbook.count("validate_generation_gate_report.py") == 2
     assert runbook.count('validate_gate "$') == 2
     assert '--gate "$gate_path" --stage "$stage"' in runbook
     assert 'validate_gate "$SCALING_GATE" scaling' in runbook
     assert 'validate_gate "$FINAL_GATE" full' in runbook
+    assert 'gate_sources_match "$SCALING_GATE" scaling' in runbook
+    assert 'gate_sources_match "$FINAL_GATE" full' in runbook
+    assert "--sources-only" in runbook
     ordered_markers = [
         "STAGE=posteval_10pct",
         "STAGE=promotion_gate",

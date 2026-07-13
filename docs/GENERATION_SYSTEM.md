@@ -155,6 +155,15 @@ recomputes the core inequalities from the report summary, and cross-checks the
 FID, endpoint, ordering, zero-token, shuffle, and full precision/recall evidence.
 The 300K runbook and completion audit call this same contract, so editing only a
 gate's status or decision cannot authorize an expensive downstream stage.
+Formal gate files also bind all six authoritative source reports: CoFiTok/dense
+training, distribution metrics, and checkpoint-mechanism evaluation. Each source
+is recorded by authoritative path, byte count, and SHA256. The CLI validator
+rehashes them before a gate can be reused or authorize another stage; the
+completion pipeline reruns a recoverable post-evaluation stage when source-only
+verification fails, while a source-valid scientific `hold` remains a
+non-retryable quality decision. The terminal audit independently requires the
+same verified source set. See
+`docs/records/2026-07-14_generation_gate_source_provenance.md`.
 The full 300K trainer also consumes the exact scaling gate through
 `--authorization-gate`. Its canonical gate identity, file SHA256, byte count,
 stage, and decision are copied into the run manifest, every checkpoint payload,

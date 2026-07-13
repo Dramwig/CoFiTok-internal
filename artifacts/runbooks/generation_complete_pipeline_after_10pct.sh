@@ -63,10 +63,17 @@ validate_gate() {
     --gate "$gate_path" --stage "$stage"
 }
 
+gate_sources_match() {
+  local gate_path="$1"
+  local stage="$2"
+  python scripts/validate_generation_gate_report.py \
+    --gate "$gate_path" --stage "$stage" --sources-only >/dev/null
+}
+
 write_status running "validating the completed 10% matched training pair"
 validate_completed_training_pair
 
-if [[ ! -f "$SCALING_GATE" ]]; then
+if [[ ! -f "$SCALING_GATE" ]] || ! gate_sources_match "$SCALING_GATE" scaling; then
   STAGE=posteval_10pct
   write_status running "running matched 10K sampling, metrics, and scaling gate"
   bash artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh
@@ -80,7 +87,8 @@ STAGE=full_training
 write_status running "running alternating matched full ImageNet-256 300K training"
 bash artifacts/runbooks/generation_full_matched_300k_after_gate.sh
 
-if [[ ! -f "$FINAL_GATE" || ! -f "$FINAL_COMPARISON" || ! -f "$FINAL_VISUAL_AUDIT" ]]; then
+if [[ ! -f "$FINAL_GATE" || ! -f "$FINAL_COMPARISON" || ! -f "$FINAL_VISUAL_AUDIT" ]] \
+  || ! gate_sources_match "$FINAL_GATE" full; then
   STAGE=full_posteval
   write_status running "running matched 50K-sample formal evaluation"
   bash artifacts/runbooks/generation_full_posteval_50k.sh
