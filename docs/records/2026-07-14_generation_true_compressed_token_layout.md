@@ -63,10 +63,11 @@ the authoritative compressed 10% revision, and the full-training revision.
 
 ## Verification
 
-- Implementation commit: `35d21c3c153ea655778a8e490e7410619aa8f1d4`.
+- Core implementation commit: `35d21c3c153ea655778a8e490e7410619aa8f1d4`.
+- Native-sidecar post-eval fix: `9cfecade12c9e2bb3786d3ae842f203b56ce993e`.
 - Prerequisite-aware bundle from pinned `781a01444fddbf0d48a427ba58bdeed50167b5be`:
-  `457,725` bytes, SHA256
-  `ca06e6077b5a6b8b0f411ec160a78c0f2a36fb3a48cd0765f7ee7b30847bef16`.
+  `476,888` bytes, SHA256
+  `5625218f7de1bc9bd8700745fb73b677bcb80bdf058d52f9d20dbccbb4fa05fd`.
 - Full local suite: `571/571` pass.
 - Production scaling config preflight: pass.
 - Production full config preflight: pass.
@@ -96,7 +97,7 @@ Evidence SHA256 values, in the order above:
 ```text
 compressed_scaling_config_preflight.json: recorded in the implementation commit
 compressed_full_config_preflight.json: recorded in the implementation commit
-compressed_token_linux_pytest.xml: 2ed4a2c400e98ff42ab2549d8b51fe82609b6ec2f2cba825af8655be99d2354e
-compressed_token_linux_runbook_syntax.json: 43ec21f1a56e2390954495b7697678556d1c800544ff07b8baf897ab25d92963
-compressed_token_deployment_conflicts.json: aed468dc7a1a315a88de92eddd92586cae10838ad3b68a9ce1b58c401bf19a4c
+compressed_token_linux_pytest.xml: 397a1846eb965811b1bee50d1a6082f6308b19ce688ab1b526159c1757275ff7
+compressed_token_linux_runbook_syntax.json: 9c60474645c25e3b929b91b5d993a3abfc98bfc18f870f23bc30dfbe886f22e4
+compressed_token_deployment_conflicts.json: 051e7da3f4d5da564d6cfdfbf9c25e032c65ef9b86251c9078ca2371ccddd7f5
 ```

@@ -6,11 +6,11 @@
   "failures": [],
   "git": {
     "branch": "",
-    "revision": "35d21c3c153ea655778a8e490e7410619aa8f1d4",
+    "revision": "9cfecade12c9e2bb3786d3ae842f203b56ce993e",
     "tracked_dirty": false
   },
   "role": "generation_runbook_syntax_check",
-  "runbook_root": "/tmp/cofitok-compressed-verify.s8ToHl/CoFiTok-internal/artifacts/runbooks",
+  "runbook_root": "/tmp/cofitok-compressed-final-verify.KleMBB/CoFiTok-internal/artifacts/runbooks",
   "runbooks": [
     "artifacts/runbooks/after_mar_ema_imagenet256_path_eval_2026-07-11.sh",
     "artifacts/runbooks/after_mar_imagenet256_20k_2026-07-11.sh",
