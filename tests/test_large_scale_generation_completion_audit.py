@@ -229,15 +229,41 @@ def _training_audit() -> dict:
 
 
 def _runtime_selection() -> dict:
+    environment = _runtime_environment()
+    environment_sha = runtime_environment_sha256(environment)
+    benchmark = {
+        "status": "completed",
+        "git": {
+            "revision": FULL_REVISION,
+            "branch": "scale/generative-system",
+            "dirty": False,
+        },
+        "runtime_environment": environment,
+        "runtime_environment_sha256": environment_sha,
+    }
     return {
         "status": "selected",
         "git_revision": FULL_REVISION,
+        "runtime_environment_sha256": environment_sha,
         "selected": {
             "micro_batch_size": 16,
             "gradient_accumulation_steps": 4,
             "effective_batch_size": 64,
             "estimated_speedup_over_16x4": 1.0,
         },
+        "candidates": [
+            {
+                "micro_batch_size": 16,
+                "gradient_accumulation_steps": 4,
+                "effective_batch_size": 64,
+                "eligible": True,
+                "runtime_environment_sha256": environment_sha,
+                "methods": {
+                    "cofitok": copy.deepcopy(benchmark),
+                    "dense_identity": copy.deepcopy(benchmark),
+                },
+            }
+        ],
     }
 
 
@@ -1207,8 +1233,25 @@ def test_completion_audit_rejects_matched_runtime_environment_drift() -> None:
     assert completion["failed_checks"] == [
         "full_training_runtime_environment",
         "reproducible_full_checkpoint_files",
+        "full_runtime_selection",
         "deployable_ema_inference_artifacts",
     ]
+
+
+def test_completion_audit_rejects_training_benchmark_environment_drift() -> None:
+    kwargs = _kwargs()
+    benchmark = kwargs["runtime_selection"]["candidates"][0]["methods"][
+        "dense_identity"
+    ]
+    benchmark["runtime_environment"]["device"]["name"] = "another GPU"
+    benchmark["runtime_environment_sha256"] = runtime_environment_sha256(
+        benchmark["runtime_environment"]
+    )
+
+    completion = build_completion_audit(**kwargs)
+
+    assert completion["status"] == "failed"
+    assert completion["failed_checks"] == ["full_runtime_selection"]
 
 
 def test_completion_audit_rejects_checkpoint_from_another_revision() -> None:

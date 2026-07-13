@@ -234,6 +234,51 @@ def _runtime_selection_evidence(
         raise ValueError("selected full runtime is invalid")
     if micro_batch * accumulation != effective_batch:
         raise ValueError("selected full runtime changes effective batch")
+    selected_candidates = [
+        row
+        for row in selection.get("candidates", [])
+        if int(row.get("micro_batch_size", -1)) == micro_batch
+        and int(row.get("gradient_accumulation_steps", -1)) == accumulation
+    ]
+    if (
+        len(selected_candidates) != 1
+        or selected_candidates[0].get("eligible") is not True
+    ):
+        raise ValueError("selected full runtime benchmark evidence is invalid")
+    selected_environment_sha = str(selection.get("runtime_environment_sha256", ""))
+    if len(selected_environment_sha) != 64:
+        raise ValueError("selected full runtime environment SHA256 is malformed")
+    for candidate in selection.get("candidates", []):
+        completed_methods = 0
+        for method in ("cofitok", "dense_identity"):
+            benchmark = candidate.get("methods", {}).get(method, {})
+            if benchmark.get("status") != "completed":
+                continue
+            completed_methods += 1
+            environment = benchmark.get("runtime_environment")
+            git = benchmark.get("git", {})
+            if (
+                not isinstance(environment, dict)
+                or runtime_environment_sha256(environment)
+                != selected_environment_sha
+                or benchmark.get("runtime_environment_sha256")
+                != selected_environment_sha
+            ):
+                raise ValueError(
+                    f"{method} training benchmark environment differs"
+                )
+            if (
+                git.get("revision") != expected_revision
+                or git.get("branch") != "scale/generative-system"
+                or git.get("dirty") is not False
+            ):
+                raise ValueError(f"{method} training benchmark Git state differs")
+        if (
+            completed_methods == 2
+            and candidate.get("runtime_environment_sha256")
+            != selected_environment_sha
+        ):
+            raise ValueError("training benchmark candidate environment differs")
     for method, report in training_reports.items():
         config = report.get("config", {})
         if int(config.get("data", {}).get("batch_size", -1)) != micro_batch:
@@ -247,6 +292,8 @@ def _runtime_selection_evidence(
             != accumulation
         ):
             raise ValueError(f"{method} training did not use selected accumulation")
+        if report.get("runtime_environment_sha256") != selected_environment_sha:
+            raise ValueError(f"{method} training environment differs from runtime selection")
     return {
         "micro_batch_size": micro_batch,
         "gradient_accumulation_steps": accumulation,
@@ -254,6 +301,7 @@ def _runtime_selection_evidence(
         "estimated_speedup_over_16x4": float(
             selected["estimated_speedup_over_16x4"]
         ),
+        "runtime_environment_sha256": selected_environment_sha,
     }
 
 

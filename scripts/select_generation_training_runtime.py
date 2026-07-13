@@ -13,10 +13,19 @@ from pathlib import Path
 from typing import Any
 
 from cofitok.configs import config_to_dict, load_config
+from cofitok.environment import runtime_environment_sha256
 from cofitok.reporting import file_sha256, write_json_report
 
 
 CANDIDATE_PATTERN = re.compile(r"^(?P<micro>[1-9][0-9]*)x(?P<accum>[1-9][0-9]*)$")
+
+
+def _validated_runtime_environment_sha(report: dict[str, Any]) -> str | None:
+    environment = report.get("runtime_environment")
+    if not isinstance(environment, dict):
+        return None
+    actual = runtime_environment_sha256(environment)
+    return actual if report.get("runtime_environment_sha256") == actual else None
 
 
 def parse_candidates(value: str, *, expected_effective_batch: int) -> list[tuple[int, int]]:
@@ -47,12 +56,15 @@ def select_runtime_candidate(
         raise ValueError("max_memory_fraction must be between zero and one")
     eligible = []
     normalized = []
+    environment_provenance_issues = []
+    observed_method_environment_shas = []
     for row in candidates:
         candidate = dict(row)
         methods = candidate.get("methods", {})
         reasons = []
         scores = []
         memory_fractions = []
+        environment_shas = []
         for method in ("cofitok", "dense_identity"):
             report = methods.get(method, {})
             if report.get("status") != "completed":
@@ -60,6 +72,14 @@ def select_runtime_candidate(
                 continue
             if int(report.get("effective_batch_size", -1)) != expected_effective_batch:
                 reasons.append(f"{method}_effective_batch_mismatch")
+            environment_sha = _validated_runtime_environment_sha(report)
+            if environment_sha is None:
+                reason = f"{method}_invalid_runtime_environment"
+                reasons.append(reason)
+                environment_provenance_issues.append(reason)
+            else:
+                environment_shas.append(environment_sha)
+                observed_method_environment_shas.append(environment_sha)
             seconds = float(report.get("mean_optimizer_step_seconds", math.nan))
             throughput = float(report.get("images_per_second", math.nan))
             if not math.isfinite(seconds) or seconds <= 0.0:
@@ -77,6 +97,16 @@ def select_runtime_candidate(
                 memory_fractions.append(fraction)
                 if fraction > max_memory_fraction:
                     reasons.append(f"{method}_memory_headroom")
+        if len(environment_shas) == 2 and len(set(environment_shas)) != 1:
+            reasons.append("matched_runtime_environment_mismatch")
+            environment_provenance_issues.append(
+                "matched_runtime_environment_mismatch"
+            )
+        candidate["runtime_environment_sha256"] = (
+            environment_shas[0]
+            if len(environment_shas) == 2 and len(set(environment_shas)) == 1
+            else None
+        )
         candidate["eligible"] = not reasons
         candidate["ineligible_reasons"] = sorted(set(reasons))
         candidate["selection_score_seconds"] = max(scores) if len(scores) == 2 else None
@@ -86,6 +116,16 @@ def select_runtime_candidate(
         normalized.append(candidate)
         if candidate["eligible"]:
             eligible.append(candidate)
+    if environment_provenance_issues:
+        raise ValueError(
+            "runtime benchmark environment provenance failed: "
+            + ", ".join(sorted(set(environment_provenance_issues)))
+        )
+    observed_environment_shas = {
+        str(value) for value in observed_method_environment_shas
+    }
+    if len(observed_environment_shas) > 1:
+        raise ValueError("runtime environment changed across benchmark candidates")
     if not eligible:
         raise ValueError("no shared generation runtime candidate passed")
     selected = min(
@@ -128,6 +168,7 @@ def select_runtime_candidate(
             "max_memory_fraction": float(selected["max_memory_fraction"]),
             "estimated_speedup_over_16x4": speedup,
         },
+        "runtime_environment_sha256": selected["runtime_environment_sha256"],
         "candidates": normalized,
     }
 
@@ -174,6 +215,8 @@ def _benchmark_matches(
         report.get("status") == "completed"
         and report.get("config") == expected_config
         and report.get("git", {}).get("revision") == expected_revision
+        and report.get("git", {}).get("dirty") is False
+        and _validated_runtime_environment_sha(report) is not None
         and int(report.get("benchmark_steps", -1)) == benchmark_steps
         and int(report.get("warmup_steps", -1)) == warmup_steps
         and report.get("checkpoint_written") is False

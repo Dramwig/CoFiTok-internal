@@ -19,6 +19,7 @@ optimizer step. Warmup steps are excluded from mean/median/p95 throughput, and
 the report records:
 
 - actual resolved config and Git revision;
+- canonical Python/PyTorch/CUDA/GPU/project-lock environment and SHA256;
 - microbatch, accumulation, and effective batch;
 - optimizer-step durations and images/second;
 - peak allocated VRAM and total device memory;
@@ -37,6 +38,8 @@ for both CoFiTok and `dense_identity`. A candidate is eligible only if:
 - both retain effective batch 64;
 - timing and throughput are finite and positive;
 - peak VRAM is valid and no more than 90% of device memory.
+- every completed method/candidate benchmark has a valid, identical runtime
+  environment fingerprint.
 
 The selected shared candidate minimizes the slower method's mean optimizer-step
 time. The conservative `16x4` baseline must itself pass; otherwise selection
@@ -45,7 +48,10 @@ permission to give the two methods different runtimes.
 
 The full runbook passes the selected microbatch and accumulation to every
 50K/100K/200K/300K training segment. Both final training reports must contain
-that exact selection, and the final completion audit verifies the binding.
+that exact selection and the same runtime-environment SHA. Cached benchmark
+reports are reusable only under the same clean Git revision, resolved config,
+benchmark horizon, and canonical environment. The final completion audit
+recomputes every completed benchmark fingerprint and verifies the binding.
 
 ## Evidence boundary
 
@@ -53,3 +59,6 @@ This procedure optimizes execution packing only. It does not tune model quality,
 learning rate, loss weights, data, training steps, or sampling protocol. Runtime
 benchmark outputs are operational evidence and cannot be reported as generation
 quality results.
+
+The environment hardening implementation and adversarial tests are recorded in
+`2026-07-13_generation_training_runtime_selection_environment.md`.

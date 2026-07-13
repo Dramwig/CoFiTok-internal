@@ -596,6 +596,10 @@ def main() -> None:
             "config": config_to_dict(config),
             "config_path": str(Path(args.config).resolve()),
             "git": manifest["git"],
+            "runtime_environment": manifest["runtime_environment"],
+            "runtime_environment_sha256": manifest[
+                "runtime_environment_sha256"
+            ],
             "device": manifest["device"],
             "device_name": manifest["device_name"],
             "parameter_count": manifest["parameter_count"],

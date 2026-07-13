@@ -14,6 +14,7 @@ import pytest
 import torch
 
 from cofitok.configs import config_from_dict, load_config
+from cofitok.environment import runtime_environment_sha256
 from scripts.train_generation import _augment_training_images, _validate_config
 
 
@@ -230,6 +231,9 @@ def test_runtime_benchmark_executes_training_without_checkpoint(tmp_path) -> Non
     assert report["effective_batch_size"] == 4
     assert report["mean_optimizer_step_seconds"] > 0.0
     assert report["images_per_second"] > 0.0
+    assert report["runtime_environment_sha256"] == runtime_environment_sha256(
+        report["runtime_environment"]
+    )
     assert report["checkpoint_written"] is False
     assert not list(output.glob("checkpoint_step_*.pt"))
     assert not (output / "training_report.json").exists()

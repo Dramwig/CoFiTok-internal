@@ -317,8 +317,11 @@ Before full 300K training starts, both methods run the same checkpoint-free
 training-runtime candidates `16x4`, `32x2`, and `64x1`. Selection preserves
 effective batch 64, requires both methods to fit below 90% VRAM, and minimizes
 the slower method's synchronized optimizer-step time. The selected microbatch
-and accumulation are applied to every full-training segment and verified again
-by the completion audit. See
+and accumulation are applied to every full-training segment. Every completed
+benchmark records the canonical Python/PyTorch/CUDA/GPU/project-lock runtime
+environment; all candidates, both methods, and the subsequent full training
+reports must share one exact environment SHA. Cached benchmark reuse and the
+completion audit both reject environment or tracked-Git drift. See
 `docs/records/2026-07-12_generation_training_runtime_selection.md`.
 
 The full ImageNet-256 pair also uses the same per-image random horizontal flip
