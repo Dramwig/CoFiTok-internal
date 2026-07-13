@@ -9,6 +9,7 @@ from typing import Any
 from cofitok.environment import runtime_environment_sha256
 from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_pair import generation_pair_contract
+from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
 from cofitok.reporting import write_json_report
 
 
@@ -113,9 +114,9 @@ def _training_checkpoint_integrity_matches(
     )
 
 
-def _sampling_environment_identity(provenance: dict[str, Any]) -> dict[str, Any]:
-    environment = provenance.get("runtime_environment")
-    declared = provenance.get("runtime_environment_sha256")
+def _runtime_environment_identity(payload: dict[str, Any]) -> dict[str, Any]:
+    environment = payload.get("runtime_environment")
+    declared = payload.get("runtime_environment_sha256")
     if not isinstance(environment, dict):
         return {"valid": False, "sha256": declared}
     actual = runtime_environment_sha256(environment)
@@ -124,6 +125,31 @@ def _sampling_environment_identity(provenance: dict[str, Any]) -> dict[str, Any]
         "sha256": actual,
         "device": environment.get("device"),
         "torch": environment.get("torch"),
+    }
+
+
+def _real_set_identity(report: dict[str, Any]) -> dict[str, Any]:
+    real_set = report.get("real_set", {})
+    sha256 = str(real_set.get("sha256", ""))
+    root = real_set.get("root")
+    image_count = int(real_set.get("image_count", -1))
+    cache_name = str(report.get("parameters", {}).get("real_cache_name", ""))
+    valid_sha = len(sha256) == 64 and all(
+        character in "0123456789abcdef" for character in sha256
+    )
+    return {
+        "valid": (
+            real_set.get("digest_schema") == IMAGE_TREE_DIGEST_SCHEMA
+            and valid_sha
+            and root == report.get("paths", {}).get("real_dir")
+            and image_count == int(report.get("counts", {}).get("real_image_count", -2))
+            and cache_name.endswith(f"__cofitok_{sha256[:16]}")
+        ),
+        "digest_schema": real_set.get("digest_schema"),
+        "sha256": sha256,
+        "root": root,
+        "image_count": image_count,
+        "real_cache_name": cache_name,
     }
 
 
@@ -194,8 +220,12 @@ def build_report(
     dense_sampling = _sampling_protocol(dense_provenance)
     cofitok_sampling_git = cofitok_provenance.get("git", {})
     dense_sampling_git = dense_provenance.get("git", {})
-    cofitok_sampling_environment = _sampling_environment_identity(cofitok_provenance)
-    dense_sampling_environment = _sampling_environment_identity(dense_provenance)
+    cofitok_sampling_environment = _runtime_environment_identity(cofitok_provenance)
+    dense_sampling_environment = _runtime_environment_identity(dense_provenance)
+    cofitok_evaluator_environment = _runtime_environment_identity(cofitok_generation)
+    dense_evaluator_environment = _runtime_environment_identity(dense_generation)
+    cofitok_real_set = _real_set_identity(cofitok_generation)
+    dense_real_set = _real_set_identity(dense_generation)
     cofitok_model_config = cofitok_training["config"]["model"]
     dense_model_config = dense_training["config"]["model"]
     cofitok_expected_shape = [
@@ -296,6 +326,16 @@ def build_report(
             {"cofitok": cofitok_quality, "dense": dense_quality},
         ),
         _gate(
+            "matched_real_set_provenance",
+            cofitok_real_set["valid"]
+            and dense_real_set["valid"]
+            and cofitok_real_set == dense_real_set,
+            {
+                "cofitok": cofitok_real_set,
+                "dense_identity": dense_real_set,
+            },
+        ),
+        _gate(
             "matched_evaluator_code_provenance",
             len(str(evaluator_git_pair[0].get("revision", ""))) == 40
             and evaluator_git_pair[0] == evaluator_git_pair[1]
@@ -310,6 +350,17 @@ def build_report(
                 "cofitok": evaluator_git_pair[0],
                 "dense_identity": evaluator_git_pair[1],
                 "full_training_revision": cofitok_revision if stage == "full" else None,
+            },
+        ),
+        _gate(
+            "matched_evaluator_runtime_environment",
+            cofitok_evaluator_environment["valid"]
+            and dense_evaluator_environment["valid"]
+            and cofitok_evaluator_environment["sha256"]
+            == dense_evaluator_environment["sha256"],
+            {
+                "cofitok": cofitok_evaluator_environment,
+                "dense_identity": dense_evaluator_environment,
             },
         ),
         _gate(

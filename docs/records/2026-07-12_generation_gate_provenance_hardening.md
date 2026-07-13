@@ -28,7 +28,10 @@ The scaling and full generation gates additionally require:
 - CoFiTok and dense reports from the same 40-character revision on
   `scale/generative-system`;
 - completed `torch_fidelity_directory_metrics` reports using the same real
-  image directory and real-image count;
+  image directory, real-image count, content-addressed image-tree SHA, and
+  digest-derived cache key;
+- the same canonical evaluator runtime environment in addition to the same clean
+  evaluator code revision;
 - exactly the requested 10,000 or 50,000 generated images for each method;
 - zero-based sample streams, exact requested sample counts, balanced modulo
   class scheduling, EMA weights, matching image shapes, and batch/resume

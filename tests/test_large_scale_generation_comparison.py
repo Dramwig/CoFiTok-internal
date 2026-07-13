@@ -27,8 +27,14 @@ def _training(parameters: int, token_count: int) -> dict:
 
 def _generation(fid: float, checkpoint_sha: str, sample_sha: str) -> dict:
     return {
-        "counts": {"generated_image_count": 50_000},
+        "counts": {"real_image_count": 50_000, "generated_image_count": 50_000},
         "implementation": {"package": "torch_fidelity", "version": "0.4.0"},
+        "runtime_environment_sha256": "f" * 64,
+        "real_set": {
+            "digest_schema": "cofitok_image_tree_sha256_v1",
+            "sha256": "e" * 64,
+            "image_count": 50_000,
+        },
         "metrics": {
             "frechet_inception_distance": fid,
             "inception_score_mean": 30.0,
@@ -95,7 +101,18 @@ def _gate(status: str = "pass") -> dict:
                     "cofitok_sample_set_sha256": "c" * 64,
                     "dense_sample_set_sha256": "d" * 64,
                 },
-            }
+            },
+            {
+                "name": "matched_real_set_provenance",
+                "evidence": {
+                    method: {
+                        "digest_schema": "cofitok_image_tree_sha256_v1",
+                        "sha256": "e" * 64,
+                        "image_count": 50_000,
+                    }
+                    for method in ("cofitok", "dense_identity")
+                },
+            },
         ],
     }
 
@@ -117,6 +134,7 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     report = _report()
 
     assert report["status"] == "ready"
+    assert report["schema_version"] == 3
     assert len(report["matched_training_rows"]) == 2
     assert len(report["official_context_rows"]) == 3
     assert report["comparison_policy"]["cross_tier_numeric_ranking_allowed"] is False
@@ -133,6 +151,7 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     assert report["matched_training_rows"][0]["peak_vram_bytes"] == 24 * 1024**3
     assert report["matched_training_rows"][0]["sampling_images_per_second"] == 5.0
     assert report["matched_training_rows"][0]["sample_batch_size"] == 64
+    assert report["matched_training_rows"][0]["real_set_sha256"] == "e" * 64
     assert "not a direct ranking" in render_markdown(report)
     assert "VRAM GiB" in render_markdown(report)
     assert "sample img/s" in render_markdown(report)
@@ -143,6 +162,23 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
 
 def test_comparison_preserves_hold_decision() -> None:
     assert _report(gate=_gate("fail"))["status"] == "hold"
+
+
+def test_comparison_rejects_mismatched_real_set() -> None:
+    dense = _generation(11.8, "b" * 64, "d" * 64)
+    dense["real_set"]["sha256"] = "8" * 64
+
+    with pytest.raises(ValueError, match="different real sets"):
+        build_report(
+            cofitok_training=_training(62_950_800, 8),
+            dense_training=_training(62_824_707, 1),
+            cofitok_generation=_generation(12.0, "a" * 64, "c" * 64),
+            dense_generation=dense,
+            final_gate=_gate(),
+            official_related=_official(),
+            official_source_path="/reports/official_related_methods_table.json",
+            official_source_sha256="e" * 64,
+        )
 
 
 def test_comparison_rejects_unsafe_external_table_role() -> None:

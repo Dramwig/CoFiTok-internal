@@ -15,6 +15,7 @@ from cofitok.environment import runtime_environment_sha256
 
 TEN_REVISION = "a" * 40
 FULL_REVISION = "b" * 40
+REAL_SET_SHA = "e" * 64
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -112,6 +113,7 @@ def _gate(stage: str) -> dict:
         if stage == "scaling"
         else "large_scale_generation_ready"
     )
+    environment_sha = runtime_environment_sha256(_runtime_environment())
     gates = [{"name": "all_evidence", "passed": True}]
     if stage == "full":
         gates.extend(
@@ -121,25 +123,43 @@ def _gate(stage: str) -> dict:
                 "evidence": (
                     {
                         "cofitok": {
-                            "sha256": runtime_environment_sha256(
-                                _runtime_environment()
-                            )
+                            "sha256": environment_sha
                         },
                         "dense_identity": {
-                            "sha256": runtime_environment_sha256(
-                                _runtime_environment()
-                            )
+                            "sha256": environment_sha
                         },
                     }
-                    if name == "matched_sampling_runtime_environment"
-                    else {}
+                    if name
+                    in {
+                        "matched_sampling_runtime_environment",
+                        "matched_evaluator_runtime_environment",
+                    }
+                    else (
+                        {
+                            method: {
+                                "valid": True,
+                                "digest_schema": "cofitok_image_tree_sha256_v1",
+                                "sha256": REAL_SET_SHA,
+                                "root": "/datasets/imagenet_256/validation",
+                                "image_count": 50_000,
+                                "real_cache_name": (
+                                    "imagenet256_val__cofitok_" + REAL_SET_SHA[:16]
+                                ),
+                            }
+                            for method in ("cofitok", "dense_identity")
+                        }
+                        if name == "matched_real_set_provenance"
+                        else {}
+                    )
                 ),
             }
             for name in (
                 "generation_metrics_complete",
+                "matched_real_set_provenance",
                 "matched_sampling_code_provenance",
                 "matched_sampling_runtime_environment",
                 "matched_evaluator_code_provenance",
+                "matched_evaluator_runtime_environment",
                 "matched_checkpoint_evaluator_code_provenance",
                 "distribution_metric_ranges",
                 "fid_within_tolerance",
@@ -232,6 +252,7 @@ def _milestone(step: int, alerts: list[str] | None = None) -> dict:
 
 def _generation(seed: str) -> dict:
     runtime_environment = _runtime_environment()
+    environment_sha = runtime_environment_sha256(runtime_environment)
     return {
         "status": "completed",
         "git": {
@@ -239,7 +260,19 @@ def _generation(seed: str) -> dict:
             "branch": "scale/generative-system",
             "tracked_dirty": False,
         },
-        "counts": {"generated_image_count": 50_000},
+        "runtime_environment": copy.deepcopy(runtime_environment),
+        "runtime_environment_sha256": environment_sha,
+        "paths": {"real_dir": "/datasets/imagenet_256/validation"},
+        "counts": {"real_image_count": 50_000, "generated_image_count": 50_000},
+        "real_set": {
+            "digest_schema": "cofitok_image_tree_sha256_v1",
+            "sha256": REAL_SET_SHA,
+            "root": "/datasets/imagenet_256/validation",
+            "image_count": 50_000,
+        },
+        "parameters": {
+            "real_cache_name": "imagenet256_val__cofitok_" + REAL_SET_SHA[:16]
+        },
         "metrics": {
             "frechet_inception_distance": 19.0,
             "precision": 0.6,
@@ -248,9 +281,7 @@ def _generation(seed: str) -> dict:
         "implementation": {"package": "torch_fidelity", "version": "0.4.0"},
         "sample_provenance": {
             "runtime_environment": runtime_environment,
-            "runtime_environment_sha256": runtime_environment_sha256(
-                runtime_environment
-            ),
+            "runtime_environment_sha256": environment_sha,
             "git": {
                 "revision": FULL_REVISION,
                 "branch": "scale/generative-system",
@@ -310,7 +341,7 @@ def _official_related() -> dict:
 def _comparison() -> dict:
     official = _official_related()
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "status": "ready",
         "comparison_policy": {
             "primary_direct_tier": "matched_training_direct",
@@ -342,6 +373,12 @@ def _comparison() -> dict:
                 "sampling_images_per_second": 5.0,
                 "checkpoint_sha256": "a" * 64,
                 "sample_set_sha256": "A" * 64,
+                "real_set_digest_schema": "cofitok_image_tree_sha256_v1",
+                "real_set_sha256": REAL_SET_SHA,
+                "real_image_count": 50_000,
+                "evaluator_runtime_environment_sha256": runtime_environment_sha256(
+                    _runtime_environment()
+                ),
             },
             {
                 "method": "Dense identity",
@@ -362,6 +399,12 @@ def _comparison() -> dict:
                 "sampling_images_per_second": 5.0,
                 "checkpoint_sha256": "b" * 64,
                 "sample_set_sha256": "B" * 64,
+                "real_set_digest_schema": "cofitok_image_tree_sha256_v1",
+                "real_set_sha256": REAL_SET_SHA,
+                "real_image_count": 50_000,
+                "evaluator_runtime_environment_sha256": runtime_environment_sha256(
+                    _runtime_environment()
+                ),
             },
         ],
         "official_context_rows": [
@@ -946,6 +989,42 @@ def test_completion_audit_rejects_mismatched_sampling_environment() -> None:
         "formal_50k_generation",
         "formal_sampling_runtime_selection",
         "final_generation_gate",
+    ]
+
+
+def test_completion_audit_rejects_mismatched_evaluator_environment() -> None:
+    kwargs = _kwargs()
+    dense_generation = kwargs["dense_generation"]
+    dense_generation["runtime_environment"]["device"]["name"] = "another-gpu"
+    dense_generation["runtime_environment_sha256"] = runtime_environment_sha256(
+        dense_generation["runtime_environment"]
+    )
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == [
+        "formal_50k_generation",
+        "final_generation_gate",
+        "final_comparison_report",
+    ]
+
+
+def test_completion_audit_rejects_mismatched_real_set_content() -> None:
+    kwargs = _kwargs()
+    dense_generation = kwargs["dense_generation"]
+    dense_generation["real_set"]["sha256"] = "8" * 64
+    dense_generation["parameters"]["real_cache_name"] = (
+        "imagenet256_val__cofitok_" + "8" * 16
+    )
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == [
+        "formal_50k_generation",
+        "final_generation_gate",
+        "final_comparison_report",
     ]
 
 

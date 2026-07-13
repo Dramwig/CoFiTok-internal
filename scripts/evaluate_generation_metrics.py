@@ -9,8 +9,13 @@ from typing import Any
 
 import torch
 
-from cofitok.environment import runtime_environment_sha256
-from cofitok.image_integrity import is_valid_png, sample_set_sha256
+from cofitok.environment import capture_runtime_environment, runtime_environment_sha256
+from cofitok.image_integrity import (
+    IMAGE_TREE_DIGEST_SCHEMA,
+    image_tree_sha256,
+    is_valid_png,
+    sample_set_sha256,
+)
 from cofitok.reporting import file_sha256, git_provenance, write_json_report
 
 
@@ -49,6 +54,16 @@ def find_images(path: Path) -> list[Path]:
         for candidate in path.rglob("*")
         if candidate.is_file() and candidate.suffix.lower() in IMAGE_EXTENSIONS
     )
+
+
+def content_addressed_real_cache_name(base_name: str, real_set_sha256: str) -> str:
+    if not base_name.strip():
+        raise ValueError("real cache base name must not be empty")
+    if len(real_set_sha256) != 64 or any(
+        character not in "0123456789abcdef" for character in real_set_sha256
+    ):
+        raise ValueError("real-set SHA256 is malformed")
+    return f"{base_name}__cofitok_{real_set_sha256[:16]}"
 
 
 def validate_sampling_provenance(
@@ -241,7 +256,19 @@ def main() -> None:
     )
     evaluator_git = git_provenance(PROJECT_ROOT)
     cuda = torch.cuda.is_available() and not args.cpu
+    evaluator_device = torch.device("cuda" if cuda else "cpu")
+    evaluator_environment = capture_runtime_environment(
+        evaluator_device,
+        project_root=PROJECT_ROOT,
+    )
+    evaluator_environment_sha = runtime_environment_sha256(evaluator_environment)
     start = time.time()
+    real_set_sha = image_tree_sha256(real_images, root=real_dir)
+    real_digest_elapsed_seconds = time.time() - start
+    effective_real_cache_name = content_addressed_real_cache_name(
+        args.real_cache_name,
+        real_set_sha,
+    )
     metrics, version = calculate_metrics(
         real_dir=real_dir,
         generated_dir=generated_dir,
@@ -250,14 +277,16 @@ def main() -> None:
         seed=args.seed,
         cuda=cuda,
         cache_root=args.cache_root,
-        real_cache_name=args.real_cache_name,
+        real_cache_name=effective_real_cache_name,
         prc=not args.skip_prc,
     )
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "completed",
         "protocol": "torch_fidelity_directory_metrics",
         "git": evaluator_git,
+        "runtime_environment": evaluator_environment,
+        "runtime_environment_sha256": evaluator_environment_sha,
         "implementation": {
             "package": "torch_fidelity",
             "version": version,
@@ -270,6 +299,12 @@ def main() -> None:
             "real_image_count": len(real_images),
             "generated_image_count": len(generated_images),
         },
+        "real_set": {
+            "digest_schema": IMAGE_TREE_DIGEST_SCHEMA,
+            "sha256": real_set_sha,
+            "root": real_dir.resolve().as_posix(),
+            "image_count": len(real_images),
+        },
         "sample_provenance": sample_provenance,
         "parameters": {
             "batch_size": args.batch_size,
@@ -278,12 +313,14 @@ def main() -> None:
             "cuda": cuda,
             "samples_find_deep": True,
             "samples_shuffle": False,
-            "real_cache_name": args.real_cache_name,
+            "requested_real_cache_name": args.real_cache_name,
+            "real_cache_name": effective_real_cache_name,
             "precision_recall_enabled": not args.skip_prc,
         },
         "metrics": metrics,
         "runtime": {
             "elapsed_seconds": time.time() - start,
+            "real_set_digest_elapsed_seconds": real_digest_elapsed_seconds,
             "torch_version": torch.__version__,
             "cuda_available": torch.cuda.is_available(),
         },

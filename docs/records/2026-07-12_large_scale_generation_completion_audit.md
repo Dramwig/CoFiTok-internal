@@ -46,6 +46,8 @@ The audit requires all of the following:
 - paired formal 50K DDIM-250 EMA generation with completed atomic sampling
   progress, checkpoint/sample SHA256, integrity sidecars, and positive sampling
   elapsed time, plus canonical and identical actual sampling environments;
+- content-addressed real ImageNet validation trees, derived torch-fidelity cache
+  keys, and canonical evaluator environments identical across both methods;
 - a shared, revision/checkpoint-bound formal sampling batch selection that both
   50K sample reports actually use with batch-invariant random streams and the
   same runtime-environment fingerprint;
@@ -66,7 +68,8 @@ runs are trend diagnostics. They cannot override a failed final 50K gate.
 The final-gate check is structural and provenance-bound. It requires the
 absolute/relative FID, metric-range, precision/recall, endpoint, ordered-prefix,
 restricted-synthesis, shuffle, and training-checkpoint-integrity gates. Its
-named gates also require matching sampling runtime environments. Its
+named gates also require matching sampling/evaluator runtime environments and
+real-set provenance. Its
 thresholds may be stricter but not weaker than FID 20.0, precision/recall 0.30,
 and 0.05 relative regression limits. Reported FID/precision/recall must exactly
 match the formal 50K generation reports bound by checkpoint and sample-set SHA.

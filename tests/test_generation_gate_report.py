@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import copy
+
 import pytest
 
 from cofitok.environment import runtime_environment_sha256
@@ -58,6 +60,7 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
         "schema_version": 1,
         "device": {"type": "cuda", "name": "GPU"},
     }
+    real_set_sha = "9" * 64
     return {
         "status": "completed",
         "protocol": "torch_fidelity_directory_metrics",
@@ -66,13 +69,27 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
             "branch": "scale/generative-system",
             "tracked_dirty": False,
         },
+        "runtime_environment": copy.deepcopy(runtime_environment),
+        "runtime_environment_sha256": runtime_environment_sha256(
+            runtime_environment
+        ),
         "implementation": {"package": "torch_fidelity", "version": "0.4.0"},
         "paths": {
             "real_dir": "/datasets/imagenet_256/val",
             "generated_dir": f"/samples/prefix_{token_count}",
         },
         "counts": {"real_image_count": 50_000, "generated_image_count": 10_000},
-        "parameters": {"batch_size": 64, "seed": 2027},
+        "real_set": {
+            "digest_schema": "cofitok_image_tree_sha256_v1",
+            "sha256": real_set_sha,
+            "root": "/datasets/imagenet_256/val",
+            "image_count": 50_000,
+        },
+        "parameters": {
+            "batch_size": 64,
+            "seed": 2027,
+            "real_cache_name": f"imagenet256_val__cofitok_{real_set_sha[:16]}",
+        },
         "metrics": {
             "frechet_inception_distance": fid,
             "inception_score_mean": 18.0,
@@ -226,6 +243,58 @@ def test_generation_gate_rejects_mismatched_sampling_environment() -> None:
         gate
         for gate in report["gates"]
         if gate["name"] == "matched_sampling_runtime_environment"
+    )
+    assert gate["passed"] is False
+
+
+def test_generation_gate_rejects_mismatched_evaluator_environment() -> None:
+    cofitok = _generation(20.0, 8, "a" * 64)
+    dense = _generation(20.0, 1, "b" * 64)
+    dense["runtime_environment"]["device"]["name"] = "another GPU"
+    dense["runtime_environment_sha256"] = runtime_environment_sha256(
+        dense["runtime_environment"]
+    )
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=dense,
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(
+        gate
+        for gate in report["gates"]
+        if gate["name"] == "matched_evaluator_runtime_environment"
+    )
+    assert gate["passed"] is False
+
+
+def test_generation_gate_rejects_mismatched_real_set_content() -> None:
+    cofitok = _generation(20.0, 8, "a" * 64)
+    dense = _generation(20.0, 1, "b" * 64)
+    dense["real_set"]["sha256"] = "8" * 64
+    dense["parameters"]["real_cache_name"] = (
+        "imagenet256_val__cofitok_" + "8" * 16
+    )
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=dense,
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(
+        gate for gate in report["gates"] if gate["name"] == "matched_real_set_provenance"
     )
     assert gate["passed"] is False
 

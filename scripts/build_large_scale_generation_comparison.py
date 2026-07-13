@@ -9,6 +9,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from cofitok.generation_cost import training_cost_summary
+from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
 from cofitok.reporting import file_sha256, write_json_report, write_text_report
 
 
@@ -36,6 +37,20 @@ def _matched_row(
     provenance = generation["sample_provenance"]
     sampling = provenance["sampling"]
     sampling_progress = provenance["sampling_progress"]
+    real_set = generation.get("real_set", {})
+    real_set_sha = str(real_set.get("sha256", ""))
+    evaluator_environment_sha = str(
+        generation.get("runtime_environment_sha256", "")
+    )
+    if (
+        real_set.get("digest_schema") != IMAGE_TREE_DIGEST_SCHEMA
+        or len(real_set_sha) != 64
+        or any(character not in "0123456789abcdef" for character in real_set_sha)
+        or int(real_set.get("image_count", -1)) < 1
+    ):
+        raise ValueError(f"{method} real-set provenance is invalid")
+    if len(evaluator_environment_sha) != 64:
+        raise ValueError(f"{method} evaluator environment SHA256 is malformed")
     training_cost = training_cost_summary(training)
     if training_cost["valid"] is not True:
         raise ValueError(f"{method} training cost accounting is invalid")
@@ -74,6 +89,10 @@ def _matched_row(
         "guidance_scale": float(sampling["guidance_scale"]),
         "checkpoint_sha256": provenance["checkpoint_sha256"],
         "sample_set_sha256": provenance["sample_set_sha256"],
+        "real_set_digest_schema": real_set.get("digest_schema"),
+        "real_set_sha256": real_set_sha,
+        "real_image_count": int(real_set.get("image_count", -1)),
+        "evaluator_runtime_environment_sha256": evaluator_environment_sha,
         "protocol_note": "Same data, backbone family, optimizer, steps, and evaluator.",
     }
 
@@ -179,6 +198,17 @@ def build_report(
         raise ValueError("matched methods used different evaluator implementations")
     if matched[0]["sample_count"] != matched[1]["sample_count"]:
         raise ValueError("matched methods used different sample counts")
+    if (
+        matched[0]["real_set_digest_schema"] != matched[1]["real_set_digest_schema"]
+        or matched[0]["real_set_sha256"] != matched[1]["real_set_sha256"]
+        or matched[0]["real_image_count"] != matched[1]["real_image_count"]
+    ):
+        raise ValueError("matched methods used different real sets")
+    if (
+        matched[0]["evaluator_runtime_environment_sha256"]
+        != matched[1]["evaluator_runtime_environment_sha256"]
+    ):
+        raise ValueError("matched methods used different evaluator environments")
     if matched[1]["fid"] <= 0.0:
         raise ValueError("dense FID must be positive")
     gate_summary = final_gate.get("summary", {})
@@ -206,13 +236,22 @@ def build_report(
             raise ValueError(f"final gate {prefix} checkpoint hash does not match")
         if sampling_evidence.get(f"{prefix}_sample_set_sha256") != row["sample_set_sha256"]:
             raise ValueError(f"final gate {prefix} sample-set hash does not match")
+    real_set_evidence = _gate_evidence(final_gate, "matched_real_set_provenance")
+    for method, row in (("cofitok", matched[0]), ("dense_identity", matched[1])):
+        gate_real_set = real_set_evidence.get(method, {})
+        if (
+            gate_real_set.get("digest_schema") != row["real_set_digest_schema"]
+            or gate_real_set.get("sha256") != row["real_set_sha256"]
+            or int(gate_real_set.get("image_count", -1)) != row["real_image_count"]
+        ):
+            raise ValueError(f"final gate {method} real-set hash does not match")
     external = _external_rows(official_related)
     ready = (
         final_gate.get("status") == "pass"
         and final_gate.get("decision") == "large_scale_generation_ready"
     )
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "status": "ready" if ready else "hold",
         "final_gate": {
             "status": final_gate.get("status"),
@@ -327,6 +366,7 @@ def render_csv(report: dict[str, Any]) -> str:
         "training_images_per_second",
         "peak_vram_bytes",
         "sample_count",
+        "real_image_count",
         "sample_batch_size",
         "sampling_elapsed_seconds",
         "sampling_images_per_second",
@@ -335,6 +375,9 @@ def render_csv(report: dict[str, Any]) -> str:
         "inception_score",
         "precision",
         "recall",
+        "real_set_digest_schema",
+        "real_set_sha256",
+        "evaluator_runtime_environment_sha256",
         "protocol_note",
     ]
     output = io.StringIO(newline="")

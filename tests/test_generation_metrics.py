@@ -8,10 +8,12 @@ import pytest
 from PIL import Image
 
 from cofitok.environment import runtime_environment_sha256
-from cofitok.image_integrity import sample_set_sha256
+from cofitok.image_integrity import image_tree_sha256, sample_set_sha256
 from cofitok.reporting import file_sha256
 from scripts.evaluate_generation_metrics import (
     calculate_metrics,
+    content_addressed_real_cache_name,
+    main as evaluate_main,
     find_images,
     validate_sampling_provenance,
 )
@@ -25,6 +27,35 @@ def test_find_images_is_recursive_and_filters_extensions(tmp_path) -> None:
     (nested / "ignore.txt").write_text("x", encoding="utf-8")
 
     assert [path.name for path in find_images(tmp_path)] == ["b.jpg", "a.png"]
+
+
+def test_real_image_tree_digest_binds_paths_bytes_and_cache_key(tmp_path) -> None:
+    root = tmp_path / "real"
+    nested = root / "class_a"
+    nested.mkdir(parents=True)
+    first = nested / "image.png"
+    second = root / "second.jpg"
+    first.write_bytes(b"first")
+    second.write_bytes(b"second")
+
+    digest = image_tree_sha256([second, first], root=root)
+    assert digest == image_tree_sha256([first, second], root=root)
+    assert content_addressed_real_cache_name("imagenet256_val", digest).endswith(
+        digest[:16]
+    )
+
+    first.write_bytes(b"changed")
+    assert image_tree_sha256([first, second], root=root) != digest
+
+
+def test_real_image_tree_digest_rejects_outside_entry(tmp_path) -> None:
+    root = tmp_path / "real"
+    root.mkdir()
+    outside = tmp_path / "outside.png"
+    outside.write_bytes(b"outside")
+
+    with pytest.raises(ValueError, match="outside the declared tree root"):
+        image_tree_sha256([outside], root=root)
 
 
 def test_calculate_metrics_uses_generated_as_precision_input(monkeypatch, tmp_path) -> None:
@@ -72,7 +103,7 @@ def test_calculate_metrics_uses_generated_as_precision_input(monkeypatch, tmp_pa
     assert calls[0]["input2_cache_name"] == "real-v1"
 
 
-def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> None:
+def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path, monkeypatch) -> None:
     generated = tmp_path / "samples" / "prefix_8"
     generated.mkdir(parents=True)
     for index in range(2):
@@ -150,6 +181,61 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
     assert provenance["sample_set_sha256"] == sample_sha256
     assert provenance["sampling_progress"]["status"] == "completed"
     assert provenance["runtime_environment_sha256"] == runtime_environment_sha
+
+    real = tmp_path / "real"
+    real.mkdir()
+    for index in range(2):
+        Image.new("RGB", (4, 4), color=(index, index, index)).save(
+            real / f"real_{index}.png"
+        )
+    metric_calls = []
+
+    def fake_metrics(**kwargs):
+        metric_calls.append(kwargs)
+        return (
+            {
+                "frechet_inception_distance": 1.0,
+                "inception_score_mean": 2.0,
+                "inception_score_std": 0.1,
+                "precision": 0.6,
+                "recall": 0.5,
+            },
+            "0.4.0",
+        )
+
+    output_dir = tmp_path / "metrics"
+    monkeypatch.setattr("scripts.evaluate_generation_metrics.calculate_metrics", fake_metrics)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "evaluate_generation_metrics.py",
+            "--real-dir",
+            str(real),
+            "--generated-dir",
+            str(generated),
+            "--sampling-report",
+            str(report_path),
+            "--output-dir",
+            str(output_dir),
+            "--min-samples",
+            "2",
+            "--cpu",
+            "--skip-prc",
+        ],
+    )
+    evaluate_main()
+    metrics_report = json.loads(
+        (output_dir / "generation_metrics_report.json").read_text(encoding="utf-8")
+    )
+    assert metrics_report["schema_version"] == 2
+    assert metrics_report["real_set"]["image_count"] == 2
+    assert metric_calls[0]["real_cache_name"].endswith(
+        metrics_report["real_set"]["sha256"][:16]
+    )
+    assert metrics_report["runtime_environment_sha256"] == runtime_environment_sha256(
+        metrics_report["runtime_environment"]
+    )
 
     sampling_report = json.loads(report_path.read_text(encoding="utf-8"))
     sampling_report["runtime_environment_sha256"] = "f" * 64

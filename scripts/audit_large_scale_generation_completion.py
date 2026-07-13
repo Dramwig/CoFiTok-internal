@@ -9,6 +9,7 @@ from typing import Any, Callable
 from cofitok.environment import runtime_environment_sha256
 from cofitok.generation.artifact import verify_inference_artifact
 from cofitok.generation_cost import training_cost_summary
+from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
@@ -294,6 +295,8 @@ def _generation_evidence(
 ) -> dict[str, Any]:
     evidence = {}
     sampling_environment_shas = set()
+    evaluator_environment_shas = set()
+    real_set_identities = set()
     for method, report in reports.items():
         if report.get("status") != "completed":
             raise ValueError(f"{method} formal generation metrics are incomplete")
@@ -304,8 +307,33 @@ def _generation_evidence(
             or evaluator_git.get("tracked_dirty") is not False
         ):
             raise ValueError(f"{method} formal evaluator code provenance is invalid")
+        evaluator_environment = report.get("runtime_environment")
+        if not isinstance(evaluator_environment, dict):
+            raise ValueError(f"{method} formal evaluator environment is missing")
+        evaluator_environment_sha = runtime_environment_sha256(evaluator_environment)
+        if report.get("runtime_environment_sha256") != evaluator_environment_sha:
+            raise ValueError(f"{method} formal evaluator environment SHA256 differs")
+        evaluator_environment_shas.add(evaluator_environment_sha)
         if int(report.get("counts", {}).get("generated_image_count", -1)) != 50_000:
             raise ValueError(f"{method} formal generated sample count is not 50000")
+        real_set = report.get("real_set", {})
+        real_set_sha = str(real_set.get("sha256", ""))
+        real_count = int(report.get("counts", {}).get("real_image_count", -1))
+        real_root = report.get("paths", {}).get("real_dir")
+        real_cache_name = str(report.get("parameters", {}).get("real_cache_name", ""))
+        if (
+            real_set.get("digest_schema") != IMAGE_TREE_DIGEST_SCHEMA
+            or len(real_set_sha) != 64
+            or any(character not in "0123456789abcdef" for character in real_set_sha)
+            or int(real_set.get("image_count", -1)) != real_count
+            or real_count != 50_000
+            or real_set.get("root") != real_root
+            or not real_cache_name.endswith(f"__cofitok_{real_set_sha[:16]}")
+        ):
+            raise ValueError(f"{method} formal real-set provenance is invalid")
+        real_set_identities.add(
+            (IMAGE_TREE_DIGEST_SCHEMA, real_set_sha, real_root, real_count, real_cache_name)
+        )
         provenance = report.get("sample_provenance", {})
         git = provenance.get("git", {})
         progress = provenance.get("sampling_progress", {})
@@ -362,9 +390,15 @@ def _generation_evidence(
             "sample_set_sha256": provenance["sample_set_sha256"],
             "sampling_elapsed_seconds": elapsed,
             "runtime_environment_sha256": sampling_environment_sha,
+            "evaluator_runtime_environment_sha256": evaluator_environment_sha,
+            "real_set_sha256": real_set_sha,
         }
     if len(sampling_environment_shas) != 1:
         raise ValueError("formal matched methods used different sampling environments")
+    if len(evaluator_environment_shas) != 1:
+        raise ValueError("formal matched methods used different evaluator environments")
+    if len(real_set_identities) != 1:
+        raise ValueError("formal matched methods used different real sets")
     return evidence
 
 
@@ -626,9 +660,11 @@ def _final_gate_evidence(
         indexed_gates[name] = row
     required_quality_gates = {
         "generation_metrics_complete",
+        "matched_real_set_provenance",
         "matched_sampling_code_provenance",
         "matched_sampling_runtime_environment",
         "matched_evaluator_code_provenance",
+        "matched_evaluator_runtime_environment",
         "matched_checkpoint_evaluator_code_provenance",
         "distribution_metric_ranges",
         "fid_within_tolerance",
@@ -711,6 +747,41 @@ def _final_gate_evidence(
         )
         if gate_environments.get(method, {}).get("sha256") != expected_sha:
             raise ValueError(f"final gate {method} sampling environment differs")
+    evaluator_environment_matches = [
+        row.get("evidence", {})
+        for row in gate.get("gates", [])
+        if row.get("name") == "matched_evaluator_runtime_environment"
+    ]
+    if len(evaluator_environment_matches) != 1:
+        raise ValueError("final gate lacks unique evaluator runtime environment")
+    gate_evaluator_environments = evaluator_environment_matches[0]
+    for method in ("cofitok", "dense_identity"):
+        expected_sha = generation_reports[method].get("runtime_environment_sha256")
+        if gate_evaluator_environments.get(method, {}).get("sha256") != expected_sha:
+            raise ValueError(f"final gate {method} evaluator environment differs")
+    real_set_matches = [
+        row.get("evidence", {})
+        for row in gate.get("gates", [])
+        if row.get("name") == "matched_real_set_provenance"
+    ]
+    if len(real_set_matches) != 1:
+        raise ValueError("final gate lacks unique real-set provenance")
+    gate_real_sets = real_set_matches[0]
+    for method in ("cofitok", "dense_identity"):
+        expected_real_set = generation_reports[method].get("real_set", {})
+        gate_real_set = gate_real_sets.get(method, {})
+        if (
+            gate_real_set.get("valid") is not True
+            or gate_real_set.get("real_cache_name")
+            != generation_reports[method].get("parameters", {}).get("real_cache_name")
+            or gate_real_set.get("sha256") != expected_real_set.get("sha256")
+            or gate_real_set.get("digest_schema")
+            != expected_real_set.get("digest_schema")
+            or gate_real_set.get("root") != expected_real_set.get("root")
+            or int(gate_real_set.get("image_count", -1))
+            != int(expected_real_set.get("image_count", -2))
+        ):
+            raise ValueError(f"final gate {method} real-set provenance differs")
     evidence["quality_metrics_bound"] = True
     evidence["quality_thresholds"] = {
         name: thresholds[name] for name in required_thresholds
@@ -725,7 +796,7 @@ def _comparison_evidence(
     official_related: dict[str, Any],
     official_related_sha256: str,
 ) -> dict[str, Any]:
-    if report.get("schema_version") != 2:
+    if report.get("schema_version") != 3:
         raise ValueError("large-scale comparison schema is stale")
     if report.get("status") != "ready":
         raise ValueError("large-scale comparison is not ready")
@@ -773,6 +844,20 @@ def _comparison_evidence(
             raise ValueError(f"comparison {method} checkpoint SHA256 differs")
         if row.get("sample_set_sha256") != provenance.get("sample_set_sha256"):
             raise ValueError(f"comparison {method} sample-set SHA256 differs")
+        generation = generation_reports[key]
+        generation_real_set = generation.get("real_set", {})
+        if (
+            row.get("real_set_digest_schema")
+            != generation_real_set.get("digest_schema")
+            or row.get("real_set_sha256") != generation_real_set.get("sha256")
+            or int(row.get("real_image_count", -1))
+            != int(generation_real_set.get("image_count", -2))
+        ):
+            raise ValueError(f"comparison {method} real-set SHA256 differs")
+        if row.get("evaluator_runtime_environment_sha256") != generation.get(
+            "runtime_environment_sha256"
+        ):
+            raise ValueError(f"comparison {method} evaluator environment differs")
         expected_exact = {
             "parameter_count": int(training["parameter_count"]),
             "effective_batch_size": int(cost["effective_batch_size"]),

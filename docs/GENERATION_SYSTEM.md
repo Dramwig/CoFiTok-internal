@@ -79,7 +79,11 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Generation evaluation uses `torch-fidelity==0.4.x` with generated samples as
   input 1 and the recursive 50K ImageNet validation directory as input 2. One
   report records FID, Inception Score, precision, recall, exact image counts,
-  package version, seed, cache name, and runtime.
+  package version, seed, cache name, and runtime. Before evaluation, every real
+  image byte and root-relative path is hashed with
+  `cofitok_image_tree_sha256_v1`. The digest is embedded in metrics schema v2
+  and in the effective torch-fidelity cache key, so changed real data cannot
+  silently reuse stale cached features.
 - Formal metric evaluation requires the corresponding `sampling_report.json`,
   an exact zero-based numbered image set, and a valid checkpoint SHA256. The
   promotion gate cross-checks that sample metrics and mechanism diagnostics use
@@ -247,9 +251,10 @@ Both promotion decisions are provenance gates, not only metric thresholds.
 They require the CoFiTok and dense training reports to share the same
 40-character `git.revision` on `scale/generative-system`, use the same real
 ImageNet-256 directory and evaluator, and contain exactly the requested 10K or
-50K generated samples. Both metrics reports must also bind the same clean
-evaluator revision/branch; at full scale it must equal the full training and
-sampling revision. Ordered-prefix/zero/shuffle checkpoint diagnostics carry an
+ 50K generated samples. Both metrics reports must also bind the same clean
+ evaluator revision/branch, canonical evaluator runtime environment, and exact
+ real-set content digest; at full scale the revision must equal full training and
+ sampling. Ordered-prefix/zero/shuffle checkpoint diagnostics carry an
 independent mechanism-evaluator Git state under the same matched clean/full
 revision rules. Formal class-conditional sampling must start at index zero, use
 balanced modulo labels and EMA weights, preserve per-sample random streams
@@ -293,6 +298,9 @@ Large-scale completion is fail-closed. Before the completion pipeline can
 publish `pass`, `scripts/audit_large_scale_generation_completion.py` must verify
 the pinned 10% pair and promotion gate, full matched 300K pair, training audits,
 all four milestones, formal paired 50K sampling, final gate, and final comparison.
+The formal pair is accepted only when its real-set tree digest, content-addressed
+cache key, and evaluator environment are identical and bound through the gate
+and comparison schema v3.
 Missing evidence is `in_progress`, contradictory evidence is `failed`, and only
 the full chain is `complete`. See
 `docs/records/2026-07-12_large_scale_generation_completion_audit.md`.
