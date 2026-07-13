@@ -1101,6 +1101,7 @@ def _deployment_transition() -> tuple[dict, dict]:
             "bytes": 1234,
             "sha256": "e" * 64,
             "heads": [FULL_REVISION],
+            "prerequisites": [TEN_REVISION],
         },
         "training_pair_validation": {
             "status": "pass",
@@ -1138,6 +1139,7 @@ def _deployment_transition() -> tuple[dict, dict]:
             "bytes": 1234,
             "sha256": "e" * 64,
             "heads": [FULL_REVISION],
+            "prerequisites": [TEN_REVISION],
         },
         "conflict_scan": {
             "status": "verified",
@@ -1297,6 +1299,21 @@ def test_completion_audit_verifies_archived_bundle_bytes_and_head(tmp_path) -> N
         cwd=repository,
         check=True,
     )
+    (repository / "tracked.txt").write_text("pinned\n", encoding="ascii")
+    subprocess.run(["git", "add", "tracked.txt"], cwd=repository, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "pinned"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+    )
+    pinned_revision = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
     (repository / "tracked.txt").write_text("target\n", encoding="ascii")
     subprocess.run(["git", "add", "tracked.txt"], cwd=repository, check=True)
     subprocess.run(
@@ -1314,7 +1331,7 @@ def test_completion_audit_verifies_archived_bundle_bytes_and_head(tmp_path) -> N
     ).stdout.strip()
     bundle = tmp_path / "deployment.bundle"
     subprocess.run(
-        ["git", "bundle", "create", str(bundle), "HEAD"],
+        ["git", "bundle", "create", str(bundle), "HEAD", f"^{pinned_revision}"],
         cwd=repository,
         check=True,
         capture_output=True,
@@ -1324,6 +1341,7 @@ def test_completion_audit_verifies_archived_bundle_bytes_and_head(tmp_path) -> N
 
     assert verified["status"] == "verified"
     assert verified["heads"] == [revision]
+    assert verified["prerequisites"] == [pinned_revision]
     bundle.write_bytes(bundle.read_bytes()[:-1])
     tampered = _verify_deployment_bundle_source(bundle)
     assert tampered["status"] == "verified"

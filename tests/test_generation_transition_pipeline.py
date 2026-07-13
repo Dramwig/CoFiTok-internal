@@ -113,6 +113,12 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     ) < deployer.index("git merge --ff-only FETCH_HEAD")
     assert "pgrep -af '[s]cripts/train_generation.py" in deployer
     assert "git bundle verify" in deployer
+    assert "bundle_prerequisites" in deployer
+    assert 'bundle_header_line' in deployer
+    assert '!= "$EXPECTED_COMMIT"' in deployer
+    assert deployer.index("bundle_prerequisites=()") < deployer.index(
+        'git bundle verify "$BUNDLE"'
+    )
     assert "scripts/check_generation_deployment_conflicts.py" in deployer
     assert 'python "$conflict_checker"' in deployer
     assert '--current-commit "$current_commit"' in deployer

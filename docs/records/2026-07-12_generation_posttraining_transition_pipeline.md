@@ -33,7 +33,8 @@ The remote helper refuses deployment unless:
   matching tolerance, and identify the exact step-50K checkpoint;
 - neither the matched runbook nor either 10% training command is still active;
 - the bundle resolves to the exact local target commit and can be applied with
-  a fast-forward-only merge.
+  a fast-forward-only merge; its header contains exactly one prerequisite and
+  that prerequisite is the pinned 10% training revision.
 - no remote untracked file has the same path as a file tracked by the target
   revision; the helper checks only paths newly tracked between pinned and target
   revisions plus parent file/symlink blockers, then reports all conflicts without
@@ -52,7 +53,7 @@ output root. The verified upgrade bundle is first atomically copied from `/tmp`
 to `checkpoints/generation/deployment/`, where it remains available after a
 reboot. The receipt binds the pinned training revision, deployed target
 revision, archived bundle bytes/SHA256/advertised head, training-pair validation
-SHA256, clean tracked Git state, and three source artifacts:
+SHA256, the exact pinned bundle prerequisite, clean tracked Git state, and three source artifacts:
 
 - `generation_upgrade_conflict_scan.json`, written before fast-forward;
 - `generation_upgrade_pytest.xml`, the full remote JUnit result;

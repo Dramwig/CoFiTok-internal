@@ -283,8 +283,12 @@ gate decisions in order. A held gate or interrupted stage is recorded as a
 failure rather than reported as generation readiness.
 The transition bundle is atomically archived under
 `checkpoints/generation/deployment/` instead of relying on `/tmp`. The receipt
-binds its bytes, SHA256, and advertised target head. It also binds three durable
-source reports: the bounded pre-merge conflict JSON, a JUnit XML from the full
+binds its bytes, SHA256, advertised target head, and exact pinned prerequisite.
+The helper parses the bundle header before fetch and requires exactly one
+prerequisite equal to the pinned 10% training revision; receipt generation and
+terminal audit independently repeat that check on the archived bytes. The
+receipt also binds three durable source reports: the bounded pre-merge conflict
+JSON, a JUnit XML from the full
 remote pytest suite, and a JSON report that enumerates every target-tracked
 shell runbook with `git ls-files` and checks each with `bash -n`. The final
 completion audit reopens and rehashes all four source files, revalidates their

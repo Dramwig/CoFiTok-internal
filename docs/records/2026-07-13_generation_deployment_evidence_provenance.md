@@ -27,7 +27,7 @@ Deployment receipt schema v2 is generated only from four durable sources:
    shell list with `git ls-files` and runs `bash -n` on every listed path.
 
 The receipt records path, bytes, and SHA256 for every source. It additionally
-records the bundle head, conflict count and target-added count, pytest test and
+records the bundle head and exact pinned prerequisite, conflict count and target-added count, pytest test and
 failure counts, and the exact runbook count. An idempotent retry on an already
 deployed target requires the original pre-merge conflict report instead of
 fabricating a zero-path scan after the transition.
@@ -37,6 +37,12 @@ authoritative paths, recomputes bytes/SHA256, asks Git to list the archived
 bundle head, reparses JUnit, and reruns the conflict/runbook semantic validators.
 Receipt-only edits and source-file tampering therefore fail the named
 `controlled_revision_transition` check.
+
+Before fetch, the remote helper also parses the uploaded bundle header and
+requires exactly one prerequisite equal to the pinned training revision. The
+receipt writer and terminal audit independently parse the archived header, so
+an extra prerequisite or a bundle cut from another baseline is rejected even
+when its advertised target head is correct.
 
 ## Verification
 

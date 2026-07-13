@@ -24,6 +24,7 @@ def _kwargs() -> dict:
         "bundle_bytes": 1234,
         "bundle_sha256": "c" * 64,
         "bundle_heads": [TARGET_REVISION],
+        "bundle_prerequisites": [TEN_REVISION],
         "pair_validation_path": "/outputs/pair.json",
         "pair_validation_sha256": "d" * 64,
         "pair_validation": {
@@ -115,6 +116,10 @@ def test_deployment_receipt_binds_bundle_pair_and_revisions() -> None:
             "does not contain the target revision",
         ),
         (
+            lambda values: values.update(bundle_prerequisites=["f" * 40]),
+            "prerequisite differs",
+        ),
+        (
             lambda values: values["conflict_scan"].update(conflict_count=1),
             "conflict scan",
         ),
@@ -155,6 +160,21 @@ def test_deployment_receipt_cli_verifies_real_bundle_head(tmp_path) -> None:
         cwd=repository,
         check=True,
     )
+    (repository / "tracked.txt").write_text("pinned\n", encoding="ascii")
+    subprocess.run(["git", "add", "tracked.txt"], cwd=repository, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "pinned"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+    )
+    pinned_revision = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
     (repository / "tracked.txt").write_text("target\n", encoding="ascii")
     subprocess.run(["git", "add", "tracked.txt"], cwd=repository, check=True)
     subprocess.run(
@@ -172,14 +192,14 @@ def test_deployment_receipt_cli_verifies_real_bundle_head(tmp_path) -> None:
     ).stdout.strip()
     bundle = tmp_path / "upgrade.bundle"
     subprocess.run(
-        ["git", "bundle", "create", str(bundle), "HEAD"],
+        ["git", "bundle", "create", str(bundle), "HEAD", f"^{pinned_revision}"],
         cwd=repository,
         check=True,
         capture_output=True,
     )
     pair_validation = tmp_path / "pair.json"
     pair_validation.write_text(
-        json.dumps({"status": "pass", "expected_revision": TEN_REVISION}),
+        json.dumps({"status": "pass", "expected_revision": pinned_revision}),
         encoding="utf-8",
     )
     conflict_scan = tmp_path / "conflict.json"
@@ -188,7 +208,7 @@ def test_deployment_receipt_cli_verifies_real_bundle_head(tmp_path) -> None:
             {
                 "schema_version": 1,
                 "status": "pass",
-                "current_commit": TEN_REVISION,
+                "current_commit": pinned_revision,
                 "target_commit": revision,
                 "target_added_path_count": 1,
                 "conflict_count": 0,
@@ -246,7 +266,7 @@ def test_deployment_receipt_cli_verifies_real_bundle_head(tmp_path) -> None:
             "--pytest-report",
             str(pytest_report),
             "--expected-training-revision",
-            TEN_REVISION,
+            pinned_revision,
             "--target-revision",
             revision,
         ],
@@ -260,6 +280,7 @@ def test_deployment_receipt_cli_verifies_real_bundle_head(tmp_path) -> None:
     assert result.returncode == 0, result.stderr
     receipt = json.loads(output.read_text(encoding="utf-8"))
     assert receipt["bundle"]["heads"] == [revision]
+    assert receipt["bundle"]["prerequisites"] == [pinned_revision]
     assert receipt["target_revision"] == revision
     assert receipt["verification"]["pytest"]["tests"] == 3
     assert receipt["verification"]["runbook_syntax"]["checked_count"] == 1

@@ -28,6 +28,7 @@ except ModuleNotFoundError:
 
 try:
     from scripts.write_generation_deployment_receipt import (
+        bundle_prerequisites,
         pytest_junit_summary,
         validate_conflict_scan,
         validate_pytest_summary,
@@ -35,6 +36,7 @@ try:
     )
 except ModuleNotFoundError:
     from write_generation_deployment_receipt import (
+        bundle_prerequisites,
         pytest_junit_summary,
         validate_conflict_scan,
         validate_pytest_summary,
@@ -1215,6 +1217,7 @@ def _deployment_transition_evidence(
         int(bundle.get("bytes", 0)) < 1
         or len(str(bundle.get("sha256", ""))) != 64
         or expected_target_revision not in bundle.get("heads", [])
+        or bundle.get("prerequisites") != [expected_training_revision]
     ):
         raise ValueError("deployment receipt bundle integrity is invalid")
     bundle_source = verification_files.get("bundle")
@@ -1225,6 +1228,7 @@ def _deployment_transition_evidence(
         or bundle.get("bytes") != bundle_source.get("bytes")
         or bundle.get("sha256") != bundle_source.get("sha256")
         or sorted(bundle.get("heads", [])) != bundle_source.get("heads")
+        or bundle.get("prerequisites") != bundle_source.get("prerequisites")
     ):
         raise ValueError("deployment bundle source binding differs")
     pair = receipt.get("training_pair_validation", {})
@@ -1844,6 +1848,7 @@ def _verify_deployment_bundle_source(path: Path) -> dict[str, Any] | None:
             "bytes": path.stat().st_size,
             "sha256": file_sha256(path),
             "heads": heads,
+            "prerequisites": bundle_prerequisites(path),
         }
     except (OSError, subprocess.CalledProcessError, ValueError) as error:
         return {

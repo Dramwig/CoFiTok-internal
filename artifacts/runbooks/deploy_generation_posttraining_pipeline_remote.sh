@@ -53,6 +53,21 @@ cleanup_prevalidation() {
 trap cleanup_prevalidation EXIT
 
 if [[ "$current_commit" == "$EXPECTED_COMMIT" ]]; then
+  bundle_prerequisites=()
+  while IFS= read -r bundle_header_line; do
+    [[ -z "$bundle_header_line" ]] && break
+    if [[ "$bundle_header_line" == -* ]]; then
+      bundle_prerequisite="${bundle_header_line#-}"
+      bundle_prerequisite="${bundle_prerequisite%% *}"
+      bundle_prerequisites+=("$bundle_prerequisite")
+    fi
+  done < "$BUNDLE"
+  if (( ${#bundle_prerequisites[@]} != 1 )) || \
+      [[ "${bundle_prerequisites[0]:-}" != "$EXPECTED_COMMIT" ]]; then
+    printf 'bundle prerequisites must equal only pinned commit %s; found: %s\n' \
+      "$EXPECTED_COMMIT" "${bundle_prerequisites[*]:-none}" >&2
+    exit 78
+  fi
   git bundle verify "$BUNDLE"
   git fetch "$BUNDLE" HEAD
   fetched_commit="$(git rev-parse FETCH_HEAD)"

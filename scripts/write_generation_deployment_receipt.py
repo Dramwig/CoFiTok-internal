@@ -84,6 +84,7 @@ def build_deployment_receipt(
     bundle_bytes: int,
     bundle_sha256: str,
     bundle_heads: list[str],
+    bundle_prerequisites: list[str],
     pair_validation_path: str,
     pair_validation_sha256: str,
     pair_validation: dict[str, Any],
@@ -117,6 +118,8 @@ def build_deployment_receipt(
         raise ValueError("deployment bundle integrity evidence is invalid")
     if target_revision not in bundle_heads:
         raise ValueError("deployment bundle does not contain the target revision")
+    if bundle_prerequisites != [expected_training_revision]:
+        raise ValueError("deployment bundle prerequisite differs from pinned training")
     if len(pair_validation_sha256) != 64:
         raise ValueError("training-pair validation SHA256 is invalid")
     if pair_validation.get("status") != "pass":
@@ -154,6 +157,7 @@ def build_deployment_receipt(
             "bytes": bundle_bytes,
             "sha256": bundle_sha256,
             "heads": bundle_heads,
+            "prerequisites": bundle_prerequisites,
         },
         "training_pair_validation": {
             "path": pair_validation_path,
@@ -206,6 +210,30 @@ def _bundle_heads(path: Path) -> list[str]:
     if not heads:
         raise ValueError("deployment bundle has no advertised heads")
     return heads
+
+
+def bundle_prerequisites(path: str | Path) -> list[str]:
+    prerequisites = []
+    with Path(path).open("rb") as handle:
+        first_line = handle.readline()
+        if not first_line.startswith(b"# v") or b"git bundle" not in first_line:
+            raise ValueError("deployment bundle header is invalid")
+        for raw_line in handle:
+            line = raw_line.rstrip(b"\r\n")
+            if not line:
+                break
+            if line.startswith(b"-"):
+                token = line[1:].split(b" ", 1)[0]
+                try:
+                    value = token.decode("ascii")
+                except UnicodeDecodeError as error:
+                    raise ValueError("bundle prerequisite is not ASCII") from error
+                if len(value) not in {40, 64} or any(
+                    character not in "0123456789abcdef" for character in value.lower()
+                ):
+                    raise ValueError("bundle prerequisite object id is invalid")
+                prerequisites.append(value.lower())
+    return sorted(set(prerequisites))
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -276,6 +304,7 @@ def main() -> None:
         bundle_bytes=bundle.stat().st_size,
         bundle_sha256=file_sha256(bundle),
         bundle_heads=_bundle_heads(bundle),
+        bundle_prerequisites=bundle_prerequisites(bundle),
         pair_validation_path=pair_validation_path.as_posix(),
         pair_validation_sha256=file_sha256(pair_validation_path),
         pair_validation=pair_validation,
