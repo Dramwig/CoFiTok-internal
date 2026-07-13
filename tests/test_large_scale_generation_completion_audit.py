@@ -72,6 +72,7 @@ def _training(
             "checkpoint": f"checkpoint_step_{steps:08d}.pt",
             "step": steps,
             "checkpoint_sha256": checkpoint_sha,
+            "checkpoint_bytes": 1_000,
             "integrity_manifest": f"checkpoint_step_{steps:08d}.pt.integrity.json",
             "runtime_environment_sha256": environment_sha,
             "git_revision": revision,
@@ -523,6 +524,10 @@ def _inference_exports() -> dict:
         ("cofitok", "a" * 64, "f" * 64, 4),
         ("dense_identity", "b" * 64, "9" * 64, 2),
     ):
+        artifact = (
+            "/root/autodl-tmp/CoFiTok/checkpoints/generation/exports/"
+            f"imagenet256_full_300k/{method}_ema_inference.pt"
+        )
         output[f"{method}_export"] = {
             "status": "completed",
             "verified": True,
@@ -532,6 +537,8 @@ def _inference_exports() -> dict:
             "source_checkpoint_bytes": 1_000,
             "artifact_sha256": artifact_sha,
             "artifact_bytes": 400,
+            "artifact": artifact,
+            "artifact_integrity_manifest": f"{artifact}.integrity.json",
         }
         output[f"{method}_preflight"] = {
             "status": "passed",
@@ -549,6 +556,54 @@ def _inference_exports() -> dict:
                 "source_checkpoint_sha256": source_sha,
             },
             "outputs": [{"sha256": str(index) * 64} for index in range(1, count + 1)],
+        }
+    return output
+
+
+def _full_checkpoint_files() -> dict:
+    output = {}
+    environment_sha = runtime_environment_sha256(_runtime_environment())
+    for method, run, checkpoint_sha in (
+        ("cofitok", "imagenet256_full_cofitok_k8_300k", "a" * 64),
+        ("dense_identity", "imagenet256_full_dense_300k", "b" * 64),
+    ):
+        checkpoint = "checkpoint_step_00300000.pt"
+        path = f"/root/autodl-tmp/CoFiTok/checkpoints/generation/{run}/{checkpoint}"
+        output[method] = {
+            "status": "verified",
+            "path": path,
+            "integrity_manifest": f"{path}.integrity.json",
+            "checkpoint": checkpoint,
+            "checkpoint_sha256": checkpoint_sha,
+            "checkpoint_bytes": 1_000,
+            "checkpoint_format_version": 1,
+            "step": 300_000,
+            "runtime_environment_sha256": environment_sha,
+            "git_revision": FULL_REVISION,
+            "git_branch": "scale/generative-system",
+            "git_dirty": False,
+        }
+    return output
+
+
+def _inference_artifact_files() -> dict:
+    output = {}
+    for method, source_sha, artifact_sha in (
+        ("cofitok", "a" * 64, "f" * 64),
+        ("dense_identity", "b" * 64, "9" * 64),
+    ):
+        path = (
+            "/root/autodl-tmp/CoFiTok/checkpoints/generation/exports/"
+            f"imagenet256_full_300k/{method}_ema_inference.pt"
+        )
+        output[method] = {
+            "status": "verified",
+            "path": path,
+            "integrity_manifest": f"{path}.integrity.json",
+            "artifact_sha256": artifact_sha,
+            "artifact_bytes": 400,
+            "source_checkpoint_sha256": source_sha,
+            "step": 300_000,
         }
     return output
 
@@ -600,6 +655,7 @@ def _kwargs() -> dict:
         "storage_preflights": _storage_preflights(),
         "expected_storage_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
         "full_training_monitor": _full_training_monitor(),
+        "full_checkpoint_files": _full_checkpoint_files(),
         "scaling_gate": _gate("scaling"),
         "cofitok_full_training": _training(
             steps=300_000,
@@ -621,6 +677,7 @@ def _kwargs() -> dict:
         "sampling_runtime_selection": _sampling_runtime_selection(),
         "visual_audit": _visual_audit(),
         "inference_exports": _inference_exports(),
+        "inference_artifact_files": _inference_artifact_files(),
         "milestones": {step: _milestone(step) for step in MILESTONE_STEPS},
         "cofitok_generation": _generation("a"),
         "dense_generation": _generation("b"),
@@ -638,7 +695,7 @@ def test_completion_audit_requires_every_large_scale_artifact() -> None:
     assert report["complete"] is True
     assert report["failed_checks"] == []
     assert report["missing_checks"] == []
-    assert len(report["checks"]) == 17
+    assert len(report["checks"]) == 18
 
 
 def test_completion_audit_requires_controlled_revision_transition() -> None:
@@ -663,6 +720,7 @@ def test_completion_audit_reports_missing_work_as_in_progress() -> None:
         "full_matched_training",
         "full_training_runtime_environment",
         "full_training_checkpoint_code_provenance",
+        "reproducible_full_checkpoint_files",
         "full_runtime_selection",
         "formal_50k_generation",
         "final_comparison_report",
@@ -918,7 +976,10 @@ def test_completion_audit_rejects_matched_runtime_environment_drift() -> None:
     completion = build_completion_audit(**kwargs)
 
     assert completion["status"] == "failed"
-    assert completion["failed_checks"] == ["full_training_runtime_environment"]
+    assert completion["failed_checks"] == [
+        "full_training_runtime_environment",
+        "reproducible_full_checkpoint_files",
+    ]
 
 
 def test_completion_audit_rejects_checkpoint_from_another_revision() -> None:
@@ -929,8 +990,33 @@ def test_completion_audit_rejects_checkpoint_from_another_revision() -> None:
 
     assert completion["status"] == "failed"
     assert completion["failed_checks"] == [
-        "full_training_checkpoint_code_provenance"
+        "full_training_checkpoint_code_provenance",
+        "reproducible_full_checkpoint_files",
     ]
+
+
+def test_completion_audit_rejects_missing_full_checkpoint_bytes() -> None:
+    kwargs = _kwargs()
+    kwargs["full_checkpoint_files"]["cofitok"] = {
+        "status": "invalid",
+        "path": "/missing/checkpoint_step_00300000.pt",
+        "error": "Checkpoint integrity manifest is missing",
+    }
+
+    completion = build_completion_audit(**kwargs)
+
+    assert completion["status"] == "failed"
+    assert completion["failed_checks"] == ["reproducible_full_checkpoint_files"]
+
+
+def test_completion_audit_rejects_checkpoint_sidecar_revision_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["full_checkpoint_files"]["dense_identity"]["git_revision"] = "c" * 40
+
+    completion = build_completion_audit(**kwargs)
+
+    assert completion["status"] == "failed"
+    assert completion["failed_checks"] == ["reproducible_full_checkpoint_files"]
 
 
 def test_completion_audit_rejects_export_from_stale_training_checkpoint() -> None:
@@ -938,6 +1024,20 @@ def test_completion_audit_rejects_export_from_stale_training_checkpoint() -> Non
     kwargs["inference_exports"]["cofitok_export"][
         "source_checkpoint_sha256"
     ] = "Z" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_rejects_corrupted_inference_artifact_bytes() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_artifact_files"]["dense_identity"] = {
+        "status": "invalid",
+        "path": "/corrupted/dense_identity_ema_inference.pt",
+        "error": "Inference artifact SHA256 mismatch",
+    }
 
     report = build_completion_audit(**kwargs)
 

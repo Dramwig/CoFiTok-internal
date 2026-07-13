@@ -36,6 +36,8 @@ The audit requires all of the following:
   PyTorch/CUDA/cuDNN, GPU, and project-lock provenance;
 - latest full checkpoint pointers bound to the same clean deployed Git revision,
   branch, and tracked state as their training reports;
+- both physical step-300K exact-resume checkpoint files rehashed against their
+  integrity sidecars and matched to the authoritative training pointers;
 - a revision-bound shared runtime selection whose microbatch and accumulation
   are present in both 300K training reports and preserve effective batch 64;
 - complete training audits with validation events and protected 50K, 100K,
@@ -48,8 +50,9 @@ The audit requires all of the following:
   50K sample reports actually use with batch-invariant random streams;
 - deterministic fixed-index CoFiTok/dense endpoint panels and a separate
   `1/2/4/8` prefix-path panel bound to the formal checkpoint/sample-set hashes;
-- verified, smaller EMA-only artifacts for both methods, each bound to the source
-  300K checkpoint and proven by real-forward preflight plus short DDIM PNG smoke;
+- verified, smaller EMA-only artifacts for both methods, each physically
+  rehashed at terminal audit time, bound to the source 300K checkpoint, and
+  proven by real-forward preflight plus short DDIM PNG smoke;
 - a passing final gate with decision `large_scale_generation_ready`;
 - the ready two-tier comparison containing the matched pair and three official
   contextual methods, with direct compute fields recomputed from training and

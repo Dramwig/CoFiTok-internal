@@ -7,8 +7,13 @@ from pathlib import Path
 from typing import Any, Callable
 
 from cofitok.environment import runtime_environment_sha256
+from cofitok.generation.artifact import verify_inference_artifact
 from cofitok.generation_cost import training_cost_summary
 from cofitok.reporting import file_sha256, write_json_report
+from cofitok.training.checkpointing import (
+    checkpoint_integrity_path,
+    verify_training_checkpoint,
+)
 
 try:
     from scripts.validate_generation_training_pair import validate_training_pair
@@ -157,6 +162,54 @@ def _checkpoint_code_provenance_evidence(
             "branch": "scale/generative-system",
             "tracked_dirty": False,
             "checkpoint": latest.get("checkpoint"),
+        }
+    return evidence
+
+
+def _full_checkpoint_file_evidence(
+    files: dict[str, dict[str, Any]],
+    training_reports: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    evidence = {}
+    for method in ("cofitok", "dense_identity"):
+        verified = files[method]
+        latest = training_reports[method].get("latest_checkpoint", {})
+        if verified.get("status") != "verified":
+            raise ValueError(
+                f"{method} full checkpoint file is invalid: "
+                f"{verified.get('error', 'verification failed')}"
+            )
+        if int(verified.get("step", -1)) != 300_000:
+            raise ValueError(f"{method} verified checkpoint is not step 300K")
+        if verified.get("checkpoint") != latest.get("checkpoint"):
+            raise ValueError(f"{method} verified checkpoint filename differs")
+        if verified.get("checkpoint_sha256") != latest.get("checkpoint_sha256"):
+            raise ValueError(f"{method} verified checkpoint SHA256 differs")
+        if int(verified.get("checkpoint_bytes", -1)) != int(
+            latest.get("checkpoint_bytes", -2)
+        ):
+            raise ValueError(f"{method} verified checkpoint byte count differs")
+        if Path(str(verified.get("integrity_manifest", ""))).name != Path(
+            str(latest.get("integrity_manifest", ""))
+        ).name:
+            raise ValueError(f"{method} verified checkpoint integrity path differs")
+        for key in (
+            "runtime_environment_sha256",
+            "git_revision",
+            "git_branch",
+            "git_dirty",
+        ):
+            if verified.get(key) != latest.get(key):
+                raise ValueError(
+                    f"{method} verified checkpoint {key} binding differs"
+                )
+        if int(verified.get("checkpoint_format_version", -1)) != 1:
+            raise ValueError(f"{method} verified checkpoint format differs")
+        evidence[method] = {
+            "path": verified["path"],
+            "checkpoint_sha256": verified["checkpoint_sha256"],
+            "checkpoint_bytes": int(verified["checkpoint_bytes"]),
+            "integrity_manifest": verified["integrity_manifest"],
         }
     return evidence
 
@@ -413,6 +466,7 @@ def _visual_audit_evidence(
 
 def _inference_export_evidence(
     exports: dict[str, dict[str, Any]],
+    artifact_files: dict[str, dict[str, Any]],
     generation_reports: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     evidence = {}
@@ -436,6 +490,26 @@ def _inference_export_evidence(
         source_bytes = int(export.get("source_checkpoint_bytes", 0))
         if len(artifact_sha) != 64 or not 0 < artifact_bytes < source_bytes:
             raise ValueError(f"{method} inference export size/hash is invalid")
+        verified_file = artifact_files[method]
+        if verified_file.get("status") != "verified":
+            raise ValueError(
+                f"{method} inference artifact file is invalid: "
+                f"{verified_file.get('error', 'verification failed')}"
+            )
+        if verified_file.get("path") != export.get("artifact"):
+            raise ValueError(f"{method} inference artifact path differs")
+        if verified_file.get("integrity_manifest") != export.get(
+            "artifact_integrity_manifest"
+        ):
+            raise ValueError(f"{method} inference artifact integrity path differs")
+        if (
+            verified_file.get("artifact_sha256") != artifact_sha
+            or int(verified_file.get("artifact_bytes", -1)) != artifact_bytes
+            or int(verified_file.get("step", -1)) != 300_000
+            or verified_file.get("source_checkpoint_sha256")
+            != export.get("source_checkpoint_sha256")
+        ):
+            raise ValueError(f"{method} inference artifact bytes differ from report")
         if preflight.get("status") != "passed":
             raise ValueError(f"{method} inference export preflight failed")
         if preflight.get("checkpoint_sha256") != artifact_sha:
@@ -464,6 +538,7 @@ def _inference_export_evidence(
         if any(len(str(row.get("sha256", ""))) != 64 for row in smoke.get("outputs", [])):
             raise ValueError(f"{method} export smoke output SHA256 is malformed")
         evidence[method] = {
+            "artifact_path": verified_file["path"],
             "artifact_sha256": artifact_sha,
             "artifact_bytes": artifact_bytes,
             "source_checkpoint_bytes": source_bytes,
@@ -915,6 +990,7 @@ def build_completion_audit(
     storage_preflights: dict[str, dict[str, Any] | None],
     expected_storage_path: str,
     full_training_monitor: dict[str, Any] | None,
+    full_checkpoint_files: dict[str, dict[str, Any] | None],
     scaling_gate: dict[str, Any] | None,
     cofitok_full_training: dict[str, Any] | None,
     dense_full_training: dict[str, Any] | None,
@@ -924,6 +1000,7 @@ def build_completion_audit(
     sampling_runtime_selection: dict[str, Any] | None,
     visual_audit: dict[str, Any] | None,
     inference_exports: dict[str, dict[str, Any] | None],
+    inference_artifact_files: dict[str, dict[str, Any] | None],
     milestones: dict[int, dict[str, Any] | None],
     cofitok_generation: dict[str, Any] | None,
     dense_generation: dict[str, Any] | None,
@@ -1032,6 +1109,24 @@ def build_completion_audit(
     )
     checks.append(
         _check(
+            "reproducible_full_checkpoint_files",
+            [
+                full_checkpoint_files.get("cofitok"),
+                full_checkpoint_files.get("dense_identity"),
+                cofitok_full_training,
+                dense_full_training,
+            ],
+            lambda: _full_checkpoint_file_evidence(
+                full_checkpoint_files,
+                {
+                    "cofitok": cofitok_full_training,
+                    "dense_identity": dense_full_training,
+                },
+            ),
+        )
+    )
+    checks.append(
+        _check(
             "full_runtime_selection",
             [runtime_selection, cofitok_full_training, dense_full_training],
             lambda: _runtime_selection_evidence(
@@ -1124,9 +1219,14 @@ def build_completion_audit(
                     "cofitok_smoke",
                     "dense_identity_smoke",
                 )
+            ]
+            + [
+                inference_artifact_files.get("cofitok"),
+                inference_artifact_files.get("dense_identity"),
             ],
             lambda: _inference_export_evidence(
                 inference_exports,
+                inference_artifact_files,
                 {"cofitok": cofitok_generation, "dense_identity": dense_generation},
             ),
         )
@@ -1189,6 +1289,40 @@ def _read_optional(path: Path) -> dict[str, Any] | None:
         return json.load(handle)
 
 
+def _verify_checkpoint_file(path: Path) -> dict[str, Any]:
+    try:
+        integrity = verify_training_checkpoint(path)
+    except (OSError, KeyError, TypeError, ValueError) as error:
+        return {
+            "status": "invalid",
+            "path": path.resolve().as_posix(),
+            "error": str(error),
+        }
+    return {
+        "status": "verified",
+        "path": path.resolve().as_posix(),
+        "integrity_manifest": checkpoint_integrity_path(path).resolve().as_posix(),
+        **integrity,
+    }
+
+
+def _verify_inference_artifact_file(path: Path) -> dict[str, Any]:
+    try:
+        integrity = verify_inference_artifact(path)
+    except (OSError, KeyError, TypeError, ValueError) as error:
+        return {
+            "status": "invalid",
+            "path": path.resolve().as_posix(),
+            "error": str(error),
+        }
+    return {
+        "status": "verified",
+        "path": path.resolve().as_posix(),
+        "integrity_manifest": checkpoint_integrity_path(path).resolve().as_posix(),
+        **integrity,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Audit end-to-end completion of large-scale CoFiTok generation."
@@ -1240,6 +1374,14 @@ def main() -> None:
         full_training_monitor=_read_optional(
             output_root / "generation_full_matched_300k_monitor.json"
         ),
+        full_checkpoint_files={
+            "cofitok": _verify_checkpoint_file(
+                cofitok_full / "checkpoint_step_00300000.pt"
+            ),
+            "dense_identity": _verify_checkpoint_file(
+                dense_full / "checkpoint_step_00300000.pt"
+            ),
+        },
         scaling_gate=_read_optional(ten_root / "promotion_gate.json"),
         cofitok_full_training=_read_optional(cofitok_full / "training_report.json"),
         dense_full_training=_read_optional(dense_full / "training_report.json"),
@@ -1268,6 +1410,16 @@ def main() -> None:
             ),
             "dense_identity_smoke": _read_optional(
                 full_root / "exports/dense_export_inference_smoke.json"
+            ),
+        },
+        inference_artifact_files={
+            "cofitok": _verify_inference_artifact_file(
+                output_root
+                / "exports/imagenet256_full_300k/cofitok_k8_ema_inference.pt"
+            ),
+            "dense_identity": _verify_inference_artifact_file(
+                output_root
+                / "exports/imagenet256_full_300k/dense_identity_ema_inference.pt"
             ),
         },
         milestones={

@@ -48,3 +48,9 @@ Every smoke PNG is atomically published and hashed. Completion requires export
 size to be smaller than its training checkpoint, source SHA agreement with the
 formal 50K evidence, artifact/preflight/smoke SHA agreement, exported-EMA load,
 and the exact expected smoke output counts.
+
+The terminal audit also opens the fixed deployment paths and runs the artifact
+integrity verifier again. A stale report cannot mask a deleted, truncated, or
+replaced EMA artifact. The same audit independently rehashes the two physical
+step-300K exact-resume checkpoints, preserving both deployable inference and
+reproducible training assets.

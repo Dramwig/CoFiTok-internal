@@ -372,6 +372,12 @@ and short DDIM smoke PNGs are required by completion. These artifacts are smalle
 inference copies and never replace exact-resume training checkpoints. See
 `docs/records/2026-07-12_deployable_ema_inference_artifact.md`.
 
+The terminal completion audit does not trust those JSON reports alone. It
+rehashes both physical step-300K exact-resume checkpoints through their
+integrity sidecars and separately rehashes both exported EMA artifacts.
+Missing, truncated, or replaced model bytes fail the named checkpoint or
+deployment-artifact gate even when an older report still claims completion.
+
 Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies
 strictly increasing finite metrics, resume-aware timing segments, checkpoint
