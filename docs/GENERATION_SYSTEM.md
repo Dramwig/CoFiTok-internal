@@ -321,6 +321,15 @@ and unaugmented. The pinned 10% legacy pair keeps its resolved default of `0.0`,
 so this upgrade does not alter the active training protocol. See
 `docs/records/2026-07-13_generation_exact_resume_horizontal_flip.md`.
 
+Production scalable U-Net token heads are zero initialized. Both the K-token
+CoFiTok predictor and the one-head dense control therefore begin with an exact
+zero epsilon prediction instead of method-dependent random output variance.
+Restricted synthesis weights remain nonzero, so the first loss backward pass
+reaches every token head and training leaves the zero state immediately. This
+initialization affects only fresh training; loading an existing checkpoint
+strictly replaces all initialized state. See
+`docs/records/2026-07-13_generation_zero_initialized_output_heads.md`.
+
 Formal 10K and 50K sampling also selects one shared batch from
 `16,32,64,128`. Both checkpoints run repeated synchronized EMA/CFG forwards;
 eligible candidates must pass for both methods below 90% VRAM, and selection

@@ -220,6 +220,9 @@ class ScalableUNetTokenPredictor(nn.Module):
         self.token_heads = nn.ModuleList(
             [nn.Conv2d(current_channels, token_channels, kernel_size=1) for _ in range(token_count)]
         )
+        for head in self.token_heads:
+            nn.init.zeros_(head.weight)
+            nn.init.zeros_(head.bias)
         self.feedback = (
             nn.ModuleList(
                 [nn.Conv2d(token_channels, current_channels, kernel_size=1) for _ in range(token_count - 1)]

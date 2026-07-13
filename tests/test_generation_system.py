@@ -1,5 +1,6 @@
 import json
 import random
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -45,6 +46,7 @@ def test_scalable_predictor_keeps_conditioning_inside_tk() -> None:
     model = CoFiTokTiny(_small_model_config()).eval()
     with torch.no_grad():
         model.predictor.encoder[0].blocks[0].out[-1].weight.normal_(std=0.01)
+        model.predictor.token_heads[0].weight.normal_(std=0.01)
     images = torch.randn(2, 3, 16, 16)
     timesteps = torch.tensor([2, 3])
     labels = torch.tensor([1, 2])
@@ -69,6 +71,45 @@ def test_scalable_predictor_keeps_conditioning_inside_tk() -> None:
     )
     zero_components = model.synthesis.zero_components_like(output.tokens)
     assert all(torch.count_nonzero(component) == 0 for component in zero_components)
+
+
+@pytest.mark.parametrize("synthesis_mode", ["restricted", "dense_identity"])
+def test_scalable_generation_heads_start_at_zero_and_receive_gradient(
+    synthesis_mode: str,
+) -> None:
+    config = _small_model_config()
+    if synthesis_mode == "dense_identity":
+        config = replace(
+            config,
+            token_count=1,
+            token_channels=3,
+            predictor_use_feedback=False,
+            synthesis_mode="dense_identity",
+            synthesis_active_token_channels=[],
+        )
+    model = CoFiTokTiny(config)
+    images = torch.randn(2, 3, 16, 16)
+    timesteps = torch.tensor([2, 3])
+    labels = torch.tensor([1, 2])
+    target = torch.randn_like(images)
+
+    initial = model(images, timesteps, class_labels=labels)
+    assert torch.count_nonzero(initial.epsilon) == 0
+    assert all(torch.count_nonzero(head.weight) == 0 for head in model.predictor.token_heads)
+    assert all(torch.count_nonzero(head.bias) == 0 for head in model.predictor.token_heads)
+
+    torch.nn.functional.mse_loss(initial.epsilon, target).backward()
+    head_gradient = sum(
+        float(head.weight.grad.abs().sum())
+        for head in model.predictor.token_heads
+        if head.weight.grad is not None
+    )
+    assert head_gradient > 0.0
+
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+    optimizer.step()
+    learned = model(images, timesteps, class_labels=labels)
+    assert torch.count_nonzero(learned.epsilon) > 0
 
 
 def test_generation_configs_form_a_matched_backbone_pair() -> None:
