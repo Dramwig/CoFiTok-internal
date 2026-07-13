@@ -59,8 +59,7 @@ if [[ "$current_commit" == "$EXPECTED_COMMIT" ]]; then
   prevalidation_root="$(mktemp -d /tmp/cofitok-generation-prevalidation.XXXXXX)"
   git archive "$TARGET_COMMIT" -- \
     scripts/validate_generation_training_pair.py \
-    src/cofitok/__init__.py \
-    src/cofitok/generation_pair.py | tar -x -C "$prevalidation_root"
+    src/cofitok | tar -x -C "$prevalidation_root"
   validator="$prevalidation_root/scripts/validate_generation_training_pair.py"
   validator_pythonpath="$prevalidation_root/src"
 else

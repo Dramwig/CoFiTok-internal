@@ -81,7 +81,7 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert '"$current_commit" == "$EXPECTED_COMMIT"' in deployer
     assert 'git archive "$TARGET_COMMIT"' in deployer
     assert "scripts/validate_generation_training_pair.py" in deployer
-    assert "src/cofitok/generation_pair.py" in deployer
+    assert "src/cofitok | tar -x" in deployer
     assert 'PYTHONPATH="$validator_pythonpath" python "$validator"' in deployer
     assert "mktemp -d /tmp/cofitok-generation-prevalidation" in deployer
     assert "trap cleanup_prevalidation EXIT" in deployer

@@ -16,10 +16,10 @@ the pinned training commit to the clean local `scale/generative-system` HEAD
 and delegates the state-changing work to
 `artifacts/runbooks/deploy_generation_posttraining_pipeline_remote.sh`. The
 remote helper verifies and fetches the bundle objects without moving HEAD,
-then extracts `scripts/validate_generation_training_pair.py` and
-`src/cofitok/generation_pair.py` directly from the exact target commit into a
-temporary isolated Python path. Pre-deployment and post-deployment checks thus
-use the same target contract even while the worktree is still pinned.
+then extracts `scripts/validate_generation_training_pair.py` and the complete
+`src/cofitok/` package directly from the exact target commit into a temporary
+isolated Python path. Pre-deployment and post-deployment checks thus use the
+same target contract even while the worktree is still pinned.
 
 The remote helper refuses deployment unless:
 
@@ -90,7 +90,9 @@ An exact pre-deployment rehearsal on 2026-07-13 reproduced that copying only
 the target validator to `/tmp` and running it from the pinned worktree failed
 with `ModuleNotFoundError: No module named 'cofitok'`; the target validator also
 depends on the post-pinned `cofitok.generation_pair` module. The deployment
-helper now fetches verified bundle objects first, archives both target files
-into a temporary tree, and supplies that tree as `PYTHONPATH`. Fetching adds
+helper now fetches verified bundle objects first, archives the target validator
+and complete `src/cofitok/` package into a temporary tree, and supplies that
+tree as `PYTHONPATH`. The full package is required because importing a submodule
+first executes the target package `__init__` and its imports. Fetching adds
 objects but does not move HEAD; only a successful pair validation can reach the
 existing untracked-conflict check and fast-forward merge.
