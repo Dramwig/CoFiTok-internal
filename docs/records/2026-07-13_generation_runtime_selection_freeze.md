@@ -43,5 +43,16 @@ environment, and `checkpoint_written=false` role.
 
 Focused tests cover pre-training selection, state-triggered read-only reuse,
 missing-selection failure, candidate/contract/environment drift, benchmark
-config tampering, and terminal lock rejection. Full local and isolated Linux
-suite counts are recorded with the implementation commit after final validation.
+config tampering, and terminal lock rejection.
+
+- implementation commit: `3bd4da72d3e58a9787a88db3b29245d6cc7dd615`;
+- complete local suite: `549/549` passed;
+- complete isolated Linux suite in the real sibling-`paper/` layout: `549/549`
+  passed;
+- tracked Linux runbook syntax audit: `40/40` passed;
+- formal remote target-added-path scan: `149` paths, `0` conflicts;
+- pinned `781a01444fddbf0d48a427ba58bdeed50167b5be` to implementation
+  bundle: `424,568` bytes, SHA256
+  `9d37c9a7917c3fd93a3f8f1688f9960c4071f7520d599a8b6906ba96691f467f`;
+- formal remote HEAD remained pinned at `781a01444fddbf0d48a427ba58bdeed50167b5be`
+  with a clean tracked worktree before and after verification.
