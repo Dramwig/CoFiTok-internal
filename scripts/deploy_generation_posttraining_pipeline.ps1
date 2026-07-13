@@ -53,8 +53,24 @@ try {
         if (Test-Path -LiteralPath $Bundle) {
             Remove-Item -LiteralPath $Bundle -Force
         }
-        Invoke-CheckedCommand git @("bundle", "create", $Bundle, "HEAD")
+        # The remote already owns the pinned training commit, so transfer only
+        # the verified fast-forward range needed for the generation upgrade.
+        Invoke-CheckedCommand git @(
+            "bundle",
+            "create",
+            $Bundle,
+            "HEAD",
+            "^$ExpectedRemoteCommit"
+        )
         Invoke-CheckedCommand git @("bundle", "verify", $Bundle)
+        $BundleHeads = @(& git bundle list-heads $Bundle)
+        if ($LASTEXITCODE -ne 0 -or $BundleHeads.Count -ne 1) {
+            throw "Upgrade bundle must advertise exactly one head."
+        }
+        $BundleHead = ($BundleHeads[0] -split "\s+", 2)[0]
+        if ($BundleHead -ne $TargetCommit) {
+            throw "Upgrade bundle advertises '$BundleHead' instead of '$TargetCommit'."
+        }
         Invoke-CheckedCommand scp @("-O", $Bundle, "${HostAlias}:${RemoteBundle}")
         Invoke-CheckedCommand scp @("-O", $Helper, "${HostAlias}:${RemoteHelper}")
         Invoke-CheckedCommand scp @("-O", $Validator, "${HostAlias}:${RemoteValidator}")

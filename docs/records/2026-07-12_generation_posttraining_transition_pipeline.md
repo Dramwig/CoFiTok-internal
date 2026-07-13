@@ -11,8 +11,9 @@ code update while either training process is active.
 ## Deployment contract
 
 `scripts/deploy_generation_posttraining_pipeline.ps1` is the only supported
-transition command. It creates a bundle from the clean local
-`scale/generative-system` HEAD and delegates the state-changing work to
+transition command. It creates a prerequisite-aware bundle for the range from
+the pinned training commit to the clean local `scale/generative-system` HEAD
+and delegates the state-changing work to
 `artifacts/runbooks/deploy_generation_posttraining_pipeline_remote.sh`. The
 local command also transfers `scripts/validate_generation_training_pair.py`
 to `/tmp`, so pre-deployment and post-deployment checks use the same testable
@@ -70,3 +71,13 @@ hold is therefore visible and cannot be mistaken for system readiness.
 
 The deployment command must not be run while the active matched 50K queue is
 still training.
+
+## Incremental bundle rehearsal
+
+On 2026-07-13, a local rehearsal built and verified the exact bundle range
+`781a01444fddbf0d48a427ba58bdeed50167b5be..9bca00015ab35f22369451cf8b3db5501765199a`.
+The bundle was 238,044 bytes, advertised exactly the target commit as `HEAD`,
+and declared the pinned commit as its required prerequisite. The earlier
+complete-history rehearsal was 85,619,213 bytes. The deployer now enforces the
+incremental form and verifies the sole advertised head before any transfer;
+the remote helper independently verifies the prerequisite before fetching.

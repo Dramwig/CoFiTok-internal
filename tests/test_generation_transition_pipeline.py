@@ -114,7 +114,12 @@ def test_local_deployer_pins_current_training_revision_and_builds_bundle() -> No
     assert "781a01444fddbf0d48a427ba58bdeed50167b5be" in deployer
     assert '"scale/generative-system"' in deployer
     assert "--untracked-files=no" in deployer
-    assert '"bundle", "create"' in deployer
+    assert '"bundle",' in deployer
+    assert '"create",' in deployer
+    assert '"^$ExpectedRemoteCommit"' in deployer
+    assert "git bundle list-heads" in deployer
+    assert "BundleHeads.Count -ne 1" in deployer
+    assert "$BundleHead -ne $TargetCommit" in deployer
     assert "deploy_generation_posttraining_pipeline_remote.sh" in deployer
     assert "validate_generation_training_pair.py" in deployer
     assert "$RemoteValidator" in deployer

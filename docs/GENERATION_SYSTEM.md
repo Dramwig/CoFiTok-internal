@@ -207,6 +207,12 @@ gate decisions in order. A held gate or interrupted stage is recorded as a
 failure rather than reported as generation readiness.
 The final completion audit requires the deployment receipt, so changing remote
 HEAD alone cannot prove a controlled revision transition.
+The local bundle is prerequisite-aware: it advertises only the upgrade HEAD
+and excludes history reachable from the pinned training commit. The local
+deployer verifies the single advertised head before transfer, while the remote
+`git bundle verify` proves that the pinned prerequisite exists before fetch.
+This preserves the same fast-forward trust boundary without retransmitting the
+repository's full historical object graph.
 
 While the pinned legacy 10% pair runs, a separate read-only monitor may be
 launched from `/tmp` without changing the training revision. It atomically
