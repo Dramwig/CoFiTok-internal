@@ -34,6 +34,8 @@ The audit requires all of the following:
 - matching canonical runtime-environment fingerprints in both full training
   reports and latest checkpoint pointers, with required Python, package,
   PyTorch/CUDA/cuDNN, GPU, and project-lock provenance;
+- latest full checkpoint pointers bound to the same clean deployed Git revision,
+  branch, and tracked state as their training reports;
 - a revision-bound shared runtime selection whose microbatch and accumulation
   are present in both 300K training reports and preserve effective batch 64;
 - complete training audits with validation events and protected 50K, 100K,

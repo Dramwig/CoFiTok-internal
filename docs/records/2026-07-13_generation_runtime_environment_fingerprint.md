@@ -22,10 +22,17 @@ the current environment before loading model, EMA, optimizer, scheduler, scaler,
 or RNG state. A mismatch fails with exact field paths and cannot advance metrics
 or write a new checkpoint.
 
+The same pre-deserialization boundary now binds Git revision, branch, and tracked
+dirty state in checkpoint extra state, integrity sidecar, and `latest.json`.
+Resume therefore cannot silently continue a trajectory under another source
+revision even when the resolved training config and package environment match.
+
 The final completion audit independently recomputes both full-training report
 hashes, requires the latest checkpoint pointers to bind them, verifies required
 language/framework/package/project-file fields, and requires CoFiTok and dense to
-have the same environment SHA.
+have the same environment SHA. A separate completion check verifies that both
+latest checkpoint pointers bind the clean deployed `scale/generative-system`
+revision reported by their training runs.
 
 This rule applies to upgrade-branch full 300K checkpoints. The pinned 10% legacy
 checkpoints are migrated only for byte integrity and are not rewritten. Exported

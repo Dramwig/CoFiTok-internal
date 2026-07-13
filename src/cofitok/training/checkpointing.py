@@ -43,6 +43,25 @@ def _config_mismatch_paths(
     return [] if expected == actual else [path]
 
 
+def _validate_git_provenance(
+    provenance: Mapping[str, Any],
+    *,
+    label: str,
+) -> dict[str, Any]:
+    required = {"revision", "branch", "dirty"}
+    if set(provenance) != required:
+        raise ValueError(f"{label} must contain exactly: {sorted(required)}")
+    resolved = dict(provenance)
+    if (
+        not isinstance(resolved["revision"], str)
+        or not resolved["revision"]
+        or not isinstance(resolved["branch"], str)
+        or not isinstance(resolved["dirty"], bool)
+    ):
+        raise ValueError(f"{label} is malformed")
+    return resolved
+
+
 def checkpoint_integrity_path(path: str | Path) -> Path:
     checkpoint = Path(path)
     return checkpoint.with_name(f"{checkpoint.name}.integrity.json")
@@ -74,6 +93,17 @@ def verify_training_checkpoint(path: str | Path) -> dict[str, Any]:
     runtime_environment_sha = integrity.get("runtime_environment_sha256")
     if runtime_environment_sha is not None and len(str(runtime_environment_sha)) != 64:
         raise ValueError("Checkpoint runtime environment SHA256 is malformed")
+    git_keys = {"git_revision", "git_branch", "git_dirty"}
+    present_git_keys = git_keys & integrity.keys()
+    if present_git_keys and present_git_keys != git_keys:
+        raise ValueError("Checkpoint Git integrity metadata is incomplete")
+    if present_git_keys and (
+        not isinstance(integrity["git_revision"], str)
+        or not integrity["git_revision"]
+        or not isinstance(integrity["git_branch"], str)
+        or not isinstance(integrity["git_dirty"], bool)
+    ):
+        raise ValueError("Checkpoint Git integrity metadata is malformed")
     return integrity
 
 
@@ -159,6 +189,9 @@ def resolve_latest_checkpoint(directory: str | Path) -> Path:
         expected_pointer["runtime_environment_sha256"] = integrity[
             "runtime_environment_sha256"
         ]
+    for key in ("git_revision", "git_branch", "git_dirty"):
+        if key in integrity:
+            expected_pointer[key] = integrity[key]
     for key, expected in expected_pointer.items():
         if latest.get(key) != expected:
             raise ValueError(f"latest.json {key} does not match checkpoint integrity metadata")
@@ -212,6 +245,15 @@ def save_training_checkpoint(
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     resolved_extra_state = dict(extra_state or {})
+    git_provenance = resolved_extra_state.get("git")
+    if git_provenance is not None and not isinstance(git_provenance, Mapping):
+        raise ValueError("Git checkpoint state must be a mapping")
+    if git_provenance is not None:
+        git_provenance = _validate_git_provenance(
+            git_provenance,
+            label="Git checkpoint state",
+        )
+        resolved_extra_state["git"] = git_provenance
     runtime_environment = resolved_extra_state.get("runtime_environment")
     runtime_environment_sha = None
     if runtime_environment is not None:
@@ -253,6 +295,14 @@ def save_training_checkpoint(
     }
     if runtime_environment_sha is not None:
         integrity["runtime_environment_sha256"] = runtime_environment_sha
+    if git_provenance is not None:
+        integrity.update(
+            {
+                "git_revision": git_provenance.get("revision"),
+                "git_branch": git_provenance.get("branch"),
+                "git_dirty": git_provenance.get("dirty"),
+            }
+        )
     integrity_path = checkpoint_integrity_path(target)
     write_json_report(integrity_path, integrity)
     write_json_report(
@@ -274,11 +324,25 @@ def load_training_checkpoint(
     verify_integrity: bool = True,
     expected_config: Mapping[str, Any] | None = None,
     expected_runtime_environment: Mapping[str, Any] | None = None,
+    expected_git_provenance: Mapping[str, Any] | None = None,
     map_location: str | torch.device = "cpu",
 ) -> dict[str, Any]:
     integrity = None
     if verify_integrity:
         integrity = verify_training_checkpoint(path)
+    if expected_git_provenance is not None:
+        expected_git_provenance = _validate_git_provenance(
+            expected_git_provenance,
+            label="Expected Git provenance",
+        )
+        if integrity is not None:
+            integrity_git = {
+                "revision": integrity.get("git_revision"),
+                "branch": integrity.get("git_branch"),
+                "dirty": integrity.get("git_dirty"),
+            }
+            if expected_git_provenance != integrity_git:
+                raise ValueError("Checkpoint Git provenance differs from expected revision")
     checkpoint = torch.load(path, map_location=map_location, weights_only=False)
     if checkpoint.get("format_version") != CHECKPOINT_FORMAT_VERSION:
         raise ValueError(f"Unsupported checkpoint format: {checkpoint.get('format_version')}")
@@ -316,6 +380,29 @@ def load_training_checkpoint(
             if len(mismatches) > 8:
                 preview += f", ... ({len(mismatches)} fields)"
             raise ValueError(f"Checkpoint runtime environment mismatch at: {preview}")
+    if expected_git_provenance is not None:
+        extra_state = checkpoint.get("extra_state")
+        if not isinstance(extra_state, Mapping):
+            raise ValueError("Checkpoint is missing exact-resume extra state")
+        checkpoint_git = extra_state.get("git")
+        if not isinstance(checkpoint_git, Mapping):
+            raise ValueError("Checkpoint is missing its exact-resume Git provenance")
+        mismatches = _config_mismatch_paths(
+            expected_git_provenance,
+            checkpoint_git,
+            path="git",
+        )
+        if mismatches:
+            preview = ", ".join(mismatches[:8])
+            raise ValueError(f"Checkpoint Git provenance mismatch at: {preview}")
+        if integrity is not None:
+            integrity_git = {
+                "revision": integrity.get("git_revision"),
+                "branch": integrity.get("git_branch"),
+                "dirty": integrity.get("git_dirty"),
+            }
+            if dict(checkpoint_git) != integrity_git:
+                raise ValueError("Checkpoint Git provenance differs from integrity metadata")
     if integrity is not None:
         if int(checkpoint.get("step", -1)) != int(integrity["step"]):
             raise ValueError("Checkpoint payload step does not match integrity metadata")

@@ -360,7 +360,9 @@ Every upgrade-branch training checkpoint also binds a canonical runtime
 environment fingerprint across payload, integrity sidecar, latest pointer, and
 training report. Exact resume rejects Python, package, PyTorch/CUDA/cuDNN/driver,
 GPU, backend, environment-variable, or project-lock drift before deserializing
-state. The final audit requires identical CoFiTok/dense environment SHA values.
+state. Git revision, branch, and tracked state are bound at the same checkpoint
+trust boundary. The final audit requires identical CoFiTok/dense environment SHA
+values and checkpoint pointers from the clean deployed revision.
 See `docs/records/2026-07-13_generation_runtime_environment_fingerprint.md`.
 
 After the final gate, both methods export separate EMA-only deployment

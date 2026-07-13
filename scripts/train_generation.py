@@ -308,6 +308,7 @@ def main() -> None:
         project_root=PROJECT_ROOT,
     )
     runtime_environment_sha = runtime_environment_sha256(runtime_environment)
+    git_provenance = _git_revision()
 
     train_loader, sampler = _build_train_loader(config)
     eval_loader = build_dataloader(
@@ -352,6 +353,7 @@ def main() -> None:
             restore_rng=True,
             expected_config=config_to_dict(config),
             expected_runtime_environment=runtime_environment,
+            expected_git_provenance=git_provenance,
             map_location=device,
         )
         start_step = int(checkpoint["step"])
@@ -388,7 +390,7 @@ def main() -> None:
         "config": config_to_dict(config),
         "config_path": str(Path(args.config).resolve()),
         "output_dir": str(output_dir.resolve()),
-        "git": _git_revision(),
+        "git": git_provenance,
         "torch_version": torch.__version__,
         "cuda_version": torch.version.cuda,
         "device": str(device),
@@ -538,6 +540,7 @@ def main() -> None:
                 metrics=last_metrics,
                 extra_state={
                     "sampler": sampler.state_dict(),
+                    "git": git_provenance,
                     "runtime_environment": runtime_environment,
                     "runtime_environment_sha256": runtime_environment_sha,
                     "cumulative_elapsed_seconds": (

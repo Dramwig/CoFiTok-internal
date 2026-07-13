@@ -74,6 +74,9 @@ def _training(
             "checkpoint_sha256": checkpoint_sha,
             "integrity_manifest": f"checkpoint_step_{steps:08d}.pt.integrity.json",
             "runtime_environment_sha256": environment_sha,
+            "git_revision": revision,
+            "git_branch": "scale/generative-system",
+            "git_dirty": False,
         },
         "config": {
             "data": {"dataset": dataset, "batch_size": 16},
@@ -635,7 +638,7 @@ def test_completion_audit_requires_every_large_scale_artifact() -> None:
     assert report["complete"] is True
     assert report["failed_checks"] == []
     assert report["missing_checks"] == []
-    assert len(report["checks"]) == 16
+    assert len(report["checks"]) == 17
 
 
 def test_completion_audit_requires_controlled_revision_transition() -> None:
@@ -659,6 +662,7 @@ def test_completion_audit_reports_missing_work_as_in_progress() -> None:
     assert report["missing_checks"] == [
         "full_matched_training",
         "full_training_runtime_environment",
+        "full_training_checkpoint_code_provenance",
         "full_runtime_selection",
         "formal_50k_generation",
         "final_comparison_report",
@@ -915,6 +919,18 @@ def test_completion_audit_rejects_matched_runtime_environment_drift() -> None:
 
     assert completion["status"] == "failed"
     assert completion["failed_checks"] == ["full_training_runtime_environment"]
+
+
+def test_completion_audit_rejects_checkpoint_from_another_revision() -> None:
+    kwargs = _kwargs()
+    kwargs["dense_full_training"]["latest_checkpoint"]["git_revision"] = "c" * 40
+
+    completion = build_completion_audit(**kwargs)
+
+    assert completion["status"] == "failed"
+    assert completion["failed_checks"] == [
+        "full_training_checkpoint_code_provenance"
+    ]
 
 
 def test_completion_audit_rejects_export_from_stale_training_checkpoint() -> None:

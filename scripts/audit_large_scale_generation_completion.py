@@ -131,6 +131,36 @@ def _runtime_environment_evidence(
     return evidence
 
 
+def _checkpoint_code_provenance_evidence(
+    training_reports: dict[str, dict[str, Any]],
+    *,
+    expected_revision: str,
+) -> dict[str, Any]:
+    evidence = {}
+    for method, report in training_reports.items():
+        git = report.get("git", {})
+        latest = report.get("latest_checkpoint", {})
+        if (
+            git.get("revision") != expected_revision
+            or git.get("branch") != "scale/generative-system"
+            or git.get("dirty") is not False
+        ):
+            raise ValueError(f"{method} training Git provenance is invalid")
+        if (
+            latest.get("git_revision") != expected_revision
+            or latest.get("git_branch") != "scale/generative-system"
+            or latest.get("git_dirty") is not False
+        ):
+            raise ValueError(f"{method} checkpoint pointer Git binding is invalid")
+        evidence[method] = {
+            "revision": expected_revision,
+            "branch": "scale/generative-system",
+            "tracked_dirty": False,
+            "checkpoint": latest.get("checkpoint"),
+        }
+    return evidence
+
+
 def _runtime_selection_evidence(
     selection: dict[str, Any],
     training_reports: dict[str, dict[str, Any]],
@@ -984,6 +1014,19 @@ def build_completion_audit(
                     "cofitok": cofitok_full_training,
                     "dense_identity": dense_full_training,
                 }
+            ),
+        )
+    )
+    checks.append(
+        _check(
+            "full_training_checkpoint_code_provenance",
+            [cofitok_full_training, dense_full_training],
+            lambda: _checkpoint_code_provenance_evidence(
+                {
+                    "cofitok": cofitok_full_training,
+                    "dense_identity": dense_full_training,
+                },
+                expected_revision=expected_full_revision,
             ),
         )
     )

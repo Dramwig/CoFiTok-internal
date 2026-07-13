@@ -198,6 +198,20 @@ def test_checkpoint_roundtrip_restores_all_training_and_rng_state(tmp_path) -> N
     random.seed(123)
     np.random.seed(123)
     torch.manual_seed(123)
+    invalid_path = tmp_path / "invalid_checkpoint.pt"
+    with pytest.raises(ValueError, match="must contain exactly"):
+        save_training_checkpoint(
+            invalid_path,
+            model=model,
+            ema=ema,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            scaler=None,
+            step=1,
+            config={"name": "test"},
+            extra_state={"git": {"revision": "a" * 40}},
+        )
+    assert not invalid_path.exists()
     path = tmp_path / "checkpoint_step_00000001.pt"
     save_training_checkpoint(
         path,
@@ -208,7 +222,14 @@ def test_checkpoint_roundtrip_restores_all_training_and_rng_state(tmp_path) -> N
         scaler=None,
         step=1,
         config={"name": "test"},
-        extra_state={"marker": 9},
+        extra_state={
+            "marker": 9,
+            "git": {
+                "revision": "a" * 40,
+                "branch": "scale/generative-system",
+                "dirty": False,
+            },
+        },
     )
     integrity = verify_training_checkpoint(path)
     latest = json.loads((tmp_path / "latest.json").read_text(encoding="utf-8"))
@@ -217,6 +238,7 @@ def test_checkpoint_roundtrip_restores_all_training_and_rng_state(tmp_path) -> N
     assert len(integrity["checkpoint_sha256"]) == 64
     assert latest["checkpoint_sha256"] == integrity["checkpoint_sha256"]
     assert latest["integrity_manifest"] == checkpoint_integrity_path(path).name
+    assert latest["git_revision"] == "a" * 40
     assert resolve_latest_checkpoint(tmp_path) == path
     expected = (random.random(), float(np.random.rand()), float(torch.rand(())))
 
@@ -237,6 +259,18 @@ def test_checkpoint_roundtrip_restores_all_training_and_rng_state(tmp_path) -> N
             path,
             model=restored_model,
             expected_config={"name": "changed"},
+            restore_rng=False,
+        )
+    with pytest.raises(ValueError, match="differs from expected revision"):
+        load_training_checkpoint(
+            path,
+            model=restored_model,
+            expected_config={"name": "test"},
+            expected_git_provenance={
+                "revision": "b" * 40,
+                "branch": "scale/generative-system",
+                "dirty": False,
+            },
             restore_rng=False,
         )
     for pristine, current in zip(

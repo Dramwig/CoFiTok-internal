@@ -139,10 +139,15 @@ def test_resume_rejects_runtime_environment_drift_before_advancing(tmp_path) -> 
     )
     latest = json.loads((output / "latest.json").read_text(encoding="utf-8"))
     environment_sha = checkpoint["extra_state"]["runtime_environment_sha256"]
+    checkpoint_git = checkpoint["extra_state"]["git"]
 
     assert checkpoint["extra_state"]["runtime_environment"]["schema_version"] == 1
     assert integrity["runtime_environment_sha256"] == environment_sha
     assert latest["runtime_environment_sha256"] == environment_sha
+    assert integrity["git_revision"] == checkpoint_git["revision"]
+    assert integrity["git_branch"] == checkpoint_git["branch"]
+    assert integrity["git_dirty"] == checkpoint_git["dirty"]
+    assert latest["git_revision"] == checkpoint_git["revision"]
 
     with pytest.raises(subprocess.CalledProcessError) as error:
         _run(
