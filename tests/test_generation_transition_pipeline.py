@@ -79,9 +79,22 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert "git diff --cached --quiet" in deployer
     assert '"$current_commit" != "$TARGET_COMMIT"' in deployer
     assert '"$current_commit" == "$EXPECTED_COMMIT"' in deployer
-    assert 'python "$VALIDATOR"' in deployer
+    assert 'git archive "$TARGET_COMMIT"' in deployer
+    assert "scripts/validate_generation_training_pair.py" in deployer
+    assert "src/cofitok/generation_pair.py" in deployer
+    assert 'PYTHONPATH="$validator_pythonpath" python "$validator"' in deployer
+    assert "mktemp -d /tmp/cofitok-generation-prevalidation" in deployer
+    assert "trap cleanup_prevalidation EXIT" in deployer
     assert '--expected-revision "$EXPECTED_COMMIT"' in deployer
-    assert deployer.index("conda activate pf-vlm") < deployer.index('python "$VALIDATOR"')
+    assert deployer.index("git fetch \"$BUNDLE\" HEAD") < deployer.index(
+        'PYTHONPATH="$validator_pythonpath" python "$validator"'
+    )
+    assert deployer.index("conda activate pf-vlm") < deployer.index(
+        'PYTHONPATH="$validator_pythonpath" python "$validator"'
+    )
+    assert deployer.index(
+        'PYTHONPATH="$validator_pythonpath" python "$validator"'
+    ) < deployer.index("git merge --ff-only FETCH_HEAD")
     assert "pgrep -af '[s]cripts/train_generation.py" in deployer
     assert "git bundle verify" in deployer
     assert "git ls-files --others --exclude-standard" in deployer
@@ -121,6 +134,6 @@ def test_local_deployer_pins_current_training_revision_and_builds_bundle() -> No
     assert "BundleHeads.Count -ne 1" in deployer
     assert "$BundleHead -ne $TargetCommit" in deployer
     assert "deploy_generation_posttraining_pipeline_remote.sh" in deployer
-    assert "validate_generation_training_pair.py" in deployer
-    assert "$RemoteValidator" in deployer
+    assert "$RemoteValidator" not in deployer
+    assert "$Validator" not in deployer
     assert "ExpectedRemoteCommit" in deployer

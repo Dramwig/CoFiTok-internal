@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if (( $# != 4 )); then
-  printf 'usage: %s BUNDLE EXPECTED_COMMIT TARGET_COMMIT VALIDATOR\n' "$0" >&2
+if (( $# != 3 )); then
+  printf 'usage: %s BUNDLE EXPECTED_COMMIT TARGET_COMMIT\n' "$0" >&2
   exit 64
 fi
 
 BUNDLE="$1"
 EXPECTED_COMMIT="$2"
 TARGET_COMMIT="$3"
-VALIDATOR="$4"
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
 PIPELINE=artifacts/runbooks/generation_complete_pipeline_after_10pct.sh
@@ -39,14 +38,40 @@ if [[ "$current_commit" == "$EXPECTED_COMMIT" && ! -f "$BUNDLE" ]]; then
   printf 'upgrade bundle is missing: %s\n' "$BUNDLE" >&2
   exit 67
 fi
-if [[ ! -f "$VALIDATOR" ]]; then
-  printf 'training-pair validator is missing: %s\n' "$VALIDATOR" >&2
-  exit 74
+
+prevalidation_root=""
+cleanup_prevalidation() {
+  if [[ -n "$prevalidation_root" && -d "$prevalidation_root" ]]; then
+    rm -rf -- "$prevalidation_root"
+  fi
+}
+trap cleanup_prevalidation EXIT
+
+if [[ "$current_commit" == "$EXPECTED_COMMIT" ]]; then
+  git bundle verify "$BUNDLE"
+  git fetch "$BUNDLE" HEAD
+  fetched_commit="$(git rev-parse FETCH_HEAD)"
+  if [[ "$fetched_commit" != "$TARGET_COMMIT" ]]; then
+    printf 'bundle resolved to %s instead of target %s\n' \
+      "$fetched_commit" "$TARGET_COMMIT" >&2
+    exit 70
+  fi
+  prevalidation_root="$(mktemp -d /tmp/cofitok-generation-prevalidation.XXXXXX)"
+  git archive "$TARGET_COMMIT" -- \
+    scripts/validate_generation_training_pair.py \
+    src/cofitok/__init__.py \
+    src/cofitok/generation_pair.py | tar -x -C "$prevalidation_root"
+  validator="$prevalidation_root/scripts/validate_generation_training_pair.py"
+  validator_pythonpath="$prevalidation_root/src"
+else
+  fetched_commit="$TARGET_COMMIT"
+  validator="scripts/validate_generation_training_pair.py"
+  validator_pythonpath="src"
 fi
 
 mkdir -p "$OUTPUT_ROOT"
 pair_validation_temporary="${PAIR_VALIDATION}.tmp.$$"
-if python "$VALIDATOR" \
+if PYTHONPATH="$validator_pythonpath" python "$validator" \
     --cofitok-training "$COFITOK_REPORT" \
     --dense-training "$DENSE_REPORT" \
     --expected-steps 50000 --expected-revision "$EXPECTED_COMMIT" \
@@ -77,14 +102,6 @@ if [[ -f "$PID_FILE" ]]; then
 fi
 
 if [[ "$current_commit" == "$EXPECTED_COMMIT" ]]; then
-  git bundle verify "$BUNDLE"
-  git fetch "$BUNDLE" HEAD
-  fetched_commit="$(git rev-parse FETCH_HEAD)"
-  if [[ "$fetched_commit" != "$TARGET_COMMIT" ]]; then
-    printf 'bundle resolved to %s instead of target %s\n' \
-      "$fetched_commit" "$TARGET_COMMIT" >&2
-    exit 70
-  fi
   mapfile -t untracked_conflicts < <(
     comm -12 \
       <(git ls-files --others --exclude-standard | LC_ALL=C sort) \

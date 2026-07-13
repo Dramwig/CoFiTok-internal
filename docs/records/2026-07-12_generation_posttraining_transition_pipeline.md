@@ -15,9 +15,11 @@ transition command. It creates a prerequisite-aware bundle for the range from
 the pinned training commit to the clean local `scale/generative-system` HEAD
 and delegates the state-changing work to
 `artifacts/runbooks/deploy_generation_posttraining_pipeline_remote.sh`. The
-local command also transfers `scripts/validate_generation_training_pair.py`
-to `/tmp`, so pre-deployment and post-deployment checks use the same testable
-training-report contract even while the remote repository is still pinned.
+remote helper verifies and fetches the bundle objects without moving HEAD,
+then extracts `scripts/validate_generation_training_pair.py` and
+`src/cofitok/generation_pair.py` directly from the exact target commit into a
+temporary isolated Python path. Pre-deployment and post-deployment checks thus
+use the same target contract even while the worktree is still pinned.
 
 The remote helper refuses deployment unless:
 
@@ -81,3 +83,14 @@ and declared the pinned commit as its required prerequisite. The earlier
 complete-history rehearsal was 85,619,213 bytes. The deployer now enforces the
 incremental form and verifies the sole advertised head before any transfer;
 the remote helper independently verifies the prerequisite before fetching.
+
+## Pinned-worktree validator rehearsal
+
+An exact pre-deployment rehearsal on 2026-07-13 reproduced that copying only
+the target validator to `/tmp` and running it from the pinned worktree failed
+with `ModuleNotFoundError: No module named 'cofitok'`; the target validator also
+depends on the post-pinned `cofitok.generation_pair` module. The deployment
+helper now fetches verified bundle objects first, archives both target files
+into a temporary tree, and supplies that tree as `PYTHONPATH`. Fetching adds
+objects but does not move HEAD; only a successful pair validation can reach the
+existing untracked-conflict check and fast-forward merge.

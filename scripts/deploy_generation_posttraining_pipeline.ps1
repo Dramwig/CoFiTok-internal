@@ -45,9 +45,7 @@ try {
     $Bundle = Join-Path $env:TEMP "cofitok-generation-upgrade-$($TargetCommit.Substring(0, 12)).bundle"
     $RemoteBundle = "/tmp/cofitok-generation-upgrade.bundle"
     $RemoteHelper = "/tmp/deploy_generation_posttraining_pipeline_remote.sh"
-    $RemoteValidator = "/tmp/validate_generation_training_pair.py"
     $Helper = Join-Path $RepositoryRoot "artifacts/runbooks/deploy_generation_posttraining_pipeline_remote.sh"
-    $Validator = Join-Path $RepositoryRoot "scripts/validate_generation_training_pair.py"
 
     try {
         if (Test-Path -LiteralPath $Bundle) {
@@ -73,15 +71,13 @@ try {
         }
         Invoke-CheckedCommand scp @("-O", $Bundle, "${HostAlias}:${RemoteBundle}")
         Invoke-CheckedCommand scp @("-O", $Helper, "${HostAlias}:${RemoteHelper}")
-        Invoke-CheckedCommand scp @("-O", $Validator, "${HostAlias}:${RemoteValidator}")
         Invoke-CheckedCommand ssh @(
             $HostAlias,
             "bash",
             $RemoteHelper,
             $RemoteBundle,
             $ExpectedRemoteCommit,
-            $TargetCommit,
-            $RemoteValidator
+            $TargetCommit
         )
     }
     finally {

@@ -213,6 +213,13 @@ deployer verifies the single advertised head before transfer, while the remote
 `git bundle verify` proves that the pinned prerequisite exists before fetch.
 This preserves the same fast-forward trust boundary without retransmitting the
 repository's full historical object graph.
+Before moving HEAD, the remote helper fetches only the verified bundle objects
+and extracts the target revision's training-pair validator and
+`cofitok.generation_pair` contract with `git archive` into a temporary isolated
+Python path. Pre-deployment validation therefore runs the exact target code
+even though the worktree is still pinned to the legacy training revision. The
+temporary tree is removed on exit, and a failed validation never merges the
+target revision.
 
 While the pinned legacy 10% pair runs, a separate read-only monitor may be
 launched from `/tmp` without changing the training revision. It atomically
