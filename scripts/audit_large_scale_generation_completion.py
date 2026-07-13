@@ -8,6 +8,8 @@ import subprocess
 from pathlib import Path
 from typing import Any, Callable
 
+from PIL import Image
+
 from cofitok.environment import runtime_environment_sha256
 from cofitok.data.provenance import validate_dataset_provenance
 from cofitok.generation import sampling_protocol_contract
@@ -855,9 +857,84 @@ def _visual_audit_evidence(
     }
 
 
+def _verify_inference_smoke_outputs(
+    report: dict[str, Any] | None,
+    *,
+    expected_root: str | Path,
+) -> dict[str, Any] | None:
+    if report is None:
+        return None
+    root = Path(expected_root).resolve()
+    try:
+        if not root.is_dir():
+            raise ValueError(f"inference smoke directory is missing: {root}")
+        rows = report.get("outputs")
+        if not isinstance(rows, list) or int(report.get("output_count", -1)) != len(rows):
+            raise ValueError("inference smoke report output count differs")
+        verified = []
+        paths: set[Path] = set()
+        for row in rows:
+            if not isinstance(row, dict):
+                raise ValueError("inference smoke output row is malformed")
+            raw_path = str(row.get("path", ""))
+            path = Path(raw_path)
+            if not path.is_absolute():
+                raise ValueError("inference smoke output path is not absolute")
+            resolved = path.resolve(strict=True)
+            if path.as_posix() != resolved.as_posix():
+                raise ValueError("inference smoke output path is not canonical")
+            if not resolved.is_relative_to(root):
+                raise ValueError("inference smoke output escapes its output root")
+            if resolved.suffix.lower() != ".png" or resolved.name != row.get("filename"):
+                raise ValueError("inference smoke output filename differs")
+            if resolved in paths:
+                raise ValueError("inference smoke report repeats an output path")
+            paths.add(resolved)
+            actual_sha = file_sha256(resolved)
+            if actual_sha != row.get("sha256"):
+                raise ValueError("inference smoke output SHA256 differs")
+            with Image.open(resolved) as image:
+                image.verify()
+            with Image.open(resolved) as image:
+                mode = image.mode
+                width, height = image.size
+            if mode != "RGB" or (width, height) != (256, 256):
+                raise ValueError("inference smoke output is not an RGB 256x256 PNG")
+            verified.append(
+                {
+                    "path": resolved.as_posix(),
+                    "bytes": resolved.stat().st_size,
+                    "sha256": actual_sha,
+                    "mode": mode,
+                    "width": width,
+                    "height": height,
+                }
+            )
+        discovered = {
+            path.resolve()
+            for path in root.rglob("*")
+            if path.is_file() and path.suffix.lower() == ".png"
+        }
+        if discovered != paths:
+            raise ValueError("inference smoke directory PNG set differs from report")
+    except (KeyError, OSError, TypeError, ValueError) as error:
+        return {
+            "status": "invalid",
+            "root": root.as_posix(),
+            "error": str(error),
+        }
+    return {
+        "status": "verified",
+        "root": root.as_posix(),
+        "output_count": len(verified),
+        "outputs": sorted(verified, key=lambda row: row["path"]),
+    }
+
+
 def _inference_export_evidence(
     exports: dict[str, dict[str, Any]],
     artifact_files: dict[str, dict[str, Any]],
+    smoke_files: dict[str, dict[str, Any]],
     generation_reports: dict[str, dict[str, Any]],
     training_reports: dict[str, dict[str, Any]],
     final_gate: dict[str, Any],
@@ -972,10 +1049,30 @@ def _inference_export_evidence(
             smoke.get("output_count", -1)
         ) != expected_smoke_count:
             raise ValueError(f"{method} inference export smoke is incomplete")
+        expected_budgets = [1, 8] if method == "cofitok" else [1]
+        expected_request = {
+            "seeds": [0, 1],
+            "class_ids": [0, 0],
+            "prefix_budgets": expected_budgets,
+            "batch_size": 2,
+            "sample_steps": 10,
+            "guidance_scale": 1.5,
+            "guidance_rescale": 0.0,
+            "cfg_batch_mode": "batched",
+            "eta": 0.0,
+            "precision": "bf16",
+        }
+        if smoke.get("request") != expected_request:
+            raise ValueError(f"{method} inference export smoke request differs")
         if checkpoint.get("checkpoint_sha256") != artifact_sha:
             raise ValueError(f"{method} export smoke artifact SHA256 differs")
         if checkpoint.get("artifact_type") != "cofitok_generation_inference":
             raise ValueError(f"{method} export smoke artifact type differs")
+        if (
+            checkpoint.get("weights") != "ema_export"
+            or int(checkpoint.get("checkpoint_step", -1)) != 300_000
+        ):
+            raise ValueError(f"{method} export smoke did not load step-300K EMA")
         if checkpoint.get("source_checkpoint_sha256") != export.get(
             "source_checkpoint_sha256"
         ):
@@ -990,8 +1087,40 @@ def _inference_export_evidence(
             != release_authorization
         ):
             raise ValueError(f"{method} export smoke source identity differs")
-        if any(len(str(row.get("sha256", ""))) != 64 for row in smoke.get("outputs", [])):
-            raise ValueError(f"{method} export smoke output SHA256 is malformed")
+        expected_rows = {
+            (seed, 0, budget)
+            for budget in expected_budgets
+            for seed in (0, 1)
+        }
+        reported_outputs = smoke.get("outputs", [])
+        if len(reported_outputs) != expected_smoke_count or {
+            (row.get("seed"), row.get("class_id"), row.get("prefix_budget"))
+            for row in reported_outputs
+        } != expected_rows:
+            raise ValueError(f"{method} export smoke output request rows differ")
+        verified_smoke = smoke_files[method]
+        if (
+            verified_smoke.get("status") != "verified"
+            or int(verified_smoke.get("output_count", -1)) != expected_smoke_count
+        ):
+            raise ValueError(
+                f"{method} inference smoke files are invalid: "
+                f"{verified_smoke.get('error', 'verification failed')}"
+            )
+        verified_by_path = {
+            row["path"]: row for row in verified_smoke.get("outputs", [])
+        }
+        for row in reported_outputs:
+            path = str(row.get("path", ""))
+            verified = verified_by_path.get(path)
+            if (
+                verified is None
+                or verified.get("sha256") != row.get("sha256")
+                or verified.get("mode") != "RGB"
+                or verified.get("width") != 256
+                or verified.get("height") != 256
+            ):
+                raise ValueError(f"{method} inference smoke PNG differs from report")
         evidence[method] = {
             "artifact_path": verified_file["path"],
             "artifact_sha256": artifact_sha,
@@ -1002,6 +1131,9 @@ def _inference_export_evidence(
             "training_authorization": expected_authorization,
             "release_authorization": release_authorization,
             "smoke_output_count": expected_smoke_count,
+            "smoke_output_sha256": sorted(
+                row["sha256"] for row in verified_smoke["outputs"]
+            ),
         }
     if release_authorizations["cofitok"] != release_authorizations["dense_identity"]:
         raise ValueError("CoFiTok and dense artifacts used different release authorizations")
@@ -1688,6 +1820,7 @@ def build_completion_audit(
     visual_audit: dict[str, Any] | None,
     inference_exports: dict[str, dict[str, Any] | None],
     inference_artifact_files: dict[str, dict[str, Any] | None],
+    inference_smoke_files: dict[str, dict[str, Any] | None],
     milestones: dict[int, dict[str, Any] | None],
     milestone_source_verifications: dict[int, dict[str, Any] | None],
     cofitok_generation: dict[str, Any] | None,
@@ -1933,6 +2066,8 @@ def build_completion_audit(
             + [
                 inference_artifact_files.get("cofitok"),
                 inference_artifact_files.get("dense_identity"),
+                inference_smoke_files.get("cofitok"),
+                inference_smoke_files.get("dense_identity"),
                 cofitok_full_training,
                 dense_full_training,
                 final_gate,
@@ -1940,6 +2075,7 @@ def build_completion_audit(
             lambda: _inference_export_evidence(
                 inference_exports,
                 inference_artifact_files,
+                inference_smoke_files,
                 {"cofitok": cofitok_generation, "dense_identity": dense_generation},
                 {
                     "cofitok": cofitok_full_training,
@@ -2198,6 +2334,26 @@ def main() -> None:
     deployment_receipt = _read_optional(
         output_root / "generation_upgrade_deployment_receipt.json"
     )
+    inference_exports = {
+        "cofitok_export": _read_optional(
+            full_root / "exports/cofitok_export_report.json"
+        ),
+        "dense_identity_export": _read_optional(
+            full_root / "exports/dense_export_report.json"
+        ),
+        "cofitok_preflight": _read_optional(
+            full_root / "exports/cofitok_export_preflight.json"
+        ),
+        "dense_identity_preflight": _read_optional(
+            full_root / "exports/dense_export_preflight.json"
+        ),
+        "cofitok_smoke": _read_optional(
+            full_root / "exports/cofitok_export_inference_smoke.json"
+        ),
+        "dense_identity_smoke": _read_optional(
+            full_root / "exports/dense_export_inference_smoke.json"
+        ),
+    }
 
     audit = build_completion_audit(
         expected_deployment_source_revision=args.expected_deployment_source_revision,
@@ -2256,26 +2412,7 @@ def main() -> None:
             full_root / "sampling_runtime_selection.json"
         ),
         visual_audit=_read_optional(full_root / "visual_audit/visual_audit_report.json"),
-        inference_exports={
-            "cofitok_export": _read_optional(
-                full_root / "exports/cofitok_export_report.json"
-            ),
-            "dense_identity_export": _read_optional(
-                full_root / "exports/dense_export_report.json"
-            ),
-            "cofitok_preflight": _read_optional(
-                full_root / "exports/cofitok_export_preflight.json"
-            ),
-            "dense_identity_preflight": _read_optional(
-                full_root / "exports/dense_export_preflight.json"
-            ),
-            "cofitok_smoke": _read_optional(
-                full_root / "exports/cofitok_export_inference_smoke.json"
-            ),
-            "dense_identity_smoke": _read_optional(
-                full_root / "exports/dense_export_inference_smoke.json"
-            ),
-        },
+        inference_exports=inference_exports,
         inference_artifact_files={
             "cofitok": _verify_inference_artifact_file(
                 output_root
@@ -2284,6 +2421,21 @@ def main() -> None:
             "dense_identity": _verify_inference_artifact_file(
                 output_root
                 / "exports/imagenet256_full_300k/dense_identity_ema_inference.pt"
+            ),
+        },
+        inference_smoke_files={
+            "cofitok": _verify_inference_smoke_outputs(
+                inference_exports["cofitok_smoke"],
+                expected_root=(
+                    output_root / "exports/imagenet256_full_300k/smoke/cofitok"
+                ),
+            ),
+            "dense_identity": _verify_inference_smoke_outputs(
+                inference_exports["dense_identity_smoke"],
+                expected_root=(
+                    output_root
+                    / "exports/imagenet256_full_300k/smoke/dense_identity"
+                ),
             ),
         },
         milestones=milestones,

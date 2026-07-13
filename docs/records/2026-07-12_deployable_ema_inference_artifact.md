@@ -63,3 +63,10 @@ integrity verifier again. A stale report cannot mask a deleted, truncated, or
 replaced EMA artifact. The same audit independently rehashes the two physical
 step-300K exact-resume checkpoints, preserving both deployable inference and
 reproducible training assets.
+
+Smoke evidence is also file-backed rather than report-only. The terminal audit
+requires the exact fixed PNG set under each method's smoke directory, rejects
+noncanonical or escaping paths, recomputes every SHA256, decodes every image,
+and requires RGB 256x256 pixels. It independently locks the request to seeds
+0/1, class 0, DDIM-10, CFG 1.5, bf16, and the method-specific prefix budgets;
+deleted, replaced, malformed, stale, or extra PNGs invalidate deployment.

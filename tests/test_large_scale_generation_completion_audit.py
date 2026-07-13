@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from PIL import Image
+
 from cofitok.diffusion import select_sampling_timesteps
 from cofitok.configs import config_to_dict, load_config
 from cofitok.data.provenance import (
@@ -20,6 +22,7 @@ from cofitok.training.authorization import build_generation_training_authorizati
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
     _verify_deployment_bundle_source,
+    _verify_inference_smoke_outputs,
     build_completion_audit,
 )
 from scripts.build_generation_milestone_report import expected_source_report_suffixes
@@ -1106,6 +1109,8 @@ def _inference_exports() -> dict:
             "output_count": count,
             "checkpoint": {
                 "checkpoint_sha256": artifact_sha,
+                "checkpoint_step": 300_000,
+                "weights": "ema_export",
                 "artifact_type": "cofitok_generation_inference",
                 "source_checkpoint_sha256": source_sha,
                 "source_runtime_environment_sha256": environment_sha,
@@ -1117,7 +1122,36 @@ def _inference_exports() -> dict:
                     release_authorization
                 ),
             },
-            "outputs": [{"sha256": str(index) * 64} for index in range(1, count + 1)],
+            "request": {
+                "seeds": [0, 1],
+                "class_ids": [0, 0],
+                "prefix_budgets": [1, 8] if method == "cofitok" else [1],
+                "batch_size": 2,
+                "sample_steps": 10,
+                "guidance_scale": 1.5,
+                "guidance_rescale": 0.0,
+                "cfg_batch_mode": "batched",
+                "eta": 0.0,
+                "precision": "bf16",
+            },
+            "outputs": [
+                {
+                    "path": (
+                        "/root/autodl-tmp/CoFiTok/checkpoints/generation/exports/"
+                        f"imagenet256_full_300k/smoke/{method}/output_{index}.png"
+                    ),
+                    "filename": f"output_{index}.png",
+                    "sha256": str(index) * 64,
+                    "seed": (index - 1) % 2,
+                    "class_id": 0,
+                    "prefix_budget": (
+                        [1, 1, 8, 8][index - 1]
+                        if method == "cofitok"
+                        else 1
+                    ),
+                }
+                for index in range(1, count + 1)
+            ],
         }
     return output
 
@@ -1185,6 +1219,30 @@ def _inference_artifact_files() -> dict:
             ),
             "release_authorization": copy.deepcopy(release_authorization),
             "step": 300_000,
+        }
+    return output
+
+
+def _inference_smoke_files() -> dict:
+    exports = _inference_exports()
+    output = {}
+    for method in ("cofitok", "dense_identity"):
+        rows = exports[f"{method}_smoke"]["outputs"]
+        output[method] = {
+            "status": "verified",
+            "root": str(Path(rows[0]["path"]).parent),
+            "output_count": len(rows),
+            "outputs": [
+                {
+                    "path": row["path"],
+                    "bytes": 1024,
+                    "sha256": row["sha256"],
+                    "mode": "RGB",
+                    "width": 256,
+                    "height": 256,
+                }
+                for row in rows
+            ],
         }
     return output
 
@@ -1362,6 +1420,7 @@ def _kwargs() -> dict:
         "visual_audit": _visual_audit(),
         "inference_exports": _inference_exports(),
         "inference_artifact_files": _inference_artifact_files(),
+        "inference_smoke_files": _inference_smoke_files(),
         "milestones": {step: _milestone(step) for step in MILESTONE_STEPS},
         "milestone_source_verifications": {
             step: _milestone_source_verification(step) for step in MILESTONE_STEPS
@@ -2109,11 +2168,87 @@ def test_completion_audit_rejects_checkpoint_authorization_sidecar_drift() -> No
     assert completion["failed_checks"] == ["reproducible_full_checkpoint_files"]
 
 
+def test_inference_smoke_file_verifier_rehashes_and_decodes_pngs(tmp_path) -> None:
+    root = tmp_path / "smoke"
+    root.mkdir()
+    outputs = []
+    for index in range(2):
+        path = (root / f"output_{index}.png").resolve()
+        Image.new("RGB", (256, 256), (index * 20, 10, 30)).save(path)
+        outputs.append(
+            {
+                "path": path.as_posix(),
+                "filename": path.name,
+                "sha256": file_sha256(path),
+            }
+        )
+    report = {"output_count": 2, "outputs": outputs}
+
+    verified = _verify_inference_smoke_outputs(report, expected_root=root)
+
+    assert verified is not None
+    assert verified["status"] == "verified"
+    assert verified["output_count"] == 2
+    assert all(row["mode"] == "RGB" for row in verified["outputs"])
+    Image.new("RGB", (256, 256), (255, 0, 0)).save(outputs[0]["path"])
+    tampered = _verify_inference_smoke_outputs(report, expected_root=root)
+    assert tampered is not None
+    assert tampered["status"] == "invalid"
+    assert "SHA256 differs" in tampered["error"]
+
+
+def test_inference_smoke_file_verifier_rejects_path_escape(tmp_path) -> None:
+    root = tmp_path / "smoke"
+    root.mkdir()
+    outside = (tmp_path / "outside.png").resolve()
+    Image.new("RGB", (256, 256)).save(outside)
+    report = {
+        "output_count": 1,
+        "outputs": [
+            {
+                "path": outside.as_posix(),
+                "filename": outside.name,
+                "sha256": file_sha256(outside),
+            }
+        ],
+    }
+
+    verified = _verify_inference_smoke_outputs(report, expected_root=root)
+
+    assert verified is not None
+    assert verified["status"] == "invalid"
+    assert "escapes its output root" in verified["error"]
+
+
 def test_completion_audit_rejects_export_from_stale_training_checkpoint() -> None:
     kwargs = _kwargs()
     kwargs["inference_exports"]["cofitok_export"][
         "source_checkpoint_sha256"
     ] = "Z" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_rejects_missing_or_tampered_smoke_pngs() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_smoke_files"]["cofitok"] = {
+        "status": "invalid",
+        "root": "/missing/smoke/cofitok",
+        "error": "inference smoke output SHA256 differs",
+    }
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_rejects_weakened_inference_smoke_request() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_exports"]["cofitok_smoke"]["request"]["sample_steps"] = 1
 
     report = build_completion_audit(**kwargs)
 
