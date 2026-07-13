@@ -50,15 +50,17 @@ python scripts/check_generation_storage_capacity.py \
   --stage 10pct_posteval --checkpoint-count 0 --sample-count 20256 \
   --estimated-sample-kib 256 --additional-gib 16 --safety-margin-gib 32
 
-python scripts/migrate_generation_checkpoint_integrity.py \
-  --checkpoint "$COFITOK_CHECKPOINT" \
-  --training-report "$COFITOK_RUN/training_report.json" \
-  --output "$COFITOK_RUN/checkpoint_integrity_migration.json"
+python scripts/audit_generation_training_progress.py \
+  --run-dir "$COFITOK_RUN" --expected-steps 50000 \
+  --checkpoint-interval 5000 --evaluation-interval 1000 \
+  --integrity-policy required \
+  --output "$COFITOK_RUN/prepromotion_training_audit.json"
 
-python scripts/migrate_generation_checkpoint_integrity.py \
-  --checkpoint "$DENSE_CHECKPOINT" \
-  --training-report "$DENSE_RUN/training_report.json" \
-  --output "$DENSE_RUN/checkpoint_integrity_migration.json"
+python scripts/audit_generation_training_progress.py \
+  --run-dir "$DENSE_RUN" --expected-steps 50000 \
+  --checkpoint-interval 5000 --evaluation-interval 1000 \
+  --integrity-policy required \
+  --output "$DENSE_RUN/prepromotion_training_audit.json"
 
 SAMPLING_BATCH="$(python scripts/select_generation_sampling_batch.py \
   --cofitok-checkpoint "$COFITOK_CHECKPOINT" \

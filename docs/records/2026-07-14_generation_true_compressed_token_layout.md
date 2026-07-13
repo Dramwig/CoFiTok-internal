@@ -56,6 +56,8 @@ The old pinned CoFiTok/dense 50K reports may validate only under the explicit
 completion pipeline must train a fresh compressed 10% CoFiTok/dense pair on the
 same target revision and with bound dataset/checkpoint provenance. Only the new
 pair's 10K sampling reports and promotion gate may authorize full 300K training.
+Its post-evaluation verifies native sidecars with `integrity-policy=required`;
+the legacy migration utility is not allowed to rewrite the new training report.
 The completion audit separately binds the legacy deployment source revision,
 the authoritative compressed 10% revision, and the full-training revision.
 

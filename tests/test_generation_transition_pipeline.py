@@ -77,6 +77,13 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
     assert "FINAL_VISUAL_AUDIT" in runbook
     assert "generation_export_inference_artifacts.sh" in runbook
 
+    scaling_posteval = _read(
+        "artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh"
+    )
+    assert "migrate_generation_checkpoint_integrity.py" not in scaling_posteval
+    assert scaling_posteval.count("audit_generation_training_progress.py") == 2
+    assert scaling_posteval.count("--integrity-policy required") == 2
+
     full_training = _read(
         "artifacts/runbooks/generation_full_matched_300k_after_gate.sh"
     )

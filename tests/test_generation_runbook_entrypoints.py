@@ -30,7 +30,6 @@ ENTRYPOINTS = {
     "export_generation_inference_artifact.py",
     "generate_samples.py",
     "infer_generation.py",
-    "migrate_generation_checkpoint_integrity.py",
     "monitor_generation_pair.py",
     "preflight_generation_sampling.py",
     "select_generation_sampling_batch.py",
