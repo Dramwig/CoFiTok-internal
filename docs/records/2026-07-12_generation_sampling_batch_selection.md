@@ -29,6 +29,8 @@ A candidate is eligible only when:
 - both methods pass on the same checkpoint step and sampling protocol;
 - each reusable preflight was produced by the selector's current Git revision
   from a clean tracked worktree;
+- both preflights contain valid, identical canonical Python/PyTorch/CUDA/GPU/
+  project-lock runtime-environment fingerprints;
 - both produce finite positive output-images/second;
 - both remain below 90% of device memory;
 - batch 32, the conservative baseline, also passes.
@@ -48,8 +50,10 @@ The final selection is bound to the deployed Git revision and both checkpoint
 SHA256 values. The completion audit verifies that both formal generation reports
 actually use the selected batch, that the selected CoFiTok and dense preflight
 evidence carries the deployed revision, and that both retain batch-invariant
-random streams. The final matched comparison publishes sample batch, cumulative
-sample time, and images/second together with FID/IS/precision/recall.
+random streams. It also requires both formal generation reports to carry the
+same runtime-environment SHA selected by those preflights. The final matched
+comparison publishes sample batch, cumulative sample time, and images/second
+together with FID/IS/precision/recall.
 
 The formal sampler independently embeds the same Git state into its immutable
 sampling manifest and completed report. Metrics propagate it as sample
@@ -57,3 +61,5 @@ provenance. Both promotion/final gates require matched clean CoFiTok/dense
 sampling code, and the final completion audit additionally binds it to the full
 training revision and `scale/generative-system` branch. This prevents a clean
 selector preflight from masking later uncommitted inference-code changes.
+The same chain prevents a cached preflight from masking a later interpreter,
+package lock, CUDA driver, GPU, or backend-setting change.

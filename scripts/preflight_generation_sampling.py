@@ -10,6 +10,7 @@ from typing import Any
 import torch
 
 from cofitok.diffusion import predict_epsilon
+from cofitok.environment import capture_runtime_environment, runtime_environment_sha256
 from cofitok.generation import load_generation_model
 from cofitok.reporting import git_provenance, write_json_report
 from cofitok.training.runtime import autocast_context
@@ -75,6 +76,11 @@ def run_sampling_preflight(
     model = loaded.model
     config = loaded.config
     device = loaded.device
+    runtime_environment = capture_runtime_environment(
+        device,
+        project_root=PROJECT_ROOT,
+    )
+    runtime_environment_sha = runtime_environment_sha256(runtime_environment)
     budget = prefix_budget or config.model.token_count
     if not 1 <= budget <= config.model.token_count:
         raise ValueError("prefix-budget is outside the model token range")
@@ -103,6 +109,8 @@ def run_sampling_preflight(
         "schema_version": 1,
         "status": "running",
         "git": git_provenance(PROJECT_ROOT),
+        "runtime_environment": runtime_environment,
+        "runtime_environment_sha256": runtime_environment_sha,
         "checkpoint": str(loaded.checkpoint_path),
         "checkpoint_sha256": loaded.checkpoint_sha256,
         "checkpoint_integrity_manifest": str(loaded.checkpoint_integrity_manifest),

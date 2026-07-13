@@ -10,6 +10,7 @@ import torch
 from torchvision.utils import save_image
 
 from cofitok.diffusion import select_sampling_timesteps
+from cofitok.environment import capture_runtime_environment, runtime_environment_sha256
 from cofitok.generation import GenerationRequest, GenerationSession
 from cofitok.image_integrity import is_valid_png, sample_set_sha256
 from cofitok.reporting import file_sha256, git_provenance, write_json_report
@@ -204,6 +205,11 @@ def main() -> None:
     checkpoint_step = loaded.checkpoint_step
     config = loaded.config
     device = loaded.device
+    runtime_environment = capture_runtime_environment(
+        device,
+        project_root=PROJECT_ROOT,
+    )
+    runtime_environment_sha = runtime_environment_sha256(runtime_environment)
     budgets = _parse_budgets(args.prefix_budgets, config.model.token_count)
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -251,8 +257,10 @@ def main() -> None:
         str(budget): str((output_dir / f"prefix_{budget}").resolve()) for budget in budgets
     }
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "git": code_git,
+        "runtime_environment": runtime_environment,
+        "runtime_environment_sha256": runtime_environment_sha,
         "checkpoint": str(checkpoint_path.resolve()),
         "checkpoint_sha256": checkpoint_hash,
         "checkpoint_integrity_manifest": str(loaded.checkpoint_integrity_manifest),
@@ -371,9 +379,11 @@ def main() -> None:
             sample_sets=sample_sets,
         )
         report = {
-            "schema_version": 4,
+            "schema_version": 5,
             "status": "completed",
             "git": code_git,
+            "runtime_environment": runtime_environment,
+            "runtime_environment_sha256": runtime_environment_sha,
             "checkpoint": str(checkpoint_path.resolve()),
             "checkpoint_sha256": checkpoint_hash,
             "checkpoint_integrity_manifest": str(loaded.checkpoint_integrity_manifest),

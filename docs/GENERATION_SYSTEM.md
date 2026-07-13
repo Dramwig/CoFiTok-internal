@@ -44,9 +44,10 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   requested EMA/model weights, precision, prefix budget, batch size, and CFG
   batching mode. The preflight records checkpoint SHA256, output finiteness,
   inference-code Git revision/branch/tracked-dirty state, latency, and CUDA
-  baseline/peak memory, and fails before a sampling manifest or partial image
-  directory is created when the target inference shape OOMs. Runtime selection
-  never reuses a preflight from another revision or a dirty worktree.
+  baseline/peak memory, plus a canonical Python/PyTorch/CUDA/GPU/project-lock
+  runtime-environment fingerprint. It fails before a sampling manifest or partial
+  image directory is created when the target inference shape OOMs. Runtime
+  selection never reuses a preflight from another revision or a dirty worktree.
 - Classifier-free guidance can evaluate conditional and unconditional branches
   in one batch, with a sequential fallback. The selected execution mode is part
   of the immutable sampling manifest and must match across compared methods.
@@ -55,11 +56,14 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   uses the same stream at every prefix budget. Prefix comparisons are therefore
   paired rather than comparisons between unrelated initial noises.
 - Sampling writes an immutable checkpoint-and-protocol manifest before the
-  first image, including revision/branch/tracked-dirty code provenance.
+  first image, including revision/branch/tracked-dirty code provenance and the
+  actual sampling process runtime-environment fingerprint. Manifest schema v2
+  and completed report schema v5 carry the full canonical environment and SHA.
   `--resume` accepts only an exact manifest match, skips completed numbered
   images, and regenerates missing images from their original streams. Metrics,
-  promotion/final gates, and completion audit preserve and validate that code
-  provenance; formal post-evaluation runbooks also fail early on tracked dirt.
+  promotion/final gates, and completion audit preserve and validate code and
+  environment provenance; formal post-evaluation runbooks also fail early on
+  tracked dirt. Environment drift therefore cannot silently resume an old set.
 - Each PNG is encoded to a same-directory partial file and atomically published
   only after encoding succeeds. JSON manifests and reports use the same atomic
   replacement rule, so interruption cannot turn a partial file into apparent
@@ -304,9 +308,11 @@ by the completion audit. See
 Formal 10K and 50K sampling also selects one shared batch from
 `16,32,64,128`. Both checkpoints run repeated synchronized EMA/CFG forwards;
 eligible candidates must pass for both methods below 90% VRAM, and selection
-maximizes the slower method's output-images/second. Per-index random streams
-keep generated samples invariant to the selected batch. The final comparison
-reports batch, elapsed time, and realized throughput. See
+maximizes the slower method's output-images/second. Both methods must also expose
+the same canonical sampling environment; the selected fingerprint is bound to
+the formal generation reports. Per-index random streams keep generated samples
+invariant to the selected batch. The final comparison reports batch, elapsed
+time, and realized throughput. See
 `docs/records/2026-07-12_generation_sampling_batch_selection.md`.
 
 Stable inference is exposed through `cofitok.generation.GenerationSession` and
@@ -379,6 +385,9 @@ rehashes both physical step-300K exact-resume checkpoints through their
 integrity sidecars and separately rehashes both exported EMA artifacts.
 Missing, truncated, or replaced model bytes fail the named checkpoint or
 deployment-artifact gate even when an older report still claims completion.
+Formal sampling separately requires one canonical runtime-environment SHA shared
+by the selected CoFiTok/dense preflights, immutable manifests, metrics reports,
+and final quality gate.
 
 Live long-run health can be audited without loading the model or competing for
 GPU time using `scripts/audit_generation_training_progress.py`. It verifies

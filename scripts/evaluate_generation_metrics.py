@@ -9,6 +9,7 @@ from typing import Any
 
 import torch
 
+from cofitok.environment import runtime_environment_sha256
 from cofitok.image_integrity import is_valid_png, sample_set_sha256
 from cofitok.reporting import file_sha256, git_provenance, write_json_report
 
@@ -113,6 +114,12 @@ def validate_sampling_provenance(
         raise ValueError("Sampling report Git revision is malformed")
     if not isinstance(git.get("tracked_dirty"), bool):
         raise ValueError("Sampling report tracked-dirty state is missing")
+    runtime_environment = report.get("runtime_environment")
+    if not isinstance(runtime_environment, dict):
+        raise ValueError("Sampling report runtime environment is missing")
+    sampling_environment_sha = runtime_environment_sha256(runtime_environment)
+    if report.get("runtime_environment_sha256") != sampling_environment_sha:
+        raise ValueError("Sampling report runtime environment SHA256 differs")
     checkpoint_sha256 = str(report["checkpoint_sha256"])
     if len(checkpoint_sha256) != 64:
         raise ValueError("Sampling report checkpoint SHA256 is malformed")
@@ -123,6 +130,13 @@ def validate_sampling_provenance(
     sampling_manifest_path = report_path.parent / "sampling_manifest.json"
     if not sampling_manifest_path.is_file():
         raise FileNotFoundError("Sampling manifest is missing beside the sampling report")
+    sampling_manifest = json.loads(sampling_manifest_path.read_text(encoding="utf-8"))
+    if (
+        sampling_manifest.get("runtime_environment") != runtime_environment
+        or sampling_manifest.get("runtime_environment_sha256")
+        != sampling_environment_sha
+    ):
+        raise ValueError("Sampling manifest runtime environment differs from report")
     sampling_manifest_sha256 = file_sha256(sampling_manifest_path)
     if report.get("sampling_manifest_sha256") != sampling_manifest_sha256:
         raise ValueError("Sampling report does not match the immutable sampling manifest")
@@ -149,6 +163,8 @@ def validate_sampling_provenance(
         "checkpoint_step": int(report["checkpoint_step"]),
         "weights": report["weights"],
         "git": git,
+        "runtime_environment": runtime_environment,
+        "runtime_environment_sha256": sampling_environment_sha,
         "selected_prefix_budget": selected_budget,
         "image_shape": image_shape,
         "sample_set_sha256": actual_sample_sha256,

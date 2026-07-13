@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from cofitok.environment import runtime_environment_sha256
 from cofitok.reporting import write_json_report
 from cofitok.training.checkpointing import checkpoint_integrity_path
 
@@ -36,6 +37,14 @@ def _protocol(report: dict[str, Any]) -> dict[str, Any]:
     return {key: value for key, value in request.items() if key not in ignored}
 
 
+def _validated_runtime_environment_sha(report: dict[str, Any]) -> str | None:
+    environment = report.get("runtime_environment")
+    if not isinstance(environment, dict):
+        return None
+    actual = runtime_environment_sha256(environment)
+    return actual if report.get("runtime_environment_sha256") == actual else None
+
+
 def select_sampling_batch(
     candidates: list[dict[str, Any]],
     *,
@@ -55,6 +64,7 @@ def select_sampling_batch(
         memory_fractions = []
         protocols = []
         checkpoint_steps = []
+        environment_shas = []
         for method in ("cofitok", "dense_identity"):
             report = methods.get(method, {})
             if report.get("status") != "passed":
@@ -81,10 +91,22 @@ def select_sampling_batch(
                     reasons.append(f"{method}_memory_headroom")
             protocols.append(_protocol(report))
             checkpoint_steps.append(int(report.get("checkpoint_step", -1)))
+            environment_sha = _validated_runtime_environment_sha(report)
+            if environment_sha is None:
+                reasons.append(f"{method}_runtime_environment_invalid")
+            else:
+                environment_shas.append(environment_sha)
         if len(protocols) == 2 and protocols[0] != protocols[1]:
             reasons.append("matched_sampling_protocol_mismatch")
         if len(checkpoint_steps) == 2 and checkpoint_steps[0] != checkpoint_steps[1]:
             reasons.append("matched_checkpoint_step_mismatch")
+        if len(environment_shas) == 2 and environment_shas[0] != environment_shas[1]:
+            reasons.append("matched_sampling_environment_mismatch")
+        candidate["runtime_environment_sha256"] = (
+            environment_shas[0]
+            if len(environment_shas) == 2 and environment_shas[0] == environment_shas[1]
+            else None
+        )
         candidate["eligible"] = not reasons
         candidate["ineligible_reasons"] = sorted(set(reasons))
         candidate["selection_score_images_per_second"] = (
@@ -132,6 +154,7 @@ def select_sampling_batch(
             "max_memory_fraction": float(selected["max_memory_fraction"]),
             "estimated_speedup_over_baseline": speedup,
         },
+        "runtime_environment_sha256": selected["runtime_environment_sha256"],
         "candidates": normalized,
     }
 
@@ -187,6 +210,7 @@ def _preflight_matches(
         report.get("status") == "passed"
         and git.get("revision") == expected_revision
         and git.get("tracked_dirty") is False
+        and _validated_runtime_environment_sha(report) is not None
         and report.get("checkpoint_sha256") == checkpoint_identity["sha256"]
         and int(report.get("checkpoint_step", -1)) == checkpoint_identity["step"]
         and int(request.get("batch_size", -1)) == batch_size

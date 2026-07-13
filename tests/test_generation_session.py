@@ -213,6 +213,22 @@ def test_formal_sampling_cli_runs_checkpoint_to_png_and_report(tmp_path) -> None
     report = json.loads((output_dir / "sampling_report.json").read_text(encoding="utf-8"))
     assert report["status"] == "completed"
     assert report["sampling"]["actual_timesteps"] == [0]
+    assert report["schema_version"] == 5
+    assert report["runtime_environment"]["schema_version"] == 1
+    assert len(report["runtime_environment_sha256"]) == 64
     assert report["sample_sets"]["2"]["count"] == 1
     assert len(report["sample_sets"]["2"]["sha256"]) == 64
     assert (output_dir / "prefix_2/000000.png").is_file()
+
+    drifted_environment = dict(environment)
+    drifted_environment["PYTHONHASHSEED"] = "314159"
+    resumed = subprocess.run(
+        [*result.args, "--resume"],
+        cwd=ROOT,
+        env=drifted_environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert resumed.returncode != 0
+    assert "sampling manifest does not match" in resumed.stderr

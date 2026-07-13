@@ -115,10 +115,30 @@ def _gate(stage: str) -> dict:
     gates = [{"name": "all_evidence", "passed": True}]
     if stage == "full":
         gates.extend(
-            {"name": name, "passed": True, "evidence": {}}
+            {
+                "name": name,
+                "passed": True,
+                "evidence": (
+                    {
+                        "cofitok": {
+                            "sha256": runtime_environment_sha256(
+                                _runtime_environment()
+                            )
+                        },
+                        "dense_identity": {
+                            "sha256": runtime_environment_sha256(
+                                _runtime_environment()
+                            )
+                        },
+                    }
+                    if name == "matched_sampling_runtime_environment"
+                    else {}
+                ),
+            }
             for name in (
                 "generation_metrics_complete",
                 "matched_sampling_code_provenance",
+                "matched_sampling_runtime_environment",
                 "matched_evaluator_code_provenance",
                 "matched_checkpoint_evaluator_code_provenance",
                 "distribution_metric_ranges",
@@ -211,6 +231,7 @@ def _milestone(step: int, alerts: list[str] | None = None) -> dict:
 
 
 def _generation(seed: str) -> dict:
+    runtime_environment = _runtime_environment()
     return {
         "status": "completed",
         "git": {
@@ -226,6 +247,10 @@ def _generation(seed: str) -> dict:
         },
         "implementation": {"package": "torch_fidelity", "version": "0.4.0"},
         "sample_provenance": {
+            "runtime_environment": runtime_environment,
+            "runtime_environment_sha256": runtime_environment_sha256(
+                runtime_environment
+            ),
             "git": {
                 "revision": FULL_REVISION,
                 "branch": "scale/generative-system",
@@ -365,9 +390,12 @@ def _comparison() -> dict:
 
 
 def _sampling_runtime_selection() -> dict:
+    runtime_environment = _runtime_environment()
+    environment_sha = runtime_environment_sha256(runtime_environment)
     return {
         "status": "selected",
         "git_revision": FULL_REVISION,
+        "runtime_environment_sha256": environment_sha,
         "policy": {
             "shared_candidate_required": True,
             "batch_size_invariant_random_stream_required": True,
@@ -382,12 +410,16 @@ def _sampling_runtime_selection() -> dict:
                 "eligible": True,
                 "methods": {
                     "cofitok": {
+                        "runtime_environment": runtime_environment,
+                        "runtime_environment_sha256": environment_sha,
                         "git": {
                             "revision": FULL_REVISION,
                             "tracked_dirty": False,
                         }
                     },
                     "dense_identity": {
+                        "runtime_environment": runtime_environment,
+                        "runtime_environment_sha256": environment_sha,
                         "git": {
                             "revision": FULL_REVISION,
                             "tracked_dirty": False,
@@ -897,6 +929,24 @@ def test_completion_audit_rejects_stale_selected_sampling_preflight() -> None:
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == ["formal_sampling_runtime_selection"]
+
+
+def test_completion_audit_rejects_mismatched_sampling_environment() -> None:
+    kwargs = _kwargs()
+    dense_provenance = kwargs["dense_generation"]["sample_provenance"]
+    dense_provenance["runtime_environment"]["device"]["name"] = "another-gpu"
+    dense_provenance["runtime_environment_sha256"] = runtime_environment_sha256(
+        dense_provenance["runtime_environment"]
+    )
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == [
+        "formal_50k_generation",
+        "formal_sampling_runtime_selection",
+        "final_generation_gate",
+    ]
 
 
 def test_completion_audit_rejects_dirty_formal_sampling_code() -> None:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from cofitok.environment import runtime_environment_sha256
 from scripts.build_generation_gate_report import build_report
 
 
@@ -53,6 +54,10 @@ def _training(parameters: int, token_count: int) -> dict:
 
 
 def _generation(fid: float, token_count: int, sha: str) -> dict:
+    runtime_environment = {
+        "schema_version": 1,
+        "device": {"type": "cuda", "name": "GPU"},
+    }
     return {
         "status": "completed",
         "protocol": "torch_fidelity_directory_metrics",
@@ -76,6 +81,10 @@ def _generation(fid: float, token_count: int, sha: str) -> dict:
             "recall": 0.4,
         },
         "sample_provenance": {
+            "runtime_environment": runtime_environment,
+            "runtime_environment_sha256": runtime_environment_sha256(
+                runtime_environment
+            ),
             "git": {
                 "revision": "a" * 40,
                 "branch": "scale/generative-system",
@@ -190,6 +199,34 @@ def test_generation_gate_holds_on_unpaired_sampling_streams() -> None:
     )
 
     gate = next(gate for gate in report["gates"] if gate["name"] == "matched_sampling_provenance")
+    assert gate["passed"] is False
+
+
+def test_generation_gate_rejects_mismatched_sampling_environment() -> None:
+    cofitok = _generation(20.0, 8, "a" * 64)
+    dense = _generation(20.0, 1, "b" * 64)
+    dense_environment = dense["sample_provenance"]["runtime_environment"]
+    dense_environment["device"]["name"] = "another GPU"
+    dense["sample_provenance"][
+        "runtime_environment_sha256"
+    ] = runtime_environment_sha256(dense_environment)
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=dense,
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(
+        gate
+        for gate in report["gates"]
+        if gate["name"] == "matched_sampling_runtime_environment"
+    )
     assert gate["passed"] is False
 
 

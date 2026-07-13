@@ -293,6 +293,7 @@ def _generation_evidence(
     expected_revision: str,
 ) -> dict[str, Any]:
     evidence = {}
+    sampling_environment_shas = set()
     for method, report in reports.items():
         if report.get("status") != "completed":
             raise ValueError(f"{method} formal generation metrics are incomplete")
@@ -309,6 +310,16 @@ def _generation_evidence(
         git = provenance.get("git", {})
         progress = provenance.get("sampling_progress", {})
         inference_api = provenance.get("sampling", {}).get("inference_api", {})
+        sampling_environment = provenance.get("runtime_environment")
+        if not isinstance(sampling_environment, dict):
+            raise ValueError(f"{method} formal sampling environment is missing")
+        sampling_environment_sha = runtime_environment_sha256(sampling_environment)
+        if (
+            provenance.get("runtime_environment_sha256")
+            != sampling_environment_sha
+        ):
+            raise ValueError(f"{method} formal sampling environment SHA256 differs")
+        sampling_environment_shas.add(sampling_environment_sha)
         if int(provenance.get("checkpoint_step", -1)) != 300_000:
             raise ValueError(f"{method} formal samples do not use the 300K checkpoint")
         if provenance.get("weights") != "ema":
@@ -350,7 +361,10 @@ def _generation_evidence(
             "checkpoint_sha256": provenance["checkpoint_sha256"],
             "sample_set_sha256": provenance["sample_set_sha256"],
             "sampling_elapsed_seconds": elapsed,
+            "runtime_environment_sha256": sampling_environment_sha,
         }
+    if len(sampling_environment_shas) != 1:
+        raise ValueError("formal matched methods used different sampling environments")
     return evidence
 
 
@@ -391,8 +405,22 @@ def _sampling_runtime_selection_evidence(
         ):
             raise ValueError(f"{method} selected sampling preflight revision differs")
     identities = selection.get("checkpoints", {})
+    selected_environment_sha = selection.get("runtime_environment_sha256")
+    if len(str(selected_environment_sha)) != 64:
+        raise ValueError("sampling selection runtime environment SHA256 is malformed")
     for method in ("cofitok", "dense_identity"):
+        selected_method = selected_methods.get(method, {})
+        selected_method_environment = selected_method.get("runtime_environment")
+        if not isinstance(selected_method_environment, dict) or (
+            runtime_environment_sha256(selected_method_environment)
+            != selected_environment_sha
+            or selected_method.get("runtime_environment_sha256")
+            != selected_environment_sha
+        ):
+            raise ValueError(f"{method} selected preflight environment differs")
         provenance = generation_reports[method].get("sample_provenance", {})
+        if provenance.get("runtime_environment_sha256") != selected_environment_sha:
+            raise ValueError(f"{method} sampling environment differs from selection")
         if identities.get(method, {}).get("sha256") != provenance.get(
             "checkpoint_sha256"
         ):
@@ -413,6 +441,7 @@ def _sampling_runtime_selection_evidence(
             method: identities[method]["sha256"]
             for method in ("cofitok", "dense_identity")
         },
+        "runtime_environment_sha256": selected_environment_sha,
     }
 
 
@@ -598,6 +627,7 @@ def _final_gate_evidence(
     required_quality_gates = {
         "generation_metrics_complete",
         "matched_sampling_code_provenance",
+        "matched_sampling_runtime_environment",
         "matched_evaluator_code_provenance",
         "matched_checkpoint_evaluator_code_provenance",
         "distribution_metric_ranges",
@@ -667,6 +697,20 @@ def _final_gate_evidence(
             ):
                 raise ValueError(f"final gate {method} {metric} differs from sample metrics")
     evidence["sampling_provenance_bound"] = True
+    environment_matches = [
+        row.get("evidence", {})
+        for row in gate.get("gates", [])
+        if row.get("name") == "matched_sampling_runtime_environment"
+    ]
+    if len(environment_matches) != 1:
+        raise ValueError("final gate lacks unique sampling runtime environment")
+    gate_environments = environment_matches[0]
+    for method in ("cofitok", "dense_identity"):
+        expected_sha = generation_reports[method]["sample_provenance"].get(
+            "runtime_environment_sha256"
+        )
+        if gate_environments.get(method, {}).get("sha256") != expected_sha:
+            raise ValueError(f"final gate {method} sampling environment differs")
     evidence["quality_metrics_bound"] = True
     evidence["quality_thresholds"] = {
         name: thresholds[name] for name in required_thresholds

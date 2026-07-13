@@ -14,6 +14,7 @@ from cofitok.configs import (
     RuntimeConfig,
     config_to_dict,
 )
+from cofitok.environment import runtime_environment_sha256
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
@@ -93,6 +94,10 @@ def test_sampling_preflight_runs_shared_ema_cfg_path(tmp_path) -> None:
         text=True,
     ).stdout.strip()
     assert isinstance(report["git"]["tracked_dirty"], bool)
+    assert report["runtime_environment"]["device"]["type"] == "cpu"
+    assert report["runtime_environment_sha256"] == runtime_environment_sha256(
+        report["runtime_environment"]
+    )
     assert report["checkpoint_step"] == 17
     assert len(report["checkpoint_sha256"]) == 64
     assert report["checkpoint_integrity_manifest"].endswith("checkpoint.pt.integrity.json")

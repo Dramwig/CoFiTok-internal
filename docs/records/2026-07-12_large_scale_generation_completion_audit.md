@@ -45,9 +45,10 @@ The audit requires all of the following:
 - all four paired 2,048-sample DDIM-50 milestone reports;
 - paired formal 50K DDIM-250 EMA generation with completed atomic sampling
   progress, checkpoint/sample SHA256, integrity sidecars, and positive sampling
-  elapsed time;
+  elapsed time, plus canonical and identical actual sampling environments;
 - a shared, revision/checkpoint-bound formal sampling batch selection that both
-  50K sample reports actually use with batch-invariant random streams;
+  50K sample reports actually use with batch-invariant random streams and the
+  same runtime-environment fingerprint;
 - deterministic fixed-index CoFiTok/dense endpoint panels and a separate
   `1/2/4/8` prefix-path panel bound to the formal checkpoint/sample-set hashes;
 - verified, smaller EMA-only artifacts for both methods, each physically
@@ -65,6 +66,7 @@ runs are trend diagnostics. They cannot override a failed final 50K gate.
 The final-gate check is structural and provenance-bound. It requires the
 absolute/relative FID, metric-range, precision/recall, endpoint, ordered-prefix,
 restricted-synthesis, shuffle, and training-checkpoint-integrity gates. Its
+named gates also require matching sampling runtime environments. Its
 thresholds may be stricter but not weaker than FID 20.0, precision/recall 0.30,
 and 0.05 relative regression limits. Reported FID/precision/recall must exactly
 match the formal 50K generation reports bound by checkpoint and sample-set SHA.

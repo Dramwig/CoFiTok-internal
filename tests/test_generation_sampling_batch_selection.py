@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from cofitok.environment import runtime_environment_sha256
 from scripts.select_generation_sampling_batch import (
     _preflight_matches,
     parse_candidates,
@@ -18,10 +19,13 @@ def _method(
     checkpoint_step: int = 300_000,
 ) -> dict:
     total = 100_000
+    environment = {"schema_version": 1, "device": {"type": "cuda", "name": "GPU"}}
     return {
         "status": "passed",
         "checkpoint_step": checkpoint_step,
         "weights": "ema",
+        "runtime_environment": environment,
+        "runtime_environment_sha256": runtime_environment_sha256(environment),
         "request": {
             "batch_size": batch_size,
             "effective_model_batch_size": batch_size * 2,
@@ -80,6 +84,7 @@ def test_sampling_selector_maximizes_worst_method_throughput() -> None:
     assert report["selected"]["estimated_speedup_over_baseline"] == pytest.approx(
         70.0 / 48.0
     )
+    assert len(report["runtime_environment_sha256"]) == 64
 
 
 def test_sampling_selector_rejects_oom_and_memory_pressure() -> None:
@@ -106,6 +111,21 @@ def test_sampling_selector_rejects_oom_and_memory_pressure() -> None:
 def test_sampling_selector_rejects_mismatched_protocol_or_checkpoint() -> None:
     dense = _method(32, 48.0, prefix_budget=1, checkpoint_step=299_999)
     dense["request"]["guidance_scale"] = 2.0
+
+    with pytest.raises(ValueError, match="no shared"):
+        select_sampling_batch(
+            [_candidate(32, _method(32, 50.0), dense)],
+            baseline_batch_size=32,
+            max_memory_fraction=0.9,
+        )
+
+
+def test_sampling_selector_rejects_mismatched_runtime_environment() -> None:
+    dense = _method(32, 48.0, prefix_budget=1)
+    dense["runtime_environment"]["device"]["name"] = "another GPU"
+    dense["runtime_environment_sha256"] = runtime_environment_sha256(
+        dense["runtime_environment"]
+    )
 
     with pytest.raises(ValueError, match="no shared"):
         select_sampling_batch(

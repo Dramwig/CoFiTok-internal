@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 from typing import Any
 
+from cofitok.environment import runtime_environment_sha256
 from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_pair import generation_pair_contract
 from cofitok.reporting import write_json_report
@@ -112,6 +113,20 @@ def _training_checkpoint_integrity_matches(
     )
 
 
+def _sampling_environment_identity(provenance: dict[str, Any]) -> dict[str, Any]:
+    environment = provenance.get("runtime_environment")
+    declared = provenance.get("runtime_environment_sha256")
+    if not isinstance(environment, dict):
+        return {"valid": False, "sha256": declared}
+    actual = runtime_environment_sha256(environment)
+    return {
+        "valid": declared == actual,
+        "sha256": actual,
+        "device": environment.get("device"),
+        "torch": environment.get("torch"),
+    }
+
+
 def build_report(
     *,
     cofitok_training: dict[str, Any],
@@ -179,6 +194,8 @@ def build_report(
     dense_sampling = _sampling_protocol(dense_provenance)
     cofitok_sampling_git = cofitok_provenance.get("git", {})
     dense_sampling_git = dense_provenance.get("git", {})
+    cofitok_sampling_environment = _sampling_environment_identity(cofitok_provenance)
+    dense_sampling_environment = _sampling_environment_identity(dense_provenance)
     cofitok_model_config = cofitok_training["config"]["model"]
     dense_model_config = dense_training["config"]["model"]
     cofitok_expected_shape = [
@@ -404,6 +421,17 @@ def build_report(
                 "cofitok": cofitok_sampling_git,
                 "dense_identity": dense_sampling_git,
                 "full_training_revision": cofitok_revision if stage == "full" else None,
+            },
+        ),
+        _gate(
+            "matched_sampling_runtime_environment",
+            cofitok_sampling_environment["valid"]
+            and dense_sampling_environment["valid"]
+            and cofitok_sampling_environment["sha256"]
+            == dense_sampling_environment["sha256"],
+            {
+                "cofitok": cofitok_sampling_environment,
+                "dense_identity": dense_sampling_environment,
             },
         ),
         _gate(

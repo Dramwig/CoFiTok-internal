@@ -68,6 +68,10 @@ its payload and sidecar both bind the source training revision and environment.
 ## Formal sampling
 
 `generate_samples.py` uses the same `GenerationSession`; its immutable sampling
-manifest identifies API version 1. Formal metrics and the completion audit reject
-50K evidence that bypasses this API. Batch sampling additionally provides atomic
-progress, exact resume, numbered PNG validation, and sample-set SHA256.
+manifest identifies API version 1. Sampling manifest schema v2 and completed
+report schema v5 also bind the actual Python/PyTorch/CUDA/GPU/project-lock
+environment. Exact resume rejects any environment drift. Formal metrics, the
+matched-batch selector, quality gates, and the completion audit recompute and
+cross-check that fingerprint, and reject 50K evidence that bypasses this API or
+uses different CoFiTok/dense environments. Batch sampling additionally provides
+atomic progress, exact resume, numbered PNG validation, and sample-set SHA256.

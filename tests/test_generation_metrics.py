@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import pytest
 from PIL import Image
 
+from cofitok.environment import runtime_environment_sha256
 from cofitok.image_integrity import sample_set_sha256
 from cofitok.reporting import file_sha256
 from scripts.evaluate_generation_metrics import (
@@ -85,8 +86,18 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
         "prefix_budgets": [8],
     }
     sample_sets = {"8": {"count": 2, "sha256": sample_sha256}}
+    runtime_environment = {"schema_version": 1, "device": {"type": "cpu"}}
+    runtime_environment_sha = runtime_environment_sha256(runtime_environment)
     manifest_path = generated.parent / "sampling_manifest.json"
-    manifest_path.write_text('{"manifest": "test"}\n', encoding="utf-8")
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "runtime_environment": runtime_environment,
+                "runtime_environment_sha256": runtime_environment_sha,
+            }
+        ),
+        encoding="utf-8",
+    )
     manifest_sha256 = file_sha256(manifest_path)
     progress_path = generated.parent / "sampling_progress.json"
     progress_path.write_text(
@@ -112,6 +123,8 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
                     "branch": "scale/generative-system",
                     "tracked_dirty": False,
                 },
+                "runtime_environment": runtime_environment,
+                "runtime_environment_sha256": runtime_environment_sha,
                 "checkpoint": "/checkpoints/model.pt",
                 "checkpoint_sha256": "a" * 64,
                 "checkpoint_integrity_manifest": "/checkpoints/model.pt.integrity.json",
@@ -136,6 +149,23 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path) -> N
     assert provenance["image_shape"] == [3, 4, 4]
     assert provenance["sample_set_sha256"] == sample_sha256
     assert provenance["sampling_progress"]["status"] == "completed"
+    assert provenance["runtime_environment_sha256"] == runtime_environment_sha
+
+    sampling_report = json.loads(report_path.read_text(encoding="utf-8"))
+    sampling_report["runtime_environment_sha256"] = "f" * 64
+    report_path.write_text(json.dumps(sampling_report), encoding="utf-8")
+    with pytest.raises(ValueError, match="runtime environment SHA256 differs"):
+        validate_sampling_provenance(report_path, generated, find_images(generated))
+    sampling_report["runtime_environment_sha256"] = runtime_environment_sha
+    report_path.write_text(json.dumps(sampling_report), encoding="utf-8")
+
+    sampling_manifest_text = manifest_path.read_text(encoding="utf-8")
+    sampling_manifest = json.loads(sampling_manifest_text)
+    sampling_manifest["runtime_environment"]["device"]["type"] = "cuda"
+    manifest_path.write_text(json.dumps(sampling_manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="manifest runtime environment differs"):
+        validate_sampling_provenance(report_path, generated, find_images(generated))
+    manifest_path.write_text(sampling_manifest_text, encoding="utf-8")
 
     sampling_report = json.loads(report_path.read_text(encoding="utf-8"))
     sampling_git = sampling_report.pop("git")
