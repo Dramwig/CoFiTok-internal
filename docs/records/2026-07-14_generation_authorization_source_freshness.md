@@ -42,3 +42,16 @@ source before EMA export. The latter monkeypatches `torch.load` to prove source
 validation fails before deserialization. Runbook tests require both source-gate
 and full matched-pair validation ahead of formal post-evaluation. Final local
 and isolated Linux suite counts are recorded after validation.
+
+- implementation commit: `6b4a1a8db70a545bece254433af50acfb945d40e`;
+- complete local suite: `565/565` passed;
+- complete isolated Linux suite in the real sibling-`paper/` layout: `565/565`
+  passed;
+- tracked Linux runbook syntax audit: `40/40` passed;
+- formal remote target-added-path scan: `154` paths, `0` conflicts;
+- pinned `781a01444fddbf0d48a427ba58bdeed50167b5be` to implementation
+  bundle: `437,107` bytes, SHA256
+  `0c386cddd12e5558e876b3fb4b108c819b9e1016cf71e0d4ef0119699f1d9cae`;
+- formal remote HEAD remained pinned at
+  `781a01444fddbf0d48a427ba58bdeed50167b5be` with a clean tracked
+  worktree before and after verification.
