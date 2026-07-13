@@ -468,6 +468,7 @@ def _inference_export_evidence(
     exports: dict[str, dict[str, Any]],
     artifact_files: dict[str, dict[str, Any]],
     generation_reports: dict[str, dict[str, Any]],
+    training_reports: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     evidence = {}
     for method, expected_smoke_count in (("cofitok", 4), ("dense_identity", 2)):
@@ -475,6 +476,11 @@ def _inference_export_evidence(
         preflight = exports[f"{method}_preflight"]
         smoke = exports[f"{method}_smoke"]
         source_provenance = generation_reports[method]["sample_provenance"]
+        source_training = training_reports[method]
+        expected_environment_sha = source_training.get(
+            "runtime_environment_sha256"
+        )
+        expected_git = source_training.get("git")
         if export.get("status") != "completed" or export.get("verified") is not True:
             raise ValueError(f"{method} inference export is incomplete")
         if export.get("weights") != "ema_export":
@@ -485,6 +491,12 @@ def _inference_export_evidence(
             "checkpoint_sha256"
         ):
             raise ValueError(f"{method} inference export source checkpoint differs")
+        if (
+            export.get("source_runtime_environment_sha256")
+            != expected_environment_sha
+            or export.get("source_git") != expected_git
+        ):
+            raise ValueError(f"{method} inference export source provenance differs")
         artifact_sha = str(export.get("artifact_sha256", ""))
         artifact_bytes = int(export.get("artifact_bytes", 0))
         source_bytes = int(export.get("source_checkpoint_bytes", 0))
@@ -508,6 +520,14 @@ def _inference_export_evidence(
             or int(verified_file.get("step", -1)) != 300_000
             or verified_file.get("source_checkpoint_sha256")
             != export.get("source_checkpoint_sha256")
+            or verified_file.get("source_runtime_environment_sha256")
+            != expected_environment_sha
+            or {
+                "revision": verified_file.get("source_git_revision"),
+                "branch": verified_file.get("source_git_branch"),
+                "dirty": verified_file.get("source_git_dirty"),
+            }
+            != expected_git
         ):
             raise ValueError(f"{method} inference artifact bytes differ from report")
         if preflight.get("status") != "passed":
@@ -522,6 +542,12 @@ def _inference_export_evidence(
             "source_checkpoint_sha256"
         ):
             raise ValueError(f"{method} export preflight source provenance differs")
+        if (
+            preflight.get("source_runtime_environment_sha256")
+            != expected_environment_sha
+            or preflight.get("source_git") != expected_git
+        ):
+            raise ValueError(f"{method} export preflight source identity differs")
         checkpoint = smoke.get("checkpoint", {})
         if smoke.get("status") != "completed" or int(
             smoke.get("output_count", -1)
@@ -535,6 +561,12 @@ def _inference_export_evidence(
             "source_checkpoint_sha256"
         ):
             raise ValueError(f"{method} export smoke source provenance differs")
+        if (
+            checkpoint.get("source_runtime_environment_sha256")
+            != expected_environment_sha
+            or checkpoint.get("source_git") != expected_git
+        ):
+            raise ValueError(f"{method} export smoke source identity differs")
         if any(len(str(row.get("sha256", ""))) != 64 for row in smoke.get("outputs", [])):
             raise ValueError(f"{method} export smoke output SHA256 is malformed")
         evidence[method] = {
@@ -542,6 +574,8 @@ def _inference_export_evidence(
             "artifact_sha256": artifact_sha,
             "artifact_bytes": artifact_bytes,
             "source_checkpoint_bytes": source_bytes,
+            "source_runtime_environment_sha256": expected_environment_sha,
+            "source_git": expected_git,
             "smoke_output_count": expected_smoke_count,
         }
     return evidence
@@ -1223,11 +1257,17 @@ def build_completion_audit(
             + [
                 inference_artifact_files.get("cofitok"),
                 inference_artifact_files.get("dense_identity"),
+                cofitok_full_training,
+                dense_full_training,
             ],
             lambda: _inference_export_evidence(
                 inference_exports,
                 inference_artifact_files,
                 {"cofitok": cofitok_generation, "dense_identity": dense_generation},
+                {
+                    "cofitok": cofitok_full_training,
+                    "dense_identity": dense_full_training,
+                },
             ),
         )
     )

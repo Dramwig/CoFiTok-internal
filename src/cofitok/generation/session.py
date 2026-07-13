@@ -152,6 +152,10 @@ class GenerationSession:
             "weights": self.loaded.weights,
             "artifact_type": self.loaded.artifact_type,
             "source_checkpoint_sha256": self.loaded.source_checkpoint_sha256,
+            "source_runtime_environment_sha256": (
+                self.loaded.source_runtime_environment_sha256
+            ),
+            "source_git": self.loaded.source_git_provenance,
             "device": str(self.device),
             "request": {
                 "seeds": list(request.seeds),

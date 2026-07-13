@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import torch
 from torch import nn
@@ -33,6 +35,8 @@ class LoadedGenerationModel:
     weights: str
     artifact_type: str
     source_checkpoint_sha256: str | None
+    source_runtime_environment_sha256: str | None
+    source_git_provenance: dict[str, Any] | None
 
 
 def load_generation_model(
@@ -85,6 +89,25 @@ def load_generation_model(
         source_checkpoint_sha256 = str(checkpoint["source"]["checkpoint_sha256"])
         if source_checkpoint_sha256 != integrity["source_checkpoint_sha256"]:
             raise ValueError("Inference artifact source provenance mismatch")
+        source_runtime_environment_sha256 = str(
+            checkpoint["source"].get("runtime_environment_sha256", "")
+        )
+        if (
+            source_runtime_environment_sha256
+            != integrity["source_runtime_environment_sha256"]
+        ):
+            raise ValueError("Inference artifact source environment mismatch")
+        source_git = checkpoint["source"].get("git")
+        if not isinstance(source_git, Mapping):
+            raise ValueError("Inference artifact source Git provenance is missing")
+        source_git_provenance = dict(source_git)
+        integrity_git = {
+            "revision": integrity["source_git_revision"],
+            "branch": integrity["source_git_branch"],
+            "dirty": integrity["source_git_dirty"],
+        }
+        if source_git_provenance != integrity_git:
+            raise ValueError("Inference artifact source Git provenance mismatch")
     elif weights == "ema":
         if "ema" not in checkpoint:
             raise KeyError("EMA weights are missing from the checkpoint")
@@ -97,9 +120,13 @@ def load_generation_model(
         ema.copy_to(model)
         effective_weights = "ema"
         source_checkpoint_sha256 = None
+        source_runtime_environment_sha256 = None
+        source_git_provenance = None
     else:
         effective_weights = "model"
         source_checkpoint_sha256 = None
+        source_runtime_environment_sha256 = None
+        source_git_provenance = None
 
     checkpoint_step = int(checkpoint["step"])
     del checkpoint
@@ -120,4 +147,6 @@ def load_generation_model(
         weights=effective_weights,
         artifact_type=(INFERENCE_ARTIFACT_TYPE if is_inference_artifact else "training_checkpoint"),
         source_checkpoint_sha256=source_checkpoint_sha256,
+        source_runtime_environment_sha256=source_runtime_environment_sha256,
+        source_git_provenance=source_git_provenance,
     )

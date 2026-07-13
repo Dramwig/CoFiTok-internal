@@ -17,7 +17,9 @@ Each request explicitly contains:
 The session validates class and token ranges before sampling, uses one generator
 per seed, runs under inference mode/autocast, rejects non-finite or malformed
 outputs, returns CPU tensors, and attaches checkpoint SHA/step/integrity plus the
-resolved sampling protocol.
+resolved sampling protocol. EMA deployment artifacts additionally propagate the
+source training checkpoint SHA, runtime-environment SHA, and Git identity through
+session metadata and CLI reports.
 
 ## CLI
 
@@ -60,7 +62,8 @@ python scripts/infer_generation.py \
 
 The artifact contains EMA-applied weights only. Keep `--weights ema`; requesting
 `model` is rejected. The original full training checkpoint remains mandatory for
-exact resume and scientific provenance.
+exact resume and scientific provenance. Artifact schema v2 is self-describing:
+its payload and sidecar both bind the source training revision and environment.
 
 ## Formal sampling
 

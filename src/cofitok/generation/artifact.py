@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -18,8 +19,34 @@ from cofitok.training.checkpointing import (
 
 
 INFERENCE_ARTIFACT_TYPE = "cofitok_generation_inference"
-INFERENCE_ARTIFACT_FORMAT_VERSION = 1
-INFERENCE_ARTIFACT_INTEGRITY_VERSION = 1
+INFERENCE_ARTIFACT_FORMAT_VERSION = 2
+INFERENCE_ARTIFACT_INTEGRITY_VERSION = 2
+
+
+def _source_checkpoint_provenance(
+    source_integrity: Mapping[str, Any],
+) -> dict[str, Any]:
+    runtime_environment_sha = str(
+        source_integrity.get("runtime_environment_sha256", "")
+    )
+    if len(runtime_environment_sha) != 64:
+        raise ValueError("Source checkpoint lacks runtime environment provenance")
+    git = {
+        "revision": source_integrity.get("git_revision"),
+        "branch": source_integrity.get("git_branch"),
+        "dirty": source_integrity.get("git_dirty"),
+    }
+    if (
+        not isinstance(git["revision"], str)
+        or not git["revision"]
+        or not isinstance(git["branch"], str)
+        or not isinstance(git["dirty"], bool)
+    ):
+        raise ValueError("Source checkpoint lacks Git provenance")
+    return {
+        "runtime_environment_sha256": runtime_environment_sha,
+        "git": git,
+    }
 
 
 def verify_inference_artifact(path: str | Path) -> dict[str, Any]:
@@ -50,6 +77,15 @@ def verify_inference_artifact(path: str | Path) -> dict[str, Any]:
         raise ValueError("Inference artifact step is invalid")
     if len(str(integrity.get("source_checkpoint_sha256", ""))) != 64:
         raise ValueError("Inference artifact source checkpoint SHA256 is malformed")
+    if len(str(integrity.get("source_runtime_environment_sha256", ""))) != 64:
+        raise ValueError("Inference artifact source environment SHA256 is malformed")
+    if (
+        not isinstance(integrity.get("source_git_revision"), str)
+        or not integrity["source_git_revision"]
+        or not isinstance(integrity.get("source_git_branch"), str)
+        or not isinstance(integrity.get("source_git_dirty"), bool)
+    ):
+        raise ValueError("Inference artifact source Git provenance is malformed")
     return integrity
 
 
@@ -60,17 +96,33 @@ def export_ema_inference_artifact(
     source_path = Path(training_checkpoint)
     target = Path(output)
     source_integrity = verify_training_checkpoint(source_path)
+    source_provenance = _source_checkpoint_provenance(source_integrity)
     if target.exists() or checkpoint_integrity_path(target).exists():
         existing = verify_inference_artifact(target)
         if existing["source_checkpoint_sha256"] != source_integrity["checkpoint_sha256"]:
             raise ValueError("Existing inference artifact comes from another checkpoint")
+        if (
+            existing["source_runtime_environment_sha256"]
+            != source_provenance["runtime_environment_sha256"]
+            or {
+                "revision": existing["source_git_revision"],
+                "branch": existing["source_git_branch"],
+                "dirty": existing["source_git_dirty"],
+            }
+            != source_provenance["git"]
+        ):
+            raise ValueError("Existing inference artifact source provenance differs")
         return {
-            "schema_version": 1,
+            "schema_version": 2,
             "status": "completed",
             "reused": True,
             "source_checkpoint": source_path.resolve().as_posix(),
             "source_checkpoint_sha256": source_integrity["checkpoint_sha256"],
             "source_checkpoint_bytes": int(source_integrity["checkpoint_bytes"]),
+            "source_runtime_environment_sha256": source_provenance[
+                "runtime_environment_sha256"
+            ],
+            "source_git": source_provenance["git"],
             "artifact": target.resolve().as_posix(),
             "artifact_integrity_manifest": checkpoint_integrity_path(target).resolve().as_posix(),
             "artifact_sha256": existing["artifact_sha256"],
@@ -83,6 +135,15 @@ def export_ema_inference_artifact(
     checkpoint = torch.load(source_path, map_location="cpu", weights_only=False)
     if int(checkpoint.get("step", -1)) != int(source_integrity["step"]):
         raise ValueError("Training checkpoint step differs from integrity metadata")
+    extra_state = checkpoint.get("extra_state")
+    if not isinstance(extra_state, Mapping):
+        raise ValueError("Training checkpoint lacks deployment provenance state")
+    if (
+        extra_state.get("runtime_environment_sha256")
+        != source_provenance["runtime_environment_sha256"]
+        or extra_state.get("git") != source_provenance["git"]
+    ):
+        raise ValueError("Training checkpoint deployment provenance is inconsistent")
     config = config_from_dict(checkpoint["config"])
     model = CoFiTokTiny(config.model)
     model.load_state_dict(checkpoint["model"], strict=True)
@@ -106,6 +167,10 @@ def export_ema_inference_artifact(
             "checkpoint_format_version": int(
                 source_integrity["checkpoint_format_version"]
             ),
+            "runtime_environment_sha256": source_provenance[
+                "runtime_environment_sha256"
+            ],
+            "git": source_provenance["git"],
         },
     }
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -128,16 +193,26 @@ def export_ema_inference_artifact(
         "artifact_format_version": INFERENCE_ARTIFACT_FORMAT_VERSION,
         "step": int(source_integrity["step"]),
         "source_checkpoint_sha256": source_integrity["checkpoint_sha256"],
+        "source_runtime_environment_sha256": source_provenance[
+            "runtime_environment_sha256"
+        ],
+        "source_git_revision": source_provenance["git"]["revision"],
+        "source_git_branch": source_provenance["git"]["branch"],
+        "source_git_dirty": source_provenance["git"]["dirty"],
     }
     write_json_report(checkpoint_integrity_path(target), integrity)
     verified = verify_inference_artifact(target)
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "completed",
         "reused": False,
         "source_checkpoint": source_path.resolve().as_posix(),
         "source_checkpoint_sha256": source_integrity["checkpoint_sha256"],
         "source_checkpoint_bytes": int(source_integrity["checkpoint_bytes"]),
+        "source_runtime_environment_sha256": source_provenance[
+            "runtime_environment_sha256"
+        ],
+        "source_git": source_provenance["git"],
         "artifact": target.resolve().as_posix(),
         "artifact_integrity_manifest": checkpoint_integrity_path(target).resolve().as_posix(),
         "artifact_sha256": verified["artifact_sha256"],

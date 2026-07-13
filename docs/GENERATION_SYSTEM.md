@@ -367,8 +367,10 @@ See `docs/records/2026-07-13_generation_runtime_environment_fingerprint.md`.
 
 After the final gate, both methods export separate EMA-only deployment
 artifacts. Their type-specific sidecars are verified before deserialization;
-source training checkpoint SHA, step, artifact SHA/bytes, real-forward preflight,
-and short DDIM smoke PNGs are required by completion. These artifacts are smaller
+source training checkpoint SHA, runtime-environment SHA, Git identity, step,
+artifact SHA/bytes, real-forward preflight, and short DDIM smoke PNGs are required
+by completion. Artifact schema v2 propagates the source identity through the
+loader, session, preflight, and inference report. These artifacts are smaller
 inference copies and never replace exact-resume training checkpoints. See
 `docs/records/2026-07-12_deployable_ema_inference_artifact.md`.
 

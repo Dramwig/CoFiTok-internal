@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import pytest
 import torch
 
@@ -24,7 +26,15 @@ from cofitok.training import ExponentialMovingAverage
 from cofitok.training.checkpointing import checkpoint_integrity_path
 
 
-def _training_checkpoint(tmp_path):
+SOURCE_ENVIRONMENT_SHA = "e" * 64
+SOURCE_GIT = {
+    "revision": "a" * 40,
+    "branch": "scale/generative-system",
+    "dirty": False,
+}
+
+
+def _training_checkpoint(tmp_path, *, include_provenance: bool = True):
     config = ExperimentConfig(
         name="inference_export_cpu",
         data=DataConfig(image_size=8, channels=3),
@@ -53,26 +63,37 @@ def _training_checkpoint(tmp_path):
             if torch.is_floating_point(value):
                 value.add_(0.01)
     path = tmp_path / "training.pt"
-    torch.save(
-        {
-            "format_version": 1,
-            "config": config_to_dict(config),
-            "model": model.state_dict(),
-            "ema": ema.state_dict(),
-            "step": 31,
-        },
-        path,
-    )
+    payload = {
+        "format_version": 1,
+        "config": config_to_dict(config),
+        "model": model.state_dict(),
+        "ema": ema.state_dict(),
+        "step": 31,
+    }
+    if include_provenance:
+        payload["extra_state"] = {
+            "runtime_environment_sha256": SOURCE_ENVIRONMENT_SHA,
+            "git": SOURCE_GIT,
+        }
+    torch.save(payload, path)
+    integrity = {
+        "schema_version": 1,
+        "checkpoint": path.name,
+        "checkpoint_bytes": path.stat().st_size,
+        "checkpoint_sha256": file_sha256(path),
+        "checkpoint_format_version": 1,
+        "step": 31,
+    }
+    if include_provenance:
+        integrity.update(
+            runtime_environment_sha256=SOURCE_ENVIRONMENT_SHA,
+            git_revision=SOURCE_GIT["revision"],
+            git_branch=SOURCE_GIT["branch"],
+            git_dirty=SOURCE_GIT["dirty"],
+        )
     write_json_report(
         checkpoint_integrity_path(path),
-        {
-            "schema_version": 1,
-            "checkpoint": path.name,
-            "checkpoint_bytes": path.stat().st_size,
-            "checkpoint_sha256": file_sha256(path),
-            "checkpoint_format_version": 1,
-            "step": 31,
-        },
+        integrity,
     )
     return path
 
@@ -85,13 +106,17 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     reused = export_ema_inference_artifact(source, artifact)
 
     assert report["status"] == "completed"
+    assert report["schema_version"] == 2
     assert report["weights"] == "ema_export"
     assert report["verified"] is True
     assert report["artifact_bytes"] < report["source_checkpoint_bytes"]
     assert reused["reused"] is True
-    assert verify_inference_artifact(artifact)["artifact_sha256"] == report[
-        "artifact_sha256"
-    ]
+    verified = verify_inference_artifact(artifact)
+    assert verified["schema_version"] == 2
+    assert verified["artifact_format_version"] == 2
+    assert verified["artifact_sha256"] == report["artifact_sha256"]
+    assert report["source_runtime_environment_sha256"] == SOURCE_ENVIRONMENT_SHA
+    assert report["source_git"] == SOURCE_GIT
 
     request = GenerationRequest(
         seeds=(9,),
@@ -115,6 +140,21 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     assert export_result.metadata["source_checkpoint_sha256"] == report[
         "source_checkpoint_sha256"
     ]
+    assert (
+        export_result.metadata["source_runtime_environment_sha256"]
+        == SOURCE_ENVIRONMENT_SHA
+    )
+    assert export_result.metadata["source_git"] == SOURCE_GIT
+
+
+def test_ema_export_rejects_source_without_deployment_provenance(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path, include_provenance=False)
+
+    with pytest.raises(ValueError, match="runtime environment provenance"):
+        export_ema_inference_artifact(
+            source,
+            tmp_path / "unprovenanced_inference.pt",
+        )
 
 
 def test_inference_artifact_rejects_model_weights_and_tampering(tmp_path) -> None:
@@ -129,4 +169,17 @@ def test_inference_artifact_rejects_model_weights_and_tampering(tmp_path) -> Non
     payload[len(payload) // 2] ^= 1
     artifact.write_bytes(payload)
     with pytest.raises(ValueError, match="SHA256 mismatch"):
+        GenerationSession.from_checkpoint(artifact, weights="ema")
+
+
+def test_inference_artifact_rejects_source_sidecar_drift(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    export_ema_inference_artifact(source, artifact)
+    integrity_path = checkpoint_integrity_path(artifact)
+    integrity = json.loads(integrity_path.read_text(encoding="utf-8"))
+    integrity["source_git_revision"] = "b" * 40
+    write_json_report(integrity_path, integrity)
+
+    with pytest.raises(ValueError, match="source Git provenance mismatch"):
         GenerationSession.from_checkpoint(artifact, weights="ema")

@@ -171,6 +171,8 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
                 "weights",
                 "artifact_type",
                 "source_checkpoint_sha256",
+                "source_runtime_environment_sha256",
+                "source_git",
             )
         },
         "request": {

@@ -111,6 +111,10 @@ def run_sampling_preflight(
         "requested_weights": weights,
         "artifact_type": loaded.artifact_type,
         "source_checkpoint_sha256": loaded.source_checkpoint_sha256,
+        "source_runtime_environment_sha256": (
+            loaded.source_runtime_environment_sha256
+        ),
+        "source_git": loaded.source_git_provenance,
         "device": str(device),
         "torch_version": torch.__version__,
         "request": {

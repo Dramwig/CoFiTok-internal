@@ -520,6 +520,12 @@ def _full_training_monitor() -> dict:
 
 def _inference_exports() -> dict:
     output = {}
+    environment_sha = runtime_environment_sha256(_runtime_environment())
+    source_git = {
+        "dirty": False,
+        "revision": FULL_REVISION,
+        "branch": "scale/generative-system",
+    }
     for method, source_sha, artifact_sha, count in (
         ("cofitok", "a" * 64, "f" * 64, 4),
         ("dense_identity", "b" * 64, "9" * 64, 2),
@@ -535,6 +541,8 @@ def _inference_exports() -> dict:
             "checkpoint_step": 300_000,
             "source_checkpoint_sha256": source_sha,
             "source_checkpoint_bytes": 1_000,
+            "source_runtime_environment_sha256": environment_sha,
+            "source_git": dict(source_git),
             "artifact_sha256": artifact_sha,
             "artifact_bytes": 400,
             "artifact": artifact,
@@ -546,6 +554,8 @@ def _inference_exports() -> dict:
             "artifact_type": "cofitok_generation_inference",
             "weights": "ema_export",
             "source_checkpoint_sha256": source_sha,
+            "source_runtime_environment_sha256": environment_sha,
+            "source_git": dict(source_git),
         }
         output[f"{method}_smoke"] = {
             "status": "completed",
@@ -554,6 +564,8 @@ def _inference_exports() -> dict:
                 "checkpoint_sha256": artifact_sha,
                 "artifact_type": "cofitok_generation_inference",
                 "source_checkpoint_sha256": source_sha,
+                "source_runtime_environment_sha256": environment_sha,
+                "source_git": dict(source_git),
             },
             "outputs": [{"sha256": str(index) * 64} for index in range(1, count + 1)],
         }
@@ -588,6 +600,7 @@ def _full_checkpoint_files() -> dict:
 
 def _inference_artifact_files() -> dict:
     output = {}
+    environment_sha = runtime_environment_sha256(_runtime_environment())
     for method, source_sha, artifact_sha in (
         ("cofitok", "a" * 64, "f" * 64),
         ("dense_identity", "b" * 64, "9" * 64),
@@ -603,6 +616,10 @@ def _inference_artifact_files() -> dict:
             "artifact_sha256": artifact_sha,
             "artifact_bytes": 400,
             "source_checkpoint_sha256": source_sha,
+            "source_runtime_environment_sha256": environment_sha,
+            "source_git_revision": FULL_REVISION,
+            "source_git_branch": "scale/generative-system",
+            "source_git_dirty": False,
             "step": 300_000,
         }
     return output
@@ -723,6 +740,7 @@ def test_completion_audit_reports_missing_work_as_in_progress() -> None:
         "reproducible_full_checkpoint_files",
         "full_runtime_selection",
         "formal_50k_generation",
+        "deployable_ema_inference_artifacts",
         "final_comparison_report",
     ]
 
@@ -979,6 +997,7 @@ def test_completion_audit_rejects_matched_runtime_environment_drift() -> None:
     assert completion["failed_checks"] == [
         "full_training_runtime_environment",
         "reproducible_full_checkpoint_files",
+        "deployable_ema_inference_artifacts",
     ]
 
 
@@ -1023,6 +1042,18 @@ def test_completion_audit_rejects_export_from_stale_training_checkpoint() -> Non
     kwargs = _kwargs()
     kwargs["inference_exports"]["cofitok_export"][
         "source_checkpoint_sha256"
+    ] = "Z" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_rejects_export_from_stale_training_environment() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_exports"]["cofitok_export"][
+        "source_runtime_environment_sha256"
     ] = "Z" * 64
 
     report = build_completion_audit(**kwargs)

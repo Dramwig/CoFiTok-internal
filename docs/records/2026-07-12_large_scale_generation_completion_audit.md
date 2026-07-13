@@ -52,7 +52,8 @@ The audit requires all of the following:
   `1/2/4/8` prefix-path panel bound to the formal checkpoint/sample-set hashes;
 - verified, smaller EMA-only artifacts for both methods, each physically
   rehashed at terminal audit time, bound to the source 300K checkpoint, and
-  proven by real-forward preflight plus short DDIM PNG smoke;
+  bound to the full-training runtime environment and Git revision through the
+  payload, sidecar, preflight, and short DDIM PNG smoke;
 - a passing final gate with decision `large_scale_generation_ready`;
 - the ready two-tier comparison containing the matched pair and three official
   contextual methods, with direct compute fields recomputed from training and
