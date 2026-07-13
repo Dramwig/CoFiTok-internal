@@ -196,3 +196,21 @@ def test_local_deployer_pins_current_training_revision_and_builds_bundle() -> No
     assert "$RemoteValidator" not in deployer
     assert "$Validator" not in deployer
     assert "ExpectedRemoteCommit" in deployer
+
+
+def test_legacy_pair_deployment_waiter_is_bounded_locked_and_fail_closed() -> None:
+    waiter = _read("artifacts/runbooks/wait_for_legacy_pair_and_deploy.sh")
+
+    assert "flock -n 7" in waiter
+    assert "COFITOK_DEPLOY_WAITER_MAX_SECONDS:-172800" in waiter
+    assert "git bundle verify" in waiter
+    assert "git bundle list-heads" in waiter
+    assert "git diff --quiet" in waiter
+    assert "git diff --cached --quiet" in waiter
+    assert "pair_complete" in waiter
+    assert "legacy_process_active" in waiter
+    assert "monitor_failed" in waiter
+    assert "training_complete" in waiter
+    assert "completed_steps" in waiter
+    assert 'bash "$DEPLOY_HELPER" "$BUNDLE" "$EXPECTED_COMMIT" "$TARGET_COMMIT"' in waiter
+    assert waiter.index("pair_complete") < waiter.rindex('bash "$DEPLOY_HELPER"')

@@ -82,6 +82,15 @@ the authoritative compressed 10% revision, and the full-training revision.
 At record time the pinned legacy CoFiTok run was complete and the matched dense
 run remained healthy. No remote revision or active training process was changed.
 
+The final bundle and deployment helper may be staged under `/tmp` while training
+continues. `wait_for_legacy_pair_and_deploy.sh` is a locked, 48-hour-bounded
+one-shot waiter: it verifies the bundle/target and clean pinned worktree, polls
+the authoritative monitor, requires both exact 50K reports and no remaining
+legacy training/runbook process, then invokes the existing fail-closed deployer.
+Monitor failure, timeout, revision drift, dirty tracked files, incomplete reports,
+or a mismatched bundle stops deployment. It does not touch the formal worktree
+while the legacy pair is active.
+
 Machine-readable evidence:
 
 ```text
