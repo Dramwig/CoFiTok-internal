@@ -74,3 +74,15 @@ failures. The bounded scanner then checked the formal remote's large untracked
 tree against the implementation target: `148` target-added paths, zero
 conflicts, and `0.054` seconds elapsed. The formal worktree remained at pinned
 `781a01444fddbf0d48a427ba58bdeed50167b5be` with clean tracked status.
+
+Bundle-prerequisite enforcement was added in
+`1767a5ecbf404d1573fdbd16f758c8ff1303a9e5`. The complete local and isolated
+Linux suites both pass `542/542`. Its pinned incremental bundle is `416,672`
+bytes with SHA256
+`0f1b1b40ebcdee945a17cc3d5d71509b43714628ca81d73ad3eda067f40139af`;
+the independent Python header parser returns only
+`781a01444fddbf0d48a427ba58bdeed50167b5be`. A negative server rehearsal used
+the correct target head but deliberately required implementation commit
+`91095b907862b5fe72b7dff2196e2b76b046f3cd`; the remote helper rejected it
+before fetch with the dedicated exit code `78`. The formal worktree again
+remained pinned and clean.
