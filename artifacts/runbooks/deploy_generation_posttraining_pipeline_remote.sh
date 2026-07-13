@@ -119,6 +119,35 @@ fi
 if [[ -f "$PID_FILE" ]]; then
   previous_pid="$(cat "$PID_FILE")"
   if [[ "$previous_pid" =~ ^[0-9]+$ ]] && kill -0 "$previous_pid" 2>/dev/null; then
+    if [[ "$current_commit" != "$TARGET_COMMIT" ]]; then
+      printf 'live supervisor PID %s cannot authorize deployment from HEAD %s\n' \
+        "$previous_pid" "$current_commit" >&2
+      exit 79
+    fi
+    previous_command="$(ps -p "$previous_pid" -o args=)"
+    if [[ "$previous_command" != *"generation_completion_supervisor.sh"* ]]; then
+      printf 'PID %s is live but is not the generation completion supervisor\n' \
+        "$previous_pid" >&2
+      exit 80
+    fi
+    if [[ ! -f "$DEPLOYMENT_RECEIPT" ]]; then
+      printf 'live supervisor lacks deployment receipt: %s\n' \
+        "$DEPLOYMENT_RECEIPT" >&2
+      exit 81
+    fi
+    python - "$DEPLOYMENT_RECEIPT" "$EXPECTED_COMMIT" "$TARGET_COMMIT" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    receipt = json.load(handle)
+if receipt.get("status") != "pass":
+    raise SystemExit("existing deployment receipt did not pass")
+if receipt.get("expected_training_revision") != sys.argv[2]:
+    raise SystemExit("existing deployment receipt has the wrong training revision")
+if receipt.get("target_revision") != sys.argv[3]:
+    raise SystemExit("existing deployment receipt has the wrong target revision")
+PY
     printf 'generation completion supervisor is already active as PID %s\n' \
       "$previous_pid"
     exit 0

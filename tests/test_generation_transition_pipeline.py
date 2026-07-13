@@ -150,6 +150,12 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert 'cp -- "$BUNDLE" "$bundle_temporary"' in deployer
     assert 'git bundle verify "$ARCHIVED_BUNDLE"' in deployer
     assert "kill -0 \"$previous_pid\"" in deployer
+    assert '"$current_commit" != "$TARGET_COMMIT"' in deployer
+    assert 'ps -p "$previous_pid" -o args=' in deployer
+    assert '"generation_completion_supervisor.sh"' in deployer
+    assert '[[ ! -f "$DEPLOYMENT_RECEIPT" ]]' in deployer
+    assert 'receipt.get("status") != "pass"' in deployer
+    assert 'receipt.get("target_revision") != sys.argv[3]' in deployer
     assert "exit 0" in deployer
     assert "generation_completion_supervisor.sh" in deployer
     assert "nohup bash \"$SUPERVISOR\"" in deployer

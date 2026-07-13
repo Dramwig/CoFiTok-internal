@@ -44,8 +44,11 @@ After the fast-forward, the helper runs the full test suite and syntax-checks
 every target-tracked shell runbook before launching one background completion
 pipeline. If deployment was
 already fast-forwarded but validation or launch stopped, rerunning the same
-command resumes from the target revision. A live PID file makes a repeated
-command return successfully without launching a duplicate.
+command resumes from the target revision. A live PID file is accepted as an
+idempotent success only when HEAD is already the exact target, the PID command
+is the generation completion supervisor, and a passing deployment receipt binds
+the expected training and target revisions. A reused or unrelated live PID
+cannot suppress deployment.
 
 After tests and shell checks pass, the helper atomically writes
 `generation_upgrade_deployment_receipt.json` schema v2 under the generation
@@ -68,16 +71,19 @@ changed remote HEAD is not accepted as a controlled transition.
 ## Completion pipeline
 
 `artifacts/runbooks/generation_complete_pipeline_after_10pct.sh` holds an
-exclusive `flock` and advances through these stages:
+exclusive `flock`. After the deploy helper validates the immutable legacy pair,
+the deployed pipeline advances through these stages:
 
-1. validate the completed matched 10% pair;
-2. migrate legacy checkpoint integrity, preflight inference, sample 10K images
-   per method, compute metrics, and build the scaling gate;
+1. train and validate a fresh authoritative true-compressed 10% CoFiTok/dense
+   pair on the deployed revision with native integrity sidecars;
+2. preflight inference, sample 10K images per method, compute metrics, and build
+   the scaling gate without rewriting either training report or checkpoint;
 3. require `promote_to_full_imagenet256`;
 4. run alternating matched 50K/100K/200K/300K full-data training and milestone
    diagnostics;
 5. run the formal matched 50K-sample DDIM-250 evaluation;
-6. require the final `large_scale_generation_ready` decision.
+6. require `large_scale_generation_ready`, export the release-authorized EMA
+   inference artifacts, and run the terminal completion audit.
 
 Every stage atomically updates
 `/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_complete_pipeline_after_10pct.status.json`.
