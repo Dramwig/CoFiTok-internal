@@ -277,7 +277,10 @@ def _sampling_runtime_selection_evidence(
 
 
 def _visual_audit_evidence(
-    report: dict[str, Any], generation_reports: dict[str, dict[str, Any]]
+    report: dict[str, Any],
+    generation_reports: dict[str, dict[str, Any]],
+    *,
+    expected_revision: str,
 ) -> dict[str, Any]:
     if report.get("status") != "completed":
         raise ValueError("final deterministic visual audit is incomplete")
@@ -285,6 +288,13 @@ def _visual_audit_evidence(
         raise ValueError("visual audit incorrectly claims quantitative metric status")
     if report.get("prefix_budgets") != [1, 2, 4, 8]:
         raise ValueError("visual audit lacks the required prefix budgets")
+    git = report.get("git", {})
+    if (
+        git.get("revision") != expected_revision
+        or git.get("branch") != "scale/generative-system"
+        or git.get("tracked_dirty") is not False
+    ):
+        raise ValueError("visual audit was not built from the clean full-training revision")
     sources = report.get("sources", {})
     for method in ("cofitok", "dense_identity"):
         provenance = generation_reports[method].get("sample_provenance", {})
@@ -809,6 +819,7 @@ def build_completion_audit(
             lambda: _visual_audit_evidence(
                 visual_audit,
                 {"cofitok": cofitok_generation, "dense_identity": dense_generation},
+                expected_revision=expected_full_revision,
             ),
         )
     )

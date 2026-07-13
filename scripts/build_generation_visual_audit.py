@@ -10,7 +10,10 @@ import torch
 from torchvision.io import read_image
 from torchvision.utils import make_grid, save_image
 
-from cofitok.reporting import file_sha256, write_json_report
+from cofitok.reporting import file_sha256, git_provenance, write_json_report
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _read(path: str | Path) -> dict[str, Any]:
@@ -133,6 +136,7 @@ def build_visual_audit(
     prefix_budgets: list[int],
     output_dir: Path,
 ) -> dict[str, Any]:
+    git = git_provenance(PROJECT_ROOT)
     cofitok_budget = max(int(value) for value in cofitok_sampling["sampling"]["prefix_budgets"])
     dense_budget = max(int(value) for value in dense_sampling["sampling"]["prefix_budgets"])
     cofitok_source = _sampling_source(
@@ -201,6 +205,7 @@ def build_visual_audit(
         "schema_version": 1,
         "status": "completed",
         "role": "deterministic_visual_quality_audit",
+        "git": git,
         "claim_policy": {
             "quantitative_metric": False,
             "reason": "Fixed panels support human inspection and do not replace formal FID/IS/precision/recall.",

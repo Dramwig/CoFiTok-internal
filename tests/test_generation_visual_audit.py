@@ -63,6 +63,8 @@ def test_visual_audit_builds_hash_bound_matched_and_prefix_panels(tmp_path) -> N
     )
 
     assert report["status"] == "completed"
+    assert len(report["git"]["revision"]) == 40
+    assert isinstance(report["git"]["tracked_dirty"], bool)
     assert report["sources"]["cofitok"]["checkpoint_sha256"] == "a" * 64
     assert report["sources"]["dense_identity"]["sample_set_sha256"] == "1" * 64
     assert report["statistics"]["cofitok"]["exact_duplicate_count"] == 0

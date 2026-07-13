@@ -329,8 +329,9 @@ Promotion and final post-evaluation also create deterministic fixed-index
 CoFiTok/dense endpoint panels plus a separate `1/2/4/8` prefix-path panel.
 Their report binds every panel and source image to checkpoint/sample-set SHA,
 rejects exact duplicates in the fixed endpoint selections, and remains explicitly
-non-quantitative. The completion audit requires this visual evidence in addition
-to formal metrics. See
+non-quantitative. It also records the builder Git revision, branch, and tracked
+worktree state; the completion audit accepts only the clean full-training
+revision. This visual evidence is required in addition to formal metrics. See
 `docs/records/2026-07-12_generation_visual_quality_audit.md`.
 
 The multi-week completion run is wrapped by a bounded supervisor. Only

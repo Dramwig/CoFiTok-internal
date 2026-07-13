@@ -366,6 +366,11 @@ def _sampling_runtime_selection() -> dict:
 def _visual_audit() -> dict:
     return {
         "status": "completed",
+        "git": {
+            "revision": FULL_REVISION,
+            "branch": "scale/generative-system",
+            "tracked_dirty": False,
+        },
         "claim_policy": {"quantitative_metric": False},
         "indices": [0, 1],
         "prefix_indices": [0, 1],
@@ -728,6 +733,16 @@ def test_completion_audit_rejects_sampling_outside_stable_inference_api() -> Non
 def test_completion_audit_rejects_visual_audit_from_stale_sample_set() -> None:
     kwargs = _kwargs()
     kwargs["visual_audit"]["sources"]["cofitok"]["sample_set_sha256"] = "Z" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deterministic_visual_quality_audit"]
+
+
+def test_completion_audit_rejects_visual_audit_from_dirty_code() -> None:
+    kwargs = _kwargs()
+    kwargs["visual_audit"]["git"]["tracked_dirty"] = True
 
     report = build_completion_audit(**kwargs)
 
