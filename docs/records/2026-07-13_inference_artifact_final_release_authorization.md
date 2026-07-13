@@ -29,6 +29,12 @@ sidecar, and export report. The stable loader compares payload with sidecar and
 propagates it through `GenerationSession`, real-forward preflight, and inference
 reports. Existing artifact reuse requires the exact same release authorization.
 
+As of 2026-07-14, release authorization capture also rehashes the full gate's
+six bound training/metrics/checkpoint-evaluation reports before any source
+checkpoint deserialization. A stale final gate therefore cannot authorize a
+new or reused EMA artifact. See
+`docs/records/2026-07-14_generation_authorization_source_freshness.md`.
+
 The terminal completion audit recomputes the semantic binding against the actual
 full gate, requires artifact-file/export/preflight/smoke equality, and requires
 CoFiTok and dense artifacts to use the same gate file binding. A failed, weakened,

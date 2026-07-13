@@ -157,13 +157,16 @@ The 300K runbook and completion audit call this same contract, so editing only a
 gate's status or decision cannot authorize an expensive downstream stage.
 Formal gate files also bind all six authoritative source reports: CoFiTok/dense
 training, distribution metrics, and checkpoint-mechanism evaluation. Each source
-is recorded by authoritative path, byte count, and SHA256. The CLI validator
-rehashes them before a gate can be reused or authorize another stage; the
+is recorded by authoritative path, byte count, and SHA256. The shared core
+verifier rehashes them before the CLI may reuse a gate, before every formal
+300K training start or resume, and before final EMA export consumes its release
+gate; the
 completion pipeline reruns a recoverable post-evaluation stage when source-only
 verification fails, while a source-valid scientific `hold` remains a
 non-retryable quality decision. The terminal audit independently requires the
 same verified source set. See
-`docs/records/2026-07-14_generation_gate_source_provenance.md`.
+`docs/records/2026-07-14_generation_gate_source_provenance.md` and
+`docs/records/2026-07-14_generation_authorization_source_freshness.md`.
 The full 300K trainer also consumes the exact scaling gate through
 `--authorization-gate`. Its canonical gate identity, file SHA256, byte count,
 stage, and decision are copied into the run manifest, every checkpoint payload,
@@ -249,6 +252,10 @@ status, protocol, source metrics path, and table role. The completion audit
 recomputes direct training/sampling cost fields and cross-checks every contextual
 row against that source table. See
 `docs/records/2026-07-12_generation_baseline_comparison_provenance.md`.
+Before any checkpoint evaluation or sampling, the full post-evaluation runbook
+also rehashes the scaling gate's six source reports and reruns the complete full
+matched-training-pair validator against the deployed revision, recipe, dataset,
+parameter gap, checkpoint pointers, and scaling authorization.
 
 Full-training milestone checkpoints are reproducible assets, not disposable
 rolling saves. Both 300K configs protect 50K, 100K, 200K, and 300K while also
@@ -366,7 +373,9 @@ and gate provenance. Legacy 10% weights therefore require the migration stage;
 full checkpoints satisfy this contract at creation. See
 `docs/records/2026-07-12_generation_checkpoint_trust_boundary.md`.
 Formal full-training checkpoints additionally bind their scaling authorization
-before deserialization; see
+before deserialization. Capturing that authorization on every segment reopens
+the gate and verifies all six bound source reports before checkpoint loading;
+see
 `docs/records/2026-07-13_generation_training_authorization_binding.md`.
 
 Long sampling runs expose atomic, resumable progress. Each completed batch
@@ -516,7 +525,9 @@ scaling-gate training authorization, final quality release authorization,
 artifact SHA/bytes, real-forward preflight, and short DDIM smoke PNGs are required
 by completion. Artifact schema v4 propagates the source identity, training
 authorization, and exact passing full gate through the payload, sidecar, export
-report, loader, session, preflight, and inference report. These artifacts are smaller
+report, loader, session, preflight, and inference report. Release authorization
+capture rehashes the final gate's six source reports before `torch.load`, so a
+stale quality decision cannot authorize an artifact. These artifacts are smaller
 inference copies and never replace exact-resume training checkpoints. See
 `docs/records/2026-07-12_deployable_ema_inference_artifact.md` and
 `docs/records/2026-07-13_inference_artifact_final_release_authorization.md`.

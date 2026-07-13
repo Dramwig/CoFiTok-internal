@@ -13,6 +13,7 @@ REPORT_ROOT="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k
 OFFICIAL_RELATED="$PROJECT/artifacts/reports/baselines/official_related_methods_2026-07-11_final/official_related_methods_table.json"
 SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/imagenet256_full_50k_sampling"
 SAMPLING_SELECTION="$REPORT_ROOT/sampling_runtime_selection.json"
+SCALING_GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_matched_50k_2026-07-12/promotion_gate.json"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -24,24 +25,17 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
 fi
 mkdir -p "$REPORT_ROOT"
 
-validate_training_report() {
-  python - "$1" <<'PY'
-import json
-import sys
+python scripts/validate_generation_gate_report.py \
+  --gate "$SCALING_GATE" --stage scaling
 
-with open(sys.argv[1], encoding="utf-8") as handle:
-    report = json.load(handle)
-if report.get("training_complete") is not True:
-    raise SystemExit(f"training is incomplete: {sys.argv[1]}")
-if report.get("completed_steps") != report.get("target_steps"):
-    raise SystemExit(f"step mismatch: {sys.argv[1]}")
-if report.get("git", {}).get("dirty") is not False:
-    raise SystemExit(f"training used a dirty tracked worktree: {sys.argv[1]}")
-PY
-}
+python scripts/validate_generation_training_pair.py \
+  --cofitok-training "$COFITOK_RUN/training_report.json" \
+  --dense-training "$DENSE_RUN/training_report.json" \
+  --expected-steps 300000 --expected-revision "$(git rev-parse HEAD)" \
+  --expected-dataset imagenet_256 --expected-recipe-stage full \
+  --authorization-gate "$SCALING_GATE" \
+  >"$REPORT_ROOT/posteval_training_pair_validation.json"
 
-validate_training_report "$COFITOK_RUN/training_report.json"
-validate_training_report "$DENSE_RUN/training_report.json"
 test -f "$COFITOK_CHECKPOINT"
 test -f "$DENSE_CHECKPOINT"
 test -f "$OFFICIAL_RELATED"

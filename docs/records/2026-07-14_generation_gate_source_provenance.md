@@ -37,6 +37,14 @@ quality decision. The completion pipeline uses that distinction as follows:
 The terminal completion audit receives a fresh source verification for both the
 scaling and final gates and requires it to equal each gate's embedded identities.
 
+The source verifier was subsequently moved from the report-builder script into
+`cofitok.generation_gate_sources` so authorization consumers can enforce the
+same contract without depending on a CLI module. Formal training capture now
+rehashes the scaling sources at every start/resume, final release capture does
+the same before EMA export deserializes a checkpoint, and full 50K post-eval
+revalidates both the gate and matched training pair before GPU evaluation. See
+`docs/records/2026-07-14_generation_authorization_source_freshness.md`.
+
 ## Verification
 
 Tests cover six-source construction, authoritative suffix rejection, byte-level

@@ -15,6 +15,7 @@ from cofitok.generation.artifact import verify_inference_artifact
 from cofitok.generation_authorization import validate_generation_gate_binding
 from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_gate import validate_generation_gate_authorization
+from cofitok.generation_gate_sources import verify_generation_gate_source_reports
 from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training.checkpointing import (
@@ -31,13 +32,6 @@ try:
     from scripts.select_generation_sampling_batch import select_sampling_batch
 except ModuleNotFoundError:
     from select_generation_sampling_batch import select_sampling_batch
-
-try:
-    from scripts.build_generation_gate_report import (
-        verify_generation_gate_source_reports,
-    )
-except ModuleNotFoundError:
-    from build_generation_gate_report import verify_generation_gate_source_reports
 
 try:
     from scripts.write_generation_deployment_receipt import (

@@ -14,6 +14,10 @@ from cofitok.generation_gate import (
     REQUIRED_GENERATION_GATES,
     validate_generation_gate_authorization,
 )
+from cofitok.generation_gate_sources import (
+    GATE_SOURCE_SUFFIXES,
+    build_generation_gate_source_reports,
+)
 from cofitok.training import ExponentialMovingAverage
 from cofitok.training.authorization import (
     capture_generation_training_authorization,
@@ -109,6 +113,24 @@ def _gate(stage: str = "scaling") -> dict:
     }
 
 
+def _bind_gate_sources(gate: dict, tmp_path: Path) -> dict[str, Path]:
+    stage = gate["stage"]
+    paths = {}
+    for index, (name, suffix) in enumerate(GATE_SOURCE_SUFFIXES[stage].items()):
+        path = tmp_path / suffix
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps({"name": name, "index": index}),
+            encoding="utf-8",
+        )
+        paths[name] = path
+    gate["source_reports"] = build_generation_gate_source_reports(
+        stage=stage,
+        paths=paths,
+    )
+    return paths
+
+
 def test_scaling_gate_authorizes_only_the_locked_contract() -> None:
     evidence = validate_generation_gate_authorization(_gate(), expected_stage="scaling")
 
@@ -157,8 +179,10 @@ def test_full_gate_rejects_weakened_precision_floor() -> None:
 def test_training_authorization_binds_gate_file_and_checkpoint_before_load(
     tmp_path, monkeypatch
 ) -> None:
+    gate = _gate()
+    source_paths = _bind_gate_sources(gate, tmp_path)
     gate_path = tmp_path / "promotion_gate.json"
-    gate_path.write_text(json.dumps(_gate(), sort_keys=True), encoding="utf-8")
+    gate_path.write_text(json.dumps(gate, sort_keys=True), encoding="utf-8")
     authorization = capture_generation_training_authorization(gate_path)
 
     model = torch.nn.Linear(2, 2)
@@ -189,7 +213,7 @@ def test_training_authorization_binds_gate_file_and_checkpoint_before_load(
     )
     assert restored["extra_state"]["training_authorization"] == authorization
 
-    changed_gate = _gate()
+    changed_gate = copy.deepcopy(gate)
     changed_gate["gates"].append(
         {"name": "additional_audit_note", "passed": True, "evidence": {}}
     )
@@ -208,6 +232,10 @@ def test_training_authorization_binds_gate_file_and_checkpoint_before_load(
             expected_training_authorization=changed_authorization,
         )
 
+    source_paths["cofitok_generation"].write_text("changed\n", encoding="ascii")
+    with pytest.raises(ValueError, match="source report changed after binding"):
+        capture_generation_training_authorization(gate_path)
+
 
 def test_full_training_runbook_binds_authorization_to_every_segment() -> None:
     runbook = (
@@ -217,6 +245,19 @@ def test_full_training_runbook_binds_authorization_to_every_segment() -> None:
 
     assert '--authorization-gate "$GATE"' in runbook
     assert "training_pair_validation.json" in runbook
+
+
+def test_full_posteval_revalidates_gate_sources_and_training_pair() -> None:
+    runbook = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts/runbooks/generation_full_posteval_50k.sh"
+    ).read_text(encoding="utf-8")
+
+    assert "validate_generation_gate_report.py" in runbook
+    assert '--gate "$SCALING_GATE" --stage scaling' in runbook
+    assert "validate_generation_training_pair.py" in runbook
+    assert '--authorization-gate "$SCALING_GATE"' in runbook
+    assert "posteval_training_pair_validation.json" in runbook
 
 
 def test_formal_full_trainer_refuses_to_start_without_authorization(tmp_path) -> None:

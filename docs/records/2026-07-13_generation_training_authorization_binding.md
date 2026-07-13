@@ -30,6 +30,12 @@ canonical identity are also copied into the checkpoint integrity sidecar and
 payload mapping before restoring model, EMA, optimizer, scheduler, scaler, RNG,
 or sampler state.
 
+As of 2026-07-14, capturing this authorization also reopens and hashes all six
+source reports embedded in the scaling gate. Every milestone start/resume
+therefore rejects source drift before deserializing its training checkpoint;
+the gate file alone is no longer sufficient when its evidence changed in place.
+See `docs/records/2026-07-14_generation_authorization_source_freshness.md`.
+
 The shared generation loader and EMA-export path also validate the payload
 authorization against the integrity sidecar before loading model/EMA weights.
 This closes the final-checkpoint case where step 300K is sampled directly and no

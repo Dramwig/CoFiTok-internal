@@ -23,7 +23,7 @@ from scripts.audit_large_scale_generation_completion import (
     build_completion_audit,
 )
 from scripts.build_generation_milestone_report import expected_source_report_suffixes
-from scripts.build_generation_gate_report import GATE_SOURCE_SUFFIXES
+from cofitok.generation_gate_sources import GATE_SOURCE_SUFFIXES
 from scripts.select_generation_sampling_batch import select_sampling_batch
 from cofitok.environment import runtime_environment_sha256
 

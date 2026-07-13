@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.build_generation_gate_report import (
+from cofitok.generation_gate_sources import (
     GATE_SOURCE_SUFFIXES,
     build_generation_gate_source_reports,
     verify_generation_gate_source_reports,

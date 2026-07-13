@@ -5,13 +5,7 @@ import json
 from pathlib import Path
 
 from cofitok.generation_gate import validate_generation_gate_authorization
-
-try:
-    from scripts.build_generation_gate_report import (
-        verify_generation_gate_source_reports,
-    )
-except ModuleNotFoundError:
-    from build_generation_gate_report import verify_generation_gate_source_reports
+from cofitok.generation_gate_sources import verify_generation_gate_source_reports
 
 
 def parse_args() -> argparse.Namespace:

@@ -9,6 +9,7 @@ from cofitok.generation_gate import (
     generation_gate_identity_sha256,
     validate_generation_gate_authorization,
 )
+from cofitok.generation_gate_sources import verify_generation_gate_source_reports
 from cofitok.reporting import file_sha256
 
 
@@ -56,6 +57,7 @@ def capture_generation_gate_binding(
     path = Path(gate_path).resolve()
     with path.open("r", encoding="utf-8") as handle:
         gate = json.load(handle)
+    verify_generation_gate_source_reports(gate)
     return build_generation_gate_binding(
         gate,
         expected_stage=expected_stage,

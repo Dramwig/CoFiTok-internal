@@ -22,6 +22,10 @@ from cofitok.generation import (
     verify_inference_artifact,
 )
 from cofitok.generation_gate import REQUIRED_GENERATION_GATES
+from cofitok.generation_gate_sources import (
+    GATE_SOURCE_SUFFIXES,
+    build_generation_gate_source_reports,
+)
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
@@ -146,8 +150,22 @@ def _full_gate() -> dict:
 
 
 def _release_gate_path(tmp_path):
+    gate = _full_gate()
+    paths = {}
+    for index, (name, suffix) in enumerate(GATE_SOURCE_SUFFIXES["full"].items()):
+        path = tmp_path / suffix
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps({"name": name, "index": index}),
+            encoding="utf-8",
+        )
+        paths[name] = path
+    gate["source_reports"] = build_generation_gate_source_reports(
+        stage="full",
+        paths=paths,
+    )
     path = tmp_path / "final_generation_gate.json"
-    path.write_text(json.dumps(_full_gate(), sort_keys=True), encoding="utf-8")
+    path.write_text(json.dumps(gate, sort_keys=True), encoding="utf-8")
     return path
 
 
@@ -415,6 +433,27 @@ def test_formal_inference_export_requires_release_gate(tmp_path) -> None:
         )
 
 
+def test_formal_export_rejects_release_source_drift_before_deserialization(
+    tmp_path, monkeypatch
+) -> None:
+    source = _training_checkpoint(tmp_path, include_authorization=True)
+    release_gate = _release_gate_path(tmp_path)
+    gate = json.loads(release_gate.read_text(encoding="utf-8"))
+    source_report = Path(gate["source_reports"]["dense_generation"]["path"])
+    source_report.write_text("changed\n", encoding="ascii")
+
+    def fail_if_deserialized(*args, **kwargs):
+        raise AssertionError("checkpoint was deserialized before gate-source validation")
+
+    monkeypatch.setattr(torch, "load", fail_if_deserialized)
+    with pytest.raises(ValueError, match="source report changed after binding"):
+        export_ema_inference_artifact(
+            source,
+            tmp_path / "source_drift_inference.pt",
+            release_gate=release_gate,
+        )
+
+
 def test_inference_artifact_rejects_release_authorization_drift(tmp_path) -> None:
     source = _training_checkpoint(tmp_path, include_authorization=True)
     artifact = tmp_path / "cofitok_ema_inference.pt"
@@ -441,7 +480,7 @@ def test_export_reuse_rejects_changed_release_gate(tmp_path) -> None:
         artifact,
         release_gate=release_gate,
     )
-    changed_gate = _full_gate()
+    changed_gate = json.loads(release_gate.read_text(encoding="utf-8"))
     changed_gate["gates"].append(
         {"name": "additional_release_audit", "passed": True, "evidence": {}}
     )
