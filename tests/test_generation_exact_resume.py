@@ -17,9 +17,14 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs/generation/smoke_random_cpu.json"
 
 
-def _run(output: Path, *extra: str) -> None:
+def _run(
+    output: Path,
+    *extra: str,
+    environment_overrides: dict[str, str] | None = None,
+) -> None:
     environment = dict(os.environ)
     environment["PYTHONPATH"] = str(ROOT / "src")
+    environment.update(environment_overrides or {})
     subprocess.run(
         [
             sys.executable,
@@ -119,6 +124,39 @@ def test_resume_rejects_changed_training_config_before_advancing(
     assert f"Checkpoint config mismatch at: {mismatch_path}" in error.value.stderr
     latest = json.loads((output / "latest.json").read_text(encoding="utf-8"))
     assert latest["step"] == 1
+    assert not (output / "checkpoint_step_00000002.pt").exists()
+
+
+def test_resume_rejects_runtime_environment_drift_before_advancing(tmp_path) -> None:
+    output = tmp_path / "environment_drift"
+    _run(output, "--stop-after-steps", "1")
+    checkpoint_path = output / "checkpoint_step_00000001.pt"
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+    integrity = json.loads(
+        (output / "checkpoint_step_00000001.pt.integrity.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    latest = json.loads((output / "latest.json").read_text(encoding="utf-8"))
+    environment_sha = checkpoint["extra_state"]["runtime_environment_sha256"]
+
+    assert checkpoint["extra_state"]["runtime_environment"]["schema_version"] == 1
+    assert integrity["runtime_environment_sha256"] == environment_sha
+    assert latest["runtime_environment_sha256"] == environment_sha
+
+    with pytest.raises(subprocess.CalledProcessError) as error:
+        _run(
+            output,
+            "--resume",
+            "auto",
+            environment_overrides={"PYTHONHASHSEED": "314159"},
+        )
+
+    assert (
+        "Checkpoint runtime environment mismatch at: "
+        "runtime_environment.environment_variables.PYTHONHASHSEED"
+    ) in error.value.stderr
+    assert json.loads((output / "latest.json").read_text(encoding="utf-8"))["step"] == 1
     assert not (output / "checkpoint_step_00000002.pt").exists()
 
 

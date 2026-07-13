@@ -31,6 +31,9 @@ The audit requires all of the following:
 - a passing 10K scaling gate authorizing full ImageNet-256;
 - matched full ImageNet-256 CoFiTok/dense 300K training at the deployed upgrade
   revision;
+- matching canonical runtime-environment fingerprints in both full training
+  reports and latest checkpoint pointers, with required Python, package,
+  PyTorch/CUDA/cuDNN, GPU, and project-lock provenance;
 - a revision-bound shared runtime selection whose microbatch and accumulation
   are present in both 300K training reports and preserve effective batch 64;
 - complete training audits with validation events and protected 50K, 100K,

@@ -10,6 +10,7 @@ from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
     build_completion_audit,
 )
+from cofitok.environment import runtime_environment_sha256
 
 
 TEN_REVISION = "a" * 40
@@ -17,9 +18,41 @@ FULL_REVISION = "b" * 40
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _runtime_environment() -> dict:
+    return {
+        "schema_version": 1,
+        "python": {
+            "implementation": "CPython",
+            "version": "3.10.20",
+            "executable": "/env/bin/python",
+        },
+        "platform": {"system": "Linux", "release": "test", "machine": "x86_64"},
+        "packages": {
+            "numpy": "2.0.0",
+            "pillow": "11.0.0",
+            "torch": "2.7.1",
+            "torchvision": "0.22.1",
+            "tqdm": "4.67.0",
+        },
+        "torch": {
+            "version": "2.7.1+cu128",
+            "cuda_version": "12.8",
+            "cudnn_version": 90701,
+        },
+        "device": {"type": "cuda", "name": "NVIDIA RTX PRO 6000"},
+        "environment_variables": {},
+        "project_files": {
+            "pyproject.toml": {"sha256": "1" * 64},
+            "uv.lock": {"sha256": "2" * 64},
+        },
+    }
+
+
 def _training(
     *, steps: int, dataset: str, revision: str, parameters: int, checkpoint_sha: str
 ) -> dict:
+    runtime_environment = _runtime_environment()
+    environment_sha = runtime_environment_sha256(runtime_environment)
     return {
         "training_complete": True,
         "completed_steps": steps,
@@ -28,6 +61,8 @@ def _training(
         "elapsed_seconds": 100_000.0,
         "peak_vram_bytes": 24 * 1024**3,
         "final_metrics": {"samples_seen": steps * 64},
+        "runtime_environment": runtime_environment,
+        "runtime_environment_sha256": environment_sha,
         "git": {
             "dirty": False,
             "revision": revision,
@@ -38,6 +73,7 @@ def _training(
             "step": steps,
             "checkpoint_sha256": checkpoint_sha,
             "integrity_manifest": f"checkpoint_step_{steps:08d}.pt.integrity.json",
+            "runtime_environment_sha256": environment_sha,
         },
         "config": {
             "data": {"dataset": dataset, "batch_size": 16},
@@ -599,7 +635,7 @@ def test_completion_audit_requires_every_large_scale_artifact() -> None:
     assert report["complete"] is True
     assert report["failed_checks"] == []
     assert report["missing_checks"] == []
-    assert len(report["checks"]) == 15
+    assert len(report["checks"]) == 16
 
 
 def test_completion_audit_requires_controlled_revision_transition() -> None:
@@ -622,6 +658,7 @@ def test_completion_audit_reports_missing_work_as_in_progress() -> None:
     assert report["complete"] is False
     assert report["missing_checks"] == [
         "full_matched_training",
+        "full_training_runtime_environment",
         "full_runtime_selection",
         "formal_50k_generation",
         "final_comparison_report",
@@ -864,6 +901,20 @@ def test_completion_audit_rejects_full_monitor_health_issue() -> None:
 
     assert completion["status"] == "failed"
     assert completion["failed_checks"] == ["full_training_operational_monitor"]
+
+
+def test_completion_audit_rejects_matched_runtime_environment_drift() -> None:
+    kwargs = _kwargs()
+    dense = kwargs["dense_full_training"]
+    dense["runtime_environment"]["torch"]["cudnn_version"] = 99999
+    changed_sha = runtime_environment_sha256(dense["runtime_environment"])
+    dense["runtime_environment_sha256"] = changed_sha
+    dense["latest_checkpoint"]["runtime_environment_sha256"] = changed_sha
+
+    completion = build_completion_audit(**kwargs)
+
+    assert completion["status"] == "failed"
+    assert completion["failed_checks"] == ["full_training_runtime_environment"]
 
 
 def test_completion_audit_rejects_export_from_stale_training_checkpoint() -> None:

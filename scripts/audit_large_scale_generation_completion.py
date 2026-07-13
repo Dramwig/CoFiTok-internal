@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 from typing import Any, Callable
 
+from cofitok.environment import runtime_environment_sha256
 from cofitok.generation_cost import training_cost_summary
 from cofitok.reporting import file_sha256, write_json_report
 
@@ -73,6 +74,60 @@ def _training_audit_evidence(audits: dict[str, dict[str, Any]]) -> dict[str, Any
         }
     if any(row["last_step"] != 300_000 for row in evidence.values()):
         raise ValueError("full training audit did not reach exactly 300000 steps")
+    return evidence
+
+
+def _runtime_environment_evidence(
+    training_reports: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    evidence = {}
+    for method, report in training_reports.items():
+        environment = report.get("runtime_environment")
+        if not isinstance(environment, dict) or environment.get("schema_version") != 1:
+            raise ValueError(f"{method} training lacks runtime environment provenance")
+        environment_sha = runtime_environment_sha256(environment)
+        if report.get("runtime_environment_sha256") != environment_sha:
+            raise ValueError(f"{method} runtime environment SHA256 differs")
+        if report.get("latest_checkpoint", {}).get(
+            "runtime_environment_sha256"
+        ) != environment_sha:
+            raise ValueError(f"{method} checkpoint pointer lacks environment binding")
+        python = environment.get("python", {})
+        torch_environment = environment.get("torch", {})
+        device = environment.get("device", {})
+        packages = environment.get("packages", {})
+        project_files = environment.get("project_files", {})
+        if not all(
+            isinstance(value, str) and value
+            for value in (
+                python.get("implementation"),
+                python.get("version"),
+                torch_environment.get("version"),
+            )
+        ):
+            raise ValueError(f"{method} runtime language/framework versions are incomplete")
+        if device.get("type") != "cuda" or not device.get("name"):
+            raise ValueError(f"{method} full training did not bind a CUDA device")
+        if not isinstance(torch_environment.get("cudnn_version"), int):
+            raise ValueError(f"{method} runtime cuDNN provenance is incomplete")
+        for package in ("numpy", "pillow", "torch", "torchvision", "tqdm"):
+            if not packages.get(package):
+                raise ValueError(f"{method} runtime package {package} is missing")
+        for filename in ("pyproject.toml", "uv.lock"):
+            identity = project_files.get(filename)
+            if not isinstance(identity, dict) or len(str(identity.get("sha256", ""))) != 64:
+                raise ValueError(f"{method} project environment file {filename} is unbound")
+        evidence[method] = {
+            "runtime_environment_sha256": environment_sha,
+            "python_version": python["version"],
+            "torch_version": torch_environment["version"],
+            "cuda_version": torch_environment.get("cuda_version"),
+            "cudnn_version": torch_environment["cudnn_version"],
+            "device_name": device["name"],
+        }
+    hashes = {row["runtime_environment_sha256"] for row in evidence.values()}
+    if len(hashes) != 1:
+        raise ValueError("full matched methods used different runtime environments")
     return evidence
 
 
@@ -917,6 +972,18 @@ def build_completion_audit(
                 expected_steps=300_000,
                 expected_revision=expected_full_revision,
                 expected_dataset="imagenet_256",
+            ),
+        )
+    )
+    checks.append(
+        _check(
+            "full_training_runtime_environment",
+            [cofitok_full_training, dense_full_training],
+            lambda: _runtime_environment_evidence(
+                {
+                    "cofitok": cofitok_full_training,
+                    "dense_identity": dense_full_training,
+                }
             ),
         )
     )

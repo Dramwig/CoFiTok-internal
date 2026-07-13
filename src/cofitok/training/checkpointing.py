@@ -11,6 +11,10 @@ import numpy as np
 import torch
 from torch import nn
 
+from cofitok.environment import (
+    runtime_environment_mismatch_paths,
+    runtime_environment_sha256,
+)
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training.ema import ExponentialMovingAverage
 
@@ -67,6 +71,9 @@ def verify_training_checkpoint(path: str | Path) -> dict[str, Any]:
     actual_sha256 = file_sha256(checkpoint)
     if actual_sha256 != expected_sha256:
         raise ValueError("Checkpoint SHA256 mismatch")
+    runtime_environment_sha = integrity.get("runtime_environment_sha256")
+    if runtime_environment_sha is not None and len(str(runtime_environment_sha)) != 64:
+        raise ValueError("Checkpoint runtime environment SHA256 is malformed")
     return integrity
 
 
@@ -148,6 +155,10 @@ def resolve_latest_checkpoint(directory: str | Path) -> Path:
         "checkpoint_sha256": integrity["checkpoint_sha256"],
         "integrity_manifest": checkpoint_integrity_path(checkpoint).name,
     }
+    if "runtime_environment_sha256" in integrity:
+        expected_pointer["runtime_environment_sha256"] = integrity[
+            "runtime_environment_sha256"
+        ]
     for key, expected in expected_pointer.items():
         if latest.get(key) != expected:
             raise ValueError(f"latest.json {key} does not match checkpoint integrity metadata")
@@ -200,6 +211,17 @@ def save_training_checkpoint(
 ) -> Path:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
+    resolved_extra_state = dict(extra_state or {})
+    runtime_environment = resolved_extra_state.get("runtime_environment")
+    runtime_environment_sha = None
+    if runtime_environment is not None:
+        if not isinstance(runtime_environment, Mapping):
+            raise ValueError("runtime environment checkpoint state must be a mapping")
+        runtime_environment_sha = runtime_environment_sha256(runtime_environment)
+        declared_sha = resolved_extra_state.get("runtime_environment_sha256")
+        if declared_sha is not None and declared_sha != runtime_environment_sha:
+            raise ValueError("runtime environment SHA256 differs from checkpoint state")
+        resolved_extra_state["runtime_environment_sha256"] = runtime_environment_sha
     payload = {
         "format_version": CHECKPOINT_FORMAT_VERSION,
         "step": step,
@@ -211,7 +233,7 @@ def save_training_checkpoint(
         "scaler": scaler.state_dict() if scaler is not None else None,
         "rng_state": capture_rng_state(),
         "metrics": dict(metrics or {}),
-        "extra_state": dict(extra_state or {}),
+        "extra_state": resolved_extra_state,
     }
     temporary = target.with_suffix(f"{target.suffix}.tmp-{os.getpid()}")
     try:
@@ -229,6 +251,8 @@ def save_training_checkpoint(
         "checkpoint_format_version": CHECKPOINT_FORMAT_VERSION,
         "step": step,
     }
+    if runtime_environment_sha is not None:
+        integrity["runtime_environment_sha256"] = runtime_environment_sha
     integrity_path = checkpoint_integrity_path(target)
     write_json_report(integrity_path, integrity)
     write_json_report(
@@ -249,6 +273,7 @@ def load_training_checkpoint(
     restore_rng: bool = True,
     verify_integrity: bool = True,
     expected_config: Mapping[str, Any] | None = None,
+    expected_runtime_environment: Mapping[str, Any] | None = None,
     map_location: str | torch.device = "cpu",
 ) -> dict[str, Any]:
     integrity = None
@@ -267,6 +292,30 @@ def load_training_checkpoint(
             if len(mismatches) > 8:
                 preview += f", ... ({len(mismatches)} fields)"
             raise ValueError(f"Checkpoint config mismatch at: {preview}")
+    if expected_runtime_environment is not None:
+        extra_state = checkpoint.get("extra_state")
+        if not isinstance(extra_state, Mapping):
+            raise ValueError("Checkpoint is missing exact-resume extra state")
+        checkpoint_environment = extra_state.get("runtime_environment")
+        if not isinstance(checkpoint_environment, Mapping):
+            raise ValueError("Checkpoint is missing its exact-resume runtime environment")
+        checkpoint_environment_sha = runtime_environment_sha256(checkpoint_environment)
+        if extra_state.get("runtime_environment_sha256") != checkpoint_environment_sha:
+            raise ValueError("Checkpoint runtime environment SHA256 is inconsistent")
+        if integrity is not None and integrity.get(
+            "runtime_environment_sha256"
+        ) != checkpoint_environment_sha:
+            raise ValueError(
+                "Checkpoint runtime environment differs from integrity metadata"
+            )
+        mismatches = runtime_environment_mismatch_paths(
+            expected_runtime_environment, checkpoint_environment
+        )
+        if mismatches:
+            preview = ", ".join(mismatches[:8])
+            if len(mismatches) > 8:
+                preview += f", ... ({len(mismatches)} fields)"
+            raise ValueError(f"Checkpoint runtime environment mismatch at: {preview}")
     if integrity is not None:
         if int(checkpoint.get("step", -1)) != int(integrity["step"]):
             raise ValueError("Checkpoint payload step does not match integrity metadata")

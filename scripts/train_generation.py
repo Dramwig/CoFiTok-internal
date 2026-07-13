@@ -19,6 +19,10 @@ from torch.utils.data import DataLoader
 from cofitok.configs import ExperimentConfig, config_to_dict, load_config
 from cofitok.data import StatefulRandomSampler, build_dataloader, build_dataset
 from cofitok.diffusion import DiffusionSchedule
+from cofitok.environment import (
+    capture_runtime_environment,
+    runtime_environment_sha256,
+)
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import write_json_report
 from cofitok.training import (
@@ -39,6 +43,9 @@ from cofitok.training.runtime import (
     build_warmup_cosine_scheduler,
 )
 from cofitok.utils.seed import seed_everything
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 class StopController:
@@ -296,6 +303,11 @@ def main() -> None:
         torch.backends.cudnn.allow_tf32 = config.runtime.allow_tf32
         torch.backends.cudnn.benchmark = config.runtime.cudnn_benchmark
     torch.set_float32_matmul_precision("high")
+    runtime_environment = capture_runtime_environment(
+        device,
+        project_root=PROJECT_ROOT,
+    )
+    runtime_environment_sha = runtime_environment_sha256(runtime_environment)
 
     train_loader, sampler = _build_train_loader(config)
     eval_loader = build_dataloader(
@@ -339,6 +351,7 @@ def main() -> None:
             scaler=scaler,
             restore_rng=True,
             expected_config=config_to_dict(config),
+            expected_runtime_environment=runtime_environment,
             map_location=device,
         )
         start_step = int(checkpoint["step"])
@@ -380,6 +393,8 @@ def main() -> None:
         "cuda_version": torch.version.cuda,
         "device": str(device),
         "device_name": torch.cuda.get_device_name(device) if device.type == "cuda" else "cpu",
+        "runtime_environment": runtime_environment,
+        "runtime_environment_sha256": runtime_environment_sha,
         "parameter_count": sum(parameter.numel() for parameter in base_model.parameters()),
         "trainable_parameter_count": sum(
             parameter.numel() for parameter in base_model.parameters() if parameter.requires_grad
@@ -523,6 +538,8 @@ def main() -> None:
                 metrics=last_metrics,
                 extra_state={
                     "sampler": sampler.state_dict(),
+                    "runtime_environment": runtime_environment,
+                    "runtime_environment_sha256": runtime_environment_sha,
                     "cumulative_elapsed_seconds": (
                         cumulative_elapsed_before_segment + segment_elapsed_seconds
                     ),

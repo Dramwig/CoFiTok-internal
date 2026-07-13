@@ -356,6 +356,13 @@ the final completion audit requires a clean-revision `pass` report with both
 exact 300K runs and all protected milestone checkpoint stats. See
 `docs/records/2026-07-13_full_generation_operational_monitor.md`.
 
+Every upgrade-branch training checkpoint also binds a canonical runtime
+environment fingerprint across payload, integrity sidecar, latest pointer, and
+training report. Exact resume rejects Python, package, PyTorch/CUDA/cuDNN/driver,
+GPU, backend, environment-variable, or project-lock drift before deserializing
+state. The final audit requires identical CoFiTok/dense environment SHA values.
+See `docs/records/2026-07-13_generation_runtime_environment_fingerprint.md`.
+
 After the final gate, both methods export separate EMA-only deployment
 artifacts. Their type-specific sidecars are verified before deserialization;
 source training checkpoint SHA, step, artifact SHA/bytes, real-forward preflight,
