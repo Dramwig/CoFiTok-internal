@@ -10,6 +10,9 @@ RUNTIME_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/full_imagenet256_300k"
 RUNTIME_SELECTION="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/runtime_selection.json"
 REFERENCE_COFITOK="$OUTPUT_ROOT/imagenet256_10pct_cofitok_k8_50k_2026-07-12/checkpoint_step_00050000.pt"
 REFERENCE_DENSE="$OUTPUT_ROOT/imagenet256_10pct_dense_50k_2026-07-12/checkpoint_step_00050000.pt"
+MONITOR_REPORT="$OUTPUT_ROOT/generation_full_matched_300k_monitor.json"
+MONITOR_LOG="$OUTPUT_ROOT/generation_full_matched_300k_monitor.log"
+MONITOR_PID_FILE="$OUTPUT_ROOT/generation_full_matched_300k_monitor.pid"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -54,6 +57,74 @@ if (( SELECTED_MICRO_BATCH * SELECTED_ACCUMULATION != 64 )); then
   printf 'selected runtime changes effective batch: %s\n' "$runtime_selected" >&2
   exit 1
 fi
+
+monitor_report_passes() {
+  python - "$MONITOR_REPORT" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+if not path.is_file():
+    raise SystemExit(1)
+with path.open(encoding="utf-8") as handle:
+    report = json.load(handle)
+if report.get("status") != "pass" or report.get("stage") != "complete":
+    raise SystemExit(1)
+PY
+}
+
+start_full_monitor() {
+  if monitor_report_passes; then
+    printf 'full matched monitor already has a terminal pass report\n'
+    return
+  fi
+  if [[ -f "$MONITOR_PID_FILE" ]]; then
+    local existing_pid
+    existing_pid="$(cat "$MONITOR_PID_FILE")"
+    if [[ "$existing_pid" =~ ^[0-9]+$ ]] && kill -0 "$existing_pid" 2>/dev/null; then
+      printf 'full matched monitor already active as PID %s\n' "$existing_pid"
+      return
+    fi
+  fi
+  nohup python scripts/monitor_generation_pair.py \
+    --output-root "$OUTPUT_ROOT" --output "$MONITOR_REPORT" \
+    --monitor-name generation_full_matched_300k \
+    --cofitok-run imagenet256_full_cofitok_k8_300k \
+    --dense-run imagenet256_full_dense_300k --expected-steps 300000 \
+    --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_.*300k' \
+    --runbook-process-pattern '[g]eneration_full_matched_300k_after_gate.sh' \
+    --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
+    --poll-seconds 300 --stall-seconds 1800 \
+    --idle-failure-grace-seconds 600 \
+    >"$MONITOR_LOG" 2>&1 </dev/null &
+  local monitor_pid=$!
+  local temporary="${MONITOR_PID_FILE}.tmp.$$"
+  printf '%s\n' "$monitor_pid" >"$temporary"
+  mv "$temporary" "$MONITOR_PID_FILE"
+  sleep 1
+  if ! kill -0 "$monitor_pid" 2>/dev/null; then
+    if monitor_report_passes; then
+      printf 'full matched monitor published pass and exited\n'
+      return
+    fi
+    printf 'full matched monitor exited during launch; inspect %s\n' "$MONITOR_LOG" >&2
+    exit 1
+  fi
+}
+
+snapshot_full_monitor() {
+  python scripts/monitor_generation_pair.py \
+    --output-root "$OUTPUT_ROOT" --output "$MONITOR_REPORT" \
+    --monitor-name generation_full_matched_300k \
+    --cofitok-run imagenet256_full_cofitok_k8_300k \
+    --dense-run imagenet256_full_dense_300k --expected-steps 300000 \
+    --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_.*300k' \
+    --runbook-process-pattern '[g]eneration_full_matched_300k_after_gate.sh' \
+    --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
+    --poll-seconds 300 --stall-seconds 1800 \
+    --idle-failure-grace-seconds 600 --once
+}
 
 require_complete() {
   python - "$1" <<'PY'
@@ -179,6 +250,8 @@ build_paired_milestone() {
     --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/milestones/$step_tag.json"
 }
 
+start_full_monitor
+
 for milestone in 50000 100000 200000 300000; do
   if paired_milestone_complete "$milestone"; then
     printf 'paired milestone %s already complete; skipping\n' "$milestone"
@@ -186,10 +259,12 @@ for milestone in 50000 100000 200000 300000; do
   fi
   train_to_milestone \
     configs/generation/imagenet256_cofitok_k8_300k.json "$COFITOK_RUN" "$milestone"
+  snapshot_full_monitor
   evaluate_milestone cofitok "$COFITOK_RUN" "$milestone" 8 4
 
   train_to_milestone \
     configs/generation/imagenet256_dense_300k.json "$DENSE_RUN" "$milestone"
+  snapshot_full_monitor
   evaluate_milestone dense_identity "$DENSE_RUN" "$milestone" 1 0
 
   build_paired_milestone "$milestone"
@@ -197,6 +272,7 @@ done
 
 require_complete "$COFITOK_RUN/training_report.json"
 require_complete "$DENSE_RUN/training_report.json"
+snapshot_full_monitor
 
 python scripts/audit_generation_training_progress.py \
   --run-dir "$COFITOK_RUN" --expected-steps 300000 \

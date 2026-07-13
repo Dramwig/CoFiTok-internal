@@ -349,6 +349,13 @@ safety margin; insufficient capacity exits non-retryably before large artifacts
 are created. See
 `docs/records/2026-07-13_generation_storage_capacity_preflight.md`.
 
+The full 300K matched run also publishes a generic read-only operational monitor
+with optimizer-step freshness, finite-metric checks, checkpoint cadence, process,
+disk, and GPU state. Milestone boundaries force synchronous health snapshots;
+the final completion audit requires a clean-revision `pass` report with both
+exact 300K runs and all protected milestone checkpoint stats. See
+`docs/records/2026-07-13_full_generation_operational_monitor.md`.
+
 After the final gate, both methods export separate EMA-only deployment
 artifacts. Their type-specific sidecars are verified before deserialization;
 source training checkpoint SHA, step, artifact SHA/bytes, real-forward preflight,

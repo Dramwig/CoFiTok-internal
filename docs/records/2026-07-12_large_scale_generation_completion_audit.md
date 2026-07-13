@@ -25,6 +25,9 @@ The audit requires all of the following:
 - passing storage-capacity preflights for 10K post-evaluation, full 300K
   training, and formal 50K post-evaluation, all bound to the clean deployed
   revision and the generation filesystem with non-weakened reserves;
+- a clean-revision full-training operational-monitor pass with finite monotonic
+  metrics, exact 300K completion for both methods, and stat evidence for all
+  protected milestone checkpoints;
 - a passing 10K scaling gate authorizing full ImageNet-256;
 - matched full ImageNet-256 CoFiTok/dense 300K training at the deployed upgrade
   revision;

@@ -760,6 +760,66 @@ def _storage_capacity_evidence(
     return evidence
 
 
+def _full_training_monitor_evidence(
+    report: dict[str, Any],
+    *,
+    expected_revision: str,
+    expected_output_root: str,
+) -> dict[str, Any]:
+    if (
+        int(report.get("schema_version", 0)) < 2
+        or report.get("monitor") != "generation_full_matched_300k"
+        or report.get("status") != "pass"
+        or report.get("stage") != "complete"
+        or report.get("issues") != []
+    ):
+        raise ValueError("full-training monitor did not reach a clean pass state")
+    git = report.get("git", {})
+    if (
+        git.get("revision") != expected_revision
+        or git.get("branch") != "scale/generative-system"
+        or git.get("tracked_dirty") is not False
+    ):
+        raise ValueError("full-training monitor Git provenance is invalid")
+    expected_dirs = {
+        "cofitok": "imagenet256_full_cofitok_k8_300k",
+        "dense_identity": "imagenet256_full_dense_300k",
+    }
+    protected = {50_000, 100_000, 200_000, 300_000}
+    root = expected_output_root.replace("\\", "/").rstrip("/")
+    evidence = {}
+    for method, directory in expected_dirs.items():
+        run = report.get("runs", {}).get(method, {})
+        expected_dir = f"{root}/{directory}"
+        observed_dir = str(run.get("run_dir", "")).replace("\\", "/").rstrip("/")
+        if observed_dir != expected_dir:
+            raise ValueError(f"full-training monitor path differs for {method}")
+        if (
+            run.get("complete") is not True
+            or int(run.get("expected_steps", -1)) != 300_000
+            or int(run.get("last_step", -1)) != 300_000
+            or int(run.get("metric_rows", 0)) < 1
+            or run.get("health_issues") != []
+        ):
+            raise ValueError(f"full-training monitor run is invalid for {method}")
+        checkpoints = {
+            int(row.get("step", -1)): int(row.get("bytes", 0))
+            for row in run.get("checkpoints", [])
+        }
+        if not protected.issubset(checkpoints) or any(
+            checkpoints[step] < 1 for step in protected
+        ):
+            raise ValueError(f"full-training monitor lacks protected checkpoints for {method}")
+        evidence[method] = {
+            "last_step": 300_000,
+            "metric_rows": int(run.get("metric_rows", 0)),
+            "protected_checkpoint_bytes": {
+                str(step): checkpoints[step] for step in sorted(protected)
+            },
+        }
+    return evidence
+
+
 def build_completion_audit(
     *,
     expected_10pct_revision: str,
@@ -769,6 +829,7 @@ def build_completion_audit(
     deployment_receipt: dict[str, Any] | None,
     storage_preflights: dict[str, dict[str, Any] | None],
     expected_storage_path: str,
+    full_training_monitor: dict[str, Any] | None,
     scaling_gate: dict[str, Any] | None,
     cofitok_full_training: dict[str, Any] | None,
     dense_full_training: dict[str, Any] | None,
@@ -821,6 +882,17 @@ def build_completion_audit(
                 storage_preflights,
                 expected_revision=expected_full_revision,
                 expected_path=expected_storage_path,
+            ),
+        )
+    )
+    checks.append(
+        _check(
+            "full_training_operational_monitor",
+            [full_training_monitor],
+            lambda: _full_training_monitor_evidence(
+                full_training_monitor,
+                expected_revision=expected_full_revision,
+                expected_output_root=expected_storage_path,
             ),
         )
     )
@@ -1055,6 +1127,9 @@ def main() -> None:
             ),
         },
         expected_storage_path=output_root.as_posix(),
+        full_training_monitor=_read_optional(
+            output_root / "generation_full_matched_300k_monitor.json"
+        ),
         scaling_gate=_read_optional(ten_root / "promotion_gate.json"),
         cofitok_full_training=_read_optional(cofitok_full / "training_report.json"),
         dense_full_training=_read_optional(dense_full / "training_report.json"),

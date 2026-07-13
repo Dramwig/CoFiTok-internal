@@ -443,6 +443,41 @@ def _storage_preflights() -> dict:
     return reports
 
 
+def _full_training_monitor() -> dict:
+    runs = {}
+    for method, directory in (
+        ("cofitok", "imagenet256_full_cofitok_k8_300k"),
+        ("dense_identity", "imagenet256_full_dense_300k"),
+    ):
+        runs[method] = {
+            "run_dir": (
+                "/root/autodl-tmp/CoFiTok/checkpoints/generation/" + directory
+            ),
+            "complete": True,
+            "expected_steps": 300_000,
+            "last_step": 300_000,
+            "metric_rows": 6_000,
+            "health_issues": [],
+            "checkpoints": [
+                {"step": step, "bytes": 1_000}
+                for step in (50_000, 100_000, 200_000, 300_000)
+            ],
+        }
+    return {
+        "schema_version": 2,
+        "monitor": "generation_full_matched_300k",
+        "status": "pass",
+        "stage": "complete",
+        "issues": [],
+        "git": {
+            "revision": FULL_REVISION,
+            "branch": "scale/generative-system",
+            "tracked_dirty": False,
+        },
+        "runs": runs,
+    }
+
+
 def _inference_exports() -> dict:
     output = {}
     for method, source_sha, artifact_sha, count in (
@@ -525,6 +560,7 @@ def _kwargs() -> dict:
         },
         "storage_preflights": _storage_preflights(),
         "expected_storage_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
+        "full_training_monitor": _full_training_monitor(),
         "scaling_gate": _gate("scaling"),
         "cofitok_full_training": _training(
             steps=300_000,
@@ -563,7 +599,7 @@ def test_completion_audit_requires_every_large_scale_artifact() -> None:
     assert report["complete"] is True
     assert report["failed_checks"] == []
     assert report["missing_checks"] == []
-    assert len(report["checks"]) == 14
+    assert len(report["checks"]) == 15
 
 
 def test_completion_audit_requires_controlled_revision_transition() -> None:
@@ -816,6 +852,18 @@ def test_completion_audit_rejects_weakened_storage_safety_margin() -> None:
 
     assert completion["status"] == "failed"
     assert completion["failed_checks"] == ["generation_storage_capacity"]
+
+
+def test_completion_audit_rejects_full_monitor_health_issue() -> None:
+    kwargs = _kwargs()
+    kwargs["full_training_monitor"]["runs"]["cofitok"]["health_issues"] = [
+        "metric total is non-finite"
+    ]
+
+    completion = build_completion_audit(**kwargs)
+
+    assert completion["status"] == "failed"
+    assert completion["failed_checks"] == ["full_training_operational_monitor"]
 
 
 def test_completion_audit_rejects_export_from_stale_training_checkpoint() -> None:

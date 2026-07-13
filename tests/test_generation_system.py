@@ -115,6 +115,12 @@ def test_full_generation_configs_keep_matched_runtime_and_checkpoint_cadence() -
     assert "paired milestone %s already complete; skipping" in runbook
     assert 'checkpoint_tag.integrity.json' in runbook
     assert "passed milestone %s without protected checkpoint" in runbook
+    assert "monitor_generation_pair.py" in runbook
+    assert "generation_full_matched_300k_monitor.json" in runbook
+    assert "--checkpoint-interval 5000" in runbook
+    assert runbook.count("snapshot_full_monitor") == 4
+    assert "monitor_report_passes" in runbook
+    assert "published pass and exited" in runbook
 
     preflight = validate_pair(cofitok, dense, max_parameter_gap=0.02)
     assert preflight["status"] == "pass"

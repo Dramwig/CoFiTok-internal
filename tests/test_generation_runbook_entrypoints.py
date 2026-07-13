@@ -31,6 +31,7 @@ ENTRYPOINTS = {
     "generate_samples.py",
     "infer_generation.py",
     "migrate_generation_checkpoint_integrity.py",
+    "monitor_generation_pair.py",
     "preflight_generation_sampling.py",
     "select_generation_sampling_batch.py",
     "select_generation_training_runtime.py",
