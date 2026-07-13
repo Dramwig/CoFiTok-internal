@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from scripts.select_generation_sampling_batch import (
+    _preflight_matches,
     parse_candidates,
     select_sampling_batch,
 )
@@ -112,3 +113,28 @@ def test_sampling_selector_rejects_mismatched_protocol_or_checkpoint() -> None:
             baseline_batch_size=32,
             max_memory_fraction=0.9,
         )
+
+
+def test_sampling_preflight_cache_requires_exact_git_revision() -> None:
+    report = _method(32, 50.0)
+    report.update(
+        git_revision="a" * 40,
+        checkpoint_sha256="b" * 64,
+    )
+    expected = {
+        "checkpoint_identity": {"sha256": "b" * 64, "step": 300_000},
+        "expected_revision": "a" * 40,
+        "batch_size": 32,
+        "prefix_budget": 8,
+        "guidance_scale": 1.5,
+        "guidance_rescale": 0.0,
+        "cfg_batch_mode": "batched",
+        "weights": "ema",
+        "precision": "bf16",
+        "warmup_forwards": 2,
+        "measured_forwards": 5,
+    }
+
+    assert _preflight_matches(report, **expected)
+    expected["expected_revision"] = "c" * 40
+    assert not _preflight_matches(report, **expected)

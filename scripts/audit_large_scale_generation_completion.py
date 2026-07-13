@@ -216,6 +216,20 @@ def _sampling_runtime_selection_evidence(
     batch_size = int(selection.get("selected", {}).get("batch_size", -1))
     if batch_size < 1:
         raise ValueError("selected formal sampling batch is invalid")
+    selected_candidates = [
+        row
+        for row in selection.get("candidates", [])
+        if int(row.get("batch_size", -1)) == batch_size
+    ]
+    if (
+        len(selected_candidates) != 1
+        or selected_candidates[0].get("eligible") is not True
+    ):
+        raise ValueError("selected formal sampling candidate evidence is invalid")
+    selected_methods = selected_candidates[0].get("methods", {})
+    for method in ("cofitok", "dense_identity"):
+        if selected_methods.get(method, {}).get("git_revision") != expected_revision:
+            raise ValueError(f"{method} selected sampling preflight revision differs")
     identities = selection.get("checkpoints", {})
     for method in ("cofitok", "dense_identity"):
         provenance = generation_reports[method].get("sample_provenance", {})

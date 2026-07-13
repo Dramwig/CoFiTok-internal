@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import subprocess
+from pathlib import Path
+
 import pytest
 import torch
 
@@ -16,6 +19,9 @@ from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
 from cofitok.training.checkpointing import checkpoint_integrity_path
 from scripts.preflight_generation_sampling import run_sampling_preflight
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _write_cpu_checkpoint(path) -> None:
@@ -79,6 +85,13 @@ def test_sampling_preflight_runs_shared_ema_cfg_path(tmp_path) -> None:
     )
 
     assert report["status"] == "passed"
+    assert report["git_revision"] == subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
     assert report["checkpoint_step"] == 17
     assert len(report["checkpoint_sha256"]) == 64
     assert report["checkpoint_integrity_manifest"].endswith("checkpoint.pt.integrity.json")

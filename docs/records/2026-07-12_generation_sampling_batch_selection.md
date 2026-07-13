@@ -16,8 +16,8 @@ declares `batch_size_invariant=true` and `resume_index_invariant=true`.
 `preflight_generation_sampling.py` now supports warmup and repeated synchronized
 forwards. It reports mean/median/p95 forward time, requested and effective CFG
 throughput, per-forward durations, output finiteness, peak allocated/reserved
-VRAM, and total device memory. Its default remains one measured forward for
-backward compatibility.
+VRAM, total device memory, and the exact inference-code Git revision. Its
+default remains one measured forward for backward compatibility.
 
 ## Shared selection
 
@@ -26,6 +26,7 @@ the CoFiTok and dense checkpoints using EMA, bf16, CFG 1.5, and batched CFG.
 A candidate is eligible only when:
 
 - both methods pass on the same checkpoint step and sampling protocol;
+- each reusable preflight was produced by the selector's current Git revision;
 - both produce finite positive output-images/second;
 - both remain below 90% of device memory;
 - batch 32, the conservative baseline, also passes.
@@ -43,6 +44,7 @@ prefix diagnostic remains batch 16.
 
 The final selection is bound to the deployed Git revision and both checkpoint
 SHA256 values. The completion audit verifies that both formal generation reports
-actually use the selected batch and retain batch-invariant random streams. The
-final matched comparison publishes sample batch, cumulative sample time, and
-images/second together with FID/IS/precision/recall.
+actually use the selected batch, that the selected CoFiTok and dense preflight
+evidence carries the deployed revision, and that both retain batch-invariant
+random streams. The final matched comparison publishes sample batch, cumulative
+sample time, and images/second together with FID/IS/precision/recall.

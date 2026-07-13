@@ -43,8 +43,10 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Formal post-evaluation runbooks first execute one real model forward with the
   requested EMA/model weights, precision, prefix budget, batch size, and CFG
   batching mode. The preflight records checkpoint SHA256, output finiteness,
-  latency, and CUDA baseline/peak memory, and fails before a sampling manifest
-  or partial image directory is created when the target inference shape OOMs.
+  inference-code Git revision, latency, and CUDA baseline/peak memory, and fails
+  before a sampling manifest or partial image directory is created when the
+  target inference shape OOMs. Runtime selection never reuses a preflight from
+  another revision.
 - Classifier-free guidance can evaluate conditional and unconditional branches
   in one batch, with a sequential fallback. The selected execution mode is part
   of the immutable sampling manifest and must match across compared methods.

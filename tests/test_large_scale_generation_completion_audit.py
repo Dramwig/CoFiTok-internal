@@ -323,6 +323,16 @@ def _sampling_runtime_selection() -> dict:
             "batch_size": 64,
             "estimated_speedup_over_baseline": 1.4,
         },
+        "candidates": [
+            {
+                "batch_size": 64,
+                "eligible": True,
+                "methods": {
+                    "cofitok": {"git_revision": FULL_REVISION},
+                    "dense_identity": {"git_revision": FULL_REVISION},
+                },
+            }
+        ],
         "checkpoints": {
             "cofitok": {"sha256": "a" * 64, "step": 300_000},
             "dense_identity": {"sha256": "b" * 64, "step": 300_000},
@@ -633,6 +643,17 @@ def test_completion_audit_rejects_sampling_that_ignores_selected_batch() -> None
         "formal_sampling_runtime_selection",
         "final_comparison_report",
     ]
+
+
+def test_completion_audit_rejects_stale_selected_sampling_preflight() -> None:
+    kwargs = _kwargs()
+    selected = kwargs["sampling_runtime_selection"]["candidates"][0]
+    selected["methods"]["cofitok"]["git_revision"] = "0" * 40
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["formal_sampling_runtime_selection"]
 
 
 def test_completion_audit_rejects_sampling_outside_stable_inference_api() -> None:

@@ -170,6 +170,7 @@ def _preflight_matches(
     report: dict[str, Any],
     *,
     checkpoint_identity: dict[str, Any],
+    expected_revision: str,
     batch_size: int,
     prefix_budget: int,
     guidance_scale: float,
@@ -183,6 +184,7 @@ def _preflight_matches(
     request = report.get("request", {})
     return (
         report.get("status") == "passed"
+        and report.get("git_revision") == expected_revision
         and report.get("checkpoint_sha256") == checkpoint_identity["sha256"]
         and int(report.get("checkpoint_step", -1)) == checkpoint_identity["step"]
         and int(request.get("batch_size", -1)) == batch_size
@@ -202,6 +204,7 @@ def _run_preflight(
     method: str,
     checkpoint: Path,
     checkpoint_identity: dict[str, Any],
+    expected_revision: str,
     batch_size: int,
     prefix_budget: int,
     output_root: Path,
@@ -220,6 +223,7 @@ def _run_preflight(
     report_path = run_dir / "sampling_preflight.json"
     expected = {
         "checkpoint_identity": checkpoint_identity,
+        "expected_revision": expected_revision,
         "batch_size": batch_size,
         "prefix_budget": prefix_budget,
         "guidance_scale": guidance_scale,
@@ -342,6 +346,7 @@ def main() -> None:
     dense_checkpoint = Path(args.dense_checkpoint).resolve()
     output_root = Path(args.output_root).resolve()
     preflight_script = (project_root / args.preflight_script).resolve()
+    revision = _git_revision(project_root)
     candidates = parse_candidates(
         args.candidates,
         baseline_batch_size=args.baseline_batch_size,
@@ -360,6 +365,7 @@ def main() -> None:
                         method="cofitok",
                         checkpoint=cofitok_checkpoint,
                         checkpoint_identity=identities["cofitok"],
+                        expected_revision=revision,
                         batch_size=batch_size,
                         prefix_budget=args.cofitok_prefix_budget,
                         output_root=output_root,
@@ -378,6 +384,7 @@ def main() -> None:
                         method="dense_identity",
                         checkpoint=dense_checkpoint,
                         checkpoint_identity=identities["dense_identity"],
+                        expected_revision=revision,
                         batch_size=batch_size,
                         prefix_budget=args.dense_prefix_budget,
                         output_root=output_root,
@@ -400,7 +407,7 @@ def main() -> None:
         baseline_batch_size=args.baseline_batch_size,
         max_memory_fraction=args.max_memory_fraction,
     )
-    selection["git_revision"] = _git_revision(project_root)
+    selection["git_revision"] = revision
     selection["checkpoints"] = identities
     selection["benchmark_root"] = output_root.as_posix()
     write_json_report(args.output, selection)
