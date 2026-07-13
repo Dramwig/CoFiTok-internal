@@ -17,6 +17,7 @@ from cofitok.generation.artifact import (
 )
 from cofitok.models import CoFiTokTiny
 from cofitok.training import ExponentialMovingAverage
+from cofitok.training.authorization import validate_checkpoint_training_authorization
 from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
     verify_training_checkpoint,
@@ -75,6 +76,8 @@ def load_generation_model(
         raise ValueError("Checkpoint payload format does not match integrity metadata")
     if int(checkpoint.get("step", -1)) != int(integrity["step"]):
         raise ValueError("Checkpoint payload step does not match integrity metadata")
+    if not is_inference_artifact:
+        validate_checkpoint_training_authorization(checkpoint, integrity)
     config = config_from_dict(checkpoint["config"])
     device = torch.device(config.runtime.device)
     if device.type == "cuda" and not torch.cuda.is_available():

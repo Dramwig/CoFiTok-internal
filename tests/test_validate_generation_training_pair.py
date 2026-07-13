@@ -71,7 +71,7 @@ def test_validator_accepts_completed_matched_pair() -> None:
     )
 
     assert report["status"] == "pass"
-    assert report["schema_version"] == 2
+    assert report["schema_version"] == 3
     assert report["relative_parameter_gap"] == pytest.approx(0.005)
 
 

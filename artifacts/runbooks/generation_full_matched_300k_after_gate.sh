@@ -180,6 +180,7 @@ train_to_milestone() {
   fi
   python scripts/train_generation.py \
     --config "$config" --output-dir "$run_dir" \
+    --authorization-gate "$GATE" \
     --micro-batch-size "$SELECTED_MICRO_BATCH" \
     --gradient-accumulation-steps "$SELECTED_ACCUMULATION" \
     --stop-after-steps "$delta" "${resume_args[@]}"
@@ -263,6 +264,14 @@ done
 require_complete "$COFITOK_RUN/training_report.json"
 require_complete "$DENSE_RUN/training_report.json"
 snapshot_full_monitor
+
+python scripts/validate_generation_training_pair.py \
+  --cofitok-training "$COFITOK_RUN/training_report.json" \
+  --dense-training "$DENSE_RUN/training_report.json" \
+  --expected-steps 300000 --expected-revision "$(git rev-parse HEAD)" \
+  --expected-dataset imagenet_256 --expected-recipe-stage full \
+  --authorization-gate "$GATE" \
+  >"$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/training_pair_validation.json"
 
 python scripts/audit_generation_training_progress.py \
   --run-dir "$COFITOK_RUN" --expected-steps 300000 \

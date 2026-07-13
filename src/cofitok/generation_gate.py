@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 from typing import Any
 
@@ -65,6 +67,16 @@ REQUIRED_GENERATION_GATE_THRESHOLDS = {
         "max_recall_regression": ("max", 0.05),
     },
 }
+
+
+def generation_gate_identity_sha256(gate: dict[str, Any]) -> str:
+    canonical = json.dumps(
+        gate,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
 
 
 def _finite_number(value: Any, *, name: str) -> float:

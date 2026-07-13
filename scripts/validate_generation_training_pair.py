@@ -9,6 +9,7 @@ from typing import Any
 from cofitok.data.provenance import validate_dataset_provenance
 from cofitok.generation_pair import MATCHED_CONFIG_SECTIONS, generation_pair_contract
 from cofitok.generation_recipe import generation_training_recipe_contract
+from cofitok.training.authorization import validate_generation_training_authorization
 
 
 def _read(path: str | Path) -> dict[str, Any]:
@@ -25,6 +26,7 @@ def _validate_report(
     expected_branch: str,
     expected_dataset: str,
     allow_legacy_missing_dataset_provenance: bool,
+    expected_authorization_gate: dict[str, Any] | None,
 ) -> dict[str, Any]:
     if report.get("training_complete") is not True:
         raise ValueError(f"{label} training is incomplete")
@@ -71,6 +73,42 @@ def _validate_report(
             raise ValueError(
                 f"{label} checkpoint pointer lacks the training dataset identity"
             )
+    training_authorization = report.get("training_authorization")
+    authorization_evidence = None
+    if expected_dataset == "imagenet_256" and not isinstance(
+        training_authorization, dict
+    ):
+        raise ValueError(f"{label} full training lacks scaling-gate authorization")
+    if training_authorization is not None:
+        if not isinstance(training_authorization, dict):
+            raise ValueError(f"{label} training authorization is malformed")
+        authorization_evidence = validate_generation_training_authorization(
+            training_authorization,
+            expected_gate=expected_authorization_gate,
+        )
+        latest_authorization = {
+            "stage": latest.get("authorization_stage"),
+            "decision": latest.get("authorization_decision"),
+            "gate_bytes": latest.get("authorization_gate_bytes"),
+            "gate_sha256": latest.get("authorization_gate_sha256"),
+            "gate_identity_sha256": latest.get(
+                "authorization_gate_identity_sha256"
+            ),
+        }
+        expected_latest_authorization = {
+            key: authorization_evidence[key]
+            for key in (
+                "stage",
+                "decision",
+                "gate_bytes",
+                "gate_sha256",
+                "gate_identity_sha256",
+            )
+        }
+        if latest_authorization != expected_latest_authorization:
+            raise ValueError(
+                f"{label} checkpoint pointer lacks the scaling-gate authorization binding"
+            )
     return {
         "completed_steps": completed_steps,
         "revision": git["revision"],
@@ -80,6 +118,7 @@ def _validate_report(
         "latest_checkpoint": expected_checkpoint,
         "dataset_provenance": provenance_evidence,
         "dataset_provenance_warning": legacy_warning,
+        "training_authorization": authorization_evidence,
     }
 
 
@@ -94,6 +133,7 @@ def validate_training_pair(
     max_parameter_gap: float = 0.02,
     expected_recipe_stage: str | None = None,
     allow_legacy_missing_dataset_provenance: bool = False,
+    expected_authorization_gate: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if expected_steps < 1:
         raise ValueError("expected_steps must be positive")
@@ -109,6 +149,7 @@ def validate_training_pair(
         expected_branch=expected_branch,
         expected_dataset=expected_dataset,
         allow_legacy_missing_dataset_provenance=allow_legacy_missing_dataset_provenance,
+        expected_authorization_gate=expected_authorization_gate,
     )
     validated_dense = _validate_report(
         dense,
@@ -118,6 +159,7 @@ def validate_training_pair(
         expected_branch=expected_branch,
         expected_dataset=expected_dataset,
         allow_legacy_missing_dataset_provenance=allow_legacy_missing_dataset_provenance,
+        expected_authorization_gate=expected_authorization_gate,
     )
     provenance_states = {
         validated_cofitok["dataset_provenance"] is None,
@@ -130,6 +172,18 @@ def validate_training_pair(
         != validated_dense["dataset_provenance"]["identity_sha256"]
     ):
         raise ValueError("matched training pair used different dataset identities")
+    authorization_states = {
+        validated_cofitok["training_authorization"] is None,
+        validated_dense["training_authorization"] is None,
+    }
+    if len(authorization_states) != 1:
+        raise ValueError("matched training pair mixes bound and unbound authorization")
+    if (
+        validated_cofitok["training_authorization"] is not None
+        and validated_cofitok["training_authorization"]
+        != validated_dense["training_authorization"]
+    ):
+        raise ValueError("matched training pair used different promotion authorizations")
     pair_contract = generation_pair_contract(cofitok["config"], dense["config"])
     if not pair_contract["valid"]:
         raise ValueError("training pair contract failed: " + "; ".join(pair_contract["issues"]))
@@ -154,7 +208,7 @@ def validate_training_pair(
             f"training pair parameter gap {parameter_gap:.6f} exceeds {max_parameter_gap:.6f}"
         )
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "status": "pass",
         "expected_steps": expected_steps,
         "expected_revision": expected_revision,
@@ -168,6 +222,13 @@ def validate_training_pair(
             None
             if validated_cofitok["dataset_provenance"] is None
             else validated_cofitok["dataset_provenance"]["identity_sha256"]
+        ),
+        "authorization_gate_identity_sha256": (
+            None
+            if validated_cofitok["training_authorization"] is None
+            else validated_cofitok["training_authorization"][
+                "gate_identity_sha256"
+            ]
         ),
         "relative_parameter_gap": parameter_gap,
         "max_parameter_gap": max_parameter_gap,
@@ -193,6 +254,11 @@ def main() -> None:
         action="store_true",
         help="Allow both pinned legacy reports to omit dataset provenance.",
     )
+    parser.add_argument(
+        "--authorization-gate",
+        default="",
+        help="Scaling promotion gate that must authorize both full training reports.",
+    )
     args = parser.parse_args()
     report = validate_training_pair(
         _read(args.cofitok_training),
@@ -205,6 +271,9 @@ def main() -> None:
         expected_recipe_stage=args.expected_recipe_stage,
         allow_legacy_missing_dataset_provenance=(
             args.allow_legacy_missing_dataset_provenance
+        ),
+        expected_authorization_gate=(
+            _read(args.authorization_gate) if args.authorization_gate else None
         ),
     )
     print(json.dumps(report, indent=2, sort_keys=True))

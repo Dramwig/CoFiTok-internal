@@ -12,6 +12,7 @@ from cofitok.configs import config_from_dict
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
+from cofitok.training.authorization import validate_checkpoint_training_authorization
 from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
     verify_training_checkpoint,
@@ -135,6 +136,7 @@ def export_ema_inference_artifact(
     checkpoint = torch.load(source_path, map_location="cpu", weights_only=False)
     if int(checkpoint.get("step", -1)) != int(source_integrity["step"]):
         raise ValueError("Training checkpoint step differs from integrity metadata")
+    validate_checkpoint_training_authorization(checkpoint, source_integrity)
     extra_state = checkpoint.get("extra_state")
     if not isinstance(extra_state, Mapping):
         raise ValueError("Training checkpoint lacks deployment provenance state")

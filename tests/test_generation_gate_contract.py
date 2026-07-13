@@ -1,12 +1,28 @@
 from __future__ import annotations
 
 import copy
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
 
 import pytest
+import torch
 
 from cofitok.generation_gate import (
     REQUIRED_GENERATION_GATES,
     validate_generation_gate_authorization,
+)
+from cofitok.training import ExponentialMovingAverage
+from cofitok.training.authorization import (
+    capture_generation_training_authorization,
+    validate_checkpoint_training_authorization,
+)
+from cofitok.training.checkpointing import (
+    load_training_checkpoint,
+    save_training_checkpoint,
+    verify_training_checkpoint,
 )
 
 
@@ -136,3 +152,106 @@ def test_full_gate_rejects_weakened_precision_floor() -> None:
 
     with pytest.raises(ValueError, match="min_precision"):
         validate_generation_gate_authorization(gate, expected_stage="full")
+
+
+def test_training_authorization_binds_gate_file_and_checkpoint_before_load(
+    tmp_path, monkeypatch
+) -> None:
+    gate_path = tmp_path / "promotion_gate.json"
+    gate_path.write_text(json.dumps(_gate(), sort_keys=True), encoding="utf-8")
+    authorization = capture_generation_training_authorization(gate_path)
+
+    model = torch.nn.Linear(2, 2)
+    ema = ExponentialMovingAverage(model, warmup_steps=0)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+    checkpoint = tmp_path / "checkpoint_step_00000001.pt"
+    save_training_checkpoint(
+        checkpoint,
+        model=model,
+        ema=ema,
+        optimizer=optimizer,
+        scheduler=None,
+        scaler=None,
+        step=1,
+        config={"name": "authorization-test"},
+        extra_state={"training_authorization": authorization},
+    )
+    integrity = verify_training_checkpoint(checkpoint)
+    assert (
+        integrity["authorization_gate_identity_sha256"]
+        == authorization["gate_identity_sha256"]
+    )
+    restored = load_training_checkpoint(
+        checkpoint,
+        model=torch.nn.Linear(2, 2),
+        expected_training_authorization=authorization,
+        restore_rng=False,
+    )
+    assert restored["extra_state"]["training_authorization"] == authorization
+
+    changed_gate = _gate()
+    changed_gate["gates"].append(
+        {"name": "additional_audit_note", "passed": True, "evidence": {}}
+    )
+    changed_path = tmp_path / "changed_promotion_gate.json"
+    changed_path.write_text(json.dumps(changed_gate, sort_keys=True), encoding="utf-8")
+    changed_authorization = capture_generation_training_authorization(changed_path)
+
+    def fail_if_deserialized(*args, **kwargs):
+        raise AssertionError("checkpoint was deserialized before authorization validation")
+
+    monkeypatch.setattr(torch, "load", fail_if_deserialized)
+    with pytest.raises(ValueError, match="expected promotion gate"):
+        load_training_checkpoint(
+            checkpoint,
+            model=torch.nn.Linear(2, 2),
+            expected_training_authorization=changed_authorization,
+        )
+
+
+def test_full_training_runbook_binds_authorization_to_every_segment() -> None:
+    runbook = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts/runbooks/generation_full_matched_300k_after_gate.sh"
+    ).read_text(encoding="utf-8")
+
+    assert '--authorization-gate "$GATE"' in runbook
+    assert "training_pair_validation.json" in runbook
+
+
+def test_formal_full_trainer_refuses_to_start_without_authorization(tmp_path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(root / "src")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(root / "scripts/train_generation.py"),
+            "--config",
+            str(root / "configs/generation/imagenet256_cofitok_k8_300k.json"),
+            "--output-dir",
+            str(tmp_path / "must-not-start"),
+        ],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "requires --authorization-gate" in result.stderr
+    assert not (tmp_path / "must-not-start").exists()
+
+
+def test_formal_full_checkpoint_payload_requires_authorization_binding() -> None:
+    checkpoint = {
+        "config": {
+            "data": {"dataset": "imagenet_256"},
+            "runtime": {"steps": 300_000},
+        },
+        "extra_state": {},
+    }
+
+    with pytest.raises(ValueError, match="lacks its scaling-gate authorization"):
+        validate_checkpoint_training_authorization(checkpoint, {})

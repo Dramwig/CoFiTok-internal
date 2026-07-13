@@ -155,6 +155,18 @@ recomputes the core inequalities from the report summary, and cross-checks the
 FID, endpoint, ordering, zero-token, shuffle, and full precision/recall evidence.
 The 300K runbook and completion audit call this same contract, so editing only a
 gate's status or decision cannot authorize an expensive downstream stage.
+The full 300K trainer also consumes the exact scaling gate through
+`--authorization-gate`. Its canonical gate identity, file SHA256, byte count,
+stage, and decision are copied into the run manifest, every checkpoint payload,
+the pre-deserialization integrity sidecar, `latest.json`, and the completed
+training report. Every resumed milestone must present the same gate bytes.
+The full matched-pair validator and terminal completion audit recompute the
+identity from the actual scaling report and require both methods and both real
+step-300K sidecars to bind it. A gate created after training, a replaced gate,
+or CoFiTok/dense runs authorized by different gates therefore cannot complete.
+Formal sampling and EMA export also compare the deserialized checkpoint payload
+with this sidecar before applying model or EMA weights, covering the final 300K
+checkpoint even when it is sampled without a subsequent training resume.
 
 The full queue alternates CoFiTok and dense at 50K, 100K, 200K, and 300K
 milestones. At each matched point it produces 2,048 fixed-protocol EMA samples
@@ -326,6 +338,9 @@ The resolved sidecar path is propagated through preflight, sampling, metrics,
 and gate provenance. Legacy 10% weights therefore require the migration stage;
 full checkpoints satisfy this contract at creation. See
 `docs/records/2026-07-12_generation_checkpoint_trust_boundary.md`.
+Formal full-training checkpoints additionally bind their scaling authorization
+before deserialization; see
+`docs/records/2026-07-13_generation_training_authorization_binding.md`.
 
 Long sampling runs expose atomic, resumable progress. Each completed batch
 updates `sampling_progress.json`, which is bound to the immutable sampling

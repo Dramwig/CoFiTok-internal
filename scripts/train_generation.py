@@ -32,6 +32,7 @@ from cofitok.models import CoFiTokTiny
 from cofitok.reporting import write_json_report
 from cofitok.training import (
     ExponentialMovingAverage,
+    capture_generation_training_authorization,
     compute_losses,
     ensure_fresh_training_output,
     reconcile_metrics_for_resume,
@@ -86,6 +87,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--benchmark-warmup-steps", type=int, default=2)
     parser.add_argument("--benchmark-output", default="")
+    parser.add_argument(
+        "--authorization-gate",
+        default="",
+        help="Passing scaling gate that authorizes formal full ImageNet-256 training.",
+    )
     return parser.parse_args()
 
 
@@ -307,6 +313,20 @@ def main() -> None:
             ),
         )
     _validate_config(config)
+    formal_full_training = (
+        not benchmark_mode
+        and config.data.dataset == "imagenet_256"
+        and config.runtime.steps == 300_000
+    )
+    if benchmark_mode and args.authorization_gate:
+        raise ValueError("benchmark mode does not consume a training authorization gate")
+    if formal_full_training and not args.authorization_gate:
+        raise ValueError("formal full ImageNet-256 training requires --authorization-gate")
+    training_authorization = (
+        capture_generation_training_authorization(args.authorization_gate)
+        if args.authorization_gate
+        else None
+    )
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     metrics_path = output_dir / "train_metrics.jsonl"
@@ -385,6 +405,7 @@ def main() -> None:
             expected_runtime_environment=runtime_environment,
             expected_git_provenance=git_provenance,
             expected_dataset_provenance=dataset_provenance,
+            expected_training_authorization=training_authorization,
             map_location=device,
         )
         start_step = int(checkpoint["step"])
@@ -429,6 +450,7 @@ def main() -> None:
         "runtime_environment": runtime_environment,
         "runtime_environment_sha256": runtime_environment_sha,
         "dataset_provenance": dataset_provenance,
+        "training_authorization": training_authorization,
         "parameter_count": sum(parameter.numel() for parameter in base_model.parameters()),
         "trainable_parameter_count": sum(
             parameter.numel() for parameter in base_model.parameters() if parameter.requires_grad
@@ -580,6 +602,7 @@ def main() -> None:
                     "runtime_environment": runtime_environment,
                     "runtime_environment_sha256": runtime_environment_sha,
                     "dataset_provenance": dataset_provenance,
+                    "training_authorization": training_authorization,
                     "cumulative_elapsed_seconds": (
                         cumulative_elapsed_before_segment + segment_elapsed_seconds
                     ),

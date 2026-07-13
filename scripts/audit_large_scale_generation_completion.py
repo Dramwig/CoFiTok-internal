@@ -220,6 +220,11 @@ def _full_checkpoint_file_evidence(
             "git_revision",
             "git_branch",
             "git_dirty",
+            "authorization_stage",
+            "authorization_decision",
+            "authorization_gate_bytes",
+            "authorization_gate_sha256",
+            "authorization_gate_identity_sha256",
         ):
             if verified.get(key) != latest.get(key):
                 raise ValueError(
@@ -1435,6 +1440,7 @@ def build_completion_audit(
                 expected_revision=expected_full_revision,
                 expected_dataset="imagenet_256",
                 expected_recipe_stage="full",
+                expected_authorization_gate=scaling_gate,
             ),
         )
     )

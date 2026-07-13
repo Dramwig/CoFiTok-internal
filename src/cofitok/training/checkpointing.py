@@ -17,6 +17,10 @@ from cofitok.environment import (
     runtime_environment_sha256,
 )
 from cofitok.reporting import file_sha256, write_json_report
+from cofitok.training.authorization import (
+    validate_checkpoint_training_authorization,
+    validate_generation_training_authorization,
+)
 from cofitok.training.ema import ExponentialMovingAverage
 
 
@@ -108,6 +112,24 @@ def verify_training_checkpoint(path: str | Path) -> dict[str, Any]:
         or not isinstance(integrity["git_dirty"], bool)
     ):
         raise ValueError("Checkpoint Git integrity metadata is malformed")
+    authorization_keys = {
+        "authorization_stage",
+        "authorization_decision",
+        "authorization_gate_bytes",
+        "authorization_gate_sha256",
+        "authorization_gate_identity_sha256",
+    }
+    present_authorization_keys = authorization_keys & integrity.keys()
+    if present_authorization_keys and present_authorization_keys != authorization_keys:
+        raise ValueError("Checkpoint training-authorization metadata is incomplete")
+    if present_authorization_keys and (
+        integrity["authorization_stage"] != "scaling"
+        or integrity["authorization_decision"] != "promote_to_full_imagenet256"
+        or int(integrity["authorization_gate_bytes"]) < 1
+        or len(str(integrity["authorization_gate_sha256"])) != 64
+        or len(str(integrity["authorization_gate_identity_sha256"])) != 64
+    ):
+        raise ValueError("Checkpoint training-authorization metadata is malformed")
     return integrity
 
 
@@ -196,6 +218,15 @@ def resolve_latest_checkpoint(directory: str | Path) -> Path:
     for key in ("git_revision", "git_branch", "git_dirty"):
         if key in integrity:
             expected_pointer[key] = integrity[key]
+    for key in (
+        "authorization_stage",
+        "authorization_decision",
+        "authorization_gate_bytes",
+        "authorization_gate_sha256",
+        "authorization_gate_identity_sha256",
+    ):
+        if key in integrity:
+            expected_pointer[key] = integrity[key]
     for key, expected in expected_pointer.items():
         if latest.get(key) != expected:
             raise ValueError(f"latest.json {key} does not match checkpoint integrity metadata")
@@ -281,6 +312,14 @@ def save_training_checkpoint(
                 dataset_provenance,
                 expected_dataset=str(config_data["dataset"]),
             )["identity_sha256"]
+    training_authorization = resolved_extra_state.get("training_authorization")
+    authorization_evidence = None
+    if training_authorization is not None:
+        if not isinstance(training_authorization, Mapping):
+            raise ValueError("generation training authorization must be a mapping")
+        authorization_evidence = validate_generation_training_authorization(
+            training_authorization
+        )
     payload = {
         "format_version": CHECKPOINT_FORMAT_VERSION,
         "step": step,
@@ -322,6 +361,18 @@ def save_training_checkpoint(
                 "git_dirty": git_provenance.get("dirty"),
             }
         )
+    if authorization_evidence is not None:
+        integrity.update(
+            {
+                "authorization_stage": authorization_evidence["stage"],
+                "authorization_decision": authorization_evidence["decision"],
+                "authorization_gate_bytes": authorization_evidence["gate_bytes"],
+                "authorization_gate_sha256": authorization_evidence["gate_sha256"],
+                "authorization_gate_identity_sha256": authorization_evidence[
+                    "gate_identity_sha256"
+                ],
+            }
+        )
     integrity_path = checkpoint_integrity_path(target)
     write_json_report(integrity_path, integrity)
     write_json_report(
@@ -345,6 +396,7 @@ def load_training_checkpoint(
     expected_runtime_environment: Mapping[str, Any] | None = None,
     expected_git_provenance: Mapping[str, Any] | None = None,
     expected_dataset_provenance: Mapping[str, Any] | None = None,
+    expected_training_authorization: Mapping[str, Any] | None = None,
     map_location: str | torch.device = "cpu",
 ) -> dict[str, Any]:
     integrity = None
@@ -384,9 +436,34 @@ def load_training_checkpoint(
             raise ValueError(
                 "Checkpoint dataset identity differs from expected provenance"
             )
+    expected_authorization_evidence = None
+    if expected_training_authorization is not None:
+        expected_authorization_evidence = validate_generation_training_authorization(
+            expected_training_authorization
+        )
+        if integrity is None:
+            raise ValueError("Checkpoint training authorization requires integrity metadata")
+        expected_integrity_authorization = {
+            "authorization_stage": expected_authorization_evidence["stage"],
+            "authorization_decision": expected_authorization_evidence["decision"],
+            "authorization_gate_bytes": expected_authorization_evidence["gate_bytes"],
+            "authorization_gate_sha256": expected_authorization_evidence["gate_sha256"],
+            "authorization_gate_identity_sha256": expected_authorization_evidence[
+                "gate_identity_sha256"
+            ],
+        }
+        if any(
+            integrity.get(key) != value
+            for key, value in expected_integrity_authorization.items()
+        ):
+            raise ValueError(
+                "Checkpoint training authorization differs from the expected promotion gate"
+            )
     checkpoint = torch.load(path, map_location=map_location, weights_only=False)
     if checkpoint.get("format_version") != CHECKPOINT_FORMAT_VERSION:
         raise ValueError(f"Unsupported checkpoint format: {checkpoint.get('format_version')}")
+    if integrity is not None:
+        validate_checkpoint_training_authorization(checkpoint, integrity)
     if expected_config is not None:
         checkpoint_config = checkpoint.get("config")
         if not isinstance(checkpoint_config, Mapping):
@@ -482,6 +559,23 @@ def load_training_checkpoint(
                 raise ValueError(
                     "Checkpoint dataset identity differs from integrity metadata"
                 )
+    if expected_training_authorization is not None:
+        extra_state = checkpoint.get("extra_state")
+        if not isinstance(extra_state, Mapping):
+            raise ValueError("Checkpoint is missing exact-resume extra state")
+        checkpoint_authorization = extra_state.get("training_authorization")
+        if not isinstance(checkpoint_authorization, Mapping):
+            raise ValueError("Checkpoint is missing its generation training authorization")
+        mismatches = _config_mismatch_paths(
+            expected_training_authorization,
+            checkpoint_authorization,
+            path="training_authorization",
+        )
+        if mismatches:
+            preview = ", ".join(mismatches[:8])
+            raise ValueError(
+                f"Checkpoint generation training authorization mismatch at: {preview}"
+            )
     if integrity is not None:
         if int(checkpoint.get("step", -1)) != int(integrity["step"]):
             raise ValueError("Checkpoint payload step does not match integrity metadata")

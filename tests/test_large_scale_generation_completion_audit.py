@@ -14,6 +14,7 @@ from cofitok.data.provenance import (
 )
 from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
 from cofitok.generation_gate import REQUIRED_GENERATION_GATES
+from cofitok.training.authorization import build_generation_training_authorization
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
     build_completion_audit,
@@ -97,6 +98,42 @@ def _training(
             else "imagenet256_dense_300k.json"
         )
     dataset_provenance = _dataset_provenance(dataset)
+    training_authorization = None
+    if dataset == "imagenet_256":
+        training_authorization = build_generation_training_authorization(
+            _gate("scaling"),
+            gate_path=(
+                "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/"
+                "generation/imagenet256_10pct_matched_50k_2026-07-12/"
+                "promotion_gate.json"
+            ),
+            gate_bytes=10_000,
+            gate_sha256="9" * 64,
+        )
+    latest = {
+        "checkpoint": f"checkpoint_step_{steps:08d}.pt",
+        "step": steps,
+        "checkpoint_sha256": checkpoint_sha,
+        "checkpoint_bytes": 1_000,
+        "integrity_manifest": f"checkpoint_step_{steps:08d}.pt.integrity.json",
+        "runtime_environment_sha256": environment_sha,
+        "git_revision": revision,
+        "git_branch": "scale/generative-system",
+        "git_dirty": False,
+        "dataset_identity_sha256": dataset_provenance["identity_sha256"],
+    }
+    if training_authorization is not None:
+        latest.update(
+            {
+                "authorization_stage": training_authorization["stage"],
+                "authorization_decision": training_authorization["decision"],
+                "authorization_gate_bytes": training_authorization["gate_bytes"],
+                "authorization_gate_sha256": training_authorization["gate_sha256"],
+                "authorization_gate_identity_sha256": training_authorization[
+                    "gate_identity_sha256"
+                ],
+            }
+        )
     return {
         "training_complete": True,
         "completed_steps": steps,
@@ -112,22 +149,12 @@ def _training(
             "revision": revision,
             "branch": "scale/generative-system",
         },
-        "latest_checkpoint": {
-            "checkpoint": f"checkpoint_step_{steps:08d}.pt",
-            "step": steps,
-            "checkpoint_sha256": checkpoint_sha,
-            "checkpoint_bytes": 1_000,
-            "integrity_manifest": f"checkpoint_step_{steps:08d}.pt.integrity.json",
-            "runtime_environment_sha256": environment_sha,
-            "git_revision": revision,
-            "git_branch": "scale/generative-system",
-            "git_dirty": False,
-            "dataset_identity_sha256": dataset_provenance["identity_sha256"],
-        },
+        "latest_checkpoint": latest,
         "config": config_to_dict(
             load_config(ROOT / "configs/generation" / config_name)
         ),
         "dataset_provenance": dataset_provenance,
+        "training_authorization": training_authorization,
     }
 
 
@@ -922,6 +949,15 @@ def _inference_exports() -> dict:
 def _full_checkpoint_files() -> dict:
     output = {}
     environment_sha = runtime_environment_sha256(_runtime_environment())
+    authorization = build_generation_training_authorization(
+        _gate("scaling"),
+        gate_path=(
+            "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/"
+            "imagenet256_10pct_matched_50k_2026-07-12/promotion_gate.json"
+        ),
+        gate_bytes=10_000,
+        gate_sha256="9" * 64,
+    )
     for method, run, checkpoint_sha in (
         ("cofitok", "imagenet256_full_cofitok_k8_300k", "a" * 64),
         ("dense_identity", "imagenet256_full_dense_300k", "b" * 64),
@@ -941,6 +977,13 @@ def _full_checkpoint_files() -> dict:
             "git_revision": FULL_REVISION,
             "git_branch": "scale/generative-system",
             "git_dirty": False,
+            "authorization_stage": authorization["stage"],
+            "authorization_decision": authorization["decision"],
+            "authorization_gate_bytes": authorization["gate_bytes"],
+            "authorization_gate_sha256": authorization["gate_sha256"],
+            "authorization_gate_identity_sha256": authorization[
+                "gate_identity_sha256"
+            ],
         }
     return output
 
@@ -1124,7 +1167,10 @@ def test_completion_audit_rejects_weakened_scaling_quality_threshold() -> None:
     report = build_completion_audit(**kwargs)
 
     assert report["status"] == "failed"
-    assert report["failed_checks"] == ["scaling_promotion_gate"]
+    assert report["failed_checks"] == [
+        "scaling_promotion_gate",
+        "full_matched_training",
+    ]
 
 
 def test_completion_audit_rejects_incomplete_scaling_gate_contract() -> None:
@@ -1138,7 +1184,10 @@ def test_completion_audit_rejects_incomplete_scaling_gate_contract() -> None:
     report = build_completion_audit(**kwargs)
 
     assert report["status"] == "failed"
-    assert report["failed_checks"] == ["scaling_promotion_gate"]
+    assert report["failed_checks"] == [
+        "scaling_promotion_gate",
+        "full_matched_training",
+    ]
 
 
 def test_completion_audit_rejects_unbound_final_quality_metrics() -> None:
@@ -1542,6 +1591,30 @@ def test_completion_audit_rejects_missing_full_checkpoint_bytes() -> None:
 def test_completion_audit_rejects_checkpoint_sidecar_revision_drift() -> None:
     kwargs = _kwargs()
     kwargs["full_checkpoint_files"]["dense_identity"]["git_revision"] = "c" * 40
+
+    completion = build_completion_audit(**kwargs)
+
+    assert completion["status"] == "failed"
+    assert completion["failed_checks"] == ["reproducible_full_checkpoint_files"]
+
+
+def test_completion_audit_rejects_full_training_authorization_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["dense_full_training"]["training_authorization"][
+        "gate_identity_sha256"
+    ] = "c" * 64
+
+    completion = build_completion_audit(**kwargs)
+
+    assert completion["status"] == "failed"
+    assert completion["failed_checks"] == ["full_matched_training"]
+
+
+def test_completion_audit_rejects_checkpoint_authorization_sidecar_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["full_checkpoint_files"]["dense_identity"][
+        "authorization_gate_identity_sha256"
+    ] = "c" * 64
 
     completion = build_completion_audit(**kwargs)
 
