@@ -3,10 +3,13 @@ from __future__ import annotations
 import json
 import os
 import sys
+import threading
 import time
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+import pytest
 
 from cofitok.training.watchdog import (
     MONITOR_FAILURE_EXIT_CODE,
@@ -193,3 +196,61 @@ def test_watchdog_passes_through_child_failure(tmp_path: Path) -> None:
     assert report["status"] == "failed"
     assert report["reason"] == "child_failed"
     assert report["child_exit_code"] == 7
+
+
+@pytest.mark.skipif(os.name != "posix", reason="requires POSIX process groups")
+def test_watchdog_terminates_descendant_process_group(tmp_path: Path) -> None:
+    descendant_pid_file = tmp_path / "descendant.pid"
+    child_script = (
+        "import subprocess, sys, time; "
+        "from pathlib import Path; "
+        "descendant = subprocess.Popen([sys.executable, '-c', "
+        "'import time; time.sleep(60)']); "
+        "Path(sys.argv[1]).write_text(str(descendant.pid), encoding='ascii'); "
+        "time.sleep(60)"
+    )
+    config = _config(
+        tmp_path,
+        (sys.executable, "-c", child_script, str(descendant_pid_file)),
+    )
+    _write_monitor(
+        config.monitor_report,
+        status="running",
+        updated_at=datetime.now(timezone.utc),
+    )
+
+    updater_error: list[str] = []
+
+    def publish_failure() -> None:
+        deadline = time.monotonic() + 5.0
+        while time.monotonic() < deadline:
+            if descendant_pid_file.is_file():
+                _write_monitor(
+                    config.monitor_report,
+                    status="stalled",
+                    updated_at=datetime.now(timezone.utc),
+                )
+                return
+            time.sleep(0.01)
+        updater_error.append("descendant PID was not published")
+
+    updater = threading.Thread(target=publish_failure)
+    updater.start()
+    exit_code = run_training_watchdog(config)
+    updater.join(timeout=5.0)
+
+    assert updater_error == []
+    assert not updater.is_alive()
+    assert exit_code == MONITOR_FAILURE_EXIT_CODE
+    descendant_pid = int(descendant_pid_file.read_text(encoding="ascii"))
+    deadline = time.monotonic() + 5.0
+    while time.monotonic() < deadline:
+        try:
+            stat = Path(f"/proc/{descendant_pid}/stat").read_text(encoding="ascii")
+        except FileNotFoundError:
+            break
+        if stat.split()[2] == "Z":
+            break
+        time.sleep(0.05)
+    else:
+        pytest.fail(f"descendant process {descendant_pid} survived watchdog shutdown")
