@@ -179,12 +179,23 @@ train_to_milestone() {
   if (( current > 0 )); then
     resume_args=(--resume auto)
   fi
-  python scripts/train_generation.py \
-    --config "$config" --output-dir "$run_dir" \
-    --authorization-gate "$GATE" \
-    --micro-batch-size "$SELECTED_MICRO_BATCH" \
-    --gradient-accumulation-steps "$SELECTED_ACCUMULATION" \
-    --stop-after-steps "$delta" "${resume_args[@]}"
+  local watchdog_status
+  watchdog_status="$run_dir/training_watchdog_step_$(printf '%08d' "$target").json"
+  python scripts/run_generation_training_watchdog.py \
+    --monitor-report "$MONITOR_REPORT" \
+    --monitor-pid-file "$MONITOR_PID_FILE" \
+    --expected-monitor-name generation_full_matched_300k \
+    --status-output "$watchdog_status" \
+    --poll-seconds 30 --startup-grace-seconds 600 \
+    --monitor-silence-seconds 900 --monitor-process-grace-seconds 120 \
+    --termination-grace-seconds 60 \
+    -- \
+    python scripts/train_generation.py \
+      --config "$config" --output-dir "$run_dir" \
+      --authorization-gate "$GATE" \
+      --micro-batch-size "$SELECTED_MICRO_BATCH" \
+      --gradient-accumulation-steps "$SELECTED_ACCUMULATION" \
+      --stop-after-steps "$delta" "${resume_args[@]}"
   local reached
   reached="$(latest_step "$run_dir")"
   if (( reached != target )); then

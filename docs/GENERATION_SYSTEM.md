@@ -30,6 +30,12 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - Production training uses bf16, gradient accumulation, gradient clipping,
   cosine LR, EMA, isolated DataLoader RNG, atomic checkpoints, retention, and
   exact model/optimizer/scheduler/RNG/sampler recovery.
+- Every upgrade-branch scaling/full training command is owned by a monitor-aware
+  watchdog. The watchdog requires a fresh report from the expected pair monitor,
+  fails closed when that monitor reports `failed`/`stalled`, stops publishing, or
+  disappears, and terminates the complete POSIX training process group before
+  returning a distinct operational exit code. Its atomic status JSON preserves
+  command, monitor summary, child exit, timing, and bounded invocation history.
 - Formal data identity is verified before model construction by rehashing the
   authoritative ImageNet metadata manifest and checking its byte count plus
   train/validation sizes against the recorded dataset condition. The resulting
@@ -508,6 +514,17 @@ disk, and GPU state. Milestone boundaries force synchronous health snapshots;
 the final completion audit requires a clean-revision `pass` report with both
 exact 300K runs and all protected milestone checkpoint stats. See
 `docs/records/2026-07-13_full_generation_operational_monitor.md`.
+
+The compressed 10% and full 300K runbooks launch that monitor before training
+and wrap every training segment with
+`scripts/run_generation_training_watchdog.py`. Exit codes `86`, `87`, `88`, and
+`89` respectively mean terminal monitor failure, no fresh startup report,
+monitor-report silence, and monitor-process disappearance; a training-process
+failure otherwise preserves the child's exit code. This converts monitor
+evidence into active fail-closed process ownership instead of leaving an
+unhealthy GPU job running until a human notices. The pinned legacy pair remains
+untouched because its code revision cannot change mid-pair. See
+`docs/records/2026-07-14_generation_training_watchdog.md`.
 
 Every upgrade-branch training checkpoint also binds a canonical runtime
 environment fingerprint across payload, integrity sidecar, latest pointer, and

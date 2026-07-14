@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNBOOKS = (
+    "generation_10pct_matched_50k_2026-07-12.sh",
     "generation_10pct_posteval_2026-07-12.sh",
     "generation_full_milestone_eval.sh",
     "generation_full_posteval_50k.sh",
@@ -32,6 +33,7 @@ ENTRYPOINTS = {
     "infer_generation.py",
     "monitor_generation_pair.py",
     "preflight_generation_sampling.py",
+    "run_generation_training_watchdog.py",
     "select_generation_sampling_batch.py",
     "select_generation_training_runtime.py",
     "train_generation.py",
@@ -71,13 +73,21 @@ def _runbook_contracts() -> dict[str, set[str]]:
             if match is None:
                 index += 1
                 continue
-            script = match.group(1)
             command_lines = [lines[index]]
             while command_lines[-1].rstrip().endswith("\\"):
                 index += 1
                 command_lines.append(lines[index])
-            options = set(re.findall(r"--[a-z0-9-]+", "\n".join(command_lines)))
-            contracts.setdefault(script, set()).update(options)
+            command = "\n".join(command_lines)
+            parts = re.split(r"(?m)^\s*--\s*\\\s*$", command, maxsplit=1)
+            for part in parts:
+                nested_match = re.search(
+                    r"python scripts/([A-Za-z0-9_]+\.py)", part
+                )
+                if nested_match is None:
+                    continue
+                script = nested_match.group(1)
+                options = set(re.findall(r"--[a-z0-9-]+", part))
+                contracts.setdefault(script, set()).update(options)
             index += 1
     return contracts
 
