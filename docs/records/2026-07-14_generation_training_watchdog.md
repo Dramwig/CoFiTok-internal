@@ -50,3 +50,21 @@ and monitor-process disappearance. The runbook entrypoint contract also checks
 that the wrapper and nested training CLI options remain live. A Linux isolated
 checkout rehearsal is required before the deployment waiter may target this
 revision.
+
+## Implementation rehearsal
+
+The watchdog implementation and POSIX descendant-cleanup test were committed at
+`938c177f0b690160d8fde83783a8cbb4a6db7adf`. Its prerequisite-aware bundle:
+
+- advertises exactly that one `scale/generative-system` head;
+- requires pinned commit `781a01444fddbf0d48a427ba58bdeed50167b5be`;
+- is `496,253` bytes with SHA256
+  `3a00e18db39148f4a9a733acaa0cdccb76514d049ccbd209bf07ab64c3050e0c`.
+
+On `pro6000`, the bundle was fetched only into the isolated checkout
+`/tmp/cofitok-rehearsal-938c177.sgFVyh/CoFiTok/CoFiTok-internal`. With GPU
+visibility disabled, all `590/590` tests passed, including the Linux-only test
+that proves a stalled monitor terminates both the training child and its
+descendant process. All `41/41` target-tracked shell runbooks passed `bash -n`,
+and the isolated tracked worktree remained clean. The formal repository HEAD
+was `781a01444fddbf0d48a427ba58bdeed50167b5be` before and after rehearsal.
