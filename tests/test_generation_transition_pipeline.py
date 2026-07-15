@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -113,7 +114,14 @@ def test_remote_deployer_guards_revision_training_and_duplicate_launch() -> None
     assert '--expected-revision "$EXPECTED_COMMIT"' in deployer
     assert "--expected-recipe-stage legacy_scaling" in deployer
     assert "--allow-legacy-missing-dataset-provenance" in deployer
-    assert deployer.index("git fetch \"$BUNDLE\" HEAD") < deployer.index(
+    assert 'git fetch "$BUNDLE" "$bundle_ref"' in deployer
+    assert 'git fetch "$BUNDLE" HEAD' not in deployer
+    assert "mapfile -t bundle_heads" in deployer
+    assert "${#bundle_heads[@]} != 1" in deployer
+    assert '"$bundle_head" != "$TARGET_COMMIT"' in deployer
+    assert '"$bundle_ref" != "HEAD"' in deployer
+    assert '"$bundle_ref" != "refs/heads/scale/generative-system"' in deployer
+    assert deployer.index('git fetch "$BUNDLE" "$bundle_ref"') < deployer.index(
         'PYTHONPATH="$validator_pythonpath" python "$validator"'
     )
     assert deployer.index("conda activate pf-vlm") < deployer.index(
@@ -202,6 +210,121 @@ def test_local_deployer_pins_current_training_revision_and_builds_bundle() -> No
     assert "$RemoteValidator" not in deployer
     assert "$Validator" not in deployer
     assert "ExpectedRemoteCommit" in deployer
+
+
+@pytest.mark.parametrize(
+    ("bundle_revision", "expected_ref"),
+    [
+        ("HEAD", "HEAD"),
+        ("scale/generative-system", "refs/heads/scale/generative-system"),
+    ],
+)
+def test_incremental_bundle_fetches_through_its_advertised_head(
+    tmp_path: Path,
+    bundle_revision: str,
+    expected_ref: str,
+) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    subprocess.run(
+        ["git", "init", "-b", "scale/generative-system"],
+        cwd=source,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.email", "cofitok@example.invalid"],
+        cwd=source,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "CoFiTok Test"],
+        cwd=source,
+        check=True,
+    )
+    tracked = source / "tracked.txt"
+    tracked.write_text("pinned\n", encoding="ascii")
+    subprocess.run(["git", "add", "tracked.txt"], cwd=source, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "pinned"],
+        cwd=source,
+        check=True,
+        capture_output=True,
+    )
+    pinned = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=source,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    tracked.write_text("target\n", encoding="ascii")
+    subprocess.run(["git", "add", "tracked.txt"], cwd=source, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "target"],
+        cwd=source,
+        check=True,
+        capture_output=True,
+    )
+    target = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=source,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    bundle = tmp_path / "upgrade.bundle"
+    subprocess.run(
+        [
+            "git",
+            "bundle",
+            "create",
+            str(bundle),
+            bundle_revision,
+            f"^{pinned}",
+        ],
+        cwd=source,
+        check=True,
+        capture_output=True,
+    )
+
+    pinned_checkout = tmp_path / "pinned"
+    subprocess.run(
+        ["git", "clone", "--no-local", str(source), str(pinned_checkout)],
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "checkout", "--detach", pinned],
+        cwd=pinned_checkout,
+        check=True,
+        capture_output=True,
+    )
+    advertised = subprocess.run(
+        ["git", "bundle", "list-heads", str(bundle)],
+        cwd=pinned_checkout,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip().split()
+    assert advertised == [target, expected_ref]
+
+    result = subprocess.run(
+        ["git", "fetch", str(bundle), advertised[1]],
+        cwd=pinned_checkout,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    fetched = subprocess.run(
+        ["git", "rev-parse", "FETCH_HEAD"],
+        cwd=pinned_checkout,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    assert fetched == target
 
 
 def test_legacy_pair_deployment_waiter_is_bounded_locked_and_fail_closed() -> None:

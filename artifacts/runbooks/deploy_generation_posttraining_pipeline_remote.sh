@@ -69,7 +69,21 @@ if [[ "$current_commit" == "$EXPECTED_COMMIT" ]]; then
     exit 78
   fi
   git bundle verify "$BUNDLE"
-  git fetch "$BUNDLE" HEAD
+  mapfile -t bundle_heads < <(git bundle list-heads "$BUNDLE")
+  if (( ${#bundle_heads[@]} != 1 )); then
+    printf 'upgrade bundle must advertise exactly one head; found %s\n' \
+      "${#bundle_heads[@]}" >&2
+    exit 82
+  fi
+  read -r bundle_head bundle_ref <<<"${bundle_heads[0]}"
+  if [[ "$bundle_head" != "$TARGET_COMMIT" || \
+        ( "$bundle_ref" != "HEAD" && \
+          "$bundle_ref" != "refs/heads/scale/generative-system" ) ]]; then
+    printf 'bundle advertised unsupported head %s %s for target %s\n' \
+      "$bundle_head" "$bundle_ref" "$TARGET_COMMIT" >&2
+    exit 83
+  fi
+  git fetch "$BUNDLE" "$bundle_ref"
   fetched_commit="$(git rev-parse FETCH_HEAD)"
   if [[ "$fetched_commit" != "$TARGET_COMMIT" ]]; then
     printf 'bundle resolved to %s instead of target %s\n' \
