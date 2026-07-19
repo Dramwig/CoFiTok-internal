@@ -3,11 +3,7 @@ set -euo pipefail
 
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
-COFITOK_CHECKPOINT="$OUTPUT_ROOT/imagenet256_full_cofitok_k8_300k/checkpoint_step_00300000.pt"
-DENSE_CHECKPOINT="$OUTPUT_ROOT/imagenet256_full_dense_300k/checkpoint_step_00300000.pt"
 EXPORT_ROOT="$OUTPUT_ROOT/exports/imagenet256_full_300k"
-REPORT_ROOT="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/exports"
-FINAL_GATE="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/final_generation_gate.json"
 COFITOK_ARTIFACT="$EXPORT_ROOT/cofitok_k8_ema_inference.pt"
 DENSE_ARTIFACT="$EXPORT_ROOT/dense_identity_ema_inference.pt"
 
@@ -15,6 +11,12 @@ source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
 cd "$PROJECT"
 export PYTHONPATH=src
+eval "$(python scripts/print_generation_workspace_paths.py \
+  --project-root "$PROJECT" --output-root "$OUTPUT_ROOT" --format shell)"
+COFITOK_CHECKPOINT="$FULL_COFITOK_RUN/checkpoint_step_00300000.pt"
+DENSE_CHECKPOINT="$FULL_DENSE_RUN/checkpoint_step_00300000.pt"
+REPORT_ROOT="$FULL_REPORT_ROOT/exports"
+FINAL_GATE="$FULL_GATE"
 mkdir -p "$EXPORT_ROOT" "$REPORT_ROOT"
 
 test -f "$COFITOK_CHECKPOINT"

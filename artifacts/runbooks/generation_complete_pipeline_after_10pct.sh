@@ -5,18 +5,19 @@ PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
 STATUS="$OUTPUT_ROOT/generation_complete_pipeline_after_10pct.status.json"
 LOCK="$OUTPUT_ROOT/generation_complete_pipeline_after_10pct.lock"
-SCALING_GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_compressed_matched_50k/promotion_gate.json"
-FINAL_GATE="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/final_generation_gate.json"
-FINAL_COMPARISON="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/comparison/large_scale_generation_comparison.json"
-FINAL_VISUAL_AUDIT="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/visual_audit/visual_audit_report.json"
-COFITOK_10PCT="$OUTPUT_ROOT/imagenet256_10pct_compressed_cofitok_k8_50k/training_report.json"
-DENSE_10PCT="$OUTPUT_ROOT/imagenet256_10pct_compressed_dense_50k/training_report.json"
 DEPLOYMENT_SOURCE_REVISION=781a01444fddbf0d48a427ba58bdeed50167b5be
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
 cd "$PROJECT"
 export PYTHONPATH=src
+eval "$(python scripts/print_generation_workspace_paths.py \
+  --project-root "$PROJECT" --output-root "$OUTPUT_ROOT" --format shell)"
+FINAL_GATE="$FULL_GATE"
+FINAL_COMPARISON="$FULL_REPORT_ROOT/comparison/large_scale_generation_comparison.json"
+FINAL_VISUAL_AUDIT="$FULL_REPORT_ROOT/visual_audit/visual_audit_report.json"
+COFITOK_10PCT="$SCALING_COFITOK_RUN/training_report.json"
+DENSE_10PCT="$SCALING_DENSE_RUN/training_report.json"
 FULL_REVISION="$(git rev-parse HEAD)"
 mkdir -p "$OUTPUT_ROOT"
 
@@ -112,7 +113,7 @@ python scripts/audit_large_scale_generation_completion.py \
   --expected-deployment-source-revision "$DEPLOYMENT_SOURCE_REVISION" \
   --expected-10pct-revision "$FULL_REVISION" \
   --expected-full-revision "$FULL_REVISION" \
-  --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/completion_audit.json"
+  --output "$FULL_REPORT_ROOT/completion_audit.json"
 
 STAGE=complete
 write_status pass "large-scale generation training and formal evaluation passed"

@@ -117,3 +117,11 @@ cannot authorize 50K or 300K automatically. Candidate selection requires
 mechanism improvement plus direct visual inspection. The winner must then run a
 fresh same-revision matched 50K pair and pass the unchanged 10K scaling gate
 before full ImageNet-256 training is allowed.
+
+The fresh formal pair is isolated from the failed `04a` assets through the
+versioned run identities `imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2`
+and `imagenet256_10pct_rankcomplete_dense_50k_v2`; its report root is
+`imagenet256_10pct_rankcomplete_matched_50k_v2`. Training, post-evaluation,
+full-training authorization, gate source verification, and terminal audit all
+resolve these names from `cofitok.generation_paths`. The legacy directories are
+therefore never resumed, overwritten, or accepted as current completion.

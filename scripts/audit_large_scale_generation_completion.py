@@ -22,6 +22,7 @@ from cofitok.generation_authorization import validate_generation_gate_binding
 from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.generation_gate_sources import verify_generation_gate_source_reports
+from cofitok.generation_paths import generation_workspace_paths
 from cofitok.image_integrity import (
     IMAGE_TREE_DIGEST_SCHEMA,
     image_tree_sha256,
@@ -2584,13 +2585,16 @@ def main() -> None:
 
     project = Path(args.project_root).resolve()
     output_root = Path(args.output_root).resolve()
-    report_root = project / "artifacts/reports/generation"
-    ten_root = report_root / "imagenet256_10pct_compressed_matched_50k"
-    full_root = report_root / "imagenet256_full_matched_300k"
-    cofitok_10 = output_root / "imagenet256_10pct_compressed_cofitok_k8_50k"
-    dense_10 = output_root / "imagenet256_10pct_compressed_dense_50k"
-    cofitok_full = output_root / "imagenet256_full_cofitok_k8_300k"
-    dense_full = output_root / "imagenet256_full_dense_300k"
+    workspace = generation_workspace_paths(
+        project_root=project,
+        output_root=output_root,
+    )
+    ten_root = workspace["SCALING_REPORT_ROOT"]
+    full_root = workspace["FULL_REPORT_ROOT"]
+    cofitok_10 = workspace["SCALING_COFITOK_RUN"]
+    dense_10 = workspace["SCALING_DENSE_RUN"]
+    cofitok_full = workspace["FULL_COFITOK_RUN"]
+    dense_full = workspace["FULL_DENSE_RUN"]
     official_related_path = (
         project
         / "artifacts/reports/baselines/official_related_methods_2026-07-11_final"

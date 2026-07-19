@@ -144,6 +144,22 @@ datasets:    /root/autodl-tmp/CoFiTok/datasets
 checkpoints: /root/autodl-tmp/CoFiTok/checkpoints/generation
 ```
 
+The failed revision-`04a738c` 10% pair keeps its original `compressed_*` run
+directories as immutable evidence. The next authoritative scaling attempt uses
+fresh identities resolved by `cofitok.generation_paths`:
+
+```text
+CoFiTok: imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2
+dense:   imagenet256_10pct_rankcomplete_dense_50k_v2
+report:  imagenet256_10pct_rankcomplete_matched_50k_v2
+```
+
+Active runbooks import these paths through
+`scripts/print_generation_workspace_paths.py`; gate source validation and the
+terminal completion audit use the same Python contract. A completed run may be
+skipped only when its resolved config, Git identity, step identity,
+`latest.json`, checkpoint, and integrity sidecar all match the current request.
+
 ## Promotion gates
 
 1. Code gate: full tests, CPU exact-resume smoke, CUDA bf16 smoke, zero-token

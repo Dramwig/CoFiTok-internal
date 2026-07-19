@@ -4,21 +4,22 @@ set -euo pipefail
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 DATA=/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
-COFITOK_RUN="$OUTPUT_ROOT/imagenet256_full_cofitok_k8_300k"
-DENSE_RUN="$OUTPUT_ROOT/imagenet256_full_dense_300k"
-COFITOK_CHECKPOINT="$COFITOK_RUN/checkpoint_step_00300000.pt"
-DENSE_CHECKPOINT="$DENSE_RUN/checkpoint_step_00300000.pt"
-EVAL_CACHE="$OUTPUT_ROOT/eval_cache/torch_fidelity"
-REPORT_ROOT="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k"
 OFFICIAL_RELATED="$PROJECT/artifacts/reports/baselines/official_related_methods_2026-07-11_final/official_related_methods_table.json"
 SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/imagenet256_full_50k_sampling"
-SAMPLING_SELECTION="$REPORT_ROOT/sampling_runtime_selection.json"
-SCALING_GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_compressed_matched_50k/promotion_gate.json"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
 cd "$PROJECT"
 export PYTHONPATH=src
+eval "$(python scripts/print_generation_workspace_paths.py \
+  --project-root "$PROJECT" --output-root "$OUTPUT_ROOT" --format shell)"
+COFITOK_RUN="$FULL_COFITOK_RUN"
+DENSE_RUN="$FULL_DENSE_RUN"
+COFITOK_CHECKPOINT="$COFITOK_RUN/checkpoint_step_00300000.pt"
+DENSE_CHECKPOINT="$DENSE_RUN/checkpoint_step_00300000.pt"
+EVAL_CACHE="$OUTPUT_ROOT/eval_cache/torch_fidelity"
+REPORT_ROOT="$FULL_REPORT_ROOT"
+SAMPLING_SELECTION="$REPORT_ROOT/sampling_runtime_selection.json"
 if ! git diff --quiet || ! git diff --cached --quiet; then
   printf 'formal 50K post-evaluation requires a clean tracked worktree\n' >&2
   exit 66

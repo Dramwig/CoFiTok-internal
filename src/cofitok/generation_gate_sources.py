@@ -3,58 +3,64 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from cofitok.generation_paths import (
+    FULL_COFITOK_RUN_ID,
+    FULL_DENSE_RUN_ID,
+    SCALING_COFITOK_RUN_ID,
+    SCALING_DENSE_RUN_ID,
+)
 from cofitok.reporting import file_sha256
 
 
 GATE_SOURCE_SUFFIXES = {
     "scaling": {
         "cofitok_training": (
-            "checkpoints/generation/imagenet256_10pct_compressed_cofitok_k8_50k/"
+            f"checkpoints/generation/{SCALING_COFITOK_RUN_ID}/"
             "training_report.json"
         ),
         "dense_training": (
-            "checkpoints/generation/imagenet256_10pct_compressed_dense_50k/"
+            f"checkpoints/generation/{SCALING_DENSE_RUN_ID}/"
             "training_report.json"
         ),
         "cofitok_generation": (
-            "checkpoints/generation/imagenet256_10pct_compressed_cofitok_k8_50k/"
+            f"checkpoints/generation/{SCALING_COFITOK_RUN_ID}/"
             "samples_gate10k_ddim100_cfg15/metrics/generation_metrics_report.json"
         ),
         "dense_generation": (
-            "checkpoints/generation/imagenet256_10pct_compressed_dense_50k/"
+            f"checkpoints/generation/{SCALING_DENSE_RUN_ID}/"
             "samples_gate10k_ddim100_cfg15/metrics/generation_metrics_report.json"
         ),
         "cofitok_checkpoint_eval": (
-            "checkpoints/generation/imagenet256_10pct_compressed_cofitok_k8_50k/"
+            f"checkpoints/generation/{SCALING_COFITOK_RUN_ID}/"
             "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
         ),
         "dense_checkpoint_eval": (
-            "checkpoints/generation/imagenet256_10pct_compressed_dense_50k/"
+            f"checkpoints/generation/{SCALING_DENSE_RUN_ID}/"
             "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
         ),
     },
     "full": {
         "cofitok_training": (
-            "checkpoints/generation/imagenet256_full_cofitok_k8_300k/"
+            f"checkpoints/generation/{FULL_COFITOK_RUN_ID}/"
             "training_report.json"
         ),
         "dense_training": (
-            "checkpoints/generation/imagenet256_full_dense_300k/training_report.json"
+            f"checkpoints/generation/{FULL_DENSE_RUN_ID}/training_report.json"
         ),
         "cofitok_generation": (
-            "checkpoints/generation/imagenet256_full_cofitok_k8_300k/"
+            f"checkpoints/generation/{FULL_COFITOK_RUN_ID}/"
             "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
         ),
         "dense_generation": (
-            "checkpoints/generation/imagenet256_full_dense_300k/"
+            f"checkpoints/generation/{FULL_DENSE_RUN_ID}/"
             "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
         ),
         "cofitok_checkpoint_eval": (
-            "checkpoints/generation/imagenet256_full_cofitok_k8_300k/"
+            f"checkpoints/generation/{FULL_COFITOK_RUN_ID}/"
             "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
         ),
         "dense_checkpoint_eval": (
-            "checkpoints/generation/imagenet256_full_dense_300k/"
+            f"checkpoints/generation/{FULL_DENSE_RUN_ID}/"
             "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
         ),
     },

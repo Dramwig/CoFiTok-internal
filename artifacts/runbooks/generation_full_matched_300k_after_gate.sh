@@ -3,13 +3,7 @@ set -euo pipefail
 
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
-GATE="$PROJECT/artifacts/reports/generation/imagenet256_10pct_compressed_matched_50k/promotion_gate.json"
-COFITOK_RUN="$OUTPUT_ROOT/imagenet256_full_cofitok_k8_300k"
-DENSE_RUN="$OUTPUT_ROOT/imagenet256_full_dense_300k"
 RUNTIME_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/full_imagenet256_300k"
-RUNTIME_SELECTION="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/runtime_selection.json"
-REFERENCE_COFITOK="$OUTPUT_ROOT/imagenet256_10pct_compressed_cofitok_k8_50k/checkpoint_step_00050000.pt"
-REFERENCE_DENSE="$OUTPUT_ROOT/imagenet256_10pct_compressed_dense_50k/checkpoint_step_00050000.pt"
 MONITOR_REPORT="$OUTPUT_ROOT/generation_full_matched_300k_monitor.json"
 MONITOR_LOG="$OUTPUT_ROOT/generation_full_matched_300k_monitor.log"
 MONITOR_PID_FILE="$OUTPUT_ROOT/generation_full_matched_300k_monitor.pid"
@@ -18,23 +12,32 @@ source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
 cd "$PROJECT"
 export PYTHONPATH=src
+eval "$(python scripts/print_generation_workspace_paths.py \
+  --project-root "$PROJECT" --output-root "$OUTPUT_ROOT" --format shell)"
+GATE="$SCALING_GATE"
+COFITOK_RUN="$FULL_COFITOK_RUN"
+DENSE_RUN="$FULL_DENSE_RUN"
+REFERENCE_COFITOK="$SCALING_COFITOK_RUN/checkpoint_step_00050000.pt"
+REFERENCE_DENSE="$SCALING_DENSE_RUN/checkpoint_step_00050000.pt"
+RUNTIME_SELECTION="$FULL_REPORT_ROOT/runtime_selection.json"
 if ! git diff --quiet || ! git diff --cached --quiet; then
   printf 'full matched 300K training requires a clean tracked worktree\n' >&2
   exit 66
 fi
+mkdir -p "$FULL_REPORT_ROOT"
 
 python scripts/validate_generation_configs.py \
   --cofitok-config configs/generation/imagenet256_cofitok_k8_300k.json \
   --dense-config configs/generation/imagenet256_dense_300k.json \
   --stage full \
-  --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/config_recipe.json"
+  --output "$FULL_REPORT_ROOT/config_recipe.json"
 
 python scripts/validate_generation_gate_report.py \
   --gate "$GATE" --stage scaling
 
 python scripts/check_generation_storage_capacity.py \
   --path "$OUTPUT_ROOT" \
-  --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/storage_preflight_training.json" \
+  --output "$FULL_REPORT_ROOT/storage_preflight_training.json" \
   --stage full_training \
   --reference-checkpoint "$REFERENCE_COFITOK" \
   --reference-checkpoint "$REFERENCE_DENSE" \
@@ -127,17 +130,9 @@ snapshot_full_monitor() {
 }
 
 require_complete() {
-  python - "$1" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], encoding="utf-8") as handle:
-    report = json.load(handle)
-if report.get("training_complete") is not True:
-    raise SystemExit(f"training did not reach its target: {sys.argv[1]}")
-if report.get("completed_steps") != report.get("target_steps"):
-    raise SystemExit(f"training step mismatch: {sys.argv[1]}")
-PY
+  python scripts/validate_generation_training_completion.py \
+    --training-report "$1" --config "$2" --expected-steps 300000 \
+    --expected-revision "$(git rev-parse HEAD)" >/dev/null
 }
 
 latest_step() {
@@ -207,7 +202,7 @@ train_to_milestone() {
 paired_milestone_complete() {
   local step="$1"
   local report
-  report="$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/milestones/step_$(printf '%08d' "$step").json"
+  report="$FULL_REPORT_ROOT/milestones/step_$(printf '%08d' "$step").json"
   if [[ ! -f "$report" ]]; then
     return 1
   fi
@@ -247,9 +242,9 @@ build_paired_milestone() {
     --cofitok-checkpoint-eval "$cofitok_milestone/checkpoint_eval/checkpoint_evaluation_report.json" \
     --dense-checkpoint-eval "$dense_milestone/checkpoint_eval/checkpoint_evaluation_report.json" \
     --milestone-step "$step" --expected-samples 2048 \
-    --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/milestones/$step_tag.json"
+    --output "$FULL_REPORT_ROOT/milestones/$step_tag.json"
   python scripts/validate_generation_milestone_report.py \
-    --report "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/milestones/$step_tag.json" \
+    --report "$FULL_REPORT_ROOT/milestones/$step_tag.json" \
     --expected-step "$step" >/dev/null
 }
 
@@ -273,8 +268,10 @@ for milestone in 50000 100000 200000 300000; do
   build_paired_milestone "$milestone"
 done
 
-require_complete "$COFITOK_RUN/training_report.json"
-require_complete "$DENSE_RUN/training_report.json"
+require_complete "$COFITOK_RUN/training_report.json" \
+  configs/generation/imagenet256_cofitok_k8_300k.json
+require_complete "$DENSE_RUN/training_report.json" \
+  configs/generation/imagenet256_dense_300k.json
 snapshot_full_monitor
 
 python scripts/validate_generation_training_pair.py \
@@ -283,18 +280,18 @@ python scripts/validate_generation_training_pair.py \
   --expected-steps 300000 --expected-revision "$(git rev-parse HEAD)" \
   --expected-dataset imagenet_256 --expected-recipe-stage full \
   --authorization-gate "$GATE" \
-  >"$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/training_pair_validation.json"
+  >"$FULL_REPORT_ROOT/training_pair_validation.json"
 
 python scripts/audit_generation_training_progress.py \
   --run-dir "$COFITOK_RUN" --expected-steps 300000 \
   --checkpoint-interval 5000 --evaluation-interval 2000 \
   --required-checkpoint-steps 50000,100000,200000,300000 \
   --integrity-policy required \
-  --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/cofitok_training_audit.json"
+  --output "$FULL_REPORT_ROOT/cofitok_training_audit.json"
 
 python scripts/audit_generation_training_progress.py \
   --run-dir "$DENSE_RUN" --expected-steps 300000 \
   --checkpoint-interval 5000 --evaluation-interval 2000 \
   --required-checkpoint-steps 50000,100000,200000,300000 \
   --integrity-policy required \
-  --output "$PROJECT/artifacts/reports/generation/imagenet256_full_matched_300k/dense_training_audit.json"
+  --output "$FULL_REPORT_ROOT/dense_training_audit.json"

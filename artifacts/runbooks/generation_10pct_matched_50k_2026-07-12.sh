@@ -3,33 +3,26 @@ set -euo pipefail
 
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
-REPORT_ROOT="$PROJECT/artifacts/reports/generation/imagenet256_10pct_compressed_matched_50k"
-COFITOK_RUN="$OUTPUT_ROOT/imagenet256_10pct_compressed_cofitok_k8_50k"
-DENSE_RUN="$OUTPUT_ROOT/imagenet256_10pct_compressed_dense_50k"
-MONITOR_REPORT="$OUTPUT_ROOT/generation_10pct_compressed_pair_monitor.json"
-MONITOR_LOG="$OUTPUT_ROOT/generation_10pct_compressed_pair_monitor.log"
-MONITOR_PID_FILE="$OUTPUT_ROOT/generation_10pct_compressed_pair_monitor.pid"
-MONITOR_NAME=generation_10pct_compressed_matched_pair
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
 cd "$PROJECT"
 export PYTHONPATH=src
+eval "$(python scripts/print_generation_workspace_paths.py \
+  --project-root "$PROJECT" --output-root "$OUTPUT_ROOT" --format shell)"
+REPORT_ROOT="$SCALING_REPORT_ROOT"
+COFITOK_RUN="$SCALING_COFITOK_RUN"
+DENSE_RUN="$SCALING_DENSE_RUN"
+MONITOR_REPORT="$OUTPUT_ROOT/generation_10pct_rankcomplete_v2_pair_monitor.json"
+MONITOR_LOG="$OUTPUT_ROOT/generation_10pct_rankcomplete_v2_pair_monitor.log"
+MONITOR_PID_FILE="$OUTPUT_ROOT/generation_10pct_rankcomplete_v2_pair_monitor.pid"
+MONITOR_NAME=generation_10pct_rankcomplete_v2_matched_pair
 mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
 
 require_complete() {
-  python - "$1" <<'PY'
-import json
-import sys
-
-path = sys.argv[1]
-with open(path, encoding="utf-8") as handle:
-    report = json.load(handle)
-if report.get("training_complete") is not True:
-    raise SystemExit(f"training did not reach its target: {path}")
-if report.get("completed_steps") != report.get("target_steps"):
-    raise SystemExit(f"training step mismatch: {path}")
-PY
+  python scripts/validate_generation_training_completion.py \
+    --training-report "$1" --config "$2" --expected-steps 50000 \
+    --expected-revision "$(git rev-parse HEAD)" >/dev/null
 }
 
 monitor_report_passes() {
@@ -68,8 +61,8 @@ start_compressed_monitor() {
   nohup python scripts/monitor_generation_pair.py \
     --output-root "$OUTPUT_ROOT" --output "$MONITOR_REPORT" \
     --monitor-name "$MONITOR_NAME" \
-    --cofitok-run imagenet256_10pct_compressed_cofitok_k8_50k \
-    --dense-run imagenet256_10pct_compressed_dense_50k --expected-steps 50000 \
+    --cofitok-run "$(basename "$COFITOK_RUN")" \
+    --dense-run "$(basename "$DENSE_RUN")" --expected-steps 50000 \
     --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_10pct_compressed_' \
     --runbook-process-pattern '[g]eneration_10pct_matched_50k_2026-07-12.sh' \
     --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
@@ -95,8 +88,8 @@ snapshot_compressed_monitor() {
   python scripts/monitor_generation_pair.py \
     --output-root "$OUTPUT_ROOT" --output "$MONITOR_REPORT" \
     --monitor-name "$MONITOR_NAME" \
-    --cofitok-run imagenet256_10pct_compressed_cofitok_k8_50k \
-    --dense-run imagenet256_10pct_compressed_dense_50k --expected-steps 50000 \
+    --cofitok-run "$(basename "$COFITOK_RUN")" \
+    --dense-run "$(basename "$DENSE_RUN")" --expected-steps 50000 \
     --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_10pct_compressed_' \
     --runbook-process-pattern '[g]eneration_10pct_matched_50k_2026-07-12.sh' \
     --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
@@ -108,7 +101,7 @@ run_training() {
   local config="$1"
   local run_dir="$2"
   if [[ -f "$run_dir/training_report.json" ]] \
-    && require_complete "$run_dir/training_report.json"; then
+    && require_complete "$run_dir/training_report.json" "$config"; then
     printf 'training already complete for %s\n' "$run_dir"
     return
   fi
@@ -139,12 +132,14 @@ start_compressed_monitor
 run_training \
   configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json \
   "$COFITOK_RUN"
-require_complete "$COFITOK_RUN/training_report.json"
+require_complete "$COFITOK_RUN/training_report.json" \
+  configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json
 snapshot_compressed_monitor
 
 run_training \
   configs/generation/imagenet256_10pct_compressed_dense_50k.json \
   "$DENSE_RUN"
-require_complete "$DENSE_RUN/training_report.json"
+require_complete "$DENSE_RUN/training_report.json" \
+  configs/generation/imagenet256_10pct_compressed_dense_50k.json
 snapshot_compressed_monitor
 monitor_report_passes

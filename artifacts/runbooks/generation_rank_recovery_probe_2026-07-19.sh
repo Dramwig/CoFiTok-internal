@@ -24,20 +24,9 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
 fi
 
 require_complete() {
-  python - "$1" <<'PY'
-import json
-import sys
-
-path = sys.argv[1]
-with open(path, encoding="utf-8") as handle:
-    report = json.load(handle)
-if report.get("training_complete") is not True:
-    raise SystemExit(f"training did not reach its target: {path}")
-if report.get("completed_steps") != 5000 or report.get("target_steps") != 5000:
-    raise SystemExit(f"probe step mismatch: {path}")
-if report.get("git", {}).get("dirty") not in {False, None}:
-    raise SystemExit(f"training used a dirty tracked worktree: {path}")
-PY
+  python scripts/validate_generation_training_completion.py \
+    --training-report "$1" --config "$2" --expected-steps 5000 \
+    --expected-revision "$(git rev-parse HEAD)" >/dev/null
 }
 
 monitor_report_passes() {
@@ -116,7 +105,7 @@ run_training() {
   local config="$1"
   local run_dir="$2"
   if [[ -f "$run_dir/training_report.json" ]] \
-    && require_complete "$run_dir/training_report.json"; then
+    && require_complete "$run_dir/training_report.json" "$config"; then
     printf 'probe training already complete for %s\n' "$run_dir"
     return
   fi
@@ -174,13 +163,15 @@ start_monitor
 run_training \
   configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json \
   "$DENOISE_RUN"
-require_complete "$DENOISE_RUN/training_report.json"
+require_complete "$DENOISE_RUN/training_report.json" \
+  configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json
 snapshot_monitor
 
 run_training \
   configs/generation/imagenet256_10pct_rankcomplete_epsilon_band_k8_probe5k.json \
   "$BAND_RUN"
-require_complete "$BAND_RUN/training_report.json"
+require_complete "$BAND_RUN/training_report.json" \
+  configs/generation/imagenet256_10pct_rankcomplete_epsilon_band_k8_probe5k.json
 snapshot_monitor
 monitor_report_passes
 

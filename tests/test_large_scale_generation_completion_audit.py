@@ -36,6 +36,7 @@ from scripts.audit_large_scale_generation_completion import (
 )
 from scripts.build_generation_milestone_report import expected_source_report_suffixes
 from cofitok.generation_gate_sources import GATE_SOURCE_SUFFIXES
+from cofitok.generation_paths import SCALING_REPORT_ID
 from scripts.select_generation_sampling_batch import select_sampling_batch
 from cofitok.environment import runtime_environment_sha256
 
@@ -101,7 +102,7 @@ def _full_training_authorization() -> dict:
         _gate("scaling"),
         gate_path=(
             "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/"
-            "generation/imagenet256_10pct_compressed_matched_50k/"
+            f"generation/{SCALING_REPORT_ID}/"
             "promotion_gate.json"
         ),
         gate_bytes=10_000,

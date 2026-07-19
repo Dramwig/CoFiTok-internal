@@ -5,8 +5,12 @@ the locked short-budget paper runs.
 
 - `imagenet256_10pct_cofitok_k8_50k.json`: completed legacy full-resolution-field run.
 - `imagenet256_10pct_dense_50k.json`: completed legacy matched dense control.
-- `imagenet256_10pct_compressed_cofitok_k8_50k.json`: authoritative compressed-token scaling gate.
-- `imagenet256_10pct_compressed_dense_50k.json`: same-revision dense control for the authoritative gate.
+- `imagenet256_10pct_compressed_cofitok_k8_50k.json`: rank-complete CoFiTok
+  scaling recipe; the authoritative fresh run identity is
+  `imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2`.
+- `imagenet256_10pct_compressed_dense_50k.json`: same-revision dense recipe;
+  the authoritative fresh control identity is
+  `imagenet256_10pct_rankcomplete_dense_50k_v2`.
 - `imagenet256_cofitok_k8_300k.json`: full-data long-budget run after the 10% gate passes.
 - `imagenet256_dense_300k.json`: full-data matched dense control.
 

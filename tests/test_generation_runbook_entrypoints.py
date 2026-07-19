@@ -33,6 +33,7 @@ ENTRYPOINTS = {
     "infer_generation.py",
     "monitor_generation_pair.py",
     "preflight_generation_sampling.py",
+    "print_generation_workspace_paths.py",
     "run_generation_training_watchdog.py",
     "select_generation_sampling_batch.py",
     "select_generation_training_runtime.py",
@@ -40,6 +41,7 @@ ENTRYPOINTS = {
     "validate_generation_configs.py",
     "validate_generation_gate_report.py",
     "validate_generation_milestone_report.py",
+    "validate_generation_training_completion.py",
     "validate_generation_training_pair.py",
     "write_generation_pipeline_status.py",
 }
