@@ -17,6 +17,7 @@ from cofitok.training.checkpointing import (
     load_training_checkpoint,
     prune_checkpoints,
     resolve_latest_checkpoint,
+    restore_rng_state,
     save_training_checkpoint,
     verify_training_checkpoint,
 )
@@ -118,9 +119,50 @@ def test_production_compressed_layout_is_strictly_smaller_per_token() -> None:
     )
 
     assert compressed_token_layout_issues(layout) == []
-    assert layout.spatial_sizes == (16, 16, 32, 32, 64, 64, 128, 256)
+    assert layout.spatial_sizes == (16, 16, 32, 32, 64, 64, 256, 256)
     assert layout.scalar_counts == (1024, 1024, 8192, 8192, 32768, 32768, 65536, 131072)
+    assert layout.full_resolution_channels == 3
     assert all(count < layout.dense_scalar_count for count in layout.scalar_counts)
+
+
+def test_compressed_layout_rejects_high_frequency_channel_rank_deficit() -> None:
+    layout = resolve_token_layout(
+        image_size=16,
+        image_channels=3,
+        token_count=2,
+        token_channels=4,
+        token_channel_schedule=[4, 2],
+        token_spatial_strides=[2, 1],
+    )
+
+    assert any(
+        "full-resolution token channels" in issue
+        for issue in compressed_token_layout_issues(layout)
+    )
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA is required")
+def test_rng_restore_accepts_states_remapped_to_cuda() -> None:
+    random.seed(123)
+    np.random.seed(123)
+    torch.manual_seed(123)
+    torch.cuda.manual_seed_all(123)
+    state = {
+        "python": random.getstate(),
+        "numpy": np.random.get_state(),
+        "torch_cpu": torch.get_rng_state().cuda(),
+        "torch_cuda": [item.cuda() for item in torch.cuda.get_rng_state_all()],
+    }
+
+    restore_rng_state(state)
+
+    assert torch.equal(torch.get_rng_state(), state["torch_cpu"].cpu())
+    assert all(
+        torch.equal(actual, expected.cpu())
+        for actual, expected in zip(
+            torch.cuda.get_rng_state_all(), state["torch_cuda"], strict=True
+        )
+    )
 
 
 @pytest.mark.parametrize("synthesis_mode", ["restricted", "dense_identity"])

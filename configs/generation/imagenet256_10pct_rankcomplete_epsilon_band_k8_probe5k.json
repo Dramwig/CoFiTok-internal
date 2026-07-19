@@ -1,7 +1,7 @@
 {
-  "name": "imagenet256_cofitok_k8_generation_300k",
+  "name": "imagenet256_10pct_rankcomplete_epsilon_band_k8_probe5k",
   "data": {
-    "dataset": "imagenet_256",
+    "dataset": "imagenet_256_10pct",
     "root": "/root/autodl-tmp/CoFiTok/datasets",
     "image_size": 256,
     "channels": 3,
@@ -10,7 +10,7 @@
     "class_conditional": true,
     "persistent_workers": true,
     "prefetch_factor": 2,
-    "random_horizontal_flip_prob": 0.5
+    "random_horizontal_flip_prob": 0.0
   },
   "diffusion": {
     "num_train_timesteps": 1000,
@@ -41,36 +41,31 @@
   },
   "loss": {
     "epsilon_weight": 1.0,
-    "prefix_weight": 0.0,
-    "monotonic_weight": 0.0,
-    "zero_token_weight": 0.0,
-    "denoise_path_prefix_weight": 0.05,
-    "denoise_path_component_weight": 0.1,
-    "denoise_path_progress_power": 1.5
+    "epsilon_band_prefix_weight": 0.05,
+    "epsilon_band_component_weight": 0.1
   },
   "runtime": {
     "seed": 2027,
     "device": "cuda",
-    "steps": 300000,
+    "steps": 5000,
     "precision": "bf16",
     "compile_model": false,
     "allow_tf32": true,
     "checkpoint_interval": 5000,
-    "evaluation_interval": 2000,
-    "keep_last_checkpoints": 3,
-    "protected_checkpoint_steps": [50000, 100000, 200000, 300000]
+    "evaluation_interval": 1000,
+    "keep_last_checkpoints": 1
   },
   "optimization": {
     "learning_rate": 0.0001,
-    "min_learning_rate": 0.000005,
-    "warmup_steps": 5000,
+    "min_learning_rate": 0.000098,
+    "warmup_steps": 1000,
     "weight_decay": 0.01,
     "betas": [0.9, 0.99],
     "grad_clip_norm": 1.0,
     "gradient_accumulation_steps": 4,
     "ema_decay": 0.9999,
     "ema_warmup_steps": 2000,
-    "log_interval": 100,
+    "log_interval": 50,
     "visualization_count": 8
   }
 }

@@ -48,8 +48,8 @@ def test_validate_configs_accepts_true_compressed_token_layout(tmp_path: Path) -
     payload["model"].update(
         {
             "predictor_type": "scalable_unet",
-            "token_channel_schedule": [2, 2],
-            "token_spatial_strides": [4, 1],
+            "token_channel_schedule": [1, 2],
+            "token_spatial_strides": [1, 1],
         }
     )
     _write_config(path, payload)
@@ -57,8 +57,9 @@ def test_validate_configs_accepts_true_compressed_token_layout(tmp_path: Path) -
     result = validate_configs([path], spatial_size=16, static_only=True)
 
     layout = result["results"][0]["evidence"]["token_layout"]
-    assert layout["channels"] == [2, 2]
-    assert layout["spatial_sizes"] == [4, 16]
+    assert layout["channels"] == [1, 2]
+    assert layout["spatial_sizes"] == [16, 16]
+    assert layout["full_resolution_channels"] == 3
 
 
 def test_validate_configs_records_deep_synthesis_as_ablation(tmp_path: Path) -> None:

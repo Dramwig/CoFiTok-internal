@@ -6,6 +6,8 @@ from typing import Sequence
 
 @dataclass(frozen=True)
 class TokenLayout:
+    image_channels: int
+    image_size: int
     channels: tuple[int, ...]
     spatial_strides: tuple[int, ...]
     spatial_sizes: tuple[int, ...]
@@ -23,6 +25,14 @@ class TokenLayout:
     @property
     def aggregate_compression(self) -> float:
         return self.dense_scalar_count / self.total_scalar_count
+
+    @property
+    def full_resolution_channels(self) -> int:
+        return sum(
+            channel
+            for channel, stride in zip(self.channels, self.spatial_strides)
+            if stride == 1
+        )
 
 
 def resolve_token_layout(
@@ -59,6 +69,8 @@ def resolve_token_layout(
         for channel, spatial_size in zip(channels, spatial_sizes)
     )
     return TokenLayout(
+        image_channels=image_channels,
+        image_size=image_size,
         channels=channels,
         spatial_strides=strides,
         spatial_sizes=spatial_sizes,
@@ -83,6 +95,11 @@ def compressed_token_layout_issues(layout: TokenLayout) -> list[str]:
             f"token scalar capacities must be coarse-to-fine nondecreasing, got "
             f"{list(layout.scalar_counts)}"
         )
+    if layout.full_resolution_channels < layout.image_channels:
+        issues.append(
+            "full-resolution token channels must span the dense output channels: "
+            f"got {layout.full_resolution_channels}, need at least {layout.image_channels}"
+        )
     return issues
 
 
@@ -99,5 +116,7 @@ def token_layout_summary(layout: TokenLayout) -> dict[str, object]:
         "aggregate_token_to_dense_ratio": (
             layout.total_scalar_count / layout.dense_scalar_count
         ),
+        "full_resolution_channels": layout.full_resolution_channels,
+        "required_full_resolution_channels": layout.image_channels,
         "issues": compressed_token_layout_issues(layout),
     }

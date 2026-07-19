@@ -85,6 +85,13 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
     assert scaling_posteval.count("audit_generation_training_progress.py") == 2
     assert scaling_posteval.count("--integrity-policy required") == 2
 
+    scaling_training = _read(
+        "artifacts/runbooks/generation_10pct_matched_50k_2026-07-12.sh"
+    )
+    assert '[[ -f "$run_dir/training_report.json" ]]' in scaling_training
+    assert 'require_complete "$run_dir/training_report.json"' in scaling_training
+    assert "training already complete" in scaling_training
+
     full_training = _read(
         "artifacts/runbooks/generation_full_matched_300k_after_gate.sh"
     )

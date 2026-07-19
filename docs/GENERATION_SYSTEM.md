@@ -12,12 +12,18 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - `RestrictedSynthesisBank` remains the default `S_k`. Every `S_k` receives only
   its current token, is bias-free and linear/local, and preserves `S_k(0)=0`.
 - Authoritative scaling/full CoFiTok uses true variable-shape token fields:
-  spatial strides `[16,16,8,8,4,4,2,1]` and channel counts
-  `[4,4,8,8,8,8,4,2]`. Token scalar capacities increase from `1,024` to
+  spatial strides `[16,16,8,8,4,4,1,1]` and channel counts
+  `[4,4,8,8,8,8,1,2]`. Token scalar capacities increase from `1,024` to
   `131,072`, while a dense RGB epsilon field has `196,608` scalars. Each token
   is therefore strictly compressed. `T_k` pools before each variable-channel
   head, feeds back only that emitted token, and `S_k` performs fixed bilinear
   upsampling before its shallow local linear convolution.
+- A restricted linear synthesis layout must allocate at least three aggregate
+  full-resolution token channels for RGB epsilon prediction. Otherwise the
+  highest-frequency output is rank-deficient regardless of model size or
+  training time. The formal config and recipe contract reject such layouts;
+  the final two rank-complete tokens use one and two full-resolution channels
+  while preserving the previous aggregate token-scalar budget exactly.
 - The dense control uses the identical U-Net and training protocol with one
   direct `dense_identity` epsilon head.
 - Formal scaling and full-data training additionally pass
@@ -194,6 +200,16 @@ Formal sampling and EMA export also compare the deserialized checkpoint payload
 with this sidecar before applying model or EMA weights, covering the final 300K
 checkpoint even when it is sampled without a subsequent training resume.
 
+A failed scientific scaling gate never triggers full training. After a
+representation-level failure, the recovery path first runs
+`generation_rank_recovery_probe_2026-07-19.sh`: two same-backbone 5K candidates
+compare denoise-path and epsilon-band ordering objectives under the rank-complete
+layout. Each candidate receives a 512-image checkpoint audit and a deterministic
+DDIM-50 sample probe. The aggregate explicitly marks those FID/IS values as
+non-formal, requires manual visual review, and cannot launch either a 50K or
+300K run. The selected objective must then complete a fresh same-revision 10%
+matched 50K pair and pass the unchanged 10K promotion gate.
+
 The full queue alternates CoFiTok and dense at 50K, 100K, 200K, and 300K
 milestones. At each matched point it produces 2,048 fixed-protocol EMA samples
 at DDIM-50 / CFG 1.5, FID/IS trend metrics, and a 256-image mechanism audit.
@@ -241,6 +257,8 @@ python scripts/evaluate_generation_metrics.py \
   --generated-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/<run>/samples_50k_cfg15/prefix_8 \
   --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/<run>/samples_50k_cfg15/metrics \
   --cache-root /root/autodl-tmp/CoFiTok/checkpoints/generation/eval_cache/torch_fidelity
+
+bash artifacts/runbooks/generation_rank_recovery_probe_2026-07-19.sh
 ```
 
 The 10% post-training gate is encoded in

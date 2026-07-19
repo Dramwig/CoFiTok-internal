@@ -259,9 +259,20 @@ def capture_rng_state() -> dict[str, Any]:
 def restore_rng_state(state: Mapping[str, Any]) -> None:
     random.setstate(state["python"])
     np.random.set_state(state["numpy"])
-    torch.set_rng_state(state["torch_cpu"])
+    torch_cpu = state["torch_cpu"]
+    if not isinstance(torch_cpu, torch.Tensor) or torch_cpu.dtype != torch.uint8:
+        raise TypeError("CPU RNG state must be a torch.uint8 tensor")
+    # A CUDA map_location also remaps the serialized CPU RNG tensor. PyTorch's
+    # CPU and CUDA generators both require their state tensors on the CPU.
+    torch.set_rng_state(torch_cpu.detach().cpu())
     if torch.cuda.is_available() and "torch_cuda" in state:
-        torch.cuda.set_rng_state_all(state["torch_cuda"])
+        torch_cuda = state["torch_cuda"]
+        if not isinstance(torch_cuda, (list, tuple)) or any(
+            not isinstance(item, torch.Tensor) or item.dtype != torch.uint8
+            for item in torch_cuda
+        ):
+            raise TypeError("CUDA RNG states must be torch.uint8 tensors")
+        torch.cuda.set_rng_state_all([item.detach().cpu() for item in torch_cuda])
 
 
 def save_training_checkpoint(

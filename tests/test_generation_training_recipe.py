@@ -89,6 +89,18 @@ def test_compressed_recipe_rejects_a_dense_sized_token() -> None:
     assert any("not smaller than the dense field" in issue for issue in contract["issues"])
 
 
+def test_compressed_recipe_rejects_full_resolution_rank_deficit() -> None:
+    cofitok = _config("imagenet256_10pct_compressed_cofitok_k8_50k.json")
+    dense = _config("imagenet256_10pct_compressed_dense_50k.json")
+    cofitok["model"]["token_channel_schedule"][-2:] = [4, 2]
+    cofitok["model"]["token_spatial_strides"][-2:] = [2, 1]
+
+    contract = generation_training_recipe_contract(cofitok, dense, stage="scaling")
+
+    assert contract["valid"] is False
+    assert any("full-resolution token channels" in issue for issue in contract["issues"])
+
+
 def test_recipe_rejects_identically_weakened_matched_pair() -> None:
     cofitok = _config("imagenet256_cofitok_k8_300k.json")
     dense = _config("imagenet256_dense_300k.json")

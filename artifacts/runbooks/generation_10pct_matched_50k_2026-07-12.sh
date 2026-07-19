@@ -107,6 +107,11 @@ snapshot_compressed_monitor() {
 run_training() {
   local config="$1"
   local run_dir="$2"
+  if [[ -f "$run_dir/training_report.json" ]] \
+    && require_complete "$run_dir/training_report.json"; then
+    printf 'training already complete for %s\n' "$run_dir"
+    return
+  fi
   local resume_args=()
   if [[ -f "$run_dir/latest.json" ]]; then
     resume_args=(--resume auto)

@@ -101,8 +101,8 @@ def _expected_method(method: str, stage: str) -> dict[str, Any]:
             return {
                 "model.token_count": 8,
                 "model.token_channels": 8,
-                "model.token_channel_schedule": [4, 4, 8, 8, 8, 8, 4, 2],
-                "model.token_spatial_strides": [16, 16, 8, 8, 4, 4, 2, 1],
+                "model.token_channel_schedule": [4, 4, 8, 8, 8, 8, 1, 2],
+                "model.token_spatial_strides": [16, 16, 8, 8, 4, 4, 1, 1],
                 "model.predictor_use_feedback": True,
                 "model.synthesis_mode": "restricted",
                 "model.synthesis_kernel_size": 3,
