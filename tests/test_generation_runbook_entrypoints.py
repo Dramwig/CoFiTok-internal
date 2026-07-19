@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNBOOKS = (
+    "generation_attest_deployed_revision.sh",
     "generation_10pct_matched_50k_2026-07-12.sh",
     "generation_10pct_posteval_2026-07-12.sh",
     "generation_full_milestone_eval.sh",
@@ -26,6 +27,8 @@ ENTRYPOINTS = {
     "build_generation_visual_audit.py",
     "build_large_scale_generation_comparison.py",
     "check_generation_storage_capacity.py",
+    "check_generation_deployment_conflicts.py",
+    "check_generation_runbook_syntax.py",
     "evaluate_generation_checkpoint.py",
     "evaluate_generation_metrics.py",
     "export_generation_inference_artifact.py",
@@ -44,6 +47,7 @@ ENTRYPOINTS = {
     "validate_generation_training_completion.py",
     "validate_generation_training_pair.py",
     "write_generation_pipeline_status.py",
+    "write_generation_deployment_receipt.py",
 }
 
 

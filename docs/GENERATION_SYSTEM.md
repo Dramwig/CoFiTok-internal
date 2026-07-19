@@ -160,6 +160,15 @@ terminal completion audit use the same Python contract. A completed run may be
 skipped only when its resolved config, Git identity, step identity,
 `latest.json`, checkpoint, and integrity sidecar all match the current request.
 
+After the probe winner is committed and deployed, run
+`generation_attest_deployed_revision.sh` before starting the fresh formal 50K
+pair. It creates a consolidated bundle from the locked source revision through
+the selected target, reruns the complete remote test and runbook-syntax suites,
+and writes target-SHA-versioned evidence under `checkpoints/generation/deployment/`.
+The completion audit reads only that target-specific receipt and its bound
+sources. Earlier transition and recovery receipts remain immutable historical
+evidence instead of being overwritten by a mutable canonical filename.
+
 ## Promotion gates
 
 1. Code gate: full tests, CPU exact-resume smoke, CUDA bf16 smoke, zero-token

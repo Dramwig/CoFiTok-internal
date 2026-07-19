@@ -22,7 +22,10 @@ from cofitok.generation_authorization import validate_generation_gate_binding
 from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.generation_gate_sources import verify_generation_gate_source_reports
-from cofitok.generation_paths import generation_workspace_paths
+from cofitok.generation_paths import (
+    generation_deployment_attestation_paths,
+    generation_workspace_paths,
+)
 from cofitok.image_integrity import (
     IMAGE_TREE_DIGEST_SCHEMA,
     image_tree_sha256,
@@ -2612,9 +2615,11 @@ def main() -> None:
     comparison = _read_optional(comparison_path)
     scaling_gate = _read_optional(ten_root / "promotion_gate.json")
     final_gate = _read_optional(full_root / "final_generation_gate.json")
-    deployment_receipt = _read_optional(
-        output_root / "generation_upgrade_deployment_receipt.json"
+    deployment = generation_deployment_attestation_paths(
+        output_root=output_root,
+        target_revision=args.expected_full_revision,
     )
+    deployment_receipt = _read_optional(deployment["DEPLOYMENT_RECEIPT"])
     inference_exports = {
         "cofitok_export": _read_optional(
             full_root / "exports/cofitok_export_report.json"
@@ -2653,18 +2658,16 @@ def main() -> None:
         deployment_receipt=deployment_receipt,
         deployment_verification_files={
             "bundle": _verify_deployment_bundle_source(
-                output_root
-                / "deployment"
-                / f"cofitok-generation-upgrade-{args.expected_full_revision}.bundle"
+                deployment["DEPLOYMENT_BUNDLE"]
             ),
             "conflict_scan": _verify_deployment_json_source(
-                output_root / "generation_upgrade_conflict_scan.json"
+                deployment["DEPLOYMENT_CONFLICT_SCAN"]
             ),
             "runbook_syntax": _verify_deployment_json_source(
-                output_root / "generation_upgrade_runbook_syntax.json"
+                deployment["DEPLOYMENT_RUNBOOK_SYNTAX"]
             ),
             "pytest": _verify_deployment_pytest_source(
-                output_root / "generation_upgrade_pytest.xml"
+                deployment["DEPLOYMENT_PYTEST"]
             ),
         },
         storage_preflights={

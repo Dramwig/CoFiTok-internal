@@ -8,6 +8,7 @@ from cofitok.generation_paths import (
     SCALING_COFITOK_RUN_ID,
     SCALING_DENSE_RUN_ID,
     SCALING_REPORT_ID,
+    generation_deployment_attestation_paths,
     generation_workspace_paths,
 )
 from scripts import print_generation_workspace_paths
@@ -33,6 +34,7 @@ def test_shell_export_round_trips_paths_with_spaces(
 ) -> None:
     project = tmp_path / "project with spaces"
     output = tmp_path / "outputs with spaces"
+    revision = "b" * 40
     monkeypatch.setattr(
         sys,
         "argv",
@@ -44,6 +46,8 @@ def test_shell_export_round_trips_paths_with_spaces(
             str(output),
             "--format",
             "shell",
+            "--target-revision",
+            revision,
         ],
     )
 
@@ -61,7 +65,48 @@ def test_shell_export_round_trips_paths_with_spaces(
             output_root=output,
         ).items()
     }
+    expected.update(
+        {
+            name: path.as_posix()
+            for name, path in generation_deployment_attestation_paths(
+                output_root=output,
+                target_revision=revision,
+            ).items()
+        }
+    )
     assert assignments == expected
+
+
+def test_deployment_attestation_paths_are_target_versioned(tmp_path: Path) -> None:
+    revision = "a" * 40
+    paths = generation_deployment_attestation_paths(
+        output_root=tmp_path / "outputs",
+        target_revision=revision,
+    )
+
+    assert paths["DEPLOYMENT_BUNDLE"].name == (
+        f"cofitok-generation-upgrade-{revision}.bundle"
+    )
+    for name in (
+        "DEPLOYMENT_RECEIPT",
+        "DEPLOYMENT_CONFLICT_SCAN",
+        "DEPLOYMENT_RUNBOOK_SYNTAX",
+        "DEPLOYMENT_PYTEST",
+    ):
+        assert revision in paths[name].name
+        assert paths[name].parent == paths["DEPLOYMENT_EVIDENCE_ROOT"]
+
+
+def test_deployment_attestation_rejects_abbreviated_revision(tmp_path: Path) -> None:
+    try:
+        generation_deployment_attestation_paths(
+            output_root=tmp_path,
+            target_revision="abc123",
+        )
+    except ValueError as error:
+        assert "full Git SHA-1" in str(error)
+    else:
+        raise AssertionError("abbreviated deployment revision was accepted")
 
 
 def test_active_pipeline_runbooks_use_the_path_contract() -> None:
@@ -81,3 +126,14 @@ def test_active_pipeline_runbooks_use_the_path_contract() -> None:
             "reports/generation/imagenet256_10pct_compressed_matched_50k"
             not in source
         )
+
+
+def test_deployment_attestation_runbook_uses_versioned_evidence() -> None:
+    source = (
+        ROOT / "artifacts/runbooks/generation_attest_deployed_revision.sh"
+    ).read_text(encoding="utf-8")
+
+    assert "--target-revision \"$TARGET_REVISION\"" in source
+    assert '[[ -e "$DEPLOYMENT_RECEIPT" ]]' in source
+    assert "write_generation_deployment_receipt.py" in source
+    assert "generation_upgrade_deployment_receipt.json" not in source
