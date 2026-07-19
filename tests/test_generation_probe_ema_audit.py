@@ -89,6 +89,21 @@ def test_rank_recovery_runbook_builds_model_and_ema_audit() -> None:
     assert "scripts/audit_generation_probe_ema.py" in source
 
 
+def test_posthoc_waiter_is_revision_locked_and_waits_for_training_exit() -> None:
+    source = (
+        ROOT
+        / "artifacts/runbooks/"
+        "generation_rank_recovery_posthoc_model_eval_waiter_2026-07-20.sh"
+    ).read_text(encoding="utf-8")
+
+    assert f"EXPECTED_REVISION={REVISION}" not in source
+    assert "EXPECTED_REVISION=05bbb4af63a9f1d9b7f11bc4222d50875e382e1d" in source
+    assert "[g]eneration_rank_recovery_probe_2026-07-19.sh" in source
+    assert "[s]cripts/train_generation.py" in source
+    assert "--weights model" in source
+    assert "TIMEOUT_SECONDS=43200" in source
+
+
 def test_probe_ema_audit_binds_model_and_ema_without_authorizing_scale(
     tmp_path: Path, monkeypatch
 ) -> None:
