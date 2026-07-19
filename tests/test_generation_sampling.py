@@ -133,7 +133,8 @@ def test_prefix_budgets_share_the_same_initial_noise() -> None:
 
 
 @pytest.mark.parametrize("eta", [0.0, 0.5])
-def test_ddim_oracle_epsilon_reconstructs_x0(eta: float) -> None:
+@pytest.mark.parametrize("clip_x0", [False, True])
+def test_ddim_oracle_epsilon_reconstructs_x0(eta: float, clip_x0: bool) -> None:
     device = torch.device("cpu")
     schedule = DiffusionSchedule(
         DiffusionConfig(num_train_timesteps=32, schedule_type="cosine"),
@@ -149,7 +150,7 @@ def test_ddim_oracle_epsilon_reconstructs_x0(eta: float) -> None:
         sample_steps=7,
         prefix_budget=1,
         eta=eta,
-        clip_x0=False,
+        clip_x0=clip_x0,
         device=device,
         generator=torch.Generator(device=device).manual_seed(29),
     )
