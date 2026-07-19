@@ -62,6 +62,49 @@ def test_completed_training_is_safe_to_skip_only_with_current_identity(
     assert report["completed_steps"] == 2
 
 
+def test_completed_training_binds_selected_runtime_overrides(tmp_path: Path) -> None:
+    run = _completed_run(tmp_path)
+    report_path = run / "training_report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report["config"]["data"]["batch_size"] = 4
+    report["config"]["optimization"]["gradient_accumulation_steps"] = 2
+    _write(report_path, report)
+
+    with pytest.raises(ValueError, match="resolved config differs"):
+        validate_completed_generation_training(
+            report_path=report_path,
+            config_path=CONFIG,
+            expected_steps=2,
+            expected_revision=REVISION,
+        )
+
+    completed = validate_completed_generation_training(
+        report_path=report_path,
+        config_path=CONFIG,
+        expected_steps=2,
+        expected_revision=REVISION,
+        expected_micro_batch_size=4,
+        expected_gradient_accumulation_steps=2,
+    )
+
+    assert completed["config"]["data"]["batch_size"] == 4
+
+
+def test_completed_training_requires_a_complete_runtime_override_pair(
+    tmp_path: Path,
+) -> None:
+    run = _completed_run(tmp_path)
+
+    with pytest.raises(ValueError, match="provided together"):
+        validate_completed_generation_training(
+            report_path=run / "training_report.json",
+            config_path=CONFIG,
+            expected_steps=2,
+            expected_revision=REVISION,
+            expected_micro_batch_size=4,
+        )
+
+
 @pytest.mark.parametrize("mutation", ["revision", "config", "latest"])
 def test_completed_training_rejects_stale_or_inconsistent_identity(
     tmp_path: Path, mutation: str

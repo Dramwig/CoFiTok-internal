@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -22,9 +23,21 @@ def validate_completed_generation_training(
     config_path: str | Path,
     expected_steps: int,
     expected_revision: str,
+    expected_micro_batch_size: int | None = None,
+    expected_gradient_accumulation_steps: int | None = None,
 ) -> dict[str, Any]:
     if expected_steps < 1 or len(expected_revision) != 40:
         raise ValueError("completion expectation is invalid")
+    runtime_overrides = (
+        expected_micro_batch_size,
+        expected_gradient_accumulation_steps,
+    )
+    if (runtime_overrides[0] is None) != (runtime_overrides[1] is None):
+        raise ValueError("completion runtime overrides must be provided together")
+    if runtime_overrides[0] is not None and any(
+        value is None or value < 1 for value in runtime_overrides
+    ):
+        raise ValueError("completion runtime overrides must be positive")
     report_file = Path(report_path).resolve()
     config_file = Path(config_path).resolve()
     report = _read_object(report_file)
@@ -36,7 +49,19 @@ def validate_completed_generation_training(
     ):
         raise ValueError("training report step identity differs")
 
-    expected_config = json.loads(json.dumps(config_to_dict(load_config(config_file))))
+    config = load_config(config_file)
+    if expected_micro_batch_size is not None:
+        config = replace(
+            config,
+            data=replace(config.data, batch_size=expected_micro_batch_size),
+            optimization=replace(
+                config.optimization,
+                gradient_accumulation_steps=(
+                    expected_gradient_accumulation_steps
+                ),
+            ),
+        )
+    expected_config = json.loads(json.dumps(config_to_dict(config)))
     if report.get("config") != expected_config:
         raise ValueError("training report resolved config differs from the current config")
     git = report.get("git", {})

@@ -132,7 +132,9 @@ snapshot_full_monitor() {
 require_complete() {
   python scripts/validate_generation_training_completion.py \
     --training-report "$1" --config "$2" --expected-steps 300000 \
-    --expected-revision "$(git rev-parse HEAD)" >/dev/null
+    --expected-revision "$(git rev-parse HEAD)" \
+    --expected-micro-batch-size "$SELECTED_MICRO_BATCH" \
+    --expected-gradient-accumulation-steps "$SELECTED_ACCUMULATION" >/dev/null
 }
 
 latest_step() {

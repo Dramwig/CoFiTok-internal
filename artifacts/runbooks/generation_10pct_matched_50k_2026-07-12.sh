@@ -3,6 +3,7 @@ set -euo pipefail
 
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
+RUNTIME_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/imagenet256_10pct_rankcomplete_v2_50k"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -17,12 +18,15 @@ MONITOR_REPORT="$OUTPUT_ROOT/generation_10pct_rankcomplete_v2_pair_monitor.json"
 MONITOR_LOG="$OUTPUT_ROOT/generation_10pct_rankcomplete_v2_pair_monitor.log"
 MONITOR_PID_FILE="$OUTPUT_ROOT/generation_10pct_rankcomplete_v2_pair_monitor.pid"
 MONITOR_NAME=generation_10pct_rankcomplete_v2_matched_pair
+RUNTIME_SELECTION="$REPORT_ROOT/runtime_selection.json"
 mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
 
 require_complete() {
   python scripts/validate_generation_training_completion.py \
     --training-report "$1" --config "$2" --expected-steps 50000 \
-    --expected-revision "$(git rev-parse HEAD)" >/dev/null
+    --expected-revision "$(git rev-parse HEAD)" \
+    --expected-micro-batch-size "$SELECTED_MICRO_BATCH" \
+    --expected-gradient-accumulation-steps "$SELECTED_ACCUMULATION" >/dev/null
 }
 
 monitor_report_passes() {
@@ -119,13 +123,33 @@ run_training() {
     --termination-grace-seconds 60 \
     -- \
     python scripts/train_generation.py \
-      --config "$config" --output-dir "$run_dir" "${resume_args[@]}"
+      --config "$config" --output-dir "$run_dir" \
+      --micro-batch-size "$SELECTED_MICRO_BATCH" \
+      --gradient-accumulation-steps "$SELECTED_ACCUMULATION" \
+      "${resume_args[@]}"
 }
 
 python scripts/validate_generation_configs.py \
   --cofitok-config configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json \
   --dense-config configs/generation/imagenet256_10pct_compressed_dense_50k.json \
   --output "$REPORT_ROOT/config_pair.json"
+
+runtime_selected="$(python scripts/select_generation_training_runtime.py \
+  --cofitok-config configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json \
+  --dense-config configs/generation/imagenet256_10pct_compressed_dense_50k.json \
+  --output-root "$RUNTIME_BENCHMARK_ROOT" --output "$RUNTIME_SELECTION" \
+  --training-run-dir "$COFITOK_RUN" --training-run-dir "$DENSE_RUN" \
+  --candidates 16x4,32x2,64x1 --effective-batch-size 64 \
+  --benchmark-steps 8 --warmup-steps 2 --max-memory-fraction 0.90)"
+read -r SELECTED_MICRO_BATCH SELECTED_ACCUMULATION <<<"$runtime_selected"
+if [[ ! "$SELECTED_MICRO_BATCH" =~ ^[0-9]+$ || ! "$SELECTED_ACCUMULATION" =~ ^[0-9]+$ ]]; then
+  printf 'invalid selected runtime: %s\n' "$runtime_selected" >&2
+  exit 1
+fi
+if (( SELECTED_MICRO_BATCH * SELECTED_ACCUMULATION != 64 )); then
+  printf 'selected runtime changes effective batch: %s\n' "$runtime_selected" >&2
+  exit 1
+fi
 
 start_compressed_monitor
 
