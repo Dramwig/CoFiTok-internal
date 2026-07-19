@@ -3,14 +3,14 @@ set -euo pipefail
 
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
-REPORT_ROOT="$PROJECT/artifacts/reports/generation/rank_recovery_probe_2026-07-19"
-DENOISE_RUN="$OUTPUT_ROOT/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k"
-BAND_RUN="$OUTPUT_ROOT/imagenet256_10pct_rankcomplete_epsilon_band_k8_probe5k"
+REPORT_ROOT="$PROJECT/artifacts/reports/generation/rank_recovery_probe_2026-07-20_v2"
+DENOISE_RUN="$OUTPUT_ROOT/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k_v2"
+BAND_RUN="$OUTPUT_ROOT/imagenet256_10pct_rankcomplete_epsilon_band_k8_probe5k_v2"
 LEGACY_EVAL="$OUTPUT_ROOT/imagenet256_10pct_compressed_cofitok_k8_50k/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
-MONITOR_REPORT="$OUTPUT_ROOT/generation_rank_recovery_probe_monitor.json"
-MONITOR_LOG="$OUTPUT_ROOT/generation_rank_recovery_probe_monitor.log"
-MONITOR_PID_FILE="$OUTPUT_ROOT/generation_rank_recovery_probe_monitor.pid"
-MONITOR_NAME=generation_rank_recovery_probe_pair
+MONITOR_REPORT="$OUTPUT_ROOT/generation_rank_recovery_probe_v2_monitor.json"
+MONITOR_LOG="$OUTPUT_ROOT/generation_rank_recovery_probe_v2_monitor.log"
+MONITOR_PID_FILE="$OUTPUT_ROOT/generation_rank_recovery_probe_v2_monitor.pid"
+MONITOR_NAME=generation_rank_recovery_probe_pair_v2
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm

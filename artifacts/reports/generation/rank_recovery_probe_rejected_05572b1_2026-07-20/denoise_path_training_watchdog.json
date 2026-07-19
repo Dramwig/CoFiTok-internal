@@ -1,0 +1,55 @@
+{
+  "child_exit_code": 0,
+  "child_pid": 444764,
+  "command": [
+    "python",
+    "scripts/train_generation.py",
+    "--config",
+    "configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json",
+    "--output-dir",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k"
+  ],
+  "expected_monitor_name": "generation_rank_recovery_probe_pair",
+  "finished_at": "2026-07-19T16:35:14.009589+00:00",
+  "history": [],
+  "hostname": "",
+  "invocation": 1,
+  "launched_at": "2026-07-19T16:24:55.642295+00:00",
+  "monitor": {
+    "issues": [],
+    "monitor": "generation_rank_recovery_probe_pair",
+    "runs": {
+      "cofitok": {
+        "complete": false,
+        "last_step": 250,
+        "progress_fraction": 0.05
+      },
+      "dense_identity": {
+        "complete": false,
+        "last_step": 0,
+        "progress_fraction": 0.0
+      }
+    },
+    "stage": "cofitok_training",
+    "status": "running",
+    "updated_at": "2026-07-19T16:34:53.608380+00:00"
+  },
+  "monitor_pid": 444683,
+  "monitor_pid_file": "/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_rank_recovery_probe_monitor.pid",
+  "monitor_process_alive": true,
+  "monitor_report_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_rank_recovery_probe_monitor.json",
+  "pid": 444698,
+  "reason": "child_completed",
+  "role": "generation_training_watchdog",
+  "schema_version": 1,
+  "status": "passed",
+  "timing": {
+    "monitor_process_grace_seconds": 120.0,
+    "monitor_silence_seconds": 600.0,
+    "poll_seconds": 30.0,
+    "startup_grace_seconds": 600.0,
+    "termination_grace_seconds": 60.0
+  },
+  "updated_at": "2026-07-19T16:35:14.009609+00:00",
+  "watchdog_exit_code": 0
+}

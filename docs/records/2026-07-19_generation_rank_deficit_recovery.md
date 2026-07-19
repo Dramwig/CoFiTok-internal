@@ -93,6 +93,17 @@ Before another matched 50K pair, run the non-formal rank-recovery probe:
 bash artifacts/runbooks/generation_rank_recovery_probe_2026-07-19.sh
 ```
 
+The first launch under commit `05572b1` was rejected at step 260 because the
+probe JSON omitted three legacy-default fields (`prefix_weight=0.25`,
+`monotonic_weight=0.05`, and `zero_token_weight=0.01`). The trainer handled
+SIGTERM by atomically writing its incomplete checkpoint and report. That run is
+kept only as operational failure evidence; it is not resumed or compared.
+Its small reports are archived at
+`artifacts/reports/generation/rank_recovery_probe_rejected_05572b1_2026-07-20/`;
+the 1 GB recovery checkpoint remains server-only.
+The corrected launch explicitly sets all three fields to zero and uses fresh
+`*_probe5k_v2` run directories plus a distinct v2 monitor/report identity.
+
 It trains two same-backbone, same-seed, rank-complete 5K candidates:
 
 1. denoise-path prefix/component supervision;

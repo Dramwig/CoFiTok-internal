@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 from pathlib import Path
 
 from cofitok.configs import config_to_dict, load_config
@@ -37,6 +38,34 @@ def test_checked_in_scaling_and_full_recipes_pass() -> None:
         assert contract["valid"] is True, contract["issues"]
         assert contract["issues"] == []
         assert contract["effective_batches"]["cofitok"]["effective_batch_size"] == 64
+
+
+def test_rank_recovery_probes_explicitly_disable_legacy_loss_defaults() -> None:
+    expected_objectives = {
+        "imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json": {
+            "denoise_path_prefix_weight": 0.05,
+            "denoise_path_component_weight": 0.1,
+        },
+        "imagenet256_10pct_rankcomplete_epsilon_band_k8_probe5k.json": {
+            "epsilon_band_prefix_weight": 0.05,
+            "epsilon_band_component_weight": 0.1,
+        },
+    }
+    for name, expected in expected_objectives.items():
+        raw = json.loads((ROOT / "configs/generation" / name).read_text(encoding="utf-8"))
+        loss = raw["loss"]
+        assert {key: loss[key] for key in ("prefix_weight", "monotonic_weight", "zero_token_weight")} == {
+            "prefix_weight": 0.0,
+            "monotonic_weight": 0.0,
+            "zero_token_weight": 0.0,
+        }
+        resolved = _config(name)["loss"]
+        nonzero_weights = {
+            key: value
+            for key, value in resolved.items()
+            if key.endswith("_weight") and float(value) != 0.0
+        }
+        assert nonzero_weights == {"epsilon_weight": 1.0, **expected}
 
 
 def test_recipe_allows_selected_runtime_with_same_effective_batch() -> None:

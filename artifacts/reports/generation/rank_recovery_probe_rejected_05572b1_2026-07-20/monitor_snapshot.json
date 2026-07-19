@@ -1,0 +1,113 @@
+{
+  "disk": {
+    "free_bytes": 560318402560,
+    "total_bytes": 1073741824000,
+    "used_bytes": 513423421440
+  },
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "05572b189548b14e963678f4174a989b408bc4d0",
+    "tracked_dirty": false
+  },
+  "gpu": [
+    {
+      "index": 0,
+      "memory_total_mib": 97887,
+      "memory_used_mib": 19925,
+      "temperature_c": 63,
+      "utilization_percent": 99
+    }
+  ],
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "issues": [],
+  "monitor": "generation_rank_recovery_probe_pair",
+  "processes": {
+    "runbook": [
+      "444669 bash -c cd /root/autodl-tmp/CoFiTok/CoFiTok-internal && LOG=/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_rank_recovery_probe_2026-07-20.log && PIDFILE=/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_rank_recovery_probe_2026-07-20.pid && nohup bash artifacts/runbooks/generation_rank_recovery_probe_2026-07-19.sh >$LOG 2>&1 </dev/null & pid=$! && temporary=${PIDFILE}.tmp.$$ && printf %s\\n $pid >$temporary && mv $temporary $PIDFILE && sleep 2 && kill -0 $pid && printf pid=%s\\nlog=%s\\n $pid $LOG",
+      "444671 bash artifacts/runbooks/generation_rank_recovery_probe_2026-07-19.sh"
+    ],
+    "training": [
+      "444698 python scripts/run_generation_training_watchdog.py --monitor-report /root/autodl-tmp/CoFiTok/checkpoints/generation/generation_rank_recovery_probe_monitor.json --monitor-pid-file /root/autodl-tmp/CoFiTok/checkpoints/generation/generation_rank_recovery_probe_monitor.pid --expected-monitor-name generation_rank_recovery_probe_pair --status-output /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k/training_watchdog.json --poll-seconds 30 --startup-grace-seconds 600 --monitor-silence-seconds 600 --monitor-process-grace-seconds 120 --termination-grace-seconds 60 -- python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444764 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444946 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444947 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444948 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444949 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444950 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444951 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444952 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444953 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444963 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444964 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444981 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444982 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444983 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444984 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444985 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "444986 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k"
+    ]
+  },
+  "runs": {
+    "cofitok": {
+      "activity_age_seconds": 6.799245595932007,
+      "checkpoints": [],
+      "complete": false,
+      "exists": true,
+      "expected_steps": 5000,
+      "health_issues": [],
+      "last_metric": {
+        "component_decorrelation": 0.0,
+        "cumulative_elapsed_seconds": 585.0595095157623,
+        "denoise_path_component": 0.055555620696395636,
+        "denoise_path_prefix": 0.3953382149338722,
+        "elapsed_seconds": 585.0595095157623,
+        "ema_decay": 0.1249875,
+        "energy_budget": 0.0,
+        "epsilon": 0.8946904242038727,
+        "epsilon_band_component": 0.0,
+        "epsilon_band_prefix": 0.0,
+        "grad_norm": 21.631593704223633,
+        "group_residual": 0.0,
+        "learning_rate": 2.5e-05,
+        "monotonic": 0.0,
+        "prefix": 208.61601185798645,
+        "residual_component": 0.0,
+        "sampled_budget": 0.0,
+        "sampled_component": 0.0,
+        "sampled_prefix": 0.0,
+        "samples_seen": 16000,
+        "step": 250,
+        "tail_floor": 0.0,
+        "total": 53.07401701807976,
+        "zero_token": 0.0
+      },
+      "last_step": 250,
+      "metric_rows": 6,
+      "progress_fraction": 0.05,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k",
+      "training_report": null
+    },
+    "dense_identity": {
+      "activity_age_seconds": null,
+      "checkpoints": [],
+      "complete": false,
+      "exists": false,
+      "expected_steps": 5000,
+      "health_issues": [],
+      "last_metric": null,
+      "last_step": 0,
+      "metric_rows": 0,
+      "progress_fraction": 0.0,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_epsilon_band_k8_probe5k",
+      "training_report": null
+    }
+  },
+  "schema_version": 2,
+  "stage": "cofitok_training",
+  "status": "running",
+  "thresholds": {
+    "idle_failure_grace_seconds": 600.0,
+    "stall_seconds": 1800.0
+  },
+  "updated_at": "2026-07-19T16:34:53.608380+00:00"
+}

@@ -41,6 +41,9 @@
   },
   "loss": {
     "epsilon_weight": 1.0,
+    "prefix_weight": 0.0,
+    "monotonic_weight": 0.0,
+    "zero_token_weight": 0.0,
     "denoise_path_prefix_weight": 0.05,
     "denoise_path_component_weight": 0.1,
     "denoise_path_progress_power": 1.5
