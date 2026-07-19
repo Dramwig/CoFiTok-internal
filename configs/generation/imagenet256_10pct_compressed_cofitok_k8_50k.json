@@ -9,7 +9,8 @@
     "num_workers": 8,
     "class_conditional": true,
     "persistent_workers": true,
-    "prefetch_factor": 2
+    "prefetch_factor": 2,
+    "random_horizontal_flip_prob": 0.5
   },
   "diffusion": {
     "num_train_timesteps": 1000,

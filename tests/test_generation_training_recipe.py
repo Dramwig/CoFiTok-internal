@@ -38,6 +38,9 @@ def test_checked_in_scaling_and_full_recipes_pass() -> None:
         assert contract["valid"] is True, contract["issues"]
         assert contract["issues"] == []
         assert contract["effective_batches"]["cofitok"]["effective_batch_size"] == 64
+        assert contract["observed"]["cofitok"][
+            "data.random_horizontal_flip_prob"
+        ] == 0.5
 
 
 def test_rank_recovery_probes_explicitly_disable_legacy_loss_defaults() -> None:

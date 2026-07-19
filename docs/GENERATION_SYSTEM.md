@@ -175,6 +175,11 @@ lag without changing the formal contract: visual probe samples, promotion
 sampling, full milestones, final 50K sampling, and exported inference artifacts
 all continue to require EMA weights.
 
+The fresh versioned 10% matched 50K pair uses the same random horizontal-flip
+probability (`0.5`) as the full 300K pair for both CoFiTok and dense identity.
+Legacy failed evidence and the fixed objective probes retain `0.0` and remain
+separately labeled.
+
 ## Promotion gates
 
 1. Code gate: full tests, CPU exact-resume smoke, CUDA bf16 smoke, zero-token

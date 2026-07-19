@@ -57,7 +57,7 @@ def _expected_shared(stage: str) -> dict[str, Any]:
         "data.image_size": 256,
         "data.channels": 3,
         "data.class_conditional": True,
-        "data.random_horizontal_flip_prob": 0.5 if full else 0.0,
+        "data.random_horizontal_flip_prob": 0.0 if stage == "legacy_scaling" else 0.5,
         "diffusion.num_train_timesteps": 1_000,
         "diffusion.schedule_type": "cosine",
         "diffusion.prediction_target": "epsilon",

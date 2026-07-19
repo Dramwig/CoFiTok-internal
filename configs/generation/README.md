@@ -14,6 +14,11 @@ the locked short-budget paper runs.
 - `imagenet256_cofitok_k8_300k.json`: full-data long-budget run after the 10% gate passes.
 - `imagenet256_dense_300k.json`: full-data matched dense control.
 
+The fresh rank-complete scaling pair and the full 300K pair both use matched
+random horizontal flips with probability `0.5`. Legacy failed scaling evidence
+and the fixed 5K objective probes retain their recorded `0.0` setting; they are
+not silently relabeled as the augmented recipe.
+
 All runs are class-conditional ImageNet-256 with classifier-free guidance
 dropout inside `T_k`. CoFiTok configs retain restricted, token-only `S_k`.
 The production K8 layout uses spatial strides `[16,16,8,8,4,4,2,1]` and
