@@ -169,6 +169,12 @@ The completion audit reads only that target-specific receipt and its bound
 sources. Earlier transition and recovery receipts remain immutable historical
 evidence instead of being overwritten by a mutable canonical filename.
 
+The 5K rank-recovery probe also records raw-model and EMA mechanism evaluations
+under the same checkpoint/config/Git identity. This detects short-horizon EMA
+lag without changing the formal contract: visual probe samples, promotion
+sampling, full milestones, final 50K sampling, and exported inference artifacts
+all continue to require EMA weights.
+
 ## Promotion gates
 
 1. Code gate: full tests, CPU exact-resume smoke, CUDA bf16 smoke, zero-token

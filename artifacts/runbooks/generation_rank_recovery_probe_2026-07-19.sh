@@ -130,6 +130,7 @@ evaluate_candidate() {
   local run_dir="$1"
   local checkpoint="$run_dir/checkpoint_step_00005000.pt"
   local checkpoint_eval="$run_dir/checkpoint_eval_ema_t500_512"
+  local checkpoint_eval_model="$run_dir/checkpoint_eval_model_t500_512"
   local samples="$run_dir/samples_probe512_ddim50_cfg15"
 
   test -f "$checkpoint"
@@ -138,6 +139,12 @@ evaluate_candidate() {
       --checkpoint "$checkpoint" --output-dir "$checkpoint_eval" \
       --num-images 512 --timestep 500 --random-orders 16 \
       --weights ema --precision bf16
+  fi
+  if [[ ! -f "$checkpoint_eval_model/checkpoint_evaluation_report.json" ]]; then
+    python scripts/evaluate_generation_checkpoint.py \
+      --checkpoint "$checkpoint" --output-dir "$checkpoint_eval_model" \
+      --num-images 512 --timestep 500 --random-orders 16 \
+      --weights model --precision bf16
   fi
 
   python scripts/generate_samples.py \
@@ -183,3 +190,8 @@ python scripts/build_generation_rank_recovery_probe.py \
   --candidate "epsilon_band=$BAND_RUN" \
   --legacy-checkpoint-eval "$LEGACY_EVAL" \
   --output "$REPORT_ROOT/rank_recovery_probe.json"
+
+python scripts/audit_generation_probe_ema.py \
+  --candidate "denoise_path=$DENOISE_RUN" \
+  --candidate "epsilon_band=$BAND_RUN" \
+  --output "$REPORT_ROOT/ema_lag_audit.json"
