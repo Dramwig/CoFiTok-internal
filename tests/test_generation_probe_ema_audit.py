@@ -19,10 +19,15 @@ def _write(path: Path, payload: dict) -> None:
 
 
 def _candidate(run_dir: Path, *, ema_endpoint: float, model_endpoint: float) -> None:
-    git = {
+    evaluation_git = {
         "revision": REVISION,
         "branch": "scale/generative-system",
         "tracked_dirty": False,
+    }
+    training_git = {
+        "revision": REVISION,
+        "branch": "scale/generative-system",
+        "dirty": False,
     }
     config = {
         "optimization": {"ema_decay": 0.9999, "ema_warmup_steps": 2_000}
@@ -34,7 +39,7 @@ def _candidate(run_dir: Path, *, ema_endpoint: float, model_endpoint: float) -> 
             "completed_steps": 5_000,
             "target_steps": 5_000,
             "config": config,
-            "git": git,
+            "git": training_git,
         },
     )
     for weights, endpoint, path in (
@@ -49,7 +54,7 @@ def _candidate(run_dir: Path, *, ema_endpoint: float, model_endpoint: float) -> 
                 "checkpoint_step": 5_000,
                 "checkpoint_sha256": "b" * 64,
                 "config": config,
-                "git": git,
+                "git": evaluation_git,
                 "metrics": {
                     "evaluated_images": 512,
                     "timestep": 500,
@@ -87,6 +92,36 @@ def test_rank_recovery_runbook_builds_model_and_ema_audit() -> None:
 
     assert "--weights model" in source
     assert "scripts/audit_generation_probe_ema.py" in source
+
+
+def test_equal_progress_probe_targets_balanced_component_work() -> None:
+    config = json.loads(
+        (
+            ROOT
+            / "configs/generation/"
+            "imagenet256_10pct_rankcomplete_equal_progress_k8_probe5k.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert config["model"]["token_channel_schedule"] == [4, 4, 8, 8, 8, 8, 1, 2]
+    assert config["model"]["token_spatial_strides"] == [16, 16, 8, 8, 4, 4, 1, 1]
+    assert config["loss"]["denoise_path_progress_power"] == 1.0
+    assert config["loss"]["denoise_path_prefix_weight"] == 0.15
+    assert config["loss"]["denoise_path_component_weight"] == 0.3
+    assert config["loss"]["energy_budget_weight"] == 0.5
+    assert config["loss"]["energy_target"] == [1.0] * 8
+
+    runbook = (
+        ROOT
+        / "artifacts/runbooks/"
+        "generation_rank_recovery_equal_progress_probe_2026-07-20.sh"
+    ).read_text(encoding="utf-8")
+    assert "imagenet256_10pct_rankcomplete_equal_progress_k8_probe5k_v3" in runbook
+    assert "--candidate \"equal_progress=$RUN\"" in runbook
+    assert "--weights ema" in runbook
+    assert "--weights model" in runbook
+    assert "--num-samples 512" in runbook
+    assert "--sample-steps 50" in runbook
 
 
 def test_posthoc_waiter_is_revision_locked_and_waits_for_training_exit() -> None:
@@ -143,6 +178,18 @@ def test_probe_ema_audit_rejects_different_checkpoint_identity(tmp_path: Path) -
     model_path = run / audit.MODEL_EVAL
     model = json.loads(model_path.read_text(encoding="utf-8"))
     model["checkpoint_sha256"] = "c" * 64
+    _write(model_path, model)
+
+    with pytest.raises(ValueError, match="identity differs"):
+        audit._candidate("candidate", run)
+
+
+def test_probe_ema_audit_rejects_git_cleanliness_mismatch(tmp_path: Path) -> None:
+    run = tmp_path / "run"
+    _candidate(run, ema_endpoint=0.08, model_endpoint=0.04)
+    model_path = run / audit.MODEL_EVAL
+    model = json.loads(model_path.read_text(encoding="utf-8"))
+    model["git"]["tracked_dirty"] = True
     _write(model_path, model)
 
     with pytest.raises(ValueError, match="identity differs"):

@@ -83,6 +83,29 @@ def _finite(value: object, *, name: str) -> float:
     return result
 
 
+def _git_identity(payload: object, *, name: str) -> tuple[str, str, bool]:
+    if not isinstance(payload, dict):
+        raise ValueError(f"{name} git identity is not an object")
+    revision = payload.get("revision")
+    branch = payload.get("branch")
+    dirty_values = [
+        payload[key]
+        for key in ("dirty", "tracked_dirty")
+        if key in payload
+    ]
+    if (
+        not isinstance(revision, str)
+        or len(revision) != 40
+        or not isinstance(branch, str)
+        or not branch
+        or not dirty_values
+        or any(not isinstance(value, bool) for value in dirty_values)
+        or len(set(dirty_values)) != 1
+    ):
+        raise ValueError(f"{name} git identity is invalid")
+    return revision, branch, dirty_values[0]
+
+
 def _metrics(report: dict[str, Any], *, candidate: str, weights: str) -> dict[str, Any]:
     if report.get("status") != "completed" or report.get("weights") != weights:
         raise ValueError(f"{candidate} {weights} checkpoint evaluation is invalid")
@@ -132,8 +155,10 @@ def _candidate(name: str, run_dir: Path) -> dict[str, Any]:
     if (
         ema_report.get("checkpoint_sha256") != model_report.get("checkpoint_sha256")
         or ema_report.get("config") != model_report.get("config")
-        or ema_report.get("git") != model_report.get("git")
-        or ema_report.get("git") != training.get("git")
+        or _git_identity(ema_report.get("git"), name=f"{name}.ema")
+        != _git_identity(model_report.get("git"), name=f"{name}.model")
+        or _git_identity(ema_report.get("git"), name=f"{name}.ema")
+        != _git_identity(training.get("git"), name=f"{name}.training")
     ):
         raise ValueError(f"{name} model/EMA evaluation identity differs")
     ema_metrics = _metrics(ema_report, candidate=name, weights="ema")

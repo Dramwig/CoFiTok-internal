@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import signal
 import statistics
@@ -110,6 +111,15 @@ def _validate_config(config: ExperimentConfig) -> None:
         raise ValueError("gradient_accumulation_steps must be positive")
     if config.runtime.precision not in {"fp32", "bf16", "fp16"}:
         raise ValueError("runtime.precision must be fp32, bf16, or fp16")
+    if config.loss.energy_budget_weight > 0.0:
+        target = config.loss.energy_target
+        if len(target) != config.model.token_count:
+            raise ValueError(
+                "energy_target length must equal model.token_count when the "
+                "energy budget is enabled"
+            )
+        if any(not math.isfinite(value) or value <= 0.0 for value in target):
+            raise ValueError("energy_target values must be finite and positive")
     protected_steps = config.runtime.protected_checkpoint_steps
     if protected_steps != sorted(set(protected_steps)):
         raise ValueError("protected_checkpoint_steps must be sorted and unique")

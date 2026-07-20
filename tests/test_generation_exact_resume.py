@@ -148,6 +148,25 @@ def test_training_rejects_invalid_horizontal_flip_probability(probability: float
 
 
 @pytest.mark.parametrize(
+    "target",
+    ([1.0], [1.0, 0.0, 1.0, 1.0], [1.0, float("nan"), 1.0, 1.0]),
+)
+def test_training_rejects_invalid_enabled_energy_target(target: list[float]) -> None:
+    config = load_config(CONFIG)
+    invalid = replace(
+        config,
+        loss=replace(
+            config.loss,
+            energy_budget_weight=0.5,
+            energy_target=target,
+        ),
+    )
+
+    with pytest.raises(ValueError, match="energy_target"):
+        _validate_config(invalid)
+
+
+@pytest.mark.parametrize(
     ("override", "mismatch_path"),
     [
         (("--micro-batch-size", "1"), "config.data.batch_size"),
