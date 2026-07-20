@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import copy
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -25,6 +28,29 @@ from scripts.select_generation_training_runtime import (
 
 ROOT = Path(__file__).resolve().parents[1]
 REVISION = "a" * 40
+
+
+def test_selector_entrypoint_sets_training_allocator_default() -> None:
+    environment = dict(os.environ)
+    environment.pop("PYTORCH_ALLOC_CONF", None)
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "import os; "
+                "import scripts.select_generation_training_runtime; "
+                "print(os.environ.get('PYTORCH_ALLOC_CONF'))"
+            ),
+        ],
+        cwd=ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    assert result.stdout.strip() == "expandable_segments:True"
 
 
 def _dataset_provenance() -> dict:
