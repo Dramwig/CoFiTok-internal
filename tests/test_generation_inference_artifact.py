@@ -21,7 +21,10 @@ from cofitok.generation import (
     export_ema_inference_artifact,
     verify_inference_artifact,
 )
-from cofitok.generation_gate import REQUIRED_GENERATION_GATES
+from cofitok.generation_gate import (
+    GENERATION_GATE_SCHEMA_VERSION,
+    REQUIRED_GENERATION_GATES,
+)
 from cofitok.generation_gate_sources import (
     GATE_SOURCE_SUFFIXES,
     build_generation_gate_source_reports,
@@ -72,12 +75,14 @@ def _full_gate() -> dict:
         "dense_recall": 0.35,
         "ordered_rank": 1,
         "order_count": 24,
+        "coarse_token_energy_ratio": 0.06,
     }
     thresholds = {
         "min_samples": 50_000,
         "max_fid_regression": 0.05,
         "max_absolute_fid": 20.0,
         "max_endpoint_regression": 0.05,
+        "min_coarse_token_energy_ratio": 0.05,
         "min_precision": 0.30,
         "min_recall": 0.30,
         "max_precision_regression": 0.05,
@@ -106,6 +111,18 @@ def _full_gate() -> dict:
             return {
                 "rank": summary["ordered_rank"],
                 "order_count": summary["order_count"],
+            }
+        if name == "coarse_token_utilization":
+            return {
+                "valid": True,
+                "source_metric": "component_energy_ratio_per_sample_mean",
+                "token_count": 8,
+                "coarse_token_count": 6,
+                "component_energy_ratios": [0.01] * 6 + [0.30, 0.64],
+                "coarse_token_energy_ratio": summary["coarse_token_energy_ratio"],
+                "min_coarse_token_energy_ratio": thresholds[
+                    "min_coarse_token_energy_ratio"
+                ],
             }
         if name == "restricted_synthesis_contract":
             return {"zero_token_max_abs": 0.0}
@@ -136,7 +153,7 @@ def _full_gate() -> dict:
         return {}
 
     return {
-        "schema_version": 1,
+        "schema_version": GENERATION_GATE_SCHEMA_VERSION,
         "stage": "full",
         "status": "pass",
         "decision": "large_scale_generation_ready",

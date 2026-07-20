@@ -21,7 +21,10 @@ from cofitok.generation import (
     SAMPLING_PROTOCOL_SCHEMA,
     SAMPLING_REPORT_SCHEMA_VERSION,
 )
-from cofitok.generation_gate import REQUIRED_GENERATION_GATES
+from cofitok.generation_gate import (
+    GENERATION_GATE_SCHEMA_VERSION,
+    REQUIRED_GENERATION_GATES,
+)
 from cofitok.generation_authorization import build_generation_gate_binding
 from cofitok.image_integrity import image_tree_sha256, sample_set_sha256
 from cofitok.reporting import file_sha256
@@ -249,6 +252,16 @@ def _gate(stage: str) -> dict:
             }
         elif name == "ordered_prefix_path":
             evidence = {"rank": 1, "order_count": 24}
+        elif name == "coarse_token_utilization":
+            evidence = {
+                "valid": True,
+                "source_metric": "component_energy_ratio_per_sample_mean",
+                "token_count": 8,
+                "coarse_token_count": 6,
+                "component_energy_ratios": [0.01] * 6 + [0.30, 0.64],
+                "coarse_token_energy_ratio": 0.06,
+                "min_coarse_token_energy_ratio": 0.05,
+            }
         elif name == "restricted_synthesis_contract":
             evidence = {"zero_token_max_abs": 0.0}
         elif name == "shuffle_mismatch":
@@ -267,7 +280,7 @@ def _gate(stage: str) -> dict:
             }
         gates.append({"name": name, "passed": True, "evidence": evidence})
     return {
-        "schema_version": 1,
+        "schema_version": GENERATION_GATE_SCHEMA_VERSION,
         "stage": stage,
         "status": "pass",
         "decision": decision,
@@ -277,6 +290,7 @@ def _gate(stage: str) -> dict:
             "max_fid_regression": 0.05,
             "max_absolute_fid": 100.0 if stage == "scaling" else 20.0,
             "max_endpoint_regression": 0.05,
+            "min_coarse_token_energy_ratio": 0.05,
             "min_precision": 0.30,
             "min_recall": 0.30,
             "max_precision_regression": 0.05,
@@ -293,6 +307,7 @@ def _gate(stage: str) -> dict:
             "dense_endpoint_mse": 0.1,
             "ordered_rank": 1,
             "order_count": 24,
+            "coarse_token_energy_ratio": 0.06,
         },
         "source_reports": {
             name: {

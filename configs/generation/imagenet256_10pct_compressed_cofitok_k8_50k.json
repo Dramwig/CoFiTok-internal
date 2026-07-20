@@ -46,7 +46,10 @@
     "zero_token_weight": 0.0,
     "denoise_path_prefix_weight": 0.05,
     "denoise_path_component_weight": 0.1,
-    "denoise_path_progress_power": 1.5
+    "denoise_path_energy_weight": 0.1,
+    "denoise_path_energy_mode": "hellinger",
+    "denoise_path_progress_power": 1.0,
+    "denoise_path_progress_mode": "token_capacity"
   },
   "runtime": {
     "seed": 2027,

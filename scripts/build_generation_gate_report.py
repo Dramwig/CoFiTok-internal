@@ -9,6 +9,7 @@ from typing import Any
 from cofitok.environment import runtime_environment_sha256
 from cofitok.generation import sampling_protocol_contract
 from cofitok.generation_cost import training_cost_summary
+from cofitok.generation_gate import GENERATION_GATE_SCHEMA_VERSION
 from cofitok.generation_gate_sources import (
     build_generation_gate_source_reports,
 )
@@ -31,6 +32,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-fid-regression", type=float, default=0.05)
     parser.add_argument("--max-absolute-fid", type=float, default=100.0)
     parser.add_argument("--max-endpoint-regression", type=float, default=0.05)
+    parser.add_argument("--min-coarse-token-energy-ratio", type=float, default=0.05)
     parser.add_argument("--min-precision", type=float, default=0.30)
     parser.add_argument("--min-recall", type=float, default=0.30)
     parser.add_argument("--max-precision-regression", type=float, default=0.05)
@@ -93,6 +95,32 @@ def _distribution_metrics_valid(metrics: dict[str, float | None]) -> bool:
         and recall is not None
         and 0.0 <= recall <= 1.0
     )
+
+
+def _coarse_token_utilization(report: dict[str, Any]) -> dict[str, Any]:
+    raw = report.get("metrics", {}).get("component_energy_ratio_per_sample_mean")
+    try:
+        ratios = [float(value) for value in raw]
+        token_count = int(report["config"]["model"]["token_count"])
+    except (KeyError, TypeError, ValueError):
+        ratios = []
+        token_count = 0
+    valid = (
+        token_count >= 3
+        and len(ratios) == token_count
+        and all(math.isfinite(value) and value >= 0.0 for value in ratios)
+        and math.isclose(sum(ratios), 1.0, rel_tol=0.0, abs_tol=1e-6)
+    )
+    coarse_token_count = max(token_count - 2, 0)
+    coarse_ratio = sum(ratios[:coarse_token_count]) if valid else None
+    return {
+        "valid": valid,
+        "source_metric": "component_energy_ratio_per_sample_mean",
+        "token_count": token_count,
+        "coarse_token_count": coarse_token_count,
+        "component_energy_ratios": ratios,
+        "coarse_token_energy_ratio": coarse_ratio,
+    }
 
 
 def _sampling_protocol(provenance: dict[str, Any]) -> dict[str, Any]:
@@ -170,6 +198,7 @@ def build_report(
     max_endpoint_regression: float,
     stage: str = "scaling",
     max_absolute_fid: float = 100.0,
+    min_coarse_token_energy_ratio: float = 0.05,
     min_precision: float = 0.30,
     min_recall: float = 0.30,
     max_precision_regression: float = 0.05,
@@ -179,6 +208,11 @@ def build_report(
         raise ValueError("stage must be scaling or full")
     if not math.isfinite(max_absolute_fid) or max_absolute_fid <= 0.0:
         raise ValueError("max_absolute_fid must be finite and positive")
+    if (
+        not math.isfinite(min_coarse_token_energy_ratio)
+        or not 0.0 <= min_coarse_token_energy_ratio <= 1.0
+    ):
+        raise ValueError("min_coarse_token_energy_ratio must be finite and in [0, 1]")
     quality_thresholds = {
         "min_precision": min_precision,
         "min_recall": min_recall,
@@ -200,6 +234,7 @@ def build_report(
     dense_endpoint = float(
         dense_checkpoint["metrics"]["orders"]["ordered"]["endpoint_clean_mse"]
     )
+    coarse_utilization = _coarse_token_utilization(cofitok_checkpoint)
     cofitok_checkpoint_sha = str(cofitok_checkpoint["checkpoint_sha256"])
     dense_checkpoint_sha = str(dense_checkpoint["checkpoint_sha256"])
     checkpoint_evaluator_git_pair = (
@@ -640,6 +675,16 @@ def build_report(
             },
         ),
         _gate(
+            "coarse_token_utilization",
+            coarse_utilization["valid"]
+            and float(coarse_utilization["coarse_token_energy_ratio"])
+            >= min_coarse_token_energy_ratio,
+            {
+                **coarse_utilization,
+                "min_coarse_token_energy_ratio": min_coarse_token_energy_ratio,
+            },
+        ),
+        _gate(
             "restricted_synthesis_contract",
             float(cofitok_checkpoint["metrics"]["zero_token_max_abs"]) == 0.0,
             {"zero_token_max_abs": cofitok_checkpoint["metrics"]["zero_token_max_abs"]},
@@ -661,7 +706,7 @@ def build_report(
         else "large_scale_generation_ready"
     )
     return {
-        "schema_version": 1,
+        "schema_version": GENERATION_GATE_SCHEMA_VERSION,
         "stage": stage,
         "status": "pass" if passed else "fail",
         "decision": pass_decision if passed else "hold",
@@ -670,6 +715,7 @@ def build_report(
             "max_fid_regression": max_fid_regression,
             "max_absolute_fid": max_absolute_fid,
             "max_endpoint_regression": max_endpoint_regression,
+            "min_coarse_token_energy_ratio": min_coarse_token_energy_ratio,
             **quality_thresholds,
         },
         "gates": gates,
@@ -686,6 +732,9 @@ def build_report(
             "dense_recall": dense_quality["recall"],
             "ordered_rank": cofitok_checkpoint["metrics"]["ordered_rank_by_path_auc"],
             "order_count": cofitok_checkpoint["metrics"]["order_count"],
+            "coarse_token_energy_ratio": coarse_utilization[
+                "coarse_token_energy_ratio"
+            ],
             "cofitok_training_cost": cofitok_cost,
             "dense_training_cost": dense_cost,
         },
@@ -706,6 +755,7 @@ def main() -> None:
         max_endpoint_regression=args.max_endpoint_regression,
         stage=args.stage,
         max_absolute_fid=args.max_absolute_fid,
+        min_coarse_token_energy_ratio=args.min_coarse_token_energy_ratio,
         min_precision=args.min_precision,
         min_recall=args.min_recall,
         max_precision_regression=args.max_precision_regression,

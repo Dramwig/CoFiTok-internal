@@ -6,7 +6,7 @@ import math
 from typing import Any
 
 
-GENERATION_GATE_SCHEMA_VERSION = 1
+GENERATION_GATE_SCHEMA_VERSION = 2
 
 _STAGE_DECISIONS = {
     "scaling": "promote_to_full_imagenet256",
@@ -35,6 +35,7 @@ _COMMON_REQUIRED_GATES = frozenset(
         "absolute_fid_quality",
         "endpoint_within_tolerance",
         "ordered_prefix_path",
+        "coarse_token_utilization",
         "restricted_synthesis_contract",
         "shuffle_mismatch",
     }
@@ -55,12 +56,14 @@ REQUIRED_GENERATION_GATE_THRESHOLDS = {
         "max_fid_regression": ("max", 0.05),
         "max_absolute_fid": ("max", 100.0),
         "max_endpoint_regression": ("max", 0.05),
+        "min_coarse_token_energy_ratio": ("min", 0.05),
     },
     "full": {
         "min_samples": ("min", 50_000.0),
         "max_fid_regression": ("max", 0.05),
         "max_absolute_fid": ("max", 20.0),
         "max_endpoint_regression": ("max", 0.05),
+        "min_coarse_token_energy_ratio": ("min", 0.05),
         "min_precision": ("min", 0.30),
         "min_recall": ("min", 0.30),
         "max_precision_regression": ("max", 0.05),
@@ -133,6 +136,14 @@ def _validate_summary(gate: dict[str, Any], *, stage: str, thresholds: dict[str,
 
     if int(summary.get("ordered_rank", -1)) != 1 or int(summary.get("order_count", 0)) < 10:
         raise ValueError("generation gate summary does not prove ordered-prefix rank 1")
+    coarse_ratio = _finite_number(
+        summary.get("coarse_token_energy_ratio"),
+        name="summary coarse_token_energy_ratio",
+    )
+    if not 0.0 <= coarse_ratio <= 1.0:
+        raise ValueError("generation gate coarse-token energy ratio is outside [0, 1]")
+    if coarse_ratio < thresholds["min_coarse_token_energy_ratio"]:
+        raise ValueError("generation gate summary violates the coarse-token utilization threshold")
 
     if stage == "full":
         cofitok_precision = _finite_number(
@@ -222,6 +233,44 @@ def _validate_scientific_gate_evidence(
         raise ValueError("generation gate ordered-prefix rank evidence differs from its summary")
     if int(ordered.get("order_count", 0)) != int(summary.get("order_count", 0)):
         raise ValueError("generation gate order-count evidence differs from its summary")
+    utilization = evidence("coarse_token_utilization")
+    if utilization.get("source_metric") != "component_energy_ratio_per_sample_mean":
+        raise ValueError("generation gate coarse-token utilization uses the wrong source metric")
+    token_count = int(utilization.get("token_count", -1))
+    coarse_token_count = int(utilization.get("coarse_token_count", -1))
+    raw_ratios = utilization.get("component_energy_ratios")
+    if token_count < 3 or coarse_token_count != token_count - 2:
+        raise ValueError("generation gate coarse-token partition is invalid")
+    if not isinstance(raw_ratios, list) or len(raw_ratios) != token_count:
+        raise ValueError("generation gate component-energy ratios are incomplete")
+    ratios = [
+        _finite_number(value, name=f"component_energy_ratio[{index}]")
+        for index, value in enumerate(raw_ratios)
+    ]
+    if any(value < 0.0 for value in ratios) or not math.isclose(
+        sum(ratios), 1.0, rel_tol=0.0, abs_tol=1e-6
+    ):
+        raise ValueError("generation gate component-energy ratios are not normalized")
+    coarse_ratio = sum(ratios[:coarse_token_count])
+    require_same(
+        "coarse_token_energy_ratio",
+        utilization.get("coarse_token_energy_ratio"),
+        coarse_ratio,
+    )
+    require_same(
+        "summary coarse_token_energy_ratio",
+        summary.get("coarse_token_energy_ratio"),
+        coarse_ratio,
+    )
+    require_same(
+        "min_coarse_token_energy_ratio",
+        utilization.get("min_coarse_token_energy_ratio"),
+        thresholds["min_coarse_token_energy_ratio"],
+    )
+    if utilization.get("valid") is not True or coarse_ratio < thresholds[
+        "min_coarse_token_energy_ratio"
+    ]:
+        raise ValueError("generation gate does not prove coarse-token utilization")
     zero_token = _finite_number(
         evidence("restricted_synthesis_contract").get("zero_token_max_abs"),
         name="zero_token_max_abs",

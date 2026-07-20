@@ -6,7 +6,7 @@ from cofitok.generation_pair import generation_pair_contract
 from cofitok.token_layout import resolve_token_layout, token_layout_summary
 
 
-GENERATION_TRAINING_RECIPE_SCHEMA = "cofitok_generation_training_recipe_v1"
+GENERATION_TRAINING_RECIPE_SCHEMA = "cofitok_generation_training_recipe_v2"
 RECIPE_STAGES = {"legacy_scaling", "scaling", "full"}
 ALLOWED_RUNTIME_BATCHES = {(16, 4), (32, 2), (64, 1)}
 
@@ -112,7 +112,10 @@ def _expected_method(method: str, stage: str) -> dict[str, Any]:
                 "loss.epsilon_weight": 1.0,
                 "loss.denoise_path_prefix_weight": 0.05,
                 "loss.denoise_path_component_weight": 0.1,
-                "loss.denoise_path_progress_power": 1.5,
+                "loss.denoise_path_energy_weight": 0.1,
+                "loss.denoise_path_energy_mode": "hellinger",
+                "loss.denoise_path_progress_power": 1.0,
+                "loss.denoise_path_progress_mode": "token_capacity",
             }
         return {
             "model.token_count": 8,
@@ -197,7 +200,12 @@ def generation_training_recipe_contract(
         (
             "cofitok",
             cofitok_config,
-            {"epsilon_weight", "denoise_path_prefix_weight", "denoise_path_component_weight"},
+            {
+                "epsilon_weight",
+                "denoise_path_prefix_weight",
+                "denoise_path_component_weight",
+                "denoise_path_energy_weight",
+            },
         ),
         ("dense_identity", dense_config, {"epsilon_weight"}),
     ):

@@ -27,11 +27,13 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - The dense control uses the identical U-Net and training protocol with one
   direct `dense_identity` epsilon head.
 - Formal scaling and full-data training additionally pass
-  `cofitok_generation_training_recipe_v1`. This contract prevents a matched
+  `cofitok_generation_training_recipe_v2`. This contract prevents a matched
   pair from passing fairness checks after both methods are identically weakened:
   it locks the ImageNet stage, diffusion horizon/target, U-Net capacity,
   class-dropout CFG training, bf16/TF32 runtime, effective batch 64, optimizer,
-  EMA, checkpoint cadence, and CoFiTok denoise-path objective. Runtime selection
+  EMA, checkpoint cadence, and the selected CoFiTok capacity-path objective:
+  prefix weight `0.05`, component weight `0.1`, and squared-Hellinger energy
+  weight `0.1`. Runtime selection
   may change micro-batch and accumulation only while their product remains 64.
 - Production training uses bf16, gradient accumulation, gradient clipping,
   cosine LR, EMA, isolated DataLoader RNG, atomic checkpoints, retention, and
@@ -190,7 +192,8 @@ separately labeled.
    `imagenet_256_10pct`; generate at least 10K EMA samples per method and compute
    FID under one real-image directory and evaluator version. Promotion requires
    CoFiTok FID at most 100.0, no more than 5% FID or endpoint-MSE regression
-   against dense, ordered-prefix rank 1, exact zero-token synthesis, and a
+   against dense, ordered-prefix rank 1, at least 5% of normalized component
+   energy in compressed tokens 1-6, exact zero-token synthesis, and a
    shuffled-token mismatch.
 4. Full gate: matched 300K-step runs on full `imagenet_256`, 50K EMA samples,
    official FID plus IS/precision/recall, prefix diagnostics, and checkpoint
@@ -198,7 +201,9 @@ separately labeled.
    advantage without a material endpoint generation regression against dense,
    all distribution metrics are finite and inside their mathematical ranges,
    CoFiTok FID is at most 20.0, precision and recall are each at least 0.30,
-   and neither precision nor recall is more than 0.05 below matched dense.
+   and neither precision nor recall is more than 0.05 below matched dense. The
+   full checkpoint must again keep at least 5% of normalized component energy
+   in tokens 1-6.
 
 The 10% gate is an engineering and architecture decision point. It is not a
 replacement for the full-data result and must not overwrite locked paper tables.
@@ -260,13 +265,20 @@ V5 recovered rank 1 but its heavy objective damaged directional quality. V6
 combined the light v2 weights with capacity progress and recovered both the v2
 endpoint trajectory and rank 1, but assigned only about 0.56% of component
 energy to tokens 1-6 and remained worse than v2 on the 512-image directional
-FID. V7 keeps the v6 protocol fixed and opts into squared Hellinger distance for
-the capacity-target energy distribution. The new distance is more sensitive to
-near-zero component probabilities while the historical default remains MSE.
-V5, v6, and v7 are all non-formal 5K probes and cannot authorize 50K or 300K.
+FID. V7 kept the v6 protocol fixed and opted into squared Hellinger distance for
+the capacity-target energy distribution. It reached rank 1 at all five audited
+timesteps, raised token-1-6 energy to 7.48% at `t=500`, kept endpoint MSE within
+3.7% of v6, and changed the 512-image directional FID by only +0.8%. Fixed-index
+visual review also showed low-frequency structure by prefix 4 instead of the
+near-identical early noise fields seen in v6. V7 is therefore the selected
+formal objective. The formal recipe and generation-gate schema were upgraded
+together; both scaling and full gates reject token-1-6 energy below 5%.
+V5, v6, and v7 remain non-formal 5K evidence and cannot themselves authorize
+50K or 300K.
 See `docs/records/2026-07-20_generation_target_energy_probe_v4_result.md`,
-`docs/records/2026-07-20_generation_capacity_path_probe_v5_result.md`, and
-`docs/records/2026-07-21_generation_capacity_path_light_probe_v6_result.md`.
+`docs/records/2026-07-20_generation_capacity_path_probe_v5_result.md`,
+`docs/records/2026-07-21_generation_capacity_path_light_probe_v6_result.md`, and
+`docs/records/2026-07-21_generation_capacity_path_hellinger_probe_v7_result.md`.
 
 The full queue alternates CoFiTok and dense at 50K, 100K, 200K, and 300K
 milestones. At each matched point it produces 2,048 fixed-protocol EMA samples

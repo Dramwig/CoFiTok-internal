@@ -41,6 +41,13 @@ def test_checked_in_scaling_and_full_recipes_pass() -> None:
         assert contract["observed"]["cofitok"][
             "data.random_horizontal_flip_prob"
         ] == 0.5
+        loss = _config(cofitok_name)["loss"]
+        assert loss["denoise_path_prefix_weight"] == 0.05
+        assert loss["denoise_path_component_weight"] == 0.1
+        assert loss["denoise_path_energy_weight"] == 0.1
+        assert loss["denoise_path_energy_mode"] == "hellinger"
+        assert loss["denoise_path_progress_power"] == 1.0
+        assert loss["denoise_path_progress_mode"] == "token_capacity"
 
 
 def test_rank_recovery_probes_explicitly_disable_legacy_loss_defaults() -> None:
@@ -197,3 +204,20 @@ def test_recipe_rejects_changed_factorization_objective() -> None:
 
     assert contract["valid"] is False
     assert any("denoise_path_component_weight" in issue for issue in contract["issues"])
+
+
+def test_recipe_rejects_old_or_weakened_energy_objective() -> None:
+    dense = _config("imagenet256_dense_300k.json")
+    for field, value in (
+        ("denoise_path_energy_weight", 0.0),
+        ("denoise_path_energy_mode", "mse"),
+        ("denoise_path_progress_mode", "power"),
+        ("denoise_path_progress_power", 1.5),
+    ):
+        cofitok = _config("imagenet256_cofitok_k8_300k.json")
+        cofitok["loss"][field] = value
+
+        contract = generation_training_recipe_contract(cofitok, dense, stage="full")
+
+        assert contract["valid"] is False
+        assert any(field in issue for issue in contract["issues"])

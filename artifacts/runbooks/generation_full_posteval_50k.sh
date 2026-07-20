@@ -123,6 +123,7 @@ python scripts/build_generation_gate_report.py \
   --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --output "$REPORT_ROOT/final_generation_gate.json" --stage full \
   --min-samples 50000 --max-absolute-fid 20.0 \
+  --min-coarse-token-energy-ratio 0.05 \
   --min-precision 0.30 --min-recall 0.30 \
   --max-precision-regression 0.05 --max-recall-regression 0.05 \
   --allow-fail

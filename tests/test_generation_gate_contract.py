@@ -11,6 +11,7 @@ import pytest
 import torch
 
 from cofitok.generation_gate import (
+    GENERATION_GATE_SCHEMA_VERSION,
     REQUIRED_GENERATION_GATES,
     validate_generation_gate_authorization,
 )
@@ -43,12 +44,14 @@ def _gate(stage: str = "scaling") -> dict:
         "dense_recall": 0.35,
         "ordered_rank": 1,
         "order_count": 24,
+        "coarse_token_energy_ratio": 0.06,
     }
     thresholds = {
         "min_samples": 50_000 if full else 10_000,
         "max_fid_regression": 0.05,
         "max_absolute_fid": 20.0 if full else 100.0,
         "max_endpoint_regression": 0.05,
+        "min_coarse_token_energy_ratio": 0.05,
         "min_precision": 0.30,
         "min_recall": 0.30,
         "max_precision_regression": 0.05,
@@ -75,6 +78,18 @@ def _gate(stage: str = "scaling") -> dict:
             }
         if name == "ordered_prefix_path":
             return {"rank": summary["ordered_rank"], "order_count": summary["order_count"]}
+        if name == "coarse_token_utilization":
+            return {
+                "valid": True,
+                "source_metric": "component_energy_ratio_per_sample_mean",
+                "token_count": 8,
+                "coarse_token_count": 6,
+                "component_energy_ratios": [0.01] * 6 + [0.30, 0.64],
+                "coarse_token_energy_ratio": summary["coarse_token_energy_ratio"],
+                "min_coarse_token_energy_ratio": thresholds[
+                    "min_coarse_token_energy_ratio"
+                ],
+            }
         if name == "restricted_synthesis_contract":
             return {"zero_token_max_abs": 0.0}
         if name == "shuffle_mismatch":
@@ -98,7 +113,7 @@ def _gate(stage: str = "scaling") -> dict:
         return {}
 
     return {
-        "schema_version": 1,
+        "schema_version": GENERATION_GATE_SCHEMA_VERSION,
         "stage": stage,
         "status": "pass",
         "decision": (
@@ -140,7 +155,12 @@ def test_scaling_gate_authorizes_only_the_locked_contract() -> None:
 
 @pytest.mark.parametrize(
     ("threshold", "value"),
-    (("min_samples", 9_999), ("max_absolute_fid", 100.01), ("max_fid_regression", 0.051)),
+    (
+        ("min_samples", 9_999),
+        ("max_absolute_fid", 100.01),
+        ("max_fid_regression", 0.051),
+        ("min_coarse_token_energy_ratio", 0.049),
+    ),
 )
 def test_scaling_gate_rejects_weakened_thresholds(threshold: str, value: float) -> None:
     gate = _gate()
@@ -165,6 +185,19 @@ def test_scaling_gate_recomputes_summary_thresholds() -> None:
     gate["summary"]["cofitok_fid"] = 100.1
 
     with pytest.raises(ValueError, match="absolute FID"):
+        validate_generation_gate_authorization(gate, expected_stage="scaling")
+
+
+def test_scaling_gate_rejects_collapsed_coarse_token_evidence() -> None:
+    gate = _gate()
+    gate["summary"]["coarse_token_energy_ratio"] = 0.005
+    row = next(
+        item for item in gate["gates"] if item["name"] == "coarse_token_utilization"
+    )
+    row["evidence"]["component_energy_ratios"] = [0.0] * 5 + [0.005, 0.335, 0.66]
+    row["evidence"]["coarse_token_energy_ratio"] = 0.005
+
+    with pytest.raises(ValueError, match="coarse-token utilization"):
         validate_generation_gate_authorization(gate, expected_stage="scaling")
 
 

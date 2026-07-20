@@ -142,4 +142,5 @@ python scripts/build_generation_gate_report.py \
   --cofitok-checkpoint-eval "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --output "$SCALING_REPORT_ROOT/promotion_gate.json" \
-  --stage scaling --min-samples 10000 --max-absolute-fid 100.0 --allow-fail
+  --stage scaling --min-samples 10000 --max-absolute-fid 100.0 \
+  --min-coarse-token-energy-ratio 0.05 --allow-fail

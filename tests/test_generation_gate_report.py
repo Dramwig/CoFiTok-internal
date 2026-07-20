@@ -7,6 +7,7 @@ import pytest
 from cofitok.environment import runtime_environment_sha256
 from cofitok.diffusion import select_sampling_timesteps
 from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
+from cofitok.generation_gate import GENERATION_GATE_SCHEMA_VERSION
 from scripts.build_generation_gate_report import build_report
 
 
@@ -165,6 +166,7 @@ def _full_generation(fid: float, token_count: int, sha: str) -> dict:
 
 
 def _checkpoint(endpoint: float, sha: str, rank: int = 1) -> dict:
+    token_count = 1 if sha == "b" * 64 else 8
     return {
         "git": {
             "revision": "a" * 40,
@@ -174,14 +176,50 @@ def _checkpoint(endpoint: float, sha: str, rank: int = 1) -> dict:
         "checkpoint_sha256": sha,
         "checkpoint_integrity_manifest": "/checkpoints/checkpoint.pt.integrity.json",
         "checkpoint_step": 50_000,
+        "config": {"model": {"token_count": token_count}},
         "metrics": {
             "orders": {"ordered": {"endpoint_clean_mse": endpoint}},
             "ordered_rank_by_path_auc": rank,
             "order_count": 18,
             "zero_token_max_abs": 0.0,
             "shuffled_to_ordered_endpoint_ratio": 1.5,
+            "component_energy_ratio_per_sample_mean": (
+                [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.30, 0.64]
+                if token_count > 1
+                else [1.0]
+            ),
         }
     }
+
+
+def test_generation_gate_holds_on_collapsed_coarse_tokens() -> None:
+    checkpoint = _checkpoint(0.1, "a" * 64)
+    checkpoint["metrics"]["component_energy_ratio_per_sample_mean"] = [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.001,
+        0.004,
+        0.335,
+        0.66,
+    ]
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(20.5, 8, "a" * 64),
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=checkpoint,
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(row for row in report["gates"] if row["name"] == "coarse_token_utilization")
+    assert gate["passed"] is False
+    assert gate["evidence"]["coarse_token_energy_ratio"] == pytest.approx(0.005)
+    assert report["status"] == "fail"
 
 
 def test_generation_gate_passes_matched_quality_and_mechanism() -> None:
@@ -198,7 +236,9 @@ def test_generation_gate_passes_matched_quality_and_mechanism() -> None:
     )
 
     assert report["status"] == "pass"
+    assert report["schema_version"] == GENERATION_GATE_SCHEMA_VERSION
     assert report["decision"] == "promote_to_full_imagenet256"
+    assert report["summary"]["coarse_token_energy_ratio"] == pytest.approx(0.06)
     assert all(gate["passed"] for gate in report["gates"])
 
 
