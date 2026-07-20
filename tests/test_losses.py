@@ -276,7 +276,11 @@ def test_denoise_path_losses_are_reported_when_enabled() -> None:
     noisy = schedule.add_noise(clean, noise, timesteps)
 
     losses = compute_losses(
-        LossConfig(denoise_path_prefix_weight=0.5, denoise_path_component_weight=0.5),
+        LossConfig(
+            denoise_path_prefix_weight=0.5,
+            denoise_path_component_weight=0.5,
+            denoise_path_energy_weight=0.5,
+        ),
         output,
         schedule,
         noisy,
@@ -287,5 +291,51 @@ def test_denoise_path_losses_are_reported_when_enabled() -> None:
 
     assert losses.denoise_path_prefix.item() > 0
     assert losses.denoise_path_component.item() > 0
+    assert losses.denoise_path_energy.item() > 0
     assert "denoise_path_prefix" in losses.as_dict()
     assert "denoise_path_component" in losses.as_dict()
+    assert "denoise_path_energy" in losses.as_dict()
+
+
+def test_denoise_path_energy_loss_backpropagates_to_every_component() -> None:
+    components = [
+        torch.randn(2, 3, 16, 16, requires_grad=True)
+        for _ in range(4)
+    ]
+    prefixes = []
+    running = torch.zeros_like(components[0])
+    for component in components:
+        running = running + component
+        prefixes.append(running)
+    output = CoFiTokOutput(
+        tokens=[torch.zeros(2, 1, 16, 16) for _ in components],
+        components=components,
+        prefix_epsilons=prefixes,
+        epsilon=prefixes[-1],
+    )
+    schedule = DiffusionSchedule(DiffusionConfig(num_train_timesteps=10), device="cpu")
+    clean = torch.randn(2, 3, 16, 16)
+    noise = torch.randn_like(clean)
+    timesteps = torch.tensor([3, 7])
+    noisy = schedule.add_noise(clean, noise, timesteps)
+
+    losses = compute_losses(
+        LossConfig(
+            epsilon_weight=0.0,
+            prefix_weight=0.0,
+            monotonic_weight=0.0,
+            zero_token_weight=0.0,
+            denoise_path_energy_weight=1.0,
+        ),
+        output,
+        schedule,
+        noisy,
+        clean,
+        noise,
+        timesteps,
+    )
+    losses.total.backward()
+
+    assert losses.denoise_path_energy.item() > 0
+    assert all(component.grad is not None for component in components)
+    assert all(torch.isfinite(component.grad).all() for component in components)

@@ -83,6 +83,7 @@ class LossConfig:
     epsilon_band_component_weight: float = 0.0
     denoise_path_prefix_weight: float = 0.0
     denoise_path_component_weight: float = 0.0
+    denoise_path_energy_weight: float = 0.0
     denoise_path_progress_power: float = 1.0
     tail_early_dropout_weight: float = 0.0
     tail_early_dropout_prob: float = 0.0

@@ -137,6 +137,37 @@ def test_timestep_diagnostic_covers_fixed_schedule_without_training() -> None:
     assert "train_generation.py \\" not in runbook
 
 
+def test_target_energy_probe_matches_path_energy_per_sample() -> None:
+    config = json.loads(
+        (
+            ROOT
+            / "configs/generation/"
+            "imagenet256_10pct_rankcomplete_target_energy_k8_probe5k.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert config["model"]["token_channel_schedule"] == [4, 4, 8, 8, 8, 8, 1, 2]
+    assert config["model"]["token_spatial_strides"] == [16, 16, 8, 8, 4, 4, 1, 1]
+    assert config["loss"]["energy_budget_weight"] == 0.0
+    assert config["loss"]["energy_target"] == []
+    assert config["loss"]["denoise_path_prefix_weight"] == 0.15
+    assert config["loss"]["denoise_path_component_weight"] == 0.3
+    assert config["loss"]["denoise_path_energy_weight"] == 0.5
+    assert config["loss"]["denoise_path_progress_power"] == 1.0
+
+    runbook = (
+        ROOT
+        / "artifacts/runbooks/generation_rank_recovery_target_energy_probe_2026-07-20.sh"
+    ).read_text(encoding="utf-8")
+    assert "imagenet256_10pct_rankcomplete_target_energy_k8_probe5k_v4" in runbook
+    assert "--candidate \"target_energy=$RUN\"" in runbook
+    assert "for timestep in 50 250 750 950" in runbook
+    assert "--weights ema" in runbook
+    assert "--weights model" in runbook
+    assert "--num-samples 512" in runbook
+    assert "--sample-steps 50" in runbook
+
+
 def test_posthoc_waiter_is_revision_locked_and_waits_for_training_exit() -> None:
     source = (
         ROOT

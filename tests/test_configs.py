@@ -37,6 +37,7 @@ def test_load_config_with_optimization_defaults(tmp_path) -> None:
     assert config.loss.epsilon_band_component_weight == 0.0
     assert config.loss.denoise_path_prefix_weight == 0.0
     assert config.loss.denoise_path_component_weight == 0.0
+    assert config.loss.denoise_path_energy_weight == 0.0
     assert config.loss.denoise_path_progress_power == 1.0
     assert config.loss.tail_early_dropout_weight == 0.0
     assert config.loss.tail_early_dropout_prob == 0.0
@@ -107,6 +108,7 @@ def test_load_config_with_optimization_overrides(tmp_path) -> None:
                     "epsilon_band_component_weight": 0.75,
                     "denoise_path_prefix_weight": 0.2,
                     "denoise_path_component_weight": 0.6,
+                    "denoise_path_energy_weight": 0.4,
                     "denoise_path_progress_power": 1.5,
                     "tail_early_dropout_weight": 0.25,
                     "tail_early_dropout_prob": 0.5,
@@ -152,6 +154,7 @@ def test_load_config_with_optimization_overrides(tmp_path) -> None:
     assert config.loss.epsilon_band_component_weight == 0.75
     assert config.loss.denoise_path_prefix_weight == 0.2
     assert config.loss.denoise_path_component_weight == 0.6
+    assert config.loss.denoise_path_energy_weight == 0.4
     assert config.loss.denoise_path_progress_power == 1.5
     assert config.loss.tail_early_dropout_weight == 0.25
     assert config.loss.tail_early_dropout_prob == 0.5

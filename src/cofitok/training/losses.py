@@ -30,6 +30,7 @@ class LossBreakdown:
     epsilon_band_component: torch.Tensor
     denoise_path_prefix: torch.Tensor
     denoise_path_component: torch.Tensor
+    denoise_path_energy: torch.Tensor
 
     def as_dict(self) -> dict[str, torch.Tensor]:
         return {
@@ -50,6 +51,7 @@ class LossBreakdown:
             "epsilon_band_component": self.epsilon_band_component.detach(),
             "denoise_path_prefix": self.denoise_path_prefix.detach(),
             "denoise_path_component": self.denoise_path_component.detach(),
+            "denoise_path_energy": self.denoise_path_energy.detach(),
         }
 
 
@@ -148,15 +150,21 @@ def _energy_budget_loss(
         target_tensor = target_tensor / target_tensor.sum().clamp_min(1e-12)
         return F.mse_loss(ratios, target_tensor)
     if scope == "sample":
-        energies = torch.stack(
-            [component.float().square().flatten(1).mean(dim=1) for component in output.components],
-            dim=1,
-        )
-        ratios = energies / energies.sum(dim=1, keepdim=True).clamp_min(1e-12)
+        ratios = _per_sample_component_energy_ratios(output.components)
         target_tensor = torch.tensor(target, dtype=ratios.dtype, device=ratios.device)
         target_tensor = target_tensor / target_tensor.sum().clamp_min(1e-12)
         return F.mse_loss(ratios, target_tensor.unsqueeze(0).expand_as(ratios))
     raise ValueError(f"Unknown energy budget scope: {scope}")
+
+
+def _per_sample_component_energy_ratios(
+    components: list[torch.Tensor],
+) -> torch.Tensor:
+    energies = torch.stack(
+        [component.float().square().flatten(1).mean(dim=1) for component in components],
+        dim=1,
+    )
+    return energies / energies.sum(dim=1, keepdim=True).clamp_min(1e-12)
 
 
 def _component_energy_ratios(output: CoFiTokOutput) -> torch.Tensor:
@@ -339,7 +347,7 @@ def _denoise_path_losses(
     clean_images: torch.Tensor,
     timesteps: torch.Tensor,
     progress_power: float,
-) -> tuple[torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     # The denoise path starts at epsilon=0 and is linear in x0. Construct
     # targets directly in epsilon space to avoid catastrophic cancellation at
     # the near-zero terminal alpha of cosine schedules.
@@ -357,10 +365,21 @@ def _denoise_path_losses(
     ]
     previous_target = torch.zeros_like(target_prefix_epsilons[0])
     component_losses = []
+    target_components = []
     for component, target_prefix in zip(output.components, target_prefix_epsilons):
-        component_losses.append(F.mse_loss(component, target_prefix - previous_target))
+        target_component = target_prefix - previous_target
+        target_components.append(target_component)
+        component_losses.append(F.mse_loss(component, target_component))
         previous_target = target_prefix
-    return torch.stack(prefix_losses).mean(), torch.stack(component_losses).mean()
+    energy_loss = F.mse_loss(
+        _per_sample_component_energy_ratios(output.components),
+        _per_sample_component_energy_ratios(target_components),
+    )
+    return (
+        torch.stack(prefix_losses).mean(),
+        torch.stack(component_losses).mean(),
+        energy_loss,
+    )
 
 
 def compute_losses(
@@ -450,8 +469,16 @@ def compute_losses(
     else:
         epsilon_band_prefix_loss = output.epsilon.new_zeros(())
         epsilon_band_component_loss = output.epsilon.new_zeros(())
-    if config.denoise_path_prefix_weight > 0.0 or config.denoise_path_component_weight > 0.0:
-        denoise_path_prefix_loss, denoise_path_component_loss = _denoise_path_losses(
+    if (
+        config.denoise_path_prefix_weight > 0.0
+        or config.denoise_path_component_weight > 0.0
+        or config.denoise_path_energy_weight > 0.0
+    ):
+        (
+            denoise_path_prefix_loss,
+            denoise_path_component_loss,
+            denoise_path_energy_loss,
+        ) = _denoise_path_losses(
             output,
             schedule,
             noisy_images,
@@ -462,6 +489,7 @@ def compute_losses(
     else:
         denoise_path_prefix_loss = output.epsilon.new_zeros(())
         denoise_path_component_loss = output.epsilon.new_zeros(())
+        denoise_path_energy_loss = output.epsilon.new_zeros(())
     total = (
         config.epsilon_weight * epsilon_loss
         + config.prefix_weight * prefix_loss
@@ -478,6 +506,7 @@ def compute_losses(
         + config.epsilon_band_component_weight * epsilon_band_component_loss
         + config.denoise_path_prefix_weight * denoise_path_prefix_loss
         + config.denoise_path_component_weight * denoise_path_component_loss
+        + config.denoise_path_energy_weight * denoise_path_energy_loss
     )
     return LossBreakdown(
         total=total,
@@ -497,4 +526,5 @@ def compute_losses(
         epsilon_band_component=epsilon_band_component_loss,
         denoise_path_prefix=denoise_path_prefix_loss,
         denoise_path_component=denoise_path_component_loss,
+        denoise_path_energy=denoise_path_energy_loss,
     )
