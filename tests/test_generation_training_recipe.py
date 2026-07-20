@@ -62,6 +62,11 @@ def test_rank_recovery_probes_explicitly_disable_legacy_loss_defaults() -> None:
             "denoise_path_prefix_weight": 0.05,
             "denoise_path_component_weight": 0.1,
         },
+        "imagenet256_10pct_rankcomplete_capacity_path_hellinger_k8_probe5k.json": {
+            "denoise_path_prefix_weight": 0.05,
+            "denoise_path_component_weight": 0.1,
+            "denoise_path_energy_weight": 0.1,
+        },
     }
     for name, expected in expected_objectives.items():
         raw = json.loads((ROOT / "configs/generation" / name).read_text(encoding="utf-8"))
@@ -80,6 +85,29 @@ def test_rank_recovery_probes_explicitly_disable_legacy_loss_defaults() -> None:
         assert nonzero_weights == {"epsilon_weight": 1.0, **expected}
         if "capacity_path" in name:
             assert loss["denoise_path_progress_mode"] == "token_capacity"
+        if "hellinger" in name:
+            assert loss["denoise_path_energy_mode"] == "hellinger"
+
+
+def test_hellinger_probe_only_changes_the_light_probe_energy_objective() -> None:
+    light = json.loads(
+        (
+            ROOT
+            / "configs/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k.json"
+        ).read_text(encoding="utf-8")
+    )
+    hellinger = json.loads(
+        (
+            ROOT
+            / "configs/generation/imagenet256_10pct_rankcomplete_capacity_path_hellinger_k8_probe5k.json"
+        ).read_text(encoding="utf-8")
+    )
+    expected = copy.deepcopy(light)
+    expected["name"] = "imagenet256_10pct_rankcomplete_capacity_path_hellinger_k8_probe5k"
+    expected["loss"]["denoise_path_energy_weight"] = 0.1
+    expected["loss"]["denoise_path_energy_mode"] = "hellinger"
+
+    assert hellinger == expected
 
 
 def test_recipe_allows_selected_runtime_with_same_effective_batch() -> None:

@@ -254,9 +254,19 @@ be represented by the early spatially compressed synthesis subspaces. The v5
 capacity-path probe therefore derives each progress increment from the square
 root of the token's restricted synthesis rank proxy and derives the spatial
 target from its actual token resolution. This mode is opt-in; historical
-`power` targets retain their exact behavior. V5 remains a non-formal 5K probe
-and cannot authorize 50K or 300K. See
-`docs/records/2026-07-20_generation_target_energy_probe_v4_result.md`.
+`power` targets retain their exact behavior.
+
+V5 recovered rank 1 but its heavy objective damaged directional quality. V6
+combined the light v2 weights with capacity progress and recovered both the v2
+endpoint trajectory and rank 1, but assigned only about 0.56% of component
+energy to tokens 1-6 and remained worse than v2 on the 512-image directional
+FID. V7 keeps the v6 protocol fixed and opts into squared Hellinger distance for
+the capacity-target energy distribution. The new distance is more sensitive to
+near-zero component probabilities while the historical default remains MSE.
+V5, v6, and v7 are all non-formal 5K probes and cannot authorize 50K or 300K.
+See `docs/records/2026-07-20_generation_target_energy_probe_v4_result.md`,
+`docs/records/2026-07-20_generation_capacity_path_probe_v5_result.md`, and
+`docs/records/2026-07-21_generation_capacity_path_light_probe_v6_result.md`.
 
 The full queue alternates CoFiTok and dense at 50K, 100K, 200K, and 300K
 milestones. At each matched point it produces 2,048 fixed-protocol EMA samples

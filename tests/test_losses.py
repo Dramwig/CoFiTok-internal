@@ -1,9 +1,14 @@
+import pytest
 import torch
 
 from cofitok.configs import DiffusionConfig, LossConfig
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.models import CoFiTokOutput
-from cofitok.training.losses import compute_losses, denoise_path_schedule
+from cofitok.training.losses import (
+    _component_energy_distribution_loss,
+    compute_losses,
+    denoise_path_schedule,
+)
 
 
 def _fake_output() -> CoFiTokOutput:
@@ -359,3 +364,54 @@ def test_denoise_path_energy_loss_backpropagates_to_every_component() -> None:
     assert losses.denoise_path_energy.item() > 0
     assert all(component.grad is not None for component in components)
     assert all(torch.isfinite(component.grad).all() for component in components)
+
+
+def test_component_energy_distribution_modes_match_and_penalize_collapse() -> None:
+    target = [
+        torch.full((2, 1, 2, 2), 0.2),
+        torch.full((2, 1, 2, 2), 0.4),
+        torch.full((2, 1, 2, 2), 0.8),
+    ]
+    matched = [component.clone() for component in target]
+    collapsed = [
+        torch.full((2, 1, 2, 2), 1e-3),
+        torch.full((2, 1, 2, 2), 1e-3),
+        torch.full((2, 1, 2, 2), 1.0),
+    ]
+
+    assert _component_energy_distribution_loss(matched, target, "mse").item() == 0.0
+    assert _component_energy_distribution_loss(matched, target, "hellinger").item() == 0.0
+    mse = _component_energy_distribution_loss(collapsed, target, "mse")
+    hellinger = _component_energy_distribution_loss(collapsed, target, "hellinger")
+
+    assert torch.isfinite(mse)
+    assert torch.isfinite(hellinger)
+    assert hellinger.item() > mse.item()
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.bfloat16])
+def test_denoise_path_hellinger_energy_backpropagates_finite_gradients(
+    dtype: torch.dtype,
+) -> None:
+    components = [
+        torch.full((2, 3, 8, 8), value, dtype=dtype, requires_grad=True)
+        for value in (1e-3, 0.1, 1.0)
+    ]
+    targets = [
+        torch.full((2, 3, 8, 8), value, dtype=dtype)
+        for value in (0.2, 0.4, 0.8)
+    ]
+
+    loss = _component_energy_distribution_loss(components, targets, "hellinger")
+    loss.backward()
+
+    assert loss.item() > 0.0
+    assert all(component.grad is not None for component in components)
+    assert all(torch.isfinite(component.grad).all() for component in components)
+
+
+def test_unknown_denoise_path_energy_mode_is_rejected() -> None:
+    components = [torch.ones(1, 1, 2, 2), torch.ones(1, 1, 2, 2)]
+
+    with pytest.raises(ValueError, match="Unknown denoise path energy mode"):
+        _component_energy_distribution_loss(components, components, "unknown")

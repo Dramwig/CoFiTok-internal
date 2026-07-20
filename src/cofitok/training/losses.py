@@ -216,6 +216,24 @@ def _per_sample_component_energy_ratios(
     return energies / energies.sum(dim=1, keepdim=True).clamp_min(1e-12)
 
 
+def _component_energy_distribution_loss(
+    components: list[torch.Tensor],
+    target_components: list[torch.Tensor],
+    mode: str,
+) -> torch.Tensor:
+    predicted = _per_sample_component_energy_ratios(components)
+    target = _per_sample_component_energy_ratios(target_components)
+    if mode == "mse":
+        return F.mse_loss(predicted, target)
+    if mode == "hellinger":
+        epsilon = torch.finfo(predicted.dtype).eps
+        distances = (
+            torch.sqrt(predicted + epsilon) - torch.sqrt(target + epsilon)
+        ).square()
+        return 0.5 * distances.sum(dim=1).mean()
+    raise ValueError(f"Unknown denoise path energy mode: {mode}")
+
+
 def _component_energy_ratios(output: CoFiTokOutput) -> torch.Tensor:
     energies = torch.stack([component.pow(2).mean() for component in output.components])
     return energies / energies.sum().clamp_min(1e-12)
@@ -422,6 +440,7 @@ def _denoise_path_losses(
     timesteps: torch.Tensor,
     progress_power: float,
     progress_mode: str,
+    energy_mode: str,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     # The denoise path starts at epsilon=0 and is linear in x0. Construct
     # targets directly in epsilon space to avoid catastrophic cancellation at
@@ -448,9 +467,10 @@ def _denoise_path_losses(
         target_components.append(target_component)
         component_losses.append(F.mse_loss(component, target_component))
         previous_target = target_prefix
-    energy_loss = F.mse_loss(
-        _per_sample_component_energy_ratios(output.components),
-        _per_sample_component_energy_ratios(target_components),
+    energy_loss = _component_energy_distribution_loss(
+        output.components,
+        target_components,
+        energy_mode,
     )
     return (
         torch.stack(prefix_losses).mean(),
@@ -563,6 +583,7 @@ def compute_losses(
             timesteps,
             progress_power=config.denoise_path_progress_power,
             progress_mode=config.denoise_path_progress_mode,
+            energy_mode=config.denoise_path_energy_mode,
         )
     else:
         denoise_path_prefix_loss = output.epsilon.new_zeros(())

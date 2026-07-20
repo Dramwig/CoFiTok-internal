@@ -196,6 +196,38 @@ def test_capacity_path_probe_matches_targets_to_restricted_token_layout() -> Non
     assert "--sample-steps 50" in runbook
 
 
+def test_hellinger_capacity_path_probe_is_nonformal_and_matches_v6_protocol() -> None:
+    config = json.loads(
+        (
+            ROOT
+            / "configs/generation/"
+            "imagenet256_10pct_rankcomplete_capacity_path_hellinger_k8_probe5k.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert config["model"]["token_channel_schedule"] == [4, 4, 8, 8, 8, 8, 1, 2]
+    assert config["model"]["token_spatial_strides"] == [16, 16, 8, 8, 4, 4, 1, 1]
+    assert config["loss"]["denoise_path_progress_mode"] == "token_capacity"
+    assert config["loss"]["denoise_path_energy_weight"] == 0.1
+    assert config["loss"]["denoise_path_energy_mode"] == "hellinger"
+
+    runbook = (
+        ROOT
+        / "artifacts/runbooks/"
+        "generation_rank_recovery_capacity_path_hellinger_probe_2026-07-21.sh"
+    ).read_text(encoding="utf-8")
+    assert "imagenet256_10pct_rankcomplete_capacity_path_hellinger_k8_probe5k_v7" in runbook
+    assert "--candidate \"capacity_path_light=$LIGHT_REFERENCE\"" in runbook
+    assert "--candidate \"capacity_path_hellinger=$RUN\"" in runbook
+    assert "for timestep in 50 250 750 950" in runbook
+    assert "--weights ema" in runbook
+    assert "--weights model" in runbook
+    assert "--num-samples 512" in runbook
+    assert "--sample-steps 50" in runbook
+    assert "50K" not in runbook
+    assert "300K" not in runbook
+
+
 def test_posthoc_waiter_is_revision_locked_and_waits_for_training_exit() -> None:
     source = (
         ROOT
