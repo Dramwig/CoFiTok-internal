@@ -22,6 +22,7 @@ def test_load_config_with_optimization_defaults(tmp_path) -> None:
     assert config.runtime.cudnn_benchmark is False
     assert config.loss.energy_budget_weight == 0.0
     assert config.loss.energy_target == []
+    assert config.loss.energy_budget_scope == "batch"
     assert config.loss.residual_component_weight == 0.0
     assert config.loss.component_decorrelation_weight == 0.0
     assert config.loss.component_decorrelation_start_step == 0
@@ -91,6 +92,7 @@ def test_load_config_with_optimization_overrides(tmp_path) -> None:
                 "loss": {
                     "energy_budget_weight": 2.0,
                     "energy_target": [0.5, 0.25, 0.15, 0.1],
+                    "energy_budget_scope": "sample",
                     "residual_component_weight": 0.1,
                     "component_decorrelation_weight": 0.2,
                     "component_decorrelation_start_step": 100,
@@ -135,6 +137,7 @@ def test_load_config_with_optimization_overrides(tmp_path) -> None:
     assert config.model.deep_synthesis_depth == 4
     assert config.loss.energy_budget_weight == 2.0
     assert config.loss.energy_target == [0.5, 0.25, 0.15, 0.1]
+    assert config.loss.energy_budget_scope == "sample"
     assert config.loss.residual_component_weight == 0.1
     assert config.loss.component_decorrelation_weight == 0.2
     assert config.loss.component_decorrelation_start_step == 100

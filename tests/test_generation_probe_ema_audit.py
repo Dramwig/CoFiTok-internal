@@ -124,6 +124,19 @@ def test_equal_progress_probe_targets_balanced_component_work() -> None:
     assert "--sample-steps 50" in runbook
 
 
+def test_timestep_diagnostic_covers_fixed_schedule_without_training() -> None:
+    runbook = (
+        ROOT
+        / "artifacts/runbooks/generation_rank_recovery_timestep_diagnostic_2026-07-20.sh"
+    ).read_text(encoding="utf-8")
+
+    assert "for timestep in 50 250 500 750 950" in runbook
+    assert "--num-images 256" in runbook
+    assert "--random-orders 16" in runbook
+    assert "checkpoint_eval_ema_t${timestep}_256_energy_scope" in runbook
+    assert "train_generation.py \\" not in runbook
+
+
 def test_posthoc_waiter_is_revision_locked_and_waits_for_training_exit() -> None:
     source = (
         ROOT

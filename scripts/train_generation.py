@@ -120,6 +120,8 @@ def _validate_config(config: ExperimentConfig) -> None:
             )
         if any(not math.isfinite(value) or value <= 0.0 for value in target):
             raise ValueError("energy_target values must be finite and positive")
+        if config.loss.energy_budget_scope not in {"batch", "sample"}:
+            raise ValueError("energy_budget_scope must be batch or sample")
     protected_steps = config.runtime.protected_checkpoint_steps
     if protected_steps != sorted(set(protected_steps)):
         raise ValueError("protected_checkpoint_steps must be sorted and unique")

@@ -68,6 +68,7 @@ class LossConfig:
     zero_token_weight: float = 0.01
     energy_budget_weight: float = 0.0
     energy_target: list[float] = field(default_factory=list)
+    energy_budget_scope: str = "batch"
     residual_component_weight: float = 0.0
     component_decorrelation_weight: float = 0.0
     component_decorrelation_start_step: int = 0

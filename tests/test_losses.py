@@ -59,6 +59,54 @@ def test_energy_budget_loss_is_reported_when_target_is_set() -> None:
     assert "energy_budget" in losses.as_dict()
 
 
+def test_sample_energy_budget_cannot_be_satisfied_by_batch_complementarity() -> None:
+    first = torch.stack([torch.ones(3, 4, 4), torch.zeros(3, 4, 4)])
+    second = torch.stack([torch.zeros(3, 4, 4), torch.ones(3, 4, 4)])
+    output = CoFiTokOutput(
+        tokens=[torch.zeros(2, 1, 4, 4), torch.zeros(2, 1, 4, 4)],
+        components=[first, second],
+        prefix_epsilons=[first, first + second],
+        epsilon=first + second,
+    )
+    schedule = DiffusionSchedule(DiffusionConfig(num_train_timesteps=10), device="cpu")
+    clean = torch.zeros(2, 3, 4, 4)
+    noise = torch.zeros_like(clean)
+    timesteps = torch.tensor([1, 2])
+    noisy = schedule.add_noise(clean, noise, timesteps)
+
+    batch_loss = compute_losses(
+        LossConfig(
+            epsilon_weight=0.0,
+            energy_budget_weight=1.0,
+            energy_target=[1.0, 1.0],
+            energy_budget_scope="batch",
+        ),
+        output,
+        schedule,
+        noisy,
+        clean,
+        noise,
+        timesteps,
+    )
+    sample_loss = compute_losses(
+        LossConfig(
+            epsilon_weight=0.0,
+            energy_budget_weight=1.0,
+            energy_target=[1.0, 1.0],
+            energy_budget_scope="sample",
+        ),
+        output,
+        schedule,
+        noisy,
+        clean,
+        noise,
+        timesteps,
+    )
+
+    assert batch_loss.energy_budget.item() == 0.0
+    assert sample_loss.energy_budget.item() == 0.25
+
+
 def test_residual_component_loss_is_reported_when_enabled() -> None:
     output = _fake_output()
     schedule = DiffusionSchedule(DiffusionConfig(num_train_timesteps=10), device="cpu")

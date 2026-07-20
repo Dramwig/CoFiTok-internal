@@ -21,6 +21,7 @@ from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
 from cofitok.training.checkpointing import checkpoint_integrity_path
 from scripts.evaluate_generation_checkpoint import (
+    component_energy_statistics,
     component_orders,
     prefix_tensors,
     spatial_prefix_targets,
@@ -93,6 +94,16 @@ def test_prefix_tensors_respect_requested_order() -> None:
     assert [float(value) for value in prefixes] == [4.0, 5.0, 7.0]
 
 
+def test_component_energy_statistics_preserve_per_sample_collapse() -> None:
+    first = torch.stack([torch.ones(1, 2, 2), torch.zeros(1, 2, 2)])
+    second = torch.stack([torch.zeros(1, 2, 2), torch.ones(1, 2, 2)])
+
+    statistics = component_energy_statistics([first, second])
+
+    assert torch.equal(statistics["ratios"], torch.tensor([[1.0, 0.0], [0.0, 1.0]]))
+    assert torch.equal(statistics["uniform_mse"], torch.tensor([0.25, 0.25]))
+
+
 def test_spatial_prefix_targets_end_at_clean_image() -> None:
     clean = torch.randn(2, 3, 16, 16)
 
@@ -149,3 +160,7 @@ def test_checkpoint_evaluator_cli_records_git_provenance(tmp_path) -> None:
     assert report["status"] == "completed"
     assert report["git"]["revision"] == revision
     assert isinstance(report["git"]["tracked_dirty"], bool)
+    assert len(report["metrics"]["component_energy_ratio"]) == 2
+    assert len(report["metrics"]["target_component_energy_ratio"]) == 2
+    assert report["metrics"]["component_energy_uniform_mse_per_sample_mean"] >= 0.0
+    assert report["metrics"]["target_component_energy_uniform_mse_per_sample_mean"] >= 0.0

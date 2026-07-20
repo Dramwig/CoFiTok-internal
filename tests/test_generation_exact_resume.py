@@ -166,6 +166,22 @@ def test_training_rejects_invalid_enabled_energy_target(target: list[float]) -> 
         _validate_config(invalid)
 
 
+def test_training_rejects_invalid_enabled_energy_scope() -> None:
+    config = load_config(CONFIG)
+    invalid = replace(
+        config,
+        loss=replace(
+            config.loss,
+            energy_budget_weight=0.5,
+            energy_target=[1.0] * config.model.token_count,
+            energy_budget_scope="timestep",
+        ),
+    )
+
+    with pytest.raises(ValueError, match="energy_budget_scope"):
+        _validate_config(invalid)
+
+
 @pytest.mark.parametrize(
     ("override", "mismatch_path"),
     [

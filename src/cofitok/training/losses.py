@@ -135,16 +135,28 @@ def _monotonic_loss(
 def _energy_budget_loss(
     output: CoFiTokOutput,
     target: list[float],
+    scope: str,
 ) -> torch.Tensor:
     if not target:
         return output.epsilon.new_zeros(())
     if len(target) != len(output.components):
         raise ValueError(f"Energy target has {len(target)} entries for {len(output.components)} components")
-    energies = torch.stack([component.pow(2).mean() for component in output.components])
-    ratios = energies / energies.sum().clamp_min(1e-12)
-    target_tensor = torch.tensor(target, dtype=ratios.dtype, device=ratios.device)
-    target_tensor = target_tensor / target_tensor.sum().clamp_min(1e-12)
-    return F.mse_loss(ratios, target_tensor)
+    if scope == "batch":
+        energies = torch.stack([component.pow(2).mean() for component in output.components])
+        ratios = energies / energies.sum().clamp_min(1e-12)
+        target_tensor = torch.tensor(target, dtype=ratios.dtype, device=ratios.device)
+        target_tensor = target_tensor / target_tensor.sum().clamp_min(1e-12)
+        return F.mse_loss(ratios, target_tensor)
+    if scope == "sample":
+        energies = torch.stack(
+            [component.float().square().flatten(1).mean(dim=1) for component in output.components],
+            dim=1,
+        )
+        ratios = energies / energies.sum(dim=1, keepdim=True).clamp_min(1e-12)
+        target_tensor = torch.tensor(target, dtype=ratios.dtype, device=ratios.device)
+        target_tensor = target_tensor / target_tensor.sum().clamp_min(1e-12)
+        return F.mse_loss(ratios, target_tensor.unsqueeze(0).expand_as(ratios))
+    raise ValueError(f"Unknown energy budget scope: {scope}")
 
 
 def _component_energy_ratios(output: CoFiTokOutput) -> torch.Tensor:
@@ -298,6 +310,28 @@ def _denoise_path_prefix_targets(
     return targets
 
 
+def denoise_path_prefix_epsilon_targets(
+    schedule: DiffusionSchedule,
+    noisy_images: torch.Tensor,
+    clean_images: torch.Tensor,
+    timesteps: torch.Tensor,
+    count: int,
+    progress_power: float,
+) -> list[torch.Tensor]:
+    spatial_targets = _prefix_targets(clean_images, count)
+    power = max(progress_power, 1e-6)
+    return [
+        ((index + 1) / count) ** power
+        * _target_prefix_epsilon(
+            schedule,
+            noisy_images,
+            spatial_target,
+            timesteps,
+        )
+        for index, spatial_target in enumerate(spatial_targets)
+    ]
+
+
 def _denoise_path_losses(
     output: CoFiTokOutput,
     schedule: DiffusionSchedule,
@@ -306,22 +340,17 @@ def _denoise_path_losses(
     timesteps: torch.Tensor,
     progress_power: float,
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    spatial_targets = _prefix_targets(clean_images, len(output.prefix_epsilons))
-    power = max(progress_power, 1e-6)
     # The denoise path starts at epsilon=0 and is linear in x0. Construct
     # targets directly in epsilon space to avoid catastrophic cancellation at
     # the near-zero terminal alpha of cosine schedules.
-    target_prefix_epsilons = []
-    for index, spatial_target in enumerate(spatial_targets):
-        progress = ((index + 1) / len(spatial_targets)) ** power
-        target_prefix_epsilons.append(
-            progress * _target_prefix_epsilon(
-                schedule,
-                noisy_images,
-                spatial_target,
-                timesteps,
-            )
-        )
+    target_prefix_epsilons = denoise_path_prefix_epsilon_targets(
+        schedule,
+        noisy_images,
+        clean_images,
+        timesteps,
+        len(output.prefix_epsilons),
+        progress_power,
+    )
     prefix_losses = [
         F.mse_loss(prefix_epsilon, target_prefix)
         for prefix_epsilon, target_prefix in zip(output.prefix_epsilons, target_prefix_epsilons)
@@ -365,7 +394,11 @@ def compute_losses(
     else:
         zero_token_loss = output.epsilon.new_zeros(())
     if config.energy_budget_weight > 0.0:
-        energy_budget_loss = _energy_budget_loss(output, config.energy_target)
+        energy_budget_loss = _energy_budget_loss(
+            output,
+            config.energy_target,
+            config.energy_budget_scope,
+        )
     else:
         energy_budget_loss = output.epsilon.new_zeros(())
     if config.component_decorrelation_weight > 0.0:

@@ -14,6 +14,7 @@ from cofitok.generation import load_generation_model
 from cofitok.metrics import normalized_curve_auc
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import git_provenance, write_json_report
+from cofitok.training.losses import denoise_path_prefix_epsilon_targets
 from cofitok.training.runtime import autocast_context
 
 
@@ -63,6 +64,20 @@ def prefix_tensors(components: list[torch.Tensor], order: list[int]) -> list[tor
         running = running + components[index]
         prefixes.append(running)
     return prefixes
+
+
+def component_energy_statistics(components: list[torch.Tensor]) -> dict[str, torch.Tensor]:
+    energies = torch.stack(
+        [component.float().square().flatten(1).mean(dim=1) for component in components],
+        dim=1,
+    )
+    ratios = energies / energies.sum(dim=1, keepdim=True).clamp_min(1e-12)
+    uniform = torch.full_like(ratios, 1.0 / ratios.shape[1])
+    return {
+        "energies": energies,
+        "ratios": ratios,
+        "uniform_mse": (ratios - uniform).square().mean(dim=1),
+    }
 
 
 def spatial_prefix_targets(clean: torch.Tensor, count: int) -> list[torch.Tensor]:
@@ -145,6 +160,11 @@ def evaluate(
     clean_sums = {name: [0.0] * token_count for name in orders}
     path_sums = {name: [0.0] * token_count for name in orders}
     component_energy_sums = [0.0] * token_count
+    component_ratio_sums = [0.0] * token_count
+    component_uniform_mse_sum = 0.0
+    target_component_energy_sums = [0.0] * token_count
+    target_component_ratio_sums = [0.0] * token_count
+    target_component_uniform_mse_sum = 0.0
     random_energy_sums = [0.0] * token_count
     shuffled_endpoint_sum = 0.0
     zero_max_abs = 0.0
@@ -172,8 +192,34 @@ def evaluate(
             token_count,
             progress_power,
         )
+        target_prefix_epsilons = denoise_path_prefix_epsilon_targets(
+            schedule,
+            noisy,
+            clean,
+            timesteps,
+            token_count,
+            progress_power,
+        )
+        target_components = []
+        previous_target = torch.zeros_like(target_prefix_epsilons[0])
+        for target_prefix in target_prefix_epsilons:
+            target_components.append(target_prefix - previous_target)
+            previous_target = target_prefix
+
         for index, component in enumerate(output.components):
             component_energy_sums[index] += float(component.float().square().mean()) * batch_size
+        component_statistics = component_energy_statistics(output.components)
+        target_statistics = component_energy_statistics(target_components)
+        for index in range(token_count):
+            component_ratio_sums[index] += float(component_statistics["ratios"][:, index].sum())
+            target_component_energy_sums[index] += float(
+                target_statistics["energies"][:, index].sum()
+            )
+            target_component_ratio_sums[index] += float(
+                target_statistics["ratios"][:, index].sum()
+            )
+        component_uniform_mse_sum += float(component_statistics["uniform_mse"].sum())
+        target_component_uniform_mse_sum += float(target_statistics["uniform_mse"].sum())
 
         random_tokens = [
             torch.randn(token.shape, device=device, generator=generator, dtype=token.dtype)
@@ -228,6 +274,10 @@ def evaluate(
         }
     ranked = sorted(order_metrics, key=lambda name: order_metrics[name]["prefix_path_mse_auc"])
     ordered_endpoint = order_metrics["ordered"]["endpoint_clean_mse"]
+    component_energy = [value / count for value in component_energy_sums]
+    target_component_energy = [value / count for value in target_component_energy_sums]
+    component_energy_total = max(sum(component_energy), 1e-12)
+    target_component_energy_total = max(sum(target_component_energy), 1e-12)
     return {
         "evaluated_images": count,
         "timestep": timestep,
@@ -235,7 +285,20 @@ def evaluate(
         "ordered_rank_by_path_auc": ranked.index("ordered") + 1,
         "order_count": len(ranked),
         "ranked_orders_by_path_auc": ranked,
-        "component_energy": [value / count for value in component_energy_sums],
+        "component_energy": component_energy,
+        "component_energy_ratio": [value / component_energy_total for value in component_energy],
+        "component_energy_ratio_per_sample_mean": [value / count for value in component_ratio_sums],
+        "component_energy_uniform_mse_per_sample_mean": component_uniform_mse_sum / count,
+        "target_component_energy": target_component_energy,
+        "target_component_energy_ratio": [
+            value / target_component_energy_total for value in target_component_energy
+        ],
+        "target_component_energy_ratio_per_sample_mean": [
+            value / count for value in target_component_ratio_sums
+        ],
+        "target_component_energy_uniform_mse_per_sample_mean": (
+            target_component_uniform_mse_sum / count
+        ),
         "random_token_component_energy": [value / count for value in random_energy_sums],
         "zero_token_max_abs": zero_max_abs,
         "shuffled_endpoint_clean_mse": shuffled_endpoint_sum / count,
