@@ -194,6 +194,12 @@ def _validate_scientific_gate_evidence(
         if left_value != right_value:
             raise ValueError(f"generation gate {name} evidence differs from its summary")
 
+    def require_close(name: str, left: Any, right: Any) -> None:
+        left_value = _finite_number(left, name=name)
+        right_value = _finite_number(right, name=name)
+        if not math.isclose(left_value, right_value, rel_tol=0.0, abs_tol=1e-12):
+            raise ValueError(f"generation gate {name} evidence differs from its summary")
+
     fid = evidence("fid_within_tolerance")
     require_same("cofitok_fid", fid.get("cofitok_fid"), summary.get("cofitok_fid"))
     require_same("dense_fid", fid.get("dense_fid"), summary.get("dense_fid"))
@@ -252,12 +258,12 @@ def _validate_scientific_gate_evidence(
     ):
         raise ValueError("generation gate component-energy ratios are not normalized")
     coarse_ratio = sum(ratios[:coarse_token_count])
-    require_same(
+    require_close(
         "coarse_token_energy_ratio",
         utilization.get("coarse_token_energy_ratio"),
         coarse_ratio,
     )
-    require_same(
+    require_close(
         "summary coarse_token_energy_ratio",
         summary.get("coarse_token_energy_ratio"),
         coarse_ratio,

@@ -201,6 +201,23 @@ def test_scaling_gate_rejects_collapsed_coarse_token_evidence() -> None:
         validate_generation_gate_authorization(gate, expected_stage="scaling")
 
 
+def test_scaling_gate_accepts_roundoff_in_derived_coarse_energy_sum() -> None:
+    gate = _gate()
+    row = next(
+        item for item in gate["gates"] if item["name"] == "coarse_token_utilization"
+    )
+    derived = sum(row["evidence"]["component_energy_ratios"][:6])
+    reported = derived + 1e-15
+    row["evidence"]["coarse_token_energy_ratio"] = reported
+    gate["summary"]["coarse_token_energy_ratio"] = reported
+
+    validate_generation_gate_authorization(gate, expected_stage="scaling")
+
+    row["evidence"]["coarse_token_energy_ratio"] = derived + 1e-9
+    with pytest.raises(ValueError, match="differs from its summary"):
+        validate_generation_gate_authorization(gate, expected_stage="scaling")
+
+
 def test_full_gate_rejects_weakened_precision_floor() -> None:
     gate = copy.deepcopy(_gate("full"))
     gate["thresholds"]["min_precision"] = 0.29
