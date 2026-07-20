@@ -39,6 +39,7 @@ def test_load_config_with_optimization_defaults(tmp_path) -> None:
     assert config.loss.denoise_path_component_weight == 0.0
     assert config.loss.denoise_path_energy_weight == 0.0
     assert config.loss.denoise_path_progress_power == 1.0
+    assert config.loss.denoise_path_progress_mode == "power"
     assert config.loss.tail_early_dropout_weight == 0.0
     assert config.loss.tail_early_dropout_prob == 0.0
     assert config.loss.tail_early_dropout_start == 1
@@ -110,6 +111,7 @@ def test_load_config_with_optimization_overrides(tmp_path) -> None:
                     "denoise_path_component_weight": 0.6,
                     "denoise_path_energy_weight": 0.4,
                     "denoise_path_progress_power": 1.5,
+                    "denoise_path_progress_mode": "token_capacity",
                     "tail_early_dropout_weight": 0.25,
                     "tail_early_dropout_prob": 0.5,
                     "tail_early_dropout_start": 1,
@@ -156,6 +158,7 @@ def test_load_config_with_optimization_overrides(tmp_path) -> None:
     assert config.loss.denoise_path_component_weight == 0.6
     assert config.loss.denoise_path_energy_weight == 0.4
     assert config.loss.denoise_path_progress_power == 1.5
+    assert config.loss.denoise_path_progress_mode == "token_capacity"
     assert config.loss.tail_early_dropout_weight == 0.25
     assert config.loss.tail_early_dropout_prob == 0.5
     assert config.loss.tail_early_dropout_start == 1

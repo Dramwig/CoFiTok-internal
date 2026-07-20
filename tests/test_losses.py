@@ -3,7 +3,7 @@ import torch
 from cofitok.configs import DiffusionConfig, LossConfig
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.models import CoFiTokOutput
-from cofitok.training.losses import compute_losses
+from cofitok.training.losses import compute_losses, denoise_path_schedule
 
 
 def _fake_output() -> CoFiTokOutput:
@@ -35,6 +35,26 @@ def _fake_output_with_count(count: int, shape: tuple[int, int] = (32, 32)) -> Co
         prefix_epsilons=prefix_epsilons,
         epsilon=prefix_epsilons[-1],
     )
+
+
+def test_token_capacity_denoise_path_schedule_uses_actual_token_layout() -> None:
+    clean = torch.randn(2, 3, 16, 16)
+    tokens = [
+        torch.zeros(2, 1, 4, 4),
+        torch.zeros(2, 1, 16, 16),
+    ]
+
+    spatial_targets, progress = denoise_path_schedule(
+        clean,
+        tokens,
+        progress_power=99.0,
+        progress_mode="token_capacity",
+    )
+
+    assert progress == [0.2, 1.0]
+    assert spatial_targets[0].shape == clean.shape
+    assert not torch.equal(spatial_targets[0], clean)
+    assert torch.equal(spatial_targets[-1], clean)
 
 
 def test_energy_budget_loss_is_reported_when_target_is_set() -> None:

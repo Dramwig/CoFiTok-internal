@@ -14,7 +14,10 @@ from cofitok.generation import load_generation_model
 from cofitok.metrics import normalized_curve_auc
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import git_provenance, write_json_report
-from cofitok.training.losses import denoise_path_prefix_epsilon_targets
+from cofitok.training.losses import (
+    denoise_path_prefix_epsilon_targets,
+    denoise_path_prefix_x0_targets,
+)
 from cofitok.training.runtime import autocast_context
 
 
@@ -112,13 +115,19 @@ def denoise_path_targets(
     timesteps: torch.Tensor,
     count: int,
     progress_power: float,
+    tokens: list[torch.Tensor] | None = None,
+    progress_mode: str = "power",
 ) -> list[torch.Tensor]:
-    start = schedule.predict_x0_from_epsilon(noisy, torch.zeros_like(noisy), timesteps)
-    targets = []
-    for index, spatial in enumerate(spatial_prefix_targets(clean, count)):
-        progress = ((index + 1) / count) ** max(progress_power, 1e-6)
-        targets.append(torch.lerp(start, spatial, progress))
-    return targets
+    return denoise_path_prefix_x0_targets(
+        schedule,
+        noisy,
+        clean,
+        timesteps,
+        count,
+        progress_power,
+        tokens=tokens,
+        progress_mode=progress_mode,
+    )
 
 
 def _batch(batch: object, device: torch.device, class_conditional: bool):
@@ -150,6 +159,7 @@ def evaluate(
     timestep: int,
     orders: dict[str, list[int]],
     progress_power: float,
+    progress_mode: str,
     class_conditional: bool,
     device: torch.device,
     precision: str,
@@ -191,6 +201,8 @@ def evaluate(
             timesteps,
             token_count,
             progress_power,
+            tokens=output.tokens,
+            progress_mode=progress_mode,
         )
         target_prefix_epsilons = denoise_path_prefix_epsilon_targets(
             schedule,
@@ -199,6 +211,8 @@ def evaluate(
             timesteps,
             token_count,
             progress_power,
+            tokens=output.tokens,
+            progress_mode=progress_mode,
         )
         target_components = []
         previous_target = torch.zeros_like(target_prefix_epsilons[0])
@@ -331,6 +345,7 @@ def main() -> None:
         timestep=args.timestep,
         orders=orders,
         progress_power=config.loss.denoise_path_progress_power,
+        progress_mode=config.loss.denoise_path_progress_mode,
         class_conditional=config.data.class_conditional,
         device=device,
         precision=args.precision,

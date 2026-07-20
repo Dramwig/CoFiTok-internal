@@ -168,6 +168,34 @@ def test_target_energy_probe_matches_path_energy_per_sample() -> None:
     assert "--sample-steps 50" in runbook
 
 
+def test_capacity_path_probe_matches_targets_to_restricted_token_layout() -> None:
+    config = json.loads(
+        (
+            ROOT
+            / "configs/generation/"
+            "imagenet256_10pct_rankcomplete_capacity_path_k8_probe5k.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert config["model"]["token_channel_schedule"] == [4, 4, 8, 8, 8, 8, 1, 2]
+    assert config["model"]["token_spatial_strides"] == [16, 16, 8, 8, 4, 4, 1, 1]
+    assert config["loss"]["denoise_path_progress_mode"] == "token_capacity"
+    assert config["loss"]["denoise_path_energy_weight"] == 0.5
+
+    runbook = (
+        ROOT
+        / "artifacts/runbooks/"
+        "generation_rank_recovery_capacity_path_probe_2026-07-20.sh"
+    ).read_text(encoding="utf-8")
+    assert "imagenet256_10pct_rankcomplete_capacity_path_k8_probe5k_v5" in runbook
+    assert "--candidate \"capacity_path=$RUN\"" in runbook
+    assert "for timestep in 50 250 750 950" in runbook
+    assert "--weights ema" in runbook
+    assert "--weights model" in runbook
+    assert "--num-samples 512" in runbook
+    assert "--sample-steps 50" in runbook
+
+
 def test_posthoc_waiter_is_revision_locked_and_waits_for_training_exit() -> None:
     source = (
         ROOT

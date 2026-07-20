@@ -94,6 +94,55 @@ def _lowpass_like(tensor: torch.Tensor, scale: int) -> torch.Tensor:
     return F.interpolate(pooled, size=tensor.shape[-2:], mode="bilinear", align_corners=False)
 
 
+def denoise_path_schedule(
+    clean_images: torch.Tensor,
+    tokens: list[torch.Tensor],
+    progress_power: float,
+    progress_mode: str,
+) -> tuple[list[torch.Tensor], list[float]]:
+    count = len(tokens)
+    if count == 0:
+        return [], []
+    if progress_mode == "power":
+        power = max(progress_power, 1e-6)
+        return (
+            _prefix_targets(clean_images, count),
+            [((index + 1) / count) ** power for index in range(count)],
+        )
+    if progress_mode != "token_capacity":
+        raise ValueError(f"Unknown denoise path progress mode: {progress_mode}")
+
+    output_channels = clean_images.shape[1]
+    capacities = [
+        min(token.shape[1], output_channels) * math.prod(token.shape[-2:])
+        for token in tokens
+    ]
+    # Component energy is quadratic in its amplitude, so sqrt(rank) increments
+    # make target energy proportional to each restricted synthesis subspace.
+    progress_increments = [math.sqrt(capacity) for capacity in capacities]
+    total_progress = sum(progress_increments)
+    if total_progress <= 0:
+        raise ValueError("Denoise path token capacities must be positive")
+    progress = []
+    cumulative = 0
+    spatial_targets = []
+    output_height, output_width = clean_images.shape[-2:]
+    for token, progress_increment in zip(tokens, progress_increments):
+        token_height, token_width = token.shape[-2:]
+        if token_height <= 0 or token_width <= 0:
+            raise ValueError("Denoise path token spatial dimensions must be positive")
+        scale = max(
+            1,
+            math.ceil(output_height / token_height),
+            math.ceil(output_width / token_width),
+        )
+        spatial_targets.append(_lowpass_like(clean_images, scale))
+        cumulative += progress_increment
+        progress.append(cumulative / total_progress)
+    progress[-1] = 1.0
+    return spatial_targets, progress
+
+
 def _epsilon_band_prefix_targets(noise: torch.Tensor, count: int) -> list[torch.Tensor]:
     scales = _coarse_to_fine_scales(count, noise.shape[-2:])
     return [_lowpass_like(noise, scale) for scale in scales]
@@ -299,23 +348,37 @@ def _epsilon_band_losses(
     return torch.stack(prefix_losses).mean(), torch.stack(component_losses).mean()
 
 
-def _denoise_path_prefix_targets(
+def denoise_path_prefix_x0_targets(
     schedule: DiffusionSchedule,
     noisy_images: torch.Tensor,
     clean_images: torch.Tensor,
     timesteps: torch.Tensor,
     count: int,
     progress_power: float,
+    tokens: list[torch.Tensor] | None = None,
+    progress_mode: str = "power",
 ) -> list[torch.Tensor]:
-    spatial_targets = _prefix_targets(clean_images, count)
+    if tokens is None:
+        if progress_mode != "power":
+            raise ValueError("Denoise path tokens are required for token_capacity progress")
+        tokens = [clean_images.new_empty((clean_images.shape[0], 1, 1, 1)) for _ in range(count)]
+    if len(tokens) != count:
+        raise ValueError(f"Expected {count} denoise path tokens, got {len(tokens)}")
+    spatial_targets, progress_values = denoise_path_schedule(
+        clean_images,
+        tokens,
+        progress_power,
+        progress_mode,
+    )
     zero_epsilon = torch.zeros_like(noisy_images)
     start_x0 = schedule.predict_x0_from_epsilon(noisy_images, zero_epsilon, timesteps)
-    targets = []
-    power = max(progress_power, 1e-6)
-    for index, spatial_target in enumerate(spatial_targets):
-        progress = ((index + 1) / count) ** power
-        targets.append(torch.lerp(start_x0, spatial_target, progress))
-    return targets
+    return [
+        torch.lerp(start_x0, spatial_target, progress)
+        for spatial_target, progress in zip(spatial_targets, progress_values)
+    ]
+
+
+_denoise_path_prefix_targets = denoise_path_prefix_x0_targets
 
 
 def denoise_path_prefix_epsilon_targets(
@@ -325,18 +388,29 @@ def denoise_path_prefix_epsilon_targets(
     timesteps: torch.Tensor,
     count: int,
     progress_power: float,
+    tokens: list[torch.Tensor] | None = None,
+    progress_mode: str = "power",
 ) -> list[torch.Tensor]:
-    spatial_targets = _prefix_targets(clean_images, count)
-    power = max(progress_power, 1e-6)
+    if tokens is None:
+        if progress_mode != "power":
+            raise ValueError("Denoise path tokens are required for token_capacity progress")
+        tokens = [clean_images.new_empty((clean_images.shape[0], 1, 1, 1)) for _ in range(count)]
+    if len(tokens) != count:
+        raise ValueError(f"Expected {count} denoise path tokens, got {len(tokens)}")
+    spatial_targets, progress_values = denoise_path_schedule(
+        clean_images,
+        tokens,
+        progress_power,
+        progress_mode,
+    )
     return [
-        ((index + 1) / count) ** power
-        * _target_prefix_epsilon(
+        progress * _target_prefix_epsilon(
             schedule,
             noisy_images,
             spatial_target,
             timesteps,
         )
-        for index, spatial_target in enumerate(spatial_targets)
+        for spatial_target, progress in zip(spatial_targets, progress_values)
     ]
 
 
@@ -347,6 +421,7 @@ def _denoise_path_losses(
     clean_images: torch.Tensor,
     timesteps: torch.Tensor,
     progress_power: float,
+    progress_mode: str,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     # The denoise path starts at epsilon=0 and is linear in x0. Construct
     # targets directly in epsilon space to avoid catastrophic cancellation at
@@ -358,6 +433,8 @@ def _denoise_path_losses(
         timesteps,
         len(output.prefix_epsilons),
         progress_power,
+        tokens=output.tokens,
+        progress_mode=progress_mode,
     )
     prefix_losses = [
         F.mse_loss(prefix_epsilon, target_prefix)
@@ -485,6 +562,7 @@ def compute_losses(
             clean_images,
             timesteps,
             progress_power=config.denoise_path_progress_power,
+            progress_mode=config.denoise_path_progress_mode,
         )
     else:
         denoise_path_prefix_loss = output.epsilon.new_zeros(())

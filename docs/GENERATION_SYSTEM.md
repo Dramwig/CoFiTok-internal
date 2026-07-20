@@ -246,6 +246,18 @@ non-formal, requires manual visual review, and cannot launch either a 50K or
 300K run. The selected objective must then complete a fresh same-revision 10%
 matched 50K pair and pass the unchanged 10K promotion gate.
 
+The subsequent equal-progress v3 and exact target-energy v4 probes were also
+rejected. V4 reached a finite endpoint but ranked 17/18 at timestep 500 and
+kept about 90% of learned component energy in the final two tokens. The
+diagnosis is a target/layout mismatch: equal full-resolution progress cannot
+be represented by the early spatially compressed synthesis subspaces. The v5
+capacity-path probe therefore derives each progress increment from the square
+root of the token's restricted synthesis rank proxy and derives the spatial
+target from its actual token resolution. This mode is opt-in; historical
+`power` targets retain their exact behavior. V5 remains a non-formal 5K probe
+and cannot authorize 50K or 300K. See
+`docs/records/2026-07-20_generation_target_energy_probe_v4_result.md`.
+
 The full queue alternates CoFiTok and dense at 50K, 100K, 200K, and 300K
 milestones. At each matched point it produces 2,048 fixed-protocol EMA samples
 at DDIM-50 / CFG 1.5, FID/IS trend metrics, and a 256-image mechanism audit.
