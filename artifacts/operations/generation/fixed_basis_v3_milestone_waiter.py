@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 
-MILESTONES = (1000, 5000)
+MILESTONES = (1000, 2000, 3000, 4000, 5000)
 
 
 def utc_now() -> str:
@@ -131,6 +131,24 @@ def validate_audit(report: dict[str, Any], milestone: int) -> None:
             raise ValueError("verified checkpoint step is not 5000")
 
 
+def milestone_entry(
+    report: dict[str, Any],
+    *,
+    report_path: Path,
+) -> dict[str, Any]:
+    return {
+        "status": "pass",
+        "report": report_path.as_posix(),
+        "report_bytes": report_path.stat().st_size,
+        "audited_at": utc_now(),
+        "last_step": int(report["last_step"]),
+        "validation_event_count": int(report["validation"]["event_count"]),
+        "checkpoint_integrity": report["checkpoint"]["latest_integrity"][
+            "status"
+        ],
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Wait for and audit fixed-basis v3 training milestones."
@@ -154,6 +172,21 @@ def main() -> None:
     started_at = utc_now()
     started_monotonic = time.monotonic()
     completed: dict[str, dict[str, Any]] = {}
+
+    for milestone in MILESTONES:
+        report_path = report_root / f"cofitok_progress_step_{milestone:08d}.json"
+        if not report_path.is_file():
+            continue
+        try:
+            with report_path.open("r", encoding="utf-8") as handle:
+                report = json.load(handle)
+            validate_audit(report, milestone)
+        except (OSError, TypeError, ValueError, json.JSONDecodeError):
+            continue
+        completed[str(milestone)] = milestone_entry(
+            report,
+            report_path=report_path,
+        )
 
     def publish(status: str, detail: str, last_step: int) -> None:
         write_json_atomic(
@@ -210,19 +243,10 @@ def main() -> None:
                         # Checkpoint publication and the corresponding log row are
                         # separate atomic operations. Retry inside the bounded window.
                         continue
-                    completed[key] = {
-                        "status": "pass",
-                        "report": report_path.as_posix(),
-                        "report_bytes": report_path.stat().st_size,
-                        "audited_at": utc_now(),
-                        "last_step": int(report["last_step"]),
-                        "validation_event_count": int(
-                            report["validation"]["event_count"]
-                        ),
-                        "checkpoint_integrity": report["checkpoint"][
-                            "latest_integrity"
-                        ]["status"],
-                    }
+                    completed[key] = milestone_entry(
+                        report,
+                        report_path=report_path,
+                    )
                 publish(
                     "pass" if len(completed) == len(MILESTONES) else "waiting",
                     (

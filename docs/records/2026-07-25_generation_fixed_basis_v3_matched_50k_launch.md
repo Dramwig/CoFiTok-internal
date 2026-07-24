@@ -172,15 +172,15 @@ copied file by byte count and SHA256.
 
 ## Read-only milestone observer
 
-A bounded read-only observer was launched after formal training reached step
-400:
+A bounded read-only observer was initially launched after formal training
+reached step 400:
 
-- PID: `507430`
+- initial PID: `507430`
 - local source:
   `artifacts/operations/generation/fixed_basis_v3_milestone_waiter.py`
 - remote source:
   `/tmp/cofitok_fixed_basis_v3_milestone_waiter.py`
-- source SHA256:
+- initial source SHA256:
   `7a9798d6af3f0c484374f8307ad3136209f2eabf3fafac2a3a74608c33333745`
 - status:
   `/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_fixed_basis_v3_milestone_waiter.status.json`
@@ -189,15 +189,18 @@ A bounded read-only observer was launched after formal training reached step
 - bounded timeout: `18,000` seconds
 - polling interval: `120` seconds
 
-At step 1,000 it calls the deployed tracked progress auditor and requires a
-healthy report, no issues or warnings, and complete scheduled-validation
-logging. At step 5,000 it additionally requires the recovery checkpoint,
-integrity sidecar, `latest.json` binding, and recomputed checkpoint integrity
-to verify. Its milestone reports are written under the authoritative v3 report
-root as:
+At each 1K validation milestone it calls the deployed tracked progress auditor
+and requires a healthy report, no issues or warnings, and complete
+scheduled-validation logging. At step 5,000 it additionally requires the
+recovery checkpoint, integrity sidecar, `latest.json` binding, and recomputed
+checkpoint integrity to verify. Its milestone reports are written under the
+authoritative v3 report root as:
 
 ```text
 cofitok_progress_step_00001000.json
+cofitok_progress_step_00002000.json
+cofitok_progress_step_00003000.json
+cofitok_progress_step_00004000.json
 cofitok_progress_step_00005000.json
 ```
 
@@ -212,6 +215,20 @@ complete 1K validation, missing validation, warnings, a verified 5K
 checkpoint, a missing integrity manifest, invalid integrity, and a mismatched
 checkpoint step. The targeted suite passed `7/7`; the complete local project
 suite then passed `651` tests with the existing `2` skips (`653` collected).
+
+After the step-1,000 result showed that later validation trend matters, the
+observer was upgraded to cover every 1K event through the first checkpoint.
+The upgraded source passed `11/11` targeted tests and has SHA256:
+
+```text
+10fe73ca0f86835fab52e23263896f8c06111cd2900406e27485ef3415661f6c
+```
+
+Only the observer PID was terminated; the formal trainer, watchdog,
+supervisor, and GPU workload remained alive. The upgraded observer was
+launched as PID `511498`, reused the existing 2,054-byte step-1,000 report
+without rewriting it, and exposed pending slots for 2K, 3K, 4K, and 5K. Its
+initial upgraded status read formal training step 1,200.
 
 ## Early trajectory alignment
 

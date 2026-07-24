@@ -56,6 +56,17 @@ def test_accepts_complete_step_1000_validation() -> None:
     )
 
 
+@pytest.mark.parametrize("milestone", [2000, 3000, 4000])
+def test_accepts_complete_intermediate_validation(milestone: int) -> None:
+    waiter.validate_audit(
+        progress_report(
+            last_step=milestone,
+            validation_events=milestone // 1000,
+        ),
+        milestone,
+    )
+
+
 def test_rejects_incomplete_step_1000_validation() -> None:
     with pytest.raises(ValueError, match="validation evidence is incomplete"):
         waiter.validate_audit(
@@ -104,3 +115,15 @@ def test_rejects_unverified_step_5000_checkpoint(
     report["checkpoint"]["latest_integrity"]["step"] = integrity_step
     with pytest.raises(ValueError):
         waiter.validate_audit(report, 5000)
+
+
+def test_milestone_entry_preserves_report_identity(tmp_path: Path) -> None:
+    report_path = tmp_path / "cofitok_progress_step_00001000.json"
+    report_path.write_text("{}\n", encoding="utf-8")
+    report = progress_report(last_step=1000, validation_events=1)
+    entry = waiter.milestone_entry(report, report_path=report_path)
+    assert entry["status"] == "pass"
+    assert entry["report"] == report_path.as_posix()
+    assert entry["report_bytes"] == report_path.stat().st_size
+    assert entry["last_step"] == 1000
+    assert entry["validation_event_count"] == 1
