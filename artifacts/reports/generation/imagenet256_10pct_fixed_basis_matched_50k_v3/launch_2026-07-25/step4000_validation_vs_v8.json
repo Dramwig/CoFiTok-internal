@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "status": "pass_with_mixed_adverse_observation",
+  "role": "scheduled_validation_health_diagnostic_only",
+  "formal_v3": {
+    "git_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "step": 4000,
+    "samples_seen": 256000,
+    "training_epsilon": 0.030614038929343224,
+    "training_total": 0.044333573430776596,
+    "validation_epsilon_mse": 0.0293810423463583,
+    "progress_audit": {
+      "status": "healthy",
+      "issues": [],
+      "warnings": [],
+      "validation_event_count": 4,
+      "validation_logging_complete": true,
+      "checkpoint_status": "not_due",
+      "seconds_per_step": 2.2211671381719293,
+      "eta_seconds": 102173.68835590874
+    },
+    "metrics_snapshot": {
+      "path": "cofitok_train_metrics_through_step_00004050.jsonl",
+      "bytes": 59482,
+      "sha256": "61cc14bf30d2c4e716541c96066a624422907152505648c9de9534ad7baea0f1"
+    },
+    "progress_report": {
+      "path": "cofitok_progress_step_00004000.json",
+      "bytes": 2077,
+      "sha256": "39df2e50e51a87ea48a296f3859aee49d7987ec64364743bbf8616222e39b21a"
+    },
+    "observer_status_snapshot": {
+      "path": "milestone_waiter_after_step_00004000.json",
+      "bytes": 2129,
+      "sha256": "0ce2cf1d0d0e47c69c9f76071c934df1c2a2a1b20a007d22853fcee09e49f471"
+    }
+  },
+  "selected_v8_probe": {
+    "git_revision": "5a93c7061e4df237234b19b052331fbc3ec10425",
+    "step": 4000,
+    "training_epsilon": 0.021778635447844863,
+    "training_total": 0.03484085854142904,
+    "validation_epsilon_mse": 0.01850578375160694,
+    "metrics": {
+      "path": "artifacts/reports/generation/rank_recovery_probe_2026-07-24_v8/source_reports/train_metrics.jsonl",
+      "bytes": 73420,
+      "sha256": "efc07360aad08629541eb557c00bac86406279790ab9cffb01a6da1df0ae195c"
+    }
+  },
+  "relative_change_percent": {
+    "training_epsilon": 40.569132545779664,
+    "training_total": 27.24592701428363,
+    "validation_epsilon_mse": 58.76680901886694
+  },
+  "formal_validation_trend": {
+    "step_1000": 0.04005979001522064,
+    "step_2000": 0.03190126270055771,
+    "step_3000": 0.037659503519535065,
+    "step_4000": 0.0293810423463583,
+    "step_3000_to_step_4000_relative_change_percent": -21.982395941259526,
+    "step_2000_to_step_4000_relative_change_percent": -7.900064576927701,
+    "step_1000_to_step_4000_relative_change_percent": -26.657023576022176
+  },
+  "gpu_memory_observation": {
+    "measurement_interface": "nvidia-smi",
+    "after_step_1000_validation_mib": 77983,
+    "after_step_2000_validation_mib": 77983,
+    "after_step_3000_validation_mib": 77983,
+    "after_step_4000_validation_mib": 77983,
+    "max_delta_mib": 0,
+    "total_mib": 97887,
+    "interpretation": "allocated_memory_plateau_observed_across_four_validation_events",
+    "scope": "point_measurement_diagnostic_only"
+  },
+  "interpretation": {
+    "training_state": "formal_v3_training_objective_remains_higher_than_v8_at_step_4000",
+    "validation_state": "formal_v3_fourth_validation_recovers_from_step_3000_and_improves_beyond_steps_1000_and_2000_but_remains_higher_than_v8",
+    "memory_state": "no_repeated_post_validation_memory_growth_observed_through_step_4000",
+    "decision": "continue_frozen_run_to_step_5000_checkpoint_integrity_and_retain_formal_sample_gate_as_quality_authority",
+    "reason": "The fourth event shows that the step-3000 increase was partly non-monotonic, while the persistent gap to the selected 5K probe remains adverse. Operational health alone cannot resolve generation quality, so the clean formal run continues without recipe changes and must pass checkpoint integrity and formal sampling gates.",
+    "not_a_promotion_or_quality_gate": true
+  }
+}

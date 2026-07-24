@@ -452,3 +452,47 @@ artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/milestone_waiter_after_step_00003000.json
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/step3000_validation_vs_v8.json
 ```
+
+## Step-4,000 scheduled validation
+
+The fourth scheduled validation passed the observer and tracked progress
+auditor with:
+
+- status: `healthy`
+- issues/warnings: empty
+- validation events: `4/4`, logging complete
+- checkpoint: correctly `not_due`
+- seconds per step: `2.221167`
+- ETA to CoFiTok 50K: `102,174` seconds
+
+The exact step-4,000 row reported:
+
+- training epsilon: `0.03061404`
+- total loss: `0.04433357`
+- validation epsilon MSE: `0.02938104`
+- gradient norm: `0.12236804`
+- samples seen: `256,000`
+
+The within-run validation trend improved: step 4,000 was `21.98%` below step
+3,000, `7.90%` below step 2,000, and `26.66%` below step 1,000. The cross-run
+comparison remains adverse, however. Relative to the selected v8 probe at the
+same step, formal training epsilon, total loss, and validation MSE were
+`40.57%`, `27.25%`, and `58.77%` higher.
+
+This mixed result shows that the step-3,000 increase was partly non-monotonic,
+but it does not erase the persistent gap to the short probe. The formal run
+remains finite, fully logged, and frozen, so it proceeds to the first
+checkpoint. Step-5,000 integrity and the eventual formal sample gate, rather
+than operational health or a selected validation point, remain authoritative.
+
+Post-validation GPU memory was again `77,983 MiB`; all four point
+measurements after scheduled validation events are identical.
+
+Bound evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_progress_step_00004000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_train_metrics_through_step_00004050.jsonl
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/milestone_waiter_after_step_00004000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/step4000_validation_vs_v8.json
+```

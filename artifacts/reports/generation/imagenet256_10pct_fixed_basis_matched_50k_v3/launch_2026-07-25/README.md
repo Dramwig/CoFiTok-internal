@@ -1,7 +1,7 @@
 # Fixed-basis v3 launch evidence
 
 This bounded evidence pack records the formal v3 matched 50K launch and
-scheduled validation evidence through step 3,000. It intentionally excludes
+scheduled validation evidence through step 4,000. It intentionally excludes
 checkpoints, sample trees, feature caches, and full logs.
 
 Source revision:
@@ -21,10 +21,12 @@ No checkpoint or validation event was due at that point.
 | `cofitok_progress_step_00001000.json` | 2,054 | `86562fbb682338e288bd291b8205af0505e984459a44ab5fd0ff9c528dd0ad7f` |
 | `cofitok_progress_step_00002000.json` | 2,077 | `c87713964328b23c217653ef0988b6512b40541bc49310e5ec6b3fa61eb8fd32` |
 | `cofitok_progress_step_00003000.json` | 2,027 | `7d7f4e839c3cb9364fdd5208c6f07a83e0895d891341af218e41f9b7c10135d9` |
+| `cofitok_progress_step_00004000.json` | 2,077 | `39df2e50e51a87ea48a296f3859aee49d7987ec64364743bbf8616222e39b21a` |
 | `cofitok_train_metrics_through_step_00000650.jsonl` | 10,001 | `8bd69150a75cfb4da2d71518b6d0befcb2db0472276be38eef2fba987afee38f` |
 | `cofitok_train_metrics_through_step_00001050.jsonl` | 15,778 | `e389612aed07856721d39e2207cdd2df25def39ccf783839f18a95ef197aaaeb` |
 | `cofitok_train_metrics_through_step_00002050.jsonl` | 30,411 | `f5f7a7808ae028680d2d5147622c353be733741d5110a122381259c10c8e16bd` |
 | `cofitok_train_metrics_through_step_00003050.jsonl` | 44,947 | `17f449dcea98fb8c61a06816c5b93bf25bd31be049ae3bb18607904a658bf8df` |
+| `cofitok_train_metrics_through_step_00004050.jsonl` | 59,482 | `61cc14bf30d2c4e716541c96066a624422907152505648c9de9534ad7baea0f1` |
 | `completion_audit_in_progress_after_step1000.json` | 3,635 | `ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc` |
 | `cofitok_progress_launch.json` | 2,006 | `e68b827ca0f14ab75e886fff6b4c435e91a3595e7e0e5499796d89bb8b3e08ad` |
 | `cofitok_run_manifest.json` | 7,010 | `8d3a2c0271482a85ac9ade0af2563856eae282b0d7973126294021ac67320a9d` |
@@ -39,11 +41,13 @@ No checkpoint or validation event was due at that point.
 | `milestone_waiter_after_step_00001000.json` | 911 | `fa902474b966dbb2548cb6b80ba626272caf03ce4243608a87eee2167d273ab8` |
 | `milestone_waiter_after_step_00002000.json` | 1,353 | `e372a6f722907cdbf81c691484c74ca72f5e5ea1577232cc709422e5a75a2866` |
 | `milestone_waiter_after_step_00003000.json` | 1,741 | `a66daa01c653a97c27c2f4a6203a5a99225a78e6641d79693af236564595e393` |
+| `milestone_waiter_after_step_00004000.json` | 2,129 | `0ce2cf1d0d0e47c69c9f76071c934df1c2a2a1b20a007d22853fcee09e49f471` |
 | `runtime_selection.json` | 68,006 | `cb125609a28bf8a531c495b365c6e22a8ee9d2eb7e377ba4c2d538be1b63df0d` |
 | `storage_preflight_early_after_step1000.json` | 930 | `5e16f3b7c5dee38b9c699c0288762ae189d6dd78c3ac9051c9687116cd0351c7` |
 | `step1000_validation_vs_v8.json` | 2,236 | `b2343524e8fe813d5a3c5cb62556797cd5e7f5709224b718f5f2a21b652bcc59` |
 | `step2000_validation_vs_v8.json` | 3,209 | `10549eda3ab60490b371f9097f56178ac7ded8393aa74fe6522db7256b609bb1` |
 | `step3000_validation_vs_v8.json` | 3,455 | `203b06e946b5ab9b161c4f6474430a7494ecc1256b9ece4d272e03f820af4054` |
+| `step4000_validation_vs_v8.json` | 3,687 | `eca53a293c8954fa4f0eec520b3301e63dfe04bb1137c43ed0fe43386e548383` |
 
 These hashes identify the copied local bytes. The deployment receipt also
 contains its own source-to-target and verification bindings. Live remote
@@ -78,6 +82,14 @@ step; it remained `5.99%` below the formal step-1,000 value. The observation is
 preserved without stopping or modifying the clean formal run because one
 non-monotonic event does not establish the 50K endpoint. Step 4K, step 5K
 checkpoint integrity, and the formal sample gate remain required.
+
+The step-4,000 audit was also operationally `healthy`. Formal validation MSE
+fell to `0.02938104`, improving `21.98%` from step 3,000, `7.90%` from step
+2,000, and `26.66%` from step 1,000. It nevertheless remained `58.77%` above
+the selected v8 probe at the same step. This mixed result weakens the idea that
+the 3K increase alone was a persistent divergence, but it does not remove the
+cross-recipe quality concern. Step-5,000 checkpoint integrity and formal
+sample-quality evidence remain mandatory.
 
 The terminal completion auditor was also run with the exact source, 10%, and
 full revision identities. It returned the expected nonzero exit with
