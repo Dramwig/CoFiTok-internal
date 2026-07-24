@@ -406,3 +406,49 @@ This second validation remains a short-horizon health diagnostic. The formal
 run continues unchanged and still requires the 3K-5K validation trend, verified
 step-5,000 checkpoint integrity, both 50K trainings, and the unchanged formal
 10K promotion gate before full 300K can be authorized.
+
+## Step-3,000 scheduled validation
+
+The milestone observer accepted the third scheduled validation after the
+tracked progress auditor reported:
+
+- status: `healthy`
+- issues/warnings: empty
+- validation events: `3/3`, logging complete
+- checkpoint: correctly `not_due`
+- seconds per step: `2.221382`
+- ETA to CoFiTok 50K: `104,294` seconds
+
+The exact step-3,000 validation row was:
+
+- training epsilon: `0.03181857`
+- total loss: `0.04608585`
+- validation epsilon MSE: `0.03765950`
+- gradient norm: `0.17540261`
+- samples seen: `192,000`
+
+This event is an adverse diagnostic and is not hidden by the healthy
+operational status. Relative to the selected v8 probe at step 3,000, formal
+training epsilon, total loss, and validation MSE were respectively `29.15%`,
+`21.40%`, and `61.65%` higher. Formal validation MSE also rose `18.05%` from
+step 2,000, although it remained `5.99%` below the formal step-1,000 value.
+
+The run continues unchanged because a single non-monotonic scheduled
+validation event does not determine 50K generation quality, the formal recipe
+has a different augmentation and schedule horizon from the 5K probe, and all
+losses, gradients, logging, Git, and process health remain valid. The adverse
+comparison strengthens the requirement to inspect step 4K and 5K and to let
+the unchanged formal sample gate decide promotion.
+
+GPU memory remained `77,983 MiB` immediately after the third validation,
+matching the step-1,000 and step-2,000 measurements. No repeated validation
+memory growth has been observed across these three point measurements.
+
+Bound evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_progress_step_00003000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_train_metrics_through_step_00003050.jsonl
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/milestone_waiter_after_step_00003000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/step3000_validation_vs_v8.json
+```

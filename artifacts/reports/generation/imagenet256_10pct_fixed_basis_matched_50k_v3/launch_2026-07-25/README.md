@@ -1,7 +1,7 @@
 # Fixed-basis v3 launch evidence
 
 This bounded evidence pack records the formal v3 matched 50K launch and
-scheduled validation evidence through step 2,000. It intentionally excludes
+scheduled validation evidence through step 3,000. It intentionally excludes
 checkpoints, sample trees, feature caches, and full logs.
 
 Source revision:
@@ -20,9 +20,11 @@ No checkpoint or validation event was due at that point.
 |---|---:|---|
 | `cofitok_progress_step_00001000.json` | 2,054 | `86562fbb682338e288bd291b8205af0505e984459a44ab5fd0ff9c528dd0ad7f` |
 | `cofitok_progress_step_00002000.json` | 2,077 | `c87713964328b23c217653ef0988b6512b40541bc49310e5ec6b3fa61eb8fd32` |
+| `cofitok_progress_step_00003000.json` | 2,027 | `7d7f4e839c3cb9364fdd5208c6f07a83e0895d891341af218e41f9b7c10135d9` |
 | `cofitok_train_metrics_through_step_00000650.jsonl` | 10,001 | `8bd69150a75cfb4da2d71518b6d0befcb2db0472276be38eef2fba987afee38f` |
 | `cofitok_train_metrics_through_step_00001050.jsonl` | 15,778 | `e389612aed07856721d39e2207cdd2df25def39ccf783839f18a95ef197aaaeb` |
 | `cofitok_train_metrics_through_step_00002050.jsonl` | 30,411 | `f5f7a7808ae028680d2d5147622c353be733741d5110a122381259c10c8e16bd` |
+| `cofitok_train_metrics_through_step_00003050.jsonl` | 44,947 | `17f449dcea98fb8c61a06816c5b93bf25bd31be049ae3bb18607904a658bf8df` |
 | `completion_audit_in_progress_after_step1000.json` | 3,635 | `ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc` |
 | `cofitok_progress_launch.json` | 2,006 | `e68b827ca0f14ab75e886fff6b4c435e91a3595e7e0e5499796d89bb8b3e08ad` |
 | `cofitok_run_manifest.json` | 7,010 | `8d3a2c0271482a85ac9ade0af2563856eae282b0d7973126294021ac67320a9d` |
@@ -36,10 +38,12 @@ No checkpoint or validation event was due at that point.
 | `generation_completion_supervisor.status.json` | 469 | `87c5928e98f8a1ec1072236de7f7de0cf358e94b0a5738a36231e3415363a717` |
 | `milestone_waiter_after_step_00001000.json` | 911 | `fa902474b966dbb2548cb6b80ba626272caf03ce4243608a87eee2167d273ab8` |
 | `milestone_waiter_after_step_00002000.json` | 1,353 | `e372a6f722907cdbf81c691484c74ca72f5e5ea1577232cc709422e5a75a2866` |
+| `milestone_waiter_after_step_00003000.json` | 1,741 | `a66daa01c653a97c27c2f4a6203a5a99225a78e6641d79693af236564595e393` |
 | `runtime_selection.json` | 68,006 | `cb125609a28bf8a531c495b365c6e22a8ee9d2eb7e377ba4c2d538be1b63df0d` |
 | `storage_preflight_early_after_step1000.json` | 930 | `5e16f3b7c5dee38b9c699c0288762ae189d6dd78c3ac9051c9687116cd0351c7` |
 | `step1000_validation_vs_v8.json` | 2,236 | `b2343524e8fe813d5a3c5cb62556797cd5e7f5709224b718f5f2a21b652bcc59` |
 | `step2000_validation_vs_v8.json` | 3,209 | `10549eda3ab60490b371f9097f56178ac7ded8393aa74fe6522db7256b609bb1` |
+| `step3000_validation_vs_v8.json` | 3,455 | `203b06e946b5ab9b161c4f6474430a7494ecc1256b9ece4d272e03f820af4054` |
 
 These hashes identify the copied local bytes. The deployment receipt also
 contains its own source-to-target and verification bindings. Live remote
@@ -66,6 +70,14 @@ probe at the same step. Post-validation GPU memory remained `77,983 MiB` at
 both measurements, so no repeated validation-memory growth was observed.
 These remain short-horizon diagnostics; the 3K-5K trend and formal 10K sample
 gate are still required.
+
+The step-3,000 audit remained operationally `healthy`, but its quality
+diagnostic moved adversely. Formal validation MSE was `0.03765950`, which was
+`18.05%` above step 2,000 and `61.65%` above the selected v8 probe at the same
+step; it remained `5.99%` below the formal step-1,000 value. The observation is
+preserved without stopping or modifying the clean formal run because one
+non-monotonic event does not establish the 50K endpoint. Step 4K, step 5K
+checkpoint integrity, and the formal sample gate remain required.
 
 The terminal completion auditor was also run with the exact source, 10%, and
 full revision identities. It returned the expected nonzero exit with
