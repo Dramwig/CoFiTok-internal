@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "status": "pass_with_observation",
+  "role": "scheduled_validation_health_diagnostic_only",
+  "formal_v3": {
+    "git_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "step": 1000,
+    "samples_seen": 64000,
+    "training_epsilon": 0.03296850249171257,
+    "training_total": 0.04680163785815239,
+    "validation_epsilon_mse": 0.04005979001522064,
+    "progress_audit": {
+      "status": "healthy",
+      "issues": [],
+      "warnings": [],
+      "validation_event_count": 1,
+      "validation_logging_complete": true,
+      "checkpoint_status": "not_due"
+    },
+    "metrics_snapshot": {
+      "path": "cofitok_train_metrics_through_step_00001050.jsonl",
+      "bytes": 15778,
+      "sha256": "e389612aed07856721d39e2207cdd2df25def39ccf783839f18a95ef197aaaeb"
+    },
+    "progress_report": {
+      "path": "cofitok_progress_step_00001000.json",
+      "bytes": 2054,
+      "sha256": "86562fbb682338e288bd291b8205af0505e984459a44ab5fd0ff9c528dd0ad7f"
+    }
+  },
+  "selected_v8_probe": {
+    "git_revision": "5a93c7061e4df237234b19b052331fbc3ec10425",
+    "step": 1000,
+    "training_epsilon": 0.038830178789794445,
+    "training_total": 0.054670387879014015,
+    "validation_epsilon_mse": 0.03588735684752464,
+    "metrics": {
+      "path": "artifacts/reports/generation/rank_recovery_probe_2026-07-24_v8/source_reports/train_metrics.jsonl",
+      "bytes": 73420,
+      "sha256": "efc07360aad08629541eb557c00bac86406279790ab9cffb01a6da1df0ae195c"
+    }
+  },
+  "relative_change_percent": {
+    "training_epsilon": -15.0956716676836,
+    "training_total": -14.3930751658013,
+    "validation_epsilon_mse": 11.626471086805
+  },
+  "interpretation": {
+    "training_state": "formal_v3_training_objective_is_lower_than_v8_at_step_1000",
+    "validation_state": "formal_v3_first_scheduled_validation_is_higher_than_v8",
+    "decision": "continue_unchanged_and_require_multi_event_validation_trend_plus_formal_sample_gate",
+    "reason": "One scheduled validation event is insufficient to infer 50K generation quality. The run is finite, fully logged, and operationally healthy, but the validation increase must not be hidden behind the lower training loss.",
+    "not_a_promotion_or_quality_gate": true
+  }
+}

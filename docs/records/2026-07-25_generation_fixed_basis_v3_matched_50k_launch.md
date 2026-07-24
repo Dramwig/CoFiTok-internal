@@ -237,3 +237,39 @@ boundary. At step 650, formal epsilon and total loss were respectively
 the selected probe's early optimization trajectory despite the formal random
 flip and longer schedule. It is not a sample-quality result, promotion gate,
 or authorization for full 300K.
+
+## Step-1,000 scheduled validation
+
+The milestone observer independently completed the first required audit:
+
+- observer milestone status: `pass`
+- tracked progress status: `healthy`
+- issues/warnings: empty
+- metric rows: `21`
+- validation events: `1/1`, logging complete
+- checkpoint: correctly `not_due`
+- seconds per step: `2.219961`
+- ETA to CoFiTok 50K: `108,778` seconds
+
+The exact step-1,000 row reported:
+
+- training epsilon: `0.03296850`
+- total loss: `0.04680164`
+- validation epsilon MSE: `0.04005979`
+- gradient norm: `0.25228009`
+- samples seen: `64,000`
+
+Against v8 at the same step, formal training epsilon and total loss were
+`15.10%` and `14.39%` lower, while the first scheduled validation MSE was
+`11.63%` higher. The run remains finite, fully logged, and operationally
+healthy, so one validation event does not justify stopping or modifying the
+formal trajectory. Equally, the lower training objective must not hide the
+validation increase. The locked decision is to continue unchanged and require
+the 2K-5K validation trend plus formal generation metrics.
+
+Bound evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_progress_step_00001000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/step1000_validation_vs_v8.json
+```

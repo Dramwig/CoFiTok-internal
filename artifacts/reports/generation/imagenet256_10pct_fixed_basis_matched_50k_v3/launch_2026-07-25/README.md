@@ -18,7 +18,9 @@ No checkpoint or validation event was due at that point.
 
 | File | Bytes | SHA256 |
 |---|---:|---|
+| `cofitok_progress_step_00001000.json` | 2,054 | `86562fbb682338e288bd291b8205af0505e984459a44ab5fd0ff9c528dd0ad7f` |
 | `cofitok_train_metrics_through_step_00000650.jsonl` | 10,001 | `8bd69150a75cfb4da2d71518b6d0befcb2db0472276be38eef2fba987afee38f` |
+| `cofitok_train_metrics_through_step_00001050.jsonl` | 15,778 | `e389612aed07856721d39e2207cdd2df25def39ccf783839f18a95ef197aaaeb` |
 | `cofitok_progress_launch.json` | 2,006 | `e68b827ca0f14ab75e886fff6b4c435e91a3595e7e0e5499796d89bb8b3e08ad` |
 | `cofitok_run_manifest.json` | 7,010 | `8d3a2c0271482a85ac9ade0af2563856eae282b0d7973126294021ac67320a9d` |
 | `cofitok_train_metrics_launch.jsonl` | 3,576 | `65e8d21d6274cf081d45699279a55cd18da31a331bbdf2652d40eff7f81d9059` |
@@ -29,7 +31,9 @@ No checkpoint or validation event was due at that point.
 | `generation_10pct_fixed_basis_v3_pair_monitor.json` | 8,660 | `89a2ae4493b685158b0a1c9ad82ca25529539fc945b02023477c6d4a911ff224` |
 | `generation_complete_pipeline_after_10pct.status.json` | 386 | `0d9a884e27d02bfdd47b2a799698645437e2458936371275fb738dafb9a5a485` |
 | `generation_completion_supervisor.status.json` | 469 | `87c5928e98f8a1ec1072236de7f7de0cf358e94b0a5738a36231e3415363a717` |
+| `milestone_waiter_after_step_00001000.json` | 911 | `fa902474b966dbb2548cb6b80ba626272caf03ce4243608a87eee2167d273ab8` |
 | `runtime_selection.json` | 68,006 | `cb125609a28bf8a531c495b365c6e22a8ee9d2eb7e377ba4c2d538be1b63df0d` |
+| `step1000_validation_vs_v8.json` | 2,236 | `b2343524e8fe813d5a3c5cb62556797cd5e7f5709224b718f5f2a21b652bcc59` |
 
 These hashes identify the copied local bytes. The deployment receipt also
 contains its own source-to-target and verification bindings. Live remote
@@ -40,3 +44,10 @@ against the selected v8 probe. The three windowed epsilon deltas were
 `-0.032%`, `+0.545%`, and `+1.000%`; total-loss deltas were `-0.054%`,
 `+0.621%`, and `+1.037%`. This is a launch-health diagnostic only. It does
 not predict the 50K endpoint or replace the formal promotion gate.
+
+The tracked step-1,000 progress audit passed as `healthy`, with one expected
+and logged validation event, no issues or warnings, and no checkpoint due.
+Formal training epsilon and total loss were 15.10% and 14.39% below v8 at the
+same step, while the first scheduled validation MSE was 11.63% higher. The
+run therefore continues unchanged, but later validation events and the formal
+sample-quality gate must resolve that observation.
