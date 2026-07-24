@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "role": "training_health_diagnostic_only",
+  "decision": "formal_v3_early_trajectory_matches_selected_v8_probe",
+  "methodology": {
+    "alignment": "exact_common_logged_steps",
+    "common_step_count": 14,
+    "max_common_step": 650,
+    "window_statistic": "unweighted_mean_over_common_logged_rows",
+    "health_threshold": {
+      "metric": "maximum_absolute_window_relative_delta_percent",
+      "boundary": 2.0
+    },
+    "not_a_promotion_or_quality_gate": true
+  },
+  "sources": {
+    "formal_v3": {
+      "git_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+      "config": "configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json",
+      "metrics_snapshot": "cofitok_train_metrics_through_step_00000650.jsonl",
+      "metrics_bytes": 10001,
+      "metrics_sha256": "8bd69150a75cfb4da2d71518b6d0befcb2db0472276be38eef2fba987afee38f"
+    },
+    "selected_v8_probe": {
+      "git_revision": "5a93c7061e4df237234b19b052331fbc3ec10425",
+      "config": "configs/generation/imagenet256_10pct_rankcomplete_fixed_basis_hellinger_k8_probe5k.json",
+      "metrics_path": "artifacts/reports/generation/rank_recovery_probe_2026-07-24_v8/source_reports/train_metrics.jsonl",
+      "metrics_bytes": 73420,
+      "metrics_sha256": "efc07360aad08629541eb557c00bac86406279790ab9cffb01a6da1df0ae195c"
+    }
+  },
+  "windows": [
+    {
+      "range": "1-200",
+      "common_points": 5,
+      "formal_epsilon": 0.9571592450141907,
+      "v8_epsilon": 0.9574698776006698,
+      "epsilon_relative_delta_percent": -0.032443066225495976,
+      "formal_total": 0.9816486120224,
+      "v8_total": 0.9821805000305176,
+      "total_relative_delta_percent": -0.05415379434851042
+    },
+    {
+      "range": "201-400",
+      "common_points": 4,
+      "formal_epsilon": 0.611792579293251,
+      "v8_epsilon": 0.6084748115390539,
+      "epsilon_relative_delta_percent": 0.5452596707832935,
+      "formal_total": 0.6245892494916916,
+      "v8_total": 0.620734853670001,
+      "total_relative_delta_percent": 0.620940776710377
+    },
+    {
+      "range": "401-600",
+      "common_points": 4,
+      "formal_epsilon": 0.20942271873354912,
+      "v8_epsilon": 0.20734968036413193,
+      "epsilon_relative_delta_percent": 0.9997789076774399,
+      "formal_total": 0.2216666042804718,
+      "v8_total": 0.21939145028591156,
+      "total_relative_delta_percent": 1.0370294701982585
+    }
+  ],
+  "latest_common_step": {
+    "step": 650,
+    "formal_epsilon": 0.06165262311697006,
+    "v8_epsilon": 0.06606312654912472,
+    "epsilon_relative_delta_percent": -6.676195424803266,
+    "formal_total": 0.07690409570932388,
+    "v8_total": 0.07965291105210781,
+    "total_relative_delta_percent": -3.450991691924088
+  },
+  "summary": {
+    "maximum_absolute_window_epsilon_delta_percent": 0.9997789076774399,
+    "maximum_absolute_window_total_delta_percent": 1.0370294701982585,
+    "health_threshold_passed": true,
+    "interpretation": "The formal v3 warmup trajectory remains aligned with the selected fixed-basis v8 probe. This does not predict the 50K endpoint or authorize promotion."
+  }
+}

@@ -212,3 +212,28 @@ complete 1K validation, missing validation, warnings, a verified 5K
 checkpoint, a missing integrity manifest, invalid integrity, and a mismatched
 checkpoint step. The targeted suite passed `7/7`; the complete local project
 suite then passed `651` tests with the existing `2` skips (`653` collected).
+
+## Early trajectory alignment
+
+The formal v3 metrics through step 650 were compared with the selected v8
+probe at all 14 common logged steps. Source byte identities and the complete
+result are bound in:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/early_trajectory_vs_v8.json
+```
+
+Windowed mean relative changes, formal v3 versus v8:
+
+| Steps | Epsilon | Total loss |
+|---:|---:|---:|
+| 1-200 | -0.032% | -0.054% |
+| 201-400 | +0.545% | +0.621% |
+| 401-600 | +1.000% | +1.037% |
+
+The maximum absolute window delta was `1.037%`, below the diagnostic `2%`
+boundary. At step 650, formal epsilon and total loss were respectively
+`6.676%` and `3.451%` below v8. This establishes that the formal run preserved
+the selected probe's early optimization trajectory despite the formal random
+flip and longer schedule. It is not a sample-quality result, promotion gate,
+or authorization for full 300K.

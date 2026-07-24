@@ -18,12 +18,14 @@ No checkpoint or validation event was due at that point.
 
 | File | Bytes | SHA256 |
 |---|---:|---|
+| `cofitok_train_metrics_through_step_00000650.jsonl` | 10,001 | `8bd69150a75cfb4da2d71518b6d0befcb2db0472276be38eef2fba987afee38f` |
 | `cofitok_progress_launch.json` | 2,006 | `e68b827ca0f14ab75e886fff6b4c435e91a3595e7e0e5499796d89bb8b3e08ad` |
 | `cofitok_run_manifest.json` | 7,010 | `8d3a2c0271482a85ac9ade0af2563856eae282b0d7973126294021ac67320a9d` |
 | `cofitok_train_metrics_launch.jsonl` | 3,576 | `65e8d21d6274cf081d45699279a55cd18da31a331bbdf2652d40eff7f81d9059` |
 | `cofitok_training_watchdog.json` | 1,824 | `0b1d9d37f5a8b1ac9c2c0d8bff90a60438ec566cf9542fd5b7c09f2a5eaf135c` |
 | `config_pair.json` | 11,663 | `e90c24f6fe45aaa0c17c93df7daf3ab4f799e734367df6ea7a4e017729ba3384` |
 | `deployment_receipt.json` | 2,305 | `3a85d03023dd66223edb2ee46913b0e48f88e197a430a38650b09708d5b5285a` |
+| `early_trajectory_vs_v8.json` | 3,124 | `a64423f908f2911455842ea5289570b113ac9b2e66f096903db25d439177f745` |
 | `generation_10pct_fixed_basis_v3_pair_monitor.json` | 8,660 | `89a2ae4493b685158b0a1c9ad82ca25529539fc945b02023477c6d4a911ff224` |
 | `generation_complete_pipeline_after_10pct.status.json` | 386 | `0d9a884e27d02bfdd47b2a799698645437e2458936371275fb738dafb9a5a485` |
 | `generation_completion_supervisor.status.json` | 469 | `87c5928e98f8a1ec1072236de7f7de0cf358e94b0a5738a36231e3415363a717` |
@@ -32,3 +34,9 @@ No checkpoint or validation event was due at that point.
 These hashes identify the copied local bytes. The deployment receipt also
 contains its own source-to-target and verification bindings. Live remote
 state remains authoritative after this launch snapshot.
+
+`early_trajectory_vs_v8.json` aligns 14 common logged steps through step 650
+against the selected v8 probe. The three windowed epsilon deltas were
+`-0.032%`, `+0.545%`, and `+1.000%`; total-loss deltas were `-0.054%`,
+`+0.621%`, and `+1.037%`. This is a launch-health diagnostic only. It does
+not predict the 50K endpoint or replace the formal promotion gate.
