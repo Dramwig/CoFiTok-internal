@@ -169,3 +169,39 @@ metrics rows, and a tracked progress audit. The progress audit was `healthy`
 at step 200 with `0` issues, `0` warnings, `2.219099` seconds per step, and
 an ETA of `110,511` seconds to CoFiTok step 50,000. `README.md` binds every
 copied file by byte count and SHA256.
+
+## Read-only milestone observer
+
+A bounded read-only observer was launched after formal training reached step
+400:
+
+- PID: `507430`
+- local source:
+  `artifacts/operations/generation/fixed_basis_v3_milestone_waiter.py`
+- remote source:
+  `/tmp/cofitok_fixed_basis_v3_milestone_waiter.py`
+- source SHA256:
+  `7a9798d6af3f0c484374f8307ad3136209f2eabf3fafac2a3a74608c33333745`
+- status:
+  `/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_fixed_basis_v3_milestone_waiter.status.json`
+- log:
+  `/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_fixed_basis_v3_milestone_waiter.log`
+- bounded timeout: `18,000` seconds
+- polling interval: `120` seconds
+
+At step 1,000 it calls the deployed tracked progress auditor and requires a
+healthy report, no issues or warnings, and complete scheduled-validation
+logging. At step 5,000 it additionally requires the recovery checkpoint,
+integrity sidecar, `latest.json` binding, and recomputed checkpoint integrity
+to verify. Its milestone reports are written under the authoritative v3 report
+root as:
+
+```text
+cofitok_progress_step_00001000.json
+cofitok_progress_step_00005000.json
+```
+
+The observer only reads metrics, Git identity, and checkpoint bytes. It does
+not import or load the model, allocate GPU memory, signal processes, alter the
+pipeline decision, or move the remote revision. Its status was `waiting` with
+last step 400 immediately after launch.
