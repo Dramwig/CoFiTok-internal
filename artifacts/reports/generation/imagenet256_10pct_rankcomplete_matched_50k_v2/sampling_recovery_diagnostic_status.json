@@ -1,0 +1,11 @@
+{
+  "detail": "128-sample matched guidance sweep and raw-model endpoint comparison completed",
+  "diagnostic": "imagenet256_10pct_rankcomplete_v2_sampling_recovery",
+  "exit_code": null,
+  "git_revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "schema_version": 1,
+  "stage": "complete",
+  "status": "pass",
+  "updated_at": "2026-07-24T14:35:41.331982+00:00"
+}

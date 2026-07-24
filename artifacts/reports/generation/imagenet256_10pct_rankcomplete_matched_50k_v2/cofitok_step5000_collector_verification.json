@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "status": "pass_with_log_format_warning",
+  "created_at": "2026-07-21T10:45:55.1867876+08:00",
+  "role": "independent_small_evidence_copy_verification",
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "tracked_dirty": false
+  },
+  "checkpoint": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2/checkpoint_step_00005000.pt",
+    "bytes": 1006396450,
+    "sha256": "f2d8287252e26d07ce90a9749d7e9dd427be591fe94b5e706fb196f2529e9b6a",
+    "copied_to_local_archive": false,
+    "loaded_by_collector": false,
+    "rehashed_by_collector": false
+  },
+  "copied_evidence": [
+    {
+      "source": "/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_rankcomplete_v2_cofitok_step5000_audit.json",
+      "destination": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_rankcomplete_matched_50k_v2/cofitok_step5000_integrity_audit.json",
+      "bytes": 3098,
+      "source_sha256": "987556ad471024798ed17de4e8cf55c3dafa367be9c1807b0fe1e5aa26ebdea8",
+      "destination_sha256": "987556ad471024798ed17de4e8cf55c3dafa367be9c1807b0fe1e5aa26ebdea8",
+      "match": true
+    },
+    {
+      "source": "/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_rankcomplete_v2_cofitok_step5000_payload_audit.json",
+      "destination": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_rankcomplete_matched_50k_v2/cofitok_step5000_payload_audit.json",
+      "bytes": 1550,
+      "source_sha256": "56d9f78d15113f5e168adfce962ebf808734833454ed62dc6cff63acea151f9b",
+      "destination_sha256": "56d9f78d15113f5e168adfce962ebf808734833454ed62dc6cff63acea151f9b",
+      "match": true
+    },
+    {
+      "source": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2/checkpoint_step_00005000.pt.integrity.json",
+      "destination": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_rankcomplete_matched_50k_v2/cofitok_checkpoint_step_00005000.pt.integrity.json",
+      "bytes": 572,
+      "source_sha256": "1c01cdf1cac6f69b3b9e2ba898b0ec71bdf18a5016528daff469fae64fbfc16b",
+      "destination_sha256": "1c01cdf1cac6f69b3b9e2ba898b0ec71bdf18a5016528daff469fae64fbfc16b",
+      "match": true
+    },
+    {
+      "source": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2/latest.json",
+      "destination": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_rankcomplete_matched_50k_v2/cofitok_latest_step_00005000.json",
+      "bytes": 642,
+      "source_sha256": "1cb519949727bf1b2e4142b2802b7de1adfb8348086a09a5ccf7220be88cbaa3",
+      "destination_sha256": "1cb519949727bf1b2e4142b2802b7de1adfb8348086a09a5ccf7220be88cbaa3",
+      "match": true
+    }
+  ],
+  "independent_payload_audit": {
+    "status": "pass",
+    "checkpoint_bytes_unchanged": true,
+    "checkpoint_mtime_ns_unchanged": true,
+    "payload_exact_resume_fields_present": true,
+    "payload_identity_bindings_match": true
+  },
+  "collector_log_warning": {
+    "present": true,
+    "message": "The temporary collector's final stat invocation quoted its format arguments incorrectly and logged two non-fatal stat errors after all four source/destination SHA pairs had already matched.",
+    "affects_evidence_copy": false,
+    "affects_checkpoint_integrity": false,
+    "affects_training": false
+  }
+}

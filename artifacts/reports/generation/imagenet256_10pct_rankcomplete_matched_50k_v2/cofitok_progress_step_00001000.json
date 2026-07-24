@@ -1,0 +1,72 @@
+{
+  "checkpoint": {
+    "interval": 5000,
+    "latest": null,
+    "latest_integrity": {
+      "policy": "required",
+      "status": "not_available"
+    },
+    "missing_required_steps": [],
+    "required_steps": [],
+    "status": "not_due",
+    "steps": []
+  },
+  "current_segment_start_step": 1,
+  "eta_seconds": 109104.90530007356,
+  "expected_steps": 50000,
+  "gradient_clipping": {
+    "configured_max_norm": 1.0,
+    "logged_norm_semantics": "pre_clip_total_norm",
+    "observed_max_pre_clip_norm": 18.921213150024414,
+    "pre_clip_exceedance_count": 20
+  },
+  "issues": [],
+  "last_step": 1000,
+  "latest_metrics": {
+    "component_decorrelation": 0.0,
+    "cumulative_elapsed_seconds": 2228.241626024246,
+    "denoise_path_component": 0.08763476461172104,
+    "denoise_path_energy": 0.010393897071480751,
+    "denoise_path_prefix": 0.10521432757377625,
+    "elapsed_seconds": 2228.241626024246,
+    "ema_decay": 0.49995,
+    "energy_budget": 0.0,
+    "epsilon": 0.10070310533046722,
+    "epsilon_band_component": 0.0,
+    "epsilon_band_prefix": 0.0,
+    "grad_norm": 1.97169828414917,
+    "group_residual": 0.0,
+    "learning_rate": 0.0001,
+    "monotonic": 0.0,
+    "prefix": 0.0,
+    "residual_component": 0.0,
+    "sampled_budget": 0.0,
+    "sampled_component": 0.0,
+    "sampled_prefix": 0.0,
+    "samples_seen": 64000,
+    "step": 1000,
+    "tail_floor": 0.0,
+    "total": 0.11576668918132782,
+    "validation_epsilon_mse": 0.10599732398986816,
+    "zero_token": 0.0
+  },
+  "metric_row_count": 21,
+  "progress_fraction": 0.02,
+  "recent_mean": {
+    "epsilon": 0.28665929585695266,
+    "grad_norm": 1.4011442899703979,
+    "total": 0.30042677372694016
+  },
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2",
+  "schema_version": 2,
+  "seconds_per_step": 2.2266307204096645,
+  "status": "healthy",
+  "validation": {
+    "configured_interval": 1000,
+    "event_count": 1,
+    "expected_event_count": 1,
+    "logging_complete": true
+  },
+  "validation_event_count": 1,
+  "warnings": []
+}

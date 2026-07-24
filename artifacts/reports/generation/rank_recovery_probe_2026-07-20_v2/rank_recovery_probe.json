@@ -1,0 +1,138 @@
+{
+  "candidates": [
+    {
+      "checkpoint_sha256": "4adb333cff4d1c6030cbac5af5222828a847b0013f5b74921cbb4bfd93316f26",
+      "component_energy": [
+        5.125269083805506e-06,
+        2.396544232396991e-05,
+        7.281667512870627e-05,
+        1.8387760576388246e-05,
+        0.0035954504637629725,
+        0.004508793863351457,
+        0.34401412680745125,
+        0.6726718433201313
+      ],
+      "diagnostic_fid_512": 275.13469981442813,
+      "diagnostic_inception_score_512": 2.2748744707900443,
+      "endpoint_clean_mse": 0.019939537334721535,
+      "endpoint_clean_psnr": 23.023449143487422,
+      "git": {
+        "branch": "scale/generative-system",
+        "dirty": false,
+        "revision": "05bbb4af63a9f1d9b7f11bc4222d50875e382e1d"
+      },
+      "name": "denoise_path",
+      "ordered_prefix_path_mse_auc": 0.19952743616782495,
+      "ordered_rank_by_path_auc": 6,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k_v2",
+      "sources": {
+        "checkpoint_evaluation": {
+          "bytes": 27686,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k_v2/checkpoint_eval_ema_t500_512/checkpoint_evaluation_report.json",
+          "sha256": "a50c2045fcdac87362ae70ea4898d05f2338869e86f3507b06b5d4d7160be439"
+        },
+        "generation_metrics": {
+          "bytes": 10478,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k_v2/samples_probe512_ddim50_cfg15/metrics/generation_metrics_report.json",
+          "sha256": "e1743d9b86a8355585058a19888a76531a3fa93a6cc3e974ad26a9e942388411"
+        },
+        "sampling": {
+          "bytes": 5625,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k_v2/samples_probe512_ddim50_cfg15/sampling_report.json",
+          "sha256": "5b866cea25d7ebc8d8adbe60802113bd5f5cca8f7caeae4e1b85681cd184b73d"
+        },
+        "training": {
+          "bytes": 8641,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k_v2/training_report.json",
+          "sha256": "712a22ed16ed9ac64ba419b5cf56628009a60cb5b9965c06c513faaff5da5e40"
+        }
+      }
+    },
+    {
+      "checkpoint_sha256": "f58fc4323f9b53c88edd76029f4b2dfbca0f8176b4a864ea5624532130e35205",
+      "component_energy": [
+        2.7993823579208765e-06,
+        4.6084434757176496e-06,
+        1.3867556361901734e-05,
+        7.606213401345485e-06,
+        0.0014138759070192464,
+        0.008422038838034496,
+        0.34025826770812273,
+        0.682348845526576
+      ],
+      "diagnostic_fid_512": 281.86226440576945,
+      "diagnostic_inception_score_512": 2.131005531838454,
+      "endpoint_clean_mse": 0.020060699491295964,
+      "endpoint_clean_psnr": 22.997139190785774,
+      "git": {
+        "branch": "scale/generative-system",
+        "dirty": false,
+        "revision": "05bbb4af63a9f1d9b7f11bc4222d50875e382e1d"
+      },
+      "name": "epsilon_band",
+      "ordered_prefix_path_mse_auc": 0.2939404134439038,
+      "ordered_rank_by_path_auc": 18,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_epsilon_band_k8_probe5k_v2",
+      "sources": {
+        "checkpoint_evaluation": {
+          "bytes": 27662,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_epsilon_band_k8_probe5k_v2/checkpoint_eval_ema_t500_512/checkpoint_evaluation_report.json",
+          "sha256": "335bb80c63f11105401df8f87ea50cfe32ed8d4a6d19d7d506a81429e7422384"
+        },
+        "generation_metrics": {
+          "bytes": 10477,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_epsilon_band_k8_probe5k_v2/samples_probe512_ddim50_cfg15/metrics/generation_metrics_report.json",
+          "sha256": "4b7ac227ec7c9960726a890fb88f97e61145c0162448dfeade0ae9404234e637"
+        },
+        "sampling": {
+          "bytes": 5627,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_epsilon_band_k8_probe5k_v2/samples_probe512_ddim50_cfg15/sampling_report.json",
+          "sha256": "97bee332d85c90842c74839d7bc6264a8e28451c48f46c4dfc4be94bc873fa7c"
+        },
+        "training": {
+          "bytes": 8640,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_epsilon_band_k8_probe5k_v2/training_report.json",
+          "sha256": "79087dc7356b230210ff381ee2c749a3117aa22f3776f54a311e9af0b30e48e8"
+        }
+      }
+    }
+  ],
+  "formal_claim_allowed": false,
+  "legacy_rank_deficient_reference": {
+    "component_energy": [
+      0.00021321014992281562,
+      0.0004590516919051879,
+      0.0011092808081230032,
+      0.0009870820722426288,
+      0.016798279393697158,
+      0.01899101326125674,
+      0.3507180227898061,
+      0.73304941970855
+    ],
+    "endpoint_clean_mse": 0.16952239605598152,
+    "ordered_rank_by_path_auc": 3,
+    "source": {
+      "bytes": 27490,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_compressed_cofitok_k8_50k/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json",
+      "sha256": "c7114c2d4e03752368d4ee90c62f26626cb78d1194f598c6feb1d7a7258fa268"
+    }
+  },
+  "protocol": {
+    "checkpoint_evaluation_images": 512,
+    "checkpoint_evaluation_timestep": 500,
+    "guidance_scale": 1.5,
+    "note": "The 512-image FID/IS values are directional diagnostics only and cannot replace the 10K promotion gate.",
+    "sample_count": 512,
+    "sample_steps": 50,
+    "training_steps": 5000
+  },
+  "role": "non_formal_rank_recovery_probe",
+  "schema_version": 1,
+  "selection": {
+    "automatic_50k_or_300k_launch_allowed": false,
+    "best_mechanism_candidate": "denoise_path",
+    "decision": "revise_architecture_or_objective",
+    "mechanism_ready_for_visual_review": false
+  },
+  "status": "completed"
+}

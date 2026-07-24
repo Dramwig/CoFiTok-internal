@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "role": "precheckpoint_reproducible_checkpoint_contract",
+  "created_at": "2026-07-21T09:20:35.7132964+08:00",
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "tracked_dirty": false
+  },
+  "runtime": {
+    "device": "cpu",
+    "cuda_visible_devices": "",
+    "elapsed_seconds": 50.714730958
+  },
+  "pytest": {
+    "status": "pass",
+    "passed": 57,
+    "exit_code": 0,
+    "files": [
+      "tests/test_generation_exact_resume.py",
+      "tests/test_generation_metrics_resume.py",
+      "tests/test_audit_generation_training_progress.py",
+      "tests/test_generation_training_completion.py",
+      "tests/test_migrate_generation_checkpoint_integrity.py",
+      "tests/test_generation_training_recipe.py"
+    ],
+    "log": "reproducible_checkpoint_contract_a8f43f4.log",
+    "log_bytes": 100,
+    "log_sha256": "4ec437b93447de1a3ecd79ed62c4ccc3cc505cd7ce2acf9249b5f1bdc2a007c6"
+  },
+  "coverage": [
+    "continuous-versus-segmented exact-resume trajectory equivalence",
+    "recursive resolved-config equality before state restoration",
+    "model, EMA, optimizer, scheduler, scaler, RNG, and sampler restoration",
+    "canonical metrics reconciliation and orphan preservation",
+    "atomic checkpoint integrity sidecar and latest pointer verification",
+    "checkpoint cadence, retention, and completed training report contract",
+    "legacy checkpoint byte-preserving integrity migration"
+  ],
+  "scope": {
+    "code_contract_verified": true,
+    "live_step_5000_checkpoint_integrity_verified": false,
+    "live_step_5000_payload_verified": false,
+    "full_300k_checkpoint_reproducibility_verified": false
+  },
+  "next_live_evidence": {
+    "checkpoint": "checkpoint_step_00005000.pt",
+    "integrity_policy": "required",
+    "integrity_waiter_active": true,
+    "payload_waiter_active": true
+  }
+}

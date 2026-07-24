@@ -1,0 +1,201 @@
+{
+  "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k_v6/checkpoint_step_00005000.pt",
+  "checkpoint_integrity_manifest": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k_v6/checkpoint_step_00005000.pt.integrity.json",
+  "checkpoint_sha256": "1032cd8b0702c41f5da64d4df5dae7a628dfec20a1b00fc345150456c62aa53f",
+  "checkpoint_step": 5000,
+  "device": "cuda",
+  "elapsed_seconds": 2177.9877305030823,
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "ead85dcb304bea8d5b23611add8e5397c65b5e73",
+    "tracked_dirty": false
+  },
+  "invocation_elapsed_seconds": 2177.9877305030823,
+  "output_dirs": {
+    "1": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k_v6/samples_probe512_ddim50_cfg15/prefix_1",
+    "2": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k_v6/samples_probe512_ddim50_cfg15/prefix_2",
+    "4": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k_v6/samples_probe512_ddim50_cfg15/prefix_4",
+    "8": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k_v6/samples_probe512_ddim50_cfg15/prefix_8"
+  },
+  "runtime_environment": {
+    "device": {
+      "capability": [
+        12,
+        0
+      ],
+      "multi_processor_count": 188,
+      "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "total_memory_bytes": 101976440832,
+      "type": "cuda"
+    },
+    "environment_variables": {
+      "CUBLAS_WORKSPACE_CONFIG": null,
+      "CUDA_VISIBLE_DEVICES": null,
+      "PYTHONHASHSEED": null,
+      "PYTORCH_ALLOC_CONF": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "pillow": "12.2.0",
+      "torch": "2.7.1+cu128",
+      "torchvision": "0.22.1+cu128",
+      "tqdm": "4.67.3"
+    },
+    "platform": {
+      "machine": "x86_64",
+      "release": "5.15.0-78-generic",
+      "system": "Linux"
+    },
+    "project_files": {
+      "pyproject.toml": {
+        "bytes": 786,
+        "path": "pyproject.toml",
+        "sha256": "8ae66e4835c49a0e842499b0f6f4d6786bdd5f3f243cbee29adf436b2673d617"
+      },
+      "uv.lock": {
+        "bytes": 363675,
+        "path": "uv.lock",
+        "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+      }
+    },
+    "python": {
+      "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+      "implementation": "CPython",
+      "version": "3.10.20"
+    },
+    "schema_version": 1,
+    "torch": {
+      "cuda_matmul_allow_tf32": true,
+      "cuda_version": "12.8",
+      "cudnn_allow_tf32": true,
+      "cudnn_benchmark": false,
+      "cudnn_version": 90701,
+      "deterministic_algorithms": false,
+      "float32_matmul_precision": "high",
+      "num_interop_threads": 104,
+      "num_threads": 104,
+      "nvidia_driver_version": "590.44.01",
+      "version": "2.7.1+cu128"
+    }
+  },
+  "runtime_environment_sha256": "dabbf101270ec83c4e22fac4bf1c5e65c04268e68dbfb687136629c84fb6f23b",
+  "sample_sets": {
+    "1": {
+      "count": 512,
+      "sha256": "9324406b30c311d0e062ef033c3df863b3c76dd055b77a45919fc96d55ceb269"
+    },
+    "2": {
+      "count": 512,
+      "sha256": "260968701022cd0b284224aa7f9e732e3e5752a15bafb23f53e56cdb7a44b9eb"
+    },
+    "4": {
+      "count": 512,
+      "sha256": "1fc5a15a3b94ac5013dba63b6f7e5ce5702a31b4eb7bfe647f7d3462c8176e82"
+    },
+    "8": {
+      "count": 512,
+      "sha256": "feaa15875b44d9c79151a5979f611641abfeba8c8b0995cfec69889dac63b7aa"
+    }
+  },
+  "sampling": {
+    "actual_timesteps": [
+      999,
+      979,
+      958,
+      938,
+      917,
+      897,
+      877,
+      856,
+      836,
+      816,
+      795,
+      775,
+      754,
+      734,
+      714,
+      693,
+      673,
+      652,
+      632,
+      612,
+      591,
+      571,
+      550,
+      530,
+      510,
+      489,
+      469,
+      449,
+      428,
+      408,
+      387,
+      367,
+      347,
+      326,
+      306,
+      285,
+      265,
+      245,
+      224,
+      204,
+      183,
+      163,
+      143,
+      122,
+      102,
+      82,
+      61,
+      41,
+      20,
+      0
+    ],
+    "batch_size": 16,
+    "cfg_batch_mode": "batched",
+    "class_schedule": "balanced_modulo",
+    "clip_x0": true,
+    "eta": 0.0,
+    "guidance_rescale": 0.0,
+    "guidance_scale": 1.5,
+    "image_shape": [
+      3,
+      256,
+      256
+    ],
+    "inference_api": {
+      "name": "cofitok.generation.GenerationSession",
+      "version": 1
+    },
+    "num_samples": 512,
+    "num_train_timesteps": 1000,
+    "precision": "bf16",
+    "prefix_budgets": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "protocol_schema": "cofitok_ddim_sampling_v1",
+    "random_stream": {
+      "batch_size_invariant": true,
+      "prefix_budgets_share_stream": true,
+      "resume_index_invariant": true,
+      "scope": "per_global_sample_index",
+      "seed_formula": "(seed + global_index) mod 2^63"
+    },
+    "sample_set_digest": {
+      "algorithm": "sha256",
+      "framing": "filename_utf8_nul_file_bytes_nul"
+    },
+    "sample_steps": 50,
+    "sampler": "ddim",
+    "seed": 0,
+    "start_index": 0
+  },
+  "sampling_manifest_sha256": "c5badb1b0cd4dfaf316ab47b27caedc5affb1330f8bd0edfb2d7868c1e3a2084",
+  "sampling_progress": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k_v6/samples_probe512_ddim50_cfg15/sampling_progress.json",
+  "schema_version": 6,
+  "status": "completed",
+  "torch_version": "2.7.1+cu128",
+  "weights": "ema"
+}

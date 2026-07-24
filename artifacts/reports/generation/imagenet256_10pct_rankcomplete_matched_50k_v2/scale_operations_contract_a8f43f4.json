@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "role": "precheckpoint_large_scale_operations_contract",
+  "created_at": "2026-07-21T09:27:23.4998593+08:00",
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "tracked_dirty": false
+  },
+  "runtime": {
+    "device": "cpu",
+    "cuda_visible_devices": "",
+    "elapsed_seconds": 13.448852878
+  },
+  "pytest": {
+    "status": "pass",
+    "passed": 55,
+    "skipped": 1,
+    "skip_reason": "tests/test_generation_system.py:144 requires CUDA; CUDA was deliberately hidden from the concurrent training audit",
+    "exit_code": 0,
+    "files": [
+      "tests/test_generation_completion_supervisor.py",
+      "tests/test_generation_runtime_selection.py",
+      "tests/test_generation_storage_capacity.py",
+      "tests/test_generation_transition_pipeline.py",
+      "tests/test_generation_training_watchdog.py",
+      "tests/test_generation_system.py"
+    ],
+    "log": "scale_operations_contract_a8f43f4.log",
+    "log_bytes": 111,
+    "log_sha256": "ebdd300aac7a96bc7e5ae784517d134bdfe376f641dbd8165b92cb7c6367ec10"
+  },
+  "storage_prechecks": {
+    "full_training": {
+      "status": "pass",
+      "report": "storage_full_training_precheck_a8f43f4.json",
+      "report_bytes": 959,
+      "report_sha256": "9c7301a7a97a19e01bb1434e0c1c1ba75bd848153b0870f4ed238b8f931cfe07",
+      "required_free_bytes": 106296656416,
+      "headroom_bytes": 443744906720
+    },
+    "full_posteval": {
+      "status": "pass",
+      "report": "storage_full_posteval_precheck_a8f43f4.json",
+      "report_bytes": 950,
+      "report_sha256": "2cca95f1fe4a81a30a0c023346c419542e82b187d8f972b2dbbb1cded3d2d501",
+      "required_free_bytes": 112180854784,
+      "headroom_bytes": 437860708352
+    }
+  },
+  "coverage": [
+    "bounded supervisor retry and nonretryable scientific hold classification",
+    "training and sampling runtime selection contracts",
+    "storage reserve arithmetic and insufficient-capacity rejection",
+    "revision transition and stale-run rejection",
+    "training watchdog monitor identity and failure handling",
+    "full queue runbook and post-training pipeline contracts"
+  ],
+  "scope": {
+    "cpu_operations_contract_verified": true,
+    "current_storage_precheck_verified": true,
+    "concurrent_cuda_smoke_performed": false,
+    "formal_stage_entry_storage_reports_verified": false,
+    "full_300k_operational_monitor_verified": false
+  }
+}

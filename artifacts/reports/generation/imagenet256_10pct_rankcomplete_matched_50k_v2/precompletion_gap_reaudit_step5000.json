@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "status": "expected_in_progress",
+  "created_at": "2026-07-21T11:01:21.0157987+08:00",
+  "role": "terminal_completion_audit_recheck_after_first_verified_live_checkpoint",
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "tracked_dirty": false
+  },
+  "invocation": {
+    "script": "scripts/audit_large_scale_generation_completion.py",
+    "expected_deployment_source_revision": "781a01444fddbf0d48a427ba58bdeed50167b5be",
+    "expected_10pct_revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "expected_full_revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "cuda_visible_devices": "",
+    "exit_code": 1,
+    "exit_code_expected_for_incomplete_pipeline": true
+  },
+  "source_report": {
+    "file": "precompletion_gap_audit_after_step5000_a8f43f4.json",
+    "bytes": 3635,
+    "sha256": "3dff962581ad7c170d3326846d04b8ebcb8909e1d4b94b6c01c74d8af2d0c6f4"
+  },
+  "result": {
+    "audit_status": "in_progress",
+    "complete": false,
+    "failed_check_count": 0,
+    "warning_count": 0,
+    "missing_check_count": 17,
+    "passed_checks": [
+      "controlled_revision_transition"
+    ],
+    "missing_checks": [
+      "ten_percent_matched_training",
+      "generation_storage_capacity",
+      "full_training_operational_monitor",
+      "scaling_promotion_gate",
+      "full_matched_training",
+      "full_training_runtime_environment",
+      "full_training_checkpoint_code_provenance",
+      "reproducible_full_checkpoint_files",
+      "full_runtime_selection",
+      "full_training_audits",
+      "full_milestone_evaluations",
+      "formal_50k_generation",
+      "formal_sampling_runtime_selection",
+      "deterministic_visual_quality_audit",
+      "deployable_ema_inference_artifacts",
+      "final_generation_gate",
+      "final_comparison_report"
+    ]
+  },
+  "interpretation": {
+    "new_terminal_failure_detected": false,
+    "new_terminal_warning_detected": false,
+    "verified_step5000_checkpoint_is_terminal_completion": false,
+    "premature_completion_rejected": true,
+    "notes": "The first live checkpoint proves scaling-run integrity and payload completeness only. It does not satisfy any unfinished full-system training, quality, inference, or release requirement."
+  }
+}

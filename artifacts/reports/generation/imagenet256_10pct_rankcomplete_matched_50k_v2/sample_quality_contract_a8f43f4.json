@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "role": "precheckpoint_sample_quality_evaluation_contract",
+  "created_at": "2026-07-21T09:23:13.7922781+08:00",
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "tracked_dirty": false
+  },
+  "runtime": {
+    "device": "cpu",
+    "cuda_visible_devices": "",
+    "elapsed_seconds": 8.822486834
+  },
+  "pytest": {
+    "status": "pass",
+    "passed": 28,
+    "exit_code": 0,
+    "files": [
+      "tests/test_generation_metrics.py",
+      "tests/test_official_fid_protocol.py",
+      "tests/test_generation_checkpoint_evaluation.py",
+      "tests/test_generation_visual_audit.py",
+      "tests/test_generation_milestone_report.py",
+      "tests/test_generated_samples.py",
+      "tests/test_evaluate_quality_path.py"
+    ],
+    "log": "sample_quality_contract_a8f43f4.log",
+    "log_bytes": 99,
+    "log_sha256": "977aff91e5419d5c1e3d49c0548fc2f4d8f157ab91db4c203ae969c17524a825"
+  },
+  "coverage": [
+    "official FID, IS, precision, and recall report protocol",
+    "real-set and generated-sample tree identity",
+    "checkpoint mechanism prefix and component permutation evaluation",
+    "zero-token, random-token, and shuffled-token diagnostics",
+    "ordered-prefix rank and early-token energy evidence",
+    "deterministic matched and prefix visual-audit panels",
+    "milestone source report byte and SHA256 freshness"
+  ],
+  "formal_quality_thresholds": {
+    "scaling_cofitok_fid_max": 100.0,
+    "scaling_relative_fid_regression_max": 0.05,
+    "full_cofitok_fid_max": 20.0,
+    "full_precision_min": 0.3,
+    "full_recall_min": 0.3,
+    "full_relative_precision_recall_regression_max": 0.05,
+    "early_six_token_energy_min": 0.05,
+    "ordered_prefix_rank_required": 1
+  },
+  "scope": {
+    "evaluation_code_contract_verified": true,
+    "formal_10k_scaling_metrics_verified": false,
+    "formal_50k_full_metrics_verified": false,
+    "scientific_sample_quality_passed": false
+  }
+}

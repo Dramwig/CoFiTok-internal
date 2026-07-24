@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "role": "precheckpoint_matched_baseline_fairness_contract",
+  "created_at": "2026-07-21T09:17:10.4575287+08:00",
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "tracked_dirty": false
+  },
+  "runtime": {
+    "device": "cpu",
+    "cuda_visible_devices": "",
+    "elapsed_seconds": 8.114279591
+  },
+  "pytest": {
+    "status": "pass",
+    "passed": 83,
+    "exit_code": 0,
+    "files": [
+      "tests/test_generation_pair_contract.py",
+      "tests/test_validate_generation_training_pair.py",
+      "tests/test_generation_gate_contract.py",
+      "tests/test_generation_gate_report.py",
+      "tests/test_generation_gate_source_provenance.py",
+      "tests/test_large_scale_generation_comparison.py",
+      "tests/test_build_official_related_methods_table.py"
+    ],
+    "log": "matched_baseline_contract_a8f43f4.log",
+    "log_bytes": 179,
+    "log_sha256": "35a2ff102b9bf8fa42443eca838b563f49ad845b5bb6b16d0307e37f981aa75c"
+  },
+  "matched_direct_pair": {
+    "methods": [
+      "cofitok_k8",
+      "dense_identity"
+    ],
+    "cofitok_parameters": 62836796,
+    "dense_parameters": 62824707,
+    "relative_parameter_gap": 0.00019242429574721295,
+    "comparison_tier": "matched_training_direct"
+  },
+  "external_context": {
+    "methods": [
+      "D-AR",
+      "MAR",
+      "ReTok"
+    ],
+    "comparison_tier": "official_pretrained_contextual",
+    "cross_tier_numeric_ranking_allowed": false,
+    "official_table": "artifacts/reports/baselines/official_related_methods_2026-07-11_final/official_related_methods_table.json",
+    "official_table_bytes": 3346,
+    "official_table_sha256": "14cd71cb72e7ee121f571503cd75491858840de806a97fba9cda188d034c748a"
+  },
+  "coverage": [
+    "shared data, diffusion, runtime, optimization, and backbone fields",
+    "matched training revision, recipe stage, and checkpoint identity",
+    "dense auxiliary-loss exclusion",
+    "generation gate scientific and provenance contracts",
+    "gate source byte and SHA256 freshness",
+    "direct-versus-contextual comparison tier isolation"
+  ],
+  "scope": {
+    "code_contract_verified": true,
+    "completed_matched_training_reports_verified": false,
+    "formal_generation_metrics_verified": false
+  }
+}
