@@ -1,0 +1,43 @@
+{
+  "completed_fraction": 1.0,
+  "completed_samples": 512,
+  "cumulative_elapsed_seconds": 2188.4856431484222,
+  "error": null,
+  "error_type": null,
+  "eta_seconds": 0.0,
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "invocation": 1,
+  "invocation_elapsed_seconds": 2188.4856431484222,
+  "last_completed_index": 511,
+  "pid": 268337,
+  "prefix_budgets": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "sample_sets": {
+    "1": {
+      "count": 512,
+      "sha256": "80b41234036cbe38a6d44a26a88d204526050f5403d4787392a46ccb5b6f49ee"
+    },
+    "2": {
+      "count": 512,
+      "sha256": "70ab4d842ceda0ace0a9ff4d234593d2ce22182ebe444a9729c9ef1bcd04868d"
+    },
+    "4": {
+      "count": 512,
+      "sha256": "33b7d8eb17754e9e121744baa10f1e845646f30e4339d946052975ec98d07510"
+    },
+    "8": {
+      "count": 512,
+      "sha256": "61b736c9ab12f1e684ac6a6f943007c1ad0ad18c019eb9529bded952b7d2bcc4"
+    }
+  },
+  "samples_per_second": 0.23395172895145028,
+  "sampling_manifest_sha256": "4fd4ebc39cbf210e9c4407068a3fc4fefedcac4e6696fec80f4304f2ae9aeb12",
+  "schema_version": 1,
+  "start_index": 0,
+  "status": "completed",
+  "total_samples": 512
+}
