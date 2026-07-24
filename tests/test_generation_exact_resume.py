@@ -135,6 +135,16 @@ def test_legacy_config_defaults_to_no_random_horizontal_flip() -> None:
     assert config.data.random_horizontal_flip_prob == 0.0
 
 
+def test_training_accepts_fixed_basis_restricted_synthesis() -> None:
+    config = load_config(CONFIG)
+    fixed_basis = replace(
+        config,
+        model=replace(config.model, synthesis_mode="fixed_basis"),
+    )
+
+    _validate_config(fixed_basis)
+
+
 @pytest.mark.parametrize("probability", [-0.01, 1.01, float("nan")])
 def test_training_rejects_invalid_horizontal_flip_probability(probability: float) -> None:
     config = load_config(CONFIG)

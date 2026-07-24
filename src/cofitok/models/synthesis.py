@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -106,6 +108,101 @@ class RestrictedSynthesis(nn.Module):
                 align_corners=False,
             )
         return self.gamma.view(1, 1, 1, 1) * self.local(projected)
+
+
+def _fixed_basis_projection(
+    token_channels: int,
+    image_channels: int,
+    channel_offset: int,
+    active_token_channels: int | None = None,
+) -> torch.Tensor:
+    if token_channels < 1 or image_channels < 1:
+        raise ValueError("fixed-basis channel counts must be positive")
+    active_token_channels = active_token_channels or token_channels
+    assignments = [
+        (channel_offset + token_index) % image_channels
+        for token_index in range(active_token_channels)
+    ]
+    counts = [assignments.count(image_index) for image_index in range(image_channels)]
+    projection = torch.zeros(image_channels, token_channels, 1, 1)
+    for token_index, image_index in enumerate(assignments):
+        projection[image_index, token_index, 0, 0] = 1.0 / math.sqrt(counts[image_index])
+    return projection
+
+
+class FixedBasisSynthesis(nn.Module):
+    """Expands one token through a deterministic, bias-free channel basis."""
+
+    def __init__(
+        self,
+        token_channels: int,
+        image_channels: int,
+        gamma_mode: str = "fixed_one",
+        token_stride: int = 1,
+        active_token_channels: int | None = None,
+        output_size: int | None = None,
+        channel_offset: int = 0,
+    ) -> None:
+        super().__init__()
+        active_token_channels = _validate_token_layout(
+            token_channels,
+            token_stride,
+            active_token_channels,
+        )
+        if channel_offset < 0:
+            raise ValueError("fixed-basis channel offset must be non-negative")
+        self.token_stride = token_stride
+        self.active_token_channels = active_token_channels
+        self.output_size = output_size
+        self.channel_offset = channel_offset
+        self.register_buffer(
+            "token_channel_mask",
+            _make_token_channel_mask(token_channels, active_token_channels),
+            persistent=False,
+        )
+        self.register_buffer(
+            "projection",
+            _fixed_basis_projection(
+                token_channels,
+                image_channels,
+                channel_offset,
+                active_token_channels,
+            ),
+        )
+        gamma = _make_gamma(gamma_mode)
+        if isinstance(gamma, nn.Parameter):
+            self.gamma = gamma
+        else:
+            self.register_buffer("gamma", gamma, persistent=False)
+
+    def forward(self, token: torch.Tensor) -> torch.Tensor:
+        token = token * self.token_channel_mask
+        if self.token_stride > 1:
+            original_size = token.shape[-2:]
+            token = F.avg_pool2d(
+                token,
+                kernel_size=self.token_stride,
+                stride=self.token_stride,
+                ceil_mode=True,
+            )
+            token = F.interpolate(
+                token,
+                size=original_size,
+                mode="bilinear",
+                align_corners=False,
+            )
+        projected = F.conv2d(token, self.projection)
+        if self.output_size is not None and projected.shape[-2:] != (
+            self.output_size,
+            self.output_size,
+        ):
+            projected = F.interpolate(
+                projected,
+                size=(self.output_size, self.output_size),
+                mode="bilinear",
+                align_corners=False,
+            )
+        return self.gamma.view(1, 1, 1, 1) * projected
 
 
 class DeepSynthesis(nn.Module):
@@ -239,6 +336,82 @@ class RestrictedSynthesisBank(nn.Module):
         return [synthesizer(torch.zeros_like(token)) for synthesizer, token in zip(self.synthesizers, tokens)]
 
 
+class FixedBasisSynthesisBank(nn.Module):
+    def __init__(
+        self,
+        token_count: int,
+        token_channels: int,
+        image_channels: int,
+        gamma_mode: str,
+        token_strides: list[int] | None = None,
+        active_token_channels: list[int] | None = None,
+        token_channel_schedule: list[int] | None = None,
+        output_size: int | None = None,
+    ) -> None:
+        super().__init__()
+        token_strides = _normalize_per_token_values(
+            token_strides,
+            token_count,
+            1,
+            "token strides",
+        )
+        active_token_channels = _normalize_per_token_values(
+            active_token_channels or token_channel_schedule,
+            token_count,
+            token_channels,
+            "active channel values",
+        )
+        token_channels_per_token = _normalize_per_token_values(
+            token_channel_schedule,
+            token_count,
+            token_channels,
+            "token channel values",
+        )
+        if token_channel_schedule and active_token_channels != token_channels_per_token:
+            raise ValueError(
+                "active_token_channels must be omitted or equal token_channel_schedule "
+                "for variable-channel tokens"
+            )
+        channel_offsets = []
+        cumulative_channels = 0
+        for channels in token_channels_per_token:
+            channel_offsets.append(cumulative_channels)
+            cumulative_channels += channels
+        self.synthesizers = nn.ModuleList(
+            [
+                FixedBasisSynthesis(
+                    token_channels=channels,
+                    image_channels=image_channels,
+                    gamma_mode=gamma_mode,
+                    token_stride=token_stride,
+                    active_token_channels=active_channels,
+                    output_size=output_size,
+                    channel_offset=channel_offset,
+                )
+                for token_stride, active_channels, channels, channel_offset in zip(
+                    token_strides,
+                    active_token_channels,
+                    token_channels_per_token,
+                    channel_offsets,
+                )
+            ]
+        )
+
+    def forward(self, tokens: list[torch.Tensor]) -> list[torch.Tensor]:
+        if len(tokens) != len(self.synthesizers):
+            raise ValueError(f"Expected {len(self.synthesizers)} tokens, got {len(tokens)}")
+        return [
+            synthesizer(token)
+            for synthesizer, token in zip(self.synthesizers, tokens)
+        ]
+
+    def zero_components_like(self, tokens: list[torch.Tensor]) -> list[torch.Tensor]:
+        return [
+            synthesizer(torch.zeros_like(token))
+            for synthesizer, token in zip(self.synthesizers, tokens)
+        ]
+
+
 class DeepSynthesisBank(nn.Module):
     def __init__(
         self,
@@ -350,6 +523,17 @@ def build_synthesis_bank(
             token_count=token_count,
             token_channels=token_channels,
             image_channels=image_channels,
+        )
+    if synthesis_mode in {"fixed_basis", "fixed_channel_basis"}:
+        return FixedBasisSynthesisBank(
+            token_count=token_count,
+            token_channels=token_channels,
+            image_channels=image_channels,
+            gamma_mode=gamma_mode,
+            token_strides=token_strides,
+            active_token_channels=active_token_channels,
+            token_channel_schedule=token_channel_schedule,
+            output_size=output_size,
         )
     if synthesis_mode == "restricted":
         return RestrictedSynthesisBank(

@@ -2681,6 +2681,8 @@ def test_completion_audit_rejects_milestone_sampling_protocol_drift() -> None:
 
 
 def test_completion_audit_direct_cli_reports_in_progress(tmp_path) -> None:
+    project_root = tmp_path / "empty_project"
+    project_root.mkdir()
     output_root = tmp_path / "empty_outputs"
     output_root.mkdir()
     output = tmp_path / "completion_audit.json"
@@ -2692,13 +2694,13 @@ def test_completion_audit_direct_cli_reports_in_progress(tmp_path) -> None:
             sys.executable,
             str(ROOT / "scripts/audit_large_scale_generation_completion.py"),
             "--project-root",
-            str(ROOT),
+            str(project_root),
             "--output-root",
             str(output_root),
-                "--expected-full-revision",
-                FULL_REVISION,
-                "--expected-10pct-revision",
-                FULL_REVISION,
+            "--expected-full-revision",
+            FULL_REVISION,
+            "--expected-10pct-revision",
+            FULL_REVISION,
             "--output",
             str(output),
             "--allow-incomplete",

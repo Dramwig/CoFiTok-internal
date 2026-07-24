@@ -99,8 +99,15 @@ def parse_args() -> argparse.Namespace:
 def _validate_config(config: ExperimentConfig) -> None:
     if config.model.predictor_type not in {"scalable_unet", "adm_unet", "generation_unet"}:
         raise ValueError("train_generation.py requires the scalable generation predictor")
-    if config.model.synthesis_mode not in {"restricted", "dense_identity"}:
-        raise ValueError("production training permits only restricted CoFiTok or dense_identity control")
+    if config.model.synthesis_mode not in {
+        "restricted",
+        "fixed_basis",
+        "dense_identity",
+    }:
+        raise ValueError(
+            "production training permits only restricted/fixed-basis CoFiTok "
+            "or dense_identity control"
+        )
     if config.diffusion.prediction_target != "epsilon":
         raise ValueError("production training currently supports epsilon prediction only")
     if config.data.class_conditional != (config.model.num_classes > 0):

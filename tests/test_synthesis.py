@@ -1,7 +1,16 @@
 import torch
 from torch import nn
 
-from cofitok.models.synthesis import DenseIdentitySynthesisBank, DeepSynthesis, DeepSynthesisBank, RestrictedSynthesis, RestrictedSynthesisBank, build_synthesis_bank
+from cofitok.models.synthesis import (
+    DenseIdentitySynthesisBank,
+    DeepSynthesis,
+    DeepSynthesisBank,
+    FixedBasisSynthesis,
+    FixedBasisSynthesisBank,
+    RestrictedSynthesis,
+    RestrictedSynthesisBank,
+    build_synthesis_bank,
+)
 
 
 def test_restricted_synthesis_zero_token_maps_to_zero() -> None:
@@ -100,6 +109,69 @@ def test_synthesis_bank_upsamples_variable_channel_tokens_to_image_space() -> No
 
     assert all(component.shape == (2, 3, 16, 16) for component in components)
     assert [module.proj.in_channels for module in bank.synthesizers] == [2, 2, 4, 4]
+
+
+def test_fixed_basis_synthesis_is_deterministic_and_zero_preserving() -> None:
+    first = FixedBasisSynthesis(
+        token_channels=4,
+        image_channels=3,
+        gamma_mode="fixed_one",
+        channel_offset=2,
+    )
+    second = FixedBasisSynthesis(
+        token_channels=4,
+        image_channels=3,
+        gamma_mode="fixed_one",
+        channel_offset=2,
+    )
+    token = torch.randn(2, 4, 8, 8)
+
+    assert not list(first.parameters())
+    assert torch.equal(first.projection, second.projection)
+    assert torch.equal(first(token), second(token))
+    assert torch.count_nonzero(first(torch.zeros_like(token))) == 0
+
+
+def test_fixed_basis_rank_complete_tail_spans_rgb() -> None:
+    bank = FixedBasisSynthesisBank(
+        token_count=8,
+        token_channels=8,
+        image_channels=3,
+        gamma_mode="fixed_one",
+        token_channel_schedule=[4, 4, 8, 8, 8, 8, 1, 2],
+        output_size=16,
+    )
+    tail_projection = torch.cat(
+        [
+            bank.synthesizers[-2].projection.flatten(2).squeeze(-1),
+            bank.synthesizers[-1].projection.flatten(2).squeeze(-1),
+        ],
+        dim=1,
+    )
+
+    assert torch.linalg.matrix_rank(tail_projection) == 3
+
+
+def test_fixed_basis_bank_upsamples_variable_channel_tokens() -> None:
+    bank = build_synthesis_bank(
+        synthesis_mode="fixed_basis",
+        token_count=4,
+        token_channels=8,
+        image_channels=3,
+        kernel_size=3,
+        gamma_mode="fixed_one",
+        token_channel_schedule=[2, 2, 4, 4],
+        output_size=16,
+    )
+    tokens = [
+        torch.randn(2, 2, 4, 4),
+        torch.randn(2, 2, 8, 8),
+        torch.randn(2, 4, 8, 8),
+        torch.randn(2, 4, 16, 16),
+    ]
+
+    assert isinstance(bank, FixedBasisSynthesisBank)
+    assert all(component.shape == (2, 3, 16, 16) for component in bank(tokens))
 
 
 def test_deep_synthesis_ablation_has_bias_and_nonlinearity() -> None:
