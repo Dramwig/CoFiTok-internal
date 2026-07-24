@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "status": "pass_with_observation",
+  "role": "scheduled_validation_health_diagnostic_only",
+  "formal_v3": {
+    "git_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "step": 2000,
+    "samples_seen": 128000,
+    "training_epsilon": 0.029234474524855614,
+    "training_total": 0.04426857829093933,
+    "validation_epsilon_mse": 0.03190126270055771,
+    "progress_audit": {
+      "status": "healthy",
+      "issues": [],
+      "warnings": [],
+      "validation_event_count": 2,
+      "validation_logging_complete": true,
+      "checkpoint_status": "not_due",
+      "seconds_per_step": 2.220869678685282,
+      "eta_seconds": 106601.74457689354
+    },
+    "metrics_snapshot": {
+      "path": "cofitok_train_metrics_through_step_00002050.jsonl",
+      "bytes": 30411,
+      "sha256": "f5f7a7808ae028680d2d5147622c353be733741d5110a122381259c10c8e16bd"
+    },
+    "progress_report": {
+      "path": "cofitok_progress_step_00002000.json",
+      "bytes": 2077,
+      "sha256": "c87713964328b23c217653ef0988b6512b40541bc49310e5ec6b3fa61eb8fd32"
+    },
+    "observer_status_snapshot": {
+      "path": "milestone_waiter_after_step_00002000.json",
+      "bytes": 1353,
+      "sha256": "e372a6f722907cdbf81c691484c74ca72f5e5ea1577232cc709422e5a75a2866"
+    }
+  },
+  "selected_v8_probe": {
+    "git_revision": "5a93c7061e4df237234b19b052331fbc3ec10425",
+    "step": 2000,
+    "training_epsilon": 0.031081476714462042,
+    "training_total": 0.0452868826687336,
+    "validation_epsilon_mse": 0.03756297379732132,
+    "metrics": {
+      "path": "artifacts/reports/generation/rank_recovery_probe_2026-07-24_v8/source_reports/train_metrics.jsonl",
+      "bytes": 73420,
+      "sha256": "efc07360aad08629541eb557c00bac86406279790ab9cffb01a6da1df0ae195c"
+    }
+  },
+  "relative_change_percent": {
+    "training_epsilon": -5.94245314202535,
+    "training_total": -2.2485636409178333,
+    "validation_epsilon_mse": -15.072584847282133
+  },
+  "formal_validation_trend": {
+    "step_1000": 0.04005979001522064,
+    "step_2000": 0.03190126270055771,
+    "relative_change_percent": -20.365876385181036
+  },
+  "gpu_memory_observation": {
+    "measurement_interface": "nvidia-smi",
+    "after_step_1000_validation_mib": 77983,
+    "after_step_2000_validation_mib": 77983,
+    "delta_mib": 0,
+    "total_mib": 97887,
+    "interpretation": "allocated_memory_plateau_observed_across_two_validation_events",
+    "scope": "point_measurement_diagnostic_only"
+  },
+  "interpretation": {
+    "training_state": "formal_v3_training_objective_is_lower_than_v8_at_step_2000",
+    "validation_state": "formal_v3_second_scheduled_validation_is_lower_than_v8_and_improved_from_step_1000",
+    "memory_state": "no_repeated_post_validation_memory_growth_observed_between_step_1000_and_step_2000",
+    "decision": "continue_unchanged_and_require_step_3000_to_step_5000_validation_plus_formal_sample_gate",
+    "reason": "The second fixed-validation event resolves the isolated step-1000 increase in the favorable direction, while the run remains finite and operationally healthy. This is still a short-horizon diagnostic and cannot establish 50K generation quality.",
+    "not_a_promotion_or_quality_gate": true
+  }
+}

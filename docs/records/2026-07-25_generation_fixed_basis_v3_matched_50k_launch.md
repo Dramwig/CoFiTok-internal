@@ -359,3 +359,50 @@ It is `930` bytes with SHA256
 This removes an immediate capacity risk but does not satisfy the terminal
 `generation_storage_capacity` check. The formal runbook must rerun the same
 preflight against post-training disk state before creating samples.
+
+## Step-2,000 scheduled validation
+
+The read-only milestone observer and tracked progress auditor independently
+accepted the second scheduled validation:
+
+- observer milestone status: `pass`
+- tracked progress status: `healthy`
+- issues/warnings: empty
+- metric rows: `41`
+- validation events: `2/2`, logging complete
+- checkpoint: correctly `not_due`
+- seconds per step: `2.220870`
+- ETA to CoFiTok 50K: `106,602` seconds
+
+The exact step-2,000 row reported:
+
+- training epsilon: `0.02923447`
+- total loss: `0.04426858`
+- validation epsilon MSE: `0.03190126`
+- gradient norm: `0.15392414`
+- samples seen: `128,000`
+
+Against v8 at the same step, formal training epsilon, total loss, and
+validation MSE were respectively `5.94%`, `2.25%`, and `15.07%` lower.
+Formal validation MSE also improved `20.37%` from step 1,000 to step 2,000,
+resolving the isolated first-event increase in the favorable direction.
+
+GPU memory measured by `nvidia-smi` immediately after the step-1,000 and
+step-2,000 validation events was `77,983 MiB` both times, out of
+`97,887 MiB`. The zero delta supports a caching-allocator plateau rather than
+repeated validation-event growth across these two observations. This remains a
+point-measurement diagnostic, not a broad memory-safety proof.
+
+Bound evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_progress_step_00002000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_train_metrics_through_step_00002050.jsonl
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/milestone_waiter_after_step_00002000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/step2000_validation_vs_v8.json
+```
+
+This second validation remains a short-horizon health diagnostic. The formal
+run continues unchanged and still requires the 3K-5K validation trend, verified
+step-5,000 checkpoint integrity, both 50K trainings, and the unchanged formal
+10K promotion gate before full 300K can be authorized.
