@@ -48,6 +48,8 @@ No checkpoint or validation event was due at that point.
 | `milestone_waiter_after_step_00004000.json` | 2,129 | `0ce2cf1d0d0e47c69c9f76071c934df1c2a2a1b20a007d22853fcee09e49f471` |
 | `milestone_waiter_after_step_00005000.json` | 2,510 | `aaeff3d9ec81610258a485695e6c6bd71f8106f72fbded8ba2833bf68d593154` |
 | `latest_after_step_00005000.json` | 642 | `a3d12182bd038ad7e49d6cba94dd5d4e1391b2bb1de4cfb434a80ae4016ede97` |
+| `long_horizon_waiter_launch_status.json` | 544 | `434022c5bc8b97f594bc4e71543fce7f99852726c9697333465dbb67b9fe0aec` |
+| `long_horizon_waiter_launch.json` | 2,618 | `e480b3cb24b1fe71e00c0e40ff1f7643e0c26837f0cf9dac221fb5a8d0565110` |
 | `runtime_selection.json` | 68,006 | `cb125609a28bf8a531c495b365c6e22a8ee9d2eb7e377ba4c2d538be1b63df0d` |
 | `storage_preflight_early_after_step1000.json` | 930 | `5e16f3b7c5dee38b9c699c0288762ae189d6dd78c3ac9051c9687116cd0351c7` |
 | `step1000_validation_vs_v8.json` | 2,236 | `b2343524e8fe813d5a3c5cb62556797cd5e7f5709224b718f5f2a21b652bcc59` |
@@ -105,6 +107,12 @@ Its integrity sidecar, `latest.json`, and progress report matched on all ten
 audited identity fields. Fifth-event validation MSE was `0.03096321`: lower
 than formal steps 1K and 2K, but `36.31%` above v8 at step 5K. This proves the
 first formal checkpoint trust boundary, not generation quality or promotion.
+
+After the bounded 1K-5K observer exited successfully, a generalized read-only
+observer was launched for steps 10K, 25K, and 50K. It requires each milestone
+to bind the exact contemporaneous checkpoint and requires terminal progress
+status `complete` at 50K. The observer runs only from `/tmp`, has a 36-hour
+hard timeout, and cannot load models, use the GPU, or control training.
 
 The terminal completion auditor was also run with the exact source, 10%, and
 full revision identities. It returned the expected nonzero exit with

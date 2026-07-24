@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "role": "read_only_long_horizon_training_observer_launch",
+  "observer": {
+    "pid": 531838,
+    "source_local": "artifacts/operations/generation/fixed_basis_v3_milestone_waiter.py",
+    "source_remote": "/tmp/cofitok_fixed_basis_v3_long_horizon_waiter.py",
+    "source_sha256": "47a24e56604b8720ff689f7a9d98e2e54a876faabeec2c2fd4d97ab2cf7f210c",
+    "source_sha256_match": true,
+    "remote_syntax_check": "pass",
+    "status_remote": "/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_fixed_basis_v3_long_horizon_waiter.status.json",
+    "log_remote": "/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_fixed_basis_v3_long_horizon_waiter.log",
+    "pid_file_remote": "/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_fixed_basis_v3_long_horizon_waiter.pid"
+  },
+  "contract": {
+    "milestones": [
+      10000,
+      25000,
+      50000
+    ],
+    "expected_steps": 50000,
+    "checkpoint_interval": 5000,
+    "evaluation_interval": 1000,
+    "require_complete_final": true,
+    "poll_seconds": 240,
+    "timeout_seconds": 129600,
+    "expected_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "expected_branch": "scale/generative-system",
+    "integrity_policy": "required"
+  },
+  "initial_status": {
+    "status": "waiting",
+    "last_step": 5450,
+    "milestones_pending": [
+      10000,
+      25000,
+      50000
+    ],
+    "snapshot": {
+      "path": "long_horizon_waiter_launch_status.json",
+      "bytes": 544,
+      "sha256": "434022c5bc8b97f594bc4e71543fce7f99852726c9697333465dbb67b9fe0aec"
+    }
+  },
+  "verification": {
+    "targeted_tests": {
+      "passed": 18,
+      "failed": 0
+    },
+    "full_tests": {
+      "collected": 664,
+      "passed": 662,
+      "skipped": 2,
+      "failed": 0,
+      "exit_code": 0
+    },
+    "covered_fail_closed_cases": [
+      "step_10000_requires_exact_checkpoint_step",
+      "stale_step_5000_pointer_is_rejected_at_step_10000",
+      "step_50000_requires_complete_progress_status",
+      "duplicate_or_out_of_horizon_milestones_are_rejected"
+    ]
+  },
+  "safety": {
+    "loads_model_or_checkpoint_payload": false,
+    "uses_gpu": false,
+    "controls_training_process": false,
+    "modifies_remote_tracked_worktree": false,
+    "writes_only_status_log_and_small_progress_reports": true
+  },
+  "interpretation": {
+    "purpose": "Independently re-run the frozen tracked progress and integrity auditor at long-horizon CoFiTok milestones while the formal pair monitor remains authoritative for operational control.",
+    "not_a_training_or_quality_gate": true
+  }
+}

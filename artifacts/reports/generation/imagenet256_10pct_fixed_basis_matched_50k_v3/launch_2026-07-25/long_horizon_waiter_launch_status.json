@@ -1,0 +1,17 @@
+{
+  "detail": "waiting for the next milestone",
+  "expected_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+  "last_step": 5450,
+  "milestones": {
+    "10000": null,
+    "25000": null,
+    "50000": null
+  },
+  "observer": "fixed_basis_v3_milestone_waiter",
+  "pid": 531838,
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3",
+  "schema_version": 1,
+  "started_at": "2026-07-24T22:37:51.051823+00:00",
+  "status": "waiting",
+  "updated_at": "2026-07-24T22:37:51.066240+00:00"
+}

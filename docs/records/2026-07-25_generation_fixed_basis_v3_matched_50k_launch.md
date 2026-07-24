@@ -568,3 +568,55 @@ artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch
 This establishes a reproducible first recovery point but does not satisfy the
 10% matched-pair, promotion, full 300K, formal 50K, or release-artifact gates.
 The frozen CoFiTok 50K run continues.
+
+## Long-horizon observer
+
+The bounded 1K-5K observer exited normally after terminal `pass`. Its source
+was then generalized for long-horizon checkpoints:
+
+- milestones are CLI-controlled and validated as unique scheduled-validation
+  steps within the training horizon;
+- each checkpoint-aligned milestone requires the exact current checkpoint,
+  integrity sidecar, and `latest.json` binding;
+- a stale step-5,000 latest pointer is rejected at step 10,000;
+- the final step 50,000 milestone requires progress status `complete`, not
+  merely `healthy`.
+
+Verification:
+
+```text
+targeted tests: 18 passed
+full pytest:    664 collected, 662 passed, 2 skipped, exit 0
+source SHA256:  47a24e56604b8720ff689f7a9d98e2e54a876faabeec2c2fd4d97ab2cf7f210c
+remote syntax:  pass
+```
+
+The exact source was copied to:
+
+```text
+/tmp/cofitok_fixed_basis_v3_long_horizon_waiter.py
+```
+
+Local and remote SHA256 matched. It was launched as PID `531838` with:
+
+```text
+milestones:             10,000 / 25,000 / 50,000
+expected steps:         50,000
+checkpoint interval:    5,000
+evaluation interval:    1,000
+require complete final: true
+poll:                   240 seconds
+hard timeout:           129,600 seconds
+```
+
+Initial status was `waiting` at step 5,450 with all three milestones pending.
+The observer reads metrics, Git identity, and checkpoint metadata and invokes
+the frozen tracked progress auditor. It does not load a checkpoint, use the
+GPU, control training, or modify the remote tracked worktree.
+
+Bound launch evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/long_horizon_waiter_launch.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/long_horizon_waiter_launch_status.json
+```
