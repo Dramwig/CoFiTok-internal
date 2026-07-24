@@ -326,3 +326,36 @@ It is `3,635` bytes with SHA256
 `ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc`.
 This is evidence that the completion contract recognizes the new deployment
 and still refuses premature completion.
+
+## Early storage risk check
+
+The exact formal 10% post-evaluation storage parameters were evaluated early,
+without starting sampling:
+
+```text
+stage: 10pct_posteval
+sample count: 20,256
+estimated sample size: 256 KiB
+additional reserve: 16 GiB
+safety margin: 32 GiB
+```
+
+Result:
+
+- status: `pass`
+- required free bytes: `56,849,596,416`
+- observed free bytes: `408,803,782,656`
+- headroom bytes: `351,954,186,240`
+- revision: clean `58d83bf`
+
+Evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/storage_preflight_early_after_step1000.json
+```
+
+It is `930` bytes with SHA256
+`5e16f3b7c5dee38b9c699c0288762ae189d6dd78c3ac9051c9687116cd0351c7`.
+This removes an immediate capacity risk but does not satisfy the terminal
+`generation_storage_capacity` check. The formal runbook must rerun the same
+preflight against post-training disk state before creating samples.

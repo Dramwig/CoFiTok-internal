@@ -34,6 +34,7 @@ No checkpoint or validation event was due at that point.
 | `generation_completion_supervisor.status.json` | 469 | `87c5928e98f8a1ec1072236de7f7de0cf358e94b0a5738a36231e3415363a717` |
 | `milestone_waiter_after_step_00001000.json` | 911 | `fa902474b966dbb2548cb6b80ba626272caf03ce4243608a87eee2167d273ab8` |
 | `runtime_selection.json` | 68,006 | `cb125609a28bf8a531c495b365c6e22a8ee9d2eb7e377ba4c2d538be1b63df0d` |
+| `storage_preflight_early_after_step1000.json` | 930 | `5e16f3b7c5dee38b9c699c0288762ae189d6dd78c3ac9051c9687116cd0351c7` |
 | `step1000_validation_vs_v8.json` | 2,236 | `b2343524e8fe813d5a3c5cb62556797cd5e7f5709224b718f5f2a21b652bcc59` |
 
 These hashes identify the copied local bytes. The deployment receipt also
@@ -59,3 +60,9 @@ full revision identities. It returned the expected nonzero exit with
 `controlled_revision_transition` was the sole terminal check already at
 `pass`. The snapshot prevents launch evidence from being mistaken for
 large-scale completion.
+
+An early storage-risk preflight reused the exact formal 10% post-evaluation
+parameters. It required 56.85 GB, observed 408.80 GB free, and passed with
+351.95 GB headroom. The formal runbook must still rerun this check after both
+50K trainings complete; this early report does not satisfy the terminal
+storage check.
