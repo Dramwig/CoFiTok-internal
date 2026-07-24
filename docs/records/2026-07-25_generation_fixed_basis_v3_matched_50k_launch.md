@@ -644,3 +644,38 @@ Bound launch evidence:
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/long_horizon_waiter_launch.json
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/long_horizon_waiter_launch_status.json
 ```
+
+## Step-6,000 post-checkpoint diagnostic
+
+The first scheduled validation after checkpoint publication was inspected
+because its value moved adversely:
+
+```text
+validation epsilon MSE: 0.03626135
+relative to step 5K:    +17.11%
+relative to step 4K:    +23.42%
+relative to step 1K:     -9.48%
+```
+
+The tracked progress auditor separated this quality diagnostic from execution
+health:
+
+- status: `healthy`
+- issues/warnings: empty
+- validation events: `6/6`, logging complete
+- latest checkpoint: step 5,000
+- required step 5,000 checkpoint: present
+- latest integrity: `verified`
+- Git revision: clean `58d83bf`
+
+Evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_progress_step_00006000_diagnostic.json
+```
+
+It is `3,111` bytes with SHA256
+`93e74f800896705429200bf3c769b98cff9204977ba2aeb97d0100736c2a5f20`.
+The adverse value does not justify hiding the event or declaring quality
+success. It also does not by itself determine the 50K endpoint, so the frozen
+run and unchanged 10K/25K/50K observer continue.

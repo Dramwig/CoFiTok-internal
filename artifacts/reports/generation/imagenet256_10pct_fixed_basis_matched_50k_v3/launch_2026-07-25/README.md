@@ -24,6 +24,7 @@ No checkpoint or validation event was due at that point.
 | `cofitok_progress_step_00003000.json` | 2,027 | `7d7f4e839c3cb9364fdd5208c6f07a83e0895d891341af218e41f9b7c10135d9` |
 | `cofitok_progress_step_00004000.json` | 2,077 | `39df2e50e51a87ea48a296f3859aee49d7987ec64364743bbf8616222e39b21a` |
 | `cofitok_progress_step_00005000.json` | 3,106 | `30329026393a158f69f6dd93b2b5207a6811b0dedc87367d944582d0547d3e0e` |
+| `cofitok_progress_step_00006000_diagnostic.json` | 3,111 | `93e74f800896705429200bf3c769b98cff9204977ba2aeb97d0100736c2a5f20` |
 | `cofitok_train_metrics_through_step_00000650.jsonl` | 10,001 | `8bd69150a75cfb4da2d71518b6d0befcb2db0472276be38eef2fba987afee38f` |
 | `cofitok_train_metrics_through_step_00001050.jsonl` | 15,778 | `e389612aed07856721d39e2207cdd2df25def39ccf783839f18a95ef197aaaeb` |
 | `cofitok_train_metrics_through_step_00002050.jsonl` | 30,411 | `f5f7a7808ae028680d2d5147622c353be733741d5110a122381259c10c8e16bd` |
@@ -115,6 +116,13 @@ and zero failed checks. Its bytes and SHA256 exactly matched the step-1,000
 snapshot, proving that a valid recovery checkpoint does not satisfy any
 matched-pair, promotion, full-training, sampling, release, or final-comparison
 requirement.
+
+The first post-checkpoint scheduled validation at step 6,000 was separately
+audited because it moved adversely. Validation MSE was `0.03626135`, up
+`17.11%` from step 5,000 and `23.42%` from step 4,000. The progress audit
+remained `healthy`, with validation `6/6`, no issues or warnings, and the 5K
+checkpoint still integrity-verified. This distinguishes an adverse quality
+diagnostic from an operational or reproducibility failure.
 
 After the bounded 1K-5K observer exited successfully, a generalized read-only
 observer was launched for steps 10K, 25K, and 50K. It requires each milestone
