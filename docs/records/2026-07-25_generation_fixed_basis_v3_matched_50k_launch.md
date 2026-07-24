@@ -496,3 +496,75 @@ artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/milestone_waiter_after_step_00004000.json
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/step4000_validation_vs_v8.json
 ```
+
+## Step-5,000 validation and checkpoint integrity
+
+The bounded milestone observer completed all requested milestones and reached
+terminal `pass`. The tracked progress auditor reported:
+
+- status: `healthy`
+- issues/warnings: empty
+- validation events: `5/5`, logging complete
+- checkpoint status: `available`
+- required checkpoint steps: `[5000]`
+- missing required steps: empty
+- latest integrity status: `verified`
+- seconds per step: `2.221132`
+- ETA to CoFiTok 50K: `99,951` seconds
+
+The exact step-5,000 row reported:
+
+- training epsilon: `0.02518125`
+- total loss: `0.03765042`
+- validation epsilon MSE: `0.03096321`
+- gradient norm: `0.06627424`
+- samples seen: `320,000`
+
+Relative to v8 at step 5,000, formal training epsilon and total loss were
+`3.97%` and `6.31%` lower, while validation MSE was `36.31%` higher. Within
+the formal run, validation MSE was `5.38%` above step 4,000, `2.94%` below
+step 2,000, and `22.71%` below step 1,000. Lower training loss therefore still
+must not be substituted for sample quality.
+
+The first formal checkpoint trust boundary is:
+
+```text
+checkpoint: checkpoint_step_00005000.pt
+bytes:      1,006,351,466
+sha256:     8daedd38f44f719cbd488bc1d528187d1e8799dba6e879eed42bdc3f6bd7ce44
+format:     1
+step:       5,000
+revision:   58d83bfce2770eab2565b8c89a5f9a06201a0c86
+dataset:    97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741
+runtime:    51ef815bff2dcb9ea3e222cba9f0731dd837d11cf0b42cbf489f91e32075da57
+```
+
+The integrity sidecar, `latest.json`, and progress report matched on all ten
+audited identity fields. Their copied local byte identities are:
+
+```text
+checkpoint_step_00005000.pt.integrity.json
+  572 bytes
+  18e0ecd2b507169c4bc5911621c04d7e28fcde462c52e7a00557af8834687554
+latest_after_step_00005000.json
+  642 bytes
+  a3d12182bd038ad7e49d6cba94dd5d4e1391b2bb1de4cfb434a80ae4016ede97
+cofitok_progress_step_00005000.json
+  3,106 bytes
+  30329026393a158f69f6dd93b2b5207a6811b0dedc87367d944582d0547d3e0e
+```
+
+The 1 GB checkpoint payload remains only on the server. The local archive
+contains its verified identity and trust-boundary metadata, not the weight
+file. GPU memory after validation and checkpoint publication remained
+`77,983 MiB`, matching all four prior validation measurements.
+
+Bound summary:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/step5000_validation_and_checkpoint_vs_v8.json
+```
+
+This establishes a reproducible first recovery point but does not satisfy the
+10% matched-pair, promotion, full 300K, formal 50K, or release-artifact gates.
+The frozen CoFiTok 50K run continues.

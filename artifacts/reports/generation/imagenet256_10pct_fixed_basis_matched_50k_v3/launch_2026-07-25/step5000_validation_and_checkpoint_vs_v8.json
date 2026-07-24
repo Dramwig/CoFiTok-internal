@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "status": "checkpoint_verified_with_adverse_validation_observation",
+  "role": "scheduled_validation_and_checkpoint_health_diagnostic_only",
+  "formal_v3": {
+    "git_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "step": 5000,
+    "samples_seen": 320000,
+    "training_epsilon": 0.025181252509355545,
+    "training_total": 0.03765042498707771,
+    "validation_epsilon_mse": 0.03096320852637291,
+    "progress_audit": {
+      "status": "healthy",
+      "issues": [],
+      "warnings": [],
+      "validation_event_count": 5,
+      "validation_logging_complete": true,
+      "checkpoint_status": "available",
+      "checkpoint_integrity_status": "verified",
+      "missing_required_checkpoint_steps": [],
+      "seconds_per_step": 2.221132068925916,
+      "eta_seconds": 99950.94310166621
+    },
+    "metrics_snapshot": {
+      "path": "cofitok_train_metrics_through_step_00005100.jsonl",
+      "bytes": 74761,
+      "sha256": "7e35ac388647bebae8d8f9f648f9c5da0820548413c0922c716749cca67c9cf4"
+    },
+    "progress_report": {
+      "path": "cofitok_progress_step_00005000.json",
+      "bytes": 3106,
+      "sha256": "30329026393a158f69f6dd93b2b5207a6811b0dedc87367d944582d0547d3e0e"
+    },
+    "observer_status_snapshot": {
+      "path": "milestone_waiter_after_step_00005000.json",
+      "bytes": 2510,
+      "sha256": "aaeff3d9ec81610258a485695e6c6bd71f8106f72fbded8ba2833bf68d593154"
+    }
+  },
+  "checkpoint": {
+    "remote_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/checkpoint_step_00005000.pt",
+    "bytes": 1006351466,
+    "sha256": "8daedd38f44f719cbd488bc1d528187d1e8799dba6e879eed42bdc3f6bd7ce44",
+    "format_version": 1,
+    "step": 5000,
+    "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+    "runtime_environment_sha256": "51ef815bff2dcb9ea3e222cba9f0731dd837d11cf0b42cbf489f91e32075da57",
+    "git_branch": "scale/generative-system",
+    "git_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "git_dirty": false,
+    "integrity_manifest_snapshot": {
+      "path": "checkpoint_step_00005000.pt.integrity.json",
+      "bytes": 572,
+      "sha256": "18e0ecd2b507169c4bc5911621c04d7e28fcde462c52e7a00557af8834687554"
+    },
+    "latest_pointer_snapshot": {
+      "path": "latest_after_step_00005000.json",
+      "bytes": 642,
+      "sha256": "a3d12182bd038ad7e49d6cba94dd5d4e1391b2bb1de4cfb434a80ae4016ede97"
+    },
+    "binding_validation": {
+      "compared_fields": 10,
+      "mismatch_count": 0,
+      "checkpoint_payload_copied_locally": false
+    }
+  },
+  "selected_v8_probe": {
+    "git_revision": "5a93c7061e4df237234b19b052331fbc3ec10425",
+    "step": 5000,
+    "training_epsilon": 0.026220916770398617,
+    "training_total": 0.04018598608672619,
+    "validation_epsilon_mse": 0.022716067731380463,
+    "metrics": {
+      "path": "artifacts/reports/generation/rank_recovery_probe_2026-07-24_v8/source_reports/train_metrics.jsonl",
+      "bytes": 73420,
+      "sha256": "efc07360aad08629541eb557c00bac86406279790ab9cffb01a6da1df0ae195c"
+    }
+  },
+  "relative_change_percent": {
+    "training_epsilon": -3.9650187296914705,
+    "training_total": -6.309565464379658,
+    "validation_epsilon_mse": 36.30531873964991
+  },
+  "formal_validation_trend": {
+    "step_1000": 0.04005979001522064,
+    "step_2000": 0.03190126270055771,
+    "step_3000": 0.037659503519535065,
+    "step_4000": 0.0293810423463583,
+    "step_5000": 0.03096320852637291,
+    "step_4000_to_step_5000_relative_change_percent": 5.384989958365849,
+    "step_2000_to_step_5000_relative_change_percent": -2.9404923027338326,
+    "step_1000_to_step_5000_relative_change_percent": -22.70751166042434,
+    "five_event_mean": 0.03399296142160892,
+    "five_event_minimum": 0.0293810423463583
+  },
+  "gpu_memory_observation": {
+    "measurement_interface": "nvidia-smi",
+    "after_step_1000_validation_mib": 77983,
+    "after_step_2000_validation_mib": 77983,
+    "after_step_3000_validation_mib": 77983,
+    "after_step_4000_validation_mib": 77983,
+    "after_step_5000_validation_and_checkpoint_mib": 77983,
+    "max_delta_mib": 0,
+    "total_mib": 97887,
+    "interpretation": "allocated_memory_plateau_observed_through_validation_and_first_checkpoint",
+    "scope": "point_measurement_diagnostic_only"
+  },
+  "interpretation": {
+    "checkpoint_state": "first_formal_v3_checkpoint_is_integrity_verified_and_bound_to_latest_pointer",
+    "training_state": "formal_v3_training_objective_is_lower_than_v8_at_step_5000",
+    "validation_state": "formal_v3_validation_remains_higher_than_v8_at_step_5000",
+    "memory_state": "no_repeated_post_validation_or_checkpoint_memory_growth_observed_through_step_5000",
+    "decision": "continue_frozen_50k_run_and_retain_formal_sample_gate_as_quality_authority",
+    "reason": "Checkpoint reproducibility is now evidenced independently of sample quality. The lower training objective does not resolve the adverse fixed-validation comparison, and neither result can substitute for the matched 50K training pair and formal 10K generation gate.",
+    "not_a_promotion_or_quality_gate": true
+  }
+}

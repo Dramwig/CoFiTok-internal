@@ -1,8 +1,9 @@
 # Fixed-basis v3 launch evidence
 
-This bounded evidence pack records the formal v3 matched 50K launch and
-scheduled validation evidence through step 4,000. It intentionally excludes
-checkpoints, sample trees, feature caches, and full logs.
+This bounded evidence pack records the formal v3 matched 50K launch,
+scheduled validation evidence through step 5,000, and the first verified
+checkpoint identity. It intentionally excludes checkpoint payloads, sample
+trees, feature caches, and full logs.
 
 Source revision:
 
@@ -22,11 +23,14 @@ No checkpoint or validation event was due at that point.
 | `cofitok_progress_step_00002000.json` | 2,077 | `c87713964328b23c217653ef0988b6512b40541bc49310e5ec6b3fa61eb8fd32` |
 | `cofitok_progress_step_00003000.json` | 2,027 | `7d7f4e839c3cb9364fdd5208c6f07a83e0895d891341af218e41f9b7c10135d9` |
 | `cofitok_progress_step_00004000.json` | 2,077 | `39df2e50e51a87ea48a296f3859aee49d7987ec64364743bbf8616222e39b21a` |
+| `cofitok_progress_step_00005000.json` | 3,106 | `30329026393a158f69f6dd93b2b5207a6811b0dedc87367d944582d0547d3e0e` |
 | `cofitok_train_metrics_through_step_00000650.jsonl` | 10,001 | `8bd69150a75cfb4da2d71518b6d0befcb2db0472276be38eef2fba987afee38f` |
 | `cofitok_train_metrics_through_step_00001050.jsonl` | 15,778 | `e389612aed07856721d39e2207cdd2df25def39ccf783839f18a95ef197aaaeb` |
 | `cofitok_train_metrics_through_step_00002050.jsonl` | 30,411 | `f5f7a7808ae028680d2d5147622c353be733741d5110a122381259c10c8e16bd` |
 | `cofitok_train_metrics_through_step_00003050.jsonl` | 44,947 | `17f449dcea98fb8c61a06816c5b93bf25bd31be049ae3bb18607904a658bf8df` |
 | `cofitok_train_metrics_through_step_00004050.jsonl` | 59,482 | `61cc14bf30d2c4e716541c96066a624422907152505648c9de9534ad7baea0f1` |
+| `cofitok_train_metrics_through_step_00005100.jsonl` | 74,761 | `7e35ac388647bebae8d8f9f648f9c5da0820548413c0922c716749cca67c9cf4` |
+| `checkpoint_step_00005000.pt.integrity.json` | 572 | `18e0ecd2b507169c4bc5911621c04d7e28fcde462c52e7a00557af8834687554` |
 | `completion_audit_in_progress_after_step1000.json` | 3,635 | `ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc` |
 | `cofitok_progress_launch.json` | 2,006 | `e68b827ca0f14ab75e886fff6b4c435e91a3595e7e0e5499796d89bb8b3e08ad` |
 | `cofitok_run_manifest.json` | 7,010 | `8d3a2c0271482a85ac9ade0af2563856eae282b0d7973126294021ac67320a9d` |
@@ -42,12 +46,15 @@ No checkpoint or validation event was due at that point.
 | `milestone_waiter_after_step_00002000.json` | 1,353 | `e372a6f722907cdbf81c691484c74ca72f5e5ea1577232cc709422e5a75a2866` |
 | `milestone_waiter_after_step_00003000.json` | 1,741 | `a66daa01c653a97c27c2f4a6203a5a99225a78e6641d79693af236564595e393` |
 | `milestone_waiter_after_step_00004000.json` | 2,129 | `0ce2cf1d0d0e47c69c9f76071c934df1c2a2a1b20a007d22853fcee09e49f471` |
+| `milestone_waiter_after_step_00005000.json` | 2,510 | `aaeff3d9ec81610258a485695e6c6bd71f8106f72fbded8ba2833bf68d593154` |
+| `latest_after_step_00005000.json` | 642 | `a3d12182bd038ad7e49d6cba94dd5d4e1391b2bb1de4cfb434a80ae4016ede97` |
 | `runtime_selection.json` | 68,006 | `cb125609a28bf8a531c495b365c6e22a8ee9d2eb7e377ba4c2d538be1b63df0d` |
 | `storage_preflight_early_after_step1000.json` | 930 | `5e16f3b7c5dee38b9c699c0288762ae189d6dd78c3ac9051c9687116cd0351c7` |
 | `step1000_validation_vs_v8.json` | 2,236 | `b2343524e8fe813d5a3c5cb62556797cd5e7f5709224b718f5f2a21b652bcc59` |
 | `step2000_validation_vs_v8.json` | 3,209 | `10549eda3ab60490b371f9097f56178ac7ded8393aa74fe6522db7256b609bb1` |
 | `step3000_validation_vs_v8.json` | 3,455 | `203b06e946b5ab9b161c4f6474430a7494ecc1256b9ece4d272e03f820af4054` |
 | `step4000_validation_vs_v8.json` | 3,687 | `eca53a293c8954fa4f0eec520b3301e63dfe04bb1137c43ed0fe43386e548383` |
+| `step5000_validation_and_checkpoint_vs_v8.json` | 5,169 | `0428f85363a2ea58cc40d6cc4022e48de08f393c710711c72d9fe1ab6abbef33` |
 
 These hashes identify the copied local bytes. The deployment receipt also
 contains its own source-to-target and verification bindings. Live remote
@@ -90,6 +97,14 @@ the selected v8 probe at the same step. This mixed result weakens the idea that
 the 3K increase alone was a persistent divergence, but it does not remove the
 cross-recipe quality concern. Step-5,000 checkpoint integrity and formal
 sample-quality evidence remain mandatory.
+
+At step 5,000, the observer reached terminal `pass`. The progress auditor
+verified the 1,006,351,466-byte checkpoint at SHA256
+`8daedd38f44f719cbd488bc1d528187d1e8799dba6e879eed42bdc3f6bd7ce44`.
+Its integrity sidecar, `latest.json`, and progress report matched on all ten
+audited identity fields. Fifth-event validation MSE was `0.03096321`: lower
+than formal steps 1K and 2K, but `36.31%` above v8 at step 5K. This proves the
+first formal checkpoint trust boundary, not generation quality or promotion.
 
 The terminal completion auditor was also run with the exact source, 10%, and
 full revision identities. It returned the expected nonzero exit with
