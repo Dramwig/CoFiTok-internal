@@ -290,3 +290,39 @@ Bound evidence:
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_progress_step_00001000.json
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/step1000_validation_vs_v8.json
 ```
+
+## Terminal completion audit snapshot
+
+The deployed terminal auditor was run after the 1K validation with:
+
+```text
+deployment source: 781a01444fddbf0d48a427ba58bdeed50167b5be
+10% revision:       58d83bfce2770eab2565b8c89a5f9a06201a0c86
+full revision:      58d83bfce2770eab2565b8c89a5f9a06201a0c86
+```
+
+It correctly exited nonzero and reported:
+
+- status: `in_progress`
+- complete: `false`
+- failed checks: `0`
+- warnings: `0`
+- missing checks: `17`
+- passed terminal check: `controlled_revision_transition`
+
+The passing transition evidence binds the target revision, source validation,
+deployment bundle, conflict scan, 647-test report, and all 51 runbooks. The
+missing checks explicitly include the 10% matched pair, promotion gate, full
+300K pair, full checkpoint reproducibility, milestone evaluations, formal 50K
+generation, visual audit, EMA artifacts, final gate, and comparison report.
+
+Snapshot:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/completion_audit_in_progress_after_step1000.json
+```
+
+It is `3,635` bytes with SHA256
+`ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc`.
+This is evidence that the completion contract recognizes the new deployment
+and still refuses premature completion.

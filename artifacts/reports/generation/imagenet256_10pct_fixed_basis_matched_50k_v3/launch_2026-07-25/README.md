@@ -21,6 +21,7 @@ No checkpoint or validation event was due at that point.
 | `cofitok_progress_step_00001000.json` | 2,054 | `86562fbb682338e288bd291b8205af0505e984459a44ab5fd0ff9c528dd0ad7f` |
 | `cofitok_train_metrics_through_step_00000650.jsonl` | 10,001 | `8bd69150a75cfb4da2d71518b6d0befcb2db0472276be38eef2fba987afee38f` |
 | `cofitok_train_metrics_through_step_00001050.jsonl` | 15,778 | `e389612aed07856721d39e2207cdd2df25def39ccf783839f18a95ef197aaaeb` |
+| `completion_audit_in_progress_after_step1000.json` | 3,635 | `ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc` |
 | `cofitok_progress_launch.json` | 2,006 | `e68b827ca0f14ab75e886fff6b4c435e91a3595e7e0e5499796d89bb8b3e08ad` |
 | `cofitok_run_manifest.json` | 7,010 | `8d3a2c0271482a85ac9ade0af2563856eae282b0d7973126294021ac67320a9d` |
 | `cofitok_train_metrics_launch.jsonl` | 3,576 | `65e8d21d6274cf081d45699279a55cd18da31a331bbdf2652d40eff7f81d9059` |
@@ -51,3 +52,10 @@ Formal training epsilon and total loss were 15.10% and 14.39% below v8 at the
 same step, while the first scheduled validation MSE was 11.63% higher. The
 run therefore continues unchanged, but later validation events and the formal
 sample-quality gate must resolve that observation.
+
+The terminal completion auditor was also run with the exact source, 10%, and
+full revision identities. It returned the expected nonzero exit with
+`status=in_progress`, zero failed checks, zero warnings, and 17 missing checks.
+`controlled_revision_transition` was the sole terminal check already at
+`pass`. The snapshot prevents launch evidence from being mistaken for
+large-scale completion.
