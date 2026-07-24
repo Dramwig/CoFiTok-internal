@@ -205,3 +205,10 @@ The observer only reads metrics, Git identity, and checkpoint bytes. It does
 not import or load the model, allocate GPU memory, signal processes, alter the
 pipeline decision, or move the remote revision. Its status was `waiting` with
 last step 400 immediately after launch.
+
+Observer acceptance logic is covered by
+`tests/test_fixed_basis_v3_milestone_waiter.py`. Seven targeted tests cover a
+complete 1K validation, missing validation, warnings, a verified 5K
+checkpoint, a missing integrity manifest, invalid integrity, and a mismatched
+checkpoint step. The targeted suite passed `7/7`; the complete local project
+suite then passed `651` tests with the existing `2` skips (`653` collected).
