@@ -1,0 +1,11 @@
+{
+  "detail": "training the authoritative compressed 10% matched pair",
+  "exit_code": null,
+  "git_commit": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "pipeline": "generation_complete_after_10pct",
+  "schema_version": 1,
+  "stage": "scaling_training",
+  "status": "running",
+  "updated_at": "2026-07-24T19:12:18.522033+00:00"
+}

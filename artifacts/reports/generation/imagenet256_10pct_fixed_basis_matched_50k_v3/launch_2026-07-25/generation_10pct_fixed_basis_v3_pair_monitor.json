@@ -1,0 +1,113 @@
+{
+  "disk": {
+    "free_bytes": 408803835904,
+    "total_bytes": 1073741824000,
+    "used_bytes": 664937988096
+  },
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "tracked_dirty": false
+  },
+  "gpu": [
+    {
+      "index": 0,
+      "memory_total_mib": 97887,
+      "memory_used_mib": 69893,
+      "temperature_c": 70,
+      "utilization_percent": 100
+    }
+  ],
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "issues": [],
+  "monitor": "generation_10pct_fixed_basis_v3_matched_pair",
+  "processes": {
+    "runbook": [
+      "502462 bash artifacts/runbooks/generation_10pct_matched_50k_2026-07-12.sh"
+    ],
+    "training": [
+      "504584 python scripts/run_generation_training_watchdog.py --monitor-report /root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_fixed_basis_v3_pair_monitor.json --monitor-pid-file /root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_fixed_basis_v3_pair_monitor.pid --expected-monitor-name generation_10pct_fixed_basis_v3_matched_pair --status-output /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/training_watchdog.json --poll-seconds 30 --startup-grace-seconds 600 --monitor-silence-seconds 900 --monitor-process-grace-seconds 120 --termination-grace-seconds 60 -- python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504648 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504838 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504839 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504840 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504841 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504842 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504843 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504844 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504845 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504855 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504856 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504857 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504858 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504859 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504860 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504861 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1",
+      "504869 python scripts/train_generation.py --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 --micro-batch-size 64 --gradient-accumulation-steps 1"
+    ]
+  },
+  "runs": {
+    "cofitok": {
+      "activity_age_seconds": 68.32820963859558,
+      "checkpoints": [],
+      "complete": false,
+      "exists": true,
+      "expected_steps": 50000,
+      "health_issues": [],
+      "last_metric": {
+        "component_decorrelation": 0.0,
+        "cumulative_elapsed_seconds": 223.3367133140564,
+        "denoise_path_component": 0.03975934535264969,
+        "denoise_path_energy": 0.002825572621077299,
+        "denoise_path_prefix": 0.2238822877407074,
+        "elapsed_seconds": 223.3367133140564,
+        "ema_decay": 0.049995000000000005,
+        "energy_budget": 0.0,
+        "epsilon": 0.9921957850456238,
+        "epsilon_band_component": 0.0,
+        "epsilon_band_prefix": 0.0,
+        "grad_norm": 2.5707743167877197,
+        "group_residual": 0.0,
+        "learning_rate": 1e-05,
+        "monotonic": 0.0,
+        "prefix": 0.0,
+        "residual_component": 0.0,
+        "sampled_budget": 0.0,
+        "sampled_component": 0.0,
+        "sampled_prefix": 0.0,
+        "samples_seen": 6400,
+        "step": 100,
+        "tail_floor": 0.0,
+        "total": 1.0076484680175781,
+        "zero_token": 0.0
+      },
+      "last_step": 100,
+      "metric_rows": 3,
+      "progress_fraction": 0.002,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3",
+      "training_report": null
+    },
+    "dense_identity": {
+      "activity_age_seconds": null,
+      "checkpoints": [],
+      "complete": false,
+      "exists": false,
+      "expected_steps": 50000,
+      "health_issues": [],
+      "last_metric": null,
+      "last_step": 0,
+      "metric_rows": 0,
+      "progress_fraction": 0.0,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3",
+      "training_report": null
+    }
+  },
+  "schema_version": 2,
+  "stage": "cofitok_training",
+  "status": "running",
+  "thresholds": {
+    "idle_failure_grace_seconds": 600.0,
+    "stall_seconds": 1800.0
+  },
+  "updated_at": "2026-07-24T19:19:51.756087+00:00"
+}

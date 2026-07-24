@@ -156,3 +156,16 @@ The local archive branch was rebased onto the deployed implementation:
 This launch record and later small reports remain local evidence-only changes
 while formal training is active. No large checkpoint, full sample tree,
 feature cache, or long log is copied into the local repository.
+
+The bounded launch pack is:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/
+```
+
+It contains the deployment receipt, pair contract, runtime selection,
+supervisor/pipeline/monitor/watchdog states, run manifest, the first five
+metrics rows, and a tracked progress audit. The progress audit was `healthy`
+at step 200 with `0` issues, `0` warnings, `2.219099` seconds per step, and
+an ETA of `110,511` seconds to CoFiTok step 50,000. `README.md` binds every
+copied file by byte count and SHA256.

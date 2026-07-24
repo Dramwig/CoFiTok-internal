@@ -1,0 +1,57 @@
+{
+  "bundle": {
+    "bytes": 12117313,
+    "heads": [
+      "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+    ],
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/cofitok-generation-upgrade-58d83bfce2770eab2565b8c89a5f9a06201a0c86.bundle",
+    "prerequisites": [
+      "781a01444fddbf0d48a427ba58bdeed50167b5be"
+    ],
+    "sha256": "9476e72e259d0c336b96f2e6bf13c100ba07703c7b6514856c93c519ef927594"
+  },
+  "deployed_at": "2026-07-24T19:10:19.947061+00:00",
+  "expected_training_revision": "781a01444fddbf0d48a427ba58bdeed50167b5be",
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "tracked_dirty": false
+  },
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "schema_version": 2,
+  "status": "pass",
+  "target_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+  "training_pair_validation": {
+    "expected_revision": "781a01444fddbf0d48a427ba58bdeed50167b5be",
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_pair_validation.json",
+    "sha256": "e2ad793a84ed844d7cae01eabe49db5c9b62bb12e7185d7e6194f93f1712aea6",
+    "status": "pass"
+  },
+  "verification": {
+    "pytest": {
+      "bytes": 90743,
+      "errors": 0,
+      "failures": 0,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/generation-upgrade-58d83bfce2770eab2565b8c89a5f9a06201a0c86.pytest.xml",
+      "sha256": "daba7f996f1a5d2fcdcb0ca4540af3ade92fc1717ac775ff53b94c7ca9978d69",
+      "skipped": 0,
+      "status": "pass",
+      "tests": 647
+    },
+    "runbook_syntax": {
+      "bytes": 4022,
+      "checked_count": 51,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/generation-upgrade-58d83bfce2770eab2565b8c89a5f9a06201a0c86.runbook-syntax.json",
+      "sha256": "37d8a452e52d2eacac1acaae7bc4a273cf447682bd9c8dc5d177c2b024cfda41",
+      "status": "pass"
+    },
+    "untracked_target_conflicts": {
+      "bytes": 340,
+      "conflict_count": 0,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/generation-upgrade-58d83bfce2770eab2565b8c89a5f9a06201a0c86.conflict-scan.json",
+      "sha256": "f7c53b7ba32945c128849830ee75e0af2870cbbad620419de161f1825f24aaa5",
+      "status": "pass",
+      "target_added_path_count": 231
+    }
+  }
+}
