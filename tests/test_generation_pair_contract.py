@@ -16,8 +16,8 @@ def _read(name: str) -> dict:
 def test_checked_in_generation_pairs_isolate_factorization_differences() -> None:
     for cofitok_name, dense_name in (
         (
-            "imagenet256_10pct_cofitok_k8_50k.json",
-            "imagenet256_10pct_dense_50k.json",
+            "imagenet256_10pct_fixed_basis_cofitok_k8_50k.json",
+            "imagenet256_10pct_fixed_basis_dense_50k.json",
         ),
         ("imagenet256_cofitok_k8_300k.json", "imagenet256_dense_300k.json"),
     ):
@@ -30,6 +30,6 @@ def test_checked_in_generation_pairs_isolate_factorization_differences() -> None
             "dense_token_count": 1,
             "cofitok_feedback": True,
             "dense_feedback": False,
-            "cofitok_synthesis": "restricted",
+            "cofitok_synthesis": "fixed_basis",
             "dense_synthesis": "dense_identity",
         }

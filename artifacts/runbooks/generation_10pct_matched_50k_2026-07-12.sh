@@ -3,7 +3,7 @@ set -euo pipefail
 
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
-RUNTIME_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/imagenet256_10pct_rankcomplete_v2_50k"
+RUNTIME_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/imagenet256_10pct_fixed_basis_v3_50k"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -14,10 +14,10 @@ eval "$(python scripts/print_generation_workspace_paths.py \
 REPORT_ROOT="$SCALING_REPORT_ROOT"
 COFITOK_RUN="$SCALING_COFITOK_RUN"
 DENSE_RUN="$SCALING_DENSE_RUN"
-MONITOR_REPORT="$OUTPUT_ROOT/generation_10pct_rankcomplete_v2_pair_monitor.json"
-MONITOR_LOG="$OUTPUT_ROOT/generation_10pct_rankcomplete_v2_pair_monitor.log"
-MONITOR_PID_FILE="$OUTPUT_ROOT/generation_10pct_rankcomplete_v2_pair_monitor.pid"
-MONITOR_NAME=generation_10pct_rankcomplete_v2_matched_pair
+MONITOR_REPORT="$OUTPUT_ROOT/generation_10pct_fixed_basis_v3_pair_monitor.json"
+MONITOR_LOG="$OUTPUT_ROOT/generation_10pct_fixed_basis_v3_pair_monitor.log"
+MONITOR_PID_FILE="$OUTPUT_ROOT/generation_10pct_fixed_basis_v3_pair_monitor.pid"
+MONITOR_NAME=generation_10pct_fixed_basis_v3_matched_pair
 RUNTIME_SELECTION="$REPORT_ROOT/runtime_selection.json"
 mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
 
@@ -67,7 +67,7 @@ start_compressed_monitor() {
     --monitor-name "$MONITOR_NAME" \
     --cofitok-run "$(basename "$COFITOK_RUN")" \
     --dense-run "$(basename "$DENSE_RUN")" --expected-steps 50000 \
-    --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_10pct_compressed_' \
+    --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_10pct_fixed_basis_' \
     --runbook-process-pattern '[g]eneration_10pct_matched_50k_2026-07-12.sh' \
     --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
     --poll-seconds 300 --stall-seconds 1800 \
@@ -94,7 +94,7 @@ snapshot_compressed_monitor() {
     --monitor-name "$MONITOR_NAME" \
     --cofitok-run "$(basename "$COFITOK_RUN")" \
     --dense-run "$(basename "$DENSE_RUN")" --expected-steps 50000 \
-    --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_10pct_compressed_' \
+    --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_10pct_fixed_basis_' \
     --runbook-process-pattern '[g]eneration_10pct_matched_50k_2026-07-12.sh' \
     --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
     --poll-seconds 300 --stall-seconds 1800 \
@@ -130,13 +130,13 @@ run_training() {
 }
 
 python scripts/validate_generation_configs.py \
-  --cofitok-config configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json \
-  --dense-config configs/generation/imagenet256_10pct_compressed_dense_50k.json \
+  --cofitok-config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json \
+  --dense-config configs/generation/imagenet256_10pct_fixed_basis_dense_50k.json \
   --output "$REPORT_ROOT/config_pair.json"
 
 runtime_selected="$(python scripts/select_generation_training_runtime.py \
-  --cofitok-config configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json \
-  --dense-config configs/generation/imagenet256_10pct_compressed_dense_50k.json \
+  --cofitok-config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json \
+  --dense-config configs/generation/imagenet256_10pct_fixed_basis_dense_50k.json \
   --output-root "$RUNTIME_BENCHMARK_ROOT" --output "$RUNTIME_SELECTION" \
   --training-run-dir "$COFITOK_RUN" --training-run-dir "$DENSE_RUN" \
   --candidates 16x4,32x2,64x1 --effective-batch-size 64 \
@@ -154,16 +154,16 @@ fi
 start_compressed_monitor
 
 run_training \
-  configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json \
+  configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json \
   "$COFITOK_RUN"
 require_complete "$COFITOK_RUN/training_report.json" \
-  configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json
+  configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json
 snapshot_compressed_monitor
 
 run_training \
-  configs/generation/imagenet256_10pct_compressed_dense_50k.json \
+  configs/generation/imagenet256_10pct_fixed_basis_dense_50k.json \
   "$DENSE_RUN"
 require_complete "$DENSE_RUN/training_report.json" \
-  configs/generation/imagenet256_10pct_compressed_dense_50k.json
+  configs/generation/imagenet256_10pct_fixed_basis_dense_50k.json
 snapshot_compressed_monitor
 monitor_report_passes

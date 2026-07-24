@@ -17,7 +17,7 @@ from scripts import print_generation_workspace_paths
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_scaling_workspace_uses_fresh_rankcomplete_v2_identity(tmp_path: Path) -> None:
+def test_scaling_workspace_uses_fresh_fixed_basis_v3_identity(tmp_path: Path) -> None:
     project = tmp_path / "project"
     output = tmp_path / "outputs"
     paths = generation_workspace_paths(project_root=project, output_root=output)
@@ -26,6 +26,8 @@ def test_scaling_workspace_uses_fresh_rankcomplete_v2_identity(tmp_path: Path) -
     assert paths["SCALING_DENSE_RUN"].name == SCALING_DENSE_RUN_ID
     assert paths["SCALING_REPORT_ROOT"].name == SCALING_REPORT_ID
     assert paths["SCALING_GATE"] == paths["SCALING_REPORT_ROOT"] / "promotion_gate.json"
+    assert "fixed_basis" in paths["SCALING_COFITOK_RUN"].name
+    assert paths["SCALING_COFITOK_RUN"].name.endswith("_v3")
     assert "compressed_cofitok_k8_50k" not in paths["SCALING_COFITOK_RUN"].as_posix()
 
 
@@ -126,6 +128,19 @@ def test_active_pipeline_runbooks_use_the_path_contract() -> None:
             "reports/generation/imagenet256_10pct_compressed_matched_50k"
             not in source
         )
+
+    training = (
+        ROOT / "artifacts/runbooks/generation_10pct_matched_50k_2026-07-12.sh"
+    ).read_text(encoding="utf-8")
+    assert "imagenet256_10pct_fixed_basis_cofitok_k8_50k.json" in training
+    assert "imagenet256_10pct_fixed_basis_dense_50k.json" in training
+    assert "rankcomplete_v2" not in training
+
+    posteval = (
+        ROOT / "artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh"
+    ).read_text(encoding="utf-8")
+    assert "fixed_basis_v3_gate10k_sampling" in posteval
+    assert "rankcomplete_v2" not in posteval
 
 
 def test_deployment_attestation_runbook_uses_versioned_evidence() -> None:

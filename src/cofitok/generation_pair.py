@@ -4,6 +4,7 @@ from typing import Any
 
 
 MATCHED_CONFIG_SECTIONS = ("data", "diffusion", "runtime", "optimization")
+RESTRICTED_COFITOK_SYNTHESIS_MODES = {"restricted", "fixed_basis"}
 FACTORIZATION_MODEL_FIELDS = {
     "token_count",
     "token_channels",
@@ -58,7 +59,7 @@ def generation_pair_contract(
     if identities["cofitok_feedback"] is not True or identities["dense_feedback"] is not False:
         issues.append("factorized/dense predictor-feedback identities are invalid")
     if (
-        identities["cofitok_synthesis"] != "restricted"
+        identities["cofitok_synthesis"] not in RESTRICTED_COFITOK_SYNTHESIS_MODES
         or identities["dense_synthesis"] != "dense_identity"
     ):
         issues.append("factorized/dense synthesis identities are invalid")

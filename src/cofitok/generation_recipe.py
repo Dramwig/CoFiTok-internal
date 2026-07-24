@@ -6,7 +6,7 @@ from cofitok.generation_pair import generation_pair_contract
 from cofitok.token_layout import resolve_token_layout, token_layout_summary
 
 
-GENERATION_TRAINING_RECIPE_SCHEMA = "cofitok_generation_training_recipe_v2"
+GENERATION_TRAINING_RECIPE_SCHEMA = "cofitok_generation_training_recipe_v3"
 RECIPE_STAGES = {"legacy_scaling", "scaling", "full"}
 ALLOWED_RUNTIME_BATCHES = {(16, 4), (32, 2), (64, 1)}
 
@@ -104,9 +104,9 @@ def _expected_method(method: str, stage: str) -> dict[str, Any]:
                 "model.token_channel_schedule": [4, 4, 8, 8, 8, 8, 1, 2],
                 "model.token_spatial_strides": [16, 16, 8, 8, 4, 4, 1, 1],
                 "model.predictor_use_feedback": True,
-                "model.synthesis_mode": "restricted",
-                "model.synthesis_kernel_size": 3,
-                "model.gamma_mode": "learned_scalar",
+                "model.synthesis_mode": "fixed_basis",
+                "model.synthesis_kernel_size": 1,
+                "model.gamma_mode": "fixed_one",
                 "model.synthesis_active_token_channels": [],
                 "model.synthesis_token_strides": [],
                 "loss.epsilon_weight": 1.0,

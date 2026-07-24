@@ -20,8 +20,8 @@ def test_checked_in_scaling_and_full_recipes_pass() -> None:
     for stage, cofitok_name, dense_name in (
         (
             "scaling",
-            "imagenet256_10pct_compressed_cofitok_k8_50k.json",
-            "imagenet256_10pct_compressed_dense_50k.json",
+            "imagenet256_10pct_fixed_basis_cofitok_k8_50k.json",
+            "imagenet256_10pct_fixed_basis_dense_50k.json",
         ),
         (
             "full",
@@ -70,6 +70,11 @@ def test_rank_recovery_probes_explicitly_disable_legacy_loss_defaults() -> None:
             "denoise_path_component_weight": 0.1,
         },
         "imagenet256_10pct_rankcomplete_capacity_path_hellinger_k8_probe5k.json": {
+            "denoise_path_prefix_weight": 0.05,
+            "denoise_path_component_weight": 0.1,
+            "denoise_path_energy_weight": 0.1,
+        },
+        "imagenet256_10pct_rankcomplete_fixed_basis_hellinger_k8_probe5k.json": {
             "denoise_path_prefix_weight": 0.05,
             "denoise_path_component_weight": 0.1,
             "denoise_path_energy_weight": 0.1,
@@ -157,8 +162,8 @@ def test_scaling_recipe_accepts_pinned_legacy_implicit_defaults() -> None:
 
 
 def test_compressed_recipe_rejects_a_dense_sized_token() -> None:
-    cofitok = _config("imagenet256_10pct_compressed_cofitok_k8_50k.json")
-    dense = _config("imagenet256_10pct_compressed_dense_50k.json")
+    cofitok = _config("imagenet256_10pct_fixed_basis_cofitok_k8_50k.json")
+    dense = _config("imagenet256_10pct_fixed_basis_dense_50k.json")
     cofitok["model"]["token_channel_schedule"][-1] = 3
 
     contract = generation_training_recipe_contract(cofitok, dense, stage="scaling")
@@ -168,8 +173,8 @@ def test_compressed_recipe_rejects_a_dense_sized_token() -> None:
 
 
 def test_compressed_recipe_rejects_full_resolution_rank_deficit() -> None:
-    cofitok = _config("imagenet256_10pct_compressed_cofitok_k8_50k.json")
-    dense = _config("imagenet256_10pct_compressed_dense_50k.json")
+    cofitok = _config("imagenet256_10pct_fixed_basis_cofitok_k8_50k.json")
+    dense = _config("imagenet256_10pct_fixed_basis_dense_50k.json")
     cofitok["model"]["token_channel_schedule"][-2:] = [4, 2]
     cofitok["model"]["token_spatial_strides"][-2:] = [2, 1]
 
@@ -204,6 +209,19 @@ def test_recipe_rejects_changed_factorization_objective() -> None:
 
     assert contract["valid"] is False
     assert any("denoise_path_component_weight" in issue for issue in contract["issues"])
+
+
+def test_formal_recipe_rejects_learned_restricted_synthesis() -> None:
+    cofitok = _config("imagenet256_10pct_fixed_basis_cofitok_k8_50k.json")
+    dense = _config("imagenet256_10pct_fixed_basis_dense_50k.json")
+    cofitok["model"]["synthesis_mode"] = "restricted"
+    cofitok["model"]["synthesis_kernel_size"] = 3
+    cofitok["model"]["gamma_mode"] = "learned_scalar"
+
+    contract = generation_training_recipe_contract(cofitok, dense, stage="scaling")
+
+    assert contract["valid"] is False
+    assert any("synthesis_mode" in issue for issue in contract["issues"])
 
 
 def test_recipe_rejects_old_or_weakened_energy_objective() -> None:

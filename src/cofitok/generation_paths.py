@@ -4,9 +4,9 @@ import string
 from pathlib import Path
 
 
-SCALING_COFITOK_RUN_ID = "imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2"
-SCALING_DENSE_RUN_ID = "imagenet256_10pct_rankcomplete_dense_50k_v2"
-SCALING_REPORT_ID = "imagenet256_10pct_rankcomplete_matched_50k_v2"
+SCALING_COFITOK_RUN_ID = "imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3"
+SCALING_DENSE_RUN_ID = "imagenet256_10pct_fixed_basis_dense_50k_v3"
+SCALING_REPORT_ID = "imagenet256_10pct_fixed_basis_matched_50k_v3"
 FULL_COFITOK_RUN_ID = "imagenet256_full_cofitok_k8_300k"
 FULL_DENSE_RUN_ID = "imagenet256_full_dense_300k"
 FULL_REPORT_ID = "imagenet256_full_matched_300k"

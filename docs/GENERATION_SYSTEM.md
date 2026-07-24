@@ -9,15 +9,18 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - `ScalableUNetTokenPredictor` is the expressive `T_k`: ADM-style residual
   U-Net, spatial attention, timestep conditioning, ImageNet class conditioning,
   CFG dropout, and optional activation checkpointing.
-- `RestrictedSynthesisBank` remains the default `S_k`. Every `S_k` receives only
-  its current token, is bias-free and linear/local, and preserves `S_k(0)=0`.
+- Formal scaling/full runs use `FixedBasisSynthesisBank` as `S_k`. Every
+  operator receives only its current token and applies a deterministic,
+  parameter-free, bias-free RGB channel projection, preserving `S_k(0)=0`
+  exactly. `RestrictedSynthesisBank` remains available for historical evidence
+  and ablation only.
 - Authoritative scaling/full CoFiTok uses true variable-shape token fields:
   spatial strides `[16,16,8,8,4,4,1,1]` and channel counts
   `[4,4,8,8,8,8,1,2]`. Token scalar capacities increase from `1,024` to
   `131,072`, while a dense RGB epsilon field has `196,608` scalars. Each token
   is therefore strictly compressed. `T_k` pools before each variable-channel
   head, feeds back only that emitted token, and `S_k` performs fixed bilinear
-  upsampling before its shallow local linear convolution.
+  upsampling before its fixed channel projection.
 - A restricted linear synthesis layout must allocate at least three aggregate
   full-resolution token channels for RGB epsilon prediction. Otherwise the
   highest-frequency output is rank-deficient regardless of model size or
@@ -27,13 +30,13 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
 - The dense control uses the identical U-Net and training protocol with one
   direct `dense_identity` epsilon head.
 - Formal scaling and full-data training additionally pass
-  `cofitok_generation_training_recipe_v2`. This contract prevents a matched
+  `cofitok_generation_training_recipe_v3`. This contract prevents a matched
   pair from passing fairness checks after both methods are identically weakened:
   it locks the ImageNet stage, diffusion horizon/target, U-Net capacity,
   class-dropout CFG training, bf16/TF32 runtime, effective batch 64, optimizer,
-  EMA, checkpoint cadence, and the selected CoFiTok capacity-path objective:
-  prefix weight `0.05`, component weight `0.1`, and squared-Hellinger energy
-  weight `0.1`. Runtime selection
+  EMA, checkpoint cadence, fixed-basis synthesis, and the selected CoFiTok
+  capacity-path objective: prefix weight `0.05`, component weight `0.1`, and
+  squared-Hellinger energy weight `0.1`. Runtime selection
   may change micro-batch and accumulation only while their product remains 64.
 - Production training uses bf16, gradient accumulation, gradient clipping,
   cosine LR, EMA, isolated DataLoader RNG, atomic checkpoints, retention, and
@@ -63,11 +66,10 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   automatic resume verifies the pointer, sidecar, file bytes, payload step, and
   payload format before restoring state. Full readiness additionally requires
   the final training hash to match the checkpoint used for sampling.
-- The active pinned 10% matched queue predates integrity sidecars and the true
-  compressed-token layout. It is retained as immutable legacy evidence and a
-  deployment prerequisite only. After deployment, a fresh same-revision
-  compressed CoFiTok/dense 50K pair creates native integrity sidecars and is the
-  only 10% pair eligible for promotion sampling and the scaling gate.
+- Earlier 10% matched queues are retained as immutable legacy evidence only.
+  The fresh same-revision fixed-basis v3 CoFiTok/dense 50K pair creates native
+  integrity sidecars and is the only 10% pair eligible for new promotion
+  sampling and the scaling gate.
 - Full 300K runs checkpoint every 5K optimizer steps and retain the latest
   three states, matching the 10% gate cadence while bounding recovery loss on
   the multi-day full-data queue.
@@ -146,14 +148,14 @@ datasets:    /root/autodl-tmp/CoFiTok/datasets
 checkpoints: /root/autodl-tmp/CoFiTok/checkpoints/generation
 ```
 
-The failed revision-`04a738c` 10% pair keeps its original `compressed_*` run
+The failed learned-synthesis v2 pair keeps its original run and report
 directories as immutable evidence. The next authoritative scaling attempt uses
 fresh identities resolved by `cofitok.generation_paths`:
 
 ```text
-CoFiTok: imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2
-dense:   imagenet256_10pct_rankcomplete_dense_50k_v2
-report:  imagenet256_10pct_rankcomplete_matched_50k_v2
+CoFiTok: imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3
+dense:   imagenet256_10pct_fixed_basis_dense_50k_v3
+report:  imagenet256_10pct_fixed_basis_matched_50k_v3
 ```
 
 Active runbooks import these paths through
@@ -162,7 +164,7 @@ terminal completion audit use the same Python contract. A completed run may be
 skipped only when its resolved config, Git identity, step identity,
 `latest.json`, checkpoint, and integrity sidecar all match the current request.
 
-After the probe winner is committed and deployed, run
+After the fixed-basis v3 recipe is committed and deployed, run
 `generation_attest_deployed_revision.sh` before starting the fresh formal 50K
 pair. It creates a consolidated bundle from the locked source revision through
 the selected target, reruns the complete remote test and runbook-syntax suites,
@@ -270,15 +272,30 @@ the capacity-target energy distribution. It reached rank 1 at all five audited
 timesteps, raised token-1-6 energy to 7.48% at `t=500`, kept endpoint MSE within
 3.7% of v6, and changed the 512-image directional FID by only +0.8%. Fixed-index
 visual review also showed low-frequency structure by prefix 4 instead of the
-near-identical early noise fields seen in v6. V7 is therefore the selected
-formal objective. The formal recipe and generation-gate schema were upgraded
-together; both scaling and full gates reject token-1-6 energy below 5%.
-V5, v6, and v7 remain non-formal 5K evidence and cannot themselves authorize
-50K or 300K.
+near-identical early noise fields seen in v6.
+
+The learned local synthesis in formal v2 nevertheless failed the 10K promotion
+gate: CoFiTok FID was `191.2347` versus dense `115.0052`. A bounded sampling
+recovery sweep ruled out EMA choice, CFG scale, and guidance rescale as the
+root cause. V8 then retained the v7 layout, objective, data, backbone, seed, and
+5K budget while replacing each learned synthesis operator with a deterministic
+fixed basis. It ranked first at all five audited timesteps, reduced `t=500` EMA
+endpoint MSE from `0.02072` to `0.01763`, reduced path AUC by 8.17%, and raised
+token-1-6 energy from 7.48% to 8.11%. Its directional FID-512 improved from
+`296.38` to `260.31`, with IS increasing from `1.668` to `3.175`; fixed-index
+visuals also showed materially stronger endpoint structure. V8 is therefore
+the selected formal synthesis and v3 requires `fixed_basis`, kernel size 1,
+and `fixed_one` gamma. Both scaling and full gates continue to reject
+token-1-6 energy below 5%.
+
+V5-v8 remain non-formal 5K evidence and cannot themselves authorize 50K or
+300K. The selected v8 recipe must complete the fresh v3 same-revision 10%
+matched 50K pair and pass the unchanged 10K promotion gate.
 See `docs/records/2026-07-20_generation_target_energy_probe_v4_result.md`,
 `docs/records/2026-07-20_generation_capacity_path_probe_v5_result.md`,
 `docs/records/2026-07-21_generation_capacity_path_light_probe_v6_result.md`, and
-`docs/records/2026-07-21_generation_capacity_path_hellinger_probe_v7_result.md`.
+`docs/records/2026-07-21_generation_capacity_path_hellinger_probe_v7_result.md`,
+and `docs/records/2026-07-25_generation_fixed_basis_probe_v8_result.md`.
 
 The full queue alternates CoFiTok and dense at 50K, 100K, 200K, and 300K
 milestones. At each matched point it produces 2,048 fixed-protocol EMA samples
@@ -303,17 +320,17 @@ conda activate pf-vlm
 export PYTHONPATH=src
 
 python scripts/validate_generation_configs.py \
-  --cofitok-config configs/generation/imagenet256_10pct_cofitok_k8_50k.json \
-  --dense-config configs/generation/imagenet256_10pct_dense_50k.json \
+  --cofitok-config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json \
+  --dense-config configs/generation/imagenet256_10pct_fixed_basis_dense_50k.json \
   --output artifacts/reports/generation/config_pair_10pct.json
 
 python scripts/train_generation.py \
-  --config configs/generation/imagenet256_10pct_cofitok_k8_50k.json \
-  --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_cofitok_k8_50k
+  --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json \
+  --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3
 
 python scripts/train_generation.py \
-  --config configs/generation/imagenet256_10pct_cofitok_k8_50k.json \
-  --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_cofitok_k8_50k \
+  --config configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json \
+  --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3 \
   --resume auto
 
 python scripts/generate_samples.py \
@@ -371,8 +388,8 @@ from equal steps. Checkpoints carry cumulative elapsed time and peak VRAM across
 segmented resumes. `cofitok.generation_cost.training_cost_summary` validates
 effective batch and exact images seen, then exposes training hours,
 images/second, and peak memory in the final JSON/Markdown/CSV comparison. The
-full paired-config preflight confirms 62,837,576 vs 62,824,707 parameters
-(+0.020484%). See
+full paired-config preflight confirms 62,836,011 vs 62,824,707 parameters
+(+0.017993%). See
 `docs/records/2026-07-12_generation_matched_compute_accounting.md`.
 `cofitok.generation_pair.generation_pair_contract` additionally compares every
 shared resolved model field, all data/diffusion/runtime/optimization fields,

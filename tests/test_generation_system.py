@@ -107,7 +107,7 @@ def test_scalable_predictor_emits_true_multiscale_variable_channel_tokens() -> N
 
 def test_production_compressed_layout_is_strictly_smaller_per_token() -> None:
     config = load_config(
-        "configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json"
+        "configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json"
     )
     layout = resolve_token_layout(
         image_size=config.model.image_size,
@@ -221,10 +221,10 @@ def test_generation_configs_form_a_matched_backbone_pair() -> None:
 
 def test_compressed_generation_configs_form_authoritative_scaling_pair() -> None:
     cofitok = load_config(
-        "configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json"
+        "configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json"
     )
     dense = load_config(
-        "configs/generation/imagenet256_10pct_compressed_dense_50k.json"
+        "configs/generation/imagenet256_10pct_fixed_basis_dense_50k.json"
     )
 
     preflight = validate_pair(cofitok, dense, max_parameter_gap=0.02)
@@ -232,6 +232,9 @@ def test_compressed_generation_configs_form_authoritative_scaling_pair() -> None
     assert preflight["status"] == "pass", preflight["mismatches"]
     assert preflight["training_recipe"]["stage"] == "scaling"
     assert preflight["training_recipe"]["token_layout"]["issues"] == []
+    assert cofitok.model.synthesis_mode == "fixed_basis"
+    assert cofitok.model.synthesis_kernel_size == 1
+    assert cofitok.model.gamma_mode == "fixed_one"
 
 
 def test_full_generation_configs_keep_matched_runtime_and_checkpoint_cadence() -> None:
@@ -248,6 +251,9 @@ def test_full_generation_configs_keep_matched_runtime_and_checkpoint_cadence() -
     assert cofitok.runtime.keep_last_checkpoints == 3
     assert cofitok.runtime.protected_checkpoint_steps == [50_000, 100_000, 200_000, 300_000]
     assert dense.runtime.protected_checkpoint_steps == cofitok.runtime.protected_checkpoint_steps
+    assert cofitok.model.synthesis_mode == "fixed_basis"
+    assert cofitok.model.synthesis_kernel_size == 1
+    assert cofitok.model.gamma_mode == "fixed_one"
 
     runbook = Path("artifacts/runbooks/generation_full_matched_300k_after_gate.sh").read_text(
         encoding="utf-8"

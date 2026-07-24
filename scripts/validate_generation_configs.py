@@ -57,8 +57,8 @@ def validate_pair(
     for field in BACKBONE_FIELDS:
         if getattr(cofitok.model, field) != getattr(dense.model, field):
             mismatches.append(f"model.{field}")
-    if cofitok.model.synthesis_mode != "restricted":
-        mismatches.append("cofitok synthesis is not restricted")
+    if cofitok.model.synthesis_mode not in {"restricted", "fixed_basis"}:
+        mismatches.append("cofitok synthesis is not a restricted token-only operator")
     if dense.model.synthesis_mode != "dense_identity":
         mismatches.append("dense synthesis is not dense_identity")
     if not cofitok.data.class_conditional or cofitok.model.num_classes <= 0:

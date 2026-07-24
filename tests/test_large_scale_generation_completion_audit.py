@@ -134,9 +134,9 @@ def _training(
     cofitok_method = parameters > 100_000
     if dataset == "imagenet_256_10pct":
         config_name = (
-            "imagenet256_10pct_compressed_cofitok_k8_50k.json"
+            "imagenet256_10pct_fixed_basis_cofitok_k8_50k.json"
             if cofitok_method
-            else "imagenet256_10pct_compressed_dense_50k.json"
+            else "imagenet256_10pct_fixed_basis_dense_50k.json"
         )
     else:
         config_name = (
