@@ -569,6 +569,30 @@ This establishes a reproducible first recovery point but does not satisfy the
 10% matched-pair, promotion, full 300K, formal 50K, or release-artifact gates.
 The frozen CoFiTok 50K run continues.
 
+The tracked terminal completion auditor was repeated after this checkpoint.
+It intentionally exited nonzero and remained:
+
+```text
+status:   in_progress
+complete: false
+pass:     1
+missing:  17
+failed:   0
+```
+
+`controlled_revision_transition` remained the only pass. The report was
+byte-identical to the step-1,000 audit at `3,635` bytes and SHA256
+`ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc`.
+This proves that the newly verified 5K recovery point does not accidentally
+satisfy the dual 50K, storage, promotion, full 300K, milestone, formal
+sampling, visual audit, EMA export, final gate, or comparison checks.
+
+Snapshot:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/completion_audit_in_progress_after_step5000.json
+```
+
 ## Long-horizon observer
 
 The bounded 1K-5K observer exited normally after terminal `pass`. Its source

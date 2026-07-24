@@ -32,6 +32,7 @@ No checkpoint or validation event was due at that point.
 | `cofitok_train_metrics_through_step_00005100.jsonl` | 74,761 | `7e35ac388647bebae8d8f9f648f9c5da0820548413c0922c716749cca67c9cf4` |
 | `checkpoint_step_00005000.pt.integrity.json` | 572 | `18e0ecd2b507169c4bc5911621c04d7e28fcde462c52e7a00557af8834687554` |
 | `completion_audit_in_progress_after_step1000.json` | 3,635 | `ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc` |
+| `completion_audit_in_progress_after_step5000.json` | 3,635 | `ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc` |
 | `cofitok_progress_launch.json` | 2,006 | `e68b827ca0f14ab75e886fff6b4c435e91a3595e7e0e5499796d89bb8b3e08ad` |
 | `cofitok_run_manifest.json` | 7,010 | `8d3a2c0271482a85ac9ade0af2563856eae282b0d7973126294021ac67320a9d` |
 | `cofitok_train_metrics_launch.jsonl` | 3,576 | `65e8d21d6274cf081d45699279a55cd18da31a331bbdf2652d40eff7f81d9059` |
@@ -107,6 +108,13 @@ Its integrity sidecar, `latest.json`, and progress report matched on all ten
 audited identity fields. Fifth-event validation MSE was `0.03096321`: lower
 than formal steps 1K and 2K, but `36.31%` above v8 at step 5K. This proves the
 first formal checkpoint trust boundary, not generation quality or promotion.
+
+The terminal completion auditor was repeated after the verified 5K
+checkpoint. It still returned `in_progress` with one pass, 17 missing checks,
+and zero failed checks. Its bytes and SHA256 exactly matched the step-1,000
+snapshot, proving that a valid recovery checkpoint does not satisfy any
+matched-pair, promotion, full-training, sampling, release, or final-comparison
+requirement.
 
 After the bounded 1K-5K observer exited successfully, a generalized read-only
 observer was launched for steps 10K, 25K, and 50K. It requires each milestone
