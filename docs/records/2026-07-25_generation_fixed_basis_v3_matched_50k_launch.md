@@ -661,6 +661,27 @@ bound in:
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/long_horizon_waiter_restart_after_10k.json
 ```
 
+The local successor source was then hardened so
+`run_progress_audit` constructs the child environment itself: it prepends
+`<project_root>/src` to `PYTHONPATH` and preserves inherited entries. Two
+regression cases cover absent and existing parent paths. Verification passed:
+
+```text
+targeted: 20/20 passed
+full:     666 collected, 664 passed, 2 skipped
+source:   13,222 bytes
+SHA256:   9f9d9768f09b9a35977244244408f7df9c6e402b179decc087b24afc6aaa5988
+```
+
+The active remote observer remains on the earlier source SHA with the
+corrected launch environment because it is healthy. This local hardening is
+not deployed into the frozen formal worktree and does not alter the active
+observer mid-run. Bound evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/observer_self_contained_pythonpath_hardening.json
+```
+
 Bound launch evidence:
 
 ```text

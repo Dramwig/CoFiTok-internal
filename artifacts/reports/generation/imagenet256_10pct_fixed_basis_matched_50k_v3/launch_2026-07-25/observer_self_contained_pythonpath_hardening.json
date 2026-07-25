@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "status": "implemented_and_tested_locally",
+  "trigger": {
+    "observed_failure": "audit_generation_training_progress.py could not import cofitok when the observer subprocess lacked the project src directory in PYTHONPATH",
+    "training_affected": false,
+    "checkpoint_affected": false,
+    "remote_tracked_revision_changed": false
+  },
+  "implementation": {
+    "source": "artifacts/operations/generation/fixed_basis_v3_milestone_waiter.py",
+    "previous_sha256": "47a24e56604b8720ff689f7a9d98e2e54a876faabeec2c2fd4d97ab2cf7f210c",
+    "current_bytes": 13222,
+    "current_sha256": "9f9d9768f09b9a35977244244408f7df9c6e402b179decc087b24afc6aaa5988",
+    "behavior": "run_progress_audit now prepends <project_root>/src to the child process PYTHONPATH and preserves any inherited entries",
+    "scope": "local successor source only"
+  },
+  "verification": {
+    "targeted_test_file": "tests/test_fixed_basis_v3_milestone_waiter.py",
+    "targeted_collected": 20,
+    "targeted_passed": 20,
+    "full_collected": 666,
+    "full_passed": 664,
+    "full_skipped": 2,
+    "full_failed": 0,
+    "required_test_pythonpath": "<repo-root>;<repo-root>/src on Windows"
+  },
+  "active_remote_observer": {
+    "pid": 555237,
+    "source_sha256": "47a24e56604b8720ff689f7a9d98e2e54a876faabeec2c2fd4d97ab2cf7f210c",
+    "launch_pythonpath": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src",
+    "source_replaced_during_training": false,
+    "reason": "the running observer is healthy after the launch-environment repair, so its source remains immutable during the formal run"
+  }
+}

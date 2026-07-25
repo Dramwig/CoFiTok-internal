@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import os
 from pathlib import Path
 
 import pytest
@@ -200,3 +202,48 @@ def test_milestone_entry_preserves_report_identity(tmp_path: Path) -> None:
     assert entry["report_bytes"] == report_path.stat().st_size
     assert entry["last_step"] == 1000
     assert entry["validation_event_count"] == 1
+
+
+@pytest.mark.parametrize("inherited_pythonpath", [None, "existing/pythonpath"])
+def test_progress_audit_injects_project_src_into_pythonpath(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    inherited_pythonpath: str | None,
+) -> None:
+    project_root = tmp_path / "project"
+    run_dir = tmp_path / "run"
+    output = tmp_path / "progress.json"
+    project_root.mkdir()
+    run_dir.mkdir()
+    if inherited_pythonpath is None:
+        monkeypatch.delenv("PYTHONPATH", raising=False)
+    else:
+        monkeypatch.setenv("PYTHONPATH", inherited_pythonpath)
+
+    captured: dict = {}
+
+    def fake_run(command: list[str], **kwargs: object) -> None:
+        captured["command"] = command
+        captured["kwargs"] = kwargs
+        output.write_text(
+            json.dumps(progress_report(last_step=1000, validation_events=1)),
+            encoding="utf-8",
+        )
+
+    monkeypatch.setattr(waiter.subprocess, "run", fake_run)
+
+    report = waiter.run_progress_audit(
+        project_root=project_root,
+        run_dir=run_dir,
+        output=output,
+        milestone=1000,
+    )
+
+    environment = captured["kwargs"]["env"]
+    expected = str(project_root / "src")
+    if inherited_pythonpath:
+        expected = os.pathsep.join((expected, inherited_pythonpath))
+    assert environment["PYTHONPATH"] == expected
+    assert captured["kwargs"]["cwd"] == project_root
+    assert captured["kwargs"]["check"] is True
+    assert report["last_step"] == 1000

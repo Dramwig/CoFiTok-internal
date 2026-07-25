@@ -85,6 +85,14 @@ def run_progress_audit(
     checkpoint_interval: int = 5000,
     evaluation_interval: int = 1000,
 ) -> dict[str, Any]:
+    environment = os.environ.copy()
+    project_src = str(project_root / "src")
+    inherited_pythonpath = environment.get("PYTHONPATH")
+    environment["PYTHONPATH"] = (
+        os.pathsep.join((project_src, inherited_pythonpath))
+        if inherited_pythonpath
+        else project_src
+    )
     command = [
         sys.executable,
         str(project_root / "scripts" / "audit_generation_training_progress.py"),
@@ -103,7 +111,7 @@ def run_progress_audit(
     ]
     if milestone % checkpoint_interval == 0:
         command.extend(["--required-checkpoint-steps", str(milestone)])
-    subprocess.run(command, cwd=project_root, check=True)
+    subprocess.run(command, cwd=project_root, env=environment, check=True)
     with output.open("r", encoding="utf-8") as handle:
         return json.load(handle)
 

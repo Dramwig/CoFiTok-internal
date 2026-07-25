@@ -58,6 +58,7 @@ No checkpoint or validation event was due at that point.
 | `long_horizon_waiter_launch_status.json` | 544 | `434022c5bc8b97f594bc4e71543fce7f99852726c9697333465dbb67b9fe0aec` |
 | `long_horizon_waiter_launch.json` | 2,618 | `e480b3cb24b1fe71e00c0e40ff1f7643e0c26837f0cf9dac221fb5a8d0565110` |
 | `long_horizon_waiter_restart_after_10k.json` | 1,371 | `6651787ede70dde704b64bed4220c2b2ad4fd74d193a984f74b9319008789cb8` |
+| `observer_self_contained_pythonpath_hardening.json` | 1,598 | `ab601fabb64b4dff3e25871b4b0404a884b96b77f19955a264fef56cb06a3c95` |
 | `runtime_selection.json` | 68,006 | `cb125609a28bf8a531c495b365c6e22a8ee9d2eb7e377ba4c2d538be1b63df0d` |
 | `storage_preflight_early_after_step1000.json` | 930 | `5e16f3b7c5dee38b9c699c0288762ae189d6dd78c3ac9051c9687116cd0351c7` |
 | `step1000_validation_vs_v8.json` | 2,236 | `b2343524e8fe813d5a3c5cb62556797cd5e7f5709224b718f5f2a21b652bcc59` |
@@ -160,6 +161,15 @@ observer alone was restarted with the missing path, immediately recovered and
 passed the already-written 10K milestone, and continues under PID `555237`.
 No tracked remote file changed and no training process was stopped or
 controlled by this repair.
+
+The local successor source now makes this runtime requirement self-contained:
+it prepends `<project_root>/src` to the progress-auditor subprocess
+`PYTHONPATH` while preserving inherited entries. The regression is covered
+with and without a parent `PYTHONPATH`; targeted tests passed `20/20`, and the
+full local suite passed `664` tests with `2` skips (`666` collected). The
+healthy active remote observer deliberately remains on the old SHA-bound
+source plus its corrected launch environment, so no source is replaced during
+formal training.
 
 The terminal completion auditor was also run with the exact source, 10%, and
 full revision identities. It returned the expected nonzero exit with
