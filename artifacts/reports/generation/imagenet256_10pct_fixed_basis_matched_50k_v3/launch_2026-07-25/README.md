@@ -45,6 +45,7 @@ No checkpoint or validation event was due at that point.
 | `deployment_receipt.json` | 2,305 | `3a85d03023dd66223edb2ee46913b0e48f88e197a430a38650b09708d5b5285a` |
 | `dense_transition_readiness_after_step12000.json` | 2,704 | `35ea8ecacbe7e47da1690d3953a1ff2a9fab5d99ef9208c82752e90d8ca395fd` |
 | `early_trajectory_vs_v8.json` | 3,124 | `a64423f908f2911455842ea5289570b113ac9b2e66f096903db25d439177f745` |
+| `final_release_chain_preflight_after_step12000.json` | 4,615 | `a9bd697af17e427af4ebae4845f85a6541878894736d891a5e2d85c26e324e85` |
 | `generation_10pct_fixed_basis_v3_pair_monitor.json` | 8,660 | `89a2ae4493b685158b0a1c9ad82ca25529539fc945b02023477c6d4a911ff224` |
 | `generation_complete_pipeline_after_10pct.status.json` | 386 | `0d9a884e27d02bfdd47b2a799698645437e2458936371275fb738dafb9a5a485` |
 | `generation_completion_supervisor.status.json` | 469 | `87c5928e98f8a1ec1072236de7f7de0cf358e94b0a5738a36231e3415363a717` |
@@ -200,6 +201,16 @@ report produced the exact launch SHA, with no shared-section or shared-model
 mismatch, no dense auxiliary loss, and a `0.017993%` parameter gap. The shared
 `64x1` runtime selection contains completed real benchmarks for both methods,
 uses the slower CoFiTok time as its score, and wrote no benchmark checkpoint.
+
+The final release chain was statically preflighted against SHA-matched
+local/remote sources. After full matched 300K, the frozen pipeline requires
+dual 50K EMA DDIM-250 sampling, final visual and metric evidence, and an
+explicit final-gate pass before exporting EMA-only artifacts. Each artifact
+must pass a real forward preflight and inference smoke; the terminal auditor
+then verifies exact sample sets, stable inference API provenance, release
+authorization, artifact integrity, smoke PNGs, final comparison, and gate
+bindings before the pipeline can report completion. The inference/gate/audit
+targeted suite passed `120/120`.
 
 The terminal completion auditor was also run with the exact source, 10%, and
 full revision identities. It returned the expected nonzero exit with

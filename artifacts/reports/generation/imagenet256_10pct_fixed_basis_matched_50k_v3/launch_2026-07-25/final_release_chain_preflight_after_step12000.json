@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "role": "static_read_only_full_evaluation_and_release_chain_preflight",
+  "observed_after_cofitok_step": 12000,
+  "formal_training_affected": false,
+  "gpu_work_started": false,
+  "source_identity": {
+    "artifacts/runbooks/generation_full_posteval_50k.sh": {
+      "bytes": 6915,
+      "sha256": "8ff3314751b251fc4d350c0e3e085c533d696be2e68d23e18239fbeca7e94790",
+      "local_remote_match": true
+    },
+    "artifacts/runbooks/generation_export_inference_artifacts.sh": {
+      "bytes": 2592,
+      "sha256": "f6aedd3508f4fd750708467fe3d03ab250a661566bacba32a18326075f9d5d26",
+      "local_remote_match": true
+    },
+    "scripts/export_generation_inference_artifact.py": {
+      "bytes": 940,
+      "sha256": "06de348860b74b6f81a57a4dcf3c7c3f03a240431819bb0c6a042531b29354d6",
+      "local_remote_match": true
+    },
+    "src/cofitok/generation/artifact.py": {
+      "bytes": 13829,
+      "sha256": "def85f3baf68e3bc5bfba44c5fa9e9308215494ece8d871dce7b9ee3825ffab9",
+      "local_remote_match": true
+    },
+    "scripts/audit_large_scale_generation_completion.py": {
+      "bytes": 122055,
+      "sha256": "d8879b6c953b82981d133477d43f372278bc933fa7a2662aee7586f7cde54132",
+      "local_remote_match": true
+    },
+    "scripts/build_large_scale_generation_comparison.py": {
+      "bytes": 24649,
+      "sha256": "be7efe8f2a437448a2ca892fae1c299f0fcecff513fd0f0d690b77fcca53cd45",
+      "local_remote_match": true
+    }
+  },
+  "targeted_verification": {
+    "test_files": [
+      "tests/test_generation_inference_artifact.py",
+      "tests/test_generation_gate_report.py",
+      "tests/test_large_scale_generation_completion_audit.py"
+    ],
+    "collected": 120,
+    "passed": 120,
+    "failed": 0
+  },
+  "full_formal_evaluation": {
+    "source_checkpoints": {
+      "cofitok": "checkpoint_step_00300000.pt",
+      "dense_identity": "checkpoint_step_00300000.pt"
+    },
+    "shared_sampling_batch_selection": true,
+    "sample_count_per_method": 50000,
+    "sampling_steps": 250,
+    "weights": "ema",
+    "guidance_scale": 1.5,
+    "cfg_batch_mode": "batched",
+    "precision": "bf16",
+    "minimum_metric_samples": 50000,
+    "checkpoint_eval_images_per_method": 1024,
+    "checkpoint_eval_timestep": 500,
+    "prefix_diagnostic_images": 64,
+    "prefix_budgets": [1, 2, 4, 8],
+    "visual_audit_required": true
+  },
+  "final_gate": {
+    "stage": "full",
+    "maximum_relative_fid_regression": 0.05,
+    "maximum_absolute_fid": 20.0,
+    "maximum_endpoint_regression": 0.05,
+    "minimum_precision": 0.30,
+    "minimum_recall": 0.30,
+    "maximum_precision_regression": 0.05,
+    "maximum_recall_regression": 0.05,
+    "minimum_coarse_token_energy_ratio": 0.05,
+    "requires_ordered_rank_one": true,
+    "requires_exact_zero_token": true,
+    "requires_shuffle_mismatch": true,
+    "parent_pipeline_requires_explicit_pass": true
+  },
+  "deployable_inference_artifacts": {
+    "export_stage_runs_only_after_final_gate_validation": true,
+    "methods": ["cofitok", "dense_identity"],
+    "weights": "ema_export",
+    "source_step": 300000,
+    "release_gate_bound": true,
+    "source_checkpoint_integrity_required": true,
+    "source_training_authorization_required": true,
+    "artifact_integrity_sidecar_required": true,
+    "artifact_smaller_than_training_checkpoint_required": true,
+    "real_forward_preflight": {
+      "batch_size": 2,
+      "guidance_scale": 1.5,
+      "precision": "bf16",
+      "warmup_forwards": 1,
+      "measured_forwards": 2
+    },
+    "inference_smoke": {
+      "class_ids": [0],
+      "seeds": [0, 1],
+      "cofitok_prefix_budgets": [1, 8],
+      "dense_prefix_budgets": [1],
+      "sampling_steps": 10,
+      "output_format": "RGB 256x256 PNG",
+      "output_sha256_verified": true
+    }
+  },
+  "terminal_completion_audit": {
+    "runs_after_inference_export": true,
+    "requires_exact_50000_generated_images_per_method": true,
+    "requires_sampling_manifest_and_progress_binding": true,
+    "requires_batch_invariant_random_stream": true,
+    "requires_stable_inference_api": true,
+    "requires_matched_sampling_environment": true,
+    "requires_checkpoint_and_sample_set_sha256": true,
+    "requires_visual_audit": true,
+    "requires_large_scale_comparison": true,
+    "requires_final_gate_source_binding": true,
+    "requires_verified_ema_artifacts": true,
+    "requires_export_preflight_and_smoke": true,
+    "pipeline_marks_complete_only_after_audit_pass": true
+  },
+  "decision": "the frozen pipeline contains the full formal evaluation and deployable EMA release chain; preserve the revision and continue training"
+}

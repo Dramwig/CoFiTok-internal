@@ -791,6 +791,56 @@ directory. Evidence:
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/dense_transition_readiness_after_step12000.json
 ```
 
+## Final evaluation and release chain preflight
+
+The full-scale delivery path was also inspected before authorization or GPU
+work. Local and frozen-remote SHA256 matched for the full post-eval runbook,
+EMA export runbook and implementation, large-scale comparison builder, and
+terminal completion auditor. Their inference-artifact, final-gate, and
+completion-audit tests passed `120/120`.
+
+After full matched 300K training, the formal evaluation is fixed to:
+
+- step-300K CoFiTok and dense checkpoints;
+- shared sampling-batch selection;
+- exact 50,000 EMA samples per method;
+- DDIM-250, CFG `1.5`, batched CFG, and bf16;
+- 1,024-image EMA mechanism evaluation at `t=500`;
+- 64-image CoFiTok prefix diagnostic at `1/2/4/8`;
+- formal visual audit and large-scale comparison.
+
+The full gate is stricter than the 10% promotion gate:
+
+- relative FID regression no more than `5%`;
+- absolute FID no more than `20`;
+- endpoint regression no more than `5%`;
+- precision and recall each at least `0.30`;
+- precision and recall regressions each no more than `5%`;
+- ordered rank 1, exact zero-token, shuffle mismatch, and coarse energy.
+
+Only after the parent pipeline validates this gate does it export CoFiTok and
+dense EMA-only inference artifacts. Each export binds the final release gate,
+step-300K source checkpoint SHA, integrity sidecar, runtime environment and
+training authorization. It must then pass:
+
+- real-forward preflight with warmup and measured forwards;
+- `infer_generation.py` smoke generation through the stable API;
+- CoFiTok prefix budgets `1/8` and dense budget `1`;
+- canonical RGB 256x256 PNG paths and SHA256.
+
+Finally, the terminal completion auditor reopens the source reports and files.
+It verifies exact 50K counts, immutable sampling manifests, atomic progress,
+batch-invariant random streams, matched sampling environments, stable
+inference API provenance, visual audit, comparison, final gate, artifact
+integrity, preflight, smoke reports and PNG bytes. The pipeline writes
+terminal `complete/pass` only after that audit succeeds.
+
+Evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/final_release_chain_preflight_after_step12000.json
+```
+
 Bound launch evidence:
 
 ```text
