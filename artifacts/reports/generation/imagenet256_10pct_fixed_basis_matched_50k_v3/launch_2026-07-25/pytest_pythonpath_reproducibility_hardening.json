@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "status": "implemented_and_tested_locally",
+  "trigger": {
+    "command": "uv run pytest -q",
+    "parent_pythonpath_set": false,
+    "result_before_fix": "collection_failed",
+    "collection_error_count": 51,
+    "common_error": "ModuleNotFoundError: No module named 'scripts'"
+  },
+  "implementation": {
+    "file": "pyproject.toml",
+    "pytest_pythonpath_before": ["src"],
+    "pytest_pythonpath_after": [".", "src"],
+    "bytes": 791,
+    "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50",
+    "scope": "local successor configuration only"
+  },
+  "verification": {
+    "parent_pythonpath_explicitly_removed": true,
+    "targeted_command": "uv run pytest -q tests/test_fixed_basis_v3_milestone_waiter.py tests/test_audit_generation_training_progress.py",
+    "targeted_collected": 31,
+    "targeted_passed": 31,
+    "full_command": "uv run pytest -q",
+    "full_collected": 666,
+    "full_passed": 664,
+    "full_skipped": 2,
+    "full_failed": 0,
+    "collection_errors": 0
+  },
+  "formal_training": {
+    "remote_revision_changed": false,
+    "remote_tracked_worktree_changed": false,
+    "training_process_affected": false
+  }
+}

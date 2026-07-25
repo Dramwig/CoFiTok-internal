@@ -682,6 +682,33 @@ observer mid-run. Bound evidence:
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/observer_self_contained_pythonpath_hardening.json
 ```
 
+The complete local pytest entrypoint had the same class of hidden environment
+dependency: `pyproject.toml` declared only `pythonpath = ["src"]`, so a clean
+`uv run pytest -q` could import `cofitok` but produced 51 collection errors
+for repository-level `scripts` imports. The pytest configuration now declares:
+
+```toml
+pythonpath = [".", "src"]
+```
+
+With the parent `PYTHONPATH` explicitly removed, the observer plus tracked
+progress-auditor subset passed `31/31`, and the complete suite passed:
+
+```text
+666 collected
+664 passed
+2 skipped
+0 failed
+0 collection errors
+```
+
+This is a local reproducibility fix only; the formal remote worktree remains
+frozen. Evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/pytest_pythonpath_reproducibility_hardening.json
+```
+
 Bound launch evidence:
 
 ```text
