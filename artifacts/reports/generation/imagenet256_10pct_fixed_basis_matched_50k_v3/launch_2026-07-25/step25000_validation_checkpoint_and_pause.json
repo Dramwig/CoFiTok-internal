@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-25T18:57:41+08:00",
+  "status": "paused",
+  "reason": "user_requested_pause",
+  "quality_gate": false,
+  "formal_training": {
+    "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3",
+    "target_steps": 50000,
+    "checkpoint_interval": 5000,
+    "keep_last_checkpoints": 3,
+    "protected_checkpoint_steps": [],
+    "last_metric_step": 25350,
+    "last_metric_samples_seen": 1622400,
+    "metrics_rows_after_resume_checkpoint": 7,
+    "dense_run_exists": false
+  },
+  "shutdown": {
+    "requested_signal": "SIGTERM",
+    "signaled_processes": [
+      {
+        "pid": 502309,
+        "role": "completion_supervisor"
+      },
+      {
+        "pid": 502390,
+        "role": "completion_pipeline"
+      },
+      {
+        "pid": 502462,
+        "role": "matched_pair_runbook"
+      },
+      {
+        "pid": 504563,
+        "role": "pair_monitor"
+      },
+      {
+        "pid": 555237,
+        "role": "long_horizon_observer"
+      },
+      {
+        "pid": 504584,
+        "role": "training_watchdog"
+      }
+    ],
+    "processes_remaining": [],
+    "gpu_compute_processes_remaining": [],
+    "checkpoint_created_during_shutdown": false,
+    "training_report_created_during_shutdown": false
+  },
+  "resume": {
+    "mode": "auto",
+    "step": 25000,
+    "samples_seen": 1600000,
+    "metrics_reconciliation_required": true,
+    "metrics_rows_to_archive_as_orphan": 7,
+    "note": "Resume must use the frozen config and --resume auto. The canonical metrics reconciler will archive steps 25050-25350 before continuing from the exact checkpoint state."
+  },
+  "checkpoint": {
+    "filename": "checkpoint_step_00025000.pt",
+    "bytes": 1006351466,
+    "sha256": "5b056311d7651f3a222ce10b5bdd1a1652b4446f0a88f26185ef89ab09a7a542",
+    "format_version": 1,
+    "integrity_status": "verified",
+    "git_branch": "scale/generative-system",
+    "git_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "git_tracked_dirty": false,
+    "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+    "runtime_environment_sha256": "51ef815bff2dcb9ea3e222cba9f0731dd837d11cf0b42cbf489f91e32075da57"
+  },
+  "milestone_audit": {
+    "status": "healthy",
+    "issues": [],
+    "warnings": [],
+    "validation_event_count": 25,
+    "expected_validation_event_count": 25,
+    "checkpoint_steps": [
+      15000,
+      20000,
+      25000
+    ]
+  },
+  "validation_epsilon_mse": {
+    "events_21000_to_25000": [
+      0.02965613268315792,
+      0.028220318257808685,
+      0.028972303494811058,
+      0.03174953907728195,
+      0.030501648783683777
+    ],
+    "first_five_mean": 0.03399296142160892,
+    "last_five_mean": 0.02981998845934868,
+    "last_vs_first_relative_change": -0.12275991228017968
+  },
+  "storage": {
+    "free_bytes": 312491606016
+  },
+  "bounded_local_artifacts": {
+    "checkpoint_step_00025000.pt.integrity.json": {
+      "bytes": 573,
+      "sha256": "fded76c61fbbb2ff6f64d9f41f7eee29b4a3f9d4da923a599605089b89bc0fb8"
+    },
+    "cofitok_progress_step_00025000.json": {
+      "bytes": 3148,
+      "sha256": "6dfbac14b28723daa0ec74070cfca6f20a7d148c16408b8dbaa8c981a19c98aed"
+    },
+    "cofitok_train_metrics_through_step_00025000.jsonl": {
+      "bytes": 365174,
+      "sha256": "afe14f709b51dd7cb045fc29ec4d66f8f53c1d60e0cab862e7d1fb08dc04da13"
+    },
+    "latest_after_step_00025000.json": {
+      "bytes": 643,
+      "sha256": "f58d87cd250d73d5d489cbd4229d8c4fc0ac1c4e690480e58c5e4bdc3a6ba637"
+    },
+    "long_horizon_waiter_after_step_00025000.json": {
+      "bytes": 1315,
+      "sha256": "f3256353108c1a3cc2a03a51902876cb4044a77aa58d06d2a30a6fe4fe4758ab"
+    }
+  }
+}

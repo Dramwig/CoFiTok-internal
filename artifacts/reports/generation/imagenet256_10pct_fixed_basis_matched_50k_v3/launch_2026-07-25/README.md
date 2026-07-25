@@ -1,8 +1,9 @@
 # Fixed-basis v3 launch evidence
 
 This bounded evidence pack records the formal v3 matched 50K launch,
-scheduled validation evidence through step 20,000, and the first four
-verified checkpoint identities. It intentionally excludes checkpoint
+scheduled validation evidence through step 25,000, the first five
+verified checkpoint identities, and the user-requested pause boundary.
+It intentionally excludes checkpoint
 payloads, sample trees, feature caches, and full logs.
 
 Source revision:
@@ -28,6 +29,7 @@ No checkpoint or validation event was due at that point.
 | `cofitok_progress_step_00010000.json` | 3,079 | `0d01da6691d09befaf0a790c77dc1a98dac511876005572ab68b6feecb2a0e25` |
 | `cofitok_progress_step_00015000.json` | 3,169 | `5e0aa6ca2b2a88daf3748a4655ca71a1095bb5a65c8ae4679457f52f99173c69` |
 | `cofitok_progress_step_00020000.json` | 3,123 | `adfb5325cc78cfb0f214d0dfc9dfc46d21bcaca6652cc3f10e7a5859c59b4575` |
+| `cofitok_progress_step_00025000.json` | 3,148 | `6dfbac14b28723daa0ec74070cfca6f20a7d148c16408b8dbaa8c981a19c98aed` |
 | `cofitok_train_metrics_through_step_00000650.jsonl` | 10,001 | `8bd69150a75cfb4da2d71518b6d0befcb2db0472276be38eef2fba987afee38f` |
 | `cofitok_train_metrics_through_step_00001050.jsonl` | 15,778 | `e389612aed07856721d39e2207cdd2df25def39ccf783839f18a95ef197aaaeb` |
 | `cofitok_train_metrics_through_step_00002050.jsonl` | 30,411 | `f5f7a7808ae028680d2d5147622c353be733741d5110a122381259c10c8e16bd` |
@@ -37,10 +39,12 @@ No checkpoint or validation event was due at that point.
 | `cofitok_train_metrics_through_step_00010750.jsonl` | 157,094 | `16ac4713c91a9064b016eded5a627f325a05af76eaec48b9e3224fb088fb52b6` |
 | `cofitok_train_metrics_through_step_00015000.jsonl` | 219,164 | `580fbb6ededbc034af6d9a31c5e8f3d4f41bc45d652ae3151a5761aa938a5773` |
 | `cofitok_train_metrics_through_step_00020000.jsonl` | 292,152 | `925234453fa18d4b60c63d48c32ff4ce2cd6dd66b0d0243472fd6e24363d9589` |
+| `cofitok_train_metrics_through_step_00025000.jsonl` | 365,174 | `afe14f709b51dd7cb045fc29ec4d66f8f53c1d60e0cab862e7d1fb08dc04da13` |
 | `checkpoint_step_00005000.pt.integrity.json` | 572 | `18e0ecd2b507169c4bc5911621c04d7e28fcde462c52e7a00557af8834687554` |
 | `checkpoint_step_00010000.pt.integrity.json` | 573 | `1eca3310ff7246af33a50cdde9cc1c63a3b1993f90c58255dc8de5c000dd71fb` |
 | `checkpoint_step_00015000.pt.integrity.json` | 573 | `332c8033e9b95f3a6fc315a54a7c126e1676f851e994876d50651811f1366bf9` |
 | `checkpoint_step_00020000.pt.integrity.json` | 573 | `ce9d61d2d440f49159b19ecf9ace51b3d472dd19afaf70a01685d4bc59f73b9e` |
+| `checkpoint_step_00025000.pt.integrity.json` | 573 | `fded76c61fbbb2ff6f64d9f41f7eee29b4a3f9d4da923a599605089b89bc0fb8` |
 | `completion_audit_in_progress_after_step1000.json` | 3,635 | `ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc` |
 | `completion_audit_in_progress_after_step5000.json` | 3,635 | `ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc` |
 | `cofitok_progress_launch.json` | 2,006 | `e68b827ca0f14ab75e886fff6b4c435e91a3595e7e0e5499796d89bb8b3e08ad` |
@@ -64,7 +68,9 @@ No checkpoint or validation event was due at that point.
 | `latest_after_step_00010000.json` | 643 | `ea8e90e36ef462c4fc3adde4dbc8ccf182ddbf07fd734ba241d1b10282f93a2d` |
 | `latest_after_step_00015000.json` | 643 | `6efe23f664559145e555ed4a83ae9317aad1a9a2d164538811fdadeada014fc6` |
 | `latest_after_step_00020000.json` | 643 | `2c096449d39d73ea9be8d0adafc65121b1b7ad8adb592ecde4842ef1dfe80d23` |
+| `latest_after_step_00025000.json` | 643 | `f58d87cd250d73d5d489cbd4229d8c4fc0ac1c4e690480e58c5e4bdc3a6ba637` |
 | `long_horizon_waiter_after_step_00010000.json` | 930 | `f272fa0cbe14a704b0ac8f49109d7119f4416534275e28b80036a48e2d7a0d71` |
+| `long_horizon_waiter_after_step_00025000.json` | 1,315 | `f3256353108c1a3cc2a03a51902876cb4044a77aa58d06d2a30a6fe4fe4758ab` |
 | `long_horizon_waiter_launch_status.json` | 544 | `434022c5bc8b97f594bc4e71543fce7f99852726c9697333465dbb67b9fe0aec` |
 | `long_horizon_waiter_launch.json` | 2,618 | `e480b3cb24b1fe71e00c0e40ff1f7643e0c26837f0cf9dac221fb5a8d0565110` |
 | `long_horizon_waiter_restart_after_10k.json` | 1,371 | `6651787ede70dde704b64bed4220c2b2ad4fd74d193a984f74b9319008789cb8` |
@@ -81,6 +87,7 @@ No checkpoint or validation event was due at that point.
 | `step10000_validation_and_checkpoint.json` | 5,068 | `d9e5a9c3aaa9199b52541154718b80c467eee52a21dbb4af9a611583e81d90e2` |
 | `step15000_validation_and_checkpoint.json` | 4,991 | `ccb47b767e0e3cc33979aea85a94b947eab07d2eb093450ade5a110f4e45733f` |
 | `step20000_validation_checkpoint_and_retention.json` | 5,673 | `1a55fb93214d9167310a55425cb46a52b0852bfb54761d3b9ba1397db3a2a802` |
+| `step25000_validation_checkpoint_and_pause.json` | 3,729 | `afa6cf200ec87aa4d7baea00239cf2fd2466257e3ac3239ce6a21d4c6acaf8ac` |
 
 These hashes identify the copied local bytes. The deployment receipt also
 contains its own source-to-target and verification bindings. Live remote
@@ -192,6 +199,25 @@ was `9.93%` below the first-five mean, while step 20K was `2.88%` below step
 10K and `2.11%` below step 15K. The trajectory remains finite and
 non-monotonic; formal generated-sample quality is still unresolved.
 
+At step 25,000, the long-horizon observer independently passed the midpoint
+milestone. The tracked audit was `healthy`, logged all `25/25` validation
+events, and verified the 1,006,351,466-byte checkpoint at SHA256
+`5b056311d7651f3a222ce10b5bdd1a1652b4446f0a88f26185ef89ab09a7a542`.
+The rolling checkpoint set was exactly `15K/20K/25K`. Validation MSE at
+21K-25K was
+`0.02965613/0.02822032/0.02897230/0.03174954/0.03050165`; the last-five
+mean was `12.28%` below the first-five mean.
+
+At 18:53 CST, the user requested a pause. The completion supervisor,
+completion pipeline, matched-pair runbook, pair monitor, long-horizon
+observer, and training watchdog received `SIGTERM`. By 18:54 CST, no matching
+process or GPU compute process remained, and dense training had not started.
+The final metric row reached step 25,350, but shutdown did not publish a new
+checkpoint or training report. The authoritative resume boundary therefore
+remains the verified step-25,000 checkpoint. Exact resume must use
+`--resume auto`; the canonical metrics reconciler will archive the seven
+rows for steps 25,050-25,350 before continuing.
+
 After the bounded 1K-5K observer exited successfully, a generalized read-only
 observer was launched for steps 10K, 25K, and 50K. It requires each milestone
 to bind the exact contemporaneous checkpoint and requires terminal progress
@@ -202,9 +228,10 @@ The initial long-horizon observer environment omitted the project `src`
 directory from `PYTHONPATH`, so its tracked progress-auditor subprocess could
 not import `cofitok`. Training and checkpoint creation were unaffected. The
 observer alone was restarted with the missing path, immediately recovered and
-passed the already-written 10K milestone, and continues under PID `555237`.
-No tracked remote file changed and no training process was stopped or
-controlled by this repair.
+passed the already-written 10K milestone, and continued under PID `555237`
+until the user-requested pause after its 25K pass. No tracked remote file
+changed and no training process was stopped or controlled by the earlier
+repair.
 
 The local successor source now makes this runtime requirement self-contained:
 it prepends `<project_root>/src` to the progress-auditor subprocess

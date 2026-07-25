@@ -1110,3 +1110,77 @@ artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch
 CoFiTok is now 40% through its 50K half of the matched 10% pair. The active
 read-only observer will independently audit 25K next. Dense training and all
 sample-quality gates remain pending.
+
+## Verified 25K midpoint and user-requested pause
+
+The long-horizon observer reached the 25K midpoint at 18:42 CST and returned
+`pass`. The tracked progress audit reported:
+
+- status `healthy`
+- issues/warnings empty
+- validation events `25/25`
+- checkpoint steps `[15000, 20000, 25000]`
+- latest checkpoint integrity `verified`
+
+The fifth formal checkpoint trust boundary is:
+
+```text
+checkpoint: checkpoint_step_00025000.pt
+bytes:      1,006,351,466
+sha256:     5b056311d7651f3a222ce10b5bdd1a1652b4446f0a88f26185ef89ab09a7a542
+format:     1
+step:       25,000
+revision:   58d83bfce2770eab2565b8c89a5f9a06201a0c86
+dataset:    97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741
+runtime:    51ef815bff2dcb9ea3e222cba9f0731dd837d11cf0b42cbf489f91e32075da57
+```
+
+Validation MSE at 21K-25K was:
+
+```text
+21K  0.02965613
+22K  0.02822032
+23K  0.02897230
+24K  0.03174954
+25K  0.03050165
+```
+
+The last-five mean was `0.02981999`, `12.28%` below the first-five mean.
+This remains a fixed-noise health diagnostic and is not a sample-quality
+promotion result.
+
+At 18:53 CST, the user requested that all CoFiTok work stop temporarily.
+After exact PID and command-line verification, `SIGTERM` was sent to the
+completion supervisor, completion pipeline, matched-pair runbook, pair
+monitor, long-horizon observer, and training watchdog. At 18:54 CST:
+
+- no CoFiTok generation process remained
+- no GPU compute process remained
+- dense v3 had not started
+- the remote repository remained clean at the frozen revision
+- no temporary checkpoint file remained
+
+The training metrics reached step 25,350 while shutdown propagated, but no
+signal checkpoint or `training_report.json` was written. The authoritative
+resume point remains step 25,000. Seven later JSONL rows, steps
+25,050-25,350, are intentionally retained in the raw stopped state. A future
+`--resume auto` launch must use the existing exact-resume path, which archives
+those rows as a content-addressed orphan artifact and restores the canonical
+metrics stream before continuing from step 25,000.
+
+The local bounded archive now also contains:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_progress_step_00025000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/checkpoint_step_00025000.pt.integrity.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/latest_after_step_00025000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/long_horizon_waiter_after_step_00025000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_train_metrics_through_step_00025000.jsonl
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/step25000_validation_checkpoint_and_pause.json
+```
+
+The large-scale generation objective is paused, not complete. Remaining work
+is unchanged: resume and finish CoFiTok 50K, train fresh dense 50K, run the
+exact 10K promotion gate, and only after a pass proceed to matched full 300K,
+formal dual 50K evaluation, final gate, EMA export, stable inference, and the
+terminal completion audit.
