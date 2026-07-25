@@ -1022,3 +1022,91 @@ This establishes 30% progress and a third reproducible recovery point for the
 CoFiTok half of the 10% matched pair. Dense 50K, dual formal 10K sampling,
 promotion, full matched 300K, dual formal 50K sampling, final gate, EMA
 exports, and the terminal completion audit all remain mandatory.
+
+## Step-20,000 fourth checkpoint and rolling retention
+
+The formal CoFiTok run reached step 20,000 with the pair monitor continuously
+reporting `running/cofitok_training`, empty issue and health arrays, a live
+supervisor, and a clean tracked revision. The exact step-20,000 row recorded:
+
+```text
+images seen:             1,280,000
+training epsilon:        0.03288158
+total loss:              0.04865638
+gradient norm:           0.04720570
+validation epsilon MSE:  0.03015572
+```
+
+The tracked progress auditor initially received an incorrect caller-supplied
+required set of `5K/10K/15K/20K`. It correctly returned `invalid` because 5K
+was no longer present. Inspection of both the frozen config and the
+authoritative run manifest then confirmed:
+
+```text
+checkpoint_interval:          5,000
+keep_last_checkpoints:         3
+protected_checkpoint_steps:   []
+```
+
+Therefore the expected state at 20K is exactly `10K/15K/20K`; 5K was
+intentionally pruned when 20K was published. The audit was immediately rerun
+with that rolling set and returned:
+
+- status: `healthy`
+- issues/warnings: empty
+- validation events: `20/20`, logging complete
+- checkpoint steps: `[10000, 15000, 20000]`
+- missing required checkpoints: empty
+- latest integrity: `verified`
+- seconds per step: `2.221915`
+- remaining CoFiTok ETA at audit: `66,324s`
+
+The initially invalid report was overwritten by the corrected report. This
+was an audit invocation error, not a training, metrics, retention, or
+checkpoint-integrity failure. Full 300K uses a different retention contract
+that additionally protects `50K/100K/200K/300K`; the 10% rolling behavior
+does not weaken that requirement.
+
+The fourth formal checkpoint trust boundary is:
+
+```text
+checkpoint: checkpoint_step_00020000.pt
+bytes:      1,006,351,466
+sha256:     856d0b6af13d56de7438b364290fa3eac93084fb3262a93e8c99d4d1d37e57c4
+format:     1
+step:       20,000
+revision:   58d83bfce2770eab2565b8c89a5f9a06201a0c86
+dataset:    97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741
+runtime:    51ef815bff2dcb9ea3e222cba9f0731dd837d11cf0b42cbf489f91e32075da57
+```
+
+Validation MSE at 16K-20K was:
+
+```text
+16K  0.03343919
+17K  0.03167019
+18K  0.03097798
+19K  0.02683829
+20K  0.03015572
+```
+
+The last-five mean was `0.03061627`, `9.93%` below the first-five mean.
+Step 20K was `2.88%` below step 10K and `2.11%` below step 15K. This remains
+a finite, non-monotonic fixed-noise diagnostic; it does not establish sample
+quality.
+
+The local bounded archive contains the corrected progress report, exact
+401-row metrics prefix, integrity sidecar, latest pointer, and structured
+retention explanation:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_progress_step_00020000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/checkpoint_step_00020000.pt.integrity.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/latest_after_step_00020000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_train_metrics_through_step_00020000.jsonl
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/step20000_validation_checkpoint_and_retention.json
+```
+
+CoFiTok is now 40% through its 50K half of the matched 10% pair. The active
+read-only observer will independently audit 25K next. Dense training and all
+sample-quality gates remain pending.
