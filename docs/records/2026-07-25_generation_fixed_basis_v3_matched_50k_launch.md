@@ -950,3 +950,75 @@ artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch
 This proves a second reproducible recovery point. It does not satisfy the
 matched 50K pair or the downstream formal 10K-sample promotion gate, so the
 frozen CoFiTok run continues toward 25K and 50K.
+
+## Step-15,000 third checkpoint integrity
+
+The frozen formal run reached step 15,000 without a supervisor, watchdog,
+monitor, or tracked-worktree fault. A fresh invocation of the tracked progress
+auditor used:
+
+```text
+expected steps:              50,000
+checkpoint interval:         5,000
+evaluation interval:         1,000
+required checkpoints:        5,000 / 10,000 / 15,000
+integrity policy:             required
+```
+
+It returned:
+
+- status: `healthy`
+- issues/warnings: empty
+- validation events: `15/15`, logging complete
+- checkpoint steps: `[5000, 10000, 15000]`
+- missing required checkpoints: empty
+- latest integrity: `verified`
+- seconds per step: `2.221710`
+- remaining CoFiTok ETA at audit: `77,760s`
+
+The exact step-15,000 row recorded `960,000` images seen, training epsilon
+`0.02757408`, total loss `0.04086439`, gradient norm `0.07614650`, and fixed
+validation epsilon MSE `0.03080699`. The 11K-15K validation values were:
+
+```text
+11K  0.03187243
+12K  0.03147752
+13K  0.02831916
+14K  0.03288554
+15K  0.03080699
+```
+
+Their mean was `0.03107233`, `8.59%` below the first-five mean. Step 15K was
+`0.78%` below step 10K and `6.32%` below step 14K. The series remains finite
+and non-monotonic; this is execution-health evidence, not a generated-sample
+quality conclusion.
+
+The third formal checkpoint trust boundary is:
+
+```text
+checkpoint: checkpoint_step_00015000.pt
+bytes:      1,006,351,466
+sha256:     29ad6fc611b93b431e9fdb9c589107edfd6254d044b115f8f4a3234b4e0e42d0
+format:     1
+step:       15,000
+revision:   58d83bfce2770eab2565b8c89a5f9a06201a0c86
+dataset:    97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741
+runtime:    51ef815bff2dcb9ea3e222cba9f0731dd837d11cf0b42cbf489f91e32075da57
+```
+
+The checkpoint payload remains only on the server. Its sidecar,
+`latest.json`, exact 301-row metrics snapshot, tracked progress report, and
+structured interpretation were copied into the bounded local evidence pack:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_progress_step_00015000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/checkpoint_step_00015000.pt.integrity.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/latest_after_step_00015000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_train_metrics_through_step_00015000.jsonl
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/step15000_validation_and_checkpoint.json
+```
+
+This establishes 30% progress and a third reproducible recovery point for the
+CoFiTok half of the 10% matched pair. Dense 50K, dual formal 10K sampling,
+promotion, full matched 300K, dual formal 50K sampling, final gate, EMA
+exports, and the terminal completion audit all remain mandatory.
