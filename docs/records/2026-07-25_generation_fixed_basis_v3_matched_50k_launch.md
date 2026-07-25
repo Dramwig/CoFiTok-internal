@@ -755,6 +755,42 @@ work or post-eval output was started by this preflight. Evidence:
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/posteval_transition_preflight_after_step11000.json
 ```
 
+## Dense transition readiness
+
+After CoFiTok step 12K, the future dense transition was checked without
+starting a second GPU workload:
+
+- authoritative dense directory does not exist;
+- no stale metrics, report, checkpoint, or resume state is present;
+- the frozen config validator returned `pass`;
+- the recomputed config-pair bytes matched the launch report at SHA256
+  `e90c24f6fe45aaa0c17c93df7daf3ab4f799e734367df6ea7a4e017729ba3384`;
+- matched data/diffusion/runtime/optimization sections had zero mismatch;
+- shared backbone fields had zero mismatch;
+- dense auxiliary loss list was empty;
+- CoFiTok/dense parameters were `62,836,011 / 62,824,707`, a
+  `0.017993%` gap.
+
+The selected `64x1` runtime report at SHA256
+`cb125609a28bf8a531c495b365c6e22a8ee9d2eb7e377ba4c2d538be1b63df0d`
+contains completed real benchmarks for both methods under the same dataset
+and runtime environment:
+
+| Method | Mean optimizer step | Peak VRAM | Effective batch |
+|---|---:|---:|---:|
+| CoFiTok | `2.216154 s` | `56,182,542,336` bytes | `64` |
+| Dense identity | `2.020304 s` | `55,393,513,984` bytes | `64` |
+
+Neither benchmark wrote a checkpoint. Selection uses the slower method's
+`2.216154 s` as the shared score, so the dense baseline does not receive a
+different runtime choice. The supervisor remains unchanged and must still
+wait for the exact CoFiTok 50K completion report before creating the dense
+directory. Evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/dense_transition_readiness_after_step12000.json
+```
+
 Bound launch evidence:
 
 ```text

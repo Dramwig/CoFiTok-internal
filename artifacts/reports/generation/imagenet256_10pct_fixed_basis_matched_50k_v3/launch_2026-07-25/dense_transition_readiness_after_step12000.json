@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "role": "read_only_dense_baseline_transition_readiness",
+  "observed_at": "2026-07-25T02:41:32Z",
+  "formal_training": {
+    "cofitok_step": 12000,
+    "pair_monitor_status": "running",
+    "pair_monitor_stage": "cofitok_training",
+    "pair_monitor_issues": [],
+    "cofitok_health_issues": [],
+    "remote_branch": "scale/generative-system",
+    "remote_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "remote_tracked_dirty": false,
+    "training_process_affected": false
+  },
+  "dense_target": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3",
+    "exists": false,
+    "entries": [],
+    "fresh_start_required": true,
+    "stale_training_state_present": false
+  },
+  "pair_contract": {
+    "status": "pass",
+    "report_sha256": "e90c24f6fe45aaa0c17c93df7daf3ab4f799e734367df6ea7a4e017729ba3384",
+    "recomputed_report_matches_launch_report": true,
+    "cofitok_parameter_count": 62836011,
+    "dense_parameter_count": 62824707,
+    "relative_parameter_gap": 0.00017992921160778355,
+    "maximum_parameter_gap": 0.02,
+    "mismatches": [],
+    "contract_valid": true,
+    "contract_issues": [],
+    "mismatched_config_sections": [],
+    "mismatched_shared_model_fields": [],
+    "dense_nonzero_auxiliary_losses": [],
+    "matched_sections": ["data", "diffusion", "runtime", "optimization"],
+    "primary_epsilon_weight": 1.0
+  },
+  "shared_runtime_selection": {
+    "status": "selected",
+    "report_sha256": "cb125609a28bf8a531c495b365c6e22a8ee9d2eb7e377ba4c2d538be1b63df0d",
+    "micro_batch_size": 64,
+    "gradient_accumulation_steps": 1,
+    "effective_batch_size": 64,
+    "selection_score_seconds": 2.2161538057650128,
+    "maximum_memory_fraction": 0.550936489620748,
+    "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+    "runtime_environment_sha256": "51ef815bff2dcb9ea3e222cba9f0731dd837d11cf0b42cbf489f91e32075da57",
+    "cofitok_benchmark": {
+      "status": "completed",
+      "checkpoint_written": false,
+      "mean_optimizer_step_seconds": 2.2161538057650128,
+      "peak_vram_bytes": 56182542336,
+      "effective_batch_size": 64,
+      "parameter_count": 62836011
+    },
+    "dense_benchmark": {
+      "status": "completed",
+      "checkpoint_written": false,
+      "mean_optimizer_step_seconds": 2.0203035244097314,
+      "peak_vram_bytes": 55393513984,
+      "effective_batch_size": 64,
+      "parameter_count": 62824707
+    },
+    "selection_uses_slower_method_score": true
+  },
+  "decision": "dense transition is ready; keep the formal supervisor unchanged and wait for the exact CoFiTok 50K completion report"
+}

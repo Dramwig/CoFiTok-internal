@@ -43,6 +43,7 @@ No checkpoint or validation event was due at that point.
 | `cofitok_training_watchdog.json` | 1,824 | `0b1d9d37f5a8b1ac9c2c0d8bff90a60438ec566cf9542fd5b7c09f2a5eaf135c` |
 | `config_pair.json` | 11,663 | `e90c24f6fe45aaa0c17c93df7daf3ab4f799e734367df6ea7a4e017729ba3384` |
 | `deployment_receipt.json` | 2,305 | `3a85d03023dd66223edb2ee46913b0e48f88e197a430a38650b09708d5b5285a` |
+| `dense_transition_readiness_after_step12000.json` | 2,704 | `35ea8ecacbe7e47da1690d3953a1ff2a9fab5d99ef9208c82752e90d8ca395fd` |
 | `early_trajectory_vs_v8.json` | 3,124 | `a64423f908f2911455842ea5289570b113ac9b2e66f096903db25d439177f745` |
 | `generation_10pct_fixed_basis_v3_pair_monitor.json` | 8,660 | `89a2ae4493b685158b0a1c9ad82ca25529539fc945b02023477c6d4a911ff224` |
 | `generation_complete_pipeline_after_10pct.status.json` | 386 | `0d9a884e27d02bfdd47b2a799698645437e2458936371275fb738dafb9a5a485` |
@@ -191,6 +192,14 @@ before every downstream Python entrypoint. The preserved protocol is matched
 10K EMA DDIM-100 sampling, shared runtime batch selection, checkpoint
 mechanism evaluation, visual/prefix diagnostics, and a fail-closed promotion
 decision before full 300K.
+
+Dense-transition readiness was revalidated after CoFiTok step 12K. The target
+v3 dense run directory does not exist, so the runbook will take the required
+fresh-start path rather than resume stale state. Recomputing the config-pair
+report produced the exact launch SHA, with no shared-section or shared-model
+mismatch, no dense auxiliary loss, and a `0.017993%` parameter gap. The shared
+`64x1` runtime selection contains completed real benchmarks for both methods,
+uses the slower CoFiTok time as its score, and wrote no benchmark checkpoint.
 
 The terminal completion auditor was also run with the exact source, 10%, and
 full revision identities. It returned the expected nonzero exit with
