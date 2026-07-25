@@ -1,8 +1,8 @@
 # Fixed-basis v3 launch evidence
 
 This bounded evidence pack records the formal v3 matched 50K launch,
-scheduled validation evidence through step 5,000, and the first verified
-checkpoint identity. It intentionally excludes checkpoint payloads, sample
+scheduled validation evidence through step 10,000, and the first two verified
+checkpoint identities. It intentionally excludes checkpoint payloads, sample
 trees, feature caches, and full logs.
 
 Source revision:
@@ -25,13 +25,16 @@ No checkpoint or validation event was due at that point.
 | `cofitok_progress_step_00004000.json` | 2,077 | `39df2e50e51a87ea48a296f3859aee49d7987ec64364743bbf8616222e39b21a` |
 | `cofitok_progress_step_00005000.json` | 3,106 | `30329026393a158f69f6dd93b2b5207a6811b0dedc87367d944582d0547d3e0e` |
 | `cofitok_progress_step_00006000_diagnostic.json` | 3,111 | `93e74f800896705429200bf3c769b98cff9204977ba2aeb97d0100736c2a5f20` |
+| `cofitok_progress_step_00010000.json` | 3,079 | `0d01da6691d09befaf0a790c77dc1a98dac511876005572ab68b6feecb2a0e25` |
 | `cofitok_train_metrics_through_step_00000650.jsonl` | 10,001 | `8bd69150a75cfb4da2d71518b6d0befcb2db0472276be38eef2fba987afee38f` |
 | `cofitok_train_metrics_through_step_00001050.jsonl` | 15,778 | `e389612aed07856721d39e2207cdd2df25def39ccf783839f18a95ef197aaaeb` |
 | `cofitok_train_metrics_through_step_00002050.jsonl` | 30,411 | `f5f7a7808ae028680d2d5147622c353be733741d5110a122381259c10c8e16bd` |
 | `cofitok_train_metrics_through_step_00003050.jsonl` | 44,947 | `17f449dcea98fb8c61a06816c5b93bf25bd31be049ae3bb18607904a658bf8df` |
 | `cofitok_train_metrics_through_step_00004050.jsonl` | 59,482 | `61cc14bf30d2c4e716541c96066a624422907152505648c9de9534ad7baea0f1` |
 | `cofitok_train_metrics_through_step_00005100.jsonl` | 74,761 | `7e35ac388647bebae8d8f9f648f9c5da0820548413c0922c716749cca67c9cf4` |
+| `cofitok_train_metrics_through_step_00010750.jsonl` | 157,094 | `16ac4713c91a9064b016eded5a627f325a05af76eaec48b9e3224fb088fb52b6` |
 | `checkpoint_step_00005000.pt.integrity.json` | 572 | `18e0ecd2b507169c4bc5911621c04d7e28fcde462c52e7a00557af8834687554` |
+| `checkpoint_step_00010000.pt.integrity.json` | 573 | `1eca3310ff7246af33a50cdde9cc1c63a3b1993f90c58255dc8de5c000dd71fb` |
 | `completion_audit_in_progress_after_step1000.json` | 3,635 | `ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc` |
 | `completion_audit_in_progress_after_step5000.json` | 3,635 | `ab4c258638e300e41b575e46cc665cbaa30e0dd5b99fc1d81a3d919559ffbefc` |
 | `cofitok_progress_launch.json` | 2,006 | `e68b827ca0f14ab75e886fff6b4c435e91a3595e7e0e5499796d89bb8b3e08ad` |
@@ -50,8 +53,11 @@ No checkpoint or validation event was due at that point.
 | `milestone_waiter_after_step_00004000.json` | 2,129 | `0ce2cf1d0d0e47c69c9f76071c934df1c2a2a1b20a007d22853fcee09e49f471` |
 | `milestone_waiter_after_step_00005000.json` | 2,510 | `aaeff3d9ec81610258a485695e6c6bd71f8106f72fbded8ba2833bf68d593154` |
 | `latest_after_step_00005000.json` | 642 | `a3d12182bd038ad7e49d6cba94dd5d4e1391b2bb1de4cfb434a80ae4016ede97` |
+| `latest_after_step_00010000.json` | 643 | `ea8e90e36ef462c4fc3adde4dbc8ccf182ddbf07fd734ba241d1b10282f93a2d` |
+| `long_horizon_waiter_after_step_00010000.json` | 930 | `f272fa0cbe14a704b0ac8f49109d7119f4416534275e28b80036a48e2d7a0d71` |
 | `long_horizon_waiter_launch_status.json` | 544 | `434022c5bc8b97f594bc4e71543fce7f99852726c9697333465dbb67b9fe0aec` |
 | `long_horizon_waiter_launch.json` | 2,618 | `e480b3cb24b1fe71e00c0e40ff1f7643e0c26837f0cf9dac221fb5a8d0565110` |
+| `long_horizon_waiter_restart_after_10k.json` | 1,371 | `6651787ede70dde704b64bed4220c2b2ad4fd74d193a984f74b9319008789cb8` |
 | `runtime_selection.json` | 68,006 | `cb125609a28bf8a531c495b365c6e22a8ee9d2eb7e377ba4c2d538be1b63df0d` |
 | `storage_preflight_early_after_step1000.json` | 930 | `5e16f3b7c5dee38b9c699c0288762ae189d6dd78c3ac9051c9687116cd0351c7` |
 | `step1000_validation_vs_v8.json` | 2,236 | `b2343524e8fe813d5a3c5cb62556797cd5e7f5709224b718f5f2a21b652bcc59` |
@@ -59,6 +65,7 @@ No checkpoint or validation event was due at that point.
 | `step3000_validation_vs_v8.json` | 3,455 | `203b06e946b5ab9b161c4f6474430a7494ecc1256b9ece4d272e03f820af4054` |
 | `step4000_validation_vs_v8.json` | 3,687 | `eca53a293c8954fa4f0eec520b3301e63dfe04bb1137c43ed0fe43386e548383` |
 | `step5000_validation_and_checkpoint_vs_v8.json` | 5,169 | `0428f85363a2ea58cc40d6cc4022e48de08f393c710711c72d9fe1ab6abbef33` |
+| `step10000_validation_and_checkpoint.json` | 5,068 | `d9e5a9c3aaa9199b52541154718b80c467eee52a21dbb4af9a611583e81d90e2` |
 
 These hashes identify the copied local bytes. The deployment receipt also
 contains its own source-to-target and verification bindings. Live remote
@@ -124,11 +131,35 @@ remained `healthy`, with validation `6/6`, no issues or warnings, and the 5K
 checkpoint still integrity-verified. This distinguishes an adverse quality
 diagnostic from an operational or reproducibility failure.
 
+Steps 7K-10K remained finite but non-monotonic. Validation MSE was
+`0.03119027`, `0.02415371`, `0.02835677`, and `0.03104844`; step 8K was the
+lowest of the first ten events. The last-five-event mean was `11.15%` below
+the first-five-event mean, while the step-10K value was only `0.28%` above
+step 5K and `28.55%` above the step-8K minimum. This mixed fixed-noise
+trajectory is a health diagnostic, not generated-sample evidence.
+
+At step 10,000, the tracked progress auditor passed as `healthy` with all ten
+scheduled validation events logged and no issues or warnings. It verified the
+1,006,351,466-byte checkpoint at SHA256
+`1310dffc22b927946b0fd402c3abdc01623a710fa50b4176374c5168052e33e3`.
+The integrity sidecar, `latest.json`, and progress report matched on all ten
+audited identity fields. The checkpoint is a trusted recovery point; it is not
+the formal 10K-sample promotion result, which remains downstream of the
+completed matched 50K training pair.
+
 After the bounded 1K-5K observer exited successfully, a generalized read-only
 observer was launched for steps 10K, 25K, and 50K. It requires each milestone
 to bind the exact contemporaneous checkpoint and requires terminal progress
 status `complete` at 50K. The observer runs only from `/tmp`, has a 36-hour
 hard timeout, and cannot load models, use the GPU, or control training.
+
+The initial long-horizon observer environment omitted the project `src`
+directory from `PYTHONPATH`, so its tracked progress-auditor subprocess could
+not import `cofitok`. Training and checkpoint creation were unaffected. The
+observer alone was restarted with the missing path, immediately recovered and
+passed the already-written 10K milestone, and continues under PID `555237`.
+No tracked remote file changed and no training process was stopped or
+controlled by this repair.
 
 The terminal completion auditor was also run with the exact source, 10%, and
 full revision identities. It returned the expected nonzero exit with

@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "status": "observer_restarted_without_training_interruption",
+  "observed_at": "2026-07-25T01:49:52Z",
+  "observer": {
+    "script": "/tmp/cofitok_fixed_basis_v3_long_horizon_waiter.py",
+    "script_sha256": "47a24e56604b8720ff689f7a9d98e2e54a876faabeec2c2fd4d97ab2cf7f210c",
+    "old_pid": 531838,
+    "new_pid": 555237,
+    "old_failure": "audit_generation_training_progress.py could not import cofitok",
+    "root_cause": "the observer subprocess environment did not include the project src directory in PYTHONPATH",
+    "repair": {
+      "PYTHONPATH": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src",
+      "tracked_code_changed": false,
+      "training_process_controlled": false,
+      "gpu_used": false,
+      "checkpoint_loaded": false
+    }
+  },
+  "training": {
+    "supervisor_pid": 502309,
+    "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3",
+    "git_branch": "scale/generative-system",
+    "git_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "tracked_dirty": false,
+    "interrupted": false
+  },
+  "recovered_milestone": {
+    "step": 10000,
+    "status": "pass",
+    "checkpoint_integrity": "verified",
+    "validation_event_count": 10,
+    "progress_report": "cofitok_progress_step_00010000.json"
+  },
+  "scope": "read_only_observer_runtime_repair_only"
+}

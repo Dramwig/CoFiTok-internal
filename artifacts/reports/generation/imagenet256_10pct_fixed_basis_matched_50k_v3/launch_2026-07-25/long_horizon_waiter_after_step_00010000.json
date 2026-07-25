@@ -1,0 +1,25 @@
+{
+  "detail": "waiting for the next milestone",
+  "expected_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+  "last_step": 10650,
+  "milestones": {
+    "10000": {
+      "audited_at": "2026-07-25T01:49:55.728841+00:00",
+      "checkpoint_integrity": "verified",
+      "last_step": 10650,
+      "report": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/cofitok_progress_step_00010000.json",
+      "report_bytes": 3079,
+      "status": "pass",
+      "validation_event_count": 10
+    },
+    "25000": null,
+    "50000": null
+  },
+  "observer": "fixed_basis_v3_milestone_waiter",
+  "pid": 555237,
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3",
+  "schema_version": 1,
+  "started_at": "2026-07-25T01:49:52.591440+00:00",
+  "status": "waiting",
+  "updated_at": "2026-07-25T01:49:55.728890+00:00"
+}

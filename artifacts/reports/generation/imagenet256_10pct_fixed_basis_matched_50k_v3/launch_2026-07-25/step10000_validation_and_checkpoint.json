@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "status": "checkpoint_verified_with_fluctuating_validation_observation",
+  "role": "scheduled_validation_and_checkpoint_health_diagnostic_only",
+  "formal_v3": {
+    "git_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "step": 10000,
+    "samples_seen": 640000,
+    "training_epsilon": 0.027159735560417175,
+    "training_total": 0.041899196803569794,
+    "validation_epsilon_mse": 0.03104843571782112,
+    "progress_audit": {
+      "status": "healthy",
+      "issues": [],
+      "warnings": [],
+      "validation_event_count": 10,
+      "validation_logging_complete": true,
+      "checkpoint_status": "available",
+      "checkpoint_integrity_status": "verified",
+      "missing_required_checkpoint_steps": [],
+      "seconds_per_step": 2.22182128409039,
+      "eta_seconds_at_audit": 87428.66752895685,
+      "audit_last_step": 10650
+    },
+    "metrics_snapshot": {
+      "path": "cofitok_train_metrics_through_step_00010750.jsonl",
+      "bytes": 157094,
+      "sha256": "16ac4713c91a9064b016eded5a627f325a05af76eaec48b9e3224fb088fb52b6"
+    },
+    "progress_report": {
+      "path": "cofitok_progress_step_00010000.json",
+      "bytes": 3079,
+      "sha256": "0d01da6691d09befaf0a790c77dc1a98dac511876005572ab68b6feecb2a0e25"
+    },
+    "observer_status_snapshot": {
+      "path": "long_horizon_waiter_after_step_00010000.json",
+      "bytes": 930,
+      "sha256": "f272fa0cbe14a704b0ac8f49109d7119f4416534275e28b80036a48e2d7a0d71",
+      "milestone_status": "pass"
+    }
+  },
+  "checkpoint": {
+    "remote_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/checkpoint_step_00010000.pt",
+    "bytes": 1006351466,
+    "sha256": "1310dffc22b927946b0fd402c3abdc01623a710fa50b4176374c5168052e33e3",
+    "format_version": 1,
+    "step": 10000,
+    "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+    "runtime_environment_sha256": "51ef815bff2dcb9ea3e222cba9f0731dd837d11cf0b42cbf489f91e32075da57",
+    "git_branch": "scale/generative-system",
+    "git_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "git_dirty": false,
+    "integrity_manifest_snapshot": {
+      "path": "checkpoint_step_00010000.pt.integrity.json",
+      "bytes": 573,
+      "sha256": "1eca3310ff7246af33a50cdde9cc1c63a3b1993f90c58255dc8de5c000dd71fb"
+    },
+    "latest_pointer_snapshot": {
+      "path": "latest_after_step_00010000.json",
+      "bytes": 643,
+      "sha256": "ea8e90e36ef462c4fc3adde4dbc8ccf182ddbf07fd734ba241d1b10282f93a2d"
+    },
+    "binding_validation": {
+      "compared_fields": 10,
+      "mismatch_count": 0,
+      "checkpoint_payload_copied_locally": false
+    }
+  },
+  "formal_validation_trend": {
+    "events": [
+      {"step": 1000, "validation_epsilon_mse": 0.04005979001522064},
+      {"step": 2000, "validation_epsilon_mse": 0.03190126270055771},
+      {"step": 3000, "validation_epsilon_mse": 0.037659503519535065},
+      {"step": 4000, "validation_epsilon_mse": 0.0293810423463583},
+      {"step": 5000, "validation_epsilon_mse": 0.03096320852637291},
+      {"step": 6000, "validation_epsilon_mse": 0.03626135364174843},
+      {"step": 7000, "validation_epsilon_mse": 0.031190266832709312},
+      {"step": 8000, "validation_epsilon_mse": 0.02415371499955654},
+      {"step": 9000, "validation_epsilon_mse": 0.028356773778796196},
+      {"step": 10000, "validation_epsilon_mse": 0.03104843571782112}
+    ],
+    "ten_event_mean": 0.03209753520786762,
+    "ten_event_minimum": 0.02415371499955654,
+    "minimum_step": 8000,
+    "first_five_mean": 0.03399296142160892,
+    "last_five_mean": 0.03020210899412632,
+    "last_five_vs_first_five_relative_change_percent": -11.151874590934586,
+    "step_5000_to_step_10000_relative_change_percent": 0.2752531003872516,
+    "step_8000_to_step_10000_relative_change_percent": 28.545177081004592,
+    "step_9000_to_step_10000_relative_change_percent": 9.492130381339848,
+    "step_1000_to_step_10000_relative_change_percent": -22.494761689903196
+  },
+  "observer_runtime_repair": {
+    "snapshot": "long_horizon_waiter_restart_after_10k.json",
+    "training_interrupted": false,
+    "tracked_code_changed": false,
+    "milestone_recovered": true
+  },
+  "interpretation": {
+    "checkpoint_state": "the second formal v3 checkpoint is integrity-verified and bound to latest.json",
+    "training_state": "the optimization trajectory remains finite and operationally healthy",
+    "validation_state": "the fixed-validation series is non-monotonic; the last-five mean is lower than the first-five mean, while step 10K is nearly unchanged from step 5K and above the step-8K minimum",
+    "decision": "continue the frozen matched 50K run and retain the formal generated-sample promotion gate as quality authority",
+    "reason": "A trusted 10K recovery checkpoint and complete validation logging establish training health and reproducibility, but neither fixed-noise MSE nor a single validation minimum establishes generation quality.",
+    "not_a_promotion_or_quality_gate": true
+  }
+}

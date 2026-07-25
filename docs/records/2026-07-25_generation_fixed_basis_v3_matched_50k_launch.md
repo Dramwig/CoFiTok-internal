@@ -164,11 +164,11 @@ artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch
 ```
 
 It contains the deployment receipt, pair contract, runtime selection,
-supervisor/pipeline/monitor/watchdog states, run manifest, the first five
-metrics rows, and a tracked progress audit. The progress audit was `healthy`
-at step 200 with `0` issues, `0` warnings, `2.219099` seconds per step, and
-an ETA of `110,511` seconds to CoFiTok step 50,000. `README.md` binds every
-copied file by byte count and SHA256.
+supervisor/pipeline/monitor/watchdog states, run manifest, bounded metrics
+snapshots through step 10,750, scheduled-validation audits, and the 5K and
+10K checkpoint trust-boundary metadata. The launch progress audit was
+`healthy` at step 200 with `0` issues and `0` warnings. `README.md` binds
+every copied file by byte count and SHA256.
 
 ## Read-only milestone observer
 
@@ -638,6 +638,29 @@ The observer reads metrics, Git identity, and checkpoint metadata and invokes
 the frozen tracked progress auditor. It does not load a checkpoint, use the
 GPU, control training, or modify the remote tracked worktree.
 
+At step 10K, the observer status was still pending even though the checkpoint
+had been published. Its own log exposed the cause: the subprocess invoking
+`scripts/audit_generation_training_progress.py` did not inherit the project
+`src` directory in `PYTHONPATH`, so it could not import `cofitok`. This was an
+observer-runtime fault only; the formal trainer, watchdog, supervisor,
+metrics, and checkpoint publisher continued uninterrupted.
+
+Only observer PID `531838` was terminated. The same SHA-bound `/tmp` source
+was restarted as PID `555237` with:
+
+```text
+PYTHONPATH=/root/autodl-tmp/CoFiTok/CoFiTok-internal/src
+```
+
+It immediately audited the already-written 10K state and recorded milestone
+`pass`. No tracked remote file changed, no checkpoint was loaded, no GPU was
+used, and no training process was signalled. Runtime repair provenance is
+bound in:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/long_horizon_waiter_restart_after_10k.json
+```
+
 Bound launch evidence:
 
 ```text
@@ -679,3 +702,71 @@ It is `3,111` bytes with SHA256
 The adverse value does not justify hiding the event or declaring quality
 success. It also does not by itself determine the 50K endpoint, so the frozen
 run and unchanged 10K/25K/50K observer continue.
+
+## Steps 7,000-10,000 and second checkpoint integrity
+
+The next four fixed-validation events were:
+
+| Step | Validation epsilon MSE | Relative to previous event |
+|---:|---:|---:|
+| 7,000 | `0.03119027` | `-13.98%` |
+| 8,000 | `0.02415371` | `-22.56%` |
+| 9,000 | `0.02835677` | `+17.40%` |
+| 10,000 | `0.03104844` | `+9.49%` |
+
+Step 8K was the lowest of the first ten scheduled events. Across the larger
+window, the last-five-event mean was `0.03020211`, which was `11.15%` below
+the first-five-event mean `0.03399296`. Step 10K was nearly unchanged from
+step 5K (`+0.28%`) but `28.55%` above the 8K minimum. The series is therefore
+finite and improved in its windowed mean, but plainly non-monotonic. It cannot
+replace generated-sample evaluation.
+
+After the observer runtime repair, the deployed tracked progress auditor
+reported:
+
+- status: `healthy`
+- issues/warnings: empty
+- validation events: `10/10`, logging complete
+- required checkpoint steps: `[10000]`
+- missing required steps: empty
+- latest integrity: `verified`
+- audit last step: `10,650`
+- seconds per step: `2.221821`
+- ETA at audit: `87,429` seconds
+
+The exact step-10,000 training row was:
+
+- training epsilon: `0.02715974`
+- total loss: `0.04189920`
+- validation epsilon MSE: `0.03104844`
+- gradient norm: `0.05060176`
+- samples seen: `640,000`
+
+The second formal checkpoint trust boundary is:
+
+```text
+checkpoint: checkpoint_step_00010000.pt
+bytes:      1,006,351,466
+sha256:     1310dffc22b927946b0fd402c3abdc01623a710fa50b4176374c5168052e33e3
+format:     1
+step:       10,000
+revision:   58d83bfce2770eab2565b8c89a5f9a06201a0c86
+dataset:    97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741
+runtime:    51ef815bff2dcb9ea3e222cba9f0731dd837d11cf0b42cbf489f91e32075da57
+```
+
+The integrity sidecar, `latest.json`, and tracked progress report matched on
+all ten audited identity fields. The 1 GB checkpoint payload remains only on
+the server. Local evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/cofitok_progress_step_00010000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/checkpoint_step_00010000.pt.integrity.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/latest_after_step_00010000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/long_horizon_waiter_after_step_00010000.json
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/step10000_validation_and_checkpoint.json
+```
+
+This proves a second reproducible recovery point. It does not satisfy the
+matched 50K pair or the downstream formal 10K-sample promotion gate, so the
+frozen CoFiTok run continues toward 25K and 50K.
