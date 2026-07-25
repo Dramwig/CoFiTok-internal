@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "role": "static_read_only_posttraining_transition_preflight",
+  "observed_at": "2026-07-25T02:18:58Z",
+  "formal_training": {
+    "observed_step": 11400,
+    "remote_branch": "scale/generative-system",
+    "remote_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "remote_tracked_dirty": false,
+    "training_process_affected": false,
+    "gpu_work_started": false
+  },
+  "source_identity": {
+    "artifacts/runbooks/generation_complete_pipeline_after_10pct.sh": {
+      "bytes": 4162,
+      "sha256": "71690b7c0ebced02468e5be56419179000f906e3696ba4d9ab71b5447927e751",
+      "local_remote_match": true
+    },
+    "artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh": {
+      "bytes": 6820,
+      "sha256": "a8b82b60c4c89ef65ed85047f3649f3234de4090a0f519fab4e4c67c1eddd232",
+      "local_remote_match": true
+    },
+    "scripts/print_generation_workspace_paths.py": {
+      "bytes": 1340,
+      "sha256": "b6f5cd646a1dd6d55ff2406cb6885a1a130fbf37b2a2d716e0fc4b1a75d53091",
+      "local_remote_match": true
+    },
+    "scripts/build_generation_gate_report.py": {
+      "bytes": 33866,
+      "sha256": "e07a0a12df4a0c1be8f434567833e8bf2a42f1e1428d777e551ba1511256eeb4",
+      "local_remote_match": true
+    }
+  },
+  "runtime_environment": {
+    "runbooks_activate": "pf-vlm",
+    "working_directory_before_python": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "pythonpath": "src",
+    "posttraining_python_import_path_is_explicit": true
+  },
+  "resolved_scaling_paths": {
+    "cofitok_run": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3",
+    "dense_run": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3",
+    "report_root": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3",
+    "promotion_gate": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/promotion_gate.json",
+    "historical_v2_path_referenced": false
+  },
+  "required_inputs": {
+    "cofitok_checkpoint": "checkpoint_step_00050000.pt",
+    "dense_checkpoint": "checkpoint_step_00050000.pt",
+    "cofitok_training_report": "training_report.json",
+    "dense_training_report": "training_report.json",
+    "prepromotion_progress_audit": {
+      "expected_steps": 50000,
+      "checkpoint_interval": 5000,
+      "evaluation_interval": 1000,
+      "integrity_policy": "required"
+    }
+  },
+  "sampling_protocol": {
+    "weights": "ema",
+    "sample_count_per_method": 10000,
+    "sampling_steps": 100,
+    "guidance_scale": 1.5,
+    "cfg_batch_mode": "batched",
+    "precision": "bf16",
+    "minimum_metric_samples": 10000,
+    "cofitok_prefix_budget": 8,
+    "dense_prefix_budget": 1,
+    "shared_runtime_batch_selection": true,
+    "resume_is_idempotent": true
+  },
+  "mechanism_and_visual_protocol": {
+    "checkpoint_eval_images_per_method": 1024,
+    "checkpoint_eval_timestep": 500,
+    "cofitok_random_orders": 16,
+    "dense_random_orders": 0,
+    "prefix_diagnostic_images": 64,
+    "prefix_budgets": [1, 2, 4, 8],
+    "visual_audit_required": true
+  },
+  "promotion_gate": {
+    "stage": "scaling",
+    "allow_fail_but_do_not_promote_on_failure": true,
+    "minimum_samples": 10000,
+    "maximum_fid_regression": 0.05,
+    "maximum_absolute_fid": 100.0,
+    "maximum_endpoint_regression": 0.05,
+    "minimum_coarse_token_energy_ratio": 0.05,
+    "requires_ordered_rank_one": true,
+    "requires_exact_zero_token": true,
+    "requires_shuffle_mismatch": true,
+    "full_300k_requires_explicit_pass": true
+  },
+  "storage_preflight": {
+    "sample_count": 20256,
+    "estimated_sample_kib": 256,
+    "additional_gib": 16,
+    "safety_margin_gib": 32,
+    "reruns_after_training": true
+  },
+  "decision": "no transition bug found; keep the remote revision frozen and allow the existing supervisor to continue"
+}

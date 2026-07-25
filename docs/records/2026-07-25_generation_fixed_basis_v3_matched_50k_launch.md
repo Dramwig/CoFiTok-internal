@@ -709,6 +709,52 @@ frozen. Evidence:
 artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/pytest_pythonpath_reproducibility_hardening.json
 ```
 
+## Post-training transition preflight
+
+A separate read-only audit checked the frozen 50K-to-promotion transition
+before either training finishes. Local and remote SHA256 matched for the
+completion pipeline, 10% post-eval runbook, workspace path resolver, and gate
+builder. The frozen resolver returned only the authoritative v3 paths:
+
+```text
+CoFiTok:
+  /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3
+Dense:
+  /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3
+Reports:
+  /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3
+Gate:
+  /root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/promotion_gate.json
+```
+
+No historical v2 run or failed gate is referenced. Each formal runbook
+activates `pf-vlm`, changes to the project root, and exports
+`PYTHONPATH=src` before invoking downstream scripts, so the external observer
+environment failure cannot propagate into the formal pair validator,
+sampling, metrics, or gate stages.
+
+The frozen post-eval remains bound to:
+
+- exact step-50K checkpoints and required integrity audits;
+- shared sampling-batch selection;
+- 10,000 EMA DDIM-100 samples per method;
+- CFG `1.5`, batched CFG, bf16, and exact minimum count 10,000;
+- 1,024-image `t=500` mechanism evaluation;
+- 64-image prefix diagnostic at budgets `1/2/4/8`;
+- visual audit and the scaling gate;
+- maximum relative FID and endpoint regressions of `5%`;
+- maximum absolute FID `100`;
+- ordered rank 1, exact zero-token, shuffle mismatch, and coarse-energy
+  requirements.
+
+The post-eval runbook may write a failed gate report, but the parent pipeline
+then validates it and cannot enter full 300K without an explicit pass. No GPU
+work or post-eval output was started by this preflight. Evidence:
+
+```text
+artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/launch_2026-07-25/posteval_transition_preflight_after_step11000.json
+```
+
 Bound launch evidence:
 
 ```text
