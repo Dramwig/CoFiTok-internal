@@ -4,6 +4,7 @@ import argparse
 import json
 import math
 import os
+import re
 import signal
 import statistics
 import subprocess
@@ -30,7 +31,7 @@ from cofitok.environment import (
     runtime_environment_sha256,
 )
 from cofitok.models import CoFiTokTiny
-from cofitok.reporting import write_json_report
+from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import (
     ExponentialMovingAverage,
     capture_generation_training_authorization,
@@ -39,6 +40,7 @@ from cofitok.training import (
     reconcile_metrics_for_resume,
 )
 from cofitok.training.checkpointing import (
+    checkpoint_integrity_path,
     load_training_checkpoint,
     prune_checkpoints,
     resolve_latest_checkpoint,
@@ -53,6 +55,7 @@ from cofitok.utils.seed import seed_everything
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+FULL_GIT_REVISION_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 
 
 class StopController:
@@ -71,6 +74,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", required=True)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--resume", default="", help="Checkpoint path or 'auto' for latest.json.")
+    parser.add_argument(
+        "--resume-source-revision",
+        default="",
+        help=(
+            "Explicit clean ancestor revision allowed for one controlled resume. "
+            "The transition is bound into subsequent checkpoints and reports."
+        ),
+    )
     parser.add_argument("--max-steps", type=int, default=0, help="Override steps for smoke runs.")
     parser.add_argument("--micro-batch-size", type=int, default=0)
     parser.add_argument("--gradient-accumulation-steps", type=int, default=0)
@@ -282,6 +293,109 @@ def _git_revision() -> dict[str, str | bool]:
         return {"revision": "unknown", "branch": "unknown", "dirty": True}
 
 
+def _resolve_resume_git_provenance(
+    current_git: dict[str, str | bool],
+    source_revision: str,
+) -> tuple[dict[str, str | bool], dict[str, object] | None]:
+    if not source_revision:
+        return dict(current_git), None
+    current_revision = str(current_git.get("revision", ""))
+    current_branch = str(current_git.get("branch", ""))
+    if (
+        not FULL_GIT_REVISION_PATTERN.fullmatch(source_revision)
+        or not FULL_GIT_REVISION_PATTERN.fullmatch(current_revision)
+    ):
+        raise ValueError("controlled resume requires full lowercase Git revisions")
+    if current_git.get("dirty") is not False or not current_branch:
+        raise ValueError("controlled resume requires a clean named Git branch")
+    if source_revision == current_revision:
+        raise ValueError("resume source revision must differ from the current revision")
+    ancestor = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", source_revision, current_revision],
+        cwd=PROJECT_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if ancestor.returncode != 0:
+        raise ValueError("resume source revision is not an ancestor of the current revision")
+    return (
+        {
+            "revision": source_revision,
+            "branch": current_branch,
+            "dirty": False,
+        },
+        {
+            "schema_version": 1,
+            "reason": "sampler_rng_state_device_compatibility",
+            "source_revision": source_revision,
+            "target_revision": current_revision,
+            "branch": current_branch,
+        },
+    )
+
+
+def _build_resume_revision_transition(
+    transition: dict[str, object],
+    resume_path: Path,
+) -> dict[str, object]:
+    integrity_path = checkpoint_integrity_path(resume_path)
+    with integrity_path.open(encoding="utf-8") as handle:
+        integrity = json.load(handle)
+    if not isinstance(integrity, dict):
+        raise ValueError("resume checkpoint integrity manifest must be an object")
+    if (
+        integrity.get("git_revision") != transition["source_revision"]
+        or integrity.get("git_branch") != transition["branch"]
+        or integrity.get("git_dirty") is not False
+    ):
+        raise ValueError("resume checkpoint does not match the controlled source revision")
+    return {
+        **transition,
+        "source_checkpoint": {
+            "path": resume_path.resolve().as_posix(),
+            "filename": resume_path.name,
+            "bytes": int(integrity["checkpoint_bytes"]),
+            "sha256": str(integrity["checkpoint_sha256"]),
+            "step": int(integrity["step"]),
+            "integrity_manifest": integrity_path.resolve().as_posix(),
+            "integrity_manifest_bytes": integrity_path.stat().st_size,
+            "integrity_manifest_sha256": file_sha256(integrity_path),
+        },
+    }
+
+
+def _validate_existing_resume_revision_transition(
+    transition: object,
+    current_git: dict[str, str | bool],
+) -> dict[str, object]:
+    if not isinstance(transition, dict):
+        raise ValueError("checkpoint resume revision transition must be an object")
+    if (
+        transition.get("schema_version") != 1
+        or transition.get("reason") != "sampler_rng_state_device_compatibility"
+        or transition.get("target_revision") != current_git.get("revision")
+        or transition.get("branch") != current_git.get("branch")
+        or not FULL_GIT_REVISION_PATTERN.fullmatch(
+            str(transition.get("source_revision", ""))
+        )
+    ):
+        raise ValueError("checkpoint resume revision transition is invalid")
+    source_checkpoint = transition.get("source_checkpoint")
+    if (
+        not isinstance(source_checkpoint, dict)
+        or int(source_checkpoint.get("bytes", 0)) < 1
+        or int(source_checkpoint.get("step", 0)) < 1
+        or not re.fullmatch(r"[0-9a-f]{64}", str(source_checkpoint.get("sha256", "")))
+        or not re.fullmatch(
+            r"[0-9a-f]{64}",
+            str(source_checkpoint.get("integrity_manifest_sha256", "")),
+        )
+    ):
+        raise ValueError("checkpoint resume transition source identity is invalid")
+    return dict(transition)
+
+
 @torch.no_grad()
 def _evaluate_batch(
     model: torch.nn.Module,
@@ -314,7 +428,12 @@ def main() -> None:
             raise ValueError("benchmark mode requires --benchmark-output")
         if args.benchmark_warmup_steps < 0 or args.benchmark_warmup_steps >= args.benchmark_steps:
             raise ValueError("benchmark warmup must leave at least one measured step")
-        if args.resume or args.max_steps > 0 or args.stop_after_steps > 0:
+        if (
+            args.resume
+            or args.resume_source_revision
+            or args.max_steps > 0
+            or args.stop_after_steps > 0
+        ):
             raise ValueError("benchmark mode cannot resume or override the training horizon")
     elif args.benchmark_output:
         raise ValueError("--benchmark-output requires --benchmark-steps")
@@ -350,6 +469,8 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     metrics_path = output_dir / "train_metrics.jsonl"
     resume_path = _resolve_resume(output_dir, args.resume)
+    if args.resume_source_revision and resume_path is None:
+        raise ValueError("--resume-source-revision requires --resume")
     if resume_path is None:
         ensure_fresh_training_output(output_dir)
     stop = StopController()
@@ -368,6 +489,12 @@ def main() -> None:
     )
     runtime_environment_sha = runtime_environment_sha256(runtime_environment)
     git_provenance = _git_revision()
+    checkpoint_git_provenance, requested_resume_transition = (
+        _resolve_resume_git_provenance(
+            git_provenance,
+            args.resume_source_revision,
+        )
+    )
 
     train_loader, sampler = _build_train_loader(config)
     eval_loader = build_dataloader(
@@ -411,6 +538,7 @@ def main() -> None:
     cumulative_elapsed_before_segment = 0.0
     cumulative_peak_vram_before_segment = 0
     metrics_resume_reconciliation = None
+    resume_revision_transition = None
     if resume_path is not None:
         checkpoint = load_training_checkpoint(
             resume_path,
@@ -422,24 +550,42 @@ def main() -> None:
             restore_rng=True,
             expected_config=config_to_dict(config),
             expected_runtime_environment=runtime_environment,
-            expected_git_provenance=git_provenance,
+            expected_git_provenance=checkpoint_git_provenance,
             expected_dataset_provenance=dataset_provenance,
             expected_training_authorization=training_authorization,
             map_location=device,
         )
         start_step = int(checkpoint["step"])
-        sampler_state = checkpoint.get("extra_state", {}).get("sampler")
+        checkpoint_extra_state = checkpoint.get("extra_state", {})
+        sampler_state = checkpoint_extra_state.get("sampler")
         if sampler_state is None:
             raise ValueError("production checkpoint is missing sampler state")
         cumulative_elapsed_before_segment = float(
-            checkpoint.get("extra_state", {}).get("cumulative_elapsed_seconds", 0.0)
+            checkpoint_extra_state.get("cumulative_elapsed_seconds", 0.0)
         )
         cumulative_peak_vram_before_segment = int(
-            checkpoint.get("extra_state", {}).get("cumulative_peak_vram_bytes", 0)
+            checkpoint_extra_state.get("cumulative_peak_vram_bytes", 0)
         )
         if cumulative_elapsed_before_segment < 0.0 or cumulative_peak_vram_before_segment < 0:
             raise ValueError("checkpoint cumulative compute accounting is invalid")
         sampler.load_state_dict(sampler_state)
+        existing_resume_transition = checkpoint_extra_state.get(
+            "resume_revision_transition"
+        )
+        if requested_resume_transition is not None:
+            if existing_resume_transition is not None:
+                raise ValueError(
+                    "checkpoint already contains a resume revision transition"
+                )
+            resume_revision_transition = _build_resume_revision_transition(
+                requested_resume_transition,
+                resume_path,
+            )
+        elif existing_resume_transition is not None:
+            resume_revision_transition = _validate_existing_resume_revision_transition(
+                existing_resume_transition,
+                git_provenance,
+            )
         metrics_resume_reconciliation = reconcile_metrics_for_resume(
             metrics_path,
             resume_step=start_step,
@@ -475,6 +621,7 @@ def main() -> None:
             parameter.numel() for parameter in base_model.parameters() if parameter.requires_grad
         ),
         "resume": str(resume_path) if resume_path is not None else None,
+        "resume_revision_transition": resume_revision_transition,
         "metrics_resume_reconciliation": metrics_resume_reconciliation,
     }
     write_json_report(output_dir / "run_manifest.json", manifest)
@@ -622,6 +769,7 @@ def main() -> None:
                     "runtime_environment_sha256": runtime_environment_sha,
                     "dataset_provenance": dataset_provenance,
                     "training_authorization": training_authorization,
+                    "resume_revision_transition": resume_revision_transition,
                     "cumulative_elapsed_seconds": (
                         cumulative_elapsed_before_segment + segment_elapsed_seconds
                     ),

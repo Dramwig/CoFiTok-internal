@@ -338,6 +338,33 @@ def test_stateful_sampler_restores_consumed_not_prefetched_position() -> None:
     assert list(iter(resumed))[:5] == issued[3:8]
 
 
+def test_stateful_sampler_rejects_non_byte_generator_state() -> None:
+    sampler = StatefulRandomSampler(list(range(8)), seed=7)
+    state = sampler.state_dict()
+    state["generator_state"] = state["generator_state"].to(dtype=torch.int32)
+
+    with pytest.raises(TypeError, match="torch.uint8"):
+        sampler.load_state_dict(state)
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA regression")
+def test_stateful_sampler_restores_rng_state_loaded_on_cuda() -> None:
+    dataset = list(range(20))
+    sampler = StatefulRandomSampler(dataset, seed=7)
+    iterator = iter(sampler)
+    issued = [next(iterator) for _ in range(8)]
+    sampler.mark_consumed(3)
+    state = sampler.state_dict()
+    state["order"] = state["order"].cuda()
+    state["generator_state"] = state["generator_state"].cuda()
+
+    resumed = StatefulRandomSampler(dataset, seed=999)
+    resumed.load_state_dict(state)
+
+    assert resumed.generator.get_state().device.type == "cpu"
+    assert list(iter(resumed))[:5] == issued[3:8]
+
+
 def test_checkpoint_roundtrip_restores_all_training_and_rng_state(tmp_path) -> None:
     model = CoFiTokTiny(_small_model_config())
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)

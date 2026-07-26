@@ -380,6 +380,43 @@ def test_frozen_selection_is_reused_without_rebenchmarking_after_training_starts
     assert selection_path.read_bytes() == original
 
 
+def test_frozen_selection_allows_explicit_compatible_source_revision(
+    tmp_path: Path,
+) -> None:
+    selection, contract, run_dirs, cofitok_config, dense_config = _frozen_selection(
+        tmp_path
+    )
+    selection_path = tmp_path / "runtime_selection.json"
+    selection_path.write_text(json.dumps(selection), encoding="utf-8")
+    run_dirs[0].mkdir()
+    (run_dirs[0] / "train_metrics.jsonl").write_text("{}\n", encoding="ascii")
+    target_contract = copy.deepcopy(contract)
+    target_contract["git"]["revision"] = "b" * 40
+
+    assert reuse_runtime_selection_after_training_start(
+        selection_path=selection_path,
+        run_dirs=run_dirs,
+        expected_contract=target_contract,
+        cofitok_config=cofitok_config,
+        dense_config=dense_config,
+        current_runtime_environment_sha256=selection["runtime_environment_sha256"],
+        compatible_source_revision=selection["git_revision"],
+    ) == (16, 4)
+
+    with pytest.raises(ValueError, match="compatible source"):
+        reuse_runtime_selection_after_training_start(
+            selection_path=selection_path,
+            run_dirs=run_dirs,
+            expected_contract=target_contract,
+            cofitok_config=cofitok_config,
+            dense_config=dense_config,
+            current_runtime_environment_sha256=selection[
+                "runtime_environment_sha256"
+            ],
+            compatible_source_revision="c" * 40,
+        )
+
+
 def test_training_state_without_selection_fails_before_benchmark(tmp_path: Path) -> None:
     _, contract, run_dirs, cofitok_config, dense_config = _frozen_selection(tmp_path)
     run_dirs[0].mkdir()
