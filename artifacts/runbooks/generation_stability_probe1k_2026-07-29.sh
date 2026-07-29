@@ -4,12 +4,13 @@ set -euo pipefail
 PROJECT=/tmp/cofitok-generation-stability-6688652
 PYTHON=/root/autodl-tmp/conda/envs/pf-vlm/bin/python
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k
-EXPECTED_REVISION=a608b5e484707ed4a9fe6890c7cfc0277add7643
+EXPECTED_CODE_REVISION=a608b5e484707ed4a9fe6890c7cfc0277add7643
 COFITOK_CONFIG=configs/generation/imagenet256_10pct_stability_rgbtail3_k8_probe1k.json
 DENSE_CONFIG=configs/generation/imagenet256_10pct_stability_dense_probe1k.json
 
 cd "$PROJECT"
-[[ "$(git rev-parse HEAD)" == "$EXPECTED_REVISION" ]]
+git merge-base --is-ancestor "$EXPECTED_CODE_REVISION" HEAD
+git diff --quiet "$EXPECTED_CODE_REVISION" HEAD -- configs scripts src tests
 [[ -x "$PYTHON" ]]
 export PYTHONPATH=src
 
