@@ -411,6 +411,29 @@ def test_denoise_path_hellinger_energy_backpropagates_finite_gradients(
     assert all(torch.isfinite(component.grad).all() for component in components)
 
 
+def test_stable_hellinger_bounds_near_zero_component_gradients() -> None:
+    components = [
+        torch.full((2, 1, 4, 4), value, requires_grad=True)
+        for value in (1e-8, 0.1, 1.0)
+    ]
+    targets = [
+        torch.full((2, 1, 4, 4), value)
+        for value in (0.3, 0.3, 0.4)
+    ]
+
+    loss = _component_energy_distribution_loss(
+        components,
+        targets,
+        "hellinger_stable",
+    )
+    loss.backward()
+
+    assert loss.item() > 0.0
+    assert all(component.grad is not None for component in components)
+    assert all(torch.isfinite(component.grad).all() for component in components)
+    assert max(float(component.grad.abs().max()) for component in components) < 10.0
+
+
 def test_unknown_denoise_path_energy_mode_is_rejected() -> None:
     components = [torch.ones(1, 1, 2, 2), torch.ones(1, 1, 2, 2)]
 

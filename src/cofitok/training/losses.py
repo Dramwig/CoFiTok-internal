@@ -250,8 +250,12 @@ def _component_energy_distribution_loss(
         )
     if mode == "mse":
         return F.mse_loss(predicted, target)
-    if mode == "hellinger":
-        epsilon = torch.finfo(predicted.dtype).eps
+    if mode in {"hellinger", "hellinger_stable"}:
+        epsilon = (
+            predicted.new_tensor(1e-4)
+            if mode == "hellinger_stable"
+            else predicted.new_tensor(torch.finfo(predicted.dtype).eps)
+        )
         distances = (
             torch.sqrt(predicted + epsilon) - torch.sqrt(target + epsilon)
         ).square()
