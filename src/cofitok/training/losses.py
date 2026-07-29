@@ -32,6 +32,8 @@ class LossBreakdown:
     denoise_path_component: torch.Tensor
     denoise_path_energy: torch.Tensor
     low_snr_high_frequency: torch.Tensor
+    rollout_consistency: torch.Tensor
+    rollout_consistency_scale: torch.Tensor
 
     def as_dict(self) -> dict[str, torch.Tensor]:
         return {
@@ -54,6 +56,8 @@ class LossBreakdown:
             "denoise_path_component": self.denoise_path_component.detach(),
             "denoise_path_energy": self.denoise_path_energy.detach(),
             "low_snr_high_frequency": self.low_snr_high_frequency.detach(),
+            "rollout_consistency": self.rollout_consistency.detach(),
+            "rollout_consistency_scale": self.rollout_consistency_scale.detach(),
         }
 
 
@@ -566,6 +570,8 @@ def compute_losses(
     noise: torch.Tensor,
     timesteps: torch.Tensor,
     zero_components: list[torch.Tensor] | None = None,
+    rollout_consistency: torch.Tensor | None = None,
+    rollout_consistency_scale: float = 1.0,
 ) -> LossBreakdown:
     epsilon_loss = F.mse_loss(output.epsilon, noise)
     if config.prefix_weight > 0.0:
@@ -679,6 +685,16 @@ def compute_losses(
         )
     else:
         low_snr_high_frequency_loss = output.epsilon.new_zeros(())
+    if (
+        config.rollout_consistency_weight > 0.0
+        and rollout_consistency is not None
+        and rollout_consistency_scale > 0.0
+    ):
+        rollout_consistency_loss = rollout_consistency
+        rollout_scale = output.epsilon.new_tensor(rollout_consistency_scale)
+    else:
+        rollout_consistency_loss = output.epsilon.new_zeros(())
+        rollout_scale = output.epsilon.new_zeros(())
     total = (
         config.epsilon_weight * epsilon_loss
         + config.prefix_weight * prefix_loss
@@ -697,6 +713,9 @@ def compute_losses(
         + config.denoise_path_component_weight * denoise_path_component_loss
         + config.denoise_path_energy_weight * denoise_path_energy_loss
         + config.low_snr_high_frequency_weight * low_snr_high_frequency_loss
+        + config.rollout_consistency_weight
+        * rollout_scale
+        * rollout_consistency_loss
     )
     return LossBreakdown(
         total=total,
@@ -718,4 +737,6 @@ def compute_losses(
         denoise_path_component=denoise_path_component_loss,
         denoise_path_energy=denoise_path_energy_loss,
         low_snr_high_frequency=low_snr_high_frequency_loss,
+        rollout_consistency=rollout_consistency_loss,
+        rollout_consistency_scale=rollout_scale,
     )

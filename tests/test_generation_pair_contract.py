@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 
 from cofitok.configs import config_to_dict, load_config
@@ -33,3 +34,26 @@ def test_checked_in_generation_pairs_isolate_factorization_differences() -> None
             "cofitok_synthesis": "fixed_basis",
             "dense_synthesis": "dense_identity",
         }
+
+
+def test_rollout_consistency_is_a_matched_training_loss() -> None:
+    cofitok = _read("imagenet256_10pct_fixed_basis_cofitok_k8_50k.json")
+    dense = _read("imagenet256_10pct_fixed_basis_dense_50k.json")
+    for config in (cofitok, dense):
+        config["loss"]["rollout_consistency_weight"] = 0.25
+        config["loss"]["rollout_consistency_start_step"] = 100
+        config["loss"]["rollout_consistency_warmup_steps"] = 100
+
+    report = generation_pair_contract(cofitok, dense)
+
+    assert report["valid"] is True, report["issues"]
+    assert report["mismatched_shared_training_loss_fields"] == []
+    assert "rollout_consistency_weight" not in report["dense_nonzero_auxiliary_losses"]
+
+    mismatched = copy.deepcopy(dense)
+    mismatched["loss"]["rollout_consistency_weight"] = 0.0
+    report = generation_pair_contract(cofitok, mismatched)
+    assert report["valid"] is False
+    assert report["mismatched_shared_training_loss_fields"] == [
+        "rollout_consistency_weight"
+    ]

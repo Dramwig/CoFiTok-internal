@@ -37,7 +37,9 @@ from cofitok.training import (
     capture_generation_training_authorization,
     compute_losses,
     ensure_fresh_training_output,
+    one_step_rollout_consistency_loss,
     reconcile_metrics_for_resume,
+    rollout_consistency_weight_scale,
 )
 from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
@@ -152,6 +154,16 @@ def _validate_config(config: ExperimentConfig) -> None:
         or config.loss.low_snr_high_frequency_power <= 0.0
     ):
         raise ValueError("low_snr_high_frequency_power must be finite and positive")
+    if config.loss.rollout_consistency_weight < 0.0:
+        raise ValueError("rollout_consistency_weight must be non-negative")
+    if config.loss.rollout_consistency_start_step < 0:
+        raise ValueError("rollout_consistency_start_step must be non-negative")
+    if config.loss.rollout_consistency_warmup_steps < 0:
+        raise ValueError("rollout_consistency_warmup_steps must be non-negative")
+    if config.loss.rollout_consistency_timestep_delta < 1:
+        raise ValueError("rollout_consistency_timestep_delta must be positive")
+    if not 0.0 < config.loss.rollout_consistency_batch_fraction <= 1.0:
+        raise ValueError("rollout_consistency_batch_fraction must be in (0, 1]")
     protected_steps = config.runtime.protected_checkpoint_steps
     if protected_steps != sorted(set(protected_steps)):
         raise ValueError("protected_checkpoint_steps must be sorted and unique")
@@ -671,6 +683,25 @@ def main() -> None:
             noisy = schedule.add_noise(clean, noise, timesteps)
             with autocast_context(device, config.runtime.precision):
                 output = model(noisy, timesteps, class_labels=labels)
+                rollout_scale = rollout_consistency_weight_scale(
+                    step,
+                    start_step=config.loss.rollout_consistency_start_step,
+                    warmup_steps=config.loss.rollout_consistency_warmup_steps,
+                )
+                rollout_consistency = None
+                if config.loss.rollout_consistency_weight > 0.0 and rollout_scale > 0.0:
+                    rollout_consistency = one_step_rollout_consistency_loss(
+                        model,
+                        first_epsilon=output.epsilon,
+                        schedule=schedule,
+                        noisy_images=noisy,
+                        clean_images=clean,
+                        timesteps=timesteps,
+                        class_labels=labels,
+                        timestep_delta=config.loss.rollout_consistency_timestep_delta,
+                        batch_fraction=config.loss.rollout_consistency_batch_fraction,
+                        clip_x0=config.loss.rollout_consistency_clip_x0,
+                    )
                 losses = compute_losses(
                     config.loss,
                     output,
@@ -684,6 +715,8 @@ def main() -> None:
                         if config.loss.zero_token_weight > 0.0
                         else None
                     ),
+                    rollout_consistency=rollout_consistency,
+                    rollout_consistency_scale=rollout_scale,
                 )
                 scaled_loss = losses.total / accumulation
             if not torch.isfinite(scaled_loss):

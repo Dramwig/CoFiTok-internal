@@ -19,6 +19,15 @@ FACTORIZATION_MODEL_FIELDS = {
     "deep_synthesis_hidden_channels",
     "deep_synthesis_depth",
 }
+SHARED_TRAINING_LOSS_FIELDS = {
+    "epsilon_weight",
+    "rollout_consistency_weight",
+    "rollout_consistency_start_step",
+    "rollout_consistency_warmup_steps",
+    "rollout_consistency_timestep_delta",
+    "rollout_consistency_batch_fraction",
+    "rollout_consistency_clip_x0",
+}
 
 
 def generation_pair_contract(
@@ -66,6 +75,16 @@ def generation_pair_contract(
 
     cofitok_loss = cofitok_config.get("loss", {})
     dense_loss = dense_config.get("loss", {})
+    mismatched_shared_loss_fields = [
+        field
+        for field in sorted(SHARED_TRAINING_LOSS_FIELDS)
+        if cofitok_loss.get(field) != dense_loss.get(field)
+    ]
+    if mismatched_shared_loss_fields:
+        issues.append(
+            "mismatched shared training loss fields: "
+            + ", ".join(mismatched_shared_loss_fields)
+        )
     cofitok_epsilon = float(cofitok_loss.get("epsilon_weight", 0.0))
     dense_epsilon = float(dense_loss.get("epsilon_weight", 0.0))
     if cofitok_epsilon <= 0.0 or cofitok_epsilon != dense_epsilon:
@@ -73,7 +92,7 @@ def generation_pair_contract(
     dense_nonzero_auxiliary = sorted(
         key
         for key, value in dense_loss.items()
-        if key != "epsilon_weight"
+        if key not in SHARED_TRAINING_LOSS_FIELDS
         and key.endswith("_weight")
         and isinstance(value, (int, float))
         and float(value) != 0.0
@@ -93,6 +112,8 @@ def generation_pair_contract(
         "mismatched_shared_model_fields": mismatched_model_fields,
         "identities": identities,
         "primary_epsilon_weight": cofitok_epsilon,
+        "shared_training_loss_fields": sorted(SHARED_TRAINING_LOSS_FIELDS),
+        "mismatched_shared_training_loss_fields": mismatched_shared_loss_fields,
         "dense_nonzero_auxiliary_losses": dense_nonzero_auxiliary,
         "issues": issues,
     }
