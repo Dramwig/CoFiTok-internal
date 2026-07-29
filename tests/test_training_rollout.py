@@ -62,6 +62,7 @@ def test_rollout_consistency_uses_detached_generated_state() -> None:
         timestep_delta=4,
         batch_fraction=0.5,
         clip_x0=True,
+        mode="epsilon",
     )
     loss.backward()
 
@@ -90,9 +91,40 @@ def test_rollout_consistency_returns_connected_zero_without_valid_timesteps() ->
         timestep_delta=4,
         batch_fraction=0.5,
         clip_x0=True,
+        mode="epsilon",
     )
     loss.backward()
 
     assert loss.item() == 0.0
     assert first_epsilon.grad is not None
     torch.testing.assert_close(first_epsilon.grad, torch.zeros_like(first_epsilon))
+
+
+def test_rollout_consistency_supports_bounded_x0_loss() -> None:
+    schedule = DiffusionSchedule(
+        DiffusionConfig(num_train_timesteps=32, schedule_type="cosine"),
+        device="cpu",
+    )
+    model = _ScaledImagePredictor()
+    clean = torch.randn(4, 3, 8, 8).clamp(-1.0, 1.0)
+    noise = torch.randn_like(clean)
+    timesteps = torch.tensor([31, 24, 16, 8])
+    noisy = schedule.add_noise(clean, noise, timesteps)
+
+    loss = one_step_rollout_consistency_loss(
+        model,
+        first_epsilon=torch.randn_like(clean),
+        schedule=schedule,
+        noisy_images=noisy,
+        clean_images=clean,
+        timesteps=timesteps,
+        class_labels=None,
+        timestep_delta=4,
+        batch_fraction=0.5,
+        clip_x0=True,
+        mode="clipped_x0",
+    )
+    loss.backward()
+
+    assert 0.0 <= loss.item() <= 4.0
+    assert model.scale.grad is not None

@@ -33,11 +33,14 @@ def one_step_rollout_consistency_loss(
     timestep_delta: int,
     batch_fraction: float,
     clip_x0: bool,
+    mode: str,
 ) -> torch.Tensor:
     if timestep_delta < 1:
         raise ValueError("rollout consistency timestep_delta must be positive")
     if not 0.0 < batch_fraction <= 1.0:
         raise ValueError("rollout consistency batch_fraction must be in (0, 1]")
+    if mode not in {"epsilon", "clipped_x0"}:
+        raise ValueError("rollout consistency mode must be epsilon or clipped_x0")
 
     valid_indices = torch.nonzero(timesteps >= timestep_delta, as_tuple=False).flatten()
     if valid_indices.numel() == 0:
@@ -79,4 +82,11 @@ def one_step_rollout_consistency_loss(
         previous_timesteps,
         class_labels=selected_labels,
     )
-    return F.mse_loss(second_output.epsilon.float(), target_epsilon)
+    if mode == "epsilon":
+        return F.mse_loss(second_output.epsilon.float(), target_epsilon)
+    second_x0 = schedule.predict_x0_from_epsilon(
+        previous_images,
+        second_output.epsilon.float(),
+        previous_timesteps,
+    ).clamp(-1.0, 1.0)
+    return F.mse_loss(second_x0, selected_clean)

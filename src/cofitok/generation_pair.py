@@ -27,6 +27,7 @@ SHARED_TRAINING_LOSS_FIELDS = {
     "rollout_consistency_timestep_delta",
     "rollout_consistency_batch_fraction",
     "rollout_consistency_clip_x0",
+    "rollout_consistency_mode",
 }
 
 

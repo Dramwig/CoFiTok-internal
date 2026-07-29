@@ -97,6 +97,7 @@ class LossConfig:
     rollout_consistency_timestep_delta: int = 10
     rollout_consistency_batch_fraction: float = 0.25
     rollout_consistency_clip_x0: bool = True
+    rollout_consistency_mode: str = "epsilon"
     tail_early_dropout_weight: float = 0.0
     tail_early_dropout_prob: float = 0.0
     tail_early_dropout_start: int = 1

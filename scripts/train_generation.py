@@ -164,6 +164,8 @@ def _validate_config(config: ExperimentConfig) -> None:
         raise ValueError("rollout_consistency_timestep_delta must be positive")
     if not 0.0 < config.loss.rollout_consistency_batch_fraction <= 1.0:
         raise ValueError("rollout_consistency_batch_fraction must be in (0, 1]")
+    if config.loss.rollout_consistency_mode not in {"epsilon", "clipped_x0"}:
+        raise ValueError("rollout_consistency_mode must be epsilon or clipped_x0")
     protected_steps = config.runtime.protected_checkpoint_steps
     if protected_steps != sorted(set(protected_steps)):
         raise ValueError("protected_checkpoint_steps must be sorted and unique")
@@ -701,6 +703,7 @@ def main() -> None:
                         timestep_delta=config.loss.rollout_consistency_timestep_delta,
                         batch_fraction=config.loss.rollout_consistency_batch_fraction,
                         clip_x0=config.loss.rollout_consistency_clip_x0,
+                        mode=config.loss.rollout_consistency_mode,
                     )
                 losses = compute_losses(
                     config.loss,
