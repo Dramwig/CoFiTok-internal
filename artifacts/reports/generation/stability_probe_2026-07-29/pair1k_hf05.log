@@ -1,0 +1,94 @@
+{
+  "valid": true,
+  "matched_config_sections": [
+    "data",
+    "diffusion",
+    "runtime",
+    "optimization"
+  ],
+  "factorization_model_fields": [
+    "deep_synthesis_depth",
+    "deep_synthesis_hidden_channels",
+    "gamma_mode",
+    "predictor_use_feedback",
+    "synthesis_active_token_channels",
+    "synthesis_kernel_size",
+    "synthesis_mode",
+    "synthesis_token_strides",
+    "token_channel_schedule",
+    "token_channels",
+    "token_count",
+    "token_spatial_strides"
+  ],
+  "shared_model_fields": [
+    "base_channels",
+    "class_dropout_prob",
+    "image_channels",
+    "image_size",
+    "num_classes",
+    "predictor_attention_resolutions",
+    "predictor_channel_multipliers",
+    "predictor_depth",
+    "predictor_dropout",
+    "predictor_gradient_checkpointing",
+    "predictor_multiscale_levels",
+    "predictor_num_heads",
+    "predictor_num_res_blocks",
+    "predictor_type"
+  ],
+  "mismatched_config_sections": [],
+  "mismatched_shared_model_fields": [],
+  "identities": {
+    "cofitok_token_count": 8,
+    "dense_token_count": 1,
+    "cofitok_feedback": true,
+    "dense_feedback": false,
+    "cofitok_synthesis": "fixed_basis",
+    "dense_synthesis": "dense_identity"
+  },
+  "primary_epsilon_weight": 1.0,
+  "dense_nonzero_auxiliary_losses": [],
+  "issues": []
+}
+step=1 total=1.385694 epsilon=0.999556 grad=1.4205 lr=1.000e-06
+step=25 total=1.302915 epsilon=0.997955 grad=3.0615 lr=2.500e-05
+step=50 total=1.225559 epsilon=0.943259 grad=4.6537 lr=5.000e-05
+step=75 total=1.073169 epsilon=0.814500 grad=5.0593 lr=7.500e-05
+step=100 total=0.853236 epsilon=0.646803 grad=4.6537 lr=1.000e-04
+step=125 total=0.632115 epsilon=0.475662 grad=4.0272 lr=9.983e-05
+step=150 total=0.445621 epsilon=0.341470 grad=3.2578 lr=9.932e-05
+step=175 total=0.307202 epsilon=0.237989 grad=2.5313 lr=9.847e-05
+step=200 total=0.212596 epsilon=0.164738 grad=2.1042 lr=9.729e-05
+step=225 total=0.136615 epsilon=0.105137 grad=1.5728 lr=9.578e-05
+step=250 total=0.093837 epsilon=0.070117 grad=1.2018 lr=9.397e-05 val=0.060329
+step=275 total=0.059615 epsilon=0.039891 grad=0.6449 lr=9.186e-05
+step=300 total=0.068321 epsilon=0.047964 grad=0.6902 lr=8.947e-05
+step=325 total=0.058917 epsilon=0.039584 grad=0.6184 lr=8.682e-05
+step=350 total=0.048789 epsilon=0.030118 grad=0.3055 lr=8.393e-05
+step=375 total=0.057057 epsilon=0.037445 grad=0.7554 lr=8.081e-05
+step=400 total=0.061578 epsilon=0.041700 grad=0.2370 lr=7.750e-05
+step=425 total=0.060812 epsilon=0.040658 grad=0.2440 lr=7.402e-05
+step=450 total=0.073331 epsilon=0.052840 grad=0.4343 lr=7.039e-05
+step=475 total=0.071668 epsilon=0.050321 grad=0.4347 lr=6.665e-05
+step=500 total=0.061433 epsilon=0.041743 grad=0.3404 lr=6.281e-05 val=0.040907
+step=525 total=0.055019 epsilon=0.036095 grad=0.4262 lr=5.892e-05
+step=550 total=0.064997 epsilon=0.045284 grad=0.2206 lr=5.500e-05
+step=575 total=0.064824 epsilon=0.044383 grad=0.1573 lr=5.108e-05
+step=600 total=0.048661 epsilon=0.029987 grad=0.2008 lr=4.719e-05
+step=625 total=0.059890 epsilon=0.040667 grad=0.2342 lr=4.335e-05
+step=650 total=0.050202 epsilon=0.032015 grad=0.4558 lr=3.961e-05
+step=675 total=0.074769 epsilon=0.054346 grad=0.2901 lr=3.598e-05
+step=700 total=0.076614 epsilon=0.055687 grad=0.2194 lr=3.250e-05
+step=725 total=0.059427 epsilon=0.040069 grad=0.2209 lr=2.919e-05
+step=750 total=0.060804 epsilon=0.041146 grad=0.2087 lr=2.607e-05 val=0.026693
+step=775 total=0.051373 epsilon=0.032765 grad=0.1639 lr=2.318e-05
+step=800 total=0.065090 epsilon=0.045720 grad=0.2072 lr=2.053e-05
+step=825 total=0.054953 epsilon=0.035818 grad=0.1735 lr=1.814e-05
+step=850 total=0.048529 epsilon=0.030279 grad=0.1569 lr=1.603e-05
+step=875 total=0.057387 epsilon=0.038157 grad=0.1140 lr=1.422e-05
+step=900 total=0.058605 epsilon=0.039713 grad=0.1792 lr=1.271e-05
+step=925 total=0.045401 epsilon=0.027218 grad=0.1661 lr=1.153e-05
+step=950 total=0.059154 epsilon=0.039362 grad=0.1104 lr=1.068e-05
+step=975 total=0.052916 epsilon=0.034512 grad=0.1447 lr=1.017e-05
+step=1000 total=0.051839 epsilon=0.033297 grad=0.1248 lr=1.000e-05 val=0.021308
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k_hf05/cofitok_rgbtail3_hf05/training_report.json

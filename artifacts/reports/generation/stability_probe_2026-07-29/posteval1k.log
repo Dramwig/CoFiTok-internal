@@ -1,0 +1,4 @@
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k/cofitok_checkpoint/checkpoint_evaluation_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k/dense_checkpoint/checkpoint_evaluation_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k/cofitok_rollout/rollout_stability_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k/dense_rollout/rollout_stability_report.json
