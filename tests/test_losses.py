@@ -6,6 +6,7 @@ from cofitok.diffusion import DiffusionSchedule
 from cofitok.models import CoFiTokOutput
 from cofitok.training.losses import (
     _component_energy_distribution_loss,
+    _low_snr_high_frequency_loss,
     compute_losses,
     denoise_path_schedule,
 )
@@ -415,3 +416,69 @@ def test_unknown_denoise_path_energy_mode_is_rejected() -> None:
 
     with pytest.raises(ValueError, match="Unknown denoise path energy mode"):
         _component_energy_distribution_loss(components, components, "unknown")
+
+
+def test_component_energy_capacity_prior_changes_collapsed_target() -> None:
+    components = [
+        torch.full((2, 1, 4, 4), value, requires_grad=True)
+        for value in (1.0, 1.0, 4.0)
+    ]
+    targets = [component.detach().clone() for component in components]
+    tokens = [
+        torch.zeros(2, 1, 1, 1),
+        torch.zeros(2, 1, 2, 2),
+        torch.zeros(2, 1, 4, 4),
+    ]
+
+    path_loss = _component_energy_distribution_loss(
+        components,
+        targets,
+        "hellinger",
+    )
+    capacity_loss = _component_energy_distribution_loss(
+        components,
+        targets,
+        "hellinger",
+        tokens=tokens,
+        output_channels=1,
+        capacity_weight=1.0,
+        capacity_power=0.5,
+    )
+
+    assert path_loss.item() == pytest.approx(0.0, abs=1e-7)
+    assert capacity_loss.item() > 0.0
+    capacity_loss.backward()
+    assert all(component.grad is not None for component in components)
+
+
+def test_low_snr_high_frequency_loss_emphasizes_noisy_timesteps() -> None:
+    schedule = DiffusionSchedule(
+        DiffusionConfig(num_train_timesteps=16, schedule_type="cosine"),
+        device="cpu",
+    )
+    rows = torch.arange(8).view(8, 1)
+    columns = torch.arange(8).view(1, 8)
+    checkerboard = ((rows + columns) % 2).float().mul(2.0).sub(1.0)
+    checkerboard = checkerboard.view(1, 1, 8, 8)
+    output = CoFiTokOutput(
+        tokens=[torch.zeros_like(checkerboard)],
+        components=[torch.zeros_like(checkerboard)],
+        prefix_epsilons=[torch.zeros_like(checkerboard)],
+        epsilon=torch.zeros_like(checkerboard),
+    )
+    early = _low_snr_high_frequency_loss(
+        output,
+        checkerboard,
+        schedule,
+        torch.tensor([1]),
+        power=1.0,
+    )
+    late = _low_snr_high_frequency_loss(
+        output,
+        checkerboard,
+        schedule,
+        torch.tensor([15]),
+        power=1.0,
+    )
+
+    assert late.item() > early.item()

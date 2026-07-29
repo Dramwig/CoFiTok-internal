@@ -140,6 +140,18 @@ def _validate_config(config: ExperimentConfig) -> None:
             raise ValueError("energy_target values must be finite and positive")
         if config.loss.energy_budget_scope not in {"batch", "sample"}:
             raise ValueError("energy_budget_scope must be batch or sample")
+    if not 0.0 <= config.loss.denoise_path_energy_capacity_weight <= 1.0:
+        raise ValueError("denoise_path_energy_capacity_weight must be in [0, 1]")
+    if (
+        not math.isfinite(config.loss.denoise_path_energy_capacity_power)
+        or config.loss.denoise_path_energy_capacity_power <= 0.0
+    ):
+        raise ValueError("denoise_path_energy_capacity_power must be finite and positive")
+    if (
+        not math.isfinite(config.loss.low_snr_high_frequency_power)
+        or config.loss.low_snr_high_frequency_power <= 0.0
+    ):
+        raise ValueError("low_snr_high_frequency_power must be finite and positive")
     protected_steps = config.runtime.protected_checkpoint_steps
     if protected_steps != sorted(set(protected_steps)):
         raise ValueError("protected_checkpoint_steps must be sorted and unique")

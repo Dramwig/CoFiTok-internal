@@ -31,6 +31,7 @@ class LossBreakdown:
     denoise_path_prefix: torch.Tensor
     denoise_path_component: torch.Tensor
     denoise_path_energy: torch.Tensor
+    low_snr_high_frequency: torch.Tensor
 
     def as_dict(self) -> dict[str, torch.Tensor]:
         return {
@@ -52,6 +53,7 @@ class LossBreakdown:
             "denoise_path_prefix": self.denoise_path_prefix.detach(),
             "denoise_path_component": self.denoise_path_component.detach(),
             "denoise_path_energy": self.denoise_path_energy.detach(),
+            "low_snr_high_frequency": self.low_snr_high_frequency.detach(),
         }
 
 
@@ -220,9 +222,32 @@ def _component_energy_distribution_loss(
     components: list[torch.Tensor],
     target_components: list[torch.Tensor],
     mode: str,
+    *,
+    tokens: list[torch.Tensor] | None = None,
+    output_channels: int | None = None,
+    capacity_weight: float = 0.0,
+    capacity_power: float = 0.5,
 ) -> torch.Tensor:
     predicted = _per_sample_component_energy_ratios(components)
     target = _per_sample_component_energy_ratios(target_components)
+    if capacity_weight > 0.0:
+        if tokens is None or output_channels is None:
+            raise ValueError("capacity energy prior requires tokens and output channels")
+        capacities = torch.tensor(
+            [
+                min(token.shape[1], output_channels) * math.prod(token.shape[-2:])
+                for token in tokens
+            ],
+            dtype=target.dtype,
+            device=target.device,
+        )
+        prior = capacities.pow(capacity_power)
+        prior = prior / prior.sum().clamp_min(1e-12)
+        target = torch.lerp(
+            target,
+            prior.unsqueeze(0).expand_as(target),
+            capacity_weight,
+        )
     if mode == "mse":
         return F.mse_loss(predicted, target)
     if mode == "hellinger":
@@ -232,6 +257,31 @@ def _component_energy_distribution_loss(
         ).square()
         return 0.5 * distances.sum(dim=1).mean()
     raise ValueError(f"Unknown denoise path energy mode: {mode}")
+
+
+def _highpass_like(tensor: torch.Tensor) -> torch.Tensor:
+    lowpass = F.avg_pool2d(
+        tensor,
+        kernel_size=3,
+        stride=1,
+        padding=1,
+        count_include_pad=False,
+    )
+    return tensor - lowpass
+
+
+def _low_snr_high_frequency_loss(
+    output: CoFiTokOutput,
+    noise: torch.Tensor,
+    schedule: DiffusionSchedule,
+    timesteps: torch.Tensor,
+    power: float,
+) -> torch.Tensor:
+    per_sample = (
+        _highpass_like(output.epsilon.float()) - _highpass_like(noise.float())
+    ).square().flatten(1).mean(dim=1)
+    low_snr_weight = schedule.sqrt_one_minus_alphas_cumprod[timesteps].square()
+    return (per_sample * low_snr_weight.pow(power)).mean()
 
 
 def _component_energy_ratios(output: CoFiTokOutput) -> torch.Tensor:
@@ -441,6 +491,8 @@ def _denoise_path_losses(
     progress_power: float,
     progress_mode: str,
     energy_mode: str,
+    energy_capacity_weight: float,
+    energy_capacity_power: float,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     # The denoise path starts at epsilon=0 and is linear in x0. Construct
     # targets directly in epsilon space to avoid catastrophic cancellation at
@@ -471,6 +523,10 @@ def _denoise_path_losses(
         output.components,
         target_components,
         energy_mode,
+        tokens=output.tokens,
+        output_channels=output.epsilon.shape[1],
+        capacity_weight=energy_capacity_weight,
+        capacity_power=energy_capacity_power,
     )
     return (
         torch.stack(prefix_losses).mean(),
@@ -584,11 +640,23 @@ def compute_losses(
             progress_power=config.denoise_path_progress_power,
             progress_mode=config.denoise_path_progress_mode,
             energy_mode=config.denoise_path_energy_mode,
+            energy_capacity_weight=config.denoise_path_energy_capacity_weight,
+            energy_capacity_power=config.denoise_path_energy_capacity_power,
         )
     else:
         denoise_path_prefix_loss = output.epsilon.new_zeros(())
         denoise_path_component_loss = output.epsilon.new_zeros(())
         denoise_path_energy_loss = output.epsilon.new_zeros(())
+    if config.low_snr_high_frequency_weight > 0.0:
+        low_snr_high_frequency_loss = _low_snr_high_frequency_loss(
+            output,
+            noise,
+            schedule,
+            timesteps,
+            power=config.low_snr_high_frequency_power,
+        )
+    else:
+        low_snr_high_frequency_loss = output.epsilon.new_zeros(())
     total = (
         config.epsilon_weight * epsilon_loss
         + config.prefix_weight * prefix_loss
@@ -606,6 +674,7 @@ def compute_losses(
         + config.denoise_path_prefix_weight * denoise_path_prefix_loss
         + config.denoise_path_component_weight * denoise_path_component_loss
         + config.denoise_path_energy_weight * denoise_path_energy_loss
+        + config.low_snr_high_frequency_weight * low_snr_high_frequency_loss
     )
     return LossBreakdown(
         total=total,
@@ -626,4 +695,5 @@ def compute_losses(
         denoise_path_prefix=denoise_path_prefix_loss,
         denoise_path_component=denoise_path_component_loss,
         denoise_path_energy=denoise_path_energy_loss,
+        low_snr_high_frequency=low_snr_high_frequency_loss,
     )
