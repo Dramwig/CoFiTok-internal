@@ -15,11 +15,26 @@ import torch
 
 from cofitok.configs import config_from_dict, load_config
 from cofitok.environment import runtime_environment_sha256
-from scripts.train_generation import _augment_training_images, _validate_config
+from scripts.train_generation import (
+    _augment_training_images,
+    _resolve_resume_git_provenance,
+    _validate_config,
+    _validate_existing_resume_revision_transition,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs/generation/smoke_random_cpu.json"
+
+
+def _git(*args: str) -> str:
+    return subprocess.run(
+        ["git", *args],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
 
 
 def _run(
@@ -110,6 +125,73 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
         for line in (resumed / "train_metrics.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert steps == [1, 2]
+
+
+def test_controlled_resume_accepts_only_a_clean_ancestor_revision() -> None:
+    current_revision = _git("rev-parse", "HEAD")
+    source_revision = _git("rev-parse", "HEAD^")
+    current_git = {
+        "revision": current_revision,
+        "branch": "scale/generative-system",
+        "dirty": False,
+    }
+
+    checkpoint_git, transition = _resolve_resume_git_provenance(
+        current_git,
+        source_revision,
+    )
+
+    assert checkpoint_git == {
+        "revision": source_revision,
+        "branch": "scale/generative-system",
+        "dirty": False,
+    }
+    assert transition == {
+        "schema_version": 1,
+        "reason": "sampler_rng_state_device_compatibility",
+        "source_revision": source_revision,
+        "target_revision": current_revision,
+        "branch": "scale/generative-system",
+    }
+
+    with pytest.raises(ValueError, match="must differ"):
+        _resolve_resume_git_provenance(current_git, current_revision)
+    with pytest.raises(ValueError, match="clean named"):
+        _resolve_resume_git_provenance(
+            {**current_git, "dirty": True},
+            source_revision,
+        )
+
+
+def test_existing_resume_transition_must_target_current_revision() -> None:
+    current_git = {
+        "revision": "b" * 40,
+        "branch": "scale/generative-system",
+        "dirty": False,
+    }
+    transition = {
+        "schema_version": 1,
+        "reason": "sampler_rng_state_device_compatibility",
+        "source_revision": "a" * 40,
+        "target_revision": "b" * 40,
+        "branch": "scale/generative-system",
+        "source_checkpoint": {
+            "bytes": 10,
+            "step": 25000,
+            "sha256": "c" * 64,
+            "integrity_manifest_sha256": "d" * 64,
+        },
+    }
+
+    assert (
+        _validate_existing_resume_revision_transition(transition, current_git)
+        == transition
+    )
+    with pytest.raises(ValueError, match="transition is invalid"):
+        _validate_existing_resume_revision_transition(
+            {**transition, "target_revision": "e" * 40},
+            current_git,
+        )
 
 
 def test_training_horizontal_flip_probability_boundaries_and_rng_restore() -> None:

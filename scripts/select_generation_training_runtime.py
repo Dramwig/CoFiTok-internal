@@ -24,6 +24,7 @@ from cofitok.reporting import file_sha256, git_provenance, write_json_report
 
 
 CANDIDATE_PATTERN = re.compile(r"^(?P<micro>[1-9][0-9]*)x(?P<accum>[1-9][0-9]*)$")
+FULL_GIT_REVISION_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 
 
 def _validated_runtime_environment_sha(report: dict[str, Any]) -> str | None:
@@ -420,6 +421,7 @@ def reuse_runtime_selection_after_training_start(
     cofitok_config: Path,
     dense_config: Path,
     current_runtime_environment_sha256: str,
+    compatible_source_revision: str = "",
 ) -> tuple[int, int] | None:
     state = _training_state(run_dirs)
     if not state["started"]:
@@ -430,9 +432,25 @@ def reuse_runtime_selection_after_training_start(
             "training state exists without a frozen runtime selection: "
             + ", ".join(started)
         )
+    selection = _read(selection_path)
+    current_revision = expected_contract["git"]["revision"]
+    if selection.get("git_revision") == current_revision:
+        return validate_frozen_runtime_selection(
+            selection,
+            expected_contract=expected_contract,
+            cofitok_config=cofitok_config,
+            dense_config=dense_config,
+            current_runtime_environment_sha256=current_runtime_environment_sha256,
+        )
+    if not compatible_source_revision:
+        raise ValueError("frozen runtime selection revision changed")
+    if selection.get("git_revision") != compatible_source_revision:
+        raise ValueError("frozen runtime selection is not from the compatible source")
+    source_contract = deepcopy(expected_contract)
+    source_contract["git"]["revision"] = compatible_source_revision
     return validate_frozen_runtime_selection(
-        _read(selection_path),
-        expected_contract=expected_contract,
+        selection,
+        expected_contract=source_contract,
         cofitok_config=cofitok_config,
         dense_config=dense_config,
         current_runtime_environment_sha256=current_runtime_environment_sha256,
@@ -593,6 +611,19 @@ def main() -> None:
     parser.add_argument("--timeout-seconds", type=int, default=900)
     parser.add_argument("--project-root", default=".")
     parser.add_argument("--train-script", default="scripts/train_generation.py")
+    parser.add_argument(
+        "--compatible-source-revision",
+        default="",
+        help=(
+            "Explicit clean ancestor revision whose frozen benchmark may be reused "
+            "after a training-semantics-preserving resume hotfix."
+        ),
+    )
+    parser.add_argument(
+        "--compatibility-output",
+        default="",
+        help="JSON receipt written when a source-revision runtime selection is reused.",
+    )
     args = parser.parse_args()
     if args.benchmark_steps <= args.warmup_steps or args.timeout_seconds < 1:
         raise ValueError("runtime benchmark steps or timeout are invalid")
@@ -610,6 +641,34 @@ def main() -> None:
     if git["tracked_dirty"]:
         raise ValueError("runtime selection requires a clean tracked worktree")
     revision = str(git["revision"])
+    compatible_source_revision = args.compatible_source_revision
+    if bool(compatible_source_revision) != bool(args.compatibility_output):
+        raise ValueError(
+            "compatible source revision and compatibility output are required together"
+        )
+    if compatible_source_revision:
+        if (
+            not FULL_GIT_REVISION_PATTERN.fullmatch(compatible_source_revision)
+            or compatible_source_revision == revision
+        ):
+            raise ValueError("compatible runtime source revision is invalid")
+        ancestor = subprocess.run(
+            [
+                "git",
+                "merge-base",
+                "--is-ancestor",
+                compatible_source_revision,
+                revision,
+            ],
+            cwd=project_root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if ancestor.returncode != 0:
+            raise ValueError(
+                "compatible runtime source revision is not an ancestor"
+            )
     candidates = parse_candidates(
         args.candidates,
         expected_effective_batch=args.effective_batch_size,
@@ -646,8 +705,35 @@ def main() -> None:
         cofitok_config=cofitok_config,
         dense_config=dense_config,
         current_runtime_environment_sha256=current_environment_sha,
+        compatible_source_revision=compatible_source_revision,
     )
     if reused is not None:
+        selection = _read(output_path)
+        if selection.get("git_revision") == compatible_source_revision:
+            write_json_report(
+                args.compatibility_output,
+                {
+                    "schema_version": 1,
+                    "status": "pass",
+                    "role": "frozen_runtime_selection_revision_compatibility",
+                    "reason": "sampler_rng_state_device_compatibility",
+                    "source_revision": compatible_source_revision,
+                    "target_revision": revision,
+                    "branch": git["branch"],
+                    "selection": {
+                        "path": output_path.as_posix(),
+                        "bytes": output_path.stat().st_size,
+                        "sha256": file_sha256(output_path),
+                        "source_revision": selection["git_revision"],
+                    },
+                    "selected": {
+                        "micro_batch_size": reused[0],
+                        "gradient_accumulation_steps": reused[1],
+                        "effective_batch_size": reused[0] * reused[1],
+                    },
+                    "runtime_environment_sha256": current_environment_sha,
+                },
+            )
         print(f"{reused[0]} {reused[1]}")
         return
 

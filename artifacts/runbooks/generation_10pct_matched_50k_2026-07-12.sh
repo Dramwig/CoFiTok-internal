@@ -4,6 +4,7 @@ set -euo pipefail
 PROJECT=/root/autodl-tmp/CoFiTok/CoFiTok-internal
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
 RUNTIME_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/imagenet256_10pct_fixed_basis_v3_50k"
+COFITOK_COMPATIBLE_RESUME_SOURCE_REVISION=58d83bfce2770eab2565b8c89a5f9a06201a0c86
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -19,6 +20,7 @@ MONITOR_LOG="$OUTPUT_ROOT/generation_10pct_fixed_basis_v3_pair_monitor.log"
 MONITOR_PID_FILE="$OUTPUT_ROOT/generation_10pct_fixed_basis_v3_pair_monitor.pid"
 MONITOR_NAME=generation_10pct_fixed_basis_v3_matched_pair
 RUNTIME_SELECTION="$REPORT_ROOT/runtime_selection.json"
+RUNTIME_COMPATIBILITY="$REPORT_ROOT/runtime_selection_resume_compatibility.json"
 mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
 
 require_complete() {
@@ -72,7 +74,7 @@ start_compressed_monitor() {
     --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
     --poll-seconds 300 --stall-seconds 1800 \
     --idle-failure-grace-seconds 600 \
-    >"$MONITOR_LOG" 2>&1 </dev/null &
+    >"$MONITOR_LOG" 2>&1 </dev/null 8>&- 9>&- &
   local monitor_pid=$!
   local temporary="${MONITOR_PID_FILE}.tmp.$$"
   printf '%s\n' "$monitor_pid" >"$temporary"
@@ -104,6 +106,7 @@ snapshot_compressed_monitor() {
 run_training() {
   local config="$1"
   local run_dir="$2"
+  local compatible_source_revision="${3:-}"
   if [[ -f "$run_dir/training_report.json" ]] \
     && require_complete "$run_dir/training_report.json" "$config"; then
     printf 'training already complete for %s\n' "$run_dir"
@@ -112,6 +115,32 @@ run_training() {
   local resume_args=()
   if [[ -f "$run_dir/latest.json" ]]; then
     resume_args=(--resume auto)
+    local checkpoint_revision
+    checkpoint_revision="$(python - "$run_dir/latest.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+with Path(sys.argv[1]).open(encoding="utf-8") as handle:
+    latest = json.load(handle)
+revision = latest.get("git_revision")
+if not isinstance(revision, str) or len(revision) != 40:
+    raise SystemExit("latest checkpoint has no full Git revision")
+print(revision)
+PY
+)"
+    local current_revision
+    current_revision="$(git rev-parse HEAD)"
+    if [[ "$checkpoint_revision" == "$current_revision" ]]; then
+      :
+    elif [[ -n "$compatible_source_revision" \
+      && "$checkpoint_revision" == "$compatible_source_revision" ]]; then
+      resume_args+=(--resume-source-revision "$compatible_source_revision")
+    else
+      printf 'checkpoint revision %s cannot resume under %s\n' \
+        "$checkpoint_revision" "$current_revision" >&2
+      exit 1
+    fi
   fi
   python scripts/run_generation_training_watchdog.py \
     --monitor-report "$MONITOR_REPORT" \
@@ -140,7 +169,9 @@ runtime_selected="$(python scripts/select_generation_training_runtime.py \
   --output-root "$RUNTIME_BENCHMARK_ROOT" --output "$RUNTIME_SELECTION" \
   --training-run-dir "$COFITOK_RUN" --training-run-dir "$DENSE_RUN" \
   --candidates 16x4,32x2,64x1 --effective-batch-size 64 \
-  --benchmark-steps 8 --warmup-steps 2 --max-memory-fraction 0.90)"
+  --benchmark-steps 8 --warmup-steps 2 --max-memory-fraction 0.90 \
+  --compatible-source-revision "$COFITOK_COMPATIBLE_RESUME_SOURCE_REVISION" \
+  --compatibility-output "$RUNTIME_COMPATIBILITY")"
 read -r SELECTED_MICRO_BATCH SELECTED_ACCUMULATION <<<"$runtime_selected"
 if [[ ! "$SELECTED_MICRO_BATCH" =~ ^[0-9]+$ || ! "$SELECTED_ACCUMULATION" =~ ^[0-9]+$ ]]; then
   printf 'invalid selected runtime: %s\n' "$runtime_selected" >&2
@@ -155,7 +186,8 @@ start_compressed_monitor
 
 run_training \
   configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json \
-  "$COFITOK_RUN"
+  "$COFITOK_RUN" \
+  "$COFITOK_COMPATIBLE_RESUME_SOURCE_REVISION"
 require_complete "$COFITOK_RUN/training_report.json" \
   configs/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k.json
 snapshot_compressed_monitor

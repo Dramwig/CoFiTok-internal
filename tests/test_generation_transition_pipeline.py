@@ -91,6 +91,15 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
     assert '[[ -f "$run_dir/training_report.json" ]]' in scaling_training
     assert 'require_complete "$run_dir/training_report.json"' in scaling_training
     assert "training already complete" in scaling_training
+    assert (
+        "COFITOK_COMPATIBLE_RESUME_SOURCE_REVISION="
+        "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+    ) in scaling_training
+    assert "--resume-source-revision" in scaling_training
+    assert "--compatible-source-revision" in scaling_training
+    assert "--compatibility-output" in scaling_training
+    assert "checkpoint revision %s cannot resume under %s" in scaling_training
+    assert '8>&- 9>&- &' in scaling_training
 
     full_training = _read(
         "artifacts/runbooks/generation_full_matched_300k_after_gate.sh"

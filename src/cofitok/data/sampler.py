@@ -62,6 +62,11 @@ class StatefulRandomSampler(Sampler[int]):
         self.consumed_position = position
         self.issued_position = position
         generator_state = state["generator_state"]
-        if not isinstance(generator_state, torch.Tensor):
-            raise TypeError("sampler generator state must be a tensor")
-        self.generator.set_state(generator_state)
+        if (
+            not isinstance(generator_state, torch.Tensor)
+            or generator_state.dtype != torch.uint8
+        ):
+            raise TypeError("sampler generator state must be a torch.uint8 tensor")
+        # A CUDA map_location also remaps this serialized CPU RNG tensor.
+        # torch.Generator.set_state requires generator state on the CPU.
+        self.generator.set_state(generator_state.detach().cpu())
