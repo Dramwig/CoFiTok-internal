@@ -26,7 +26,10 @@ from cofitok.generation.stability import (
     tail_energy_ratio,
 )
 from cofitok.reporting import git_provenance, write_json_report
-from cofitok.training.losses import denoise_path_prefix_epsilon_targets
+from cofitok.training.losses import (
+    component_energy_target_ratios,
+    denoise_path_prefix_epsilon_targets,
+)
 from cofitok.training.runtime import autocast_context
 
 
@@ -152,6 +155,8 @@ def evaluate_teacher_forced(
     seed: int,
     progress_power: float,
     progress_mode: str,
+    energy_capacity_weight: float,
+    energy_capacity_power: float,
 ) -> list[dict[str, Any]]:
     accumulators = {timestep: defaultdict(list) for timestep in timesteps}
     generator = torch.Generator(device=batches[0][0].device).manual_seed(seed)
@@ -190,6 +195,13 @@ def evaluate_teacher_forced(
                 reference_output=prediction.reference_output,
                 progress_power=progress_power,
                 progress_mode=progress_mode,
+            )
+            objective_target_ratios = component_energy_target_ratios(
+                target_components,
+                tokens=prediction.reference_output.tokens,
+                output_channels=prediction.epsilon.shape[1],
+                capacity_weight=energy_capacity_weight,
+                capacity_power=energy_capacity_power,
             )
             metrics = accumulators[timestep]
             _append(metrics, "epsilon_mse", per_sample_mse(prediction.epsilon, noise))
@@ -230,6 +242,18 @@ def evaluate_teacher_forced(
                 metrics,
                 "target_tail_two_energy_ratio",
                 tail_energy_ratio(target_components, tail_count=2),
+            )
+            _append(
+                metrics,
+                "objective_target_component_energy_ratio",
+                objective_target_ratios,
+            )
+            _append(
+                metrics,
+                "objective_target_tail_two_energy_ratio",
+                objective_target_ratios[:, -min(2, objective_target_ratios.shape[1]) :].sum(
+                    dim=1
+                ),
             )
     return [
         {"timestep": timestep, **_finalize(accumulators[timestep])}
@@ -484,6 +508,8 @@ def main() -> None:
         seed=args.seed,
         progress_power=config.loss.denoise_path_progress_power,
         progress_mode=config.loss.denoise_path_progress_mode,
+        energy_capacity_weight=config.loss.denoise_path_energy_capacity_weight,
+        energy_capacity_power=config.loss.denoise_path_energy_capacity_power,
     )
     reconstruction = evaluate_rollout(
         model=loaded.model,

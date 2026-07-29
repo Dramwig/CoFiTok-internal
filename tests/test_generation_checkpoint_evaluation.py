@@ -162,5 +162,8 @@ def test_checkpoint_evaluator_cli_records_git_provenance(tmp_path) -> None:
     assert isinstance(report["git"]["tracked_dirty"], bool)
     assert len(report["metrics"]["component_energy_ratio"]) == 2
     assert len(report["metrics"]["target_component_energy_ratio"]) == 2
+    assert len(
+        report["metrics"]["objective_target_component_energy_ratio_per_sample_mean"]
+    ) == 2
     assert report["metrics"]["component_energy_uniform_mse_per_sample_mean"] >= 0.0
     assert report["metrics"]["target_component_energy_uniform_mse_per_sample_mean"] >= 0.0

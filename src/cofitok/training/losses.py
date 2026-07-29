@@ -229,6 +229,36 @@ def _component_energy_distribution_loss(
     capacity_power: float = 0.5,
 ) -> torch.Tensor:
     predicted = _per_sample_component_energy_ratios(components)
+    target = component_energy_target_ratios(
+        target_components,
+        tokens=tokens,
+        output_channels=output_channels,
+        capacity_weight=capacity_weight,
+        capacity_power=capacity_power,
+    )
+    if mode == "mse":
+        return F.mse_loss(predicted, target)
+    if mode in {"hellinger", "hellinger_stable"}:
+        epsilon = (
+            predicted.new_tensor(1e-4)
+            if mode == "hellinger_stable"
+            else predicted.new_tensor(torch.finfo(predicted.dtype).eps)
+        )
+        distances = (
+            torch.sqrt(predicted + epsilon) - torch.sqrt(target + epsilon)
+        ).square()
+        return 0.5 * distances.sum(dim=1).mean()
+    raise ValueError(f"Unknown denoise path energy mode: {mode}")
+
+
+def component_energy_target_ratios(
+    target_components: list[torch.Tensor],
+    *,
+    tokens: list[torch.Tensor] | None = None,
+    output_channels: int | None = None,
+    capacity_weight: float = 0.0,
+    capacity_power: float = 0.5,
+) -> torch.Tensor:
     target = _per_sample_component_energy_ratios(target_components)
     if capacity_weight > 0.0:
         if tokens is None or output_channels is None:
@@ -248,19 +278,7 @@ def _component_energy_distribution_loss(
             prior.unsqueeze(0).expand_as(target),
             capacity_weight,
         )
-    if mode == "mse":
-        return F.mse_loss(predicted, target)
-    if mode in {"hellinger", "hellinger_stable"}:
-        epsilon = (
-            predicted.new_tensor(1e-4)
-            if mode == "hellinger_stable"
-            else predicted.new_tensor(torch.finfo(predicted.dtype).eps)
-        )
-        distances = (
-            torch.sqrt(predicted + epsilon) - torch.sqrt(target + epsilon)
-        ).square()
-        return 0.5 * distances.sum(dim=1).mean()
-    raise ValueError(f"Unknown denoise path energy mode: {mode}")
+    return target
 
 
 def _highpass_like(tensor: torch.Tensor) -> torch.Tensor:

@@ -15,6 +15,7 @@ from cofitok.metrics import normalized_curve_auc
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import git_provenance, write_json_report
 from cofitok.training.losses import (
+    component_energy_target_ratios,
     denoise_path_prefix_epsilon_targets,
     denoise_path_prefix_x0_targets,
 )
@@ -160,6 +161,8 @@ def evaluate(
     orders: dict[str, list[int]],
     progress_power: float,
     progress_mode: str,
+    energy_capacity_weight: float,
+    energy_capacity_power: float,
     class_conditional: bool,
     device: torch.device,
     precision: str,
@@ -175,6 +178,7 @@ def evaluate(
     target_component_energy_sums = [0.0] * token_count
     target_component_ratio_sums = [0.0] * token_count
     target_component_uniform_mse_sum = 0.0
+    objective_target_component_ratio_sums = [0.0] * token_count
     random_energy_sums = [0.0] * token_count
     shuffled_endpoint_sum = 0.0
     zero_max_abs = 0.0
@@ -224,6 +228,13 @@ def evaluate(
             component_energy_sums[index] += float(component.float().square().mean()) * batch_size
         component_statistics = component_energy_statistics(output.components)
         target_statistics = component_energy_statistics(target_components)
+        objective_target_ratios = component_energy_target_ratios(
+            target_components,
+            tokens=output.tokens,
+            output_channels=output.epsilon.shape[1],
+            capacity_weight=energy_capacity_weight,
+            capacity_power=energy_capacity_power,
+        )
         for index in range(token_count):
             component_ratio_sums[index] += float(component_statistics["ratios"][:, index].sum())
             target_component_energy_sums[index] += float(
@@ -231,6 +242,9 @@ def evaluate(
             )
             target_component_ratio_sums[index] += float(
                 target_statistics["ratios"][:, index].sum()
+            )
+            objective_target_component_ratio_sums[index] += float(
+                objective_target_ratios[:, index].sum()
             )
         component_uniform_mse_sum += float(component_statistics["uniform_mse"].sum())
         target_component_uniform_mse_sum += float(target_statistics["uniform_mse"].sum())
@@ -310,6 +324,9 @@ def evaluate(
         "target_component_energy_ratio_per_sample_mean": [
             value / count for value in target_component_ratio_sums
         ],
+        "objective_target_component_energy_ratio_per_sample_mean": [
+            value / count for value in objective_target_component_ratio_sums
+        ],
         "target_component_energy_uniform_mse_per_sample_mean": (
             target_component_uniform_mse_sum / count
         ),
@@ -346,6 +363,8 @@ def main() -> None:
         orders=orders,
         progress_power=config.loss.denoise_path_progress_power,
         progress_mode=config.loss.denoise_path_progress_mode,
+        energy_capacity_weight=config.loss.denoise_path_energy_capacity_weight,
+        energy_capacity_power=config.loss.denoise_path_energy_capacity_power,
         class_conditional=config.data.class_conditional,
         device=device,
         precision=args.precision,
