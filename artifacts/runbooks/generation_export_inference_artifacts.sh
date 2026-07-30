@@ -38,6 +38,7 @@ python scripts/preflight_generation_sampling.py \
   --output "$REPORT_ROOT/cofitok_export_preflight.json" \
   --batch-size 2 --prefix-budget 8 --guidance-scale 1.5 \
   --cfg-batch-mode batched --weights ema --precision bf16 \
+  --require-release-authorization \
   --warmup-forwards 1 --measured-forwards 2
 
 python scripts/preflight_generation_sampling.py \
@@ -45,6 +46,7 @@ python scripts/preflight_generation_sampling.py \
   --output "$REPORT_ROOT/dense_export_preflight.json" \
   --batch-size 2 --prefix-budget 1 --guidance-scale 1.5 \
   --cfg-batch-mode batched --weights ema --precision bf16 \
+  --require-release-authorization \
   --warmup-forwards 1 --measured-forwards 2
 
 python scripts/infer_generation.py \
@@ -53,7 +55,7 @@ python scripts/infer_generation.py \
   --report "$REPORT_ROOT/cofitok_export_inference_smoke.json" \
   --class-ids 0 --seeds 0,1 --prefix-budgets 1,8 \
   --batch-size 2 --sample-steps 10 --guidance-scale 1.5 \
-  --weights ema --precision bf16 --overwrite
+  --weights ema --precision bf16 --require-release-authorization --overwrite
 
 python scripts/infer_generation.py \
   --checkpoint "$DENSE_ARTIFACT" \
@@ -61,4 +63,4 @@ python scripts/infer_generation.py \
   --report "$REPORT_ROOT/dense_export_inference_smoke.json" \
   --class-ids 0 --seeds 0,1 --prefix-budgets 1 \
   --batch-size 2 --sample-steps 10 --guidance-scale 1.5 \
-  --weights ema --precision bf16 --overwrite
+  --weights ema --precision bf16 --require-release-authorization --overwrite

@@ -1174,6 +1174,7 @@ def _inference_exports() -> dict:
             "source_git": dict(source_git),
             "training_authorization": copy.deepcopy(training_authorization),
             "release_authorization": copy.deepcopy(release_authorization),
+            "release_authorization_required": True,
         }
         output[f"{method}_smoke"] = {
             "status": "completed",
@@ -1192,6 +1193,7 @@ def _inference_exports() -> dict:
                 "release_authorization": copy.deepcopy(
                     release_authorization
                 ),
+                "release_authorization_required": True,
             },
             "request": {
                 "seeds": [0, 1],
@@ -2610,6 +2612,30 @@ def test_completion_audit_rejects_inference_preflight_release_drift() -> None:
     kwargs["inference_exports"]["cofitok_preflight"][
         "release_authorization"
     ]["gate_identity_sha256"] = "d" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_requires_release_only_export_preflight() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_exports"]["cofitok_preflight"][
+        "release_authorization_required"
+    ] = False
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_requires_release_only_export_smoke() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_exports"]["dense_identity_smoke"]["checkpoint"][
+        "release_authorization_required"
+    ] = False
 
     report = build_completion_audit(**kwargs)
 

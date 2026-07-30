@@ -99,6 +99,7 @@ def test_sampling_preflight_runs_shared_ema_cfg_path(tmp_path) -> None:
         report["runtime_environment"]
     )
     assert report["checkpoint_step"] == 17
+    assert report["release_authorization_required"] is False
     assert len(report["checkpoint_sha256"]) == 64
     assert report["checkpoint_integrity_manifest"].endswith("checkpoint.pt.integrity.json")
     assert report["request"]["effective_model_batch_size"] == 6
@@ -170,3 +171,23 @@ def test_sampling_preflight_rejects_checkpoint_bytes_that_fail_integrity(tmp_pat
 
     with pytest.raises(ValueError, match="SHA256 mismatch"):
         run_sampling_preflight(checkpoint, batch_size=1, precision="fp32")
+
+
+def test_sampling_preflight_release_policy_precedes_deserialization(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    _write_cpu_checkpoint(checkpoint)
+
+    def fail_if_deserialized(*args, **kwargs):
+        raise AssertionError("checkpoint was deserialized before policy rejection")
+
+    monkeypatch.setattr(torch, "load", fail_if_deserialized)
+    with pytest.raises(ValueError, match="release-authorized inference artifact"):
+        run_sampling_preflight(
+            checkpoint,
+            batch_size=1,
+            precision="fp32",
+            require_release_authorization=True,
+        )

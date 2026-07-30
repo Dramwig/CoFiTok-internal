@@ -1304,6 +1304,10 @@ def _inference_export_evidence(
             raise ValueError(f"{method} export preflight artifact type differs")
         if preflight.get("weights") != "ema_export":
             raise ValueError(f"{method} export preflight did not load exported EMA")
+        if preflight.get("release_authorization_required") is not True:
+            raise ValueError(
+                f"{method} export preflight did not enforce release authorization"
+            )
         if preflight.get("source_checkpoint_sha256") != export.get(
             "source_checkpoint_sha256"
         ):
@@ -1342,6 +1346,10 @@ def _inference_export_evidence(
             raise ValueError(f"{method} export smoke artifact SHA256 differs")
         if checkpoint.get("artifact_type") != "cofitok_generation_inference":
             raise ValueError(f"{method} export smoke artifact type differs")
+        if checkpoint.get("release_authorization_required") is not True:
+            raise ValueError(
+                f"{method} export smoke did not enforce release authorization"
+            )
         if (
             checkpoint.get("weights") != "ema_export"
             or int(checkpoint.get("checkpoint_step", -1)) != 300_000

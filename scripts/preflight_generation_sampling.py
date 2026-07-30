@@ -32,6 +32,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--cfg-batch-mode", choices=["batched", "sequential"], default="batched")
     parser.add_argument("--weights", choices=["ema", "model"], default="ema")
     parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
+    parser.add_argument("--require-release-authorization", action="store_true")
     parser.add_argument("--warmup-forwards", type=int, default=0)
     parser.add_argument("--measured-forwards", type=int, default=1)
     return parser.parse_args()
@@ -58,6 +59,7 @@ def run_sampling_preflight(
     cfg_batch_mode: str = "batched",
     weights: str = "ema",
     precision: str = "bf16",
+    require_release_authorization: bool = False,
     warmup_forwards: int = 0,
     measured_forwards: int = 1,
 ) -> dict[str, Any]:
@@ -72,7 +74,11 @@ def run_sampling_preflight(
     if warmup_forwards < 0 or measured_forwards < 1:
         raise ValueError("sampling preflight forward counts are invalid")
 
-    loaded = load_generation_model(checkpoint, weights=weights)
+    loaded = load_generation_model(
+        checkpoint,
+        weights=weights,
+        require_release_authorization=require_release_authorization,
+    )
     model = loaded.model
     config = loaded.config
     device = loaded.device
@@ -125,6 +131,9 @@ def run_sampling_preflight(
         "source_git": loaded.source_git_provenance,
         "training_authorization": loaded.training_authorization,
         "release_authorization": loaded.release_authorization,
+        "release_authorization_required": (
+            loaded.release_authorization_required
+        ),
         "device": str(device),
         "torch_version": torch.__version__,
         "request": {
@@ -250,6 +259,7 @@ def main() -> None:
             cfg_batch_mode=args.cfg_batch_mode,
             weights=args.weights,
             precision=args.precision,
+            require_release_authorization=args.require_release_authorization,
             warmup_forwards=args.warmup_forwards,
             measured_forwards=args.measured_forwards,
         )
@@ -267,6 +277,9 @@ def main() -> None:
                 "guidance_rescale": args.guidance_rescale,
                 "cfg_batch_mode": args.cfg_batch_mode,
                 "weights": args.weights,
+                "require_release_authorization": (
+                    args.require_release_authorization
+                ),
                 "warmup_forwards": args.warmup_forwards,
                 "measured_forwards": args.measured_forwards,
             },

@@ -354,8 +354,10 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
         prefix_budget=2,
         guidance_scale=1.0,
         precision="fp32",
+        require_release_authorization=True,
     )
     assert preflight["status"] == "passed"
+    assert preflight["release_authorization_required"] is True
     assert preflight["training_authorization"] == _training_authorization(
         tmp_path
     )
