@@ -232,3 +232,36 @@ official remote repository:
 This is observability hardening only. The active run remains a fresh matched
 5K gate, and formal 50K training remains unauthorized until the bounded raw
 n=8 and two-seed n=64 post-evaluation decision passes.
+
+## Malformed-provenance fail-closed follow-up
+
+Revision `164c96e71dd97f0ac85a4f906c5a86cf768b7390` closes two remaining
+parser boundaries. Required monitoring now rejects an absent or non-formal
+dataset-provenance declaration, and valid JSON values that are not metric
+objects are reported as health failures. Invalid step or consistency-scale
+types can no longer terminate the monitor while schedule validation runs.
+
+The local targeted suite passed all 22 tests, the full suite passed with three
+existing skips, and the isolated Linux suite also passed all 22 targeted
+tests. The incremental bundle was:
+
+```text
+bytes: 2,903
+SHA256: bbec81d902a4d08e4f62a3a3100d264d5bf83948449f75358a2fb2c2c94398d1
+```
+
+The replacement observer is:
+
+```text
+checkout:
+/tmp/cofitok-monitor-provenance-164c96e
+PID: 38141
+report:
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher_provenance_observer_164c96e.json
+```
+
+Its first accepted snapshot was `running / issues=[]` at step 925, with all
+38 metric rows matching both schedules and the formal dataset identity
+verified. The previous observer PID 37643 was stopped only after the
+replacement process, checkout, command, and report passed. Training,
+authoritative monitoring, and post-evaluation control remain unchanged.
