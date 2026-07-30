@@ -672,3 +672,41 @@ The tracked runbook SHA256 is
 
 This benchmark authorizes only a fresh matched 1K qualification probe. It does
 not authorize 5K, 50K, or full training.
+
+## EMA-teacher matched 1K launch
+
+The fresh matched pair is running in the isolated revision
+`10f2f6bd9977fb1a63de4b2939ca641107a0ccaa` checkout:
+
+```text
+checkout: /tmp/cofitok-generation-stability-ema-teacher-10f2f6b
+output:
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher
+runbook PID: 853818
+initial CoFiTok trainer PID: 853839
+monitor PID: 854173
+post-eval waiter PID: 854722
+```
+
+The training runbook SHA256 is
+`4b2d5daa78d819edce64eb530506dc7a9eba323cfe9077d3378ce43b0a9def6c`.
+Its inputs bind the active-teacher benchmark, failed raw 5K qualification, and
+raw milestone diagnostic SHA256 values. The initial monitor state is
+`running / cofitok_training / issues=[]` with clean target Git provenance.
+
+The n=8 post-evaluation runbook SHA256 is
+`dedef29410b6d76c91fc0a626e9f2e1f05e062cf6782d926e8082b8452a434a5`;
+the waiter SHA256 is
+`48eef1da04914e9cf86e19f6e8b9021bf1c2942e85a3fb522edf995908a9cfff`.
+A one-second bounded waiter trial observed the active queue and timed out
+without side effects. The real waiter requires monitor `pass / complete`, both
+trainers and the pair runbook to exit, an idle GPU, exact pair/checkpoint
+SHA256 identities, and the unchanged post-eval SHA before launch. The screening
+summary always sets `scaling_authorization_allowed=false`; n=8 alone cannot
+authorize 5K.
+
+Real-time authority is:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher_monitor.json
+```
