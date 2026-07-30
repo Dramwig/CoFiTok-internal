@@ -1006,3 +1006,63 @@ start 5K automatically. GPU use returned to zero.
 The two evaluation directories, qualification reports, summary, decision, and
 waiter log were synced locally. A second source/local SHA256 audit compared
 nine files and reported zero missing, extra, or mismatched files.
+
+## EMA-teacher matched 5K preparation
+
+Revision `59db142fc45d69dc92bb0333be5ac2d0162d9dc4` removes the remaining
+method-dependent logging precision from the shared consistency schedules.
+Rollout and EMA-teacher schedule scalars are now constructed as float32 tensors
+even when the model output is bf16. A regression test verifies exact float32
+values for the `1/12` and `1/6` warmup points. The two matched 5K configs use
+the same data, diffusion, runtime, optimization, rollout, and teacher fields:
+
+```text
+steps / images per member: 5,000 / 320,000
+rollout: weight 0.1, start 0, warmup 1,000, unroll 2, batch fraction 0.125
+EMA teacher: weight 0.25, start 3,000, warmup 1,000, batch fraction 0.0625
+checkpoints: every 1,250 steps; protected 1,250 / 2,500 / 5,000
+```
+
+The late teacher window directly covers the previously localized raw drift
+between steps 3,750 and 5,000. It remains a matched training regularizer and
+does not enter `S_k`.
+
+Local full pytest passed with the three existing skips. In the isolated Linux
+checkout, the targeted loss/pair/rollout tests passed `39/39`; the full suite
+passed with two existing skips after excluding only the AAAI sibling-layout
+test that cannot resolve the paper directory from `/tmp`. All three new
+runbooks pass Linux `bash -n`. The official remote repository remains at
+`1ebcc15210e63a776a2ba448481cbd8bb94a4066`.
+
+The decision-bound matched CUDA rehearsal passed:
+
+| method | images/s | peak VRAM bytes | teacher loss | grad norm |
+|---|---:|---:|---:|---:|
+| CoFiTok | 22.1403 | 15,232,468,992 | 2.9675e-13 | 372.8989 |
+| dense | 24.3586 | 15,036,313,600 | 3.1425e-14 | 1.0352 |
+
+Both members ran eight steps after two warmup steps with teacher scale `1.0`.
+All finite-loss, positive-gradient, checkpoint-free, memory, clean-revision,
+and matched-contract checks passed. The benchmark is explicitly
+`matched_5k_runtime_rehearsal_only` and cannot authorize scaling. Its summary
+SHA256 is
+`066a03a0bf9f6a7d40cd98de41468974d5d4e0d629a259c4a550026e6e399305`.
+The nine small benchmark files were synced locally with identical SHA256
+values; no checkpoint was copied.
+
+The staged runbooks are:
+
+```text
+training:
+64177647c29227cabe9ababbcb11bf59554371c5391046c59f89122e9bbd8c84
+raw n=8 plus dual-seed n=64 post-eval:
+a0935058edbd1d97c9e2519d97efeb6bed1f589086e6c89ce73ef97b1d07bd08
+monitor-bound post-eval waiter:
+913ffc8c90f262ba4db845fab2043e030376395b62d68f381c1391c95ad2e49c
+```
+
+The training runbook binds the robust 1K authorization, both 1K checkpoint
+identities, this benchmark, exact target revision, exact 5K schedules, and all
+four milestone checkpoint sidecars. Its pair summary permanently sets
+`formal_scaling_authorization_allowed=false`; only the later raw n=8 and
+dual-seed n=64 decision may authorize preparation of a formal matched 50K run.
