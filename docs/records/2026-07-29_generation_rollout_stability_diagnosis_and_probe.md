@@ -721,3 +721,20 @@ real waiter is PID `856046`: it exits without GPU work when authoritative raw
 n=8 fails, and otherwise runs raw n=64 seeds 2029 and 2039 before invoking the
 shared stage-aware decision builder with `next_stage=matched_5k`. It never
 starts 5K training.
+
+The first CoFiTok milestone passed a read-only integrity audit while training
+continued:
+
+```text
+step: 250 / 1,000
+checkpoint bytes: 1,006,321,770
+checkpoint SHA256: f78653e9e6441b7b14d6067181b5529fecc5aef33ea417a65c117631c42cb1cf
+validation epsilon MSE: 0.07069774717092514
+EMA-teacher scale: 0.0
+rollout-consistency scale: 1.0
+```
+
+The checkpoint sidecar and `latest.json` agree on filename, bytes, SHA256,
+step, Git revision, dataset identity, and runtime-environment identity. The
+canonical metric row records exactly 16,000 images. The checkpoint payload was
+not loaded or rehashed during this audit.
