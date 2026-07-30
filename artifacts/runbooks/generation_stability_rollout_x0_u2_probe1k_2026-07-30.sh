@@ -22,6 +22,7 @@ cd "$PROJECT"
 [[ "$(sha256sum "$BENCHMARK_ROOT/cofitok/benchmark_report.json" | awk '{print $1}')" == "$EXPECTED_COFITOK_BENCHMARK_SHA256" ]]
 [[ "$(sha256sum "$BENCHMARK_ROOT/dense/benchmark_report.json" | awk '{print $1}')" == "$EXPECTED_DENSE_BENCHMARK_SHA256" ]]
 [[ "$(sha256sum "$BENCHMARK_ROOT/benchmark_summary.json" | awk '{print $1}')" == "$EXPECTED_BENCHMARK_SUMMARY_SHA256" ]]
+export PYTHONPATH=src
 
 if nvidia-smi --query-compute-apps=pid --format=csv,noheader | grep -q '[0-9]'; then
   printf 'refusing to start while the GPU is busy\n' >&2
