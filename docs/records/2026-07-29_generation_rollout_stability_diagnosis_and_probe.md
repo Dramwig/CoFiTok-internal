@@ -853,3 +853,33 @@ runtime-environment identity all agree. The checkpoint payload was not loaded
 or rehashed. At this matched step the CoFiTok and dense validation MSE values
 were close (`0.04267635` and `0.04272094`), but this training-time diagnostic
 does not replace the external rollout qualification.
+
+The dense active-teacher path also ran at the configured boundary:
+
+| step | logged teacher scale | teacher loss | total loss | gradient norm |
+|---:|---:|---:|---:|---:|
+| 600 | 0.00000000 | 0.00000000 | 0.05102846 | 0.46318033 |
+| 625 | 0.08349609 | 0.14063581 | 0.04537644 | 0.22004163 |
+| 650 | 0.16699219 | 0.14415441 | 0.05803266 | 0.85093874 |
+
+The schedule function returned the same Python float values as CoFiTok. The
+dense output is bf16, so `LossBreakdown` logged the nearest bf16 scalar values
+for `1/12` and `1/6`; this is a bounded representation effect rather than a
+step offset. The teacher MSE is explicitly computed in float32. Losses and
+gradients remained finite and monitoring reported no issue.
+
+The third dense milestone passed the read-only audit:
+
+```text
+step: 750 / 1,000
+images seen: 48,000
+checkpoint bytes: 1,006,120,150
+checkpoint SHA256: 7036abd8076ea09d2ba3710d729da5fc35b78508a604c3fb74d9f05d3b6e2231
+validation epsilon MSE: 0.02896382473409176
+EMA-teacher loss / scale: 0.12420607171952724 / 0.5
+rollout-consistency scale: 1.0
+```
+
+The checkpoint stat, sidecar, and `latest.json` agree on all integrity and
+provenance fields. The canonical row records the third scheduled validation
+event. The payload was not loaded or rehashed.
