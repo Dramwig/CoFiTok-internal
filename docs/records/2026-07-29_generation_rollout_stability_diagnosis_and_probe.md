@@ -468,6 +468,21 @@ is therefore retained as an unnormalized intermediate observation, not a
 generalization warning. The matched CoFiTok/dense values at the same milestone
 and the final free-state evaluation are the valid comparisons.
 
+The third CoFiTok milestone also passed the read-only integrity audit:
+
+```text
+step: 3,750 / 5,000
+checkpoint bytes: 1,006,321,322
+checkpoint SHA256: 6513d12b9131a0276eed465d51b8f6908197d309463ea4d8ef43f7690d0f675e
+validation epsilon MSE: 0.022937312722206116
+rollout consistency scale: 1.0
+```
+
+The checkpoint, sidecar, `latest.json`, canonical validation row, dataset
+identity, runtime-environment identity, and Git revision agree. Steps 1,250,
+2,500, and 3,750 all remain present. The validation value belongs to the third
+deterministic image batch and is not interpreted as a same-batch trend.
+
 Post-training revision `9f435d4` closes this validation-observability gap for
 future runs. Each validation row now records its zero-based event index, actual
 DataLoader batch index, reset noise seed, and image count. Exact-resume tests
