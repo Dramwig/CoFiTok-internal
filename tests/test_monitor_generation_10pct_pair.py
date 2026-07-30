@@ -40,6 +40,12 @@ def _write_required_manifest(
                     "dirty": False,
                 },
                 "runtime_environment_sha256": "0" * 64,
+                "dataset_provenance": {
+                    "formal": True,
+                    "status": "pass",
+                    "issues": [],
+                    "identity_sha256": "1" * 64,
+                },
             }
         )
         + "\n",
@@ -557,6 +563,72 @@ def test_required_monitor_rejects_manifest_schedule_drift(tmp_path) -> None:
         for issue in report["health_issues"]
     )
     assert report["run_manifest"]["status"] == "invalid"
+
+
+def test_required_monitor_rejects_missing_dataset_provenance(tmp_path) -> None:
+    _write_required_manifest(tmp_path)
+    manifest_path = tmp_path / "run_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    del manifest["dataset_provenance"]
+    manifest_path.write_text(json.dumps(manifest) + "\n", encoding="utf-8")
+    (tmp_path / "train_metrics.jsonl").write_text(
+        json.dumps({"step": 1, "total": 0.1}) + "\n",
+        encoding="utf-8",
+    )
+
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+        expected_checkpoint_revision="revision-a",
+    )
+
+    assert "run manifest dataset provenance is malformed" in report["health_issues"]
+    assert report["run_manifest"]["status"] == "invalid"
+
+
+def test_monitor_reports_malformed_metric_rows_without_crashing(tmp_path) -> None:
+    _write_required_manifest(
+        tmp_path,
+        rollout_weight=0.1,
+        rollout_warmup=1_000,
+    )
+    (tmp_path / "train_metrics.jsonl").write_text(
+        json.dumps(["not", "an", "object"])
+        + "\n"
+        + json.dumps(
+            {
+                "step": 1,
+                "total": 0.1,
+                "rollout_consistency_scale": "invalid",
+                "ema_teacher_consistency_scale": 0.0,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+        expected_checkpoint_revision="revision-a",
+    )
+
+    assert any(
+        "metrics row is not a JSON object" in issue
+        for issue in report["health_issues"]
+    )
+    assert any(
+        "rollout_consistency_scale is non-numeric" in issue
+        for issue in report["health_issues"]
+    )
 
 
 def test_monitor_waits_during_runbook_only_milestone_transition() -> None:

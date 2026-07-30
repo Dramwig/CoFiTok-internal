@@ -52,6 +52,9 @@ def _read_metrics(
             except json.JSONDecodeError as error:
                 issues.append(f"metrics JSON is invalid at line {line_number}: {error.msg}")
                 continue
+            if not isinstance(row, dict):
+                issues.append(f"metrics row is not a JSON object at line {line_number}")
+                continue
             step = row.get("step")
             if not isinstance(step, int) or isinstance(step, bool) or step <= previous_step:
                 issues.append(f"metrics step is not strictly increasing at line {line_number}")
@@ -337,7 +340,11 @@ def _inspect_run_manifest(
     ):
         issues.append("run manifest runtime environment SHA256 is malformed")
     dataset = manifest.get("dataset_provenance")
-    if isinstance(dataset, dict) and dataset.get("formal") is True:
+    if not isinstance(dataset, dict):
+        issues.append("run manifest dataset provenance is malformed")
+    elif dataset.get("formal") is not True:
+        issues.append("run manifest does not declare formal dataset provenance")
+    else:
         if dataset.get("status") != "pass" or dataset.get("issues") != []:
             issues.append("run manifest formal dataset provenance did not pass")
         identity = dataset.get("identity_sha256")
@@ -360,10 +367,19 @@ def _inspect_run_manifest(
         mismatched_steps = []
         missing_steps = []
         for row in metrics_rows:
-            step = int(row.get("step", -1))
+            step = row.get("step")
+            if not isinstance(step, int) or isinstance(step, bool):
+                continue
             if scale_field not in row:
                 if weight > 0.0:
                     missing_steps.append(step)
+                continue
+            scale = row[scale_field]
+            if (
+                not isinstance(scale, (int, float))
+                or isinstance(scale, bool)
+                or not math.isfinite(float(scale))
+            ):
                 continue
             expected = _expected_consistency_scale(
                 step,
@@ -371,7 +387,7 @@ def _inspect_run_manifest(
                 start_step=start_step,
                 warmup_steps=warmup_steps,
             )
-            if float(row[scale_field]) != expected:
+            if float(scale) != expected:
                 mismatched_steps.append(step)
         if missing_steps:
             issues.append(
