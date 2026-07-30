@@ -29,6 +29,10 @@ SHARED_TRAINING_LOSS_FIELDS = {
     "rollout_consistency_batch_fraction",
     "rollout_consistency_clip_x0",
     "rollout_consistency_mode",
+    "ema_teacher_consistency_weight",
+    "ema_teacher_consistency_start_step",
+    "ema_teacher_consistency_warmup_steps",
+    "ema_teacher_consistency_batch_fraction",
 }
 
 

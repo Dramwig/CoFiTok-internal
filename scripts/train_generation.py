@@ -36,6 +36,8 @@ from cofitok.training import (
     ExponentialMovingAverage,
     capture_generation_training_authorization,
     compute_losses,
+    consistency_weight_scale,
+    ema_teacher_consistency_loss,
     ensure_fresh_training_output,
     reconcile_metrics_for_resume,
     rollout_consistency_loss,
@@ -176,6 +178,16 @@ def _validate_config(config: ExperimentConfig) -> None:
         raise ValueError("rollout_consistency_batch_fraction must be in (0, 1]")
     if config.loss.rollout_consistency_mode not in {"epsilon", "clipped_x0"}:
         raise ValueError("rollout_consistency_mode must be epsilon or clipped_x0")
+    if config.loss.ema_teacher_consistency_weight < 0.0:
+        raise ValueError("ema_teacher_consistency_weight must be non-negative")
+    if config.loss.ema_teacher_consistency_start_step < 0:
+        raise ValueError("ema_teacher_consistency_start_step must be non-negative")
+    if config.loss.ema_teacher_consistency_warmup_steps < 0:
+        raise ValueError("ema_teacher_consistency_warmup_steps must be non-negative")
+    if not 0.0 < config.loss.ema_teacher_consistency_batch_fraction <= 1.0:
+        raise ValueError(
+            "ema_teacher_consistency_batch_fraction must be in (0, 1]"
+        )
     protected_steps = config.runtime.protected_checkpoint_steps
     if protected_steps != sorted(set(protected_steps)):
         raise ValueError("protected_checkpoint_steps must be sorted and unique")
@@ -698,6 +710,27 @@ def main() -> None:
             noisy = schedule.add_noise(clean, noise, timesteps)
             with autocast_context(device, config.runtime.precision):
                 output = model(noisy, timesteps, class_labels=labels)
+                ema_teacher_scale = consistency_weight_scale(
+                    step,
+                    start_step=config.loss.ema_teacher_consistency_start_step,
+                    warmup_steps=config.loss.ema_teacher_consistency_warmup_steps,
+                )
+                ema_teacher_loss = None
+                if (
+                    config.loss.ema_teacher_consistency_weight > 0.0
+                    and ema_teacher_scale > 0.0
+                ):
+                    ema_teacher_loss = ema_teacher_consistency_loss(
+                        base_model,
+                        ema_state=ema.shadow,
+                        student_epsilon=output.epsilon,
+                        noisy_images=noisy,
+                        timesteps=timesteps,
+                        class_labels=labels,
+                        batch_fraction=(
+                            config.loss.ema_teacher_consistency_batch_fraction
+                        ),
+                    )
                 rollout_scale = rollout_consistency_weight_scale(
                     step,
                     start_step=config.loss.rollout_consistency_start_step,
@@ -734,6 +767,8 @@ def main() -> None:
                     ),
                     rollout_consistency=rollout_consistency,
                     rollout_consistency_scale=rollout_scale,
+                    ema_teacher_consistency=ema_teacher_loss,
+                    ema_teacher_consistency_scale=ema_teacher_scale,
                 )
                 scaled_loss = losses.total / accumulation
             if not torch.isfinite(scaled_loss):

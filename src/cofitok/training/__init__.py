@@ -17,6 +17,8 @@ from cofitok.training.metrics import (
     reconcile_metrics_for_resume,
 )
 from cofitok.training.rollout import (
+    consistency_weight_scale,
+    ema_teacher_consistency_loss,
     one_step_rollout_consistency_loss,
     rollout_consistency_loss,
     rollout_consistency_weight_scale,
@@ -32,6 +34,8 @@ __all__ = [
     "ensure_fresh_training_output",
     "backfill_training_checkpoint_integrity",
     "load_training_checkpoint",
+    "consistency_weight_scale",
+    "ema_teacher_consistency_loss",
     "one_step_rollout_consistency_loss",
     "rollout_consistency_loss",
     "reconcile_metrics_for_resume",

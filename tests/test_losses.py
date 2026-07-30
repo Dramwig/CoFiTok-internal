@@ -85,6 +85,37 @@ def test_energy_budget_loss_is_reported_when_target_is_set() -> None:
     assert "energy_budget" in losses.as_dict()
 
 
+def test_ema_teacher_consistency_is_scaled_in_total() -> None:
+    output = _fake_output()
+    schedule = DiffusionSchedule(DiffusionConfig(num_train_timesteps=10), device="cpu")
+    clean = torch.zeros(2, 3, 4, 4)
+    noise = torch.zeros_like(clean)
+    timesteps = torch.tensor([1, 2])
+    noisy = schedule.add_noise(clean, noise, timesteps)
+
+    losses = compute_losses(
+        LossConfig(
+            epsilon_weight=0.0,
+            prefix_weight=0.0,
+            monotonic_weight=0.0,
+            zero_token_weight=0.0,
+            ema_teacher_consistency_weight=2.0,
+        ),
+        output,
+        schedule,
+        noisy,
+        clean,
+        noise,
+        timesteps,
+        ema_teacher_consistency=torch.tensor(4.0),
+        ema_teacher_consistency_scale=0.5,
+    )
+
+    assert losses.total.item() == pytest.approx(4.0)
+    assert losses.ema_teacher_consistency.item() == pytest.approx(4.0)
+    assert losses.ema_teacher_consistency_scale.item() == pytest.approx(0.5)
+
+
 def test_sample_energy_budget_cannot_be_satisfied_by_batch_complementarity() -> None:
     first = torch.stack([torch.ones(3, 4, 4), torch.zeros(3, 4, 4)])
     second = torch.stack([torch.zeros(3, 4, 4), torch.ones(3, 4, 4)])

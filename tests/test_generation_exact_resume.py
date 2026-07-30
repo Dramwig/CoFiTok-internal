@@ -283,6 +283,30 @@ def test_training_rejects_invalid_enabled_energy_scope() -> None:
 
 
 @pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("ema_teacher_consistency_weight", -0.1),
+        ("ema_teacher_consistency_start_step", -1),
+        ("ema_teacher_consistency_warmup_steps", -1),
+        ("ema_teacher_consistency_batch_fraction", 0.0),
+        ("ema_teacher_consistency_batch_fraction", 1.1),
+    ],
+)
+def test_training_rejects_invalid_ema_teacher_config(
+    field: str,
+    value: float,
+) -> None:
+    config = load_config(CONFIG)
+    invalid = replace(
+        config,
+        loss=replace(config.loss, **{field: value}),
+    )
+
+    with pytest.raises(ValueError, match=field):
+        _validate_config(invalid)
+
+
+@pytest.mark.parametrize(
     ("override", "mismatch_path"),
     [
         (("--micro-batch-size", "1"), "config.data.batch_size"),

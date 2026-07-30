@@ -99,6 +99,10 @@ class LossConfig:
     rollout_consistency_batch_fraction: float = 0.25
     rollout_consistency_clip_x0: bool = True
     rollout_consistency_mode: str = "epsilon"
+    ema_teacher_consistency_weight: float = 0.0
+    ema_teacher_consistency_start_step: int = 0
+    ema_teacher_consistency_warmup_steps: int = 0
+    ema_teacher_consistency_batch_fraction: float = 0.0625
     tail_early_dropout_weight: float = 0.0
     tail_early_dropout_prob: float = 0.0
     tail_early_dropout_start: int = 1

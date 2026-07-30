@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 
 import torch
 import torch.nn.functional as F
+from torch.func import functional_call
 
 from cofitok.diffusion import DiffusionSchedule
 
 
-def rollout_consistency_weight_scale(
+def consistency_weight_scale(
     step: int,
     *,
     start_step: int,
@@ -19,6 +21,55 @@ def rollout_consistency_weight_scale(
     if warmup_steps <= 0:
         return 1.0
     return min((step - start_step) / warmup_steps, 1.0)
+
+
+def rollout_consistency_weight_scale(
+    step: int,
+    *,
+    start_step: int,
+    warmup_steps: int,
+) -> float:
+    return consistency_weight_scale(
+        step,
+        start_step=start_step,
+        warmup_steps=warmup_steps,
+    )
+
+
+def ema_teacher_consistency_loss(
+    model: torch.nn.Module,
+    *,
+    ema_state: Mapping[str, torch.Tensor],
+    student_epsilon: torch.Tensor,
+    noisy_images: torch.Tensor,
+    timesteps: torch.Tensor,
+    class_labels: torch.Tensor | None,
+    batch_fraction: float,
+) -> torch.Tensor:
+    if not 0.0 < batch_fraction <= 1.0:
+        raise ValueError("EMA teacher consistency batch_fraction must be in (0, 1]")
+    if student_epsilon.shape[0] != noisy_images.shape[0]:
+        raise ValueError("EMA teacher consistency batch dimensions do not match")
+    sample_count = max(1, math.ceil(student_epsilon.shape[0] * batch_fraction))
+    selected = slice(0, sample_count)
+    selected_labels = class_labels[selected] if class_labels is not None else None
+    was_training = model.training
+    model.eval()
+    try:
+        with torch.no_grad():
+            teacher_output = functional_call(
+                model,
+                ema_state,
+                (noisy_images[selected], timesteps[selected]),
+                {"class_labels": selected_labels},
+                strict=True,
+            )
+    finally:
+        model.train(was_training)
+    return F.mse_loss(
+        student_epsilon[selected].float(),
+        teacher_output.epsilon.detach().float(),
+    )
 
 
 def rollout_consistency_loss(

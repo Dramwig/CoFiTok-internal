@@ -6,6 +6,7 @@ import torch
 from cofitok.configs import DiffusionConfig
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.training.rollout import (
+    ema_teacher_consistency_loss,
     one_step_rollout_consistency_loss,
     rollout_consistency_loss,
     rollout_consistency_weight_scale,
@@ -40,6 +41,57 @@ def test_rollout_consistency_weight_scale(step: int, expected: float) -> None:
         start_step=10,
         warmup_steps=10,
     ) == pytest.approx(expected)
+
+
+def test_ema_teacher_consistency_uses_shadow_and_restores_training_mode() -> None:
+    model = _ScaledImagePredictor()
+    model.train()
+    images = torch.randn(4, 3, 8, 8)
+    timesteps = torch.arange(4)
+    labels = torch.arange(4)
+    student = model(images, timesteps, class_labels=labels).epsilon
+    ema_state = {
+        name: value.detach().clone()
+        for name, value in model.state_dict().items()
+    }
+    ema_state["scale"].fill_(1.0)
+
+    loss = ema_teacher_consistency_loss(
+        model,
+        ema_state=ema_state,
+        student_epsilon=student,
+        noisy_images=images,
+        timesteps=timesteps,
+        class_labels=labels,
+        batch_fraction=0.5,
+    )
+    loss.backward()
+
+    expected = ((images[:2] * 0.5) - images[:2]).square().mean()
+    torch.testing.assert_close(loss, expected)
+    assert model.scale.grad is not None
+    assert model.training is True
+    assert ema_state["scale"].grad is None
+
+
+@pytest.mark.parametrize("batch_fraction", [0.0, -0.1, 1.1])
+def test_ema_teacher_consistency_rejects_invalid_fraction(
+    batch_fraction: float,
+) -> None:
+    model = _ScaledImagePredictor()
+    images = torch.randn(2, 3, 4, 4)
+    output = model(images, torch.arange(2), class_labels=None)
+
+    with pytest.raises(ValueError, match="batch_fraction"):
+        ema_teacher_consistency_loss(
+            model,
+            ema_state=model.state_dict(),
+            student_epsilon=output.epsilon,
+            noisy_images=images,
+            timesteps=torch.arange(2),
+            class_labels=None,
+            batch_fraction=batch_fraction,
+        )
 
 
 def test_rollout_consistency_uses_detached_generated_state() -> None:

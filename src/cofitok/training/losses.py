@@ -34,6 +34,8 @@ class LossBreakdown:
     low_snr_high_frequency: torch.Tensor
     rollout_consistency: torch.Tensor
     rollout_consistency_scale: torch.Tensor
+    ema_teacher_consistency: torch.Tensor
+    ema_teacher_consistency_scale: torch.Tensor
 
     def as_dict(self) -> dict[str, torch.Tensor]:
         return {
@@ -58,6 +60,12 @@ class LossBreakdown:
             "low_snr_high_frequency": self.low_snr_high_frequency.detach(),
             "rollout_consistency": self.rollout_consistency.detach(),
             "rollout_consistency_scale": self.rollout_consistency_scale.detach(),
+            "ema_teacher_consistency": (
+                self.ema_teacher_consistency.detach()
+            ),
+            "ema_teacher_consistency_scale": (
+                self.ema_teacher_consistency_scale.detach()
+            ),
         }
 
 
@@ -572,6 +580,8 @@ def compute_losses(
     zero_components: list[torch.Tensor] | None = None,
     rollout_consistency: torch.Tensor | None = None,
     rollout_consistency_scale: float = 1.0,
+    ema_teacher_consistency: torch.Tensor | None = None,
+    ema_teacher_consistency_scale: float = 1.0,
 ) -> LossBreakdown:
     epsilon_loss = F.mse_loss(output.epsilon, noise)
     if config.prefix_weight > 0.0:
@@ -695,6 +705,18 @@ def compute_losses(
     else:
         rollout_consistency_loss = output.epsilon.new_zeros(())
         rollout_scale = output.epsilon.new_zeros(())
+    if (
+        config.ema_teacher_consistency_weight > 0.0
+        and ema_teacher_consistency is not None
+        and ema_teacher_consistency_scale > 0.0
+    ):
+        ema_teacher_consistency_loss = ema_teacher_consistency
+        ema_teacher_scale = output.epsilon.new_tensor(
+            ema_teacher_consistency_scale
+        )
+    else:
+        ema_teacher_consistency_loss = output.epsilon.new_zeros(())
+        ema_teacher_scale = output.epsilon.new_zeros(())
     total = (
         config.epsilon_weight * epsilon_loss
         + config.prefix_weight * prefix_loss
@@ -716,6 +738,9 @@ def compute_losses(
         + config.rollout_consistency_weight
         * rollout_scale
         * rollout_consistency_loss
+        + config.ema_teacher_consistency_weight
+        * ema_teacher_scale
+        * ema_teacher_consistency_loss
     )
     return LossBreakdown(
         total=total,
@@ -739,4 +764,6 @@ def compute_losses(
         low_snr_high_frequency=low_snr_high_frequency_loss,
         rollout_consistency=rollout_consistency_loss,
         rollout_consistency_scale=rollout_scale,
+        ema_teacher_consistency=ema_teacher_consistency_loss,
+        ema_teacher_consistency_scale=ema_teacher_scale,
     )
