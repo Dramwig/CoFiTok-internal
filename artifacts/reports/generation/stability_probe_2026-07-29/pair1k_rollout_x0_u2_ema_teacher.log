@@ -1,0 +1,277 @@
+{
+  "valid": true,
+  "matched_config_sections": [
+    "data",
+    "diffusion",
+    "runtime",
+    "optimization"
+  ],
+  "factorization_model_fields": [
+    "deep_synthesis_depth",
+    "deep_synthesis_hidden_channels",
+    "gamma_mode",
+    "predictor_use_feedback",
+    "synthesis_active_token_channels",
+    "synthesis_kernel_size",
+    "synthesis_mode",
+    "synthesis_token_strides",
+    "token_channel_schedule",
+    "token_channels",
+    "token_count",
+    "token_spatial_strides"
+  ],
+  "shared_model_fields": [
+    "base_channels",
+    "class_dropout_prob",
+    "image_channels",
+    "image_size",
+    "num_classes",
+    "predictor_attention_resolutions",
+    "predictor_channel_multipliers",
+    "predictor_depth",
+    "predictor_dropout",
+    "predictor_gradient_checkpointing",
+    "predictor_multiscale_levels",
+    "predictor_num_heads",
+    "predictor_num_res_blocks",
+    "predictor_type"
+  ],
+  "mismatched_config_sections": [],
+  "mismatched_shared_model_fields": [],
+  "identities": {
+    "cofitok_token_count": 8,
+    "dense_token_count": 1,
+    "cofitok_feedback": true,
+    "dense_feedback": false,
+    "cofitok_synthesis": "fixed_basis",
+    "dense_synthesis": "dense_identity"
+  },
+  "primary_epsilon_weight": 1.0,
+  "shared_training_loss_fields": [
+    "ema_teacher_consistency_batch_fraction",
+    "ema_teacher_consistency_start_step",
+    "ema_teacher_consistency_warmup_steps",
+    "ema_teacher_consistency_weight",
+    "epsilon_weight",
+    "rollout_consistency_batch_fraction",
+    "rollout_consistency_clip_x0",
+    "rollout_consistency_mode",
+    "rollout_consistency_start_step",
+    "rollout_consistency_timestep_delta",
+    "rollout_consistency_unroll_steps",
+    "rollout_consistency_warmup_steps",
+    "rollout_consistency_weight"
+  ],
+  "mismatched_shared_training_loss_fields": [],
+  "dense_nonzero_auxiliary_losses": [],
+  "issues": []
+}
+step=1 total=1.346252 epsilon=0.999822 grad=1.2653 lr=1.000e-06
+step=25 total=1.319514 epsilon=0.998126 grad=4.3247 lr=2.500e-05
+step=50 total=1.252054 epsilon=0.948588 grad=4.7979 lr=5.000e-05
+step=75 total=1.083509 epsilon=0.825438 grad=5.0255 lr=7.500e-05
+step=100 total=0.881859 epsilon=0.656151 grad=4.8183 lr=1.000e-04
+step=125 total=0.675820 epsilon=0.494217 grad=4.3962 lr=9.983e-05
+step=150 total=0.474173 epsilon=0.355631 grad=3.4865 lr=9.932e-05
+step=175 total=0.351774 epsilon=0.253227 grad=2.8901 lr=9.847e-05
+step=200 total=0.242790 epsilon=0.176084 grad=2.1655 lr=9.729e-05
+step=225 total=0.170094 epsilon=0.112872 grad=2.1067 lr=9.578e-05
+step=250 total=0.123013 epsilon=0.079603 grad=1.5016 lr=9.397e-05 val=0.070698
+step=275 total=0.096788 epsilon=0.057975 grad=1.2201 lr=9.186e-05
+step=300 total=0.088924 epsilon=0.051027 grad=1.1477 lr=8.947e-05
+step=325 total=0.071332 epsilon=0.042498 grad=1.0741 lr=8.682e-05
+step=350 total=0.073863 epsilon=0.033223 grad=3.1968 lr=8.393e-05
+step=375 total=0.079869 epsilon=0.054533 grad=1.7476 lr=8.081e-05
+step=400 total=0.079272 epsilon=0.046602 grad=1.4713 lr=7.750e-05
+step=425 total=0.086047 epsilon=0.061131 grad=0.3986 lr=7.402e-05
+step=450 total=0.077405 epsilon=0.053873 grad=0.5399 lr=7.039e-05
+step=475 total=0.049742 epsilon=0.028369 grad=0.2957 lr=6.665e-05
+step=500 total=0.078420 epsilon=0.038261 grad=2.5414 lr=6.281e-05 val=0.042676
+step=525 total=0.064907 epsilon=0.040495 grad=0.3992 lr=5.892e-05
+step=550 total=0.070229 epsilon=0.044996 grad=0.6876 lr=5.500e-05
+step=575 total=0.056441 epsilon=0.035001 grad=0.4618 lr=5.108e-05
+step=600 total=0.070452 epsilon=0.042456 grad=0.8665 lr=4.719e-05
+step=625 total=0.065702 epsilon=0.039972 grad=0.1853 lr=4.335e-05
+step=650 total=0.077438 epsilon=0.032960 grad=1.6557 lr=3.961e-05
+step=675 total=0.077692 epsilon=0.047149 grad=0.2063 lr=3.598e-05
+step=700 total=0.085380 epsilon=0.049548 grad=0.4850 lr=3.250e-05
+step=725 total=0.096877 epsilon=0.056898 grad=1.1832 lr=2.919e-05
+step=750 total=0.089275 epsilon=0.041895 grad=2.0707 lr=2.607e-05 val=0.029763
+step=775 total=0.075657 epsilon=0.034070 grad=0.8053 lr=2.318e-05
+step=800 total=0.072397 epsilon=0.027138 grad=0.8701 lr=2.053e-05
+step=825 total=0.088983 epsilon=0.044069 grad=0.2209 lr=1.814e-05
+step=850 total=0.090120 epsilon=0.033659 grad=2.5968 lr=1.603e-05
+step=875 total=0.085527 epsilon=0.038541 grad=0.3252 lr=1.422e-05
+step=900 total=0.097082 epsilon=0.045509 grad=0.3350 lr=1.271e-05
+step=925 total=0.097831 epsilon=0.046971 grad=0.1991 lr=1.153e-05
+step=950 total=0.101544 epsilon=0.040121 grad=1.1264 lr=1.068e-05
+step=975 total=0.087088 epsilon=0.034875 grad=0.3797 lr=1.017e-05
+step=1000 total=0.108037 epsilon=0.051310 grad=0.8871 lr=1.000e-05 val=0.026219
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json
+step=1 total=1.000091 epsilon=0.999822 grad=0.9433 lr=1.000e-06
+step=25 total=0.998010 epsilon=0.988553 grad=2.2744 lr=2.500e-05
+step=50 total=0.923872 epsilon=0.911576 grad=3.7131 lr=5.000e-05
+step=75 total=0.791655 epsilon=0.777925 grad=3.8193 lr=7.500e-05
+step=100 total=0.638972 epsilon=0.615051 grad=3.5856 lr=1.000e-04
+step=125 total=0.496328 epsilon=0.461236 grad=3.1124 lr=9.983e-05
+step=150 total=0.341853 epsilon=0.327988 grad=2.5311 lr=9.932e-05
+step=175 total=0.259494 epsilon=0.232722 grad=2.1573 lr=9.847e-05
+step=200 total=0.178461 epsilon=0.161191 grad=1.6398 lr=9.729e-05
+step=225 total=0.120323 epsilon=0.100120 grad=1.4612 lr=9.578e-05
+step=250 total=0.086888 epsilon=0.071436 grad=1.0258 lr=9.397e-05 val=0.061262
+step=275 total=0.070318 epsilon=0.054365 grad=0.8361 lr=9.186e-05
+step=300 total=0.065156 epsilon=0.048765 grad=1.1048 lr=8.947e-05
+step=325 total=0.049229 epsilon=0.040495 grad=0.5534 lr=8.682e-05
+step=350 total=0.058892 epsilon=0.035259 grad=2.0081 lr=8.393e-05
+step=375 total=0.055191 epsilon=0.051656 grad=0.6096 lr=8.081e-05
+step=400 total=0.058186 epsilon=0.046165 grad=0.8201 lr=7.750e-05
+step=425 total=0.063320 epsilon=0.060463 grad=0.2995 lr=7.402e-05
+step=450 total=0.055627 epsilon=0.053207 grad=0.2544 lr=7.039e-05
+step=475 total=0.030890 epsilon=0.028480 grad=0.2479 lr=6.665e-05
+step=500 total=0.059183 epsilon=0.038166 grad=1.0765 lr=6.281e-05 val=0.042721
+step=525 total=0.045114 epsilon=0.040464 grad=0.3286 lr=5.892e-05
+step=550 total=0.049204 epsilon=0.044268 grad=0.3289 lr=5.500e-05
+step=575 total=0.037188 epsilon=0.035244 grad=0.2945 lr=5.108e-05
+step=600 total=0.051028 epsilon=0.042145 grad=0.4632 lr=4.719e-05
+step=625 total=0.045376 epsilon=0.039663 grad=0.2200 lr=4.335e-05
+step=650 total=0.058033 epsilon=0.032508 grad=0.8509 lr=3.961e-05
+step=675 total=0.056508 epsilon=0.046499 grad=0.1272 lr=3.598e-05
+step=700 total=0.063609 epsilon=0.048929 grad=0.2255 lr=3.250e-05
+step=725 total=0.073837 epsilon=0.056726 grad=0.4106 lr=2.919e-05
+step=750 total=0.067749 epsilon=0.041460 grad=0.9474 lr=2.607e-05 val=0.028964
+step=775 total=0.054314 epsilon=0.033327 grad=0.1706 lr=2.318e-05
+step=800 total=0.051908 epsilon=0.027278 grad=0.3641 lr=2.053e-05
+step=825 total=0.066548 epsilon=0.042898 grad=0.1548 lr=1.814e-05
+step=850 total=0.067712 epsilon=0.033376 grad=1.0270 lr=1.603e-05
+step=875 total=0.063265 epsilon=0.038087 grad=0.2344 lr=1.422e-05
+step=900 total=0.074571 epsilon=0.044813 grad=0.2315 lr=1.271e-05
+step=925 total=0.074042 epsilon=0.046456 grad=0.1841 lr=1.153e-05
+step=950 total=0.078149 epsilon=0.039483 grad=0.5165 lr=1.068e-05
+step=975 total=0.065704 epsilon=0.034897 grad=0.2855 lr=1.017e-05
+step=1000 total=0.085094 epsilon=0.050707 grad=0.4865 lr=1.000e-05 val=0.025760
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/dense_rollout_x0_u2_ema_teacher/training_report.json
+{
+  "cofitok": {
+    "checkpoint_sha256": "85c61f83a333f330dde42ab1df1f3eb462788164caf05950327f590ab732695b",
+    "elapsed_seconds": 2890.8206026554108,
+    "ema_teacher_consistency": 0.1234580110758543,
+    "peak_vram_bytes": 15234796032,
+    "training_report": {
+      "bytes": 10067,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json",
+      "sha256": "e3db90536f019585ca264e22db6ed87e72c592a5a2857b4ace3f6c3ebe2ec94a"
+    },
+    "validation_epsilon_mse": 0.026219427585601807
+  },
+  "completed_steps": 1000,
+  "dense": {
+    "checkpoint_sha256": "a0494f10d5f36cef707654b9bd5406d464ee1b894f32f302cfa7e4a9a2614aa2",
+    "elapsed_seconds": 2603.068747997284,
+    "ema_teacher_consistency": 0.10877534002065659,
+    "peak_vram_bytes": 15043471872,
+    "training_report": {
+      "bytes": 9772,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/dense_rollout_x0_u2_ema_teacher/training_report.json",
+      "sha256": "c40ef1d8133b5abe328bece50b915c58e92aa795d76aab84dbbc96df3d053d41"
+    },
+    "validation_epsilon_mse": 0.025760110467672348
+  },
+  "ema_teacher_contract": {
+    "batch_fraction": 0.0625,
+    "start_step": 600,
+    "warmup_steps": 300,
+    "weight": 0.25
+  },
+  "generation_pair_contract": {
+    "dense_nonzero_auxiliary_losses": [],
+    "factorization_model_fields": [
+      "deep_synthesis_depth",
+      "deep_synthesis_hidden_channels",
+      "gamma_mode",
+      "predictor_use_feedback",
+      "synthesis_active_token_channels",
+      "synthesis_kernel_size",
+      "synthesis_mode",
+      "synthesis_token_strides",
+      "token_channel_schedule",
+      "token_channels",
+      "token_count",
+      "token_spatial_strides"
+    ],
+    "identities": {
+      "cofitok_feedback": true,
+      "cofitok_synthesis": "fixed_basis",
+      "cofitok_token_count": 8,
+      "dense_feedback": false,
+      "dense_synthesis": "dense_identity",
+      "dense_token_count": 1
+    },
+    "issues": [],
+    "matched_config_sections": [
+      "data",
+      "diffusion",
+      "runtime",
+      "optimization"
+    ],
+    "mismatched_config_sections": [],
+    "mismatched_shared_model_fields": [],
+    "mismatched_shared_training_loss_fields": [],
+    "primary_epsilon_weight": 1.0,
+    "shared_model_fields": [
+      "base_channels",
+      "class_dropout_prob",
+      "image_channels",
+      "image_size",
+      "num_classes",
+      "predictor_attention_resolutions",
+      "predictor_channel_multipliers",
+      "predictor_depth",
+      "predictor_dropout",
+      "predictor_gradient_checkpointing",
+      "predictor_multiscale_levels",
+      "predictor_num_heads",
+      "predictor_num_res_blocks",
+      "predictor_type"
+    ],
+    "shared_training_loss_fields": [
+      "ema_teacher_consistency_batch_fraction",
+      "ema_teacher_consistency_start_step",
+      "ema_teacher_consistency_warmup_steps",
+      "ema_teacher_consistency_weight",
+      "epsilon_weight",
+      "rollout_consistency_batch_fraction",
+      "rollout_consistency_clip_x0",
+      "rollout_consistency_mode",
+      "rollout_consistency_start_step",
+      "rollout_consistency_timestep_delta",
+      "rollout_consistency_unroll_steps",
+      "rollout_consistency_warmup_steps",
+      "rollout_consistency_weight"
+    ],
+    "valid": true
+  },
+  "git_revision": "10f2f6bd9977fb1a63de4b2939ca641107a0ccaa",
+  "images_seen": 64000,
+  "parameter_ratio_delta": 0.00014924064826926653,
+  "schema_version": 1,
+  "sources": {
+    "active_benchmark": {
+      "bytes": 5029,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/runtime_benchmark_rollout_x0_u2_ema_teacher_v2_2026-07-30/benchmark_summary.json",
+      "sha256": "e5a88a1e7d18bef30de56ee43b46e94447c76302a84c0aa09d0928495fbaab49"
+    },
+    "failed_raw_5k_qualification": {
+      "bytes": 7585,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/qualification5k_rollout_x0_u2_n8/qualification_report.json",
+      "sha256": "c4603cbcdfad7537e8a53d9cb5493cd0896eb17444a9cf04d7ef1362bf42f6a1"
+    },
+    "raw_milestone_diagnostic": {
+      "bytes": 13049,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/diagnostic5k_rollout_x0_u2_raw_milestones/diagnostic_report.json",
+      "sha256": "e741e84b23c090e219b10b36ba0d403d067a9a30d567ef2aa0b80d1f3dbcf9ec"
+    }
+  },
+  "stage": "matched_1k_qualification_probe",
+  "status": "completed",
+  "validation_ratio": 1.0178305569964803
+}

@@ -930,3 +930,40 @@ optimization, rollout-consistency, and EMA-teacher fields. The pair summary
 binds the active CUDA benchmark, failed raw 5K qualification, and raw
 milestone diagnostic. Its completion authorized only the already queued raw
 n=8 screening; it did not authorize 5K.
+
+## EMA-teacher matched 1K raw n=8 screening
+
+The automatic post-evaluation completed model and EMA checkpoint/rollout
+reports before writing the screening summary. The authoritative raw model
+qualification passed every gate:
+
+| gate | value | threshold |
+|---|---:|---:|
+| predicted-x0 peak high-frequency ratio | 0.74367630 | <= 1.50 |
+| reconstruction ratio | 1.04567489 | <= 1.05 |
+| endpoint ratio | 1.00346327 | <= 1.05 |
+| validation ratio | 1.01783056 | <= 1.05 |
+| tail-two energy ratio | 0.56783742 | <= 0.65 |
+| maximum single-token energy ratio | 0.28732264 | <= 0.35 |
+| ordered rank by path AUC | 1 | == 1 |
+| shuffle / ordered endpoint ratio | 82.24813305 | >= 2.0 |
+| zero-token maximum absolute value | 0.0 | <= 1e-8 |
+
+The selected raw high-frequency ratios were `0.65457`, `0.69905`, `0.72493`,
+and `0.74368` at timesteps 595, 394, 192, and 91. This is a large reversal
+from the failed raw 5K peak of `2.05125`, but n=8 remains screening evidence.
+The raw qualification SHA256 is
+`c719b1daef242157cb968bf0d2f49995f64ca6368bb8f8d355e12b96673ee651`;
+the screening summary SHA256 is
+`ccb70d103c9c565591c20c671e7b26c963cbdd830783856c7f842125c22c63ef`.
+The summary still declares `scaling_authorization_allowed=false`.
+
+The EMA diagnostic had peak high-frequency ratio `1.12792` and reconstruction
+ratio `0.97055`; it remains diagnostic only. Because raw n=8 passed, the
+pre-authorized waiter launched raw n=64 seed 2029. No 5K training was started.
+
+All small 1K training, monitor, evaluation, and qualification artifacts were
+synced under
+`artifacts/reports/generation/stability_probe_2026-07-29/`. A source/local
+SHA256 audit compared 29 files and reported zero missing, extra, or mismatched
+files. No checkpoint payload was copied.

@@ -1,0 +1,125 @@
+{
+  "cofitok": {
+    "checkpoint_sha256": "85c61f83a333f330dde42ab1df1f3eb462788164caf05950327f590ab732695b",
+    "elapsed_seconds": 2890.8206026554108,
+    "ema_teacher_consistency": 0.1234580110758543,
+    "peak_vram_bytes": 15234796032,
+    "training_report": {
+      "bytes": 10067,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json",
+      "sha256": "e3db90536f019585ca264e22db6ed87e72c592a5a2857b4ace3f6c3ebe2ec94a"
+    },
+    "validation_epsilon_mse": 0.026219427585601807
+  },
+  "completed_steps": 1000,
+  "dense": {
+    "checkpoint_sha256": "a0494f10d5f36cef707654b9bd5406d464ee1b894f32f302cfa7e4a9a2614aa2",
+    "elapsed_seconds": 2603.068747997284,
+    "ema_teacher_consistency": 0.10877534002065659,
+    "peak_vram_bytes": 15043471872,
+    "training_report": {
+      "bytes": 9772,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/dense_rollout_x0_u2_ema_teacher/training_report.json",
+      "sha256": "c40ef1d8133b5abe328bece50b915c58e92aa795d76aab84dbbc96df3d053d41"
+    },
+    "validation_epsilon_mse": 0.025760110467672348
+  },
+  "ema_teacher_contract": {
+    "batch_fraction": 0.0625,
+    "start_step": 600,
+    "warmup_steps": 300,
+    "weight": 0.25
+  },
+  "generation_pair_contract": {
+    "dense_nonzero_auxiliary_losses": [],
+    "factorization_model_fields": [
+      "deep_synthesis_depth",
+      "deep_synthesis_hidden_channels",
+      "gamma_mode",
+      "predictor_use_feedback",
+      "synthesis_active_token_channels",
+      "synthesis_kernel_size",
+      "synthesis_mode",
+      "synthesis_token_strides",
+      "token_channel_schedule",
+      "token_channels",
+      "token_count",
+      "token_spatial_strides"
+    ],
+    "identities": {
+      "cofitok_feedback": true,
+      "cofitok_synthesis": "fixed_basis",
+      "cofitok_token_count": 8,
+      "dense_feedback": false,
+      "dense_synthesis": "dense_identity",
+      "dense_token_count": 1
+    },
+    "issues": [],
+    "matched_config_sections": [
+      "data",
+      "diffusion",
+      "runtime",
+      "optimization"
+    ],
+    "mismatched_config_sections": [],
+    "mismatched_shared_model_fields": [],
+    "mismatched_shared_training_loss_fields": [],
+    "primary_epsilon_weight": 1.0,
+    "shared_model_fields": [
+      "base_channels",
+      "class_dropout_prob",
+      "image_channels",
+      "image_size",
+      "num_classes",
+      "predictor_attention_resolutions",
+      "predictor_channel_multipliers",
+      "predictor_depth",
+      "predictor_dropout",
+      "predictor_gradient_checkpointing",
+      "predictor_multiscale_levels",
+      "predictor_num_heads",
+      "predictor_num_res_blocks",
+      "predictor_type"
+    ],
+    "shared_training_loss_fields": [
+      "ema_teacher_consistency_batch_fraction",
+      "ema_teacher_consistency_start_step",
+      "ema_teacher_consistency_warmup_steps",
+      "ema_teacher_consistency_weight",
+      "epsilon_weight",
+      "rollout_consistency_batch_fraction",
+      "rollout_consistency_clip_x0",
+      "rollout_consistency_mode",
+      "rollout_consistency_start_step",
+      "rollout_consistency_timestep_delta",
+      "rollout_consistency_unroll_steps",
+      "rollout_consistency_warmup_steps",
+      "rollout_consistency_weight"
+    ],
+    "valid": true
+  },
+  "git_revision": "10f2f6bd9977fb1a63de4b2939ca641107a0ccaa",
+  "images_seen": 64000,
+  "parameter_ratio_delta": 0.00014924064826926653,
+  "schema_version": 1,
+  "sources": {
+    "active_benchmark": {
+      "bytes": 5029,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/runtime_benchmark_rollout_x0_u2_ema_teacher_v2_2026-07-30/benchmark_summary.json",
+      "sha256": "e5a88a1e7d18bef30de56ee43b46e94447c76302a84c0aa09d0928495fbaab49"
+    },
+    "failed_raw_5k_qualification": {
+      "bytes": 7585,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/qualification5k_rollout_x0_u2_n8/qualification_report.json",
+      "sha256": "c4603cbcdfad7537e8a53d9cb5493cd0896eb17444a9cf04d7ef1362bf42f6a1"
+    },
+    "raw_milestone_diagnostic": {
+      "bytes": 13049,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/diagnostic5k_rollout_x0_u2_raw_milestones/diagnostic_report.json",
+      "sha256": "e741e84b23c090e219b10b36ba0d403d067a9a30d567ef2aa0b80d1f3dbcf9ec"
+    }
+  },
+  "stage": "matched_1k_qualification_probe",
+  "status": "completed",
+  "validation_ratio": 1.0178305569964803
+}

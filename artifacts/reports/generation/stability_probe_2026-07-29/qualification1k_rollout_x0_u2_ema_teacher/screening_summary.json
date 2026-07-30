@@ -1,0 +1,138 @@
+{
+  "authoritative_raw_model_qualification": {
+    "failed_gates": [],
+    "metrics": {
+      "cofitok_endpoint_clean_mse": 0.02340203197672963,
+      "cofitok_final_reconstruction_x0_mse": 0.2727033197879791,
+      "cofitok_reconstruction_amplification": 1.1070332151521822,
+      "cofitok_validation_epsilon_mse": 0.026219427585601807,
+      "component_energy_ratio": [
+        0.010550924219981895,
+        0.01148863431838459,
+        0.031190790800944362,
+        0.030579179782647924,
+        0.061030408650612156,
+        0.2873226428533612,
+        0.2849439989021551,
+        0.28289342047191285
+      ],
+      "dense_endpoint_clean_mse": 0.023321264074184,
+      "dense_final_reconstruction_x0_mse": 0.26079168915748596,
+      "dense_reconstruction_amplification": 1.0905720666061853,
+      "dense_validation_epsilon_mse": 0.025760110467672348,
+      "endpoint_ratio": 1.0034632729293194,
+      "max_single_token_energy_ratio": 0.2873226428533612,
+      "ordered_rank_by_path_auc": 1,
+      "peak_predicted_x0_high_frequency_ratio": 0.7436763043429937,
+      "predicted_x0_high_frequency": [
+        {
+          "cofitok": 0.321107417345047,
+          "dense": 0.49056529998779297,
+          "ratio": 0.6545661043556023,
+          "timestep": 595
+        },
+        {
+          "cofitok": 0.32639914751052856,
+          "dense": 0.4669206440448761,
+          "ratio": 0.6990462976384443,
+          "timestep": 394
+        },
+        {
+          "cofitok": 0.32475021481513977,
+          "dense": 0.44797492027282715,
+          "ratio": 0.7249294550180607,
+          "timestep": 192
+        },
+        {
+          "cofitok": 0.33101773262023926,
+          "dense": 0.4451099634170532,
+          "ratio": 0.7436763043429937,
+          "timestep": 91
+        }
+      ],
+      "reconstruction_ratio": 1.0456748858407832,
+      "shuffle_to_ordered_endpoint_ratio": 82.24813305438266,
+      "tail_two_energy_ratio": 0.567837419374068,
+      "validation_ratio": 1.0178305569964803,
+      "zero_token_max_abs": 0.0
+    },
+    "source": {
+      "bytes": 7845,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/qualification1k_rollout_x0_u2_ema_teacher/model/qualification_report.json",
+      "sha256": "c719b1daef242157cb968bf0d2f49995f64ca6368bb8f8d355e12b96673ee651"
+    },
+    "status": "pass"
+  },
+  "ema_diagnostic": {
+    "cofitok_reconstruction_amplification": 1.0077254637386188,
+    "dense_reconstruction_amplification": 1.0141484021843126,
+    "endpoint_ratio": 1.1199722254449773,
+    "ordered_rank_by_path_auc": 4,
+    "peak_predicted_x0_high_frequency_ratio": 1.1279199869830125,
+    "predicted_x0_high_frequency": [
+      {
+        "cofitok": 0.7045199871063232,
+        "dense": 0.7213178873062134,
+        "ratio": 0.9767122090059038,
+        "timestep": 595
+      },
+      {
+        "cofitok": 0.6833720803260803,
+        "dense": 0.6411039233207703,
+        "ratio": 1.0659302734982041,
+        "timestep": 394
+      },
+      {
+        "cofitok": 0.6620357036590576,
+        "dense": 0.5894790291786194,
+        "ratio": 1.123086099570902,
+        "timestep": 192
+      },
+      {
+        "cofitok": 0.6486905217170715,
+        "dense": 0.5751210451126099,
+        "ratio": 1.1279199869830125,
+        "timestep": 91
+      }
+    ],
+    "reconstruction_ratio": 0.9705499957383942,
+    "role": "diagnostic_only",
+    "sources": {
+      "cofitok": {
+        "checkpoint": {
+          "bytes": 30333,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
+          "sha256": "1e2a0dfd7db9cc090a762ceb17cc7a11eb28a21044a38f846c63b5a963f196df"
+        },
+        "rollout": {
+          "bytes": 263017,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/ema/cofitok_rollout/rollout_stability_report.json",
+          "sha256": "b9de7a8ace1b353d85674535c56fefba3d766a683283b19d805225344ec2537b"
+        }
+      },
+      "dense": {
+        "checkpoint": {
+          "bytes": 6841,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/ema/dense_checkpoint/checkpoint_evaluation_report.json",
+          "sha256": "afbafb789d5d9c71dc937a862bced7eff91900812826b304ba80dcc43f3f15b7"
+        },
+        "rollout": {
+          "bytes": 162113,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/ema/dense_rollout/rollout_stability_report.json",
+          "sha256": "916fdfa0c25fb0c317eb80e321f9a45b930f00daccd281086f043f18bc8f92b2"
+        }
+      }
+    }
+  },
+  "scaling_authorization_allowed": false,
+  "schema_version": 1,
+  "sources": {
+    "pair_summary": {
+      "bytes": 4630,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/pair_summary.json",
+      "sha256": "94e857f0b537a03213e57079ef5a333d6508eaacbcdd067f85e71dbe0077f083"
+    }
+  },
+  "stage": "matched_1k_n8_screening",
+  "status": "completed"
+}
