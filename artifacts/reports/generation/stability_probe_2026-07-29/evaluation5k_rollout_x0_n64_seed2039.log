@@ -1,0 +1,4 @@
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039/model/cofitok_rollout/rollout_stability_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039/model/dense_rollout/rollout_stability_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039/ema/cofitok_rollout/rollout_stability_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039/ema/dense_rollout/rollout_stability_report.json

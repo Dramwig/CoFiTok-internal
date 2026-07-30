@@ -1,0 +1,467 @@
+{
+  "valid": true,
+  "matched_config_sections": [
+    "data",
+    "diffusion",
+    "runtime",
+    "optimization"
+  ],
+  "factorization_model_fields": [
+    "deep_synthesis_depth",
+    "deep_synthesis_hidden_channels",
+    "gamma_mode",
+    "predictor_use_feedback",
+    "synthesis_active_token_channels",
+    "synthesis_kernel_size",
+    "synthesis_mode",
+    "synthesis_token_strides",
+    "token_channel_schedule",
+    "token_channels",
+    "token_count",
+    "token_spatial_strides"
+  ],
+  "shared_model_fields": [
+    "base_channels",
+    "class_dropout_prob",
+    "image_channels",
+    "image_size",
+    "num_classes",
+    "predictor_attention_resolutions",
+    "predictor_channel_multipliers",
+    "predictor_depth",
+    "predictor_dropout",
+    "predictor_gradient_checkpointing",
+    "predictor_multiscale_levels",
+    "predictor_num_heads",
+    "predictor_num_res_blocks",
+    "predictor_type"
+  ],
+  "mismatched_config_sections": [],
+  "mismatched_shared_model_fields": [],
+  "identities": {
+    "cofitok_token_count": 8,
+    "dense_token_count": 1,
+    "cofitok_feedback": true,
+    "dense_feedback": false,
+    "cofitok_synthesis": "fixed_basis",
+    "dense_synthesis": "dense_identity"
+  },
+  "primary_epsilon_weight": 1.0,
+  "shared_training_loss_fields": [
+    "epsilon_weight",
+    "rollout_consistency_batch_fraction",
+    "rollout_consistency_clip_x0",
+    "rollout_consistency_mode",
+    "rollout_consistency_start_step",
+    "rollout_consistency_timestep_delta",
+    "rollout_consistency_warmup_steps",
+    "rollout_consistency_weight"
+  ],
+  "mismatched_shared_training_loss_fields": [],
+  "dense_nonzero_auxiliary_losses": [],
+  "issues": []
+}
+step=1 total=1.362957 epsilon=1.000158 grad=1.3332 lr=2.000e-07
+step=25 total=1.328176 epsilon=0.999795 grad=37.3031 lr=5.000e-06
+step=50 total=1.286516 epsilon=0.999268 grad=15.0839 lr=1.000e-05
+step=75 total=1.309653 epsilon=0.990153 grad=3.6722 lr=1.500e-05
+step=100 total=1.227421 epsilon=0.954513 grad=4.8133 lr=2.000e-05
+step=125 total=1.177828 epsilon=0.906912 grad=5.1639 lr=2.500e-05
+step=150 total=1.112683 epsilon=0.847802 grad=5.2808 lr=3.000e-05
+step=175 total=1.041012 epsilon=0.783209 grad=5.2095 lr=3.500e-05
+step=200 total=0.937572 epsilon=0.711231 grad=4.9659 lr=4.000e-05
+step=225 total=0.846105 epsilon=0.636711 grad=4.7433 lr=4.500e-05
+step=250 total=0.735508 epsilon=0.558798 grad=4.3795 lr=5.000e-05
+step=275 total=0.632606 epsilon=0.478205 grad=4.0768 lr=5.500e-05
+step=300 total=0.527303 epsilon=0.398651 grad=3.7031 lr=6.000e-05
+step=325 total=0.424122 epsilon=0.331869 grad=3.1148 lr=6.500e-05
+step=350 total=0.342383 epsilon=0.266580 grad=2.7044 lr=7.000e-05
+step=375 total=0.262241 epsilon=0.192014 grad=2.4151 lr=7.500e-05
+step=400 total=0.193490 epsilon=0.134915 grad=2.3993 lr=8.000e-05
+step=425 total=0.146925 epsilon=0.107860 grad=1.8301 lr=8.500e-05
+step=450 total=0.093153 epsilon=0.062084 grad=1.3790 lr=9.000e-05
+step=475 total=0.092601 epsilon=0.061621 grad=1.1920 lr=9.500e-05
+step=500 total=0.083569 epsilon=0.057956 grad=1.8819 lr=1.000e-04
+step=525 total=0.068051 epsilon=0.045418 grad=0.4066 lr=9.999e-05
+step=550 total=0.072208 epsilon=0.049165 grad=0.8027 lr=9.997e-05
+step=575 total=0.060708 epsilon=0.034366 grad=0.7779 lr=9.994e-05
+step=600 total=0.063642 epsilon=0.039928 grad=0.7244 lr=9.989e-05
+step=625 total=0.067910 epsilon=0.045914 grad=0.3580 lr=9.983e-05
+step=650 total=0.072265 epsilon=0.043356 grad=1.9836 lr=9.975e-05
+step=675 total=0.070481 epsilon=0.044966 grad=1.0130 lr=9.966e-05
+step=700 total=0.088467 epsilon=0.059397 grad=1.3250 lr=9.956e-05
+step=725 total=0.070430 epsilon=0.048765 grad=0.4795 lr=9.945e-05
+step=750 total=0.063563 epsilon=0.039139 grad=0.6860 lr=9.932e-05
+step=775 total=0.058060 epsilon=0.036642 grad=0.3320 lr=9.917e-05
+step=800 total=0.068032 epsilon=0.039251 grad=1.3405 lr=9.902e-05
+step=825 total=0.066068 epsilon=0.043734 grad=0.4356 lr=9.885e-05
+step=850 total=0.069142 epsilon=0.044926 grad=0.5528 lr=9.866e-05
+step=875 total=0.066306 epsilon=0.041441 grad=0.7405 lr=9.847e-05
+step=900 total=0.053104 epsilon=0.031960 grad=0.6387 lr=9.826e-05
+step=925 total=0.058449 epsilon=0.037229 grad=0.4936 lr=9.803e-05
+step=950 total=0.055649 epsilon=0.033631 grad=0.2588 lr=9.780e-05
+step=975 total=0.059082 epsilon=0.032833 grad=1.0536 lr=9.755e-05
+step=1000 total=0.064849 epsilon=0.035805 grad=1.2386 lr=9.729e-05
+step=1025 total=0.060307 epsilon=0.039717 grad=0.4834 lr=9.701e-05
+step=1050 total=0.060438 epsilon=0.034630 grad=0.5536 lr=9.672e-05
+step=1075 total=0.059991 epsilon=0.033420 grad=0.8767 lr=9.642e-05
+step=1100 total=0.053810 epsilon=0.033209 grad=0.3176 lr=9.611e-05
+step=1125 total=0.056343 epsilon=0.034465 grad=0.5501 lr=9.578e-05
+step=1150 total=0.067028 epsilon=0.043952 grad=0.5414 lr=9.545e-05
+step=1175 total=0.055885 epsilon=0.031214 grad=0.7017 lr=9.510e-05
+step=1200 total=0.057724 epsilon=0.028493 grad=1.0678 lr=9.473e-05
+step=1225 total=0.056883 epsilon=0.034467 grad=0.6904 lr=9.436e-05
+step=1250 total=0.055138 epsilon=0.032429 grad=0.6074 lr=9.397e-05 val=0.033049
+step=1275 total=0.061029 epsilon=0.039870 grad=0.2172 lr=9.357e-05
+step=1300 total=0.052764 epsilon=0.029360 grad=0.6651 lr=9.316e-05
+step=1325 total=0.056591 epsilon=0.034514 grad=0.4135 lr=9.274e-05
+step=1350 total=0.062299 epsilon=0.040801 grad=0.3790 lr=9.231e-05
+step=1375 total=0.073565 epsilon=0.049087 grad=0.4274 lr=9.186e-05
+step=1400 total=0.056717 epsilon=0.029874 grad=1.0039 lr=9.141e-05
+step=1425 total=0.055449 epsilon=0.028262 grad=1.1726 lr=9.094e-05
+step=1450 total=0.061517 epsilon=0.035107 grad=1.3959 lr=9.046e-05
+step=1475 total=0.076132 epsilon=0.051824 grad=0.8137 lr=8.997e-05
+step=1500 total=0.056721 epsilon=0.033173 grad=0.9281 lr=8.947e-05
+step=1525 total=0.067681 epsilon=0.043467 grad=0.6391 lr=8.896e-05
+step=1550 total=0.061080 epsilon=0.038673 grad=0.3954 lr=8.844e-05
+step=1575 total=0.048586 epsilon=0.026644 grad=0.5037 lr=8.791e-05
+step=1600 total=0.046680 epsilon=0.024136 grad=0.8557 lr=8.737e-05
+step=1625 total=0.068279 epsilon=0.047273 grad=0.2210 lr=8.682e-05
+step=1650 total=0.059236 epsilon=0.037109 grad=0.4122 lr=8.626e-05
+step=1675 total=0.046476 epsilon=0.025502 grad=0.3505 lr=8.569e-05
+step=1700 total=0.062161 epsilon=0.040275 grad=0.4622 lr=8.511e-05
+step=1725 total=0.061402 epsilon=0.030758 grad=2.2045 lr=8.452e-05
+step=1750 total=0.057562 epsilon=0.034864 grad=0.5698 lr=8.393e-05
+step=1775 total=0.063291 epsilon=0.039719 grad=0.4174 lr=8.332e-05
+step=1800 total=0.058865 epsilon=0.035751 grad=0.6601 lr=8.270e-05
+step=1825 total=0.064706 epsilon=0.037730 grad=1.7127 lr=8.208e-05
+step=1850 total=0.061527 epsilon=0.037279 grad=0.5028 lr=8.145e-05
+step=1875 total=0.076104 epsilon=0.049030 grad=1.2103 lr=8.081e-05
+step=1900 total=0.057273 epsilon=0.033250 grad=0.3660 lr=8.016e-05
+step=1925 total=0.080553 epsilon=0.052562 grad=1.2949 lr=7.951e-05
+step=1950 total=0.064480 epsilon=0.034906 grad=0.6990 lr=7.885e-05
+step=1975 total=0.061231 epsilon=0.029590 grad=2.3761 lr=7.818e-05
+step=2000 total=0.068639 epsilon=0.043953 grad=0.8365 lr=7.750e-05
+step=2025 total=0.059740 epsilon=0.037894 grad=0.2954 lr=7.682e-05
+step=2050 total=0.066128 epsilon=0.041138 grad=0.9378 lr=7.613e-05
+step=2075 total=0.059476 epsilon=0.036017 grad=0.6312 lr=7.543e-05
+step=2100 total=0.048080 epsilon=0.027638 grad=0.4439 lr=7.473e-05
+step=2125 total=0.073789 epsilon=0.048779 grad=0.8203 lr=7.402e-05
+step=2150 total=0.068941 epsilon=0.045542 grad=0.7864 lr=7.330e-05
+step=2175 total=0.054091 epsilon=0.031303 grad=0.1989 lr=7.258e-05
+step=2200 total=0.055354 epsilon=0.033384 grad=0.3167 lr=7.186e-05
+step=2225 total=0.059806 epsilon=0.034478 grad=1.0635 lr=7.113e-05
+step=2250 total=0.056625 epsilon=0.029564 grad=1.5502 lr=7.039e-05
+step=2275 total=0.053107 epsilon=0.032366 grad=0.1125 lr=6.965e-05
+step=2300 total=0.067415 epsilon=0.039935 grad=0.8549 lr=6.891e-05
+step=2325 total=0.055072 epsilon=0.034355 grad=0.1752 lr=6.816e-05
+step=2350 total=0.059837 epsilon=0.036773 grad=0.6213 lr=6.740e-05
+step=2375 total=0.067923 epsilon=0.044990 grad=0.3182 lr=6.665e-05
+step=2400 total=0.068075 epsilon=0.045219 grad=0.1619 lr=6.589e-05
+step=2425 total=0.054994 epsilon=0.032357 grad=0.5119 lr=6.512e-05
+step=2450 total=0.068803 epsilon=0.046162 grad=0.1623 lr=6.436e-05
+step=2475 total=0.072072 epsilon=0.044347 grad=1.0630 lr=6.359e-05
+step=2500 total=0.054811 epsilon=0.033873 grad=0.2724 lr=6.281e-05 val=0.036809
+step=2525 total=0.053046 epsilon=0.031950 grad=0.2644 lr=6.204e-05
+step=2550 total=0.054748 epsilon=0.024813 grad=1.4582 lr=6.126e-05
+step=2575 total=0.052022 epsilon=0.031872 grad=0.2270 lr=6.048e-05
+step=2600 total=0.047066 epsilon=0.025916 grad=0.3431 lr=5.970e-05
+step=2625 total=0.050836 epsilon=0.028773 grad=0.6517 lr=5.892e-05
+step=2650 total=0.051778 epsilon=0.029019 grad=0.7223 lr=5.814e-05
+step=2675 total=0.060795 epsilon=0.038909 grad=0.2006 lr=5.736e-05
+step=2700 total=0.058596 epsilon=0.034060 grad=1.4226 lr=5.657e-05
+step=2725 total=0.051108 epsilon=0.029673 grad=0.7265 lr=5.579e-05
+step=2750 total=0.057817 epsilon=0.036771 grad=0.1208 lr=5.500e-05
+step=2775 total=0.078948 epsilon=0.055056 grad=0.2782 lr=5.421e-05
+step=2800 total=0.064379 epsilon=0.031212 grad=4.1911 lr=5.343e-05
+step=2825 total=0.039518 epsilon=0.018663 grad=0.6791 lr=5.264e-05
+step=2850 total=0.068752 epsilon=0.042929 grad=0.9052 lr=5.186e-05
+step=2875 total=0.057526 epsilon=0.034837 grad=0.2149 lr=5.108e-05
+step=2900 total=0.050288 epsilon=0.029566 grad=0.1559 lr=5.030e-05
+step=2925 total=0.055342 epsilon=0.033538 grad=0.3169 lr=4.952e-05
+step=2950 total=0.065295 epsilon=0.043146 grad=0.4588 lr=4.874e-05
+step=2975 total=0.056586 epsilon=0.029147 grad=0.9470 lr=4.796e-05
+step=3000 total=0.055450 epsilon=0.031987 grad=0.8586 lr=4.719e-05
+step=3025 total=0.049664 epsilon=0.029876 grad=0.2564 lr=4.641e-05
+step=3050 total=0.068771 epsilon=0.045416 grad=0.5663 lr=4.564e-05
+step=3075 total=0.065158 epsilon=0.042955 grad=0.2995 lr=4.488e-05
+step=3100 total=0.061394 epsilon=0.038322 grad=0.3902 lr=4.411e-05
+step=3125 total=0.054754 epsilon=0.030985 grad=0.4520 lr=4.335e-05
+step=3150 total=0.055685 epsilon=0.034282 grad=0.1279 lr=4.260e-05
+step=3175 total=0.063429 epsilon=0.039213 grad=1.0227 lr=4.184e-05
+step=3200 total=0.054751 epsilon=0.033397 grad=0.3615 lr=4.109e-05
+step=3225 total=0.049473 epsilon=0.028761 grad=0.3614 lr=4.035e-05
+step=3250 total=0.057664 epsilon=0.036871 grad=0.2398 lr=3.961e-05
+step=3275 total=0.054244 epsilon=0.033143 grad=0.2262 lr=3.887e-05
+step=3300 total=0.061371 epsilon=0.035007 grad=1.7013 lr=3.814e-05
+step=3325 total=0.051321 epsilon=0.029371 grad=0.1682 lr=3.742e-05
+step=3350 total=0.060421 epsilon=0.038927 grad=0.1296 lr=3.670e-05
+step=3375 total=0.055030 epsilon=0.033252 grad=0.4883 lr=3.598e-05
+step=3400 total=0.057524 epsilon=0.036169 grad=0.1446 lr=3.527e-05
+step=3425 total=0.052281 epsilon=0.030741 grad=0.4420 lr=3.457e-05
+step=3450 total=0.064445 epsilon=0.042142 grad=0.2047 lr=3.387e-05
+step=3475 total=0.052749 epsilon=0.032094 grad=0.1021 lr=3.318e-05
+step=3500 total=0.056360 epsilon=0.031362 grad=2.5036 lr=3.250e-05
+step=3525 total=0.074515 epsilon=0.049486 grad=0.5650 lr=3.182e-05
+step=3550 total=0.055926 epsilon=0.034219 grad=0.2080 lr=3.115e-05
+step=3575 total=0.073002 epsilon=0.049522 grad=0.3824 lr=3.049e-05
+step=3600 total=0.051455 epsilon=0.026720 grad=1.6954 lr=2.984e-05
+step=3625 total=0.069973 epsilon=0.046331 grad=0.5152 lr=2.919e-05
+step=3650 total=0.072144 epsilon=0.049700 grad=0.1116 lr=2.855e-05
+step=3675 total=0.050249 epsilon=0.028593 grad=0.2167 lr=2.792e-05
+step=3700 total=0.054476 epsilon=0.029729 grad=1.4054 lr=2.730e-05
+step=3725 total=0.052140 epsilon=0.028127 grad=0.3557 lr=2.668e-05
+step=3750 total=0.069981 epsilon=0.044179 grad=1.0022 lr=2.607e-05 val=0.023063
+step=3775 total=0.046793 epsilon=0.025988 grad=0.2369 lr=2.548e-05
+step=3800 total=0.054808 epsilon=0.035065 grad=0.0620 lr=2.489e-05
+step=3825 total=0.053593 epsilon=0.031052 grad=0.2032 lr=2.431e-05
+step=3850 total=0.054834 epsilon=0.033181 grad=0.0742 lr=2.374e-05
+step=3875 total=0.046409 epsilon=0.024021 grad=0.5717 lr=2.318e-05
+step=3900 total=0.058482 epsilon=0.038170 grad=0.1843 lr=2.263e-05
+step=3925 total=0.051374 epsilon=0.030269 grad=0.1768 lr=2.209e-05
+step=3950 total=0.066647 epsilon=0.044000 grad=0.1020 lr=2.156e-05
+step=3975 total=0.069073 epsilon=0.045639 grad=0.2793 lr=2.104e-05
+step=4000 total=0.053543 epsilon=0.032932 grad=0.0970 lr=2.053e-05
+step=4025 total=0.062090 epsilon=0.038069 grad=0.2919 lr=2.003e-05
+step=4050 total=0.056544 epsilon=0.035132 grad=0.2537 lr=1.954e-05
+step=4075 total=0.066401 epsilon=0.044227 grad=0.1997 lr=1.906e-05
+step=4100 total=0.064169 epsilon=0.041421 grad=0.5030 lr=1.859e-05
+step=4125 total=0.048118 epsilon=0.027858 grad=0.1574 lr=1.814e-05
+step=4150 total=0.047529 epsilon=0.025450 grad=0.7222 lr=1.769e-05
+step=4175 total=0.043493 epsilon=0.022484 grad=0.2192 lr=1.726e-05
+step=4200 total=0.048092 epsilon=0.027542 grad=0.1011 lr=1.684e-05
+step=4225 total=0.047877 epsilon=0.025981 grad=0.3278 lr=1.643e-05
+step=4250 total=0.052809 epsilon=0.032439 grad=0.1050 lr=1.603e-05
+step=4275 total=0.069855 epsilon=0.047479 grad=0.1272 lr=1.564e-05
+step=4300 total=0.059351 epsilon=0.034801 grad=0.5835 lr=1.527e-05
+step=4325 total=0.042011 epsilon=0.022283 grad=0.1283 lr=1.490e-05
+step=4350 total=0.052916 epsilon=0.032198 grad=0.0491 lr=1.455e-05
+step=4375 total=0.053384 epsilon=0.032314 grad=0.0833 lr=1.422e-05
+step=4400 total=0.044759 epsilon=0.024449 grad=0.0708 lr=1.389e-05
+step=4425 total=0.050017 epsilon=0.029442 grad=0.0843 lr=1.358e-05
+step=4450 total=0.057083 epsilon=0.034583 grad=0.1962 lr=1.328e-05
+step=4475 total=0.052042 epsilon=0.031076 grad=0.5424 lr=1.299e-05
+step=4500 total=0.054864 epsilon=0.033190 grad=0.1222 lr=1.271e-05
+step=4525 total=0.044965 epsilon=0.021230 grad=1.1202 lr=1.245e-05
+step=4550 total=0.061823 epsilon=0.038508 grad=0.3506 lr=1.220e-05
+step=4575 total=0.062418 epsilon=0.040198 grad=0.1690 lr=1.197e-05
+step=4600 total=0.061303 epsilon=0.040146 grad=0.0445 lr=1.174e-05
+step=4625 total=0.052252 epsilon=0.031598 grad=0.1332 lr=1.153e-05
+step=4650 total=0.054952 epsilon=0.032276 grad=0.5762 lr=1.134e-05
+step=4675 total=0.061846 epsilon=0.038296 grad=1.0790 lr=1.115e-05
+step=4700 total=0.052218 epsilon=0.031708 grad=0.0714 lr=1.098e-05
+step=4725 total=0.048999 epsilon=0.028120 grad=0.2811 lr=1.083e-05
+step=4750 total=0.050783 epsilon=0.028441 grad=1.8549 lr=1.068e-05
+step=4775 total=0.055467 epsilon=0.034356 grad=0.0743 lr=1.055e-05
+step=4800 total=0.047800 epsilon=0.027603 grad=0.0873 lr=1.044e-05
+step=4825 total=0.055821 epsilon=0.034986 grad=0.2317 lr=1.034e-05
+step=4850 total=0.052778 epsilon=0.030678 grad=0.3881 lr=1.025e-05
+step=4875 total=0.050838 epsilon=0.030143 grad=0.0992 lr=1.017e-05
+step=4900 total=0.071513 epsilon=0.048719 grad=0.1857 lr=1.011e-05
+step=4925 total=0.053134 epsilon=0.029360 grad=0.6698 lr=1.006e-05
+step=4950 total=0.049641 epsilon=0.028639 grad=0.1524 lr=1.003e-05
+step=4975 total=0.055885 epsilon=0.034422 grad=0.1934 lr=1.001e-05
+step=5000 total=0.048393 epsilon=0.025649 grad=0.7013 lr=1.000e-05 val=0.018479
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0/cofitok_rgbtail3_rollout_x0/training_report.json
+step=1 total=1.000198 epsilon=1.000158 grad=0.9896 lr=2.000e-07
+step=25 total=1.000097 epsilon=0.998677 grad=1.3824 lr=5.000e-06
+step=50 total=0.992404 epsilon=0.989589 grad=2.3087 lr=1.000e-05
+step=75 total=0.967221 epsilon=0.963408 grad=3.2381 lr=1.500e-05
+step=100 total=0.927098 epsilon=0.922905 grad=3.6754 lr=2.000e-05
+step=125 total=0.878241 epsilon=0.870665 grad=3.9380 lr=2.500e-05
+step=150 total=0.819527 epsilon=0.811607 grad=3.9207 lr=3.000e-05
+step=175 total=0.757858 epsilon=0.749238 grad=3.8027 lr=3.500e-05
+step=200 total=0.686196 epsilon=0.678816 grad=3.6599 lr=4.000e-05
+step=225 total=0.619018 epsilon=0.606894 grad=3.5183 lr=4.500e-05
+step=250 total=0.542977 epsilon=0.533500 grad=3.2847 lr=5.000e-05
+step=275 total=0.462298 epsilon=0.452821 grad=3.0086 lr=5.500e-05
+step=300 total=0.388574 epsilon=0.375675 grad=2.7440 lr=6.000e-05
+step=325 total=0.313953 epsilon=0.308331 grad=2.3673 lr=6.500e-05
+step=350 total=0.252819 epsilon=0.245261 grad=2.0536 lr=7.000e-05
+step=375 total=0.185991 epsilon=0.172083 grad=1.7833 lr=7.500e-05
+step=400 total=0.129237 epsilon=0.114800 grad=1.4918 lr=8.000e-05
+step=425 total=0.094135 epsilon=0.088974 grad=1.0456 lr=8.500e-05
+step=450 total=0.057820 epsilon=0.052301 grad=0.9927 lr=9.000e-05
+step=475 total=0.064961 epsilon=0.057627 grad=1.0159 lr=9.500e-05
+step=500 total=0.057336 epsilon=0.054116 grad=1.0676 lr=1.000e-04
+step=525 total=0.047265 epsilon=0.045257 grad=0.4159 lr=9.999e-05
+step=550 total=0.051655 epsilon=0.048568 grad=0.3630 lr=9.997e-05
+step=575 total=0.042030 epsilon=0.035035 grad=0.8195 lr=9.994e-05
+step=600 total=0.043007 epsilon=0.039335 grad=0.5032 lr=9.989e-05
+step=625 total=0.048440 epsilon=0.046611 grad=0.4576 lr=9.983e-05
+step=650 total=0.049467 epsilon=0.041991 grad=0.6784 lr=9.975e-05
+step=675 total=0.050338 epsilon=0.044940 grad=0.6634 lr=9.966e-05
+step=700 total=0.066638 epsilon=0.058965 grad=0.6101 lr=9.956e-05
+step=725 total=0.050907 epsilon=0.049434 grad=0.3023 lr=9.945e-05
+step=750 total=0.044315 epsilon=0.039200 grad=0.4398 lr=9.932e-05
+step=775 total=0.039351 epsilon=0.036943 grad=0.3986 lr=9.917e-05
+step=800 total=0.048959 epsilon=0.039615 grad=0.4941 lr=9.902e-05
+step=825 total=0.046787 epsilon=0.044806 grad=0.2995 lr=9.885e-05
+step=850 total=0.050251 epsilon=0.045322 grad=0.4416 lr=9.866e-05
+step=875 total=0.047065 epsilon=0.041760 grad=0.4053 lr=9.847e-05
+step=900 total=0.035935 epsilon=0.033297 grad=0.5247 lr=9.826e-05
+step=925 total=0.041376 epsilon=0.038441 grad=0.3701 lr=9.803e-05
+step=950 total=0.037482 epsilon=0.034206 grad=0.3019 lr=9.780e-05
+step=975 total=0.041228 epsilon=0.033196 grad=0.5018 lr=9.755e-05
+step=1000 total=0.048548 epsilon=0.036945 grad=0.7400 lr=9.729e-05
+step=1025 total=0.041413 epsilon=0.039926 grad=0.2430 lr=9.701e-05
+step=1050 total=0.042355 epsilon=0.035086 grad=0.3878 lr=9.672e-05
+step=1075 total=0.041630 epsilon=0.033767 grad=0.4951 lr=9.642e-05
+step=1100 total=0.037675 epsilon=0.035321 grad=0.4025 lr=9.611e-05
+step=1125 total=0.037765 epsilon=0.034926 grad=0.1804 lr=9.578e-05
+step=1150 total=0.048251 epsilon=0.044267 grad=0.3481 lr=9.545e-05
+step=1175 total=0.037160 epsilon=0.031357 grad=0.3479 lr=9.510e-05
+step=1200 total=0.039193 epsilon=0.028790 grad=0.5871 lr=9.473e-05
+step=1225 total=0.037688 epsilon=0.034518 grad=0.2118 lr=9.436e-05
+step=1250 total=0.036994 epsilon=0.032785 grad=0.3531 lr=9.397e-05 val=0.033907
+step=1275 total=0.043463 epsilon=0.041002 grad=0.2176 lr=9.357e-05
+step=1300 total=0.033888 epsilon=0.029609 grad=0.2363 lr=9.316e-05
+step=1325 total=0.039070 epsilon=0.035599 grad=0.3080 lr=9.274e-05
+step=1350 total=0.043372 epsilon=0.041171 grad=0.1711 lr=9.231e-05
+step=1375 total=0.053204 epsilon=0.049298 grad=0.2563 lr=9.186e-05
+step=1400 total=0.039195 epsilon=0.029839 grad=0.6372 lr=9.141e-05
+step=1425 total=0.038385 epsilon=0.029131 grad=0.5782 lr=9.094e-05
+step=1450 total=0.042199 epsilon=0.035440 grad=0.3836 lr=9.046e-05
+step=1475 total=0.056157 epsilon=0.052415 grad=0.2685 lr=8.997e-05
+step=1500 total=0.037591 epsilon=0.033096 grad=0.3474 lr=8.947e-05
+step=1525 total=0.050106 epsilon=0.045049 grad=0.4141 lr=8.896e-05
+step=1550 total=0.041950 epsilon=0.038882 grad=0.1872 lr=8.844e-05
+step=1575 total=0.031460 epsilon=0.027154 grad=0.3402 lr=8.791e-05
+step=1600 total=0.029436 epsilon=0.024173 grad=0.4768 lr=8.737e-05
+step=1625 total=0.048579 epsilon=0.047336 grad=0.1186 lr=8.682e-05
+step=1650 total=0.040169 epsilon=0.037097 grad=0.1647 lr=8.626e-05
+step=1675 total=0.028632 epsilon=0.025879 grad=0.1917 lr=8.569e-05
+step=1700 total=0.043147 epsilon=0.040786 grad=0.1633 lr=8.511e-05
+step=1725 total=0.043849 epsilon=0.030876 grad=0.8080 lr=8.452e-05
+step=1750 total=0.040502 epsilon=0.035932 grad=0.3362 lr=8.393e-05
+step=1775 total=0.042800 epsilon=0.039553 grad=0.1065 lr=8.332e-05
+step=1800 total=0.038928 epsilon=0.035170 grad=0.1978 lr=8.270e-05
+step=1825 total=0.045297 epsilon=0.037791 grad=0.4796 lr=8.208e-05
+step=1850 total=0.042939 epsilon=0.037778 grad=0.2922 lr=8.145e-05
+step=1875 total=0.056175 epsilon=0.049645 grad=0.3623 lr=8.081e-05
+step=1900 total=0.038756 epsilon=0.033297 grad=0.2099 lr=8.016e-05
+step=1925 total=0.061814 epsilon=0.054757 grad=0.4273 lr=7.951e-05
+step=1950 total=0.045588 epsilon=0.034895 grad=0.3177 lr=7.885e-05
+step=1975 total=0.041964 epsilon=0.029495 grad=0.7029 lr=7.818e-05
+step=2000 total=0.049458 epsilon=0.044093 grad=0.2647 lr=7.750e-05
+step=2025 total=0.040303 epsilon=0.038522 grad=0.1835 lr=7.682e-05
+step=2050 total=0.047004 epsilon=0.041110 grad=0.3959 lr=7.613e-05
+step=2075 total=0.040436 epsilon=0.035818 grad=0.2303 lr=7.543e-05
+step=2100 total=0.029546 epsilon=0.027566 grad=0.1280 lr=7.473e-05
+step=2125 total=0.054003 epsilon=0.048858 grad=0.3005 lr=7.402e-05
+step=2150 total=0.047571 epsilon=0.044230 grad=0.2021 lr=7.330e-05
+step=2175 total=0.035478 epsilon=0.031251 grad=0.1680 lr=7.258e-05
+step=2200 total=0.036324 epsilon=0.032945 grad=0.1706 lr=7.186e-05
+step=2225 total=0.042844 epsilon=0.034765 grad=0.5131 lr=7.113e-05
+step=2250 total=0.037914 epsilon=0.029555 grad=0.4106 lr=7.039e-05
+step=2275 total=0.034981 epsilon=0.032829 grad=0.1336 lr=6.965e-05
+step=2300 total=0.047807 epsilon=0.039905 grad=0.3584 lr=6.891e-05
+step=2325 total=0.036561 epsilon=0.034851 grad=0.1057 lr=6.816e-05
+step=2350 total=0.041084 epsilon=0.036666 grad=0.2488 lr=6.740e-05
+step=2375 total=0.048026 epsilon=0.045294 grad=0.1129 lr=6.665e-05
+step=2400 total=0.048824 epsilon=0.045462 grad=0.1126 lr=6.589e-05
+step=2425 total=0.036057 epsilon=0.032179 grad=0.2098 lr=6.512e-05
+step=2450 total=0.048586 epsilon=0.046258 grad=0.0719 lr=6.436e-05
+step=2475 total=0.053853 epsilon=0.045380 grad=0.5221 lr=6.359e-05
+step=2500 total=0.035710 epsilon=0.033948 grad=0.0784 lr=6.281e-05 val=0.036626
+step=2525 total=0.034059 epsilon=0.031985 grad=0.0652 lr=6.204e-05
+step=2550 total=0.037040 epsilon=0.024701 grad=0.6154 lr=6.126e-05
+step=2575 total=0.033111 epsilon=0.031783 grad=0.0628 lr=6.048e-05
+step=2600 total=0.028397 epsilon=0.025691 grad=0.0941 lr=5.970e-05
+step=2625 total=0.034741 epsilon=0.029564 grad=0.3908 lr=5.892e-05
+step=2650 total=0.033618 epsilon=0.029293 grad=0.2153 lr=5.814e-05
+step=2675 total=0.041716 epsilon=0.039315 grad=0.1177 lr=5.736e-05
+step=2700 total=0.039695 epsilon=0.033981 grad=0.3099 lr=5.657e-05
+step=2725 total=0.033915 epsilon=0.029868 grad=0.2603 lr=5.579e-05
+step=2750 total=0.039053 epsilon=0.036783 grad=0.0708 lr=5.500e-05
+step=2775 total=0.058260 epsilon=0.055515 grad=0.1452 lr=5.421e-05
+step=2800 total=0.046257 epsilon=0.031479 grad=1.0260 lr=5.343e-05
+step=2825 total=0.022687 epsilon=0.018703 grad=0.2948 lr=5.264e-05
+step=2850 total=0.049155 epsilon=0.043137 grad=0.4288 lr=5.186e-05
+step=2875 total=0.038444 epsilon=0.034961 grad=0.0714 lr=5.108e-05
+step=2900 total=0.031937 epsilon=0.029665 grad=0.0889 lr=5.030e-05
+step=2925 total=0.036102 epsilon=0.033658 grad=0.0999 lr=4.952e-05
+step=2950 total=0.046895 epsilon=0.043436 grad=0.2812 lr=4.874e-05
+step=2975 total=0.038467 epsilon=0.029087 grad=0.5046 lr=4.796e-05
+step=3000 total=0.037561 epsilon=0.032203 grad=0.3053 lr=4.719e-05
+step=3025 total=0.031885 epsilon=0.029974 grad=0.0954 lr=4.641e-05
+step=3050 total=0.048501 epsilon=0.045328 grad=0.2227 lr=4.564e-05
+step=3075 total=0.045666 epsilon=0.042996 grad=0.1206 lr=4.488e-05
+step=3100 total=0.042071 epsilon=0.038424 grad=0.1050 lr=4.411e-05
+step=3125 total=0.036803 epsilon=0.030957 grad=0.2013 lr=4.335e-05
+step=3150 total=0.037334 epsilon=0.034369 grad=0.0735 lr=4.260e-05
+step=3175 total=0.044449 epsilon=0.039192 grad=0.2924 lr=4.184e-05
+step=3200 total=0.035822 epsilon=0.033752 grad=0.1543 lr=4.109e-05
+step=3225 total=0.031579 epsilon=0.028778 grad=0.1338 lr=4.035e-05
+step=3250 total=0.038556 epsilon=0.036828 grad=0.0711 lr=3.961e-05
+step=3275 total=0.035649 epsilon=0.033244 grad=0.0828 lr=3.887e-05
+step=3300 total=0.042293 epsilon=0.034952 grad=0.4662 lr=3.814e-05
+step=3325 total=0.033255 epsilon=0.029558 grad=0.1216 lr=3.742e-05
+step=3350 total=0.040982 epsilon=0.038968 grad=0.0673 lr=3.670e-05
+step=3375 total=0.036150 epsilon=0.033223 grad=0.0902 lr=3.598e-05
+step=3400 total=0.038458 epsilon=0.036459 grad=0.1307 lr=3.527e-05
+step=3425 total=0.034013 epsilon=0.030829 grad=0.1017 lr=3.457e-05
+step=3450 total=0.044676 epsilon=0.042036 grad=0.0747 lr=3.387e-05
+step=3475 total=0.034497 epsilon=0.032309 grad=0.0862 lr=3.318e-05
+step=3500 total=0.037256 epsilon=0.031384 grad=0.6898 lr=3.250e-05
+step=3525 total=0.054887 epsilon=0.049806 grad=0.2130 lr=3.182e-05
+step=3550 total=0.037462 epsilon=0.034358 grad=0.0846 lr=3.115e-05
+step=3575 total=0.052208 epsilon=0.049498 grad=0.1277 lr=3.049e-05
+step=3600 total=0.033427 epsilon=0.026657 grad=0.4936 lr=2.984e-05
+step=3625 total=0.050598 epsilon=0.046546 grad=0.1885 lr=2.919e-05
+step=3650 total=0.052072 epsilon=0.050038 grad=0.0918 lr=2.855e-05
+step=3675 total=0.032089 epsilon=0.028537 grad=0.0738 lr=2.792e-05
+step=3700 total=0.036506 epsilon=0.029766 grad=0.4079 lr=2.730e-05
+step=3725 total=0.034081 epsilon=0.028210 grad=0.1907 lr=2.668e-05
+step=3750 total=0.049314 epsilon=0.044053 grad=0.2781 lr=2.607e-05 val=0.022921
+step=3775 total=0.028958 epsilon=0.025959 grad=0.0986 lr=2.548e-05
+step=3800 total=0.036129 epsilon=0.035055 grad=0.0594 lr=2.489e-05
+step=3825 total=0.035106 epsilon=0.031034 grad=0.0982 lr=2.431e-05
+step=3850 total=0.035788 epsilon=0.033370 grad=0.0758 lr=2.374e-05
+step=3875 total=0.027755 epsilon=0.023999 grad=0.2032 lr=2.318e-05
+step=3900 total=0.040004 epsilon=0.038329 grad=0.0839 lr=2.263e-05
+step=3925 total=0.032895 epsilon=0.030350 grad=0.0645 lr=2.209e-05
+step=3950 total=0.047146 epsilon=0.044099 grad=0.0530 lr=2.156e-05
+step=3975 total=0.049604 epsilon=0.045806 grad=0.0982 lr=2.104e-05
+step=4000 total=0.034828 epsilon=0.033025 grad=0.0685 lr=2.053e-05
+step=4025 total=0.043058 epsilon=0.038119 grad=0.1219 lr=2.003e-05
+step=4050 total=0.037910 epsilon=0.035283 grad=0.1040 lr=1.954e-05
+step=4075 total=0.046933 epsilon=0.044419 grad=0.0914 lr=1.906e-05
+step=4100 total=0.044324 epsilon=0.041472 grad=0.1210 lr=1.859e-05
+step=4125 total=0.030044 epsilon=0.028008 grad=0.0801 lr=1.814e-05
+step=4150 total=0.029882 epsilon=0.025454 grad=0.2197 lr=1.769e-05
+step=4175 total=0.025999 epsilon=0.022521 grad=0.1240 lr=1.726e-05
+step=4200 total=0.029640 epsilon=0.027541 grad=0.0396 lr=1.684e-05
+step=4225 total=0.029768 epsilon=0.025992 grad=0.0836 lr=1.643e-05
+step=4250 total=0.034193 epsilon=0.032456 grad=0.0468 lr=1.603e-05
+step=4275 total=0.049684 epsilon=0.047694 grad=0.0711 lr=1.564e-05
+step=4300 total=0.041344 epsilon=0.034937 grad=0.3561 lr=1.527e-05
+step=4325 total=0.024386 epsilon=0.022274 grad=0.0408 lr=1.490e-05
+step=4350 total=0.034179 epsilon=0.032211 grad=0.0418 lr=1.455e-05
+step=4375 total=0.034378 epsilon=0.032336 grad=0.0476 lr=1.422e-05
+step=4400 total=0.026340 epsilon=0.024420 grad=0.0434 lr=1.389e-05
+step=4425 total=0.031434 epsilon=0.029423 grad=0.0594 lr=1.358e-05
+step=4450 total=0.037825 epsilon=0.034616 grad=0.0588 lr=1.328e-05
+step=4475 total=0.033735 epsilon=0.031128 grad=0.1474 lr=1.299e-05
+step=4500 total=0.035993 epsilon=0.033222 grad=0.0581 lr=1.271e-05
+step=4525 total=0.027297 epsilon=0.021268 grad=0.4229 lr=1.245e-05
+step=4550 total=0.041511 epsilon=0.038544 grad=0.1092 lr=1.220e-05
+step=4575 total=0.043359 epsilon=0.040275 grad=0.0862 lr=1.197e-05
+step=4600 total=0.042212 epsilon=0.040360 grad=0.0636 lr=1.174e-05
+step=4625 total=0.033845 epsilon=0.031649 grad=0.0500 lr=1.153e-05
+step=4650 total=0.036649 epsilon=0.032388 grad=0.1776 lr=1.134e-05
+step=4675 total=0.043487 epsilon=0.038371 grad=0.5844 lr=1.115e-05
+step=4700 total=0.033537 epsilon=0.031722 grad=0.0385 lr=1.098e-05
+step=4725 total=0.030912 epsilon=0.028113 grad=0.0647 lr=1.083e-05
+step=4750 total=0.032961 epsilon=0.028442 grad=0.5744 lr=1.068e-05
+step=4775 total=0.036589 epsilon=0.034371 grad=0.0409 lr=1.055e-05
+step=4800 total=0.029896 epsilon=0.027589 grad=0.0555 lr=1.044e-05
+step=4825 total=0.036820 epsilon=0.035100 grad=0.0572 lr=1.034e-05
+step=4850 total=0.034719 epsilon=0.030647 grad=0.0728 lr=1.025e-05
+step=4875 total=0.031962 epsilon=0.030087 grad=0.0328 lr=1.017e-05
+step=4900 total=0.051782 epsilon=0.048823 grad=0.0974 lr=1.011e-05
+step=4925 total=0.033397 epsilon=0.029335 grad=0.1146 lr=1.006e-05
+step=4950 total=0.031292 epsilon=0.028608 grad=0.0568 lr=1.003e-05
+step=4975 total=0.037065 epsilon=0.034409 grad=0.0684 lr=1.001e-05
+step=5000 total=0.029918 epsilon=0.025633 grad=0.1084 lr=1.000e-05 val=0.018415
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0/dense_identity/training_report.json

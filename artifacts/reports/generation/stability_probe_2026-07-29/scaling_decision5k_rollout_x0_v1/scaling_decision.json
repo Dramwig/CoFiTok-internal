@@ -1,0 +1,136 @@
+{
+  "decision": "hold_for_stability_correction",
+  "identity": {
+    "cofitok_checkpoint_sha256": "2b9aedee617671dd1d8e6798b35f32312e65a7ead498b404f81c11c802f1dd0d",
+    "dense_checkpoint_sha256": "b560c1f4cd5d596ac1abdd476bf2b757621a4d7c703ec58f722eac20c0608845",
+    "git_revision": "68ca820d5d901eff2623b97b86c4b88bf68ef500"
+  },
+  "issues": [
+    "robust report 1 did not pass every qualification gate"
+  ],
+  "requirements": {
+    "all_robust_gates_must_pass": true,
+    "allowed_screening_failures": [
+      "reconstruction_regression"
+    ],
+    "min_robust_images": 64,
+    "min_robust_reports": 2,
+    "unique_rollout_seeds": true
+  },
+  "robust_metric_ranges": {
+    "cofitok_reconstruction_amplification": {
+      "maximum": 1.1146269937722124,
+      "mean": 1.1009881893210431,
+      "minimum": 1.0873493848698739
+    },
+    "dense_reconstruction_amplification": {
+      "maximum": 1.0702988505489417,
+      "mean": 1.0625607613850636,
+      "minimum": 1.0548226722211855
+    },
+    "endpoint_ratio": {
+      "maximum": 1.0046174800633634,
+      "mean": 1.0046174800633634,
+      "minimum": 1.0046174800633634
+    },
+    "max_single_token_energy_ratio": {
+      "maximum": 0.2853691745324417,
+      "mean": 0.2853691745324417,
+      "minimum": 0.2853691745324417
+    },
+    "peak_predicted_x0_high_frequency_ratio": {
+      "maximum": 1.1181278078268457,
+      "mean": 1.1017488724009268,
+      "minimum": 1.085369936975008
+    },
+    "reconstruction_ratio": {
+      "maximum": 1.0519758993277029,
+      "mean": 1.0420307074830981,
+      "minimum": 1.0320855156384934
+    },
+    "tail_two_energy_ratio": {
+      "maximum": 0.5667569791927443,
+      "mean": 0.5667569791927443,
+      "minimum": 0.5667569791927443
+    },
+    "validation_ratio": {
+      "maximum": 1.0034540401467307,
+      "mean": 1.0034540401467307,
+      "minimum": 1.0034540401467307
+    }
+  },
+  "robust_rows": [
+    {
+      "cofitok_reconstruction_amplification": 1.1146269937722124,
+      "dense_reconstruction_amplification": 1.0702988505489417,
+      "endpoint_ratio": 1.0046174800633634,
+      "max_single_token_energy_ratio": 0.2853691745324417,
+      "num_images": 64,
+      "peak_predicted_x0_high_frequency_ratio": 1.1181278078268457,
+      "reconstruction_ratio": 1.0320855156384934,
+      "seed": 2029,
+      "tail_two_energy_ratio": 0.5667569791927443,
+      "validation_ratio": 1.0034540401467307
+    },
+    {
+      "cofitok_reconstruction_amplification": 1.0873493848698739,
+      "dense_reconstruction_amplification": 1.0548226722211855,
+      "endpoint_ratio": 1.0046174800633634,
+      "max_single_token_energy_ratio": 0.2853691745324417,
+      "num_images": 64,
+      "peak_predicted_x0_high_frequency_ratio": 1.085369936975008,
+      "reconstruction_ratio": 1.0519758993277029,
+      "seed": 2039,
+      "tail_two_energy_ratio": 0.5667569791927443,
+      "validation_ratio": 1.0034540401467307
+    }
+  ],
+  "schema_version": 1,
+  "screening": {
+    "failed_gates": [
+      "reconstruction_regression"
+    ],
+    "rollout_protocol": {
+      "batch_size": 2,
+      "cfg_batch_mode": "batched",
+      "clip_x0": true,
+      "guidance_rescale": 0.0,
+      "guidance_scale": 1.5,
+      "num_images": 8,
+      "precision": "bf16",
+      "sample_steps": 100,
+      "seed": 2029,
+      "teacher_guidance_scale": 1.0,
+      "teacher_timesteps": [
+        999,
+        900,
+        750,
+        500,
+        250,
+        100,
+        10
+      ]
+    },
+    "status": "fail"
+  },
+  "sources": {
+    "robust_reports": [
+      {
+        "bytes": 8079,
+        "path": "C:\\Users\\zixi-\\Desktop\\PaperField\\CoFiTok\\CoFiTok-internal\\artifacts\\reports\\generation\\stability_probe_2026-07-29\\qualification5k_rollout_x0_n64_seed2029\\qualification_report.json",
+        "sha256": "19590d32daaea842ecd5019ac3689d526297db5d3ac4cd93e72977b06070aa94"
+      },
+      {
+        "bytes": 8097,
+        "path": "C:\\Users\\zixi-\\Desktop\\PaperField\\CoFiTok\\CoFiTok-internal\\artifacts\\reports\\generation\\stability_probe_2026-07-29\\qualification5k_rollout_x0_n64_seed2039\\qualification_report.json",
+        "sha256": "2495d534e6499fcf97a696597c042060135b2a61c57762723755716bdde9ea38"
+      }
+    ],
+    "screening_report": {
+      "bytes": 8070,
+      "path": "C:\\Users\\zixi-\\Desktop\\PaperField\\CoFiTok\\CoFiTok-internal\\artifacts\\reports\\generation\\stability_probe_2026-07-29\\qualification5k_rollout_x0_n8_screening_v2\\qualification_report.json",
+      "sha256": "a2cc744b971cf7137d64809e391ea44aaa714da3ec0c3502745b8bc19e753a82"
+    }
+  },
+  "status": "fail"
+}

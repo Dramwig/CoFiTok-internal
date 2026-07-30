@@ -267,3 +267,156 @@ status at record update: running, CoFiTok step >= 50
 
 The next decision requires the same raw-model checkpoint and rollout gate at
 5K. Only a 5K pass can justify preparing a fresh matched 50K rerun.
+
+## One-step 5K result and hold
+
+The original one-step matched pair completed both methods at revision
+`68ca820d5d901eff2623b97b86c4b88bf68ef500`. CoFiTok/dense final validation
+MSE was `0.0184789896 / 0.0184153821`, a ratio of `1.00345404`.
+
+The raw-model rollout evidence did not satisfy the multi-seed scaling gate:
+
+| protocol | reconstruction ratio | result |
+|---|---:|---|
+| n=8, seed 2029 | 1.17100471 | fail |
+| n=64, seed 2029 | 1.03208552 | pass |
+| n=64, seed 2039 | 1.05197590 | fail |
+
+The second robust seed missed the `1.05` threshold by about `0.198` percentage
+points. A CFG `1.0` rerun also failed (`1.08092112`), while teacher-forced
+ratios remained near one. The residual was therefore free-state multi-step
+drift, not CFG. EMA passed the same reconstruction checks but remained
+diagnostic only and could not erase the raw-model failure.
+
+The fail-closed decision is:
+
+```text
+artifacts/reports/generation/stability_probe_2026-07-29/scaling_decision5k_rollout_x0_v1/scaling_decision.json
+status: fail
+decision: hold_for_stability_correction
+```
+
+No 50K or 300K run was authorized from that result.
+
+## Detached two-step correction
+
+Revision `6b77ef7254356d551b2e392aba07df1c96ed067c` generalized the one-step loss
+to a detached multi-step rollout:
+
+- every generated state and previous epsilon is detached;
+- each unrolled depth receives its own bounded `clipped_x0` loss;
+- `unroll_steps=2` and `batch_fraction=0.125` replace one step at `0.25`;
+- CoFiTok and dense share every rollout field through the generation-pair
+  contract;
+- the expected extra sample-forward budget per optimizer step remains
+  approximately unchanged.
+
+Local full pytest and Linux targeted tests passed. The 1K CUDA benchmark
+measured `22.4459 / 24.7608 images/s` and `15.232 / 15.036 GB` peak allocated
+VRAM for CoFiTok/dense.
+
+The fresh matched 1K pair completed at the same revision:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2
+```
+
+| method | validation MSE | final checkpoint SHA256 |
+|---|---:|---|
+| CoFiTok | 0.0224639922 | `9885273a3bd3773274d140db433af047c7cefeb87e460b9868406b45b7e1bb05` |
+| dense | 0.0226641875 | `e27a03434ec3bef7f7528d6d7a0d61867845c5f95165cd1ccb51a07adafe0046` |
+
+The validation ratio was `0.99116689`; each method completed exactly `1,000`
+steps and `64,000` images. Both final checkpoints were re-hashed by the
+runbook and matched their integrity sidecars. One initial runbook invocation
+failed before output creation because `PYTHONPATH=src` was missing; its log is
+preserved as `pair1k_rollout_x0_u2.preflight_failed_missing_pythonpath.log`.
+The corrected invocation completed normally.
+
+## Two-step 1K robust qualification
+
+Raw-model n=8 passed all nine gates:
+
+| metric | value |
+|---|---:|
+| tail-two energy | 0.57099337 |
+| maximum single-token energy | 0.29130879 |
+| ordered path rank | 1 |
+| endpoint ratio | 0.99369001 |
+| validation ratio | 0.99116689 |
+| peak predicted-x0 HF ratio | 0.90376871 |
+| reconstruction ratio | 0.99445521 |
+| CoFiTok/dense reconstruction amplification | 1.07672227 / 1.10168261 |
+| zero / shuffle | 0 / 103.289x |
+
+EMA remained a non-authoritative 1K lag diagnostic: endpoint ratio
+`1.10809945`, ordered rank `4`, reconstruction ratio `1.00518232`, and peak
+HF ratio `0.92085161`.
+
+Both independent n=64 raw-model reports passed:
+
+| seed | reconstruction ratio | CoFiTok/dense amplification | peak HF ratio |
+|---:|---:|---:|---:|
+| 2029 | 0.97597848 | 1.04731459 / 1.05692856 | 0.96025456 |
+| 2039 | 0.97530117 | 1.04200636 / 1.05223188 | 0.93034258 |
+
+Authoritative sources:
+
+```text
+artifacts/reports/generation/stability_probe_2026-07-29/qualification1k_rollout_x0_u2/model/qualification_report.json
+sha256: f4a0b344041b777bd74202daf6661ce5db271e76022e5a5c9710407160a594ea
+
+artifacts/reports/generation/stability_probe_2026-07-29/qualification1k_rollout_x0_u2_n64_seed2029/qualification_report.json
+sha256: 4585dd1122aebbd00eae56386d25d14309f6fe3534b7e1ac692d91d7f2ad679f
+
+artifacts/reports/generation/stability_probe_2026-07-29/qualification1k_rollout_x0_u2_n64_seed2039/qualification_report.json
+sha256: 4c15772716eaaea749cc0ccf4a023b8fb15041d8f82d634afade97b155f442d2
+```
+
+The stage-aware decision is SHA256
+`d47c2518e3c7fff18e8c4a9d6a2c605e1c875b9100a4641d9b8250285daac53b`:
+
+```text
+status: pass
+decision: authorize_fresh_matched_5k
+authorized_next_stage: matched_5k
+```
+
+It explicitly does not authorize fresh 50K or full 300K.
+
+## Two-step matched 5K rerun
+
+The 5K target revision is
+`2521d874a82898a7a2a527d824ea1df285df221d`; its isolated checkout is:
+
+```text
+/tmp/cofitok-generation-stability-u2-5k-2521d87
+```
+
+The official remote repository remains unchanged at
+`1ebcc15210e63a776a2ba448481cbd8bb94a4066`. The target Linux tests passed,
+and the 5K CUDA benchmark measured `22.4852 / 24.7537 images/s` for
+CoFiTok/dense.
+
+Runbook:
+
+```text
+artifacts/runbooks/generation_stability_rollout_x0_u2_probe5k_2026-07-30.sh
+sha256: b4538d2929ec285cb4a3307f42d703e553d782df91e6ad33ada95275a4561709
+```
+
+Active queue:
+
+```text
+runbook PID: 494747
+initial CoFiTok trainer PID: 494771
+output: /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2
+log: /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2.log
+order: CoFiTok 5K, then dense 5K
+```
+
+At the static record update, CoFiTok had reached step 75 with finite metrics.
+Real-time status must be read from the remote `train_metrics.jsonl`,
+`training_report.json`, process table, and GPU state. This fresh 5K pair must
+complete and pass the same raw-model n=8 plus two-seed n=64 gate before any
+new 50K preparation is allowed.

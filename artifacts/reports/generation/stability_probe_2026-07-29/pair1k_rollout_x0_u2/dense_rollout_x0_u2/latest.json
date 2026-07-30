@@ -1,0 +1,14 @@
+{
+  "checkpoint": "checkpoint_step_00001000.pt",
+  "checkpoint_bytes": 1006119702,
+  "checkpoint_format_version": 1,
+  "checkpoint_sha256": "e27a03434ec3bef7f7528d6d7a0d61867845c5f95165cd1ccb51a07adafe0046",
+  "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+  "git_branch": "",
+  "git_dirty": false,
+  "git_revision": "6b77ef7254356d551b2e392aba07df1c96ed067c",
+  "integrity_manifest": "checkpoint_step_00001000.pt.integrity.json",
+  "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+  "schema_version": 1,
+  "step": 1000
+}

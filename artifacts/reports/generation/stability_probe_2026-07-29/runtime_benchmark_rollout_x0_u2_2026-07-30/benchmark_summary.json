@@ -1,0 +1,40 @@
+{
+  "methods": {
+    "cofitok": {
+      "checks": {
+        "benchmark_steps": true,
+        "checkpoint_free": true,
+        "finite_throughput": true,
+        "measured_steps": true,
+        "memory_below_90pct": true,
+        "revision": true,
+        "status": true,
+        "warmup_steps": true
+      },
+      "device_total_memory_bytes": 101976440832,
+      "images_per_second": 22.44586253653043,
+      "mean_optimizer_step_seconds": 2.8513049964482584,
+      "parameter_count": 62834083,
+      "peak_vram_bytes": 15231682048
+    },
+    "dense": {
+      "checks": {
+        "benchmark_steps": true,
+        "checkpoint_free": true,
+        "finite_throughput": true,
+        "measured_steps": true,
+        "memory_below_90pct": true,
+        "revision": true,
+        "status": true,
+        "warmup_steps": true
+      },
+      "device_total_memory_bytes": 101976440832,
+      "images_per_second": 24.760753330340105,
+      "mean_optimizer_step_seconds": 2.584735575132072,
+      "parameter_count": 62824707,
+      "peak_vram_bytes": 15035526656
+    }
+  },
+  "schema_version": 1,
+  "status": "completed"
+}

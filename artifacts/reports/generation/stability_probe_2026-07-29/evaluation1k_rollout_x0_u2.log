@@ -1,0 +1,22 @@
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/model/cofitok_checkpoint/checkpoint_evaluation_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/model/dense_checkpoint/checkpoint_evaluation_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/model/cofitok_rollout/rollout_stability_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/model/dense_rollout/rollout_stability_report.json
+{
+  "output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/qualification1k_rollout_x0_u2/model/qualification_report.json",
+  "status": "pass"
+}
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/ema/cofitok_checkpoint/checkpoint_evaluation_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/ema/dense_checkpoint/checkpoint_evaluation_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/ema/cofitok_rollout/rollout_stability_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/ema/dense_rollout/rollout_stability_report.json
+Traceback (most recent call last):
+  File "/tmp/cofitok-generation-stability-u2-6b77ef7/scripts/build_generation_stability_qualification.py", line 86, in <module>
+    raise SystemExit(main())
+  File "/tmp/cofitok-generation-stability-u2-6b77ef7/scripts/build_generation_stability_qualification.py", line 68, in main
+    report = build_stability_qualification(
+  File "/tmp/cofitok-generation-stability-u2-6b77ef7/src/cofitok/generation/stability_qualification.py", line 126, in build_stability_qualification
+    pair_contract = _validate_sources(
+  File "/tmp/cofitok-generation-stability-u2-6b77ef7/src/cofitok/generation/stability_qualification.py", line 42, in _validate_sources
+    raise ValueError(f"{name} report must evaluate raw model weights")
+ValueError: cofitok checkpoint report must evaluate raw model weights
