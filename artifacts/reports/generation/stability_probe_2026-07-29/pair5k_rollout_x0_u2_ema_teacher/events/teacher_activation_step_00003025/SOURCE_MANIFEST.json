@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-07-31T04:53:35.4302078+08:00",
+  "remote_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29",
+  "training_revision": "59db142fc45d69dc92bb0333be5ac2d0162d9dc4",
+  "observer_revision": "164c96e71dd97f0ac85a4f906c5a86cf768b7390",
+  "event": "ema_teacher_first_logged_nonzero_scale",
+  "event_step": 3025,
+  "checkpoint_payload_copied": false,
+  "checkpoint_event": false,
+  "observer_snapshot": {
+    "status": "running",
+    "stage": "cofitok_training",
+    "issues": 0,
+    "last_step": 3025,
+    "metric_rows": 122,
+    "ema_teacher_consistency_scale": 0.02500000037252903,
+    "ema_teacher_consistency": 0.0055482672760263085,
+    "latest_checkpoint_step": 2500
+  },
+  "files": {
+    "provenance_observer_164c96e.json": {
+      "bytes": 12828,
+      "sha256": "0d66528439ba02d1ed00dbe6b94d4ee0194da1f0b41f58a1774e20b5879173f6"
+    }
+  }
+}

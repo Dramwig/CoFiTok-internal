@@ -124,3 +124,41 @@ artifacts/reports/generation/stability_probe_2026-07-29/
 `latest.json` snapshot, and run-manifest snapshot by byte count and SHA256. The
 observer snapshot was taken at training step 2,675 while its latest protected
 checkpoint remained step 2,500. The checkpoint payload itself was not copied.
+
+## EMA-teacher activation
+
+The strict provenance observer independently captured the first logged
+nonzero teacher event at step 3,025:
+
+```text
+images seen:                    193,600
+EMA-teacher scale:              0.02500000037252903
+expected float32 scale:         25 / 1000
+EMA-teacher consistency loss:   0.0055482672760263085
+total loss:                     0.04847301635891199
+epsilon loss:                   0.02906544366851449
+rollout consistency loss:       0.01372776145581156
+rollout scale:                  1.0
+gradient norm, before clipping: 0.08743015676736832
+```
+
+Step 3,000 correctly had zero teacher scale; the next logged interval at step
+3,025 therefore establishes activation without an off-by-one schedule error.
+The expected float32 value and the logged value agree, all 122 rollout and
+teacher schedule rows passed, the run manifest and training revision remained
+verified, and the observer reported `running` with no issues. This is an event
+snapshot, not a checkpoint milestone: the latest protected checkpoint remained
+step 2,500 and no checkpoint payload was copied.
+
+The small evidence is stored at:
+
+```text
+artifacts/reports/generation/stability_probe_2026-07-29/
+  pair5k_rollout_x0_u2_ema_teacher/events/
+  teacher_activation_step_00003025/
+```
+
+Its `SOURCE_MANIFEST.json` binds the observer snapshot by byte count and
+SHA256. The next protected scientific comparison remains step 3,750, where the
+teacher scale should be 0.75 and validation can be compared with steps 1,250
+and 2,500. This event does not authorize stability 50K.
