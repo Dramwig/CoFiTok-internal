@@ -463,3 +463,22 @@ n=64 seeds 2029 and 2039. Only two passing robust reports can produce
 `authorize_fresh_matched_50k_preparation`; the runbook never launches 50K
 training itself. Targeted tests, `git diff --check`, remote `bash -n`, and the
 uploaded source SHA all passed.
+
+A bounded follow-up waiter now keeps the post-evaluation connected to the
+long-running pair:
+
+```text
+source: artifacts/runbooks/generation_stability_rollout_x0_u2_posteval5k_waiter_2026-07-30.sh
+sha256: 17dc6a11482aa27e6b0518821708e03668df52dd2536726522adef487beb91c0
+remote PID: 500048
+log: /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_posteval_waiter.log
+```
+
+It polls the authoritative monitor every 60 seconds for at most 16 hours and
+fails closed on `failed`, `stalled`, timeout, revision drift, tracked checkout
+changes, a busy GPU, or a changed post-evaluation SHA. It launches the prepared
+post-evaluation only after monitor `pass`, an existing pair summary, and the
+exit of both the pair runbook and training processes. The computed pair-summary
+SHA is then passed through `EXPECTED_PAIR_SUMMARY_SHA256`. A one-second bounded
+remote trial correctly observed `running / cofitok_training` and exited with
+the dedicated timeout code without side effects.
