@@ -91,3 +91,36 @@ official remote repository:
 
 At the end of the rehearsal, the active 5K monitor remained
 `running / cofitok_training / issues=[]` at step 250 (16,000 images).
+
+## Multi-checkpoint grace transition
+
+Follow-up revision `fcd2434b3821ed5f2f4501da68a9bb09debafd37`
+fixes a transition boundary found before deploying the observer. When a new
+milestone checkpoint first appears, `latest.json` may already point to it while
+that checkpoint is still inside the write-grace window. The initial
+implementation selected the previous stable checkpoint for the latest binding
+and could therefore compare two different milestones.
+
+The monitor now treats the newest observed checkpoint as the only candidate
+for `latest.json`:
+
+- before grace, a missing sidecar or not-yet-updated latest pointer is
+  `pending_checkpoint_grace` and is not a health failure;
+- a complete sidecar/latest pair may verify immediately;
+- once grace expires, missing or mismatched metadata fails closed;
+- the previous checkpoint is never compared with the new latest pointer.
+
+Two regression tests cover both the valid in-grace transition and an incorrect
+latest pointer after grace. Local full pytest again passed with three existing
+skips. The isolated Linux suite passed `29` relevant tests with two existing
+skips, and both formal runbooks passed `bash -n`.
+
+The follow-up incremental bundle was:
+
+```text
+bytes: 4,365
+SHA256: a764c98629bd505135b6767078e3c7097cd14c6d85df6568493c6eb4c849e60a
+```
+
+The active 5K and official remote repository remained pinned to `59db142` and
+`1ebcc15`, respectively. The active 5K monitor was still healthy at step 400.
