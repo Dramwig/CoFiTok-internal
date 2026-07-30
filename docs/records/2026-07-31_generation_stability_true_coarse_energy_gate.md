@@ -162,3 +162,47 @@ Its `SOURCE_MANIFEST.json` binds the observer snapshot by byte count and
 SHA256. The next protected scientific comparison remains step 3,750, where the
 teacher scale should be 0.75 and validation can be compared with steps 1,250
 and 2,500. This event does not authorize stability 50K.
+
+## Protected step 3,750
+
+The first protected checkpoint after teacher activation and partial warmup
+passed integrity and provenance verification:
+
+```text
+images seen:                    240,000
+checkpoint bytes:               1,006,321,770
+checkpoint SHA256:              4906500378f77a8ba1af22836e7fd97bf30e89aa6bb908db58fdc120f2219a0c
+total loss:                     0.07099776808172464
+epsilon loss:                   0.042367526330053806
+rollout consistency loss:       0.07733985711820424
+rollout scale:                  1.0
+EMA-teacher consistency loss:   0.002891819181968458
+EMA-teacher scale:              0.75
+gradient norm, before clipping: 0.7962989807128906
+validation epsilon MSE:         0.022965285927057266
+validation images/noise seed:   16 / 102030
+```
+
+The observer verified the step-3,750 sidecar and `latest.json` binding, all
+three protected checkpoints, clean training revision, dataset and runtime
+identities, run manifest, and all 152 logged rollout/teacher schedule rows. It
+reported `running` with no issues. Relative to the same validation protocol,
+step 3,750 MSE was 30.5261% lower than step 1,250 and 37.7033% lower than step
+2,500. This is positive evidence that partial EMA-teacher warmup mitigated the
+earlier validation regression; it is not yet a final mechanism or generation
+quality result.
+
+The small evidence was copied to:
+
+```text
+artifacts/reports/generation/stability_probe_2026-07-29/
+  pair5k_rollout_x0_u2_ema_teacher/milestones/step_00003750/
+```
+
+The source manifest binds the observer, sidecar, latest and run-manifest
+snapshots, plus a 153-row metrics snapshot that directly contains the step
+3,750 validation event. The metrics snapshot ends at step 3,800, while the
+observer snapshot ends at step 3,775; both still bind the protected step-3,750
+checkpoint. The checkpoint payload itself was not copied. CoFiTok must still
+finish step 5,000, the matched dense member must finish, and raw n8/n64
+mechanism gates must pass before stability 50K can be authorized.
