@@ -249,3 +249,31 @@ The source manifest binds six files by bytes and SHA256, including the complete
 payload itself was not copied. CoFiTok completion is necessary but not
 sufficient for scaling: the dense member and raw n8/n64 mechanism gates remain
 mandatory, and stability 50K is still unauthorized.
+
+## Dense shared-stabilization audit
+
+At dense step 1,250, the live metrics showed nonzero rollout consistency. This
+was audited against the exact locked configs and executable pair contract. It
+is intentional: rollout consistency and EMA-teacher consistency are shared
+training-stabilization losses and must match exactly across CoFiTok and dense.
+Dense keeps only factorization-specific losses, such as denoise-path, energy,
+and tail objectives, at zero. The pair-contract tests explicitly reject a
+dense config that silently disables either shared stabilization loss.
+
+The dense step-1,250 checkpoint was metadata-verified at revision `59db142`,
+with the same dataset and runtime identities:
+
+```text
+checkpoint bytes:        1,006,120,150
+checkpoint SHA256:       227ca21455f1bc27295cd9ff8f325b6960932da373122192e10053cb17d1463a
+images seen:             80,000
+epsilon loss:            0.036663748789578676
+gradient norm:           0.3209663927555084
+validation epsilon MSE:  0.03372865170240402
+CoFiTok relative MSE:    -1.9944%
+```
+
+The observer reported a verified run manifest and no issues. This resolves a
+stale wording ambiguity in `docs/GENERATION_SYSTEM.md`, which previously said
+all dense auxiliary losses had to be zero without distinguishing shared
+stabilization from factorization-only objectives.

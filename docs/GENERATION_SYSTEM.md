@@ -460,10 +460,12 @@ full paired-config preflight confirms 62,836,011 vs 62,824,707 parameters
 `cofitok.generation_pair.generation_pair_contract` additionally compares every
 shared resolved model field, all data/diffusion/runtime/optimization fields,
 the positive primary epsilon loss, and exact factorized-versus-dense identities.
-Only token/synthesis/feedback fields and CoFiTok auxiliary losses may differ;
-the dense baseline must keep every auxiliary loss weight at zero. Both the
-training-pair validator and promotion/final gates use this contract. See
-`docs/records/2026-07-12_generation_pair_contract.md`.
+Only token/synthesis/feedback fields and CoFiTok factorization-only auxiliary
+losses may differ. Shared stabilization losses, including rollout consistency
+and EMA-teacher consistency, must match exactly and may be nonzero for both
+members; every remaining dense factorization-only auxiliary weight must be
+zero. Both the training-pair validator and promotion/final gates use this
+contract. See `docs/records/2026-07-12_generation_pair_contract.md`.
 
 The revision transition after the active 10% pair is also gated. Run
 `scripts/deploy_generation_posttraining_pipeline.ps1` locally only after both
