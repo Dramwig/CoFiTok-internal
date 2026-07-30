@@ -8,6 +8,11 @@ from typing import Any
 import torch
 
 from cofitok.diffusion import DiffusionSchedule, ddim_sample, select_sampling_timesteps
+from cofitok.generation.protocol import (
+    INFERENCE_API,
+    SAMPLING_PROTOCOL_SCHEMA,
+    sampling_protocol_contract,
+)
 from cofitok.generation.runtime import LoadedGenerationModel, load_generation_model
 from cofitok.training.runtime import autocast_context
 
@@ -141,8 +146,41 @@ class GenerationSession:
             )
         if tuple(images.shape) != shape or not bool(torch.isfinite(images).all().item()):
             raise RuntimeError("generation session produced invalid samples")
+        actual_timesteps = select_sampling_timesteps(
+            self.schedule.num_train_timesteps,
+            request.sample_steps,
+        )
+        sampling = {
+            "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+            "inference_api": dict(INFERENCE_API),
+            "sampler": "ddim",
+            "num_samples": len(request.seeds),
+            "num_train_timesteps": self.schedule.num_train_timesteps,
+            "sample_steps": request.sample_steps,
+            "actual_timesteps": actual_timesteps,
+            "prefix_budget": budget,
+            "guidance_scale": request.guidance_scale,
+            "guidance_rescale": request.guidance_rescale,
+            "cfg_batch_mode": request.cfg_batch_mode,
+            "eta": request.eta,
+            "clip_x0": request.clip_x0,
+            "precision": request.precision,
+            "random_stream": {
+                "scope": "per_request_seed",
+                "seed_formula": "explicit_seed",
+                "batch_size_invariant": True,
+            },
+        }
+        contract = sampling_protocol_contract(sampling)
+        if not contract["valid"]:
+            raise RuntimeError(
+                "generation session produced invalid sampling provenance: "
+                + ", ".join(contract["issues"])
+            )
         metadata = {
             "schema_version": 1,
+            "inference_api": dict(INFERENCE_API),
+            "sampling": sampling,
             "checkpoint": self.loaded.checkpoint_path.as_posix(),
             "checkpoint_sha256": self.loaded.checkpoint_sha256,
             "checkpoint_integrity_manifest": (
@@ -163,10 +201,7 @@ class GenerationSession:
                 "seeds": list(request.seeds),
                 "class_labels": list(request.class_labels) if request.class_labels else None,
                 "sample_steps": request.sample_steps,
-                "actual_timesteps": select_sampling_timesteps(
-                    self.schedule.num_train_timesteps,
-                    request.sample_steps,
-                ),
+                "actual_timesteps": actual_timesteps,
                 "prefix_budget": budget,
                 "guidance_scale": request.guidance_scale,
                 "guidance_rescale": request.guidance_rescale,

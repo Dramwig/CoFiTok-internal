@@ -161,6 +161,8 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
     report = {
         "schema_version": 1,
         "status": "completed",
+        "inference_api": last_metadata["inference_api"],
+        "sampling_protocol_schema": last_metadata["sampling"]["protocol_schema"],
         "checkpoint": {
             key: last_metadata[key]
             for key in (

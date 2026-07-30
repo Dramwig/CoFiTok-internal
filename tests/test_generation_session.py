@@ -19,6 +19,7 @@ from cofitok.configs import (
     config_to_dict,
 )
 from cofitok.generation import GenerationRequest, GenerationSession
+from cofitok.generation.protocol import INFERENCE_API, sampling_protocol_contract
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
@@ -101,6 +102,45 @@ def test_generation_session_reuses_loaded_checkpoint_with_provenance(tmp_path) -
     assert first.metadata["request"]["seeds"] == [11, 12]
     assert first.metadata["request"]["class_labels"] == [1, 2]
     assert first.metadata["request"]["prefix_budget"] == 2
+    assert first.metadata["inference_api"] == INFERENCE_API
+    assert first.metadata["sampling"]["protocol_schema"] == "cofitok_ddim_sampling_v1"
+    assert sampling_protocol_contract(first.metadata["sampling"])["valid"] is True
+
+
+def test_generation_session_random_stream_is_batch_size_invariant(tmp_path) -> None:
+    session = GenerationSession.from_checkpoint(_checkpoint(tmp_path), weights="ema")
+    combined = session.generate(
+        GenerationRequest(
+            seeds=(11, 12),
+            class_labels=(1, 2),
+            sample_steps=2,
+            prefix_budget=2,
+            guidance_scale=1.5,
+            precision="fp32",
+        )
+    )
+    split = torch.cat(
+        [
+            session.generate(
+                GenerationRequest(
+                    seeds=(seed,),
+                    class_labels=(label,),
+                    sample_steps=2,
+                    prefix_budget=2,
+                    guidance_scale=1.5,
+                    precision="fp32",
+                )
+            ).images
+            for seed, label in ((11, 1), (12, 2))
+        ]
+    )
+
+    torch.testing.assert_close(combined.images, split, rtol=0.0, atol=0.0)
+    assert combined.metadata["sampling"]["random_stream"] == {
+        "scope": "per_request_seed",
+        "seed_formula": "explicit_seed",
+        "batch_size_invariant": True,
+    }
 
 
 def test_generation_session_validates_model_specific_request(tmp_path) -> None:
@@ -164,6 +204,8 @@ def test_inference_cli_core_writes_atomic_provenance_report(tmp_path) -> None:
     assert report["status"] == "completed"
     assert report["output_count"] == 4
     assert report["checkpoint"]["checkpoint_step"] == 23
+    assert report["inference_api"] == INFERENCE_API
+    assert report["sampling_protocol_schema"] == "cofitok_ddim_sampling_v1"
     assert report["request"]["seeds"] == [7, 9]
     assert report["request"]["class_ids"] == [3, 3]
     assert report["request"]["prefix_budgets"] == [1, 2]
