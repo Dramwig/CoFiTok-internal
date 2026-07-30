@@ -124,3 +124,48 @@ SHA256: a764c98629bd505135b6767078e3c7097cd14c6d85df6568493c6eb4c849e60a
 
 The active 5K and official remote repository remained pinned to `59db142` and
 `1ebcc15`, respectively. The active 5K monitor was still healthy at step 400.
+
+## Checkpoint code-revision binding
+
+Revision `e22e1784ee5040167eeff029a357334990ebcc33` extends the required
+policy to bind every checkpoint sidecar to an expected clean Git revision.
+For formal same-checkout monitors, the expected revision defaults to the
+monitor checkout's current HEAD. A detached observer may instead pass:
+
+```text
+--expected-checkpoint-revision <training revision>
+```
+
+After a sidecar appears, a different `git_revision` or any value other than
+`git_dirty=false` is a health failure. The report includes the expected
+checkpoint revision independently from the observer-code revision, so an
+external observer cannot blur the two identities.
+
+Local targeted and full tests passed, with two and three existing skips
+respectively. The isolated Linux suite passed `30` relevant tests with two
+existing skips; both formal runbooks again passed `bash -n`. The incremental
+bundle was:
+
+```text
+bytes: 2,811
+SHA256: f4a5f54048151f8373ac9ea8889e7560fe6f07257067962f8bf37da5b3fc7abd
+```
+
+A second read-only observer now watches the active EMA-teacher 5K pair:
+
+```text
+observer checkout revision:
+e22e1784ee5040167eeff029a357334990ebcc33
+expected checkpoint revision:
+59db142fc45d69dc92bb0333be5ac2d0162d9dc4
+PID: 36703
+report:
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher_integrity_observer_e22e178.json
+```
+
+The initial report was `running / cofitok_training / issues=[]` at step 550.
+It uses required sidecar/latest checks but does not participate in the
+authoritative training monitor or post-evaluation waiter. The superseded
+metadata-only observer PID 21289 was terminated only after its `/proc` cwd and
+monitor name were both verified; no training, authoritative monitor, waiter,
+or GPU process was signaled.
