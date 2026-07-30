@@ -818,3 +818,20 @@ target revision, and the final canonical metric row binds the image count and
 fourth validation event. No payload was loaded or rehashed. The locked runbook
 then launched the matched dense member as PID 862754; GPU utilization was 98%
 with 18,370 MiB process memory during its first interval.
+
+The first dense milestone passed the same read-only audit while training
+continued:
+
+```text
+step: 250 / 1,000
+images seen: 16,000
+checkpoint bytes: 1,006,120,150
+checkpoint SHA256: ca4386e700e4549b28f5ca50d8ad10552a7a924b05a173078302f6c181f73e94
+validation epsilon MSE: 0.061262041330337524
+EMA-teacher scale: 0.0
+rollout-consistency scale: 1.0
+```
+
+The dense checkpoint stat, sidecar, and `latest.json` agree on filename,
+bytes, SHA256, step, target revision, and the same dataset and runtime
+identities used by CoFiTok. The checkpoint payload was not loaded or rehashed.
