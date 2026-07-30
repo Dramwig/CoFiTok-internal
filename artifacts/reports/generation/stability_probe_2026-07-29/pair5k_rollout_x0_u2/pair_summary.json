@@ -1,0 +1,23 @@
+{
+  "cofitok": {
+    "checkpoint_sha256": "47cfc77efac3835e57225cb14f0d6b78d94554e1c93d50e6efc46629979acbf4",
+    "elapsed_seconds": 14203.248574733734,
+    "peak_vram_bytes": 15237613056,
+    "training_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2/cofitok_rgbtail3_rollout_x0_u2/training_report.json",
+    "validation_epsilon_mse": 0.018510280176997185
+  },
+  "completed_steps": 5000,
+  "dense": {
+    "checkpoint_sha256": "e7bf9d53cca26605842841285f9884dbd8cd549cd611296b5c0ea39ec03d4a35",
+    "elapsed_seconds": 12897.024653673172,
+    "peak_vram_bytes": 15043470848,
+    "training_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2/dense_rollout_x0_u2/training_report.json",
+    "validation_epsilon_mse": 0.018453380092978477
+  },
+  "git_revision": "2521d874a82898a7a2a527d824ea1df285df221d",
+  "images_seen": 320000,
+  "parameter_ratio_delta": 0.00014924064826926653,
+  "schema_version": 1,
+  "status": "completed",
+  "validation_ratio": 1.0030834504969828
+}
