@@ -66,6 +66,14 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   automatic resume verifies the pointer, sidecar, file bytes, payload step, and
   payload format before restoring state. Full readiness additionally requires
   the final training hash to match the checkpoint used for sampling.
+- Formal pair monitors use `checkpoint_integrity_policy=required`. Once a
+  checkpoint passes its bounded write-grace window, the monitor verifies the
+  checkpoint filename/byte count/step and declared SHA256 against the adjacent
+  sidecar, then verifies that `latest.json` binds the same metadata. This live
+  check is explicitly metadata-only: it neither loads nor rehashes a checkpoint
+  payload while training is active. Resume, sampling, promotion, and release
+  remain responsible for recomputing the payload SHA256 at their trust
+  boundaries.
 - Earlier 10% matched queues are retained as immutable legacy evidence only.
   The fresh same-revision fixed-basis v3 CoFiTok/dense 50K pair creates native
   integrity sidecars and is the only 10% pair eligible for new promotion
