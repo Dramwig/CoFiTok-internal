@@ -32,6 +32,10 @@ def test_checked_in_generation_pairs_isolate_factorization_differences() -> None
             "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_probe1k.json",
             "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_probe1k.json",
         ),
+        (
+            "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_probe5k.json",
+            "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_probe5k.json",
+        ),
         ("imagenet256_cofitok_k8_300k.json", "imagenet256_dense_300k.json"),
     ):
         report = generation_pair_contract(_read(cofitok_name), _read(dense_name))
@@ -105,3 +109,24 @@ def test_ema_teacher_consistency_is_a_matched_training_loss() -> None:
     assert report["mismatched_shared_training_loss_fields"] == [
         "ema_teacher_consistency_weight"
     ]
+
+
+def test_ema_teacher_5k_pair_targets_the_late_drift_window() -> None:
+    cofitok = _read(
+        "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_probe5k.json"
+    )
+    dense = _read(
+        "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_probe5k.json"
+    )
+
+    for config in (cofitok, dense):
+        assert config["runtime"]["steps"] == 5000
+        assert config["runtime"]["checkpoint_interval"] == 1250
+        assert config["runtime"]["evaluation_interval"] == 1250
+        assert config["loss"]["ema_teacher_consistency_weight"] == 0.25
+        assert config["loss"]["ema_teacher_consistency_start_step"] == 3000
+        assert config["loss"]["ema_teacher_consistency_warmup_steps"] == 1000
+        assert config["loss"]["ema_teacher_consistency_batch_fraction"] == 0.0625
+
+    report = generation_pair_contract(cofitok, dense)
+    assert report["valid"] is True, report["issues"]

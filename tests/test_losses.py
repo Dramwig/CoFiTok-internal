@@ -116,6 +116,53 @@ def test_ema_teacher_consistency_is_scaled_in_total() -> None:
     assert losses.ema_teacher_consistency_scale.item() == pytest.approx(0.5)
 
 
+def test_consistency_scales_remain_float32_for_bfloat16_outputs() -> None:
+    output = _fake_output()
+    output = CoFiTokOutput(
+        tokens=[tensor.bfloat16() for tensor in output.tokens],
+        components=[tensor.bfloat16() for tensor in output.components],
+        prefix_epsilons=[
+            tensor.bfloat16() for tensor in output.prefix_epsilons
+        ],
+        epsilon=output.epsilon.bfloat16(),
+    )
+    schedule = DiffusionSchedule(
+        DiffusionConfig(num_train_timesteps=10),
+        device="cpu",
+    )
+    clean = torch.zeros(2, 3, 4, 4, dtype=torch.bfloat16)
+    noise = torch.zeros_like(clean)
+    timesteps = torch.tensor([1, 2])
+    noisy = schedule.add_noise(clean, noise, timesteps)
+
+    losses = compute_losses(
+        LossConfig(
+            epsilon_weight=0.0,
+            prefix_weight=0.0,
+            monotonic_weight=0.0,
+            zero_token_weight=0.0,
+            rollout_consistency_weight=1.0,
+            ema_teacher_consistency_weight=1.0,
+        ),
+        output,
+        schedule,
+        noisy,
+        clean,
+        noise,
+        timesteps,
+        rollout_consistency=torch.tensor(3.0),
+        rollout_consistency_scale=1.0 / 12.0,
+        ema_teacher_consistency=torch.tensor(4.0),
+        ema_teacher_consistency_scale=1.0 / 6.0,
+    )
+
+    assert losses.rollout_consistency_scale.dtype == torch.float32
+    assert losses.ema_teacher_consistency_scale.dtype == torch.float32
+    assert losses.rollout_consistency_scale.item() == pytest.approx(1.0 / 12.0)
+    assert losses.ema_teacher_consistency_scale.item() == pytest.approx(1.0 / 6.0)
+    assert losses.total.item() == pytest.approx(11.0 / 12.0)
+
+
 def test_sample_energy_budget_cannot_be_satisfied_by_batch_complementarity() -> None:
     first = torch.stack([torch.ones(3, 4, 4), torch.zeros(3, 4, 4)])
     second = torch.stack([torch.zeros(3, 4, 4), torch.ones(3, 4, 4)])

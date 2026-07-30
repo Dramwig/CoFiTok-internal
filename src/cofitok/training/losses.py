@@ -583,6 +583,13 @@ def compute_losses(
     ema_teacher_consistency: torch.Tensor | None = None,
     ema_teacher_consistency_scale: float = 1.0,
 ) -> LossBreakdown:
+    def float32_scalar(value: float) -> torch.Tensor:
+        return torch.as_tensor(
+            value,
+            dtype=torch.float32,
+            device=output.epsilon.device,
+        )
+
     epsilon_loss = F.mse_loss(output.epsilon, noise)
     if config.prefix_weight > 0.0:
         prefix_loss = _prefix_loss(output, schedule, noisy_images, clean_images, timesteps)
@@ -701,22 +708,20 @@ def compute_losses(
         and rollout_consistency_scale > 0.0
     ):
         rollout_consistency_loss = rollout_consistency
-        rollout_scale = output.epsilon.new_tensor(rollout_consistency_scale)
+        rollout_scale = float32_scalar(rollout_consistency_scale)
     else:
         rollout_consistency_loss = output.epsilon.new_zeros(())
-        rollout_scale = output.epsilon.new_zeros(())
+        rollout_scale = float32_scalar(0.0)
     if (
         config.ema_teacher_consistency_weight > 0.0
         and ema_teacher_consistency is not None
         and ema_teacher_consistency_scale > 0.0
     ):
         ema_teacher_consistency_loss = ema_teacher_consistency
-        ema_teacher_scale = output.epsilon.new_tensor(
-            ema_teacher_consistency_scale
-        )
+        ema_teacher_scale = float32_scalar(ema_teacher_consistency_scale)
     else:
         ema_teacher_consistency_loss = output.epsilon.new_zeros(())
-        ema_teacher_scale = output.epsilon.new_zeros(())
+        ema_teacher_scale = float32_scalar(0.0)
     total = (
         config.epsilon_weight * epsilon_loss
         + config.prefix_weight * prefix_loss
