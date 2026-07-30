@@ -320,7 +320,11 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     source_result = GenerationSession.from_checkpoint(source, weights="ema").generate(
         request
     )
-    export_session = GenerationSession.from_checkpoint(artifact, weights="ema")
+    export_session = GenerationSession.from_checkpoint(
+        artifact,
+        weights="ema",
+        require_release_authorization=True,
+    )
     export_result = export_session.generate(request)
     torch.testing.assert_close(
         source_result.images,
@@ -343,6 +347,7 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     assert export_result.metadata["release_authorization"] == report[
         "release_authorization"
     ]
+    assert export_result.metadata["release_authorization_required"] is True
     preflight = run_sampling_preflight(
         artifact,
         batch_size=1,
@@ -382,6 +387,19 @@ def test_inference_artifact_rejects_model_weights_and_tampering(tmp_path) -> Non
     artifact.write_bytes(payload)
     with pytest.raises(ValueError, match="SHA256 mismatch"):
         GenerationSession.from_checkpoint(artifact, weights="ema")
+
+
+def test_production_mode_rejects_unreleased_inference_artifact(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    export_ema_inference_artifact(source, artifact)
+
+    with pytest.raises(ValueError, match="release-authorized inference artifact"):
+        GenerationSession.from_checkpoint(
+            artifact,
+            weights="ema",
+            require_release_authorization=True,
+        )
 
 
 def test_inference_artifact_rejects_source_sidecar_drift(tmp_path) -> None:

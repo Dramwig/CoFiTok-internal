@@ -83,8 +83,15 @@ class GenerationSession:
         checkpoint: str | Path,
         *,
         weights: str = "ema",
+        require_release_authorization: bool = False,
     ) -> GenerationSession:
-        return cls(load_generation_model(checkpoint, weights=weights))
+        return cls(
+            load_generation_model(
+                checkpoint,
+                weights=weights,
+                require_release_authorization=require_release_authorization,
+            )
+        )
 
     @property
     def device(self) -> torch.device:
@@ -196,6 +203,9 @@ class GenerationSession:
             "source_git": self.loaded.source_git_provenance,
             "training_authorization": self.loaded.training_authorization,
             "release_authorization": self.loaded.release_authorization,
+            "release_authorization_required": (
+                self.loaded.release_authorization_required
+            ),
             "device": str(self.device),
             "request": {
                 "seeds": list(request.seeds),

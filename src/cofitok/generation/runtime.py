@@ -44,12 +44,14 @@ class LoadedGenerationModel:
     source_git_provenance: dict[str, Any] | None
     training_authorization: dict[str, Any] | None
     release_authorization: dict[str, Any] | None
+    release_authorization_required: bool
 
 
 def load_generation_model(
     checkpoint_path: str | Path,
     *,
     weights: str = "ema",
+    require_release_authorization: bool = False,
 ) -> LoadedGenerationModel:
     """Load the exact model path shared by formal sampling and its preflight."""
     if weights not in {"ema", "model"}:
@@ -67,6 +69,13 @@ def load_generation_model(
         if is_inference_artifact
         else verify_training_checkpoint(path)
     )
+    if require_release_authorization and (
+        not is_inference_artifact
+        or integrity.get("release_authorization") is None
+    ):
+        raise ValueError(
+            "Production inference requires a release-authorized inference artifact"
+        )
     checkpoint_sha256 = str(
         integrity["artifact_sha256"]
         if is_inference_artifact
@@ -196,4 +205,5 @@ def load_generation_model(
         source_git_provenance=source_git_provenance,
         training_authorization=training_authorization,
         release_authorization=release_authorization,
+        release_authorization_required=require_release_authorization,
     )

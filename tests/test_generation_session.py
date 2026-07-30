@@ -7,6 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import torch
 
 from cofitok.configs import (
@@ -175,6 +176,17 @@ def test_generation_session_validates_model_specific_request(tmp_path) -> None:
         assert "requires class labels" in str(error)
     else:
         raise AssertionError("missing class labels were accepted")
+
+
+def test_generation_session_production_mode_rejects_training_checkpoint(
+    tmp_path,
+) -> None:
+    with pytest.raises(ValueError, match="release-authorized inference artifact"):
+        GenerationSession.from_checkpoint(
+            _checkpoint(tmp_path),
+            weights="ema",
+            require_release_authorization=True,
+        )
 
 
 def test_inference_cli_core_writes_atomic_provenance_report(tmp_path) -> None:

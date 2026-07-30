@@ -77,6 +77,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--eta", type=float, default=0.0)
     parser.add_argument("--weights", choices=["ema", "model"], default="ema")
     parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
+    parser.add_argument("--require-release-authorization", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
 
@@ -84,7 +85,15 @@ def parse_args() -> argparse.Namespace:
 def run_inference(args: argparse.Namespace) -> dict[str, Any]:
     if args.batch_size < 1:
         raise ValueError("batch-size must be positive")
-    session = GenerationSession.from_checkpoint(args.checkpoint, weights=args.weights)
+    session = GenerationSession.from_checkpoint(
+        args.checkpoint,
+        weights=args.weights,
+        require_release_authorization=getattr(
+            args,
+            "require_release_authorization",
+            False,
+        ),
+    )
     seeds = _resolve_seeds(args.seeds, seed=args.seed, num_images=args.num_images)
     labels = _resolve_labels(args.class_ids, count=len(seeds), num_classes=session.num_classes)
     budgets = _resolve_budgets(args.prefix_budgets, token_count=session.token_count)
@@ -177,6 +186,7 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
                 "source_git",
                 "training_authorization",
                 "release_authorization",
+                "release_authorization_required",
             )
         },
         "request": {
