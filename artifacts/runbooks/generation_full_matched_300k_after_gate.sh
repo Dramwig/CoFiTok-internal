@@ -98,6 +98,7 @@ start_full_monitor() {
     --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_.*300k' \
     --runbook-process-pattern '[g]eneration_full_matched_300k_after_gate.sh' \
     --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
+    --checkpoint-integrity-policy required \
     --poll-seconds 300 --stall-seconds 1800 \
     --idle-failure-grace-seconds 600 \
     >"$MONITOR_LOG" 2>&1 </dev/null &
@@ -125,6 +126,7 @@ snapshot_full_monitor() {
     --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_.*300k' \
     --runbook-process-pattern '[g]eneration_full_matched_300k_after_gate.sh' \
     --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
+    --checkpoint-integrity-policy required \
     --poll-seconds 300 --stall-seconds 1800 \
     --idle-failure-grace-seconds 600 --once
 }

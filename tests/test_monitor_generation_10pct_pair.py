@@ -174,6 +174,132 @@ def test_inspect_run_detects_late_checkpoint_cadence(tmp_path) -> None:
     ]
 
 
+def test_required_checkpoint_integrity_waits_for_grace(tmp_path) -> None:
+    (tmp_path / "train_metrics.jsonl").write_text(
+        json.dumps({"step": 1_250, "total": 0.1}) + "\n", encoding="utf-8"
+    )
+    (tmp_path / "checkpoint_step_00001250.pt").write_bytes(b"checkpoint")
+
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+    )
+
+    assert report["health_issues"] == []
+    integrity = report["checkpoint_integrity"]
+    assert integrity["verification"] == "metadata_only_no_payload_hash"
+    assert integrity["manifests"][0]["status"] == "optional_missing"
+    assert integrity["latest_binding"]["status"] == "not_available"
+
+
+def test_required_checkpoint_integrity_rejects_missing_sidecar_after_grace(
+    tmp_path,
+) -> None:
+    (tmp_path / "train_metrics.jsonl").write_text(
+        json.dumps({"step": 1_350, "total": 0.1}) + "\n", encoding="utf-8"
+    )
+    checkpoint = tmp_path / "checkpoint_step_00001250.pt"
+    checkpoint.write_bytes(b"checkpoint")
+
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+    )
+
+    assert any(
+        "integrity manifest is missing" in issue
+        for issue in report["health_issues"]
+    )
+    assert any(
+        "latest.json is missing" in issue for issue in report["health_issues"]
+    )
+
+
+def test_required_checkpoint_integrity_verifies_metadata_and_latest_binding(
+    tmp_path,
+) -> None:
+    (tmp_path / "train_metrics.jsonl").write_text(
+        json.dumps({"step": 1_350, "total": 0.1}) + "\n", encoding="utf-8"
+    )
+    checkpoint = tmp_path / "checkpoint_step_00001250.pt"
+    checkpoint.write_bytes(b"checkpoint")
+    integrity = {
+        "checkpoint": checkpoint.name,
+        "checkpoint_bytes": checkpoint.stat().st_size,
+        "checkpoint_sha256": "a" * 64,
+        "step": 1_250,
+    }
+    integrity_name = checkpoint.name + ".integrity.json"
+    (tmp_path / integrity_name).write_text(
+        json.dumps(integrity) + "\n", encoding="utf-8"
+    )
+    (tmp_path / "latest.json").write_text(
+        json.dumps({**integrity, "integrity_manifest": integrity_name}) + "\n",
+        encoding="utf-8",
+    )
+
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+    )
+
+    assert report["health_issues"] == []
+    assert (
+        report["checkpoint_integrity"]["manifests"][0]["status"]
+        == "metadata_verified"
+    )
+    assert (
+        report["checkpoint_integrity"]["latest_binding"]["status"]
+        == "metadata_verified"
+    )
+
+
+def test_required_checkpoint_integrity_rejects_metadata_mismatch(tmp_path) -> None:
+    (tmp_path / "train_metrics.jsonl").write_text(
+        json.dumps({"step": 1_350, "total": 0.1}) + "\n", encoding="utf-8"
+    )
+    checkpoint = tmp_path / "checkpoint_step_00001250.pt"
+    checkpoint.write_bytes(b"checkpoint")
+    (tmp_path / f"{checkpoint.name}.integrity.json").write_text(
+        json.dumps(
+            {
+                "checkpoint": checkpoint.name,
+                "checkpoint_bytes": checkpoint.stat().st_size + 1,
+                "checkpoint_sha256": "b" * 64,
+                "step": 1_250,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+    )
+
+    assert any(
+        "mismatched checkpoint_bytes" in issue
+        for issue in report["health_issues"]
+    )
+
+
 def test_monitor_waits_during_runbook_only_milestone_transition() -> None:
     runs = {
         "cofitok": _run(complete=False, age=10_000.0),

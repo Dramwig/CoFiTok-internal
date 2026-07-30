@@ -8,6 +8,8 @@ from typing import Any
 
 
 CHECKPOINT_PATTERN = re.compile(r"checkpoint_step_(\d+)\.pt$")
+SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
+CHECKPOINT_INTEGRITY_POLICIES = ("optional", "required")
 FINITE_METRICS = {
     "step",
     "total",
@@ -69,6 +71,152 @@ def _read_report(path: Path) -> tuple[dict[str, Any] | None, list[str]]:
         return None, [f"training report JSON is invalid: {error.msg}"]
 
 
+def _read_json(path: Path, *, label: str) -> tuple[dict[str, Any] | None, list[str]]:
+    if not path.is_file():
+        return None, []
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+    except (OSError, json.JSONDecodeError) as error:
+        return None, [f"{label} JSON is invalid: {error}"]
+    if not isinstance(payload, dict):
+        return None, [f"{label} must contain a JSON object"]
+    return payload, []
+
+
+def _inspect_checkpoint_integrity(
+    checkpoint: Path,
+    *,
+    step: int,
+    checkpoint_bytes: int,
+    required: bool,
+) -> tuple[dict[str, Any], list[str]]:
+    integrity_path = checkpoint.with_name(checkpoint.name + ".integrity.json")
+    if not integrity_path.is_file():
+        return (
+            {
+                "checkpoint": checkpoint.name,
+                "integrity_manifest": integrity_path.name,
+                "status": "missing" if required else "optional_missing",
+                "checkpoint_bytes": checkpoint_bytes,
+                "step": step,
+            },
+            (
+                [f"checkpoint integrity manifest is missing: {integrity_path.name}"]
+                if required
+                else []
+            ),
+        )
+
+    integrity, issues = _read_json(
+        integrity_path,
+        label=f"checkpoint integrity manifest {integrity_path.name}",
+    )
+    if integrity is None:
+        return (
+            {
+                "checkpoint": checkpoint.name,
+                "integrity_manifest": integrity_path.name,
+                "status": "invalid",
+                "checkpoint_bytes": checkpoint_bytes,
+                "step": step,
+            },
+            issues,
+        )
+
+    expected = {
+        "checkpoint": checkpoint.name,
+        "checkpoint_bytes": checkpoint_bytes,
+        "step": step,
+    }
+    for field, value in expected.items():
+        if integrity.get(field) != value:
+            issues.append(
+                f"checkpoint integrity manifest {integrity_path.name} "
+                f"has mismatched {field}"
+            )
+    checkpoint_sha256 = integrity.get("checkpoint_sha256")
+    if (
+        not isinstance(checkpoint_sha256, str)
+        or SHA256_PATTERN.fullmatch(checkpoint_sha256) is None
+    ):
+        issues.append(
+            f"checkpoint integrity manifest {integrity_path.name} "
+            "has an invalid checkpoint_sha256"
+        )
+    return (
+        {
+            "checkpoint": checkpoint.name,
+            "integrity_manifest": integrity_path.name,
+            "status": "invalid" if issues else "metadata_verified",
+            "checkpoint_bytes": integrity.get("checkpoint_bytes"),
+            "checkpoint_sha256": checkpoint_sha256,
+            "step": integrity.get("step"),
+            "verification": "metadata_only_no_payload_hash",
+        },
+        issues,
+    )
+
+
+def _inspect_latest_binding(
+    run_dir: Path,
+    *,
+    checkpoint: dict[str, Any] | None,
+    integrity: dict[str, Any] | None,
+    required: bool,
+) -> tuple[dict[str, Any], list[str]]:
+    latest_path = run_dir / "latest.json"
+    latest, issues = _read_json(latest_path, label="latest.json")
+    if latest is None:
+        if required and checkpoint is not None:
+            issues.append("latest.json is missing for the newest stable checkpoint")
+        return (
+            {
+                "path": latest_path.name,
+                "status": (
+                    "missing"
+                    if required and checkpoint is not None
+                    else "not_available"
+                ),
+            },
+            issues,
+        )
+    if checkpoint is None:
+        return {
+            "path": latest_path.name,
+            "status": "pending_checkpoint_grace",
+        }, issues
+
+    expected = {
+        "checkpoint": checkpoint["name"],
+        "checkpoint_bytes": checkpoint["bytes"],
+        "step": checkpoint["step"],
+    }
+    if integrity is not None and integrity.get("status") == "metadata_verified":
+        expected.update(
+            {
+                "integrity_manifest": integrity["integrity_manifest"],
+                "checkpoint_sha256": integrity["checkpoint_sha256"],
+            }
+        )
+    for field, value in expected.items():
+        if latest.get(field) != value:
+            issues.append(f"latest.json has mismatched {field}")
+    return (
+        {
+            "path": latest_path.name,
+            "status": "invalid" if issues else "metadata_verified",
+            "checkpoint": latest.get("checkpoint"),
+            "checkpoint_bytes": latest.get("checkpoint_bytes"),
+            "checkpoint_sha256": latest.get("checkpoint_sha256"),
+            "integrity_manifest": latest.get("integrity_manifest"),
+            "step": latest.get("step"),
+            "verification": "metadata_only_no_payload_hash",
+        },
+        issues,
+    )
+
+
 def inspect_run(
     run_dir: str | Path,
     *,
@@ -76,30 +224,52 @@ def inspect_run(
     now: float,
     checkpoint_interval: int = 0,
     checkpoint_grace_steps: int = 0,
+    checkpoint_integrity_policy: str = "optional",
 ) -> dict[str, Any]:
     if expected_steps < 1 or checkpoint_interval < 0 or checkpoint_grace_steps < 0:
         raise ValueError("monitor run thresholds are invalid")
+    if checkpoint_integrity_policy not in CHECKPOINT_INTEGRITY_POLICIES:
+        raise ValueError(
+            "checkpoint_integrity_policy must be one of "
+            + ", ".join(CHECKPOINT_INTEGRITY_POLICIES)
+        )
     root = Path(run_dir)
     metrics_path = root / "train_metrics.jsonl"
     last, metric_rows, health_issues = _read_metrics(metrics_path)
     report, report_issues = _read_report(root / "training_report.json")
     health_issues.extend(report_issues)
+    last_step = int(last.get("step", 0)) if last is not None else 0
+    reported_complete = bool(
+        report is not None
+        and report.get("training_complete") is True
+        and int(report.get("completed_steps", -1)) == expected_steps
+        and int(report.get("target_steps", -1)) == expected_steps
+    )
     checkpoints = []
+    checkpoint_integrity = []
     for path in root.glob("checkpoint_step_*.pt") if root.is_dir() else ():
         match = CHECKPOINT_PATTERN.match(path.name)
         if match:
+            step = int(match.group(1))
             size = path.stat().st_size
-            checkpoints.append(
-                {
-                    "step": int(match.group(1)),
-                    "bytes": size,
-                    "name": path.name,
-                }
-            )
+            checkpoint = {"step": step, "bytes": size, "name": path.name}
+            checkpoints.append(checkpoint)
             if size < 1:
                 health_issues.append(f"checkpoint is empty: {path.name}")
+            required_now = (
+                checkpoint_integrity_policy == "required"
+                and (reported_complete or last_step >= step + checkpoint_grace_steps)
+            )
+            integrity, integrity_issues = _inspect_checkpoint_integrity(
+                path,
+                step=step,
+                checkpoint_bytes=size,
+                required=required_now,
+            )
+            checkpoint_integrity.append(integrity)
+            health_issues.extend(integrity_issues)
     checkpoints.sort(key=lambda row: row["step"])
-    last_step = int(last.get("step", 0)) if last is not None else 0
+    checkpoint_integrity.sort(key=lambda row: row.get("step") or -1)
     if last_step > expected_steps:
         health_issues.append(
             f"metric step {last_step} exceeds expected target {expected_steps}"
@@ -122,6 +292,28 @@ def inspect_run(
     )
     if report is not None and report.get("training_complete") is True and not complete:
         health_issues.append("training report completion fields differ from expected steps")
+    stable_checkpoints = [
+        checkpoint
+        for checkpoint in checkpoints
+        if reported_complete
+        or last_step >= checkpoint["step"] + checkpoint_grace_steps
+    ]
+    stable_checkpoint = stable_checkpoints[-1] if stable_checkpoints else None
+    integrity_by_checkpoint = {
+        row["checkpoint"]: row for row in checkpoint_integrity
+    }
+    stable_integrity = (
+        integrity_by_checkpoint.get(stable_checkpoint["name"])
+        if stable_checkpoint is not None
+        else None
+    )
+    latest_binding, latest_issues = _inspect_latest_binding(
+        root,
+        checkpoint=stable_checkpoint,
+        integrity=stable_integrity,
+        required=checkpoint_integrity_policy == "required",
+    )
+    health_issues.extend(latest_issues)
     activity_mtime = max(
         [
             path.stat().st_mtime
@@ -141,6 +333,12 @@ def inspect_run(
         "metric_rows": metric_rows,
         "activity_age_seconds": now - activity_mtime if activity_mtime > 0.0 else None,
         "checkpoints": checkpoints,
+        "checkpoint_integrity": {
+            "policy": checkpoint_integrity_policy,
+            "verification": "metadata_only_no_payload_hash",
+            "manifests": checkpoint_integrity,
+            "latest_binding": latest_binding,
+        },
         "training_report": report,
         "health_issues": health_issues,
     }

@@ -72,6 +72,7 @@ start_compressed_monitor() {
     --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_10pct_fixed_basis_' \
     --runbook-process-pattern '[g]eneration_10pct_matched_50k_2026-07-12.sh' \
     --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
+    --checkpoint-integrity-policy required \
     --poll-seconds 300 --stall-seconds 1800 \
     --idle-failure-grace-seconds 600 \
     >"$MONITOR_LOG" 2>&1 </dev/null 8>&- 9>&- &
@@ -99,6 +100,7 @@ snapshot_compressed_monitor() {
     --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_10pct_fixed_basis_' \
     --runbook-process-pattern '[g]eneration_10pct_matched_50k_2026-07-12.sh' \
     --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
+    --checkpoint-integrity-policy required \
     --poll-seconds 300 --stall-seconds 1800 \
     --idle-failure-grace-seconds 600 --once
 }

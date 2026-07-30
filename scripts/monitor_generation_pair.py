@@ -12,7 +12,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from cofitok.monitoring import build_monitor_report, inspect_run
+from cofitok.monitoring import (
+    CHECKPOINT_INTEGRITY_POLICIES,
+    build_monitor_report,
+    inspect_run,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -145,6 +149,11 @@ def parse_args(defaults: dict[str, Any] | None = None) -> argparse.Namespace:
         type=int,
         default=defaults.get("checkpoint_grace_steps", 250),
     )
+    parser.add_argument(
+        "--checkpoint-integrity-policy",
+        choices=CHECKPOINT_INTEGRITY_POLICIES,
+        default=defaults.get("checkpoint_integrity_policy", "optional"),
+    )
     parser.add_argument("--poll-seconds", type=float, default=300.0)
     parser.add_argument("--stall-seconds", type=float, default=1_800.0)
     parser.add_argument("--idle-failure-grace-seconds", type=float, default=600.0)
@@ -173,6 +182,7 @@ def main(defaults: dict[str, Any] | None = None) -> None:
                 now=now,
                 checkpoint_interval=args.checkpoint_interval,
                 checkpoint_grace_steps=args.checkpoint_grace_steps,
+                checkpoint_integrity_policy=args.checkpoint_integrity_policy,
             ),
             "dense_identity": inspect_run(
                 output_root / args.dense_run,
@@ -180,6 +190,7 @@ def main(defaults: dict[str, Any] | None = None) -> None:
                 now=now,
                 checkpoint_interval=args.checkpoint_interval,
                 checkpoint_grace_steps=args.checkpoint_grace_steps,
+                checkpoint_integrity_policy=args.checkpoint_integrity_policy,
             ),
         }
         usage = shutil.disk_usage(output_root)
