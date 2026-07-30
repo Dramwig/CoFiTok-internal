@@ -20,6 +20,10 @@ def test_checked_in_generation_pairs_isolate_factorization_differences() -> None
             "imagenet256_10pct_fixed_basis_cofitok_k8_50k.json",
             "imagenet256_10pct_fixed_basis_dense_50k.json",
         ),
+        (
+            "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_k8_probe1k.json",
+            "imagenet256_10pct_stability_rollout_x0_u2_dense_probe1k.json",
+        ),
         ("imagenet256_cofitok_k8_300k.json", "imagenet256_dense_300k.json"),
     ):
         report = generation_pair_contract(_read(cofitok_name), _read(dense_name))
@@ -43,6 +47,7 @@ def test_rollout_consistency_is_a_matched_training_loss() -> None:
         config["loss"]["rollout_consistency_weight"] = 0.25
         config["loss"]["rollout_consistency_start_step"] = 100
         config["loss"]["rollout_consistency_warmup_steps"] = 100
+        config["loss"]["rollout_consistency_unroll_steps"] = 2
 
     report = generation_pair_contract(cofitok, dense)
 
@@ -56,4 +61,12 @@ def test_rollout_consistency_is_a_matched_training_loss() -> None:
     assert report["valid"] is False
     assert report["mismatched_shared_training_loss_fields"] == [
         "rollout_consistency_weight"
+    ]
+
+    mismatched = copy.deepcopy(dense)
+    mismatched["loss"]["rollout_consistency_unroll_steps"] = 1
+    report = generation_pair_contract(cofitok, mismatched)
+    assert report["valid"] is False
+    assert report["mismatched_shared_training_loss_fields"] == [
+        "rollout_consistency_unroll_steps"
     ]

@@ -95,6 +95,7 @@ class LossConfig:
     rollout_consistency_start_step: int = 0
     rollout_consistency_warmup_steps: int = 0
     rollout_consistency_timestep_delta: int = 10
+    rollout_consistency_unroll_steps: int = 1
     rollout_consistency_batch_fraction: float = 0.25
     rollout_consistency_clip_x0: bool = True
     rollout_consistency_mode: str = "epsilon"

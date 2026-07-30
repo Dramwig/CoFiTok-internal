@@ -37,8 +37,8 @@ from cofitok.training import (
     capture_generation_training_authorization,
     compute_losses,
     ensure_fresh_training_output,
-    one_step_rollout_consistency_loss,
     reconcile_metrics_for_resume,
+    rollout_consistency_loss,
     rollout_consistency_weight_scale,
 )
 from cofitok.training.checkpointing import (
@@ -162,6 +162,16 @@ def _validate_config(config: ExperimentConfig) -> None:
         raise ValueError("rollout_consistency_warmup_steps must be non-negative")
     if config.loss.rollout_consistency_timestep_delta < 1:
         raise ValueError("rollout_consistency_timestep_delta must be positive")
+    if config.loss.rollout_consistency_unroll_steps < 1:
+        raise ValueError("rollout_consistency_unroll_steps must be positive")
+    if (
+        config.loss.rollout_consistency_timestep_delta
+        * config.loss.rollout_consistency_unroll_steps
+        >= config.diffusion.num_train_timesteps
+    ):
+        raise ValueError(
+            "rollout consistency horizon must be shorter than the diffusion schedule"
+        )
     if not 0.0 < config.loss.rollout_consistency_batch_fraction <= 1.0:
         raise ValueError("rollout_consistency_batch_fraction must be in (0, 1]")
     if config.loss.rollout_consistency_mode not in {"epsilon", "clipped_x0"}:
@@ -692,7 +702,7 @@ def main() -> None:
                 )
                 rollout_consistency = None
                 if config.loss.rollout_consistency_weight > 0.0 and rollout_scale > 0.0:
-                    rollout_consistency = one_step_rollout_consistency_loss(
+                    rollout_consistency = rollout_consistency_loss(
                         model,
                         first_epsilon=output.epsilon,
                         schedule=schedule,
@@ -701,6 +711,7 @@ def main() -> None:
                         timesteps=timesteps,
                         class_labels=labels,
                         timestep_delta=config.loss.rollout_consistency_timestep_delta,
+                        unroll_steps=config.loss.rollout_consistency_unroll_steps,
                         batch_fraction=config.loss.rollout_consistency_batch_fraction,
                         clip_x0=config.loss.rollout_consistency_clip_x0,
                         mode=config.loss.rollout_consistency_mode,

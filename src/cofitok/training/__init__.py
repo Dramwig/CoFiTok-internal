@@ -18,6 +18,7 @@ from cofitok.training.metrics import (
 )
 from cofitok.training.rollout import (
     one_step_rollout_consistency_loss,
+    rollout_consistency_loss,
     rollout_consistency_weight_scale,
 )
 
@@ -32,6 +33,7 @@ __all__ = [
     "backfill_training_checkpoint_integrity",
     "load_training_checkpoint",
     "one_step_rollout_consistency_loss",
+    "rollout_consistency_loss",
     "reconcile_metrics_for_resume",
     "rollout_consistency_weight_scale",
     "run_smoke_step",

@@ -7,6 +7,7 @@ from cofitok.configs import DiffusionConfig
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.training.rollout import (
     one_step_rollout_consistency_loss,
+    rollout_consistency_loss,
     rollout_consistency_weight_scale,
 )
 
@@ -15,6 +16,7 @@ class _ScaledImagePredictor(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.scale = torch.nn.Parameter(torch.tensor(0.5))
+        self.calls = 0
 
     def forward(
         self,
@@ -24,6 +26,7 @@ class _ScaledImagePredictor(torch.nn.Module):
         class_labels: torch.Tensor | None,
     ) -> SimpleNamespace:
         del timesteps, class_labels
+        self.calls += 1
         return SimpleNamespace(epsilon=images * self.scale)
 
 
@@ -128,3 +131,37 @@ def test_rollout_consistency_supports_bounded_x0_loss() -> None:
 
     assert 0.0 <= loss.item() <= 4.0
     assert model.scale.grad is not None
+
+
+def test_rollout_consistency_supports_two_detached_generated_steps() -> None:
+    schedule = DiffusionSchedule(
+        DiffusionConfig(num_train_timesteps=32, schedule_type="cosine"),
+        device="cpu",
+    )
+    model = _ScaledImagePredictor()
+    clean = torch.randn(4, 3, 8, 8).clamp(-1.0, 1.0)
+    noise = torch.randn_like(clean)
+    timesteps = torch.tensor([31, 24, 16, 8])
+    noisy = schedule.add_noise(clean, noise, timesteps)
+    first_epsilon = torch.randn_like(clean, requires_grad=True)
+
+    loss = rollout_consistency_loss(
+        model,
+        first_epsilon=first_epsilon,
+        schedule=schedule,
+        noisy_images=noisy,
+        clean_images=clean,
+        timesteps=timesteps,
+        class_labels=None,
+        timestep_delta=4,
+        unroll_steps=2,
+        batch_fraction=0.5,
+        clip_x0=True,
+        mode="clipped_x0",
+    )
+    loss.backward()
+
+    assert 0.0 <= loss.item() <= 4.0
+    assert model.scale.grad is not None
+    assert first_epsilon.grad is None
+    assert model.calls == 2
