@@ -527,3 +527,56 @@ exit of both the pair runbook and training processes. The computed pair-summary
 SHA is then passed through `EXPECTED_PAIR_SUMMARY_SHA256`. A one-second bounded
 remote trial correctly observed `running / cofitok_training` and exited with
 the dedicated timeout code without side effects.
+
+## Matched two-step 5K result
+
+The pair completed on revision
+`2521d874a82898a7a2a527d824ea1df285df221d`:
+
+```text
+pair summary SHA256: ce604c2e9d2a1864bb6ba6fad31cdcee1cc92219256d361333abc00feaded28c
+steps / images seen: 5,000 / 320,000 per method
+CoFiTok validation MSE: 0.018510280176997185
+dense validation MSE: 0.018453380092978477
+validation ratio: 1.0030834504969828
+CoFiTok final checkpoint SHA256: 47cfc77efac3835e57225cb14f0d6b78d94554e1c93d50e6efc46629979acbf4
+dense final checkpoint SHA256: e7bf9d53cca26605842841285f9884dbd8cd549cd611296b5c0ea39ec03d4a35
+CoFiTok elapsed / peak VRAM: 14,203.25 s / 15,237,613,056 bytes
+dense elapsed / peak VRAM: 12,897.02 s / 15,043,470,848 bytes
+```
+
+Both methods retain checkpoints and integrity sidecars at steps 1,250, 2,500,
+3,750, and 5,000. The terminal monitor is `pass / complete` with no issues.
+
+The bound post-evaluation ran and stopped exactly at the raw n=8 fail-closed
+screen:
+
+```text
+qualification SHA256: c4603cbcdfad7537e8a53d9cb5493cd0896eb17444a9cf04d7ef1362bf42f6a1
+status: fail
+failed gates: predicted_x0_high_frequency
+peak raw high-frequency ratio: 2.0512487574980742
+raw reconstruction ratio: 0.9384448969585206
+raw endpoint ratio: 1.0041073640248266
+raw validation ratio: 1.0030834504969828
+tail-two energy ratio: 0.5670275926111694
+maximum single-token energy ratio: 0.28473167502910013
+```
+
+All other gates passed, including ordered rank 1, zero-token, shuffle mismatch,
+endpoint, validation, reconstruction, and both tail-energy checks. The raw
+high-frequency ratio was already 1.60 at timestep 595 and rose to 2.05 at
+timestep 91. Because this is a non-reconstruction screening failure, the
+authoritative runbook correctly skipped raw n=64 and did not create a scaling
+decision. Formal 50K preparation remains unauthorized.
+
+The n=8 EMA diagnostic shows a weight-path split rather than tail-token energy
+collapse: EMA CoFiTok reconstruction is `0.25409` versus dense `0.26379`, and
+its four high-frequency values are lower than dense, while the raw CoFiTok
+values are higher. A diagnostic-only EMA n=64 two-seed run was therefore
+started as PID `522916` using tracked runbook
+`generation_stability_rollout_x0_u2_ema_n64_diagnostic5k_2026-07-30.sh`
+(SHA256
+`091a2ca9dd4b4422d55eeb25d626fb79e0498ab47a690a7e4906d30f389a98cc`).
+Its summary permanently declares `scaling_authorization_allowed=false`; it
+cannot replace or override the failed raw qualification.
