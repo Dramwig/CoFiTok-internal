@@ -1,0 +1,354 @@
+{
+  "first_milestone_above_raw_high_frequency_gate": 5000,
+  "protocol": {
+    "milestones": [
+      1250,
+      2500,
+      3750,
+      5000
+    ],
+    "num_images": 8,
+    "sample_steps": 100,
+    "seed": 2029,
+    "selected_timesteps": [
+      595,
+      394,
+      192,
+      91
+    ]
+  },
+  "reason": "The authoritative raw n=8 qualification failed predicted_x0_high_frequency; this report locates when that failure emerges along the immutable 5K trajectory.",
+  "role": "diagnostic_only",
+  "rows": [
+    {
+      "checkpoint_sha256": {
+        "cofitok": "8da625d6fb70dab7cab9a607029bd3c9efc9596b75a7acb53576872673836c3d",
+        "dense": "4830e726809ebb608a3d8fca749eb70cb581c50fa60ceae04d310755598dccf1"
+      },
+      "peak_predicted_x0_high_frequency_ratio": 1.2797774353206943,
+      "predicted_x0_high_frequency": [
+        {
+          "cofitok": 0.2294551432132721,
+          "dense": 0.22639067471027374,
+          "ratio": 1.0135361958124827,
+          "timestep": 595
+        },
+        {
+          "cofitok": 0.21541449427604675,
+          "dense": 0.18599918484687805,
+          "ratio": 1.1581475179764071,
+          "timestep": 394
+        },
+        {
+          "cofitok": 0.2548576593399048,
+          "dense": 0.19914217293262482,
+          "ratio": 1.2797774353206943,
+          "timestep": 192
+        },
+        {
+          "cofitok": 0.2754345238208771,
+          "dense": 0.21720606088638306,
+          "ratio": 1.2680793652666644,
+          "timestep": 91
+        }
+      ],
+      "reconstruction": {
+        "cofitok": {
+          "final_clipped_x0_mse": 0.26337528228759766,
+          "final_to_best_x0_mse_amplification": 1.0967316188814535
+        },
+        "dense": {
+          "final_clipped_x0_mse": 0.24055254459381104,
+          "final_to_best_x0_mse_amplification": 1.0440942558610458
+        }
+      },
+      "reconstruction_ratio": 1.0948763095910057,
+      "step": 1250,
+      "training": {
+        "cofitok": {
+          "epsilon": 0.036743681877851486,
+          "grad_norm": 0.7830175757408142,
+          "learning_rate": 9.397114317029975e-05,
+          "low_snr_high_frequency": 0.005538771860301495,
+          "rollout_consistency": 0.05896765319630504,
+          "total": 0.061845140531659126,
+          "validation_epsilon_mse": 0.03383226320147514
+        },
+        "dense": {
+          "epsilon": 0.03654449572786689,
+          "grad_norm": 0.3762390613555908,
+          "learning_rate": 9.397114317029975e-05,
+          "low_snr_high_frequency": 0.0,
+          "rollout_consistency": 0.061199265299364924,
+          "total": 0.04267039801925421,
+          "validation_epsilon_mse": 0.03353486210107803
+        }
+      }
+    },
+    {
+      "checkpoint_sha256": {
+        "cofitok": "ad14dbd6ae47543fbe8d15a1ba86aed928b901bc97d0a15a776bdfefd74b1253",
+        "dense": "b943f96f1b6f163c8f19f9561217c53247a91ceb5e7c5c225557f140441f0c50"
+      },
+      "peak_predicted_x0_high_frequency_ratio": 0.693518511206179,
+      "predicted_x0_high_frequency": [
+        {
+          "cofitok": 0.08113154768943787,
+          "dense": 0.11698541045188904,
+          "ratio": 0.693518511206179,
+          "timestep": 595
+        },
+        {
+          "cofitok": 0.0827474296092987,
+          "dense": 0.12854698300361633,
+          "ratio": 0.64371350984543,
+          "timestep": 394
+        },
+        {
+          "cofitok": 0.09679284691810608,
+          "dense": 0.18681547045707703,
+          "ratio": 0.518120082246322,
+          "timestep": 192
+        },
+        {
+          "cofitok": 0.10914573073387146,
+          "dense": 0.23985333740711212,
+          "ratio": 0.4550519576411576,
+          "timestep": 91
+        }
+      ],
+      "reconstruction": {
+        "cofitok": {
+          "final_clipped_x0_mse": 0.26660361886024475,
+          "final_to_best_x0_mse_amplification": 1.0316041704529415
+        },
+        "dense": {
+          "final_clipped_x0_mse": 0.2619022727012634,
+          "final_to_best_x0_mse_amplification": 1.080533210049668
+        }
+      },
+      "reconstruction_ratio": 1.0179507650334285,
+      "step": 2500,
+      "training": {
+        "cofitok": {
+          "epsilon": 0.025076492223888636,
+          "grad_norm": 0.3382154703140259,
+          "learning_rate": 6.281416799501188e-05,
+          "low_snr_high_frequency": 0.0042261803755536675,
+          "rollout_consistency": 0.03435926232486963,
+          "total": 0.04650603514164686,
+          "validation_epsilon_mse": 0.0368012972176075
+        },
+        "dense": {
+          "epsilon": 0.025210845982655883,
+          "grad_norm": 0.14265446364879608,
+          "learning_rate": 6.281416799501188e-05,
+          "low_snr_high_frequency": 0.0,
+          "rollout_consistency": 0.03623656230047345,
+          "total": 0.028838040307164192,
+          "validation_epsilon_mse": 0.03718852996826172
+        }
+      }
+    },
+    {
+      "checkpoint_sha256": {
+        "cofitok": "6513d12b9131a0276eed465d51b8f6908197d309463ea4d8ef43f7690d0f675e",
+        "dense": "dff022ff0c089cb841f2d6268ce54b4938232b8e5e1499279be8e4235c1427ae"
+      },
+      "peak_predicted_x0_high_frequency_ratio": 0.8466177553630125,
+      "predicted_x0_high_frequency": [
+        {
+          "cofitok": 0.057693302631378174,
+          "dense": 0.06814563274383545,
+          "ratio": 0.8466177553630125,
+          "timestep": 595
+        },
+        {
+          "cofitok": 0.051273878663778305,
+          "dense": 0.07002564519643784,
+          "ratio": 0.7322157263948577,
+          "timestep": 394
+        },
+        {
+          "cofitok": 0.04770580679178238,
+          "dense": 0.08519134670495987,
+          "ratio": 0.5599841842740224,
+          "timestep": 192
+        },
+        {
+          "cofitok": 0.04621147736907005,
+          "dense": 0.0997893437743187,
+          "ratio": 0.4630903022429016,
+          "timestep": 91
+        }
+      ],
+      "reconstruction": {
+        "cofitok": {
+          "final_clipped_x0_mse": 0.28068652749061584,
+          "final_to_best_x0_mse_amplification": 1.0285789766082158
+        },
+        "dense": {
+          "final_clipped_x0_mse": 0.3337245583534241,
+          "final_to_best_x0_mse_amplification": 1.1071450005126433
+        }
+      },
+      "reconstruction_ratio": 0.8410724367289764,
+      "step": 3750,
+      "training": {
+        "cofitok": {
+          "epsilon": 0.04208474885672331,
+          "grad_norm": 0.7978657484054565,
+          "learning_rate": 2.6074557564105727e-05,
+          "low_snr_high_frequency": 0.0056188486632891,
+          "rollout_consistency": 0.07608316303230822,
+          "total": 0.0700992876663804,
+          "validation_epsilon_mse": 0.022937312722206116
+        },
+        "dense": {
+          "epsilon": 0.04232393018901348,
+          "grad_norm": 0.46551764011383057,
+          "learning_rate": 2.6074557564105727e-05,
+          "low_snr_high_frequency": 0.0,
+          "rollout_consistency": 0.08636153489351273,
+          "total": 0.05096851661801338,
+          "validation_epsilon_mse": 0.02300029806792736
+        }
+      }
+    },
+    {
+      "checkpoint_sha256": {
+        "cofitok": "47cfc77efac3835e57225cb14f0d6b78d94554e1c93d50e6efc46629979acbf4",
+        "dense": "e7bf9d53cca26605842841285f9884dbd8cd549cd611296b5c0ea39ec03d4a35"
+      },
+      "peak_predicted_x0_high_frequency_ratio": 2.0512487574980742,
+      "predicted_x0_high_frequency": [
+        {
+          "cofitok": 0.12989477813243866,
+          "dense": 0.0810520201921463,
+          "ratio": 1.6026100006453026,
+          "timestep": 595
+        },
+        {
+          "cofitok": 0.15679435431957245,
+          "dense": 0.08385345339775085,
+          "ratio": 1.8698616212719754,
+          "timestep": 394
+        },
+        {
+          "cofitok": 0.19763976335525513,
+          "dense": 0.09668612480163574,
+          "ratio": 2.044137809439969,
+          "timestep": 192
+        },
+        {
+          "cofitok": 0.22403235733509064,
+          "dense": 0.10921754688024521,
+          "ratio": 2.0512487574980742,
+          "timestep": 91
+        }
+      ],
+      "reconstruction": {
+        "cofitok": {
+          "final_clipped_x0_mse": 0.31691089272499084,
+          "final_to_best_x0_mse_amplification": 1.1151911818036713
+        },
+        "dense": {
+          "final_clipped_x0_mse": 0.33769792318344116,
+          "final_to_best_x0_mse_amplification": 1.0844021671464268
+        }
+      },
+      "reconstruction_ratio": 0.9384448969585206,
+      "step": 5000,
+      "training": {
+        "cofitok": {
+          "epsilon": 0.03133281785994768,
+          "grad_norm": 0.07981650531291962,
+          "learning_rate": 1e-05,
+          "low_snr_high_frequency": 0.004467576160095632,
+          "rollout_consistency": 0.013837032252922654,
+          "total": 0.05130116641521454,
+          "validation_epsilon_mse": 0.018510280176997185
+        },
+        "dense": {
+          "epsilon": 0.03136200690641999,
+          "grad_norm": 0.0334353968501091,
+          "learning_rate": 1e-05,
+          "low_snr_high_frequency": 0.0,
+          "rollout_consistency": 0.013598492136225104,
+          "total": 0.03272318281233311,
+          "validation_epsilon_mse": 0.018453380092978477
+        }
+      }
+    }
+  ],
+  "scaling_authorization_allowed": false,
+  "schema_version": 1,
+  "sources": {
+    "pair_summary": {
+      "bytes": 1079,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2/pair_summary.json",
+      "sha256": "ce604c2e9d2a1864bb6ba6fad31cdcee1cc92219256d361333abc00feaded28c"
+    },
+    "raw_qualification": {
+      "bytes": 7585,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/qualification5k_rollout_x0_u2_n8/qualification_report.json",
+      "sha256": "c4603cbcdfad7537e8a53d9cb5493cd0896eb17444a9cf04d7ef1362bf42f6a1"
+    },
+    "rollouts": [
+      {
+        "bytes": 265351,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00001250/cofitok_rollout/rollout_stability_report.json",
+        "sha256": "235e7e982a06eb7493f9d8cc141995af254b35e41e77137fbca5f22c23890ac2"
+      },
+      {
+        "bytes": 163031,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00001250/dense_rollout/rollout_stability_report.json",
+        "sha256": "1a6959eebbb55dca3abcb253110cf646ca62273ff3af7bd94b4f27165729c313"
+      },
+      {
+        "bytes": 265222,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00002500/cofitok_rollout/rollout_stability_report.json",
+        "sha256": "1121e153c5b039ab6060a3dcd92e99cb801e5463aa918ebf3c6a15180cf49f4c"
+      },
+      {
+        "bytes": 163496,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00002500/dense_rollout/rollout_stability_report.json",
+        "sha256": "e86b645f696d3cfe1b63ad2145d8885acc5372947ec86d81777da715cd995a59"
+      },
+      {
+        "bytes": 265494,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00003750/cofitok_rollout/rollout_stability_report.json",
+        "sha256": "66d218b6c6c89b516956317428668ad1cadf23be5cdca00aa17136d0ad2998e2"
+      },
+      {
+        "bytes": 163602,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00003750/dense_rollout/rollout_stability_report.json",
+        "sha256": "425f8eae50fc8e8d02a6e5a50410bfd28cf02b5075c9463d682f2f9dd1fa088b"
+      },
+      {
+        "bytes": 265487,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/model/cofitok_rollout/rollout_stability_report.json",
+        "sha256": "86940925c804652e0fd6f59ac5cab5c6156f17e6a5ee4215c32134995cb4c905"
+      },
+      {
+        "bytes": 163498,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/model/dense_rollout/rollout_stability_report.json",
+        "sha256": "873ab344e84d9830b093b35ae9214cd9d3c59432fd1010d2c7c96afef3524f87"
+      }
+    ],
+    "training_metrics": {
+      "cofitok": {
+        "bytes": 171605,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2/cofitok_rgbtail3_rollout_x0_u2/train_metrics.jsonl",
+        "sha256": "fced57fff8e87ab3b4157244dc8eb260301737c96c1805e8a12ac26f7e6bf297"
+      },
+      "dense": {
+        "bytes": 158268,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2/dense_rollout_x0_u2/train_metrics.jsonl",
+        "sha256": "4f62562a5d63d7e3d413a2c586e03ff30fcb8c91ad0edacafc31475f654d8308"
+      }
+    }
+  },
+  "status": "completed",
+  "weights": "model"
+}

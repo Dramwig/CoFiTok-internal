@@ -589,20 +589,33 @@ Every diagnostic threshold check passed. The summary SHA256 is
 It permanently declares `scaling_authorization_allowed=false` and cannot
 replace or override the failed raw qualification.
 
-The next read-only diagnostic evaluates raw model weights at the immutable
+The next read-only diagnostic evaluated raw model weights at the immutable
 1,250, 2,500, 3,750, and 5,000 checkpoints under the same n=8 seed-2029
-rollout protocol. It binds the pair and failed qualification SHA256 values,
-reuses the final 5K reports, and records the first checkpoint whose peak
-selected predicted-x0 high-frequency ratio exceeds `1.5`. It cannot authorize
-scaling:
+rollout protocol. It bound the pair and failed qualification SHA256 values,
+reused the final 5K reports, and recorded the first checkpoint whose peak
+selected predicted-x0 high-frequency ratio exceeded `1.5`. It could not
+authorize scaling:
 
 ```text
 runbook:
 artifacts/runbooks/generation_stability_rollout_x0_u2_raw_milestone_diagnostic5k_2026-07-30.sh
 sha256: e3ba897cb2b2f16bde0fe19bd6b8d47807ffce6318eb0115b9f7857eaf8ccff0
-remote PID: 525264
 output:
 /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/diagnostic5k_rollout_x0_u2_raw_milestones/diagnostic_report.json
+summary sha256:
+e741e84b23c090e219b10b36ba0d403d067a9a30d567ef2aa0b80d1f3dbcf9ec
 ```
 
-Formal 50K remains unauthorized while this diagnosis is active.
+| step | peak raw HF ratio | reconstruction ratio |
+|---:|---:|---:|
+| 1,250 | 1.27977744 | 1.09487631 |
+| 2,500 | 0.69351851 | 1.01795077 |
+| 3,750 | 0.84661776 | 0.84107244 |
+| 5,000 | 2.05124876 | 0.93844490 |
+
+The HF gate first crosses at step 5,000. Steps 2,500 and 3,750 are stable in
+both selected HF and reconstruction, while the final raw model abruptly
+diverges from its stable EMA path. This rules out a monotonic capacity collapse
+and localizes the correction to late raw-weight stability between 3,750 and
+5,000. Formal 50K remains unauthorized until a fresh corrected matched pair
+passes the raw gate.
