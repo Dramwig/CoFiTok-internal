@@ -154,6 +154,14 @@ def parse_args(defaults: dict[str, Any] | None = None) -> argparse.Namespace:
         choices=CHECKPOINT_INTEGRITY_POLICIES,
         default=defaults.get("checkpoint_integrity_policy", "optional"),
     )
+    parser.add_argument(
+        "--expected-checkpoint-revision",
+        default=defaults.get("expected_checkpoint_revision", ""),
+        help=(
+            "Expected checkpoint sidecar Git revision. Defaults to the monitor "
+            "checkout revision."
+        ),
+    )
     parser.add_argument("--poll-seconds", type=float, default=300.0)
     parser.add_argument("--stall-seconds", type=float, default=1_800.0)
     parser.add_argument("--idle-failure-grace-seconds", type=float, default=600.0)
@@ -175,6 +183,10 @@ def main(defaults: dict[str, Any] | None = None) -> None:
     output = Path(args.output)
     while True:
         now = time.time()
+        git_state = _git_state()
+        expected_checkpoint_revision = (
+            args.expected_checkpoint_revision or str(git_state["revision"])
+        )
         runs = {
             "cofitok": inspect_run(
                 output_root / args.cofitok_run,
@@ -183,6 +195,7 @@ def main(defaults: dict[str, Any] | None = None) -> None:
                 checkpoint_interval=args.checkpoint_interval,
                 checkpoint_grace_steps=args.checkpoint_grace_steps,
                 checkpoint_integrity_policy=args.checkpoint_integrity_policy,
+                expected_checkpoint_revision=expected_checkpoint_revision,
             ),
             "dense_identity": inspect_run(
                 output_root / args.dense_run,
@@ -191,6 +204,7 @@ def main(defaults: dict[str, Any] | None = None) -> None:
                 checkpoint_interval=args.checkpoint_interval,
                 checkpoint_grace_steps=args.checkpoint_grace_steps,
                 checkpoint_integrity_policy=args.checkpoint_integrity_policy,
+                expected_checkpoint_revision=expected_checkpoint_revision,
             ),
         }
         usage = shutil.disk_usage(output_root)
@@ -209,7 +223,7 @@ def main(defaults: dict[str, Any] | None = None) -> None:
             updated_at=datetime.now(timezone.utc).isoformat(),
             hostname=socket.gethostname(),
             monitor_name=args.monitor_name,
-            git=_git_state(),
+            git=git_state,
         )
         _write_atomic(output, report)
         print(json.dumps({"status": report["status"], "stage": report["stage"]}))

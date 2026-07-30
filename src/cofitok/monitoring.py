@@ -90,6 +90,7 @@ def _inspect_checkpoint_integrity(
     step: int,
     checkpoint_bytes: int,
     required: bool,
+    expected_git_revision: str | None,
 ) -> tuple[dict[str, Any], list[str]]:
     integrity_path = checkpoint.with_name(checkpoint.name + ".integrity.json")
     if not integrity_path.is_file():
@@ -144,6 +145,17 @@ def _inspect_checkpoint_integrity(
             f"checkpoint integrity manifest {integrity_path.name} "
             "has an invalid checkpoint_sha256"
         )
+    if expected_git_revision is not None:
+        if integrity.get("git_revision") != expected_git_revision:
+            issues.append(
+                f"checkpoint integrity manifest {integrity_path.name} "
+                "has mismatched git_revision"
+            )
+        if integrity.get("git_dirty") is not False:
+            issues.append(
+                f"checkpoint integrity manifest {integrity_path.name} "
+                "does not declare a clean Git state"
+            )
     return (
         {
             "checkpoint": checkpoint.name,
@@ -152,6 +164,8 @@ def _inspect_checkpoint_integrity(
             "checkpoint_bytes": integrity.get("checkpoint_bytes"),
             "checkpoint_sha256": checkpoint_sha256,
             "step": integrity.get("step"),
+            "git_revision": integrity.get("git_revision"),
+            "git_dirty": integrity.get("git_dirty"),
             "verification": "metadata_only_no_payload_hash",
         },
         issues,
@@ -242,6 +256,7 @@ def inspect_run(
     checkpoint_interval: int = 0,
     checkpoint_grace_steps: int = 0,
     checkpoint_integrity_policy: str = "optional",
+    expected_checkpoint_revision: str | None = None,
 ) -> dict[str, Any]:
     if expected_steps < 1 or checkpoint_interval < 0 or checkpoint_grace_steps < 0:
         raise ValueError("monitor run thresholds are invalid")
@@ -250,6 +265,11 @@ def inspect_run(
             "checkpoint_integrity_policy must be one of "
             + ", ".join(CHECKPOINT_INTEGRITY_POLICIES)
         )
+    if expected_checkpoint_revision is not None and (
+        not isinstance(expected_checkpoint_revision, str)
+        or not expected_checkpoint_revision
+    ):
+        raise ValueError("expected_checkpoint_revision must be a non-empty string")
     root = Path(run_dir)
     metrics_path = root / "train_metrics.jsonl"
     last, metric_rows, health_issues = _read_metrics(metrics_path)
@@ -282,6 +302,7 @@ def inspect_run(
                 step=step,
                 checkpoint_bytes=size,
                 required=required_now,
+                expected_git_revision=expected_checkpoint_revision,
             )
             checkpoint_integrity.append(integrity)
             health_issues.extend(integrity_issues)
@@ -366,6 +387,7 @@ def inspect_run(
         "checkpoints": checkpoints,
         "checkpoint_integrity": {
             "policy": checkpoint_integrity_policy,
+            "expected_checkpoint_revision": expected_checkpoint_revision,
             "verification": "metadata_only_no_payload_hash",
             "manifests": checkpoint_integrity,
             "latest_binding": latest_binding,

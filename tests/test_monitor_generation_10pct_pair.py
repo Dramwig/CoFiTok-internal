@@ -235,6 +235,8 @@ def test_required_checkpoint_integrity_verifies_metadata_and_latest_binding(
         "checkpoint": checkpoint.name,
         "checkpoint_bytes": checkpoint.stat().st_size,
         "checkpoint_sha256": "a" * 64,
+        "git_dirty": False,
+        "git_revision": "revision-a",
         "step": 1_250,
     }
     integrity_name = checkpoint.name + ".integrity.json"
@@ -253,6 +255,7 @@ def test_required_checkpoint_integrity_verifies_metadata_and_latest_binding(
         checkpoint_interval=1_250,
         checkpoint_grace_steps=100,
         checkpoint_integrity_policy="required",
+        expected_checkpoint_revision="revision-a",
     )
 
     assert report["health_issues"] == []
@@ -297,6 +300,50 @@ def test_required_checkpoint_integrity_rejects_metadata_mismatch(tmp_path) -> No
     assert any(
         "mismatched checkpoint_bytes" in issue
         for issue in report["health_issues"]
+    )
+
+
+def test_required_checkpoint_integrity_rejects_git_revision_mismatch(
+    tmp_path,
+) -> None:
+    (tmp_path / "train_metrics.jsonl").write_text(
+        json.dumps({"step": 1_350, "total": 0.1}) + "\n", encoding="utf-8"
+    )
+    checkpoint = tmp_path / "checkpoint_step_00001250.pt"
+    checkpoint.write_bytes(b"checkpoint")
+    integrity = {
+        "checkpoint": checkpoint.name,
+        "checkpoint_bytes": checkpoint.stat().st_size,
+        "checkpoint_sha256": "f" * 64,
+        "git_dirty": False,
+        "git_revision": "wrong-revision",
+        "step": 1_250,
+    }
+    integrity_name = checkpoint.name + ".integrity.json"
+    (tmp_path / integrity_name).write_text(
+        json.dumps(integrity) + "\n", encoding="utf-8"
+    )
+    (tmp_path / "latest.json").write_text(
+        json.dumps({**integrity, "integrity_manifest": integrity_name}) + "\n",
+        encoding="utf-8",
+    )
+
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+        expected_checkpoint_revision="expected-revision",
+    )
+
+    assert any(
+        "mismatched git_revision" in issue for issue in report["health_issues"]
+    )
+    assert (
+        report["checkpoint_integrity"]["expected_checkpoint_revision"]
+        == "expected-revision"
     )
 
 
