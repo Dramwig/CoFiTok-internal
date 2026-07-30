@@ -169,3 +169,66 @@ authoritative training monitor or post-evaluation waiter. The superseded
 metadata-only observer PID 21289 was terminated only after its `/proc` cwd and
 monitor name were both verified; no training, authoritative monitor, waiter,
 or GPU process was signaled.
+
+## Run-manifest and schedule binding
+
+Revision `63af805b7ec1fe622c7a58aa65ed1d136097142e` extends the required
+monitor policy to validate `run_manifest.json` before accepting live metrics.
+The monitor now binds:
+
+- configured target steps and checkpoint interval;
+- clean training Git revision;
+- runtime-environment SHA256;
+- formal dataset provenance status and dataset identity SHA256;
+- every logged rollout-consistency and EMA-teacher-consistency scale against
+  the manifest schedule using the same float32 scalar semantics as training.
+
+Missing positive-weight scale fields and any scale drift are health failures.
+Legacy optional-policy runs remain compatible and report the manifest check as
+`not_enforced`.
+
+Local targeted and full tests passed, with the same existing skips. The
+incremental rehearsal bundle was:
+
+```text
+bytes: 4,637
+SHA256: 171686331d62437df54473d5c4646d6badfea27c0295906bc133e5e5815a0ea8
+```
+
+The isolated Linux checkout
+`/tmp/cofitok-monitor-manifest-63af805` passed all 20 targeted monitor tests,
+all 88 tracked shell runbooks passed `bash -n`, and the checkout remained
+clean.
+
+A replacement read-only observer now watches the active EMA-teacher 5K pair:
+
+```text
+observer checkout revision:
+63af805b7ec1fe622c7a58aa65ed1d136097142e
+expected training/checkpoint revision:
+59db142fc45d69dc92bb0333be5ac2d0162d9dc4
+PID: 37643
+report:
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher_manifest_observer_63af805.json
+```
+
+Its first accepted snapshot was `running / issues=[]` at CoFiTok step 800.
+The manifest was `verified`; all 33 metric rows matched both configured
+consistency schedules, and the runtime-environment and dataset-identity SHA256
+values were present and valid. The superseded `e22e178` observer PID 36703 was
+terminated only after the replacement PID, checkout, command, and healthy
+report were verified.
+
+The authoritative monitor, training runbook, post-evaluation waiter, active
+training checkout, and official repository were not changed:
+
+```text
+active training revision:
+59db142fc45d69dc92bb0333be5ac2d0162d9dc4
+official remote repository:
+1ebcc15210e63a776a2ba448481cbd8bb94a4066
+```
+
+This is observability hardening only. The active run remains a fresh matched
+5K gate, and formal 50K training remains unauthorized until the bounded raw
+n=8 and two-seed n=64 post-evaluation decision passes.
