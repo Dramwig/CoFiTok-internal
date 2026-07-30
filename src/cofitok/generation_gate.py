@@ -244,8 +244,42 @@ def _validate_scientific_gate_evidence(
         raise ValueError("generation gate coarse-token utilization uses the wrong source metric")
     token_count = int(utilization.get("token_count", -1))
     coarse_token_count = int(utilization.get("coarse_token_count", -1))
+    tail_token_count = int(
+        utilization.get(
+            "full_resolution_tail_token_count",
+            token_count - coarse_token_count,
+        )
+    )
+    partition_schema = utilization.get(
+        "partition_schema",
+        "legacy_last_two_tokens",
+    )
     raw_ratios = utilization.get("component_energy_ratios")
-    if token_count < 3 or coarse_token_count != token_count - 2:
+    if partition_schema == "token_spatial_stride_suffix_v1":
+        raw_strides = utilization.get("token_spatial_strides")
+        if (
+            not isinstance(raw_strides, list)
+            or len(raw_strides) != token_count
+            or not all(type(value) is int for value in raw_strides)
+        ):
+            raise ValueError("generation gate coarse-token stride partition is incomplete")
+        strides = list(raw_strides)
+        expected_coarse = strides.index(1) if 1 in strides else -1
+        valid_partition = (
+            expected_coarse > 0
+            and all(value > 1 for value in strides[:expected_coarse])
+            and all(value == 1 for value in strides[expected_coarse:])
+            and coarse_token_count == expected_coarse
+            and tail_token_count == token_count - expected_coarse
+        )
+    elif partition_schema == "legacy_last_two_tokens":
+        valid_partition = (
+            coarse_token_count == token_count - 2
+            and tail_token_count == 2
+        )
+    else:
+        valid_partition = False
+    if token_count < 3 or not valid_partition:
         raise ValueError("generation gate coarse-token partition is invalid")
     if not isinstance(raw_ratios, list) or len(raw_ratios) != token_count:
         raise ValueError("generation gate component-energy ratios are incomplete")

@@ -8,6 +8,9 @@ from cofitok.generation_paths import (
     FULL_DENSE_RUN_ID,
     SCALING_COFITOK_RUN_ID,
     SCALING_DENSE_RUN_ID,
+    STABILITY_SCALING_COFITOK_RUN_ID,
+    STABILITY_SCALING_DENSE_RUN_ID,
+    STABILITY_SCALING_ROOT_ID,
 )
 from cofitok.reporting import file_sha256
 
@@ -39,6 +42,36 @@ GATE_SOURCE_SUFFIXES = {
             "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
         ),
     },
+    "stability_scaling": {
+        "cofitok_training": (
+            f"checkpoints/generation/{STABILITY_SCALING_ROOT_ID}/"
+            f"{STABILITY_SCALING_COFITOK_RUN_ID}/training_report.json"
+        ),
+        "dense_training": (
+            f"checkpoints/generation/{STABILITY_SCALING_ROOT_ID}/"
+            f"{STABILITY_SCALING_DENSE_RUN_ID}/training_report.json"
+        ),
+        "cofitok_generation": (
+            f"checkpoints/generation/{STABILITY_SCALING_ROOT_ID}/"
+            f"{STABILITY_SCALING_COFITOK_RUN_ID}/"
+            "samples_gate10k_ddim100_cfg15/metrics/generation_metrics_report.json"
+        ),
+        "dense_generation": (
+            f"checkpoints/generation/{STABILITY_SCALING_ROOT_ID}/"
+            f"{STABILITY_SCALING_DENSE_RUN_ID}/"
+            "samples_gate10k_ddim100_cfg15/metrics/generation_metrics_report.json"
+        ),
+        "cofitok_checkpoint_eval": (
+            f"checkpoints/generation/{STABILITY_SCALING_ROOT_ID}/"
+            f"{STABILITY_SCALING_COFITOK_RUN_ID}/"
+            "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
+        ),
+        "dense_checkpoint_eval": (
+            f"checkpoints/generation/{STABILITY_SCALING_ROOT_ID}/"
+            f"{STABILITY_SCALING_DENSE_RUN_ID}/"
+            "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
+        ),
+    },
     "full": {
         "cofitok_training": (
             f"checkpoints/generation/{FULL_COFITOK_RUN_ID}/"
@@ -65,6 +98,11 @@ GATE_SOURCE_SUFFIXES = {
         ),
     },
 }
+GATE_SOURCE_PROFILE_STAGES = {
+    "scaling": "scaling",
+    "stability_scaling": "scaling",
+    "full": "full",
+}
 
 
 def gate_source_report_identity(path: str | Path) -> dict[str, Any]:
@@ -83,9 +121,9 @@ def gate_source_report_identity(path: str | Path) -> dict[str, Any]:
 def _validate_gate_source_report_identities(
     source_reports: dict[str, dict[str, Any]],
     *,
-    stage: str,
+    profile: str,
 ) -> None:
-    expected = GATE_SOURCE_SUFFIXES.get(stage)
+    expected = GATE_SOURCE_SUFFIXES.get(profile)
     if expected is None or set(source_reports) != set(expected):
         raise ValueError("generation gate source-report set is incomplete")
     for name, suffix in expected.items():
@@ -107,14 +145,21 @@ def build_generation_gate_source_reports(
     *,
     stage: str,
     paths: dict[str, str | Path],
+    profile: str | None = None,
 ) -> dict[str, dict[str, Any]]:
-    expected = GATE_SOURCE_SUFFIXES.get(stage)
+    source_profile = profile or stage
+    if GATE_SOURCE_PROFILE_STAGES.get(source_profile) != stage:
+        raise ValueError(
+            f"generation gate source profile {source_profile} is incompatible "
+            f"with stage {stage}"
+        )
+    expected = GATE_SOURCE_SUFFIXES.get(source_profile)
     if expected is None or set(paths) != set(expected):
         raise ValueError("generation gate source paths are incomplete")
     reports = {
         name: gate_source_report_identity(path) for name, path in paths.items()
     }
-    _validate_gate_source_report_identities(reports, stage=stage)
+    _validate_gate_source_report_identities(reports, profile=source_profile)
     return reports
 
 
@@ -122,10 +167,19 @@ def verify_generation_gate_source_reports(
     gate: dict[str, Any],
 ) -> dict[str, Any]:
     stage = str(gate.get("stage", ""))
+    source_profile = str(gate.get("source_profile", stage))
+    if GATE_SOURCE_PROFILE_STAGES.get(source_profile) != stage:
+        raise ValueError(
+            f"generation gate source profile {source_profile} is incompatible "
+            f"with stage {stage}"
+        )
     source_reports = gate.get("source_reports")
     if not isinstance(source_reports, dict):
         raise ValueError("generation gate is missing source-report identities")
-    _validate_gate_source_report_identities(source_reports, stage=stage)
+    _validate_gate_source_report_identities(
+        source_reports,
+        profile=source_profile,
+    )
     verified = {}
     for name, expected in source_reports.items():
         actual = gate_source_report_identity(expected["path"])
@@ -134,4 +188,9 @@ def verify_generation_gate_source_reports(
                 f"generation gate source report changed after binding: {name}"
             )
         verified[name] = actual
-    return {"status": "verified", "stage": stage, "source_reports": verified}
+    return {
+        "status": "verified",
+        "stage": stage,
+        "source_profile": source_profile,
+        "source_reports": verified,
+    }

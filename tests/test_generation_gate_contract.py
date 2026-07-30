@@ -218,6 +218,28 @@ def test_scaling_gate_accepts_roundoff_in_derived_coarse_energy_sum() -> None:
         validate_generation_gate_authorization(gate, expected_stage="scaling")
 
 
+def test_scaling_gate_validates_rgbtail3_stride_partition() -> None:
+    gate = _gate()
+    row = next(
+        item for item in gate["gates"] if item["name"] == "coarse_token_utilization"
+    )
+    row["evidence"].update(
+        {
+            "partition_schema": "token_spatial_stride_suffix_v1",
+            "coarse_token_count": 5,
+            "full_resolution_tail_token_count": 3,
+            "token_spatial_strides": [16, 16, 8, 8, 4, 1, 1, 1],
+            "component_energy_ratios": [0.012] * 5 + [0.30, 0.30, 0.34],
+        }
+    )
+
+    validate_generation_gate_authorization(gate, expected_stage="scaling")
+
+    row["evidence"]["coarse_token_count"] = 6
+    with pytest.raises(ValueError, match="partition is invalid"):
+        validate_generation_gate_authorization(gate, expected_stage="scaling")
+
+
 def test_full_gate_rejects_weakened_precision_floor() -> None:
     gate = copy.deepcopy(_gate("full"))
     gate["thresholds"]["min_precision"] = 0.29

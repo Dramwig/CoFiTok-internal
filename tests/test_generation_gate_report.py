@@ -222,6 +222,76 @@ def test_generation_gate_holds_on_collapsed_coarse_tokens() -> None:
     assert report["status"] == "fail"
 
 
+def test_generation_gate_uses_rgbtail3_stride_partition() -> None:
+    checkpoint = _checkpoint(0.1, "a" * 64)
+    checkpoint["config"]["model"]["token_spatial_strides"] = [
+        16,
+        16,
+        8,
+        8,
+        4,
+        1,
+        1,
+        1,
+    ]
+    checkpoint["metrics"]["component_energy_ratio_per_sample_mean"] = [
+        0.01,
+        0.01,
+        0.01,
+        0.01,
+        0.01,
+        0.30,
+        0.31,
+        0.34,
+    ]
+
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(20.5, 8, "a" * 64),
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=checkpoint,
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+        require_stride_partition=True,
+    )
+
+    gate = next(
+        row for row in report["gates"] if row["name"] == "coarse_token_utilization"
+    )
+    assert gate["passed"] is True
+    assert gate["evidence"]["partition_schema"] == "token_spatial_stride_suffix_v1"
+    assert gate["evidence"]["coarse_token_count"] == 5
+    assert gate["evidence"]["full_resolution_tail_token_count"] == 3
+    assert gate["evidence"]["coarse_token_energy_ratio"] == pytest.approx(0.05)
+
+
+def test_stability_generation_gate_rejects_missing_stride_partition() -> None:
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(20.5, 8, "a" * 64),
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.102, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+        require_stride_partition=True,
+    )
+
+    gate = next(
+        row for row in report["gates"] if row["name"] == "coarse_token_utilization"
+    )
+    assert gate["passed"] is False
+    assert (
+        gate["evidence"]["partition_schema"]
+        == "invalid_missing_token_spatial_stride_suffix"
+    )
+
+
 def test_generation_gate_passes_matched_quality_and_mechanism() -> None:
     report = build_report(
         cofitok_training=_training(100_500, 8),

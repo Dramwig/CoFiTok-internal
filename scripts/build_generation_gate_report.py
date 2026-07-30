@@ -11,6 +11,7 @@ from cofitok.generation import sampling_protocol_contract
 from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_gate import GENERATION_GATE_SCHEMA_VERSION
 from cofitok.generation_gate_sources import (
+    GATE_SOURCE_SUFFIXES,
     build_generation_gate_source_reports,
 )
 from cofitok.generation_pair import generation_pair_contract
@@ -28,6 +29,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dense-checkpoint-eval", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--stage", choices=["scaling", "full"], default="scaling")
+    parser.add_argument(
+        "--source-profile",
+        choices=sorted(GATE_SOURCE_SUFFIXES),
+        help="Authoritative path profile; defaults to the scientific gate stage.",
+    )
     parser.add_argument("--min-samples", type=int, default=10_000)
     parser.add_argument("--max-fid-regression", type=float, default=0.05)
     parser.add_argument("--max-absolute-fid", type=float, default=100.0)
@@ -97,27 +103,67 @@ def _distribution_metrics_valid(metrics: dict[str, float | None]) -> bool:
     )
 
 
-def _coarse_token_utilization(report: dict[str, Any]) -> dict[str, Any]:
+def _coarse_token_utilization(
+    report: dict[str, Any],
+    *,
+    require_stride_partition: bool = False,
+) -> dict[str, Any]:
     raw = report.get("metrics", {}).get("component_energy_ratio_per_sample_mean")
+    model = report.get("config", {}).get("model", {})
     try:
         ratios = [float(value) for value in raw]
-        token_count = int(report["config"]["model"]["token_count"])
+        token_count = int(model["token_count"])
     except (KeyError, TypeError, ValueError):
         ratios = []
         token_count = 0
+    raw_strides = model.get("token_spatial_strides")
+    strides: list[int] = []
+    if (
+        isinstance(raw_strides, list)
+        and len(raw_strides) == token_count
+        and all(type(value) is int for value in raw_strides)
+    ):
+        strides = list(raw_strides)
+    stride_partition_valid = (
+        token_count >= 3
+        and len(strides) == token_count
+        and all(value > 0 for value in strides)
+        and 1 in strides
+    )
+    if stride_partition_valid:
+        coarse_token_count = strides.index(1)
+        stride_partition_valid = (
+            coarse_token_count > 0
+            and all(value > 1 for value in strides[:coarse_token_count])
+            and all(value == 1 for value in strides[coarse_token_count:])
+        )
+    if stride_partition_valid:
+        partition_schema = "token_spatial_stride_suffix_v1"
+    elif require_stride_partition:
+        partition_schema = "invalid_missing_token_spatial_stride_suffix"
+        coarse_token_count = 0
+        strides = []
+    else:
+        partition_schema = "legacy_last_two_tokens"
+        coarse_token_count = max(token_count - 2, 0)
+        strides = []
     valid = (
         token_count >= 3
+        and partition_schema
+        != "invalid_missing_token_spatial_stride_suffix"
         and len(ratios) == token_count
         and all(math.isfinite(value) and value >= 0.0 for value in ratios)
         and math.isclose(sum(ratios), 1.0, rel_tol=0.0, abs_tol=1e-6)
     )
-    coarse_token_count = max(token_count - 2, 0)
     coarse_ratio = sum(ratios[:coarse_token_count]) if valid else None
     return {
         "valid": valid,
         "source_metric": "component_energy_ratio_per_sample_mean",
+        "partition_schema": partition_schema,
         "token_count": token_count,
         "coarse_token_count": coarse_token_count,
+        "full_resolution_tail_token_count": token_count - coarse_token_count,
+        "token_spatial_strides": strides,
         "component_energy_ratios": ratios,
         "coarse_token_energy_ratio": coarse_ratio,
     }
@@ -203,6 +249,7 @@ def build_report(
     min_recall: float = 0.30,
     max_precision_regression: float = 0.05,
     max_recall_regression: float = 0.05,
+    require_stride_partition: bool = False,
 ) -> dict[str, Any]:
     if stage not in {"scaling", "full"}:
         raise ValueError("stage must be scaling or full")
@@ -234,7 +281,10 @@ def build_report(
     dense_endpoint = float(
         dense_checkpoint["metrics"]["orders"]["ordered"]["endpoint_clean_mse"]
     )
-    coarse_utilization = _coarse_token_utilization(cofitok_checkpoint)
+    coarse_utilization = _coarse_token_utilization(
+        cofitok_checkpoint,
+        require_stride_partition=require_stride_partition,
+    )
     cofitok_checkpoint_sha = str(cofitok_checkpoint["checkpoint_sha256"])
     dense_checkpoint_sha = str(dense_checkpoint["checkpoint_sha256"])
     checkpoint_evaluator_git_pair = (
@@ -760,9 +810,11 @@ def main() -> None:
         min_recall=args.min_recall,
         max_precision_regression=args.max_precision_regression,
         max_recall_regression=args.max_recall_regression,
+        require_stride_partition=args.source_profile == "stability_scaling",
     )
     report["source_reports"] = build_generation_gate_source_reports(
         stage=args.stage,
+        profile=args.source_profile,
         paths={
             "cofitok_training": args.cofitok_training,
             "dense_training": args.dense_training,
@@ -772,6 +824,7 @@ def main() -> None:
             "dense_checkpoint_eval": args.dense_checkpoint_eval,
         },
     )
+    report["source_profile"] = args.source_profile or args.stage
     write_json_report(Path(args.output), report)
     print(f"wrote {args.output}")
     if report["status"] != "pass" and not args.allow_fail:

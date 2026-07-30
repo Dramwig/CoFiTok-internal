@@ -55,6 +55,51 @@ def test_generation_gate_source_reports_reject_wrong_authoritative_path(
         build_generation_gate_source_reports(stage="scaling", paths=paths)
 
 
+def test_stability_scaling_source_profile_is_independent_from_gate_stage(
+    tmp_path: Path,
+) -> None:
+    profile_root = (
+        Path("\\\\?\\" + str(tmp_path.resolve()))
+        if os.name == "nt"
+        else tmp_path
+    )
+    paths = {}
+    for index, (name, suffix) in enumerate(
+        GATE_SOURCE_SUFFIXES["stability_scaling"].items()
+    ):
+        path = profile_root / suffix
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"name": name, "index": index}), encoding="utf-8")
+        paths[name] = path
+    gate = {
+        "stage": "scaling",
+        "source_profile": "stability_scaling",
+        "source_reports": build_generation_gate_source_reports(
+            stage="scaling",
+            profile="stability_scaling",
+            paths=paths,
+        ),
+    }
+
+    verified = verify_generation_gate_source_reports(gate)
+
+    assert verified["stage"] == "scaling"
+    assert verified["source_profile"] == "stability_scaling"
+
+
+def test_generation_gate_source_profile_rejects_cross_stage_binding(
+    tmp_path: Path,
+) -> None:
+    paths, _ = _sources(tmp_path, stage="full")
+
+    with pytest.raises(ValueError, match="incompatible"):
+        build_generation_gate_source_reports(
+            stage="scaling",
+            profile="full",
+            paths=paths,
+        )
+
+
 def test_sources_only_cli_accepts_quality_hold_but_rejects_source_drift(
     tmp_path: Path,
 ) -> None:
