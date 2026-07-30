@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-07-31T06:28:55.4769176+08:00",
+  "remote_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29",
+  "training_revision": "59db142fc45d69dc92bb0333be5ac2d0162d9dc4",
+  "observer_revision": "164c96e71dd97f0ac85a4f906c5a86cf768b7390",
+  "member": "cofitok",
+  "milestone_step": 5000,
+  "checkpoint_payload_copied": false,
+  "observer_snapshot": {
+    "status": "running",
+    "stage": "dense_identity_training",
+    "issues": 0,
+    "cofitok_last_step": 5000,
+    "cofitok_metric_rows": 201,
+    "cofitok_complete": true,
+    "latest_checkpoint_step": 5000,
+    "dense_last_step": 25
+  },
+  "training_report": {
+    "training_complete": true,
+    "completed_steps": 5000,
+    "samples_seen": 320000,
+    "parameter_count": 62834083,
+    "elapsed_seconds": 14222.479915857315,
+    "peak_vram_bytes": 15238400000,
+    "validation_epsilon_mse": 0.018617089837789536
+  },
+  "files": {
+    "checkpoint_step_00005000.pt.integrity.json": {
+      "bytes": 549,
+      "sha256": "c5f1c6906096bff6402a2ab83c2d3031c20916e5cc17669bb4f6407a2711fbb0"
+    },
+    "latest.snapshot.json": {
+      "bytes": 619,
+      "sha256": "97575ff92c0e20ffd1a80d2b64448e0588aa348aa7e7a05171c23182ba35d2c3"
+    },
+    "provenance_observer_164c96e.json": {
+      "bytes": 28083,
+      "sha256": "9f19b52c8445f9e2b9634750277298077aa1861aa33669b413a33811309a4398"
+    },
+    "run_manifest.snapshot.json": {
+      "bytes": 7954,
+      "sha256": "6435685aa62bdb71679ae1d3daece439f883e142ffa2e7c934244434dbff0db7"
+    },
+    "train_metrics.snapshot.jsonl": {
+      "bytes": 188020,
+      "sha256": "14c065bbf9d9ff2748e18bd6662e155024461e39716c9405a1599e92374b0a00"
+    },
+    "training_report.snapshot.json": {
+      "bytes": 10132,
+      "sha256": "3de577d830d2ba07fc399296e98ebefd66d1ea9f3ccfe3552f98ccc4243ad4c7"
+    }
+  }
+}

@@ -206,3 +206,46 @@ observer snapshot ends at step 3,775; both still bind the protected step-3,750
 checkpoint. The checkpoint payload itself was not copied. CoFiTok must still
 finish step 5,000, the matched dense member must finish, and raw n8/n64
 mechanism gates must pass before stability 50K can be authorized.
+
+## CoFiTok member completion
+
+The CoFiTok member completed all 5,000 steps and the locked runbook
+automatically advanced to matched dense training:
+
+```text
+training complete:               true
+images seen:                     320,000
+parameter count:                 62,834,083
+elapsed seconds:                 14,222.479915857315
+peak VRAM bytes:                 15,238,400,000
+checkpoint bytes:                1,006,321,770
+checkpoint SHA256:               cb432c75ccbc4eba00dab878e43dd0e45740ebdd9a6b95e0cd014ce97b6d6450
+total loss:                      0.0521534513682127
+epsilon loss:                    0.0316624497063458
+rollout consistency loss:        0.013888129265978932
+EMA-teacher consistency loss:    0.0019236642983742058
+rollout/teacher schedule scales: 1.0 / 1.0
+gradient norm, before clipping:  0.06653366982936859
+validation epsilon MSE:          0.018617089837789536
+```
+
+The final validation MSE was 43.6801% lower than step 1,250, 49.4984% lower
+than step 2,500, and 18.9338% lower than step 3,750 under the same 16-image,
+fixed-noise protocol. The final report binds clean revision `59db142`, exact
+dataset/runtime identities, 320,000 images seen, and the final checkpoint
+sidecar. The strict observer verified all four checkpoints and switched to
+`dense_identity_training` with no issues; dense had reached step 25 when the
+snapshot was taken.
+
+The small completion evidence was copied to:
+
+```text
+artifacts/reports/generation/stability_probe_2026-07-29/
+  pair5k_rollout_x0_u2_ema_teacher/milestones/step_00005000_cofitok/
+```
+
+The source manifest binds six files by bytes and SHA256, including the complete
+201-row metrics history and authoritative training report. The checkpoint
+payload itself was not copied. CoFiTok completion is necessary but not
+sufficient for scaling: the dense member and raw n8/n64 mechanism gates remain
+mandatory, and stability 50K is still unauthorized.
