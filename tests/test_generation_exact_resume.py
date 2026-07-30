@@ -116,15 +116,23 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
         "epsilon",
         "grad_norm",
         "learning_rate",
+        "validation_batch_index",
         "validation_epsilon_mse",
+        "validation_event_index",
+        "validation_noise_seed",
+        "validation_num_images",
     ):
         assert uninterrupted_checkpoint["metrics"][key] == resumed_checkpoint["metrics"][key]
 
-    steps = [
-        int(json.loads(line)["step"])
+    rows = [
+        json.loads(line)
         for line in (resumed / "train_metrics.jsonl").read_text(encoding="utf-8").splitlines()
     ]
-    assert steps == [1, 2]
+    assert [int(row["step"]) for row in rows] == [1, 2]
+    assert [row["validation_event_index"] for row in rows] == [0, 1]
+    assert [row["validation_batch_index"] for row in rows] == [0, 1]
+    assert {row["validation_noise_seed"] for row in rows} == {100_020}
+    assert {row["validation_num_images"] for row in rows} == {2}
 
 
 def test_controlled_resume_accepts_only_a_clean_ancestor_revision() -> None:

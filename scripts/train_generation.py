@@ -439,10 +439,11 @@ def _evaluate_batch(
     batch: object,
     config: ExperimentConfig,
     device: torch.device,
-) -> float:
+) -> tuple[float, int, int]:
     model.eval()
     clean, labels = _move_batch(batch, device, config.data.class_conditional)
-    generator = torch.Generator(device=device).manual_seed(config.runtime.seed + 100_003)
+    validation_noise_seed = config.runtime.seed + 100_003
+    generator = torch.Generator(device=device).manual_seed(validation_noise_seed)
     noise = torch.randn(clean.shape, device=device, generator=generator)
     timesteps = torch.randint(
         0,
@@ -453,7 +454,8 @@ def _evaluate_batch(
     )
     noisy = schedule.add_noise(clean, noise, timesteps)
     output = model(noisy, timesteps, class_labels=labels)
-    return float(torch.nn.functional.mse_loss(output.epsilon.float(), noise.float()).item())
+    mse = float(torch.nn.functional.mse_loss(output.epsilon.float(), noise.float()).item())
+    return mse, int(clean.shape[0]), validation_noise_seed
 
 
 def main() -> None:
@@ -634,6 +636,7 @@ def main() -> None:
         eval_iterator,
         start_step // config.runtime.evaluation_interval,
     )
+    completed_validation_events = start_step // config.runtime.evaluation_interval
 
     model: torch.nn.Module = base_model
     if config.runtime.compile_model:
@@ -780,13 +783,23 @@ def main() -> None:
             except StopIteration:
                 eval_iterator = iter(eval_loader)
                 eval_batch = next(eval_iterator)
-            last_metrics["validation_epsilon_mse"] = _evaluate_batch(
+            validation_mse, validation_num_images, validation_noise_seed = _evaluate_batch(
                 model,
                 schedule,
                 eval_batch,
                 config,
                 device,
             )
+            last_metrics.update(
+                {
+                    "validation_epsilon_mse": validation_mse,
+                    "validation_event_index": completed_validation_events,
+                    "validation_batch_index": completed_validation_events % len(eval_loader),
+                    "validation_num_images": validation_num_images,
+                    "validation_noise_seed": validation_noise_seed,
+                }
+            )
+            completed_validation_events += 1
 
         should_log = step == start_step + 1 or step % config.optimization.log_interval == 0
         if should_log:

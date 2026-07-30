@@ -177,6 +177,13 @@ def test_audit_warns_when_scheduled_validation_is_not_logged(tmp_path) -> None:
         "event_count": 0,
         "expected_event_count": 2,
         "logging_complete": False,
+        "provenance_metadata_status": "not_applicable",
+        "provenance_fields": [
+            "validation_event_index",
+            "validation_batch_index",
+            "validation_num_images",
+            "validation_noise_seed",
+        ],
     }
     assert len(report["warnings"]) == 1
 
@@ -200,7 +207,69 @@ def test_audit_accepts_complete_validation_logging(tmp_path) -> None:
     )
 
     assert report["validation"]["logging_complete"] is True
+    assert report["validation"]["provenance_metadata_status"] == "legacy_absent"
     assert report["warnings"] == []
+
+
+def test_audit_validates_complete_validation_provenance(tmp_path) -> None:
+    _write_metrics(tmp_path, [1, 100, 200])
+    metrics_path = tmp_path / "train_metrics.jsonl"
+    rows = [json.loads(line) for line in metrics_path.read_text(encoding="utf-8").splitlines()]
+    for event_index, row in enumerate(rows[1:]):
+        row.update(
+            {
+                "validation_epsilon_mse": 0.09 - event_index * 0.01,
+                "validation_event_index": event_index,
+                "validation_batch_index": event_index,
+                "validation_num_images": 16,
+                "validation_noise_seed": 102_030,
+            }
+        )
+    metrics_path.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=1_000,
+        checkpoint_interval=500,
+        evaluation_interval=100,
+    )
+
+    assert report["status"] == "healthy"
+    assert report["validation"]["provenance_metadata_status"] == "complete"
+    assert report["issues"] == []
+
+
+def test_audit_rejects_noncontiguous_validation_event_indices(tmp_path) -> None:
+    _write_metrics(tmp_path, [1, 100, 200])
+    metrics_path = tmp_path / "train_metrics.jsonl"
+    rows = [json.loads(line) for line in metrics_path.read_text(encoding="utf-8").splitlines()]
+    for event_index, row in enumerate(rows[1:]):
+        row.update(
+            {
+                "validation_epsilon_mse": 0.09,
+                "validation_event_index": event_index + 1,
+                "validation_batch_index": event_index,
+                "validation_num_images": 16,
+                "validation_noise_seed": 102_030,
+            }
+        )
+    metrics_path.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=1_000,
+        checkpoint_interval=500,
+        evaluation_interval=100,
+    )
+
+    assert report["status"] == "invalid"
+    assert "validation event indices are not contiguous from zero" in report["issues"]
 
 
 def test_audit_requires_reached_protected_checkpoints(tmp_path) -> None:

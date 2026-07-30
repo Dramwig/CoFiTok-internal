@@ -241,7 +241,40 @@ def audit_progress(
             issues.append("training report completed_steps does not match metrics")
 
     recent = rows[-min(len(rows), 10) :]
-    validation_event_count = sum("validation_epsilon_mse" in row for row in rows)
+    validation_rows = [row for row in rows if "validation_epsilon_mse" in row]
+    validation_event_count = len(validation_rows)
+    validation_metadata_fields = (
+        "validation_event_index",
+        "validation_batch_index",
+        "validation_num_images",
+        "validation_noise_seed",
+    )
+    validation_metadata_counts = [
+        sum(field in row for field in validation_metadata_fields)
+        for row in validation_rows
+    ]
+    if not validation_rows:
+        validation_metadata_status = "not_applicable"
+    elif all(count == 0 for count in validation_metadata_counts):
+        validation_metadata_status = "legacy_absent"
+    elif all(count == len(validation_metadata_fields) for count in validation_metadata_counts):
+        validation_metadata_status = "complete"
+    else:
+        validation_metadata_status = "partial"
+        warnings.append("validation provenance metadata is only partially logged")
+    if validation_metadata_status == "complete":
+        event_indices = [
+            int(row["validation_event_index"])
+            for row in validation_rows
+        ]
+        if event_indices != list(range(validation_event_count)):
+            issues.append("validation event indices are not contiguous from zero")
+        if any(int(row["validation_batch_index"]) < 0 for row in validation_rows):
+            issues.append("validation batch indices must be non-negative")
+        if any(int(row["validation_num_images"]) <= 0 for row in validation_rows):
+            issues.append("validation image counts must be positive")
+        if any(int(row["validation_noise_seed"]) < 0 for row in validation_rows):
+            issues.append("validation noise seeds must be non-negative")
     expected_validation_events = (
         last_step // evaluation_interval if evaluation_interval is not None else None
     )
@@ -292,6 +325,8 @@ def audit_progress(
                 expected_validation_events is None
                 or validation_event_count >= expected_validation_events
             ),
+            "provenance_metadata_status": validation_metadata_status,
+            "provenance_fields": list(validation_metadata_fields),
         },
         "checkpoint": {
             "interval": checkpoint_interval,
