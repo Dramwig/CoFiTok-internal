@@ -756,3 +756,34 @@ step-500 row records exactly 32,000 images and the second scheduled validation
 event. Validation MSE improved from the step-250 milestone. The teacher is
 still correctly inactive before its step-600 boundary, and the checkpoint
 payload was not loaded or rehashed.
+
+The live training loop then exercised the active-teacher path at the expected
+warmup values:
+
+| step | teacher scale | teacher loss | total loss | gradient norm |
+|---:|---:|---:|---:|---:|
+| 600 | 0.00000000 | 0.00000000 | 0.07045249 | 0.86652696 |
+| 625 | 0.08333334 | 0.15508846 | 0.06570209 | 0.18528393 |
+| 650 | 0.16666667 | 0.15917403 | 0.07743759 | 1.65572608 |
+
+This matches the configured `(step - 600) / 300` schedule. The active loss
+remained finite and positive, the student gradient remained finite, and
+monitoring reported no issue. GPU memory was 23,515 MiB at step 650 versus
+about 23,507 MiB before activation.
+
+The third CoFiTok milestone also passed the read-only integrity audit:
+
+```text
+step: 750 / 1,000
+checkpoint bytes: 1,006,321,770
+checkpoint SHA256: e50371e8bca0843d115826382200c2b651dc7dfb496a6c2cf17686fdd3ed7708
+validation epsilon MSE: 0.029762834310531616
+EMA-teacher loss / scale: 0.1346598118543625 / 0.5
+rollout-consistency scale: 1.0
+```
+
+The sidecar, `latest.json`, checkpoint stat, revision, dataset identity, and
+runtime-environment identity all agree. The canonical row records exactly
+48,000 images and the third scheduled validation event. Validation MSE
+continued to improve after teacher activation. The checkpoint payload was not
+loaded or rehashed.
