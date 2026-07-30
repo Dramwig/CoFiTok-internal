@@ -14,6 +14,10 @@ ROBUST_METRIC_FIELDS = (
     "cofitok_reconstruction_amplification",
     "dense_reconstruction_amplification",
 )
+AUTHORIZED_NEXT_STAGES = {
+    "matched_5k": "authorize_fresh_matched_5k",
+    "fresh_matched_50k_preparation": "authorize_fresh_matched_50k_preparation",
+}
 
 
 def _failed_gates(report: dict[str, Any]) -> list[str]:
@@ -36,7 +40,13 @@ def build_stability_scaling_decision(
     robust_reports: list[dict[str, Any]],
     min_robust_reports: int = 2,
     min_robust_images: int = 64,
+    next_stage: str = "fresh_matched_50k_preparation",
 ) -> dict[str, Any]:
+    if next_stage not in AUTHORIZED_NEXT_STAGES:
+        raise ValueError(
+            "next_stage must be one of: "
+            + ", ".join(sorted(AUTHORIZED_NEXT_STAGES))
+        )
     issues: list[str] = []
     if int(screening_report.get("schema_version", 0)) < 2:
         issues.append("screening report schema must be at least 2")
@@ -134,10 +144,11 @@ def build_stability_scaling_decision(
         "schema_version": 1,
         "status": "pass" if passed else "fail",
         "decision": (
-            "authorize_fresh_matched_50k_preparation"
+            AUTHORIZED_NEXT_STAGES[next_stage]
             if passed
             else "hold_for_stability_correction"
         ),
+        "authorized_next_stage": next_stage if passed else None,
         "requirements": {
             "min_robust_reports": min_robust_reports,
             "min_robust_images": min_robust_images,

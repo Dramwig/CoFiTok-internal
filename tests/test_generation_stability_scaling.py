@@ -66,6 +66,34 @@ def test_scaling_decision_accepts_two_robust_seeds_after_screening_failure() -> 
     assert report["screening"]["failed_gates"] == ["reconstruction_regression"]
 
 
+def test_scaling_decision_can_authorize_only_the_matched_5k_stage() -> None:
+    report = build_stability_scaling_decision(
+        screening_report=_qualification(seed=2029, images=8),
+        robust_reports=[
+            _qualification(seed=2029, images=64),
+            _qualification(seed=2039, images=64),
+        ],
+        next_stage="matched_5k",
+    )
+
+    assert report["status"] == "pass"
+    assert report["decision"] == "authorize_fresh_matched_5k"
+    assert report["authorized_next_stage"] == "matched_5k"
+
+
+def test_scaling_decision_rejects_unknown_next_stage() -> None:
+    try:
+        build_stability_scaling_decision(
+            screening_report=_qualification(seed=2029, images=8),
+            robust_reports=[],
+            next_stage="matched_300k",
+        )
+    except ValueError as error:
+        assert "next_stage must be one of" in str(error)
+    else:
+        raise AssertionError("unknown next_stage was accepted")
+
+
 def test_scaling_decision_rejects_duplicate_robust_seeds() -> None:
     report = build_stability_scaling_decision(
         screening_report=_qualification(seed=2029, images=8, status="fail"),

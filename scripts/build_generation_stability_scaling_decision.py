@@ -24,6 +24,11 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--min-robust-reports", type=int, default=2)
     parser.add_argument("--min-robust-images", type=int, default=64)
+    parser.add_argument(
+        "--next-stage",
+        choices=("matched_5k", "fresh_matched_50k_preparation"),
+        default="fresh_matched_50k_preparation",
+    )
     parser.add_argument("--require-pass", action="store_true")
     return parser.parse_args()
 
@@ -48,6 +53,7 @@ def main() -> int:
         robust_reports=[_load(path) for path in args.robust_reports],
         min_robust_reports=args.min_robust_reports,
         min_robust_images=args.min_robust_images,
+        next_stage=args.next_stage,
     )
     report["sources"] = {
         "screening_report": _source(args.screening_report),

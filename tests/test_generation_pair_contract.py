@@ -24,6 +24,10 @@ def test_checked_in_generation_pairs_isolate_factorization_differences() -> None
             "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_k8_probe1k.json",
             "imagenet256_10pct_stability_rollout_x0_u2_dense_probe1k.json",
         ),
+        (
+            "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_k8_probe5k.json",
+            "imagenet256_10pct_stability_rollout_x0_u2_dense_probe5k.json",
+        ),
         ("imagenet256_cofitok_k8_300k.json", "imagenet256_dense_300k.json"),
     ):
         report = generation_pair_contract(_read(cofitok_name), _read(dense_name))
