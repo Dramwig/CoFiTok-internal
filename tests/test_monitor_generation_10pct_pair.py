@@ -7,6 +7,46 @@ import pytest
 from scripts.monitor_generation_10pct_pair import build_monitor_report, inspect_run
 
 
+def _write_required_manifest(
+    tmp_path,
+    *,
+    revision: str = "revision-a",
+    rollout_weight: float = 0.0,
+    rollout_start: int = 0,
+    rollout_warmup: int = 0,
+    teacher_weight: float = 0.0,
+    teacher_start: int = 0,
+    teacher_warmup: int = 0,
+) -> None:
+    (tmp_path / "run_manifest.json").write_text(
+        json.dumps(
+            {
+                "config": {
+                    "runtime": {
+                        "steps": 5_000,
+                        "checkpoint_interval": 1_250,
+                    },
+                    "loss": {
+                        "rollout_consistency_weight": rollout_weight,
+                        "rollout_consistency_start_step": rollout_start,
+                        "rollout_consistency_warmup_steps": rollout_warmup,
+                        "ema_teacher_consistency_weight": teacher_weight,
+                        "ema_teacher_consistency_start_step": teacher_start,
+                        "ema_teacher_consistency_warmup_steps": teacher_warmup,
+                    },
+                },
+                "git": {
+                    "revision": revision,
+                    "dirty": False,
+                },
+                "runtime_environment_sha256": "0" * 64,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _run(*, complete: bool, age: float, last_step: int = 10_000) -> dict:
     return {
         "complete": complete,
@@ -175,6 +215,7 @@ def test_inspect_run_detects_late_checkpoint_cadence(tmp_path) -> None:
 
 
 def test_required_checkpoint_integrity_waits_for_grace(tmp_path) -> None:
+    _write_required_manifest(tmp_path)
     (tmp_path / "train_metrics.jsonl").write_text(
         json.dumps({"step": 1_250, "total": 0.1}) + "\n", encoding="utf-8"
     )
@@ -199,6 +240,7 @@ def test_required_checkpoint_integrity_waits_for_grace(tmp_path) -> None:
 def test_required_checkpoint_integrity_rejects_missing_sidecar_after_grace(
     tmp_path,
 ) -> None:
+    _write_required_manifest(tmp_path)
     (tmp_path / "train_metrics.jsonl").write_text(
         json.dumps({"step": 1_350, "total": 0.1}) + "\n", encoding="utf-8"
     )
@@ -226,6 +268,7 @@ def test_required_checkpoint_integrity_rejects_missing_sidecar_after_grace(
 def test_required_checkpoint_integrity_verifies_metadata_and_latest_binding(
     tmp_path,
 ) -> None:
+    _write_required_manifest(tmp_path)
     (tmp_path / "train_metrics.jsonl").write_text(
         json.dumps({"step": 1_350, "total": 0.1}) + "\n", encoding="utf-8"
     )
@@ -270,6 +313,7 @@ def test_required_checkpoint_integrity_verifies_metadata_and_latest_binding(
 
 
 def test_required_checkpoint_integrity_rejects_metadata_mismatch(tmp_path) -> None:
+    _write_required_manifest(tmp_path)
     (tmp_path / "train_metrics.jsonl").write_text(
         json.dumps({"step": 1_350, "total": 0.1}) + "\n", encoding="utf-8"
     )
@@ -306,6 +350,7 @@ def test_required_checkpoint_integrity_rejects_metadata_mismatch(tmp_path) -> No
 def test_required_checkpoint_integrity_rejects_git_revision_mismatch(
     tmp_path,
 ) -> None:
+    _write_required_manifest(tmp_path, revision="expected-revision")
     (tmp_path / "train_metrics.jsonl").write_text(
         json.dumps({"step": 1_350, "total": 0.1}) + "\n", encoding="utf-8"
     )
@@ -350,6 +395,7 @@ def test_required_checkpoint_integrity_rejects_git_revision_mismatch(
 def test_required_integrity_does_not_compare_latest_to_previous_checkpoint(
     tmp_path,
 ) -> None:
+    _write_required_manifest(tmp_path)
     (tmp_path / "train_metrics.jsonl").write_text(
         json.dumps({"step": 2_500, "total": 0.1}) + "\n", encoding="utf-8"
     )
@@ -399,6 +445,7 @@ def test_required_integrity_does_not_compare_latest_to_previous_checkpoint(
 def test_required_integrity_enforces_latest_after_new_checkpoint_grace(
     tmp_path,
 ) -> None:
+    _write_required_manifest(tmp_path)
     (tmp_path / "train_metrics.jsonl").write_text(
         json.dumps({"step": 2_600, "total": 0.1}) + "\n", encoding="utf-8"
     )
@@ -430,6 +477,86 @@ def test_required_integrity_enforces_latest_after_new_checkpoint_grace(
 
     assert "latest.json has mismatched checkpoint" in report["health_issues"]
     assert report["checkpoint_integrity"]["latest_binding"]["status"] == "invalid"
+
+
+def test_required_monitor_validates_manifest_consistency_schedules(tmp_path) -> None:
+    _write_required_manifest(
+        tmp_path,
+        rollout_weight=0.1,
+        rollout_start=0,
+        rollout_warmup=1_000,
+        teacher_weight=0.25,
+        teacher_start=3_000,
+        teacher_warmup=1_000,
+    )
+    (tmp_path / "train_metrics.jsonl").write_text(
+        json.dumps(
+            {
+                "step": 500,
+                "total": 0.1,
+                "rollout_consistency_scale": 0.5,
+                "ema_teacher_consistency_scale": 0.0,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+        expected_checkpoint_revision="revision-a",
+    )
+
+    assert report["health_issues"] == []
+    assert report["run_manifest"]["status"] == "verified"
+    assert (
+        report["run_manifest"]["schedule_contracts"]["rollout_consistency"][
+            "checked_rows"
+        ]
+        == 1
+    )
+
+
+def test_required_monitor_rejects_manifest_schedule_drift(tmp_path) -> None:
+    _write_required_manifest(
+        tmp_path,
+        rollout_weight=0.1,
+        rollout_start=0,
+        rollout_warmup=1_000,
+    )
+    (tmp_path / "train_metrics.jsonl").write_text(
+        json.dumps(
+            {
+                "step": 500,
+                "total": 0.1,
+                "rollout_consistency_scale": 0.49,
+                "ema_teacher_consistency_scale": 0.0,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+        expected_checkpoint_revision="revision-a",
+    )
+
+    assert any(
+        "rollout_consistency_scale differs" in issue
+        for issue in report["health_issues"]
+    )
+    assert report["run_manifest"]["status"] == "invalid"
 
 
 def test_monitor_waits_during_runbook_only_milestone_transition() -> None:

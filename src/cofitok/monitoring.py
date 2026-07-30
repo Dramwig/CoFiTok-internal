@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 import re
+import struct
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +20,10 @@ FINITE_METRICS = {
     "elapsed_seconds",
     "samples_seen",
     "ema_decay",
+    "ema_teacher_consistency",
+    "ema_teacher_consistency_scale",
+    "rollout_consistency",
+    "rollout_consistency_scale",
 }
 NONNEGATIVE_METRICS = FINITE_METRICS - {"ema_decay"}
 METHOD_PROCESS_PATTERNS = {
@@ -27,13 +32,16 @@ METHOD_PROCESS_PATTERNS = {
 }
 
 
-def _read_metrics(path: Path) -> tuple[dict[str, Any] | None, int, list[str]]:
+def _read_metrics(
+    path: Path,
+) -> tuple[dict[str, Any] | None, int, list[str], list[dict[str, Any]]]:
     if not path.is_file():
-        return None, 0, []
+        return None, 0, [], []
     last = None
     row_count = 0
     previous_step = 0
     issues = []
+    rows = []
     with path.open("r", encoding="utf-8") as handle:
         for line_number, line in enumerate(handle, start=1):
             if not line.strip():
@@ -58,7 +66,8 @@ def _read_metrics(path: Path) -> tuple[dict[str, Any] | None, int, list[str]]:
                 elif key in NONNEGATIVE_METRICS and float(value) < 0.0:
                     issues.append(f"metric {key} is negative at line {line_number}")
             last = row
-    return last, row_count, issues
+            rows.append(row)
+    return last, row_count, issues, rows
 
 
 def _read_report(path: Path) -> tuple[dict[str, Any] | None, list[str]]:
@@ -248,6 +257,161 @@ def _inspect_latest_binding(
     )
 
 
+def _float32(value: float) -> float:
+    return struct.unpack("f", struct.pack("f", value))[0]
+
+
+def _expected_consistency_scale(
+    step: int,
+    *,
+    weight: float,
+    start_step: int,
+    warmup_steps: int,
+) -> float:
+    if weight <= 0.0 or step <= start_step:
+        return 0.0
+    if warmup_steps <= 0:
+        return 1.0
+    return _float32(min((step - start_step) / warmup_steps, 1.0))
+
+
+def _inspect_run_manifest(
+    run_dir: Path,
+    *,
+    metrics_rows: list[dict[str, Any]],
+    expected_steps: int,
+    checkpoint_interval: int,
+    expected_git_revision: str | None,
+    required: bool,
+) -> tuple[dict[str, Any], list[str]]:
+    path = run_dir / "run_manifest.json"
+    if not required:
+        return {
+            "path": path.name,
+            "status": "not_enforced",
+        }, []
+    manifest, issues = _read_json(path, label="run manifest")
+    if manifest is None:
+        if metrics_rows:
+            issues.append("run manifest is missing after metrics were emitted")
+        return {
+            "path": path.name,
+            "status": "missing" if metrics_rows else "not_available",
+        }, issues
+
+    config = manifest.get("config")
+    git = manifest.get("git")
+    if not isinstance(config, dict):
+        issues.append("run manifest config is malformed")
+        config = {}
+    if not isinstance(git, dict):
+        issues.append("run manifest Git provenance is malformed")
+        git = {}
+    runtime = config.get("runtime")
+    loss = config.get("loss")
+    if not isinstance(runtime, dict):
+        issues.append("run manifest runtime config is malformed")
+        runtime = {}
+    if not isinstance(loss, dict):
+        issues.append("run manifest loss config is malformed")
+        loss = {}
+    if runtime.get("steps") != expected_steps:
+        issues.append("run manifest target steps differ from the monitor")
+    if (
+        checkpoint_interval > 0
+        and runtime.get("checkpoint_interval") != checkpoint_interval
+    ):
+        issues.append("run manifest checkpoint interval differs from the monitor")
+    if (
+        expected_git_revision is not None
+        and git.get("revision") != expected_git_revision
+    ):
+        issues.append("run manifest Git revision differs from the monitor expectation")
+    if git.get("dirty") is not False:
+        issues.append("run manifest does not declare a clean Git state")
+
+    runtime_environment_sha256 = manifest.get("runtime_environment_sha256")
+    if (
+        not isinstance(runtime_environment_sha256, str)
+        or SHA256_PATTERN.fullmatch(runtime_environment_sha256) is None
+    ):
+        issues.append("run manifest runtime environment SHA256 is malformed")
+    dataset = manifest.get("dataset_provenance")
+    if isinstance(dataset, dict) and dataset.get("formal") is True:
+        if dataset.get("status") != "pass" or dataset.get("issues") != []:
+            issues.append("run manifest formal dataset provenance did not pass")
+        identity = dataset.get("identity_sha256")
+        if not isinstance(identity, str) or SHA256_PATTERN.fullmatch(identity) is None:
+            issues.append("run manifest dataset identity SHA256 is malformed")
+
+    schedule_contracts = {}
+    for prefix in ("rollout_consistency", "ema_teacher_consistency"):
+        scale_field = f"{prefix}_scale"
+        weight_field = f"{prefix}_weight"
+        start_field = f"{prefix}_start_step"
+        warmup_field = f"{prefix}_warmup_steps"
+        try:
+            weight = float(loss[weight_field])
+            start_step = int(loss[start_field])
+            warmup_steps = int(loss[warmup_field])
+        except (KeyError, TypeError, ValueError):
+            issues.append(f"run manifest {prefix} schedule is malformed")
+            continue
+        mismatched_steps = []
+        missing_steps = []
+        for row in metrics_rows:
+            step = int(row.get("step", -1))
+            if scale_field not in row:
+                if weight > 0.0:
+                    missing_steps.append(step)
+                continue
+            expected = _expected_consistency_scale(
+                step,
+                weight=weight,
+                start_step=start_step,
+                warmup_steps=warmup_steps,
+            )
+            if float(row[scale_field]) != expected:
+                mismatched_steps.append(step)
+        if missing_steps:
+            issues.append(
+                f"metrics are missing {scale_field} at steps "
+                + ", ".join(str(step) for step in missing_steps[:5])
+            )
+        if mismatched_steps:
+            issues.append(
+                f"metrics {scale_field} differs from the run manifest at steps "
+                + ", ".join(str(step) for step in mismatched_steps[:5])
+            )
+        schedule_contracts[prefix] = {
+            "weight": weight,
+            "start_step": start_step,
+            "warmup_steps": warmup_steps,
+            "checked_rows": len(metrics_rows),
+            "missing_steps": missing_steps,
+            "mismatched_steps": mismatched_steps,
+        }
+
+    return (
+        {
+            "path": path.name,
+            "status": "invalid" if issues else "verified",
+            "git_revision": git.get("revision"),
+            "git_dirty": git.get("dirty"),
+            "target_steps": runtime.get("steps"),
+            "checkpoint_interval": runtime.get("checkpoint_interval"),
+            "runtime_environment_sha256": runtime_environment_sha256,
+            "dataset_identity_sha256": (
+                dataset.get("identity_sha256")
+                if isinstance(dataset, dict)
+                else None
+            ),
+            "schedule_contracts": schedule_contracts,
+        },
+        issues,
+    )
+
+
 def inspect_run(
     run_dir: str | Path,
     *,
@@ -272,9 +436,18 @@ def inspect_run(
         raise ValueError("expected_checkpoint_revision must be a non-empty string")
     root = Path(run_dir)
     metrics_path = root / "train_metrics.jsonl"
-    last, metric_rows, health_issues = _read_metrics(metrics_path)
+    last, metric_rows, health_issues, rows = _read_metrics(metrics_path)
     report, report_issues = _read_report(root / "training_report.json")
     health_issues.extend(report_issues)
+    run_manifest, manifest_issues = _inspect_run_manifest(
+        root,
+        metrics_rows=rows,
+        expected_steps=expected_steps,
+        checkpoint_interval=checkpoint_interval,
+        expected_git_revision=expected_checkpoint_revision,
+        required=checkpoint_integrity_policy == "required",
+    )
+    health_issues.extend(manifest_issues)
     last_step = int(last.get("step", 0)) if last is not None else 0
     reported_complete = bool(
         report is not None
@@ -392,6 +565,7 @@ def inspect_run(
             "manifests": checkpoint_integrity,
             "latest_binding": latest_binding,
         },
+        "run_manifest": run_manifest,
         "training_report": report,
         "health_issues": health_issues,
     }
