@@ -389,11 +389,18 @@ def test_inference_artifact_rejects_model_weights_and_tampering(tmp_path) -> Non
         GenerationSession.from_checkpoint(artifact, weights="ema")
 
 
-def test_production_mode_rejects_unreleased_inference_artifact(tmp_path) -> None:
+def test_production_mode_rejects_unreleased_inference_artifact(
+    tmp_path,
+    monkeypatch,
+) -> None:
     source = _training_checkpoint(tmp_path)
     artifact = tmp_path / "cofitok_ema_inference.pt"
     export_ema_inference_artifact(source, artifact)
 
+    def fail_if_deserialized(*args, **kwargs):
+        raise AssertionError("inference artifact was deserialized before policy rejection")
+
+    monkeypatch.setattr(torch, "load", fail_if_deserialized)
     with pytest.raises(ValueError, match="release-authorized inference artifact"):
         GenerationSession.from_checkpoint(
             artifact,

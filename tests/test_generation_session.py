@@ -180,10 +180,17 @@ def test_generation_session_validates_model_specific_request(tmp_path) -> None:
 
 def test_generation_session_production_mode_rejects_training_checkpoint(
     tmp_path,
+    monkeypatch,
 ) -> None:
+    checkpoint = _checkpoint(tmp_path)
+
+    def fail_if_deserialized(*args, **kwargs):
+        raise AssertionError("training checkpoint was deserialized before policy rejection")
+
+    monkeypatch.setattr(torch, "load", fail_if_deserialized)
     with pytest.raises(ValueError, match="release-authorized inference artifact"):
         GenerationSession.from_checkpoint(
-            _checkpoint(tmp_path),
+            checkpoint,
             weights="ema",
             require_release_authorization=True,
         )
