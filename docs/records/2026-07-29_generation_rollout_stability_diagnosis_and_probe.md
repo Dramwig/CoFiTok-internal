@@ -738,3 +738,21 @@ The checkpoint sidecar and `latest.json` agree on filename, bytes, SHA256,
 step, Git revision, dataset identity, and runtime-environment identity. The
 canonical metric row records exactly 16,000 images. The checkpoint payload was
 not loaded or rehashed during this audit.
+
+The second CoFiTok milestone passed the same read-only integrity audit:
+
+```text
+step: 500 / 1,000
+checkpoint bytes: 1,006,321,770
+checkpoint SHA256: 09ab41200dcb4a783358c5705d455ba0fa7756db2204e40114badfcc3411fcd0
+validation epsilon MSE: 0.042676351964473724
+EMA-teacher scale: 0.0
+rollout-consistency scale: 1.0
+```
+
+The sidecar and `latest.json` again agree on filename, bytes, SHA256, step,
+revision, dataset identity, and runtime-environment identity. The canonical
+step-500 row records exactly 32,000 images and the second scheduled validation
+event. Validation MSE improved from the step-250 milestone. The teacher is
+still correctly inactive before its step-600 boundary, and the checkpoint
+payload was not loaded or rehashed.
