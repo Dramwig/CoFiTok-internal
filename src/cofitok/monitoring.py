@@ -164,6 +164,7 @@ def _inspect_latest_binding(
     checkpoint: dict[str, Any] | None,
     integrity: dict[str, Any] | None,
     required: bool,
+    enforce: bool,
 ) -> tuple[dict[str, Any], list[str]]:
     latest_path = run_dir / "latest.json"
     latest, issues = _read_json(latest_path, label="latest.json")
@@ -176,7 +177,11 @@ def _inspect_latest_binding(
                 "status": (
                     "missing"
                     if required and checkpoint is not None
-                    else "not_available"
+                    else (
+                        "pending_checkpoint_grace"
+                        if checkpoint is not None
+                        else "not_available"
+                    )
                 ),
             },
             issues,
@@ -199,19 +204,31 @@ def _inspect_latest_binding(
                 "checkpoint_sha256": integrity["checkpoint_sha256"],
             }
         )
+    binding_issues = []
     for field, value in expected.items():
         if latest.get(field) != value:
-            issues.append(f"latest.json has mismatched {field}")
+            binding_issues.append(f"latest.json has mismatched {field}")
+    if enforce:
+        issues.extend(binding_issues)
     return (
         {
             "path": latest_path.name,
-            "status": "invalid" if issues else "metadata_verified",
+            "status": (
+                "invalid"
+                if issues
+                else (
+                    "pending_checkpoint_grace"
+                    if binding_issues
+                    else "metadata_verified"
+                )
+            ),
             "checkpoint": latest.get("checkpoint"),
             "checkpoint_bytes": latest.get("checkpoint_bytes"),
             "checkpoint_sha256": latest.get("checkpoint_sha256"),
             "integrity_manifest": latest.get("integrity_manifest"),
             "step": latest.get("step"),
             "verification": "metadata_only_no_payload_hash",
+            "pending_issues": binding_issues if not enforce else [],
         },
         issues,
     )
@@ -292,26 +309,40 @@ def inspect_run(
     )
     if report is not None and report.get("training_complete") is True and not complete:
         health_issues.append("training report completion fields differ from expected steps")
-    stable_checkpoints = [
-        checkpoint
-        for checkpoint in checkpoints
-        if reported_complete
-        or last_step >= checkpoint["step"] + checkpoint_grace_steps
-    ]
-    stable_checkpoint = stable_checkpoints[-1] if stable_checkpoints else None
     integrity_by_checkpoint = {
         row["checkpoint"]: row for row in checkpoint_integrity
     }
-    stable_integrity = (
-        integrity_by_checkpoint.get(stable_checkpoint["name"])
-        if stable_checkpoint is not None
+    newest_checkpoint = checkpoints[-1] if checkpoints else None
+    newest_integrity = (
+        integrity_by_checkpoint.get(newest_checkpoint["name"])
+        if newest_checkpoint is not None
+        else None
+    )
+    newest_ready = bool(
+        newest_checkpoint is not None
+        and (
+            reported_complete
+            or last_step >= newest_checkpoint["step"] + checkpoint_grace_steps
+        )
+    )
+    binding_checkpoint = (
+        newest_checkpoint
+        if newest_ready
+        or (
+            newest_integrity is not None
+            and newest_integrity.get("status") == "metadata_verified"
+        )
         else None
     )
     latest_binding, latest_issues = _inspect_latest_binding(
         root,
-        checkpoint=stable_checkpoint,
-        integrity=stable_integrity,
-        required=checkpoint_integrity_policy == "required",
+        checkpoint=binding_checkpoint,
+        integrity=newest_integrity,
+        required=(
+            checkpoint_integrity_policy == "required"
+            and newest_ready
+        ),
+        enforce=newest_ready,
     )
     health_issues.extend(latest_issues)
     activity_mtime = max(

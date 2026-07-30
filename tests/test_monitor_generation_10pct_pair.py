@@ -300,6 +300,91 @@ def test_required_checkpoint_integrity_rejects_metadata_mismatch(tmp_path) -> No
     )
 
 
+def test_required_integrity_does_not_compare_latest_to_previous_checkpoint(
+    tmp_path,
+) -> None:
+    (tmp_path / "train_metrics.jsonl").write_text(
+        json.dumps({"step": 2_500, "total": 0.1}) + "\n", encoding="utf-8"
+    )
+    previous = tmp_path / "checkpoint_step_00001250.pt"
+    previous.write_bytes(b"previous")
+    previous_integrity = {
+        "checkpoint": previous.name,
+        "checkpoint_bytes": previous.stat().st_size,
+        "checkpoint_sha256": "c" * 64,
+        "step": 1_250,
+    }
+    (tmp_path / f"{previous.name}.integrity.json").write_text(
+        json.dumps(previous_integrity) + "\n", encoding="utf-8"
+    )
+    current = tmp_path / "checkpoint_step_00002500.pt"
+    current.write_bytes(b"current")
+    (tmp_path / "latest.json").write_text(
+        json.dumps(
+            {
+                "checkpoint": current.name,
+                "checkpoint_bytes": current.stat().st_size,
+                "checkpoint_sha256": "d" * 64,
+                "integrity_manifest": f"{current.name}.integrity.json",
+                "step": 2_500,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+    )
+
+    assert report["health_issues"] == []
+    assert (
+        report["checkpoint_integrity"]["latest_binding"]["status"]
+        == "pending_checkpoint_grace"
+    )
+
+
+def test_required_integrity_enforces_latest_after_new_checkpoint_grace(
+    tmp_path,
+) -> None:
+    (tmp_path / "train_metrics.jsonl").write_text(
+        json.dumps({"step": 2_600, "total": 0.1}) + "\n", encoding="utf-8"
+    )
+    checkpoint = tmp_path / "checkpoint_step_00002500.pt"
+    checkpoint.write_bytes(b"current")
+    integrity = {
+        "checkpoint": checkpoint.name,
+        "checkpoint_bytes": checkpoint.stat().st_size,
+        "checkpoint_sha256": "e" * 64,
+        "step": 2_500,
+    }
+    (tmp_path / f"{checkpoint.name}.integrity.json").write_text(
+        json.dumps(integrity) + "\n", encoding="utf-8"
+    )
+    (tmp_path / "latest.json").write_text(
+        json.dumps({**integrity, "checkpoint": "checkpoint_step_00001250.pt"})
+        + "\n",
+        encoding="utf-8",
+    )
+
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+    )
+
+    assert "latest.json has mismatched checkpoint" in report["health_issues"]
+    assert report["checkpoint_integrity"]["latest_binding"]["status"] == "invalid"
+
+
 def test_monitor_waits_during_runbook_only_milestone_transition() -> None:
     runs = {
         "cofitok": _run(complete=False, age=10_000.0),
