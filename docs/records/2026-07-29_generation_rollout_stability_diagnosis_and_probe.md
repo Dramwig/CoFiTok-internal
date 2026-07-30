@@ -410,8 +410,10 @@ Active queue:
 ```text
 runbook PID: 494747
 initial CoFiTok trainer PID: 494771
+read-only monitor PID: 496061
 output: /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2
 log: /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2.log
+monitor: /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_monitor.json
 order: CoFiTok 5K, then dense 5K
 ```
 
@@ -420,3 +422,12 @@ Real-time status must be read from the remote `train_metrics.jsonl`,
 `training_report.json`, process table, and GPU state. This fresh 5K pair must
 complete and pass the same raw-model n=8 plus two-seed n=64 gate before any
 new 50K preparation is allowed.
+
+The monitor is the tracked generic read-only pair monitor at target revision
+`2521d87`. It polls every 60 seconds, declares a stall after 1,800 seconds
+without metric activity, allows 600 seconds for process transitions, checks
+the 1,250-step checkpoint cadence with a 100-step grace, and exits terminally
+only on `pass`, `failed`, or `stalled`. Its initial report was
+`running / cofitok_training` with `issues=[]`, clean Git provenance, and about
+274 GB free disk. It does not load or hash checkpoint payloads and does not
+restart or terminate training.
