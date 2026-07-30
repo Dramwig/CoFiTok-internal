@@ -25,12 +25,21 @@ The session validates this object with `sampling_protocol_contract()` before
 returning a result. The lightweight inference CLI propagates the API and
 protocol identity into its atomic report.
 
+Revision `3da40a3` adds an explicit production trust policy. Callers may set
+`require_release_authorization=True`, or pass
+`--require-release-authorization` to the lightweight inference CLI. In that
+mode the loader rejects training checkpoints and unreleased development
+artifacts before model deserialization; only an inference artifact carrying a
+valid full-stage release authorization is accepted. Result and CLI metadata
+record whether this production policy was required.
+
 ## Verification
 
 The focused session, formal-protocol, and inference-artifact tests passed
 `25/25`. A new test proves exact CPU equality between generating two explicit
 seeds in one batch and generating the same seeds as two single-image requests.
-The full local suite passed with three existing environment-related skips.
+The release-only follow-up passed `23/23` focused tests. The full local suite
+passed after each change with three existing environment-related skips.
 
 This revision is not deployed into the active matched two-step 5K checkout at
 `2521d874a82898a7a2a527d824ea1df285df221d`. The active pair remains
