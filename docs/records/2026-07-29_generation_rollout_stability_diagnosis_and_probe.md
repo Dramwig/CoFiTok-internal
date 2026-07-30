@@ -686,6 +686,7 @@ runbook PID: 853818
 initial CoFiTok trainer PID: 853839
 monitor PID: 854173
 post-eval waiter PID: 854722
+raw n64 waiter PID: 856046
 ```
 
 The training runbook SHA256 is
@@ -710,3 +711,13 @@ Real-time authority is:
 ```text
 /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher_monitor.json
 ```
+
+The second-stage raw n=64 runbook SHA256 is
+`04ff2aa80762a0e4a25c0608520ef4740c54ce49192d64380321141ee4ddf919`;
+its waiter SHA256 is
+`ceae6c4acdfec5c35d62d09c573f37a8a0cd50f1546206334365e71cdcb765d5`.
+A bounded trial correctly timed out while the n=8 screening was absent. The
+real waiter is PID `856046`: it exits without GPU work when authoritative raw
+n=8 fails, and otherwise runs raw n=64 seeds 2029 and 2039 before invoking the
+shared stage-aware decision builder with `next_stage=matched_5k`. It never
+starts 5K training.
