@@ -17,6 +17,7 @@ class _ScaledImagePredictor(torch.nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.scale = torch.nn.Parameter(torch.tensor(0.5))
+        self.register_buffer("fixed_offset", torch.tensor(0.0), persistent=False)
         self.calls = 0
 
     def forward(
@@ -28,7 +29,7 @@ class _ScaledImagePredictor(torch.nn.Module):
     ) -> SimpleNamespace:
         del timesteps, class_labels
         self.calls += 1
-        return SimpleNamespace(epsilon=images * self.scale)
+        return SimpleNamespace(epsilon=images * self.scale + self.fixed_offset)
 
 
 @pytest.mark.parametrize(
@@ -91,6 +92,23 @@ def test_ema_teacher_consistency_rejects_invalid_fraction(
             timesteps=torch.arange(2),
             class_labels=None,
             batch_fraction=batch_fraction,
+        )
+
+
+def test_ema_teacher_consistency_rejects_mismatched_state() -> None:
+    model = _ScaledImagePredictor()
+    images = torch.randn(2, 3, 4, 4)
+    output = model(images, torch.arange(2), class_labels=None)
+
+    with pytest.raises(ValueError, match="state structure"):
+        ema_teacher_consistency_loss(
+            model,
+            ema_state={},
+            student_epsilon=output.epsilon,
+            noisy_images=images,
+            timesteps=torch.arange(2),
+            class_labels=None,
+            batch_fraction=0.5,
         )
 
 

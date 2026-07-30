@@ -50,6 +50,8 @@ def ema_teacher_consistency_loss(
         raise ValueError("EMA teacher consistency batch_fraction must be in (0, 1]")
     if student_epsilon.shape[0] != noisy_images.shape[0]:
         raise ValueError("EMA teacher consistency batch dimensions do not match")
+    if ema_state.keys() != model.state_dict().keys():
+        raise ValueError("EMA teacher state does not match model state structure")
     sample_count = max(1, math.ceil(student_epsilon.shape[0] * batch_fraction))
     selected = slice(0, sample_count)
     selected_labels = class_labels[selected] if class_labels is not None else None
@@ -62,7 +64,7 @@ def ema_teacher_consistency_loss(
                 ema_state,
                 (noisy_images[selected], timesteps[selected]),
                 {"class_labels": selected_labels},
-                strict=True,
+                strict=False,
             )
     finally:
         model.train(was_training)
