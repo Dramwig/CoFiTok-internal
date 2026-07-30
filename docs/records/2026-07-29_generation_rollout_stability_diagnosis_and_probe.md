@@ -468,6 +468,16 @@ is therefore retained as an unnormalized intermediate observation, not a
 generalization warning. The matched CoFiTok/dense values at the same milestone
 and the final free-state evaluation are the valid comparisons.
 
+Post-training revision `9f435d4` closes this validation-observability gap for
+future runs. Each validation row now records its zero-based event index, actual
+DataLoader batch index, reset noise seed, and image count. Exact-resume tests
+prove that uninterrupted and segmented runs preserve all four fields, and the
+training auditor distinguishes complete metadata from legacy absence while
+rejecting noncontiguous event indices or invalid counts. The targeted tests
+passed `30/30`, and the full local suite passed with three existing skips.
+This change is intentionally not deployed into the active `2521d87` checkout;
+the current matched 5K pair remains one-revision evidence.
+
 The tracked post-training evaluator is prepared but cannot run before the
 pair summary exists:
 
