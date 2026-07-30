@@ -787,3 +787,34 @@ runtime-environment identity all agree. The canonical row records exactly
 48,000 images and the third scheduled validation event. Validation MSE
 continued to improve after teacher activation. The checkpoint payload was not
 loaded or rehashed.
+
+The teacher reached full scale at step 900 and remained stable through the
+final row:
+
+| step | teacher scale | teacher loss | total loss | gradient norm |
+|---:|---:|---:|---:|---:|
+| 900 | 1.0 | 0.11594299 | 0.09708235 | 0.33503842 |
+| 925 | 1.0 | 0.11425493 | 0.09783078 | 0.19913450 |
+| 1,000 | 1.0 | 0.12345801 | 0.10803740 | 0.88709414 |
+
+The CoFiTok member then completed exactly:
+
+```text
+steps: 1,000 / 1,000
+images seen: 64,000
+canonical metric rows: 41
+scheduled validation rows: 4
+final validation epsilon MSE: 0.026219427585601807
+final checkpoint bytes: 1,006,321,770
+final checkpoint SHA256: 85c61f83a333f330dde42ab1df1f3eb462788164caf05950327f590ab732695b
+segment elapsed seconds: 2,890.8206026554108
+peak VRAM bytes: 15,234,796,032
+parameters: 62,834,083
+```
+
+The final checkpoint stat, sidecar, and `latest.json` agree on all integrity
+and provenance fields. `training_report.json` declares exact completion at the
+target revision, and the final canonical metric row binds the image count and
+fourth validation event. No payload was loaded or rehashed. The locked runbook
+then launched the matched dense member as PID 862754; GPU utilization was 98%
+with 18,370 MiB process memory during its first interval.
