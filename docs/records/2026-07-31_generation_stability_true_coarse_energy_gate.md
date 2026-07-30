@@ -112,3 +112,15 @@ It reported `running`, stage `cofitok_training`, with no issues. Teacher scale
 remaining zero is correct because activation begins at step 3,000. The next
 scientifically important protected milestone is 3,750, after teacher activation
 and partial warmup.
+
+The small milestone evidence was copied to:
+
+```text
+artifacts/reports/generation/stability_probe_2026-07-29/
+  pair5k_rollout_x0_u2_ema_teacher/milestones/step_00002500/
+```
+
+`SOURCE_MANIFEST.json` binds the copied observer, integrity sidecar,
+`latest.json` snapshot, and run-manifest snapshot by byte count and SHA256. The
+observer snapshot was taken at training step 2,675 while its latest protected
+checkpoint remained step 2,500. The checkpoint payload itself was not copied.
