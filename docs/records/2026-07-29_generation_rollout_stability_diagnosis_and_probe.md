@@ -1112,3 +1112,43 @@ The authoritative live status is:
 
 The official remote repository still remains at
 `1ebcc15210e63a776a2ba448481cbd8bb94a4066`.
+
+## EMA-teacher matched 5K milestone 1,250
+
+The first protected CoFiTok milestone passed the revision-bound metadata
+observer after its checkpoint transition:
+
+```text
+step / images seen: 1,250 / 80,000
+checkpoint: checkpoint_step_00001250.pt
+bytes: 1,006,321,770
+declared SHA256:
+f234c142aaa39e21520bcf8ec2d3458feeef85c26c8431209dfab62d4a9610c9
+training revision:
+59db142fc45d69dc92bb0333be5ac2d0162d9dc4
+checkpoint / latest status: metadata_verified / metadata_verified
+run manifest status: verified
+health issues: []
+```
+
+The adjacent sidecar and `latest.json` agree on filename, bytes, step,
+declared SHA256, clean training revision, runtime-environment SHA256, and
+dataset-identity SHA256. This live check is metadata-only and does not replace
+the later payload-hash trust boundary.
+
+The step-1,250 metric row was finite:
+
+```text
+total / epsilon: 0.06018657 / 0.03591859
+gradient norm: 0.38398108
+rollout loss / scale: 0.05039178 / 1.0
+EMA-teacher loss / scale: 0.0 / 0.0
+validation epsilon MSE: 0.03305597
+validation images / event index: 16 / 0
+```
+
+The zero teacher scale remains expected before step 3,000. At the independent
+acceptance read, training had continued to step 1,600 with
+`running / issues=[]`; all 64 metric rows matched both manifest schedules.
+This milestone is recovery and stability evidence only. It does not authorize
+formal 50K training.
