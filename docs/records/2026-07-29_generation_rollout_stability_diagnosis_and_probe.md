@@ -459,11 +459,14 @@ rollout consistency scale: 1.0
 ```
 
 The sidecar, `latest.json`, canonical validation row, dataset identity,
-runtime-environment identity, and Git revision all agree. Validation MSE is
-8.78% higher than the step-1,250 value even though the logged training losses
-continued to decrease. This is retained as a possible generalization warning,
-not interpreted as a method-specific regression before the matched dense run
-and final free-state evaluation are available.
+runtime-environment identity, and Git revision all agree. The raw validation
+MSE is 8.78% higher than the step-1,250 value even though the logged training
+losses continued to decrease. This is not a like-for-like learning-curve
+comparison: the deterministic evaluation iterator advances to a new image batch
+at each milestone, while only the noise and timestep stream is reset. The value
+is therefore retained as an unnormalized intermediate observation, not a
+generalization warning. The matched CoFiTok/dense values at the same milestone
+and the final free-state evaluation are the valid comparisons.
 
 The tracked post-training evaluator is prepared but cannot run before the
 pair summary exists:
