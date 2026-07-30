@@ -1066,3 +1066,49 @@ identities, this benchmark, exact target revision, exact 5K schedules, and all
 four milestone checkpoint sidecars. Its pair summary permanently sets
 `formal_scaling_authorization_allowed=false`; only the later raw n=8 and
 dual-seed n=64 decision may authorize preparation of a formal matched 50K run.
+
+## EMA-teacher matched 5K launch
+
+The fresh matched pair was launched from the clean isolated checkout at
+revision `59db142fc45d69dc92bb0333be5ac2d0162d9dc4`:
+
+```text
+output:
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher
+training runbook PID: 988582
+initial CoFiTok trainer PID: 988641
+read-only monitor PID: 988609
+raw-gate waiter PID: 988625
+```
+
+The waiter is already bound to the post-evaluation runbook SHA and will not
+use the GPU until the monitor reports `pass / complete`, the pair summary
+exists, all training/runbook processes have exited, and the GPU is idle. It
+then runs the raw n=8 screen and, only if there are no failures beyond the
+small-screen reconstruction allowance, raw n=64 seeds 2029 and 2039. A
+successful dual-seed decision authorizes only preparation of a fresh matched
+50K run; it does not start one.
+
+The first authoritative monitor snapshot with metrics reported
+`running / cofitok_training / issues=[]`. At step 50:
+
+```text
+images seen: 3,200
+elapsed seconds: 142.4006
+total / epsilon: 1.31013405 / 0.99881247
+gradient norm: 11.88280487
+rollout loss / scale: 0.60794435 / 0.050000000745
+EMA-teacher loss / scale: 0.0 / 0.0
+GPU memory / utilization: 21,467 MiB / 100%
+```
+
+The zero teacher scale is expected before the configured step-3,000 start.
+The rollout scalar now has the intended method-independent float32 semantics.
+The authoritative live status is:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher_monitor.json
+```
+
+The official remote repository still remains at
+`1ebcc15210e63a776a2ba448481cbd8bb94a4066`.
