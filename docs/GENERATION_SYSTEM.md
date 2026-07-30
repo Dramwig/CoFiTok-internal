@@ -200,6 +200,18 @@ repository or mutate an active training checkout.
   branch/revision, and pair contract, while explicitly setting
   `formal_300k_authorization_allowed=false`. A formal EMA sampling and mechanism
   gate is still required.
+- Stability mechanism evaluation derives the coarse/tail partition from
+  `token_spatial_strides`: the `rgbtail3` layout measures coarse utilization
+  over tokens 1-5 and treats tokens 6-8 as the full-resolution tail. The
+  stability source profile requires this stride metadata and fails closed
+  instead of falling back to the legacy v3 `K-2` partition.
+- Dormant runbook
+  `generation_stability_ema_teacher_50k_posteval_after_training.sh` reruns the
+  5K decision, recipe-v4 pair validation, and completed 50K pair summary before
+  any GPU work. It then uses the formal matched EMA DDIM-100 protocol, 10,000
+  samples per method, 1,024-image timestep-500 mechanism evaluation, and an
+  independent `stability_scaling` source-path profile. It can write and verify
+  a scaling gate but cannot invoke full training.
 
 The failed learned-synthesis v2 pair keeps its original run and report
 directories as immutable evidence. The historical fixed-basis v3 attempt uses
