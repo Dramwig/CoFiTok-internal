@@ -432,6 +432,22 @@ only on `pass`, `failed`, or `stalled`. Its initial report was
 274 GB free disk. It does not load or hash checkpoint payloads and does not
 restart or terminate training.
 
+The first CoFiTok milestone passed a read-only audit while training continued:
+
+```text
+step: 1,250 / 5,000
+checkpoint bytes: 1,006,321,322
+checkpoint SHA256: 8da625d6fb70dab7cab9a607029bd3c9efc9596b75a7acb53576872673836c3d
+validation epsilon MSE: 0.03383226320147514
+rollout consistency scale: 1.0
+```
+
+The checkpoint integrity sidecar and `latest.json` agree on filename, bytes,
+SHA256, dataset identity, runtime-environment identity, step, and revision
+`2521d874a82898a7a2a527d824ea1df285df221d`. The canonical metrics row includes
+the scheduled validation event. No checkpoint payload was loaded or rehashed
+during this audit.
+
 The tracked post-training evaluator is prepared but cannot run before the
 pair summary exists:
 
