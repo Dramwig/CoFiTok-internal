@@ -6,8 +6,14 @@ from cofitok.generation_pair import generation_pair_contract
 from cofitok.token_layout import resolve_token_layout, token_layout_summary
 
 
-GENERATION_TRAINING_RECIPE_SCHEMA = "cofitok_generation_training_recipe_v3"
-RECIPE_STAGES = {"legacy_scaling", "scaling", "full"}
+GENERATION_TRAINING_RECIPE_SCHEMA = "cofitok_generation_training_recipe_v4"
+RECIPE_STAGES = {
+    "legacy_scaling",
+    "scaling",
+    "full",
+    "stability_scaling",
+    "stability_full",
+}
 ALLOWED_RUNTIME_BATCHES = {(16, 4), (32, 2), (64, 1)}
 
 
@@ -34,6 +40,14 @@ def infer_generation_training_stage(
     cofitok_config: dict[str, Any],
     dense_config: dict[str, Any],
 ) -> str:
+    stability_recipe = any(
+        float(config.get("loss", {}).get(field, 0.0)) > 0.0
+        for config in (cofitok_config, dense_config)
+        for field in (
+            "rollout_consistency_weight",
+            "ema_teacher_consistency_weight",
+        )
+    )
     identities = {
         (
             str(config.get("data", {}).get("dataset", "")),
@@ -44,15 +58,18 @@ def infer_generation_training_stage(
     if identities == {("imagenet_256_10pct", 50_000)}:
         schedule = _path_value(cofitok_config, "model.token_channel_schedule", [])
         strides = _path_value(cofitok_config, "model.token_spatial_strides", [])
-        return "scaling" if schedule and strides else "legacy_scaling"
+        if not schedule or not strides:
+            return "legacy_scaling"
+        return "stability_scaling" if stability_recipe else "scaling"
     if identities == {("imagenet_256", 300_000)}:
-        return "full"
+        return "stability_full" if stability_recipe else "full"
     raise ValueError(f"cannot infer formal generation training stage: {sorted(identities)}")
 
 
 def _expected_shared(stage: str) -> dict[str, Any]:
-    full = stage == "full"
-    return {
+    full = stage in {"full", "stability_full"}
+    stability = stage in {"stability_scaling", "stability_full"}
+    expected = {
         "data.dataset": "imagenet_256" if full else "imagenet_256_10pct",
         "data.image_size": 256,
         "data.channels": 3,
@@ -93,10 +110,53 @@ def _expected_shared(stage: str) -> dict[str, Any]:
         "optimization.ema_decay": 0.9999,
         "optimization.ema_warmup_steps": 2_000,
     }
+    if stability:
+        horizon = 300_000 if full else 50_000
+        expected.update(
+            {
+                "loss.rollout_consistency_weight": 0.1,
+                "loss.rollout_consistency_start_step": 0,
+                "loss.rollout_consistency_warmup_steps": horizon // 5,
+                "loss.rollout_consistency_timestep_delta": 10,
+                "loss.rollout_consistency_unroll_steps": 2,
+                "loss.rollout_consistency_batch_fraction": 0.125,
+                "loss.rollout_consistency_clip_x0": True,
+                "loss.rollout_consistency_mode": "clipped_x0",
+                "loss.ema_teacher_consistency_weight": 0.25,
+                "loss.ema_teacher_consistency_start_step": 3 * horizon // 5,
+                "loss.ema_teacher_consistency_warmup_steps": horizon // 5,
+                "loss.ema_teacher_consistency_batch_fraction": 0.0625,
+            }
+        )
+    return expected
 
 
 def _expected_method(method: str, stage: str) -> dict[str, Any]:
     if method == "cofitok":
+        if stage in {"stability_scaling", "stability_full"}:
+            return {
+                "model.token_count": 8,
+                "model.token_channels": 8,
+                "model.token_channel_schedule": [4, 4, 8, 8, 8, 1, 1, 1],
+                "model.token_spatial_strides": [16, 16, 8, 8, 4, 1, 1, 1],
+                "model.predictor_use_feedback": True,
+                "model.synthesis_mode": "fixed_basis",
+                "model.synthesis_kernel_size": 1,
+                "model.gamma_mode": "fixed_one",
+                "model.synthesis_active_token_channels": [],
+                "model.synthesis_token_strides": [],
+                "loss.epsilon_weight": 1.0,
+                "loss.denoise_path_prefix_weight": 0.05,
+                "loss.denoise_path_component_weight": 0.1,
+                "loss.denoise_path_energy_weight": 0.15,
+                "loss.denoise_path_energy_mode": "hellinger_stable",
+                "loss.denoise_path_energy_capacity_weight": 0.75,
+                "loss.denoise_path_energy_capacity_power": 0.5,
+                "loss.denoise_path_progress_power": 1.0,
+                "loss.denoise_path_progress_mode": "token_capacity",
+                "loss.low_snr_high_frequency_weight": 0.5,
+                "loss.low_snr_high_frequency_power": 0.5,
+            }
         if stage != "legacy_scaling":
             return {
                 "model.token_count": 8,
@@ -196,18 +256,30 @@ def generation_training_recipe_contract(
             if actual != expected:
                 issues.append(f"{method}.{path}: expected {expected!r}, got {actual!r}")
 
-    for method, config, allowed in (
-        (
-            "cofitok",
-            cofitok_config,
+    stability = stage in {"stability_scaling", "stability_full"}
+    shared_stability_losses = (
+        {"rollout_consistency_weight", "ema_teacher_consistency_weight"}
+        if stability
+        else set()
+    )
+    cofitok_allowed_losses = {
+        "epsilon_weight",
+        "denoise_path_prefix_weight",
+        "denoise_path_component_weight",
+        "denoise_path_energy_weight",
+        *shared_stability_losses,
+    }
+    dense_allowed_losses = {"epsilon_weight", *shared_stability_losses}
+    if stability:
+        cofitok_allowed_losses.update(
             {
-                "epsilon_weight",
-                "denoise_path_prefix_weight",
-                "denoise_path_component_weight",
-                "denoise_path_energy_weight",
-            },
-        ),
-        ("dense_identity", dense_config, {"epsilon_weight"}),
+                "denoise_path_energy_capacity_weight",
+                "low_snr_high_frequency_weight",
+            }
+        )
+    for method, config, allowed in (
+        ("cofitok", cofitok_config, cofitok_allowed_losses),
+        ("dense_identity", dense_config, dense_allowed_losses),
     ):
         unexpected = _unexpected_auxiliary_losses(config, allowed=allowed)
         if unexpected:

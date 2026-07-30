@@ -1,6 +1,11 @@
 from copy import deepcopy
 
-from cofitok.generation.stability_scaling import build_stability_scaling_decision
+import pytest
+
+from cofitok.generation.stability_scaling import (
+    build_stability_scaling_decision,
+    validate_stability_scaling_decision,
+)
 
 
 def _qualification(*, seed: int, images: int, status: str = "pass") -> dict:
@@ -50,6 +55,37 @@ def _qualification(*, seed: int, images: int, status: str = "pass") -> dict:
         "gates": gates,
         "pair_contract": {"valid": True},
     }
+
+
+def _authorized_decision() -> dict:
+    report = build_stability_scaling_decision(
+        screening_report=_qualification(seed=2029, images=8),
+        robust_reports=[
+            _qualification(seed=2029, images=64),
+            _qualification(seed=2039, images=64),
+        ],
+    )
+    report["identity"] = {
+        "git_revision": "a" * 40,
+        "cofitok_checkpoint_sha256": "b" * 64,
+        "dense_checkpoint_sha256": "c" * 64,
+    }
+    report["sources"] = {
+        "screening_report": {
+            "path": "/tmp/screening.json",
+            "bytes": 1,
+            "sha256": "d" * 64,
+        },
+        "robust_reports": [
+            {
+                "path": f"/tmp/robust-{seed}.json",
+                "bytes": 1,
+                "sha256": character * 64,
+            }
+            for seed, character in ((2029, "e"), (2039, "f"))
+        ],
+    }
+    return report
 
 
 def test_scaling_decision_accepts_two_robust_seeds_after_screening_failure() -> None:
@@ -137,3 +173,39 @@ def test_scaling_decision_rejects_small_or_failed_robust_report() -> None:
     assert report["status"] == "fail"
     assert any("did not pass" in issue for issue in report["issues"])
     assert any("requires at least 64" in issue for issue in report["issues"])
+
+
+def test_scaling_decision_validator_accepts_canonical_50k_preparation() -> None:
+    evidence = validate_stability_scaling_decision(
+        _authorized_decision(),
+        expected_source_revision="a" * 40,
+    )
+
+    assert evidence["status"] == "pass"
+    assert evidence["decision"] == "authorize_fresh_matched_50k_preparation"
+    assert evidence["robust_seeds"] == [2029, 2039]
+    assert evidence["min_robust_images"] == 64
+
+
+def test_scaling_decision_validator_rejects_tampered_requirements() -> None:
+    report = _authorized_decision()
+    report["requirements"]["min_robust_images"] = 8
+
+    with pytest.raises(ValueError, match="requirements are not canonical"):
+        validate_stability_scaling_decision(
+            report,
+            expected_source_revision="a" * 40,
+        )
+
+
+def test_scaling_decision_validator_rejects_nonfinite_robust_metric() -> None:
+    report = _authorized_decision()
+    report["robust_rows"][0]["peak_predicted_x0_high_frequency_ratio"] = float(
+        "nan"
+    )
+
+    with pytest.raises(ValueError, match="is not finite"):
+        validate_stability_scaling_decision(
+            report,
+            expected_source_revision="a" * 40,
+        )

@@ -250,7 +250,13 @@ def main() -> None:
     parser.add_argument("--max-parameter-gap", type=float, default=0.02)
     parser.add_argument(
         "--expected-recipe-stage",
-        choices=("legacy_scaling", "scaling", "full"),
+        choices=(
+            "legacy_scaling",
+            "scaling",
+            "full",
+            "stability_scaling",
+            "stability_full",
+        ),
     )
     parser.add_argument(
         "--allow-legacy-missing-dataset-provenance",

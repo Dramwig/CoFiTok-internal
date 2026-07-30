@@ -6,7 +6,10 @@ from pathlib import Path
 
 from cofitok.configs import config_to_dict, load_config
 from cofitok.generation_pair import generation_pair_contract
-from cofitok.generation_recipe import generation_training_recipe_contract
+from cofitok.generation_recipe import (
+    generation_training_recipe_contract,
+    infer_generation_training_stage,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,6 +51,69 @@ def test_checked_in_scaling_and_full_recipes_pass() -> None:
         assert loss["denoise_path_energy_mode"] == "hellinger"
         assert loss["denoise_path_progress_power"] == 1.0
         assert loss["denoise_path_progress_mode"] == "token_capacity"
+
+
+def test_stability_scaling_recipe_preserves_the_qualified_5k_mechanism() -> None:
+    cofitok = _config(
+        "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json"
+    )
+    dense = _config(
+        "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k.json"
+    )
+
+    assert infer_generation_training_stage(cofitok, dense) == "stability_scaling"
+    contract = generation_training_recipe_contract(
+        cofitok,
+        dense,
+        stage="stability_scaling",
+    )
+
+    assert contract["valid"] is True, contract["issues"]
+    assert contract["issues"] == []
+    assert contract["schema"] == "cofitok_generation_training_recipe_v4"
+    assert contract["effective_batches"]["cofitok"]["effective_batch_size"] == 64
+    assert contract["expected_shared"]["loss.rollout_consistency_warmup_steps"] == 10_000
+    assert contract["expected_shared"]["loss.ema_teacher_consistency_start_step"] == 30_000
+    assert contract["expected_shared"]["loss.ema_teacher_consistency_warmup_steps"] == 10_000
+    assert contract["observed"]["cofitok"]["model.token_channel_schedule"] == [
+        4,
+        4,
+        8,
+        8,
+        8,
+        1,
+        1,
+        1,
+    ]
+    assert (
+        contract["observed"]["cofitok"]["loss.denoise_path_energy_mode"]
+        == "hellinger_stable"
+    )
+    assert contract["observed"]["cofitok"]["loss.low_snr_high_frequency_weight"] == 0.5
+
+
+def test_stability_recipe_rejects_identically_shifted_teacher_window() -> None:
+    cofitok = _config(
+        "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json"
+    )
+    dense = _config(
+        "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k.json"
+    )
+    for config in (cofitok, dense):
+        config["loss"]["ema_teacher_consistency_start_step"] = 29_999
+
+    assert generation_pair_contract(cofitok, dense)["valid"] is True
+    contract = generation_training_recipe_contract(
+        cofitok,
+        dense,
+        stage="stability_scaling",
+    )
+
+    assert contract["valid"] is False
+    assert any(
+        "ema_teacher_consistency_start_step" in issue
+        for issue in contract["issues"]
+    )
 
 
 def test_rank_recovery_probes_explicitly_disable_legacy_loss_defaults() -> None:

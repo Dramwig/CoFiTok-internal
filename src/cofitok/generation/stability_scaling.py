@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import math
+import re
 from typing import Any
 
 
@@ -18,6 +20,8 @@ AUTHORIZED_NEXT_STAGES = {
     "matched_5k": "authorize_fresh_matched_5k",
     "fresh_matched_50k_preparation": "authorize_fresh_matched_50k_preparation",
 }
+SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
+GIT_REVISION_PATTERN = re.compile(r"[0-9a-f]{40}")
 
 
 def _failed_gates(report: dict[str, Any]) -> list[str]:
@@ -165,4 +169,115 @@ def build_stability_scaling_decision(
         "robust_rows": robust_rows,
         "robust_metric_ranges": metric_ranges,
         "issues": issues,
+    }
+
+
+def validate_stability_scaling_decision(
+    report: dict[str, Any],
+    *,
+    expected_source_revision: str,
+    expected_next_stage: str = "fresh_matched_50k_preparation",
+) -> dict[str, Any]:
+    if expected_next_stage not in AUTHORIZED_NEXT_STAGES:
+        raise ValueError(
+            "expected_next_stage must be one of: "
+            + ", ".join(sorted(AUTHORIZED_NEXT_STAGES))
+        )
+    if GIT_REVISION_PATTERN.fullmatch(expected_source_revision) is None:
+        raise ValueError("expected source revision must be a full lowercase SHA")
+    expected_decision = AUTHORIZED_NEXT_STAGES[expected_next_stage]
+    if (
+        int(report.get("schema_version", 0)) != 1
+        or report.get("status") != "pass"
+        or report.get("decision") != expected_decision
+        or report.get("authorized_next_stage") != expected_next_stage
+        or report.get("issues") != []
+    ):
+        raise ValueError("stability scaling decision does not authorize the requested stage")
+
+    requirements = report.get("requirements")
+    expected_requirements = {
+        "min_robust_reports": 2,
+        "min_robust_images": 64,
+        "unique_rollout_seeds": True,
+        "allowed_screening_failures": ["reconstruction_regression"],
+        "all_robust_gates_must_pass": True,
+    }
+    if requirements != expected_requirements:
+        raise ValueError("stability scaling decision requirements are not canonical")
+
+    identity = report.get("identity")
+    if not isinstance(identity, dict):
+        raise ValueError("stability scaling decision identity is missing")
+    if identity.get("git_revision") != expected_source_revision:
+        raise ValueError("stability scaling decision source revision differs")
+    for field in ("cofitok_checkpoint_sha256", "dense_checkpoint_sha256"):
+        if SHA256_PATTERN.fullmatch(str(identity.get(field, ""))) is None:
+            raise ValueError(f"stability scaling decision {field} is malformed")
+
+    screening = report.get("screening")
+    if not isinstance(screening, dict):
+        raise ValueError("stability scaling decision screening summary is missing")
+    failed_screening = screening.get("failed_gates")
+    if not isinstance(failed_screening, list) or not set(failed_screening) <= {
+        "reconstruction_regression"
+    }:
+        raise ValueError("stability scaling screening has a disallowed failure")
+
+    robust_rows = report.get("robust_rows")
+    if not isinstance(robust_rows, list) or len(robust_rows) < 2:
+        raise ValueError("stability scaling decision lacks two robust reports")
+    seeds = []
+    for index, row in enumerate(robust_rows):
+        if not isinstance(row, dict):
+            raise ValueError(f"stability robust row {index} is malformed")
+        seed = row.get("seed")
+        if not isinstance(seed, int) or isinstance(seed, bool):
+            raise ValueError(f"stability robust row {index} seed is malformed")
+        seeds.append(seed)
+        if int(row.get("num_images", 0)) < 64:
+            raise ValueError(f"stability robust row {index} has too few images")
+        for field in ROBUST_METRIC_FIELDS:
+            value = row.get(field)
+            if (
+                not isinstance(value, (int, float))
+                or isinstance(value, bool)
+                or not math.isfinite(float(value))
+            ):
+                raise ValueError(
+                    f"stability robust row {index} metric {field} is not finite"
+                )
+    if len(set(seeds)) != len(seeds):
+        raise ValueError("stability robust report seeds are not unique")
+
+    sources = report.get("sources")
+    if not isinstance(sources, dict):
+        raise ValueError("stability scaling decision source provenance is missing")
+    descriptors = [sources.get("screening_report")]
+    robust_sources = sources.get("robust_reports")
+    if not isinstance(robust_sources, list) or len(robust_sources) != len(robust_rows):
+        raise ValueError("stability scaling robust source provenance is incomplete")
+    descriptors.extend(robust_sources)
+    for index, descriptor in enumerate(descriptors):
+        if not isinstance(descriptor, dict):
+            raise ValueError(f"stability source descriptor {index} is malformed")
+        if (
+            not isinstance(descriptor.get("path"), str)
+            or not descriptor["path"]
+            or int(descriptor.get("bytes", 0)) < 1
+            or SHA256_PATTERN.fullmatch(str(descriptor.get("sha256", ""))) is None
+        ):
+            raise ValueError(f"stability source descriptor {index} is invalid")
+
+    return {
+        "schema_version": 1,
+        "status": "pass",
+        "decision": expected_decision,
+        "authorized_next_stage": expected_next_stage,
+        "source_revision": expected_source_revision,
+        "cofitok_checkpoint_sha256": identity["cofitok_checkpoint_sha256"],
+        "dense_checkpoint_sha256": identity["dense_checkpoint_sha256"],
+        "robust_seeds": seeds,
+        "robust_report_count": len(robust_rows),
+        "min_robust_images": min(int(row["num_images"]) for row in robust_rows),
     }
