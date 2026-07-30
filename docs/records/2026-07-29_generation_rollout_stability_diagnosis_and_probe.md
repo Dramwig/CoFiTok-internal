@@ -835,3 +835,21 @@ rollout-consistency scale: 1.0
 The dense checkpoint stat, sidecar, and `latest.json` agree on filename,
 bytes, SHA256, step, target revision, and the same dataset and runtime
 identities used by CoFiTok. The checkpoint payload was not loaded or rehashed.
+
+The second dense milestone passed the same audit:
+
+```text
+step: 500 / 1,000
+images seen: 32,000
+checkpoint bytes: 1,006,120,150
+checkpoint SHA256: 9567e4c5a0be80d7c453161a3cd6daff1f3bbe072b36248fb15c8c9bf2972da1
+validation epsilon MSE: 0.042720943689346313
+EMA-teacher scale: 0.0
+rollout-consistency scale: 1.0
+```
+
+The sidecar, `latest.json`, checkpoint stat, revision, dataset identity, and
+runtime-environment identity all agree. The checkpoint payload was not loaded
+or rehashed. At this matched step the CoFiTok and dense validation MSE values
+were close (`0.04267635` and `0.04272094`), but this training-time diagnostic
+does not replace the external rollout qualification.
