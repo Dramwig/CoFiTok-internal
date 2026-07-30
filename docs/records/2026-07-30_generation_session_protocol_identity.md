@@ -44,6 +44,16 @@ environment-related skips. Revision `72b1c54` strengthens the two rejection
 tests with a `torch.load` sentinel, proving that both a training checkpoint and
 an unreleased inference artifact fail policy validation before deserialization.
 
+Revision `f6b5416` consumes the policy in the final export pipeline rather than
+leaving it as an optional library capability. Both exported-artifact preflights
+and both inference smoke invocations pass the release-only flag. Their reports
+record the enforced policy, and the large-scale completion audit rejects a
+missing or false policy field from either layer. The focused artifact,
+preflight, completion-audit, and runbook tests passed `96/96`; the full local
+suite passed with three existing skips. The uploaded runbook passed remote
+`bash -n` and matched local SHA256
+`dc8aa617a53c3e276e741e7e5701de830fe988b2b7ce00faa5884a1e6b89ce3b`.
+
 This revision is not deployed into the active matched two-step 5K checkout at
 `2521d874a82898a7a2a527d824ea1df285df221d`. The active pair remains
 single-revision evidence; future formal training and inference will consume the

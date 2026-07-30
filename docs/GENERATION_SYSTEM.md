@@ -662,6 +662,10 @@ stale quality decision cannot authorize an artifact. These artifacts are smaller
 inference copies and never replace exact-resume training checkpoints. See
 `docs/records/2026-07-12_deployable_ema_inference_artifact.md` and
 `docs/records/2026-07-13_inference_artifact_final_release_authorization.md`.
+The final export runbook invokes both artifact preflights and both inference
+smoke tests with release authorization required. Their reports carry this
+policy bit, and the completion audit fails unless all four production loads
+prove that the release gate was enforced before deserialization.
 
 The terminal completion audit does not trust those JSON reports alone. It
 rehashes both physical step-300K exact-resume checkpoints through their
