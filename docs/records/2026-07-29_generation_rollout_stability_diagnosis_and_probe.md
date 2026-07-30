@@ -448,6 +448,23 @@ SHA256, dataset identity, runtime-environment identity, step, and revision
 the scheduled validation event. No checkpoint payload was loaded or rehashed
 during this audit.
 
+The second CoFiTok milestone passed the same read-only integrity audit:
+
+```text
+step: 2,500 / 5,000
+checkpoint bytes: 1,006,321,322
+checkpoint SHA256: ad14dbd6ae47543fbe8d15a1ba86aed928b901bc97d0a15a776bdfefd74b1253
+validation epsilon MSE: 0.0368012972176075
+rollout consistency scale: 1.0
+```
+
+The sidecar, `latest.json`, canonical validation row, dataset identity,
+runtime-environment identity, and Git revision all agree. Validation MSE is
+8.78% higher than the step-1,250 value even though the logged training losses
+continued to decrease. This is retained as a possible generalization warning,
+not interpreted as a method-specific regression before the matched dense run
+and final free-state evaluation are available.
+
 The tracked post-training evaluator is prepared but cannot run before the
 pair summary exists:
 
