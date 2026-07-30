@@ -39,7 +39,10 @@ The focused session, formal-protocol, and inference-artifact tests passed
 `25/25`. A new test proves exact CPU equality between generating two explicit
 seeds in one batch and generating the same seeds as two single-image requests.
 The release-only follow-up passed `23/23` focused tests. The full local suite
-passed after each change with three existing environment-related skips.
+passed after each production-code change with three existing
+environment-related skips. Revision `72b1c54` strengthens the two rejection
+tests with a `torch.load` sentinel, proving that both a training checkpoint and
+an unreleased inference artifact fail policy validation before deserialization.
 
 This revision is not deployed into the active matched two-step 5K checkout at
 `2521d874a82898a7a2a527d824ea1df285df221d`. The active pair remains
