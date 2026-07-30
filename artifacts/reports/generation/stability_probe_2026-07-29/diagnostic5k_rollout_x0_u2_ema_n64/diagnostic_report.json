@@ -1,0 +1,121 @@
+{
+  "all_diagnostic_threshold_checks_pass": true,
+  "reason": "The authoritative raw n=8 qualification failed predicted_x0_high_frequency; this report only tests whether the production EMA path is stable across seeds.",
+  "role": "diagnostic_only",
+  "rows": [
+    {
+      "cofitok_reconstruction_amplification": 1.0624819616760608,
+      "dense_reconstruction_amplification": 1.070644632745032,
+      "diagnostic_threshold_checks": {
+        "high_frequency_ratio_at_most_1_5": true,
+        "reconstruction_ratio_at_most_1_05": true
+      },
+      "num_images": 64,
+      "peak_predicted_x0_high_frequency_ratio": 0.361330721879742,
+      "predicted_x0_high_frequency": [
+        {
+          "cofitok": 0.08872289955615997,
+          "dense": 0.29004967212677,
+          "ratio": 0.30588863936857846,
+          "timestep": 595
+        },
+        {
+          "cofitok": 0.07787714153528214,
+          "dense": 0.2596282660961151,
+          "ratio": 0.2999563287398445,
+          "timestep": 394
+        },
+        {
+          "cofitok": 0.08633558452129364,
+          "dense": 0.25952693819999695,
+          "ratio": 0.3326652143322464,
+          "timestep": 192
+        },
+        {
+          "cofitok": 0.09561719000339508,
+          "dense": 0.2646251320838928,
+          "ratio": 0.361330721879742,
+          "timestep": 91
+        }
+      ],
+      "reconstruction_ratio": 0.9658515953953564,
+      "seed": 2029
+    },
+    {
+      "cofitok_reconstruction_amplification": 1.0549741202118894,
+      "dense_reconstruction_amplification": 1.0615965414899127,
+      "diagnostic_threshold_checks": {
+        "high_frequency_ratio_at_most_1_5": true,
+        "reconstruction_ratio_at_most_1_05": true
+      },
+      "num_images": 64,
+      "peak_predicted_x0_high_frequency_ratio": 0.3355883744593471,
+      "predicted_x0_high_frequency": [
+        {
+          "cofitok": 0.08371254056692123,
+          "dense": 0.2891736626625061,
+          "ratio": 0.2894888137327428,
+          "timestep": 595
+        },
+        {
+          "cofitok": 0.0723847895860672,
+          "dense": 0.2586868405342102,
+          "ratio": 0.27981628070676684,
+          "timestep": 394
+        },
+        {
+          "cofitok": 0.0797480046749115,
+          "dense": 0.2573760747909546,
+          "ratio": 0.3098501084053141,
+          "timestep": 192
+        },
+        {
+          "cofitok": 0.08807869255542755,
+          "dense": 0.26246050000190735,
+          "ratio": 0.3355883744593471,
+          "timestep": 91
+        }
+      ],
+      "reconstruction_ratio": 0.9653916632929904,
+      "seed": 2039
+    }
+  ],
+  "scaling_authorization_allowed": false,
+  "schema_version": 1,
+  "sources": {
+    "pair_summary": {
+      "bytes": 1079,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2/pair_summary.json",
+      "sha256": "ce604c2e9d2a1864bb6ba6fad31cdcee1cc92219256d361333abc00feaded28c"
+    },
+    "raw_qualification": {
+      "bytes": 7585,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/qualification5k_rollout_x0_u2_n8/qualification_report.json",
+      "sha256": "c4603cbcdfad7537e8a53d9cb5493cd0896eb17444a9cf04d7ef1362bf42f6a1"
+    },
+    "rollouts": [
+      {
+        "bytes": 265642,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_ema_n64_seed2029/cofitok_rollout/rollout_stability_report.json",
+        "sha256": "31c5477981e8890469c93bed11dedecde8d0cab37facc62c3c8e84e46ed693dc"
+      },
+      {
+        "bytes": 163539,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_ema_n64_seed2029/dense_rollout/rollout_stability_report.json",
+        "sha256": "d324985aa6d8dec42b9606c98b996ea7a234877cebcb9fa53c6c3904b75777fa"
+      },
+      {
+        "bytes": 265599,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_ema_n64_seed2039/cofitok_rollout/rollout_stability_report.json",
+        "sha256": "0aa79dd63955d8e87cdd29b4f9275635d3d222bf06ef380ca5db32eb234565be"
+      },
+      {
+        "bytes": 163565,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_ema_n64_seed2039/dense_rollout/rollout_stability_report.json",
+        "sha256": "18350ce191766b8d39fbf4779376bddf38ab5d2fb8cb876b2b2f5f679c5110c8"
+      }
+    ]
+  },
+  "status": "completed",
+  "weights": "ema"
+}

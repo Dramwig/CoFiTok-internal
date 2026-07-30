@@ -573,10 +573,36 @@ decision. Formal 50K preparation remains unauthorized.
 The n=8 EMA diagnostic shows a weight-path split rather than tail-token energy
 collapse: EMA CoFiTok reconstruction is `0.25409` versus dense `0.26379`, and
 its four high-frequency values are lower than dense, while the raw CoFiTok
-values are higher. A diagnostic-only EMA n=64 two-seed run was therefore
-started as PID `522916` using tracked runbook
+values are higher. The diagnostic-only EMA n=64 two-seed run completed using
+tracked runbook
 `generation_stability_rollout_x0_u2_ema_n64_diagnostic5k_2026-07-30.sh`
 (SHA256
-`091a2ca9dd4b4422d55eeb25d626fb79e0498ab47a690a7e4906d30f389a98cc`).
-Its summary permanently declares `scaling_authorization_allowed=false`; it
-cannot replace or override the failed raw qualification.
+`091a2ca9dd4b4422d55eeb25d626fb79e0498ab47a690a7e4906d30f389a98cc`):
+
+| seed | peak EMA HF ratio | reconstruction ratio |
+|---:|---:|---:|
+| 2029 | 0.36133072 | 0.96585160 |
+| 2039 | 0.33558837 | 0.96539166 |
+
+Every diagnostic threshold check passed. The summary SHA256 is
+`78e14cd337ea43a24d621f04544a159b933bcc981c1ef82c49f7de7ab2ac7046`.
+It permanently declares `scaling_authorization_allowed=false` and cannot
+replace or override the failed raw qualification.
+
+The next read-only diagnostic evaluates raw model weights at the immutable
+1,250, 2,500, 3,750, and 5,000 checkpoints under the same n=8 seed-2029
+rollout protocol. It binds the pair and failed qualification SHA256 values,
+reuses the final 5K reports, and records the first checkpoint whose peak
+selected predicted-x0 high-frequency ratio exceeds `1.5`. It cannot authorize
+scaling:
+
+```text
+runbook:
+artifacts/runbooks/generation_stability_rollout_x0_u2_raw_milestone_diagnostic5k_2026-07-30.sh
+sha256: e3ba897cb2b2f16bde0fe19bd6b8d47807ffce6318eb0115b9f7857eaf8ccff0
+remote PID: 525264
+output:
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/diagnostic5k_rollout_x0_u2_raw_milestones/diagnostic_report.json
+```
+
+Formal 50K remains unauthorized while this diagnosis is active.
