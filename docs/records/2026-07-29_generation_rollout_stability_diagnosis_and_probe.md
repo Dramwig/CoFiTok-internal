@@ -967,3 +967,42 @@ synced under
 `artifacts/reports/generation/stability_probe_2026-07-29/`. A source/local
 SHA256 audit compared 29 files and reported zero missing, extra, or mismatched
 files. No checkpoint payload was copied.
+
+## EMA-teacher matched 1K raw n=64 qualification
+
+The raw robust evaluation completed two independent 64-image rollout seeds:
+
+| seed | peak HF ratio | reconstruction ratio | endpoint ratio | validation ratio | status |
+|---:|---:|---:|---:|---:|---|
+| 2029 | 0.74200056 | 0.98314020 | 1.00346327 | 1.01783056 | pass |
+| 2039 | 0.72915726 | 0.98015742 | 1.00346327 | 1.01783056 | pass |
+
+Both reports passed every gate with ordered rank 1, tail-two energy
+`0.56783742`, maximum single-token energy `0.28732264`, zero-token value 0,
+and shuffle ratio `82.24813`. Their qualification SHA256 values are:
+
+```text
+seed 2029: 8467e47d0f406fe954fe3c5d6805b545a2221eb8660efdcd625c81a0e0cb44b6
+seed 2039: 9fd020d4fe9ac6e695cc68e954a40ae0d2bbd23b426928b9e37e15340dfa8088
+```
+
+The shared decision builder verified unique seeds, at least 64 images per
+report, identical checkpoint identity and protocol apart from seed, a valid
+pair contract, and all robust gates. It produced:
+
+```text
+status: pass
+decision: authorize_fresh_matched_5k
+authorized_next_stage: matched_5k
+decision SHA256: 7f2e6e691e26ef24f18d42e0f337229a35f2eec1a774e82f12141bb15dc48c9d
+robust summary SHA256: 350d8e1a35767f2ecc2b1c5b947cb9e274d27bd14a14cddc5809c9d6e88d4017
+```
+
+The observed robust ranges were peak HF `[0.72916, 0.74200]` and
+reconstruction `[0.98016, 0.98314]`. This authorizes only a new matched 5K
+probe. It does not authorize 50K or full training, and the n64 runbook did not
+start 5K automatically. GPU use returned to zero.
+
+The two evaluation directories, qualification reports, summary, decision, and
+waiter log were synced locally. A second source/local SHA256 audit compared
+nine files and reported zero missing, extra, or mismatched files.
