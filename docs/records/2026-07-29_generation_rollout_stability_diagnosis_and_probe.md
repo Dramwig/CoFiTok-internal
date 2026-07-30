@@ -619,3 +619,56 @@ diverges from its stable EMA path. This rules out a monotonic capacity collapse
 and localizes the correction to late raw-weight stability between 3,750 and
 5,000. Formal 50K remains unauthorized until a fresh corrected matched pair
 passes the raw gate.
+
+## Late raw-weight EMA-teacher correction
+
+Revision `4cb061d898aabe58e7b5542f214b6d7968e1b4e1` introduced an optional
+late-training consistency loss between the raw model output and the existing
+EMA shadow output on a bounded micro-batch subset. The teacher path is
+no-gradient, uses evaluation mode, and never enters the synthesis operator.
+The loss weight, start, warmup, and batch fraction are shared training fields
+that the generation-pair contract requires to match exactly between CoFiTok and
+dense.
+
+The fresh 1K candidate uses:
+
+```text
+weight: 0.25
+start step: 600
+warmup steps: 300
+batch fraction: 0.0625
+two-step clipped-x0 rollout: unchanged
+```
+
+The first CUDA rehearsal correctly failed before any checkpoint was written.
+PyTorch `functional_call(strict=True)` required sixteen nonpersistent fixed
+synthesis buffers that are intentionally absent from both `state_dict()` and
+the EMA shadow. Revision
+`10f2f6bd9977fb1a63de4b2939ca641107a0ccaa` fixes the boundary by first
+requiring exact equality between EMA keys and `model.state_dict()` keys, then
+allowing only nonpersistent module constants to come from the live model.
+Student gradients, EMA-state isolation, training-mode restoration, mismatched
+state rejection, and nonpersistent-buffer behavior are covered by tests.
+
+Local full pytest passed with three existing skips. The isolated Linux suite
+passed after excluding only `test_aaai27_experiment_structure.py`, whose paper
+sibling directory does not exist under the `/tmp` worktree layout; the relevant
+Linux tests passed `59/59`. The official remote repository remained at
+`1ebcc15210e63a776a2ba448481cbd8bb94a4066`.
+
+The active-teacher CUDA benchmark v2 passed:
+
+| method | images/s | peak VRAM | teacher loss | grad norm |
+|---|---:|---:|---:|---:|
+| CoFiTok | 22.1245 | 15,232,468,992 | 1.3413e-10 | 110.60 |
+| dense | 24.3071 | 15,036,313,600 | 1.2310e-11 | 1.14 |
+
+Both reports have teacher scale `1.0`, finite positive teacher loss, no
+checkpoint, clean revision provenance, memory below 90%, and a valid matched
+pair contract. The benchmark summary SHA256 is
+`e5a88a1e7d18bef30de56ee43b46e94447c76302a84c0aa09d0928495fbaab49`.
+The tracked runbook SHA256 is
+`c9723579eb4bc432e898481beee8de63c8980a68fe3a3505d5dc69674030dc1f`.
+
+This benchmark authorizes only a fresh matched 1K qualification probe. It does
+not authorize 5K, 50K, or full training.
