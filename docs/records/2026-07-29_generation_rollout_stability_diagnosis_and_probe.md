@@ -883,3 +883,50 @@ rollout-consistency scale: 1.0
 The checkpoint stat, sidecar, and `latest.json` agree on all integrity and
 provenance fields. The canonical row records the third scheduled validation
 event. The payload was not loaded or rehashed.
+
+The dense teacher reached full scale and remained finite:
+
+| step | teacher scale | teacher loss | total loss | gradient norm |
+|---:|---:|---:|---:|---:|
+| 900 | 1.0 | 0.10376317 | 0.07457095 | 0.23146720 |
+| 925 | 1.0 | 0.09929421 | 0.07404177 | 0.18409708 |
+| 1,000 | 1.0 | 0.10877534 | 0.08509394 | 0.48646978 |
+
+The dense member completed exactly:
+
+```text
+steps: 1,000 / 1,000
+images seen: 64,000
+canonical metric rows: 41
+scheduled validation rows: 4
+final validation epsilon MSE: 0.025760110467672348
+final checkpoint bytes: 1,006,120,150
+final checkpoint SHA256: a0494f10d5f36cef707654b9bd5406d464ee1b894f32f302cfa7e4a9a2614aa2
+segment elapsed seconds: 2,603.068747997284
+peak VRAM bytes: 15,043,471,872
+parameters: 62,824,707
+```
+
+The final dense checkpoint stat, sidecar, and `latest.json` agree on all
+integrity and provenance fields. The report declares exact completion, and the
+final metric row binds the fourth validation event. The payload was not loaded
+or rehashed.
+
+The read-only monitor reached `pass / complete / issues=[]`. The training
+runbook then wrote a completed pair summary:
+
+```text
+pair summary SHA256: 94e857f0b537a03213e57079ef5a333d6508eaacbcdd067f85e71dbe0077f083
+CoFiTok training report SHA256: e3db90536f019585ca264e22db6ed87e72c592a5a2857b4ace3f6c3ebe2ec94a
+dense training report SHA256: c40ef1d8133b5abe328bece50b915c58e92aa795d76aab84dbbc96df3d053d41
+parameter ratio delta: +0.014924064826926653%
+validation ratio: 1.0178305569964803
+generation-pair contract: valid
+```
+
+Both members use revision `10f2f6b`, the same dataset/runtime identities,
+exactly 1,000 steps and 64,000 images, and identical data, diffusion, runtime,
+optimization, rollout-consistency, and EMA-teacher fields. The pair summary
+binds the active CUDA benchmark, failed raw 5K qualification, and raw
+milestone diagnostic. Its completion authorized only the already queued raw
+n=8 screening; it did not authorize 5K.
