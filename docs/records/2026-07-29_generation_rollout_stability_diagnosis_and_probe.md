@@ -431,3 +431,19 @@ only on `pass`, `failed`, or `stalled`. Its initial report was
 `running / cofitok_training` with `issues=[]`, clean Git provenance, and about
 274 GB free disk. It does not load or hash checkpoint payloads and does not
 restart or terminate training.
+
+The tracked post-training evaluator is prepared but cannot run before the
+pair summary exists:
+
+```text
+artifacts/runbooks/generation_stability_rollout_x0_u2_posteval5k_2026-07-30.sh
+sha256: f6358383cabd61c2215dea748014b8d93e189d57c5690e307c4f34078f0a64cd
+```
+
+Its invocation requires `EXPECTED_PAIR_SUMMARY_SHA256` to bind the completed
+pair. It runs raw and EMA n=8 diagnostics, permits robust expansion only when
+n=8 has no failures beyond an optional reconstruction failure, then runs raw
+n=64 seeds 2029 and 2039. Only two passing robust reports can produce
+`authorize_fresh_matched_50k_preparation`; the runbook never launches 50K
+training itself. Targeted tests, `git diff --check`, remote `bash -n`, and the
+uploaded source SHA all passed.
