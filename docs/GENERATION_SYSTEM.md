@@ -2,7 +2,9 @@
 
 This branch upgrades CoFiTok from short-budget mechanism validation to a
 class-conditional ImageNet-256 generation system. Locked paper evidence remains
-on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
+on `paper-evidence-locked`. The original large-generation implementation and
+its immutable runs remain on `scale/generative-system`; the rollout-stability
+correction is developed independently on `scale/generation-stability`.
 
 ## System boundary
 
@@ -14,30 +16,31 @@ on `paper-evidence-locked`; generation work lives on `scale/generative-system`.
   parameter-free, bias-free RGB channel projection, preserving `S_k(0)=0`
   exactly. `RestrictedSynthesisBank` remains available for historical evidence
   and ablation only.
-- Authoritative scaling/full CoFiTok uses true variable-shape token fields:
-  spatial strides `[16,16,8,8,4,4,1,1]` and channel counts
-  `[4,4,8,8,8,8,1,2]`. Token scalar capacities increase from `1,024` to
-  `131,072`, while a dense RGB epsilon field has `196,608` scalars. Each token
-  is therefore strictly compressed. `T_k` pools before each variable-channel
-  head, feeds back only that emitted token, and `S_k` performs fixed bilinear
-  upsampling before its fixed channel projection.
+- The immutable v3 scaling/full evidence uses spatial strides
+  `[16,16,8,8,4,4,1,1]` and channel counts `[4,4,8,8,8,8,1,2]`. The stability
+  correction uses the separately versioned `rgbtail3` layout with strides
+  `[16,16,8,8,4,1,1,1]` and channels `[4,4,8,8,8,1,1,1]`. Every individual
+  token remains smaller than a dense RGB epsilon field, while three independent
+  full-resolution one-channel tail tokens provide rank-complete RGB synthesis
+  without forcing the final token to carry two channels. `T_k` pools before
+  each variable-channel head, feeds back only that emitted token, and `S_k`
+  performs fixed bilinear upsampling before its fixed channel projection.
 - A restricted linear synthesis layout must allocate at least three aggregate
   full-resolution token channels for RGB epsilon prediction. Otherwise the
   highest-frequency output is rank-deficient regardless of model size or
-  training time. The formal config and recipe contract reject such layouts;
-  the final two rank-complete tokens use one and two full-resolution channels
-  while preserving the previous aggregate token-scalar budget exactly.
+  training time. The immutable v3 contract satisfies this with final one- and
+  two-channel tokens; the stability contract instead requires three separate
+  one-channel tail tokens. Both contracts reject rank-deficient layouts.
 - The dense control uses the identical U-Net and training protocol with one
   direct `dense_identity` epsilon head.
-- Formal scaling and full-data training additionally pass
-  `cofitok_generation_training_recipe_v3`. This contract prevents a matched
-  pair from passing fairness checks after both methods are identically weakened:
-  it locks the ImageNet stage, diffusion horizon/target, U-Net capacity,
-  class-dropout CFG training, bf16/TF32 runtime, effective batch 64, optimizer,
-  EMA, checkpoint cadence, fixed-basis synthesis, and the selected CoFiTok
-  capacity-path objective: prefix weight `0.05`, component weight `0.1`, and
-  squared-Hellinger energy weight `0.1`. Runtime selection
-  may change micro-batch and accumulation only while their product remains 64.
+- Generation recipe schema
+  `cofitok_generation_training_recipe_v4` preserves the historical
+  `legacy_scaling`, `scaling`, and `full` contracts and adds
+  `stability_scaling` and `stability_full`. The stability stages lock the
+  `rgbtail3` layout, Hellinger-stable capacity objective, low-SNR
+  high-frequency term, two-step clipped-`x0` rollout consistency, and late EMA
+  teacher consistency for both matched methods. Runtime selection may change
+  micro-batch and accumulation only while their product remains 64.
 - Production training uses bf16, gradient accumulation, gradient clipping,
   cosine LR, EMA, isolated DataLoader RNG, atomic checkpoints, retention, and
   exact model/optimizer/scheduler/RNG/sampler recovery.
@@ -156,9 +159,52 @@ datasets:    /root/autodl-tmp/CoFiTok/datasets
 checkpoints: /root/autodl-tmp/CoFiTok/checkpoints/generation
 ```
 
+The official server repository remains the immutable deployed generation
+revision until an explicitly authorized transition. Stability probes and Linux
+rehearsals use detached worktrees under `/tmp`; they must not move the official
+repository or mutate an active training checkout.
+
+## Stability recovery path
+
+- The current recovery candidate is
+  `rgbtail3 + clipped-x0 two-step rollout + late EMA teacher`. The matched 5K
+  qualification run is pinned to
+  `59db142fc45d69dc92bb0333be5ac2d0162d9dc4`; its final raw n=8 and two-seed
+  n=64 decision is the only input allowed to authorize 50K preparation.
+- The formal 10% successor configs are
+  `imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json`
+  and
+  `imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k.json`.
+  Both use 50,000 optimizer steps and effective batch 64. Rollout consistency
+  uses weight `0.1`, start `0`, warmup `10,000`, timestep delta `10`, two
+  unrolls, batch fraction `0.125`, and clipped-`x0` mode. EMA teacher
+  consistency uses weight `0.25`, start `30,000`, warmup `10,000`, and batch
+  fraction `0.0625`.
+- The matched parameter counts are CoFiTok `62,834,083` and dense
+  `62,824,707`, a relative gap of `+0.014924%`. The shared U-Net, diffusion,
+  data, optimizer, runtime, rollout, and teacher fields are exact pair-contract
+  matches; dense factorization-only auxiliary losses remain zero.
+- `validate_generation_stability_scaling_decision.py` verifies the expected
+  decision SHA, rehashes every screening and robust source report, rebuilds the
+  decision from those sources, and requires exact equality. Editing a decision
+  and supplying its new SHA therefore cannot bypass the qualification evidence.
+- `generation_stability_ema_teacher_matched_50k_after_gate.sh` is a dormant
+  successor runbook. Before any CUDA benchmark or training it requires the
+  passing 5K decision, exact clean target revision and branch, recipe-v4 config
+  validation, storage headroom, and an idle GPU. It then selects one matched
+  `16x4`, `32x2`, or `64x1` runtime, requires integrity-aware monitoring, and
+  permits exact resume only at the same target revision.
+- Completing this matched 50K pair still does not authorize full 300K.
+  `build_generation_stability_50k_summary.py` binds both 50K training reports,
+  decision/config validation, exact 3.2M images per method, effective batch 64,
+  branch/revision, and pair contract, while explicitly setting
+  `formal_300k_authorization_allowed=false`. A formal EMA sampling and mechanism
+  gate is still required.
+
 The failed learned-synthesis v2 pair keeps its original run and report
-directories as immutable evidence. The next authoritative scaling attempt uses
-fresh identities resolved by `cofitok.generation_paths`:
+directories as immutable evidence. The historical fixed-basis v3 attempt uses
+the following identities resolved by `cofitok.generation_paths`; the stability
+path does not reuse or overwrite them:
 
 ```text
 CoFiTok: imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3
