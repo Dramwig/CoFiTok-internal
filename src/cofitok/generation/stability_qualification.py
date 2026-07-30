@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from cofitok.generation_pair import generation_pair_contract
+
 
 DEFAULT_HIGH_FREQUENCY_TIMESTEPS = (595, 394, 192, 91)
 
@@ -27,7 +29,7 @@ def _validate_sources(
     dense_checkpoint: dict[str, Any],
     cofitok_rollout: dict[str, Any],
     dense_rollout: dict[str, Any],
-) -> None:
+) -> dict[str, Any]:
     for name, report in (
         ("cofitok checkpoint", cofitok_checkpoint),
         ("dense checkpoint", dense_checkpoint),
@@ -61,6 +63,48 @@ def _validate_sources(
     dense_revision = dense_training.get("git", {}).get("revision")
     if not cofitok_revision or cofitok_revision != dense_revision:
         raise ValueError("training reports do not share one non-empty Git revision")
+    for name, training, checkpoint, rollout in (
+        ("cofitok", cofitok_training, cofitok_checkpoint, cofitok_rollout),
+        ("dense", dense_training, dense_checkpoint, dense_rollout),
+    ):
+        if checkpoint.get("checkpoint_step") != training.get("completed_steps"):
+            raise ValueError(f"{name} evaluation does not use the final training step")
+        if checkpoint.get("git", {}).get("revision") != cofitok_revision:
+            raise ValueError(f"{name} checkpoint report uses a different Git revision")
+        if rollout.get("git", {}).get("revision") != cofitok_revision:
+            raise ValueError(f"{name} rollout report uses a different Git revision")
+        training_config = training.get("config")
+        if not isinstance(training_config, dict):
+            raise ValueError(f"{name} training report does not embed its config")
+        if checkpoint.get("config") != training_config:
+            raise ValueError(f"{name} checkpoint report config does not match training")
+        if rollout.get("config") != training_config:
+            raise ValueError(f"{name} rollout report config does not match training")
+
+    if cofitok_rollout.get("protocol") != dense_rollout.get("protocol"):
+        raise ValueError("CoFiTok and dense rollout protocols do not match")
+    rollout_protocol = cofitok_rollout.get("protocol")
+    if not isinstance(rollout_protocol, dict):
+        raise ValueError("rollout reports do not embed a protocol")
+    if int(rollout_protocol.get("num_images", 0)) < 1:
+        raise ValueError("rollout protocol num_images must be positive")
+
+    cofitok_checkpoint_metrics = cofitok_checkpoint.get("metrics", {})
+    dense_checkpoint_metrics = dense_checkpoint.get("metrics", {})
+    for field in ("evaluated_images", "timestep"):
+        if cofitok_checkpoint_metrics.get(field) != dense_checkpoint_metrics.get(field):
+            raise ValueError(f"checkpoint evaluation field {field} does not match")
+
+    pair_contract = generation_pair_contract(
+        cofitok_training["config"],
+        dense_training["config"],
+    )
+    if not pair_contract["valid"]:
+        raise ValueError(
+            "training reports fail the generation pair contract: "
+            + "; ".join(pair_contract["issues"])
+        )
+    return pair_contract
 
 
 def build_stability_qualification(
@@ -79,7 +123,7 @@ def build_stability_qualification(
     min_shuffle_mismatch_ratio: float = 2.0,
     max_zero_token_abs: float = 1e-8,
 ) -> dict[str, Any]:
-    _validate_sources(
+    pair_contract = _validate_sources(
         cofitok_training=cofitok_training,
         dense_training=dense_training,
         cofitok_checkpoint=cofitok_checkpoint,
@@ -196,12 +240,17 @@ def build_stability_qualification(
     }
     passed = all(bool(gate["passed"]) for gate in gates.values())
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "pass" if passed else "fail",
         "protocol": {
             "weights": "model",
             "checkpoint_step": int(cofitok_checkpoint["checkpoint_step"]),
+            "checkpoint_evaluated_images": int(
+                cofitok_checkpoint["metrics"]["evaluated_images"]
+            ),
+            "checkpoint_timestep": int(cofitok_checkpoint["metrics"]["timestep"]),
             "high_frequency_timesteps": list(high_frequency_timesteps),
+            "rollout": cofitok_rollout["protocol"],
         },
         "identity": {
             "git_revision": cofitok_training["git"]["revision"],
@@ -230,4 +279,5 @@ def build_stability_qualification(
             "shuffle_to_ordered_endpoint_ratio": shuffle_ratio,
         },
         "gates": gates,
+        "pair_contract": pair_contract,
     }
