@@ -147,6 +147,7 @@ def test_stability_completion_runbook_is_a_read_only_exact_identity_gate() -> No
     assert "EXPECTED_DECISION_SHA256=${" in source
     assert "EXPECTED_SCALING_GATE_SHA256=${" in source
     assert "EXPECTED_FULL_READINESS_SHA256=${" in source
+    assert "EXPECTED_FULL_LAUNCH_RECEIPT_SHA256=${" in source
     assert "EXPECTED_FINAL_GATE_SHA256=${" in source
     assert "EXPECTED_FULL_TRAINING_REVISION=${" in source
     assert "EXPECTED_FULL_EVALUATION_REVISION=${" in source
@@ -183,6 +184,8 @@ def test_stability_completion_cli_reports_empty_workspace_as_incomplete(
         "d" * 64,
         "--expected-full-readiness-sha256",
         "0" * 64,
+        "--expected-full-launch-receipt-sha256",
+        "9" * 64,
         "--expected-full-training-revision",
         "e" * 40,
         "--expected-full-training-branch",
@@ -216,8 +219,9 @@ def test_stability_completion_cli_reports_empty_workspace_as_incomplete(
     assert report["status"] == "incomplete"
     assert report["complete"] is False
     assert report["failed_checks"] == []
-    assert len(report["missing_checks"]) == 16
+    assert len(report["missing_checks"]) == 17
     assert "stability_full_training_readiness" in report["missing_checks"]
+    assert "stability_full_launch_receipt" in report["missing_checks"]
     assert "stability_full_runtime_selection" in report["missing_checks"]
     assert "stability_full_storage_capacity" in report["missing_checks"]
 
@@ -322,3 +326,55 @@ def test_stability_completion_rejects_replaced_readiness_file(
             expected_sha256=expected_sha,
             verification_kwargs={},
         )
+
+
+def test_stability_completion_rejects_replaced_full_launch_receipt(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "full_training_launch_receipt.json"
+    path.write_text('{"status":"pass"}\n', encoding="ascii")
+    expected_sha = file_sha256(path)
+    monkeypatch.setattr(
+        stability_audit,
+        "verify_full_launch_receipt",
+        lambda report, **kwargs: {
+            "readiness_sha256": "a" * 64,
+            "runtime_selection": {},
+            "launch_storage_capacity": {},
+            "training_state_absent_at_launch": True,
+            "full_training_launch_authorized": True,
+        },
+    )
+
+    evidence = stability_audit.full_launch_receipt_evidence(
+        {"status": "pass"},
+        receipt_path=path,
+        expected_sha256=expected_sha,
+        verification_kwargs={},
+    )
+    assert evidence["launch_receipt_sha256"] == expected_sha
+
+    path.write_text('{"status":"replaced"}\n', encoding="ascii")
+    with pytest.raises(ValueError, match="launch receipt SHA256 differs"):
+        stability_audit.full_launch_receipt_evidence(
+            {"status": "replaced"},
+            receipt_path=path,
+            expected_sha256=expected_sha,
+            verification_kwargs={},
+        )
+
+def test_stability_completion_replays_training_sources_from_deployed_checkout() -> None:
+    source = (ROOT / "scripts/audit_generation_stability_completion.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'deployment_receipt.get("checkout", {}).get("path", "")' in source
+    assert "generation_large_capacity_deployment_paths(" in source
+    assert 'target_revision=expectations["full_training_revision"]' in source
+    assert 'deployment_receipt_path = deployment_paths[' in source
+    assert 'deployment_receipt_path = paths[' not in source
+    assert '"cofitok_config": training_project' in source
+    assert '"dense_config": training_project' in source
+    assert '"project_root": training_project' in source
+    assert source.count('"require_current_formal_repository": False') == 2

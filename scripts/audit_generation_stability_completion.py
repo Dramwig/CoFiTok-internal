@@ -14,7 +14,10 @@ from cofitok.generation.stability_scaling import (
 )
 from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.generation_gate_sources import verify_generation_gate_source_reports
-from cofitok.generation_paths import generation_stability_workspace_paths
+from cofitok.generation_paths import (
+    generation_large_capacity_deployment_paths,
+    generation_stability_workspace_paths,
+)
 from cofitok.reporting import file_sha256, write_json_report
 
 try:
@@ -35,6 +38,9 @@ try:
     from scripts.build_generation_full_readiness import (
         validate_full_storage_capacity,
         verify_readiness_report,
+    )
+    from scripts.build_generation_full_launch_receipt import (
+        verify_full_launch_receipt,
     )
     from scripts.build_generation_stability_50k_summary import build_summary
     from scripts.build_large_scale_generation_comparison import (
@@ -59,6 +65,9 @@ except ModuleNotFoundError:
     from build_generation_full_readiness import (
         validate_full_storage_capacity,
         verify_readiness_report,
+    )
+    from build_generation_full_launch_receipt import (
+        verify_full_launch_receipt,
     )
     from build_generation_stability_50k_summary import build_summary
     from build_large_scale_generation_comparison import (
@@ -524,6 +533,35 @@ def full_readiness_evidence(
     }
 
 
+def full_launch_receipt_evidence(
+    report: dict[str, Any],
+    *,
+    receipt_path: Path,
+    expected_sha256: str,
+    verification_kwargs: dict[str, Any],
+) -> dict[str, Any]:
+    _raise_load_error(report)
+    if file_sha256(receipt_path) != expected_sha256:
+        raise ValueError("stability full launch receipt SHA256 differs")
+    verified = verify_full_launch_receipt(
+        report,
+        receipt_path=receipt_path,
+        expected_receipt_sha256=expected_sha256,
+        **verification_kwargs,
+    )
+    return {
+        "launch_receipt_sha256": expected_sha256,
+        "readiness_sha256": verified["readiness_sha256"],
+        "runtime_selection": verified["runtime_selection"],
+        "launch_storage_capacity": verified["launch_storage_capacity"],
+        "training_state_absent_at_launch": verified[
+            "training_state_absent_at_launch"
+        ],
+        "full_training_launch_authorized": verified[
+            "full_training_launch_authorized"
+        ],
+    }
+
 def milestone_evidence(
     reports: dict[int, dict[str, Any]],
     checkpoint_files: dict[int, dict[str, dict[str, Any]]],
@@ -766,6 +804,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-scaling-evaluation-branch", required=True)
     parser.add_argument("--expected-scaling-gate-sha256", required=True)
     parser.add_argument("--expected-full-readiness-sha256", required=True)
+    parser.add_argument("--expected-full-launch-receipt-sha256", required=True)
     parser.add_argument("--expected-full-training-revision", required=True)
     parser.add_argument("--expected-full-training-branch", required=True)
     parser.add_argument("--expected-full-evaluation-revision", required=True)
@@ -822,6 +861,11 @@ def main() -> None:
             args.expected_full_readiness_sha256,
             name="full readiness SHA256",
         ),
+        "full_launch_receipt_sha256": _validate_sha256(
+            args.expected_full_launch_receipt_sha256,
+            name="full launch receipt SHA256",
+        ),
+
         "final_gate_sha256": _validate_sha256(
             args.expected_final_gate_sha256,
             name="final gate SHA256",
@@ -886,10 +930,27 @@ def main() -> None:
     full_readiness = _read_optional(
         full_reports / "full_training_readiness.json"
     )
-    deployment_receipt_path = paths[
+    full_launch_receipt_path = full_reports / "full_training_launch_receipt.json"
+    full_launch_receipt = _read_optional(full_launch_receipt_path)
+
+    deployment_paths = generation_large_capacity_deployment_paths(
+        output_root=output_root,
+        target_revision=expectations["full_training_revision"],
+    )
+    deployment_receipt_path = deployment_paths[
         "STABILITY_LARGE_CAPACITY_DEPLOYMENT_RECEIPT"
     ]
     deployment_receipt = _read_optional(deployment_receipt_path)
+    deployment_checkout_value = ""
+    if isinstance(deployment_receipt, dict):
+        deployment_checkout_value = str(
+            deployment_receipt.get("checkout", {}).get("path", "")
+        )
+    training_project = (
+        Path(deployment_checkout_value).resolve()
+        if deployment_checkout_value
+        else project
+    )
     full_training = {
         "cofitok": _read_optional(full_cofitok / "training_report.json"),
         "dense_identity": _read_optional(full_dense / "training_report.json"),
@@ -1110,10 +1171,10 @@ def main() -> None:
                     "source_paths": {
                         "deployment_receipt": deployment_receipt_path,
                         "promotion_gate": paths["STABILITY_SCALING_GATE"],
-                        "cofitok_config": project
+                        "cofitok_config": training_project
                         / "configs/generation/imagenet256_stability_rgbtail3_"
                         "rollout_x0_u2_ema_teacher_k8_300k.json",
-                        "dense_config": project
+                        "dense_config": training_project
                         / "configs/generation/imagenet256_stability_"
                         "rollout_x0_u2_ema_teacher_dense_300k.json",
                         "config_validation": full_reports
@@ -1127,10 +1188,62 @@ def main() -> None:
                     "benchmark_root": paths["STABILITY_FULL_ROOT"]
                     / "runtime_preflight/training",
                     "storage_path": output_root,
-                    "project_root": project,
+                    "project_root": training_project,
                     "expected_revision": expectations["full_training_revision"],
                     "expected_branch": args.expected_full_training_branch,
                     "require_current_runtime_environment": False,
+                    "require_current_formal_repository": False,
+                    "require_current_git": False,
+                    "require_training_state_absent": False,
+                },
+            ),
+        ),
+        _check(
+            "stability_full_launch_receipt",
+            [
+                full_launch_receipt,
+                full_readiness,
+                deployment_receipt,
+                scaling_gate,
+                full_config_validation,
+                full_storage_capacity,
+                full_runtime_selection,
+                full_launch_storage_capacity,
+            ],
+            lambda: full_launch_receipt_evidence(
+                full_launch_receipt,
+                receipt_path=full_launch_receipt_path,
+                expected_sha256=expectations["full_launch_receipt_sha256"],
+                verification_kwargs={
+                    "source_paths": {
+                        "deployment_receipt": deployment_receipt_path,
+                        "promotion_gate": paths["STABILITY_SCALING_GATE"],
+                        "full_readiness": full_reports
+                        / "full_training_readiness.json",
+                        "cofitok_config": training_project
+                        / "configs/generation/imagenet256_stability_rgbtail3_"
+                        "rollout_x0_u2_ema_teacher_k8_300k.json",
+                        "dense_config": training_project
+                        / "configs/generation/imagenet256_stability_"
+                        "rollout_x0_u2_ema_teacher_dense_300k.json",
+                        "config_validation": full_reports / "config_validation.json",
+                        "storage_capacity": full_reports / "storage_capacity.json",
+                        "runtime_selection": full_reports / "runtime_selection.json",
+                        "launch_storage_capacity": full_reports
+                        / "storage_capacity_launch.json",
+                    },
+                    "training_run_dirs": [full_cofitok, full_dense],
+                    "benchmark_root": paths["STABILITY_FULL_ROOT"]
+                    / "runtime_preflight/training",
+                    "storage_path": output_root,
+                    "project_root": training_project,
+                    "expected_revision": expectations["full_training_revision"],
+                    "expected_branch": args.expected_full_training_branch,
+                    "expected_readiness_sha256": expectations[
+                        "full_readiness_sha256"
+                    ],
+                    "require_current_runtime_environment": False,
+                    "require_current_formal_repository": False,
                     "require_current_git": False,
                     "require_training_state_absent": False,
                 },

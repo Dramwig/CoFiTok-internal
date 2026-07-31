@@ -217,14 +217,24 @@ repository or mutate an active training checkout.
   `full_training_readiness.json` before exiting. It never starts the monitor or
   trainer. The full 300K runbook requires the readiness SHA256, replays every
   bound source and the current CUDA environment, reads the selected runtime
-  from that artifact, performs a fresh launch-time storage check, and only then
-  enters the resumable milestone loop. It never calls the runtime selector.
+  from that artifact, performs a fresh launch-time storage check, writes an
+  immutable `full_training_launch_receipt.json`, and only then enters the
+  resumable milestone loop. The receipt binds the readiness, promotion gate,
+  isolated deployment receipt, exact training configs, runtime selection,
+  launch-time storage report, and both run paths. A resumed launch must provide
+  the receipt SHA256 and replay it before updating only
+  `storage_capacity_current.json`; it cannot overwrite the original launch
+  storage evidence. The runbook never calls the runtime selector.
 - Deployment is a third, earlier stage and is CPU-only.
   `generation_deploy_large_capacity_readiness_checkout.sh` verifies the
   persistent bundle against the still-pinned formal repository, clones an
   isolated checkout under `checkpoints/generation/deployment/large_capacity`,
-  runs the complete CPU test suite and every tracked shell runbook syntax
-  check, and atomically writes a deterministic deployment receipt. It neither
+  stores the receipt, JUnit XML, and runbook syntax report under
+  `deployment/large_capacity/deployments/<full-target-sha>/`, runs the complete
+  CPU test suite and every tracked shell runbook syntax check, and atomically
+  writes a deterministic deployment receipt. Prior target evidence is never
+  overwritten; the historical fixed receipt path remains compatibility-only.
+  It neither
   moves the formal repository nor invokes readiness or training. Readiness must
   execute from the exact receipt-bound checkout and binds the receipt as a
   seventh immutable source. The deployment receipt explicitly authorizes only
@@ -734,6 +744,14 @@ rounded-up planned bytes, and reserve arithmetic; the stability completion
 audit requires schema v2 and refuses a multiplier below `4.0`. The 300K launch
 writes a separate `storage_capacity_launch.json`, so disk consumption between
 CUDA qualification and launch cannot silently invalidate the earlier reserve.
+That file becomes immutable once it is bound into
+`full_training_launch_receipt.json`. Receipt creation occurs before any monitor
+or trainer starts; failed receipt creation removes the unbound launch-storage
+file. Resume requires the exact receipt SHA and writes the fresh capacity result
+to `storage_capacity_current.json`. The terminal completion audit reopens the
+receipt and all bound sources from the deployment-receipt checkout, allowing
+later evaluation code while preventing a same-named config on that later
+revision from replacing the training-time source.
 
 The full 300K matched run also publishes a generic read-only operational monitor
 with optimizer-step freshness, finite-metric checks, checkpoint cadence, process,

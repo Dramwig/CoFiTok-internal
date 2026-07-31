@@ -62,6 +62,11 @@ def test_stability_full_readiness_runbook_builds_evidence_without_training() -> 
     assert "--checkpoint-size-multiplier 4.0" in source
     assert "scripts/train_generation.py" not in source
     assert "start_monitor" not in source
+    assert (
+        "deployment/large_capacity/deployments/"
+        "$EXPECTED_TARGET_REVISION/deployment_receipt.json"
+    ) in source
+    assert "deployment/large_capacity/deployment_receipt.json" not in source
 
 
 def test_stability_full_runbook_uses_new_paths_and_configs() -> None:
@@ -130,3 +135,25 @@ def test_stability_full_runbook_uses_large_capacity_runtime_and_storage_budget()
     assert "--candidates 1x64,2x32,4x16,8x8,16x4" in readiness
     assert "--baseline-candidate 1x64" in readiness
     assert "--checkpoint-size-multiplier 4.0" in source
+
+
+def test_stability_full_runbook_uses_immutable_launch_receipt_for_resume() -> None:
+    source = RUNBOOK.read_text(encoding="utf-8")
+
+    receipt = source.index("scripts/build_generation_full_launch_receipt.py")
+    monitor = source.index("start_monitor")
+    assert receipt < monitor
+    assert "EXPECTED_FULL_LAUNCH_RECEIPT_SHA256=${" in source
+    assert "scripts/validate_generation_full_launch_receipt.py" in source
+    assert '[[ -f "$FULL_LAUNCH_RECEIPT" ]]' in source
+    assert "refusing unreceipted stability full training state" in source
+    assert "storage_capacity_current.json" in source
+    assert 'rm -f -- "$LAUNCH_STORAGE_CAPACITY"' in source
+    assert "--allow-later-formal-repository" in source
+    assert source.count('storage_preflight "$LAUNCH_STORAGE_CAPACITY"') == 1
+    assert source.count('storage_preflight "$CURRENT_STORAGE_CAPACITY"') == 1
+    assert (
+        "deployment/large_capacity/deployments/"
+        "$EXPECTED_TARGET_REVISION/deployment_receipt.json"
+    ) in source
+    assert "deployment/large_capacity/deployment_receipt.json" not in source

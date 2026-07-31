@@ -9,6 +9,7 @@ from cofitok.generation_paths import (
     SCALING_DENSE_RUN_ID,
     SCALING_REPORT_ID,
     generation_deployment_attestation_paths,
+    generation_large_capacity_deployment_paths,
     generation_stability_workspace_paths,
     generation_workspace_paths,
 )
@@ -99,6 +100,40 @@ def test_deployment_attestation_paths_are_target_versioned(tmp_path: Path) -> No
         assert revision in paths[name].name
         assert paths[name].parent == paths["DEPLOYMENT_EVIDENCE_ROOT"]
 
+
+
+def test_large_capacity_deployment_paths_preserve_prior_revisions(
+    tmp_path: Path,
+) -> None:
+    first_revision = "a" * 40
+    second_revision = "b" * 40
+    first = generation_large_capacity_deployment_paths(
+        output_root=tmp_path / "generation",
+        target_revision=first_revision,
+    )
+    second = generation_large_capacity_deployment_paths(
+        output_root=tmp_path / "generation",
+        target_revision=second_revision,
+    )
+
+    assert first["STABILITY_LARGE_CAPACITY_DEPLOYMENT_ROOT"] == second[
+        "STABILITY_LARGE_CAPACITY_DEPLOYMENT_ROOT"
+    ]
+    assert first["STABILITY_LARGE_CAPACITY_DEPLOYMENT_EVIDENCE_ROOT"].name == (
+        first_revision
+    )
+    assert second["STABILITY_LARGE_CAPACITY_DEPLOYMENT_EVIDENCE_ROOT"].name == (
+        second_revision
+    )
+    assert first["STABILITY_LARGE_CAPACITY_DEPLOYMENT_RECEIPT"] != second[
+        "STABILITY_LARGE_CAPACITY_DEPLOYMENT_RECEIPT"
+    ]
+    assert first["STABILITY_LARGE_CAPACITY_DEPLOYMENT_CHECKOUT"].name == (
+        "checkout-aaaaaaa"
+    )
+    assert second["STABILITY_LARGE_CAPACITY_DEPLOYMENT_CHECKOUT"].name == (
+        "checkout-bbbbbbb"
+    )
 
 def test_stability_workspace_paths_keep_every_stage_isolated(
     tmp_path: Path,

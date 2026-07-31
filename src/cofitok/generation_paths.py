@@ -84,6 +84,32 @@ def generation_deployment_attestation_paths(
     }
 
 
+def generation_large_capacity_deployment_paths(
+    *,
+    output_root: str | Path,
+    target_revision: str,
+) -> dict[str, Path]:
+    output = Path(output_root).resolve()
+    revision = _full_git_revision(target_revision)
+    deployment_root = output / STABILITY_LARGE_CAPACITY_DEPLOYMENT_ROOT_ID
+    evidence_root = deployment_root / "deployments" / revision
+    short_revision = revision[:7]
+    return {
+        "STABILITY_LARGE_CAPACITY_DEPLOYMENT_ROOT": deployment_root,
+        "STABILITY_LARGE_CAPACITY_DEPLOYMENT_EVIDENCE_ROOT": evidence_root,
+        "STABILITY_LARGE_CAPACITY_DEPLOYMENT_CHECKOUT": (
+            deployment_root / f"checkout-{short_revision}"
+        ),
+        "STABILITY_LARGE_CAPACITY_DEPLOYMENT_RECEIPT": (
+            evidence_root / "deployment_receipt.json"
+        ),
+        "STABILITY_LARGE_CAPACITY_DEPLOYMENT_RUNBOOK_SYNTAX": (
+            evidence_root / "runbook_syntax.json"
+        ),
+        "STABILITY_LARGE_CAPACITY_DEPLOYMENT_PYTEST": evidence_root / "pytest.xml",
+    }
+
+
 def generation_stability_workspace_paths(
     *,
     output_root: str | Path,

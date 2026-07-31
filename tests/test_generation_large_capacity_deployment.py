@@ -244,3 +244,14 @@ def test_large_capacity_deployment_runbook_is_isolated_and_readiness_only() -> N
     assert "generation_stability_ema_teacher_full_readiness_after_gate.sh" not in source
     assert "generation_stability_ema_teacher_full_matched_300k_after_gate.sh" not in source
     assert "git -C \"$FORMAL_REPOSITORY\" checkout" not in source
+    assert 'EVIDENCE_ROOT="$DEPLOYMENT_ROOT/deployments/$TARGET_REVISION"' in source
+    assert 'RECEIPT="$EVIDENCE_ROOT/deployment_receipt.json"' in source
+    assert 'RUNBOOK_SYNTAX="$EVIDENCE_ROOT/runbook_syntax.json"' in source
+    assert 'PYTEST_REPORT="$EVIDENCE_ROOT/pytest.xml"' in source
+    assert 'RECEIPT="$DEPLOYMENT_ROOT/deployment_receipt.json"' not in source
+    assert 'mkdir -p "$DEPLOYMENT_ROOT" "$EVIDENCE_ROOT"' in source
+    assert 'if [[ -e "$EVIDENCE_ROOT" || -e "$CHECKOUT"' in source
+    assert source.index("trap cleanup EXIT") < source.index(
+        'if [[ -L "$PAPER_LINK" ]]'
+    )
+    assert 'rmdir -- "$EVIDENCE_ROOT"' in source

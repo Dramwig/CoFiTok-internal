@@ -17,10 +17,11 @@ PAPER_ROOT=${PAPER_ROOT:-/root/autodl-tmp/CoFiTok/paper}
 SHORT_TARGET="${TARGET_REVISION:0:7}"
 BUNDLE="$CHECKPOINT_ROOT/deployment_bundles/cofitok-generation-large-capacity-${SHORT_TARGET}-from-${EXPECTED_FORMAL_REVISION:0:7}.bundle"
 DEPLOYMENT_ROOT="$CHECKPOINT_ROOT/deployment/large_capacity"
+EVIDENCE_ROOT="$DEPLOYMENT_ROOT/deployments/$TARGET_REVISION"
 CHECKOUT="$DEPLOYMENT_ROOT/checkout-$SHORT_TARGET"
-RECEIPT="$DEPLOYMENT_ROOT/deployment_receipt.json"
-RUNBOOK_SYNTAX="$DEPLOYMENT_ROOT/runbook_syntax.json"
-PYTEST_REPORT="$DEPLOYMENT_ROOT/pytest.xml"
+RECEIPT="$EVIDENCE_ROOT/deployment_receipt.json"
+RUNBOOK_SYNTAX="$EVIDENCE_ROOT/runbook_syntax.json"
+PYTEST_REPORT="$EVIDENCE_ROOT/pytest.xml"
 TEMP_CHECKOUT="${CHECKOUT}.tmp.$$"
 TEMP_RUNBOOK_SYNTAX="${RUNBOOK_SYNTAX}.tmp.$$"
 TEMP_PYTEST_REPORT="${PYTEST_REPORT}.tmp.$$"
@@ -42,7 +43,7 @@ PAPER_LINK="$DEPLOYMENT_ROOT/paper"
 [[ "$(stat -c %s "$BUNDLE")" == "$EXPECTED_BUNDLE_BYTES" ]]
 [[ "$(sha256sum "$BUNDLE" | awk '{print $1}')" == "$EXPECTED_BUNDLE_SHA256" ]]
 
-if [[ -e "$RECEIPT" || -e "$CHECKOUT" \
+if [[ -e "$EVIDENCE_ROOT" || -e "$CHECKOUT" \
   || -e "$RUNBOOK_SYNTAX" || -e "$PYTEST_REPORT" \
   || -e "$TEMP_CHECKOUT" || -e "$TEMP_RUNBOOK_SYNTAX" \
   || -e "$TEMP_PYTEST_REPORT" ]]; then
@@ -50,16 +51,7 @@ if [[ -e "$RECEIPT" || -e "$CHECKOUT" \
     "$DEPLOYMENT_ROOT" >&2
   exit 8
 fi
-mkdir -p "$DEPLOYMENT_ROOT"
-if [[ -L "$PAPER_LINK" ]]; then
-  [[ "$(readlink -f "$PAPER_LINK")" == "$(readlink -f "$PAPER_ROOT")" ]]
-elif [[ -e "$PAPER_LINK" ]]; then
-  printf 'deployment paper path exists but is not the expected symlink: %s\n' \
-    "$PAPER_LINK" >&2
-  exit 8
-else
-  ln -s "$PAPER_ROOT" "$PAPER_LINK"
-fi
+mkdir -p "$DEPLOYMENT_ROOT" "$EVIDENCE_ROOT"
 cleanup() {
   resolved_root="$(realpath -m "$DEPLOYMENT_ROOT")"
   for candidate in "$TEMP_CHECKOUT" "$CHECKOUT"; do
@@ -82,8 +74,20 @@ cleanup() {
     rm -f -- "$TEMP_RUNBOOK_SYNTAX" "$TEMP_PYTEST_REPORT" \
       "$RUNBOOK_SYNTAX" "$PYTEST_REPORT"
   fi
+  if [[ ! -e "$RECEIPT" ]]; then
+    rmdir -- "$EVIDENCE_ROOT" 2>/dev/null || true
+  fi
 }
 trap cleanup EXIT
+if [[ -L "$PAPER_LINK" ]]; then
+  [[ "$(readlink -f "$PAPER_LINK")" == "$(readlink -f "$PAPER_ROOT")" ]]
+elif [[ -e "$PAPER_LINK" ]]; then
+  printf 'deployment paper path exists but is not the expected symlink: %s\n' \
+    "$PAPER_LINK" >&2
+  exit 8
+else
+  ln -s "$PAPER_ROOT" "$PAPER_LINK"
+fi
 
 git -C "$FORMAL_REPOSITORY" bundle verify "$BUNDLE" >/dev/null
 heads="$(git bundle list-heads "$BUNDLE")"

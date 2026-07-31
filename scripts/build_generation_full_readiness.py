@@ -268,6 +268,7 @@ def build_readiness_report(
     expected_revision: str,
     expected_branch: str,
     require_current_runtime_environment: bool,
+    require_current_formal_repository: bool = True,
     require_current_git: bool = True,
     require_training_state_absent: bool = False,
 ) -> dict[str, Any]:
@@ -285,7 +286,7 @@ def build_readiness_report(
         _read_json(source_paths["deployment_receipt"]),
         receipt_path=source_paths["deployment_receipt"],
         expected_receipt_sha256=sources["deployment_receipt"]["sha256"],
-        require_current_formal_repository=require_current_git,
+        require_current_formal_repository=require_current_formal_repository,
     )
     deployment_checkout = deployment["checkout"]["git"]
     if deployment_checkout != expected_git:

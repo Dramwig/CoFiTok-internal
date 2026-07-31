@@ -24,7 +24,7 @@ CONFIG_VALIDATION="$REPORT_ROOT/config_validation.json"
 STORAGE_CAPACITY="$REPORT_ROOT/storage_capacity.json"
 RUNTIME_SELECTION="$REPORT_ROOT/runtime_selection.json"
 READINESS="$REPORT_ROOT/full_training_readiness.json"
-DEPLOYMENT_RECEIPT="$CHECKPOINT_ROOT/deployment/large_capacity/deployment_receipt.json"
+DEPLOYMENT_RECEIPT="$CHECKPOINT_ROOT/deployment/large_capacity/deployments/$EXPECTED_TARGET_REVISION/deployment_receipt.json"
 
 cd "$PROJECT"
 export PYTHONPATH=src

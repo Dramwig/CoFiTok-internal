@@ -7,6 +7,7 @@ CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generati
 EXPECTED_DECISION_SHA256=${EXPECTED_DECISION_SHA256:?set the passing 5K decision SHA256}
 EXPECTED_SCALING_GATE_SHA256=${EXPECTED_SCALING_GATE_SHA256:?set the passing 50K gate SHA256}
 EXPECTED_FULL_READINESS_SHA256=${EXPECTED_FULL_READINESS_SHA256:?set the immutable full readiness SHA256}
+EXPECTED_FULL_LAUNCH_RECEIPT_SHA256=${EXPECTED_FULL_LAUNCH_RECEIPT_SHA256:?set the immutable full launch receipt SHA256}
 EXPECTED_FINAL_GATE_SHA256=${EXPECTED_FINAL_GATE_SHA256:?set the passing full gate SHA256}
 EXPECTED_FULL_TRAINING_REVISION=${EXPECTED_FULL_TRAINING_REVISION:?set the full training revision}
 EXPECTED_FULL_TRAINING_BRANCH=${EXPECTED_FULL_TRAINING_BRANCH:?set the full training branch}
@@ -40,6 +41,7 @@ mkdir -p "$REPORT_ROOT"
   --expected-scaling-evaluation-branch "$SCALING_EVALUATION_BRANCH" \
   --expected-scaling-gate-sha256 "$EXPECTED_SCALING_GATE_SHA256" \
   --expected-full-readiness-sha256 "$EXPECTED_FULL_READINESS_SHA256" \
+  --expected-full-launch-receipt-sha256 "$EXPECTED_FULL_LAUNCH_RECEIPT_SHA256" \
   --expected-full-training-revision "$EXPECTED_FULL_TRAINING_REVISION" \
   --expected-full-training-branch "$EXPECTED_FULL_TRAINING_BRANCH" \
   --expected-full-evaluation-revision "$EXPECTED_FULL_EVALUATION_REVISION" \

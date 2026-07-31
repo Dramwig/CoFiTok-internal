@@ -34,6 +34,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--storage-path", type=Path, required=True)
     parser.add_argument("--expected-revision", required=True)
     parser.add_argument("--expected-branch", required=True)
+    parser.add_argument("--allow-later-formal-repository", action="store_true")
     parser.add_argument("--require-current-runtime-environment", action="store_true")
     parser.add_argument("--print-selected-runtime", action="store_true")
     return parser.parse_args()
@@ -65,6 +66,9 @@ def main() -> None:
         expected_branch=args.expected_branch,
         require_current_runtime_environment=(
             args.require_current_runtime_environment
+        ),
+        require_current_formal_repository=(
+            not args.allow_later_formal_repository
         ),
         require_current_git=True,
     )

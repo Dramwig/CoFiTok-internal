@@ -6,6 +6,7 @@ PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
 CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation}
 EXPECTED_SCALING_GATE_SHA256=${EXPECTED_SCALING_GATE_SHA256:?set the passing stability scaling gate SHA256}
 EXPECTED_READINESS_SHA256=${EXPECTED_READINESS_SHA256:?set the immutable stability-full readiness SHA256}
+EXPECTED_FULL_LAUNCH_RECEIPT_SHA256=${EXPECTED_FULL_LAUNCH_RECEIPT_SHA256:-}
 EXPECTED_DEPLOYMENT_RECEIPT_SHA256=${EXPECTED_DEPLOYMENT_RECEIPT_SHA256:?set the isolated deployment receipt SHA256}
 EXPECTED_TARGET_REVISION=${EXPECTED_TARGET_REVISION:?set the clean stability-full training revision}
 EXPECTED_TARGET_BRANCH=${EXPECTED_TARGET_BRANCH:?set the clean stability-full training branch}
@@ -26,7 +27,9 @@ STORAGE_CAPACITY="$REPORT_ROOT/storage_capacity.json"
 RUNTIME_SELECTION="$REPORT_ROOT/runtime_selection.json"
 READINESS="$REPORT_ROOT/full_training_readiness.json"
 LAUNCH_STORAGE_CAPACITY="$REPORT_ROOT/storage_capacity_launch.json"
-DEPLOYMENT_RECEIPT="$CHECKPOINT_ROOT/deployment/large_capacity/deployment_receipt.json"
+CURRENT_STORAGE_CAPACITY="$REPORT_ROOT/storage_capacity_current.json"
+FULL_LAUNCH_RECEIPT="$REPORT_ROOT/full_training_launch_receipt.json"
+DEPLOYMENT_RECEIPT="$CHECKPOINT_ROOT/deployment/large_capacity/deployments/$EXPECTED_TARGET_REVISION/deployment_receipt.json"
 MONITOR_REPORT="$OUTPUT_ROOT/pair_monitor.json"
 MONITOR_LOG="$OUTPUT_ROOT/pair_monitor.log"
 MONITOR_PID_FILE="$OUTPUT_ROOT/pair_monitor.pid"
@@ -74,6 +77,7 @@ runtime_selected="$("$PYTHON" scripts/validate_generation_full_readiness.py \
   --storage-path "$CHECKPOINT_ROOT" \
   --expected-revision "$EXPECTED_TARGET_REVISION" \
   --expected-branch "$EXPECTED_TARGET_BRANCH" \
+  --allow-later-formal-repository \
   --require-current-runtime-environment \
   --print-selected-runtime)"
 read -r SELECTED_MICRO_BATCH SELECTED_ACCUMULATION <<<"$runtime_selected"
@@ -84,19 +88,104 @@ if [[ ! "$SELECTED_MICRO_BATCH" =~ ^[0-9]+$ \
   exit 10
 fi
 
-"$PYTHON" scripts/check_generation_storage_capacity.py \
-  --path "$CHECKPOINT_ROOT" \
-  --output "$LAUNCH_STORAGE_CAPACITY" \
-  --stage full_training \
-  --reference-checkpoint "$REFERENCE_COFITOK" \
-  --reference-checkpoint "$REFERENCE_DENSE" \
-  --checkpoint-count 16 \
-  --checkpoint-size-multiplier 4.0 \
-  --sample-count 16384 \
-  --estimated-sample-kib 256 \
-  --additional-gib 16 \
-  --safety-margin-gib 64 >/dev/null
+storage_preflight() {
+  local output="$1"
+  "$PYTHON" scripts/check_generation_storage_capacity.py \
+    --path "$CHECKPOINT_ROOT" \
+    --output "$output" \
+    --stage full_training \
+    --reference-checkpoint "$REFERENCE_COFITOK" \
+    --reference-checkpoint "$REFERENCE_DENSE" \
+    --checkpoint-count 16 \
+    --checkpoint-size-multiplier 4.0 \
+    --sample-count 16384 \
+    --estimated-sample-kib 256 \
+    --additional-gib 16 \
+    --safety-margin-gib 64 >/dev/null
+}
 
+launch_receipt_args=(
+  --project-root "$PROJECT"
+  --receipt "$FULL_LAUNCH_RECEIPT"
+  --deployment-receipt "$DEPLOYMENT_RECEIPT"
+  --promotion-gate "$GATE"
+  --full-readiness "$READINESS"
+  --expected-readiness-sha256 "$EXPECTED_READINESS_SHA256"
+  --cofitok-config "$COFITOK_CONFIG"
+  --dense-config "$DENSE_CONFIG"
+  --config-validation "$CONFIG_VALIDATION"
+  --storage-capacity "$STORAGE_CAPACITY"
+  --runtime-selection "$RUNTIME_SELECTION"
+  --launch-storage-capacity "$LAUNCH_STORAGE_CAPACITY"
+  --training-run-dir "$COFITOK_RUN"
+  --training-run-dir "$DENSE_RUN"
+  --benchmark-root "$RUNTIME_BENCHMARK_ROOT"
+  --storage-path "$CHECKPOINT_ROOT"
+  --expected-revision "$EXPECTED_TARGET_REVISION"
+  --expected-branch "$EXPECTED_TARGET_BRANCH"
+  --require-current-runtime-environment
+)
+
+if [[ -f "$FULL_LAUNCH_RECEIPT" ]]; then
+  if [[ -z "$EXPECTED_FULL_LAUNCH_RECEIPT_SHA256" ]]; then
+    printf 'set EXPECTED_FULL_LAUNCH_RECEIPT_SHA256 to resume stability full training\n' >&2
+    exit 10
+  fi
+  "$PYTHON" scripts/validate_generation_full_launch_receipt.py \
+    "${launch_receipt_args[@]}" \
+    --expected-receipt-sha256 "$EXPECTED_FULL_LAUNCH_RECEIPT_SHA256" >/dev/null
+  storage_preflight "$CURRENT_STORAGE_CAPACITY"
+else
+  if [[ -n "$EXPECTED_FULL_LAUNCH_RECEIPT_SHA256" ]]; then
+    printf 'expected stability full launch receipt does not exist: %s\n' \
+      "$FULL_LAUNCH_RECEIPT" >&2
+    exit 10
+  fi
+  for run_dir in "$COFITOK_RUN" "$DENSE_RUN"; do
+    if [[ -d "$run_dir" ]] \
+      && find "$run_dir" -mindepth 1 -print -quit | grep -q .; then
+      printf 'refusing unreceipted stability full training state: %s\n' \
+        "$run_dir" >&2
+      exit 10
+    fi
+  done
+  if [[ -e "$LAUNCH_STORAGE_CAPACITY" ]]; then
+    printf 'refusing stale launch storage evidence without a receipt: %s\n' \
+      "$LAUNCH_STORAGE_CAPACITY" >&2
+    exit 10
+  fi
+  storage_preflight "$LAUNCH_STORAGE_CAPACITY"
+  cleanup_unbound_launch_storage() {
+    if [[ ! -f "$FULL_LAUNCH_RECEIPT" ]]; then
+      rm -f -- "$LAUNCH_STORAGE_CAPACITY"
+    fi
+  }
+  trap cleanup_unbound_launch_storage EXIT
+  "$PYTHON" scripts/build_generation_full_launch_receipt.py \
+    --project-root "$PROJECT" \
+    --deployment-receipt "$DEPLOYMENT_RECEIPT" \
+    --promotion-gate "$GATE" \
+    --full-readiness "$READINESS" \
+    --expected-readiness-sha256 "$EXPECTED_READINESS_SHA256" \
+    --cofitok-config "$COFITOK_CONFIG" \
+    --dense-config "$DENSE_CONFIG" \
+    --config-validation "$CONFIG_VALIDATION" \
+    --storage-capacity "$STORAGE_CAPACITY" \
+    --runtime-selection "$RUNTIME_SELECTION" \
+    --launch-storage-capacity "$LAUNCH_STORAGE_CAPACITY" \
+    --training-run-dir "$COFITOK_RUN" \
+    --training-run-dir "$DENSE_RUN" \
+    --benchmark-root "$RUNTIME_BENCHMARK_ROOT" \
+    --storage-path "$CHECKPOINT_ROOT" \
+    --expected-revision "$EXPECTED_TARGET_REVISION" \
+    --expected-branch "$EXPECTED_TARGET_BRANCH" \
+    --require-current-runtime-environment \
+    --output "$FULL_LAUNCH_RECEIPT" >/dev/null
+  trap - EXIT
+  EXPECTED_FULL_LAUNCH_RECEIPT_SHA256="$(sha256sum "$FULL_LAUNCH_RECEIPT" | awk '{print $1}')"
+  printf 'stability full launch receipt: %s  %s\n' \
+    "$EXPECTED_FULL_LAUNCH_RECEIPT_SHA256" "$FULL_LAUNCH_RECEIPT"
+fi
 monitor_report_passes() {
   "$PYTHON" - "$MONITOR_REPORT" "$MONITOR_NAME" \
     "$EXPECTED_TARGET_REVISION" "$EXPECTED_TARGET_BRANCH" <<'PY'
