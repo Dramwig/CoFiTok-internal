@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-07-31T10:32:46.8857357+08:00",
+  "remote_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29",
+  "source_training_revision": "59db142fc45d69dc92bb0333be5ac2d0162d9dc4",
+  "validator_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+  "checkpoint_payloads_copied": false,
+  "decision": {
+    "status": "pass",
+    "decision": "authorize_fresh_matched_50k_preparation",
+    "authorized_next_stage": "fresh_matched_50k_preparation",
+    "sha256": "d5a6fc017f20c7d024abfab1967ba6bc966b624e3a77e9246292ddaaf7dc1da4",
+    "issues": []
+  },
+  "gate_summary": {
+    "screening_n8_status": "pass",
+    "robust_n64_seed2029_status": "pass",
+    "robust_n64_seed2039_status": "pass",
+    "ordered_rank": 1,
+    "zero_token_max_abs": 0.0,
+    "shuffle_to_ordered_endpoint_ratio": 119.17650279688726,
+    "max_single_token_energy_ratio": 0.28471727803258096,
+    "tail_two_energy_ratio": 0.5673264714685102,
+    "true_coarse_tokens_1_to_5_energy_ratio": 0.14834058933899472,
+    "tail_tokens_6_to_8_energy_ratio": 0.8516594106610053,
+    "robust_reconstruction_ratio_range": [
+      0.974483140525855,
+      0.9869742375052292
+    ],
+    "cofitok_reconstruction_amplification_range": [
+      1.1404901474769602,
+      1.1580123996245175
+    ],
+    "peak_predicted_x0_high_frequency_ratio_range": [
+      1.2901921518402368,
+      1.3066355793840627
+    ]
+  },
+  "files": {
+    "decision_validation_2c2c1f5.snapshot.json": {
+      "bytes": 1773,
+      "sha256": "a8e052b31b7756d8161a902df2e29daad7c53968d445395c503cb2fc1d178f36"
+    },
+    "qualification_n64_seed2029/qualification_report.json": {
+      "bytes": 7866,
+      "sha256": "6a3bd5708542f9c6a3bd572f096a7b05a35a7c7d98c1a76787c7b8c99bbfcdeb"
+    },
+    "qualification_n64_seed2039/qualification_report.json": {
+      "bytes": 7869,
+      "sha256": "8b33837925a6502804c1820d7936559da16f8bc16d46e78df985aa6cdaad0e2c"
+    },
+    "qualification_n8/qualification_report.json": {
+      "bytes": 7853,
+      "sha256": "31d433785a5f9508b81bc44e3b003b62a99dc7f4148d77c43adddb1c83c94462"
+    },
+    "robust_seed2029/cofitok_rollout/rollout_stability_report.json": {
+      "bytes": 265566,
+      "sha256": "bee80ff21586368870a3a1362d1f7e78009fd6419e53dcfdc8544d7df68738b3"
+    },
+    "robust_seed2029/dense_rollout/rollout_stability_report.json": {
+      "bytes": 163763,
+      "sha256": "fd60e5e8e65ab8762678d0ffe2c38248df6182fd5755d1e0376b657be314a8fe"
+    },
+    "robust_seed2039/cofitok_rollout/rollout_stability_report.json": {
+      "bytes": 265696,
+      "sha256": "4b0e1760b8fbe79c98c6a3debfd70e6149662aa215512698fd434b1021f69157"
+    },
+    "robust_seed2039/dense_rollout/rollout_stability_report.json": {
+      "bytes": 163747,
+      "sha256": "07034bd94c871a7238e69a1645ef22701ffb9f1ae0ad41c03915f05db9709cb7"
+    },
+    "scaling_decision_to_50k/scaling_decision.json": {
+      "bytes": 4409,
+      "sha256": "d5a6fc017f20c7d024abfab1967ba6bc966b624e3a77e9246292ddaaf7dc1da4"
+    },
+    "screening/ema/cofitok_checkpoint/checkpoint_evaluation_report.json": {
+      "bytes": 30462,
+      "sha256": "ee6442bb549ff9bce6b0e31940e207dcc1bf7cfca5609ec51787841a4e9a6c01"
+    },
+    "screening/ema/cofitok_rollout/rollout_stability_report.json": {
+      "bytes": 264701,
+      "sha256": "764f37ae1d0dec7d9ed41d2356be8f3460803d2a9808925f35a1e45b0f58f3b3"
+    },
+    "screening/ema/dense_checkpoint/checkpoint_evaluation_report.json": {
+      "bytes": 6900,
+      "sha256": "ae14cc1e0b9989ff101aa85bb505600032ac95d09270b87f43336b4e5a4e0ca1"
+    },
+    "screening/ema/dense_rollout/rollout_stability_report.json": {
+      "bytes": 163678,
+      "sha256": "a98a825e90602e04011a4dc1e8a075a66d2fec39970978d5fd9d8e61922b778d"
+    },
+    "screening/model/cofitok_checkpoint/checkpoint_evaluation_report.json": {
+      "bytes": 30431,
+      "sha256": "7a8ee94a0a741d500793112a8501d74d643a362e42077b9bcde10ccceb99aeca"
+    },
+    "screening/model/cofitok_rollout/rollout_stability_report.json": {
+      "bytes": 265717,
+      "sha256": "c39703bf11f1568b7f77fe568410e418829092525a6bd73bc21bef2cc7d5667f"
+    },
+    "screening/model/dense_checkpoint/checkpoint_evaluation_report.json": {
+      "bytes": 6893,
+      "sha256": "4e645cdfd1b15c6a7d633ecf289e2b39bdcb94fe7cdb545b7bdbc53cff971b3e"
+    },
+    "screening/model/dense_rollout/rollout_stability_report.json": {
+      "bytes": 163830,
+      "sha256": "1d1e3f3c02de0045b405e3dde95806612e578db6162198215d7578e0b43bfcfa"
+    }
+  }
+}

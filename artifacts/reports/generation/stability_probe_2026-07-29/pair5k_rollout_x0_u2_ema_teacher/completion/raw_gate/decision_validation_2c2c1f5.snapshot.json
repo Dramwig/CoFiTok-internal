@@ -1,0 +1,39 @@
+{
+  "authorized_next_stage": "fresh_matched_50k_preparation",
+  "cofitok_checkpoint_sha256": "cb432c75ccbc4eba00dab878e43dd0e45740ebdd9a6b95e0cd014ce97b6d6450",
+  "decision": "authorize_fresh_matched_50k_preparation",
+  "decision_source": {
+    "bytes": 4409,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/scaling_decision5k_rollout_x0_u2_ema_teacher_to_50k/scaling_decision.json",
+    "sha256": "d5a6fc017f20c7d024abfab1967ba6bc966b624e3a77e9246292ddaaf7dc1da4"
+  },
+  "dense_checkpoint_sha256": "92bc9aa315eec1e06f201961dbc7d5638cdadf471bc4dbdab0a781252254ecab",
+  "min_robust_images": 64,
+  "robust_report_count": 2,
+  "robust_seeds": [
+    2029,
+    2039
+  ],
+  "schema_version": 1,
+  "source_revision": "59db142fc45d69dc92bb0333be5ac2d0162d9dc4",
+  "status": "pass",
+  "verified_sources": {
+    "robust_reports": [
+      {
+        "bytes": 7866,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/qualification5k_rollout_x0_u2_ema_teacher_n64_seed2029/qualification_report.json",
+        "sha256": "6a3bd5708542f9c6a3bd572f096a7b05a35a7c7d98c1a76787c7b8c99bbfcdeb"
+      },
+      {
+        "bytes": 7869,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/qualification5k_rollout_x0_u2_ema_teacher_n64_seed2039/qualification_report.json",
+        "sha256": "8b33837925a6502804c1820d7936559da16f8bc16d46e78df985aa6cdaad0e2c"
+      }
+    ],
+    "screening_report": {
+      "bytes": 7853,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/qualification5k_rollout_x0_u2_ema_teacher_n8/qualification_report.json",
+      "sha256": "31d433785a5f9508b81bc44e3b003b62a99dc7f4148d77c43adddb1c83c94462"
+    }
+  }
+}

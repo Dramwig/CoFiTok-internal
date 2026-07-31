@@ -1,0 +1,133 @@
+{
+  "authorized_next_stage": "fresh_matched_50k_preparation",
+  "decision": "authorize_fresh_matched_50k_preparation",
+  "identity": {
+    "cofitok_checkpoint_sha256": "cb432c75ccbc4eba00dab878e43dd0e45740ebdd9a6b95e0cd014ce97b6d6450",
+    "dense_checkpoint_sha256": "92bc9aa315eec1e06f201961dbc7d5638cdadf471bc4dbdab0a781252254ecab",
+    "git_revision": "59db142fc45d69dc92bb0333be5ac2d0162d9dc4"
+  },
+  "issues": [],
+  "requirements": {
+    "all_robust_gates_must_pass": true,
+    "allowed_screening_failures": [
+      "reconstruction_regression"
+    ],
+    "min_robust_images": 64,
+    "min_robust_reports": 2,
+    "unique_rollout_seeds": true
+  },
+  "robust_metric_ranges": {
+    "cofitok_reconstruction_amplification": {
+      "maximum": 1.1580123996245175,
+      "mean": 1.149251273550739,
+      "minimum": 1.1404901474769602
+    },
+    "dense_reconstruction_amplification": {
+      "maximum": 1.114013637458665,
+      "mean": 1.1130493342194003,
+      "minimum": 1.1120850309801356
+    },
+    "endpoint_ratio": {
+      "maximum": 1.0024519710287594,
+      "mean": 1.0024519710287594,
+      "minimum": 1.0024519710287594
+    },
+    "max_single_token_energy_ratio": {
+      "maximum": 0.28471727803258096,
+      "mean": 0.28471727803258096,
+      "minimum": 0.28471727803258096
+    },
+    "peak_predicted_x0_high_frequency_ratio": {
+      "maximum": 1.3066355793840627,
+      "mean": 1.2984138656121498,
+      "minimum": 1.2901921518402368
+    },
+    "reconstruction_ratio": {
+      "maximum": 0.9869742375052292,
+      "mean": 0.9807286890155421,
+      "minimum": 0.974483140525855
+    },
+    "tail_two_energy_ratio": {
+      "maximum": 0.5673264714685102,
+      "mean": 0.5673264714685102,
+      "minimum": 0.5673264714685102
+    },
+    "validation_ratio": {
+      "maximum": 0.9979161021445417,
+      "mean": 0.9979161021445417,
+      "minimum": 0.9979161021445417
+    }
+  },
+  "robust_rows": [
+    {
+      "cofitok_reconstruction_amplification": 1.1580123996245175,
+      "dense_reconstruction_amplification": 1.114013637458665,
+      "endpoint_ratio": 1.0024519710287594,
+      "max_single_token_energy_ratio": 0.28471727803258096,
+      "num_images": 64,
+      "peak_predicted_x0_high_frequency_ratio": 1.3066355793840627,
+      "reconstruction_ratio": 0.974483140525855,
+      "seed": 2029,
+      "tail_two_energy_ratio": 0.5673264714685102,
+      "validation_ratio": 0.9979161021445417
+    },
+    {
+      "cofitok_reconstruction_amplification": 1.1404901474769602,
+      "dense_reconstruction_amplification": 1.1120850309801356,
+      "endpoint_ratio": 1.0024519710287594,
+      "max_single_token_energy_ratio": 0.28471727803258096,
+      "num_images": 64,
+      "peak_predicted_x0_high_frequency_ratio": 1.2901921518402368,
+      "reconstruction_ratio": 0.9869742375052292,
+      "seed": 2039,
+      "tail_two_energy_ratio": 0.5673264714685102,
+      "validation_ratio": 0.9979161021445417
+    }
+  ],
+  "schema_version": 1,
+  "screening": {
+    "failed_gates": [],
+    "rollout_protocol": {
+      "batch_size": 2,
+      "cfg_batch_mode": "batched",
+      "clip_x0": true,
+      "guidance_rescale": 0.0,
+      "guidance_scale": 1.5,
+      "num_images": 8,
+      "precision": "bf16",
+      "sample_steps": 100,
+      "seed": 2029,
+      "teacher_guidance_scale": 1.0,
+      "teacher_timesteps": [
+        999,
+        900,
+        750,
+        500,
+        250,
+        100,
+        10
+      ]
+    },
+    "status": "pass"
+  },
+  "sources": {
+    "robust_reports": [
+      {
+        "bytes": 7866,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/qualification5k_rollout_x0_u2_ema_teacher_n64_seed2029/qualification_report.json",
+        "sha256": "6a3bd5708542f9c6a3bd572f096a7b05a35a7c7d98c1a76787c7b8c99bbfcdeb"
+      },
+      {
+        "bytes": 7869,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/qualification5k_rollout_x0_u2_ema_teacher_n64_seed2039/qualification_report.json",
+        "sha256": "8b33837925a6502804c1820d7936559da16f8bc16d46e78df985aa6cdaad0e2c"
+      }
+    ],
+    "screening_report": {
+      "bytes": 7853,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/qualification5k_rollout_x0_u2_ema_teacher_n8/qualification_report.json",
+      "sha256": "31d433785a5f9508b81bc44e3b003b62a99dc7f4148d77c43adddb1c83c94462"
+    }
+  },
+  "status": "pass"
+}

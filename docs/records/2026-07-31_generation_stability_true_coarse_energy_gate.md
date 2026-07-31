@@ -314,3 +314,61 @@ summary deliberately preserves
 `formal_scaling_authorization_allowed=false`; raw n8 and robust n64 mechanism
 evaluation must still pass before the dormant stability 50K runbook can be
 authorized.
+
+## Raw mechanism gate
+
+Post-evaluation completed automatically after the matched pair passed and the
+GPU became idle. The n8 screening and both independent n64 seeds passed every
+configured gate:
+
+```text
+n8 / n64-2029 / n64-2039 status: pass / pass / pass
+ordered rank by path AUC:         1
+zero-token max abs:               0.0
+shuffle mismatch:                 119.1765x
+max single-token energy:          28.4717%
+tail-two energy:                  56.7326%
+true coarse tokens 1-5 energy:    14.8341%
+full-resolution tail 6-8 energy:  85.1659%
+n64 reconstruction ratio:         0.974483 / 0.986974
+n64 predicted-x0 HF ratio:        1.306636 / 1.290192
+```
+
+The two robust reconstruction ratios mean CoFiTok final reconstruction MSE was
+2.5517% and 1.3026% lower than dense under the same 64-image DDIM-100 rollout
+protocol. Energy is no longer concentrated in a single token or only the final
+two tokens, and the stride-derived coarse partition carries 14.8341%, above the
+formal 5% minimum. The full-resolution three-token tail still carries 85.1659%;
+this is disclosed rather than described as uniform energy.
+
+The result is mitigation, not elimination, of multi-step error amplification.
+CoFiTok amplification remains `1.140490-1.158012`, versus dense
+`1.112085-1.114014`. The final reconstruction ratio passes because CoFiTok's
+complete trajectory finishes with lower error, while its relative growth from
+its own endpoint remains larger. A 50K scaling run may test whether this gap
+shrinks; the current evidence does not support claiming that amplification has
+been fully solved.
+
+The generated decision is:
+
+```text
+status:                pass
+decision:              authorize_fresh_matched_50k_preparation
+authorized next stage: fresh_matched_50k_preparation
+decision SHA256:       d5a6fc017f20c7d024abfab1967ba6bc966b624e3a77e9246292ddaaf7dc1da4
+```
+
+In detached target checkout `2c2c1f5`, the validator rehashed all three
+qualification sources, rebuilt the decision, and verified source revision,
+checkpoint identities, robust sample counts, and distinct seeds. The complete
+small evidence pack is stored at:
+
+```text
+artifacts/reports/generation/stability_probe_2026-07-29/
+  pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/
+```
+
+Its source manifest binds 17 decision, qualification, checkpoint-evaluation,
+rollout, and validator files. The official remote repository remained at
+`1ebcc152`, the active source checkout remained clean at `59db142`, the GPU was
+idle after evaluation, and no stability 50K training was launched.
