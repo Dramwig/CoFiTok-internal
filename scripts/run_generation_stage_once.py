@@ -403,7 +403,7 @@ def run_stage_once(
         inputs = _identities(input_files, input_trees)
     except (FileNotFoundError, StageReplayError) as error:
         raise StageReplayError(
-            "generation stage inputs are missing or invalid"
+            f"generation stage inputs are missing or invalid: {error}"
         ) from error
     outputs = _output_declarations(output_files, output_trees)
     if not outputs:
@@ -623,9 +623,16 @@ def run_stage_once(
         "--",
         *command,
     ]
+    worker_environment = os.environ.copy()
+    python_roots = [str(project / "src"), str(project)]
+    inherited_pythonpath = worker_environment.get("PYTHONPATH")
+    if inherited_pythonpath:
+        python_roots.append(inherited_pythonpath)
+    worker_environment["PYTHONPATH"] = os.pathsep.join(python_roots)
     child = subprocess.Popen(
         worker_command,
         cwd=cwd,
+        env=worker_environment,
         start_new_session=os.name != "nt",
     )
     attempt["status"] = "running"
@@ -634,14 +641,45 @@ def run_stage_once(
     running_state["attempts"] = attempts
     running_state["updated_at"] = _utc_now()
     write_json_report(state_path, running_state)
-    child.wait()
+    worker_process_exit = child.wait()
+    if not worker_result_path.is_file():
+        exit_code = (
+            worker_process_exit
+            if worker_process_exit != 0
+            else WORKER_FAILURE_EXIT_CODE
+        )
+        attempt["exit_code"] = exit_code
+        attempt["status"] = "failed"
+        attempt["archived_outputs"] = _archive_outputs(
+            outputs,
+            attempt=attempt_number,
+            reason="worker-failed",
+        )
+        attempt["finished_at"] = _utc_now()
+        write_json_report(
+            state_path,
+            {
+                **running_state,
+                "status": "failed",
+                "child_pid": None,
+                "attempts": attempts,
+                "updated_at": _utc_now(),
+            },
+        )
+        raise subprocess.CalledProcessError(exit_code, worker_command)
     worker_result = _validate_worker_result(
         worker_result_path,
         expected_attempt=attempt_number,
         expected_request_sha256=request_sha256,
         expected_command=command,
     )
-    exit_code = int(worker_result["exit_code"])
+    if worker_result["status"] == "running":
+        command_child_pid = int(worker_result.get("child_pid", -1))
+        if _process_exists(command_child_pid):
+            _wait_for_process(command_child_pid)
+        exit_code = WORKER_FAILURE_EXIT_CODE
+    else:
+        exit_code = int(worker_result["exit_code"])
     attempt["exit_code"] = exit_code
     attempt["worker_result"] = file_identity(worker_result_path)
     attempt["finished_at"] = _utc_now()
