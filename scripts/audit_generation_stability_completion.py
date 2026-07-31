@@ -886,6 +886,10 @@ def main() -> None:
     full_readiness = _read_optional(
         full_reports / "full_training_readiness.json"
     )
+    deployment_receipt_path = paths[
+        "STABILITY_LARGE_CAPACITY_DEPLOYMENT_RECEIPT"
+    ]
+    deployment_receipt = _read_optional(deployment_receipt_path)
     full_training = {
         "cofitok": _read_optional(full_cofitok / "training_report.json"),
         "dense_identity": _read_optional(full_dense / "training_report.json"),
@@ -1092,6 +1096,7 @@ def main() -> None:
             "stability_full_training_readiness",
             [
                 full_readiness,
+                deployment_receipt,
                 scaling_gate,
                 full_config_validation,
                 full_storage_capacity,
@@ -1103,6 +1108,7 @@ def main() -> None:
                 expected_sha256=expectations["full_readiness_sha256"],
                 verification_kwargs={
                     "source_paths": {
+                        "deployment_receipt": deployment_receipt_path,
                         "promotion_gate": paths["STABILITY_SCALING_GATE"],
                         "cofitok_config": project
                         / "configs/generation/imagenet256_stability_rgbtail3_"

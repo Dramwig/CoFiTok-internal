@@ -5,6 +5,7 @@ PROJECT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
 CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation}
 EXPECTED_SCALING_GATE_SHA256=${EXPECTED_SCALING_GATE_SHA256:?set the passing stability scaling gate SHA256}
+EXPECTED_DEPLOYMENT_RECEIPT_SHA256=${EXPECTED_DEPLOYMENT_RECEIPT_SHA256:?set the isolated deployment receipt SHA256}
 EXPECTED_TARGET_REVISION=${EXPECTED_TARGET_REVISION:?set the clean stability-full training revision}
 EXPECTED_TARGET_BRANCH=${EXPECTED_TARGET_BRANCH:?set the clean stability-full training branch}
 
@@ -23,6 +24,7 @@ CONFIG_VALIDATION="$REPORT_ROOT/config_validation.json"
 STORAGE_CAPACITY="$REPORT_ROOT/storage_capacity.json"
 RUNTIME_SELECTION="$REPORT_ROOT/runtime_selection.json"
 READINESS="$REPORT_ROOT/full_training_readiness.json"
+DEPLOYMENT_RECEIPT="$CHECKPOINT_ROOT/deployment/large_capacity/deployment_receipt.json"
 
 cd "$PROJECT"
 export PYTHONPATH=src
@@ -31,9 +33,11 @@ export PYTHONPATH=src
 [[ "$(git branch --show-current)" == "$EXPECTED_TARGET_BRANCH" ]]
 [[ -z "$(git status --porcelain --untracked-files=no)" ]]
 [[ -f "$GATE" ]]
+[[ -f "$DEPLOYMENT_RECEIPT" ]]
 [[ -f "$REFERENCE_COFITOK" ]]
 [[ -f "$REFERENCE_DENSE" ]]
 [[ "$(sha256sum "$GATE" | awk '{print $1}')" == "$EXPECTED_SCALING_GATE_SHA256" ]]
+[[ "$(sha256sum "$DEPLOYMENT_RECEIPT" | awk '{print $1}')" == "$EXPECTED_DEPLOYMENT_RECEIPT_SHA256" ]]
 for path in \
   "$CONFIG_VALIDATION" \
   "$STORAGE_CAPACITY" \
@@ -67,6 +71,10 @@ mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
 "$PYTHON" scripts/validate_generation_gate_report.py \
   --gate "$GATE" \
   --stage scaling >/dev/null
+
+"$PYTHON" scripts/validate_generation_large_capacity_deployment.py \
+  --receipt "$DEPLOYMENT_RECEIPT" \
+  --expected-receipt-sha256 "$EXPECTED_DEPLOYMENT_RECEIPT_SHA256" >/dev/null
 
 "$PYTHON" scripts/validate_generation_configs.py \
   --cofitok-config "$COFITOK_CONFIG" \
@@ -103,6 +111,8 @@ mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
 
 "$PYTHON" scripts/build_generation_full_readiness.py \
   --project-root "$PROJECT" \
+  --deployment-receipt "$DEPLOYMENT_RECEIPT" \
+  --expected-deployment-receipt-sha256 "$EXPECTED_DEPLOYMENT_RECEIPT_SHA256" \
   --promotion-gate "$GATE" \
   --cofitok-config "$COFITOK_CONFIG" \
   --dense-config "$DENSE_CONFIG" \

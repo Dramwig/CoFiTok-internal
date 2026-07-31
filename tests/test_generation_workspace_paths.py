@@ -120,6 +120,11 @@ def test_stability_workspace_paths_keep_every_stage_isolated(
         == paths["STABILITY_EXPORT_ROOT"]
     )
     assert (
+        paths["STABILITY_LARGE_CAPACITY_DEPLOYMENT_RECEIPT"]
+        == paths["STABILITY_LARGE_CAPACITY_DEPLOYMENT_ROOT"]
+        / "deployment_receipt.json"
+    )
+    assert (
         paths["STABILITY_SCALING_ROOT"]
         != paths["STABILITY_FULL_ROOT"]
         != paths["STABILITY_EXPORT_ROOT"]

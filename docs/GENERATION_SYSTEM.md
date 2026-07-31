@@ -219,6 +219,16 @@ repository or mutate an active training checkout.
   bound source and the current CUDA environment, reads the selected runtime
   from that artifact, performs a fresh launch-time storage check, and only then
   enters the resumable milestone loop. It never calls the runtime selector.
+- Deployment is a third, earlier stage and is CPU-only.
+  `generation_deploy_large_capacity_readiness_checkout.sh` verifies the
+  persistent bundle against the still-pinned formal repository, clones an
+  isolated checkout under `checkpoints/generation/deployment/large_capacity`,
+  runs the complete CPU test suite and every tracked shell runbook syntax
+  check, and atomically writes a deterministic deployment receipt. It neither
+  moves the formal repository nor invokes readiness or training. Readiness must
+  execute from the exact receipt-bound checkout and binds the receipt as a
+  seventh immutable source. The deployment receipt explicitly authorizes only
+  readiness execution; it sets full-training launch authorization to false.
 - Stability mechanism evaluation derives the coarse/tail partition from
   `token_spatial_strides`: the `rgbtail3` layout measures coarse utilization
   over tokens 1-5 and treats tokens 6-8 as the full-resolution tail. The

@@ -17,6 +17,9 @@ from cofitok.reporting import (
 )
 
 try:
+    from scripts.build_generation_large_capacity_deployment_receipt import (
+        verify_deployment_receipt,
+    )
     from scripts.select_generation_training_runtime import (
         _current_runtime_environment_sha,
         _selection_contract,
@@ -24,6 +27,9 @@ try:
     )
     from scripts.validate_generation_configs import validate_pair
 except ModuleNotFoundError:
+    from build_generation_large_capacity_deployment_receipt import (
+        verify_deployment_receipt,
+    )
     from select_generation_training_runtime import (
         _current_runtime_environment_sha,
         _selection_contract,
@@ -275,6 +281,25 @@ def build_readiness_report(
     if require_training_state_absent:
         require_absent_training_state(training_run_dirs)
     sources = source_identities(source_paths)
+    deployment = verify_deployment_receipt(
+        _read_json(source_paths["deployment_receipt"]),
+        receipt_path=source_paths["deployment_receipt"],
+        expected_receipt_sha256=sources["deployment_receipt"]["sha256"],
+        require_current_formal_repository=require_current_git,
+    )
+    deployment_checkout = deployment["checkout"]["git"]
+    if deployment_checkout != expected_git:
+        raise ValueError("stability full deployment checkout identity differs")
+    if require_current_git and (
+        Path(deployment["checkout"]["path"]).resolve() != project_root.resolve()
+    ):
+        raise ValueError("stability full readiness is running outside the deployed checkout")
+    if (
+        deployment.get("readiness_execution_allowed") is not True
+        or deployment.get("readiness_executed") is not False
+        or deployment.get("full_training_launch_allowed") is not False
+    ):
+        raise ValueError("stability full deployment authorization boundary differs")
     gate = _read_json(source_paths["promotion_gate"])
     gate_sources = verify_generation_gate_source_reports(gate)
     if gate_sources.get("source_profile") != "stability_scaling":
@@ -312,6 +337,16 @@ def build_readiness_report(
         "stage": "stability_full",
         "git": expected_git,
         "source_reports": sources,
+        "deployment": {
+            "role": deployment["role"],
+            "receipt_sha256": sources["deployment_receipt"]["sha256"],
+            "formal_repository_git": deployment["formal_repository"]["git"],
+            "checkout_git": deployment_checkout,
+            "pytest_tests": deployment["validation"]["pytest"]["tests"],
+            "runbook_count": deployment["validation"]["runbook_syntax"][
+                "checked_count"
+            ],
+        },
         "promotion_authorization": authorization,
         "gate_source_profile": gate_sources["source_profile"],
         "config_contract": config_contract,
@@ -341,6 +376,8 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--project-root", default=".")
     parser.add_argument("--promotion-gate", type=Path, required=True)
+    parser.add_argument("--deployment-receipt", type=Path, required=True)
+    parser.add_argument("--expected-deployment-receipt-sha256", required=True)
     parser.add_argument("--cofitok-config", type=Path, required=True)
     parser.add_argument("--dense-config", type=Path, required=True)
     parser.add_argument("--config-validation", type=Path, required=True)
@@ -364,7 +401,13 @@ def main() -> None:
         raise ValueError("exactly two distinct matched training run directories are required")
     if file_sha256(args.promotion_gate) != args.expected_gate_sha256:
         raise ValueError("stability scaling gate SHA256 differs")
+    if (
+        file_sha256(args.deployment_receipt)
+        != args.expected_deployment_receipt_sha256
+    ):
+        raise ValueError("large-capacity deployment receipt SHA256 differs")
     source_paths = {
+        "deployment_receipt": args.deployment_receipt,
         "promotion_gate": args.promotion_gate,
         "cofitok_config": args.cofitok_config,
         "dense_config": args.dense_config,

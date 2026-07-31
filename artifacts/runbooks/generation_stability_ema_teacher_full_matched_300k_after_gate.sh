@@ -6,6 +6,7 @@ PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
 CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation}
 EXPECTED_SCALING_GATE_SHA256=${EXPECTED_SCALING_GATE_SHA256:?set the passing stability scaling gate SHA256}
 EXPECTED_READINESS_SHA256=${EXPECTED_READINESS_SHA256:?set the immutable stability-full readiness SHA256}
+EXPECTED_DEPLOYMENT_RECEIPT_SHA256=${EXPECTED_DEPLOYMENT_RECEIPT_SHA256:?set the isolated deployment receipt SHA256}
 EXPECTED_TARGET_REVISION=${EXPECTED_TARGET_REVISION:?set the clean stability-full training revision}
 EXPECTED_TARGET_BRANCH=${EXPECTED_TARGET_BRANCH:?set the clean stability-full training branch}
 
@@ -25,6 +26,7 @@ STORAGE_CAPACITY="$REPORT_ROOT/storage_capacity.json"
 RUNTIME_SELECTION="$REPORT_ROOT/runtime_selection.json"
 READINESS="$REPORT_ROOT/full_training_readiness.json"
 LAUNCH_STORAGE_CAPACITY="$REPORT_ROOT/storage_capacity_launch.json"
+DEPLOYMENT_RECEIPT="$CHECKPOINT_ROOT/deployment/large_capacity/deployment_receipt.json"
 MONITOR_REPORT="$OUTPUT_ROOT/pair_monitor.json"
 MONITOR_LOG="$OUTPUT_ROOT/pair_monitor.log"
 MONITOR_PID_FILE="$OUTPUT_ROOT/pair_monitor.pid"
@@ -40,8 +42,10 @@ export PYTHONPATH=src
 [[ -f "$REFERENCE_COFITOK" ]]
 [[ -f "$REFERENCE_DENSE" ]]
 [[ -f "$READINESS" ]]
+[[ -f "$DEPLOYMENT_RECEIPT" ]]
 [[ "$(sha256sum "$GATE" | awk '{print $1}')" == "$EXPECTED_SCALING_GATE_SHA256" ]]
 [[ "$(sha256sum "$READINESS" | awk '{print $1}')" == "$EXPECTED_READINESS_SHA256" ]]
+[[ "$(sha256sum "$DEPLOYMENT_RECEIPT" | awk '{print $1}')" == "$EXPECTED_DEPLOYMENT_RECEIPT_SHA256" ]]
 mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
 
 "$PYTHON" scripts/validate_generation_gate_report.py \
@@ -57,6 +61,7 @@ runtime_selected="$("$PYTHON" scripts/validate_generation_full_readiness.py \
   --project-root "$PROJECT" \
   --readiness "$READINESS" \
   --expected-readiness-sha256 "$EXPECTED_READINESS_SHA256" \
+  --deployment-receipt "$DEPLOYMENT_RECEIPT" \
   --promotion-gate "$GATE" \
   --cofitok-config "$COFITOK_CONFIG" \
   --dense-config "$DENSE_CONFIG" \

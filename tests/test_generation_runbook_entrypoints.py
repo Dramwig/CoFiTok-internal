@@ -14,6 +14,7 @@ COMMAND_PATTERN = re.compile(
 )
 RUNBOOKS = (
     "generation_attest_deployed_revision.sh",
+    "generation_deploy_large_capacity_readiness_checkout.sh",
     "generation_10pct_matched_50k_2026-07-12.sh",
     "generation_10pct_posteval_2026-07-12.sh",
     "generation_full_milestone_eval.sh",
@@ -35,6 +36,7 @@ ENTRYPOINTS = {
     "audit_generation_training_progress.py",
     "audit_large_scale_generation_completion.py",
     "build_generation_gate_report.py",
+    "build_generation_large_capacity_deployment_receipt.py",
     "build_generation_full_readiness.py",
     "build_generation_milestone_report.py",
     "build_generation_stability_50k_summary.py",
@@ -59,6 +61,7 @@ ENTRYPOINTS = {
     "validate_generation_configs.py",
     "validate_generation_full_readiness.py",
     "validate_generation_gate_report.py",
+    "validate_generation_large_capacity_deployment.py",
     "validate_generation_milestone_report.py",
     "validate_generation_stability_scaling_decision.py",
     "validate_generation_training_completion.py",

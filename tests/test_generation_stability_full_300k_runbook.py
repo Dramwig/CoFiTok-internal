@@ -32,12 +32,14 @@ def test_stability_full_runbook_is_gate_and_identity_bound() -> None:
         < training
     )
     assert "EXPECTED_SCALING_GATE_SHA256=${" in source
+    assert "EXPECTED_DEPLOYMENT_RECEIPT_SHA256=${" in source
     assert "EXPECTED_READINESS_SHA256=${" in source
     assert "EXPECTED_TARGET_REVISION=${" in source
     assert "EXPECTED_TARGET_BRANCH=${" in source
     assert '--expected-checkpoint-revision "$EXPECTED_TARGET_REVISION"' in source
     assert "--expected-recipe-stage stability_full" in source
     assert "scripts/select_generation_training_runtime.py" not in source
+    assert "--deployment-receipt" in source
     assert "storage_capacity_launch.json" in source
 
 
@@ -53,6 +55,8 @@ def test_stability_full_readiness_runbook_builds_evidence_without_training() -> 
     assert gpu_idle < gate < config < storage < selector < builder
     assert 'find "$run_dir" -mindepth 1 -print -quit' in source
     assert "--stage stability_full" in source
+    assert "validate_generation_large_capacity_deployment.py" in source
+    assert "--expected-deployment-receipt-sha256" in source
     assert "--candidates 1x64,2x32,4x16,8x8,16x4" in source
     assert "--baseline-candidate 1x64" in source
     assert "--checkpoint-size-multiplier 4.0" in source

@@ -201,6 +201,7 @@ def test_readiness_exact_replay_rejects_source_drift(
     source_paths = {
         name: _write_json(tmp_path / f"{name}.json", {"name": name})
         for name in (
+            "deployment_receipt",
             "promotion_gate",
             "cofitok_config",
             "dense_config",
@@ -209,6 +210,35 @@ def test_readiness_exact_replay_rejects_source_drift(
             "runtime_selection",
         )
     }
+    monkeypatch.setattr(
+        readiness,
+        "verify_deployment_receipt",
+        lambda *args, **kwargs: {
+            "role": "generation_large_capacity_isolated_deployment",
+            "formal_repository": {
+                "git": {
+                    "revision": "f" * 40,
+                    "branch": "scale/generative-system",
+                    "tracked_dirty": False,
+                }
+            },
+            "checkout": {
+                "path": ROOT.resolve().as_posix(),
+                "git": {
+                    "revision": REVISION,
+                    "branch": BRANCH,
+                    "tracked_dirty": False,
+                }
+            },
+            "validation": {
+                "pytest": {"tests": 814},
+                "runbook_syntax": {"checked_count": 97},
+            },
+            "readiness_execution_allowed": True,
+            "readiness_executed": False,
+            "full_training_launch_allowed": False,
+        },
+    )
     monkeypatch.setattr(
         readiness,
         "verify_generation_gate_source_reports",
@@ -252,6 +282,7 @@ def test_readiness_exact_replay_rejects_source_drift(
     report = readiness.build_readiness_report(**kwargs)
     assert readiness.verify_readiness_report(report, **kwargs) == report
     assert report["training_state_absent_at_build"] is True
+    assert report["deployment"]["pytest_tests"] == 814
 
     _write_json(source_paths["runtime_selection"], {"name": "changed"})
     with pytest.raises(ValueError, match="not reproducible"):

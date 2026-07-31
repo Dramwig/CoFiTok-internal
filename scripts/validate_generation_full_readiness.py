@@ -23,6 +23,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--readiness", type=Path, required=True)
     parser.add_argument("--expected-readiness-sha256", required=True)
     parser.add_argument("--promotion-gate", type=Path, required=True)
+    parser.add_argument("--deployment-receipt", type=Path, required=True)
     parser.add_argument("--cofitok-config", type=Path, required=True)
     parser.add_argument("--dense-config", type=Path, required=True)
     parser.add_argument("--config-validation", type=Path, required=True)
@@ -45,6 +46,7 @@ def main() -> None:
     if len(args.training_run_dir) != 2 or len(set(args.training_run_dir)) != 2:
         raise ValueError("exactly two distinct matched training run directories are required")
     source_paths = {
+        "deployment_receipt": args.deployment_receipt,
         "promotion_gate": args.promotion_gate,
         "cofitok_config": args.cofitok_config,
         "dense_config": args.dense_config,

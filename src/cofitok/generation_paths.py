@@ -16,6 +16,7 @@ STABILITY_FULL_ROOT_ID = "stability_full_300k_ema_teacher"
 STABILITY_FULL_COFITOK_RUN_ID = "cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
 STABILITY_FULL_DENSE_RUN_ID = "dense_rollout_x0_u2_ema_teacher"
 STABILITY_EXPORT_ROOT_ID = "exports/stability_full_300k_ema_teacher"
+STABILITY_LARGE_CAPACITY_DEPLOYMENT_ROOT_ID = "deployment/large_capacity"
 FULL_COFITOK_RUN_ID = "imagenet256_full_cofitok_k8_300k"
 FULL_DENSE_RUN_ID = "imagenet256_full_dense_300k"
 FULL_REPORT_ID = "imagenet256_full_matched_300k"
@@ -98,6 +99,7 @@ def generation_stability_workspace_paths(
     full_cofitok = full_root / STABILITY_FULL_COFITOK_RUN_ID
     full_dense = full_root / STABILITY_FULL_DENSE_RUN_ID
     export_root = output / STABILITY_EXPORT_ROOT_ID
+    deployment_root = output / STABILITY_LARGE_CAPACITY_DEPLOYMENT_ROOT_ID
     return {
         "STABILITY_DECISION": (
             probe_root / STABILITY_DECISION_ID / "scaling_decision.json"
@@ -116,6 +118,10 @@ def generation_stability_workspace_paths(
         "STABILITY_FULL_REPORT_ROOT": full_reports,
         "STABILITY_FULL_GATE": full_reports / "final_generation_gate.json",
         "STABILITY_EXPORT_ROOT": export_root,
+        "STABILITY_LARGE_CAPACITY_DEPLOYMENT_ROOT": deployment_root,
+        "STABILITY_LARGE_CAPACITY_DEPLOYMENT_RECEIPT": (
+            deployment_root / "deployment_receipt.json"
+        ),
         "STABILITY_COFITOK_INFERENCE_ARTIFACT": (
             export_root / "cofitok_k8_ema_inference.pt"
         ),
