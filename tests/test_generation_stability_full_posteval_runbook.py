@@ -52,3 +52,25 @@ def test_stability_full_comparison_keeps_official_methods_contextual() -> None:
     assert "--official-related" in source
     assert "--source-profile stability_full" in source
     assert "generation_stability_ema_teacher_full_matched_300k_after_gate.sh" not in source
+
+
+def test_stability_full_posteval_audits_each_run_against_its_config() -> None:
+    source = RUNBOOK.read_text(encoding="utf-8")
+
+    assert (
+        "COFITOK_CONFIG=configs/generation/"
+        "imagenet256_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json"
+    ) in source
+    assert (
+        "DENSE_CONFIG=configs/generation/"
+        "imagenet256_stability_rollout_x0_u2_ema_teacher_dense_300k.json"
+    ) in source
+    cofitok_run = source.index('--run-dir "$COFITOK_RUN"')
+    cofitok_config = source.index('--config "$COFITOK_CONFIG"', cofitok_run)
+    dense_run = source.index('--run-dir "$DENSE_RUN"')
+    dense_config = source.index('--config "$DENSE_CONFIG"', dense_run)
+
+    assert cofitok_run < cofitok_config < source.index(
+        "--expected-steps", cofitok_run
+    )
+    assert dense_run < dense_config < source.index("--expected-steps", dense_run)

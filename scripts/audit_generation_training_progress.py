@@ -8,6 +8,8 @@ from pathlib import Path
 from statistics import mean
 from typing import Any
 
+from cofitok.configs import load_config
+from cofitok.training import consistency_weight_scale
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
@@ -128,6 +130,104 @@ def _audit_latest_checkpoint_integrity(
     )
 
 
+def _audit_consistency_schedules(
+    rows: list[dict[str, Any]],
+    *,
+    config_path: Path | None,
+) -> tuple[dict[str, Any], list[str]]:
+    if config_path is None:
+        return {"status": "not_requested"}, []
+    config = load_config(config_path)
+    schedules = {
+        "rollout_consistency": {
+            "scale_field": "rollout_consistency_scale",
+            "loss_field": "rollout_consistency",
+            "weight": config.loss.rollout_consistency_weight,
+            "start_step": config.loss.rollout_consistency_start_step,
+            "warmup_steps": config.loss.rollout_consistency_warmup_steps,
+        },
+        "ema_teacher_consistency": {
+            "scale_field": "ema_teacher_consistency_scale",
+            "loss_field": "ema_teacher_consistency",
+            "weight": config.loss.ema_teacher_consistency_weight,
+            "start_step": config.loss.ema_teacher_consistency_start_step,
+            "warmup_steps": config.loss.ema_teacher_consistency_warmup_steps,
+        },
+    }
+    issues: list[str] = []
+    evidence: dict[str, Any] = {}
+    for name, schedule in schedules.items():
+        scale_field = str(schedule["scale_field"])
+        loss_field = str(schedule["loss_field"])
+        weight = float(schedule["weight"])
+        verified_rows = 0
+        active_rows = 0
+        nonzero_loss_rows = 0
+        for index, row in enumerate(rows):
+            step = int(row.get("step", -1))
+            scheduled_scale = consistency_weight_scale(
+                step,
+                start_step=int(schedule["start_step"]),
+                warmup_steps=int(schedule["warmup_steps"]),
+            )
+            expected_scale = scheduled_scale if weight > 0.0 else 0.0
+            actual_scale = row.get(scale_field)
+            try:
+                actual_scale_value = float(actual_scale)
+            except (TypeError, ValueError):
+                issues.append(f"row {index} has invalid {scale_field}")
+                continue
+            if not math.isfinite(actual_scale_value):
+                issues.append(f"row {index} has invalid {scale_field}")
+                continue
+            if not math.isclose(
+                actual_scale_value, expected_scale, rel_tol=0.0, abs_tol=1e-6
+            ):
+                issues.append(f"row {index} {scale_field} differs from config schedule")
+            loss = row.get(loss_field)
+            try:
+                loss_value = float(loss)
+            except (TypeError, ValueError):
+                issues.append(f"row {index} has invalid {loss_field}")
+                continue
+            if not math.isfinite(loss_value):
+                issues.append(f"row {index} has invalid {loss_field}")
+                continue
+            if expected_scale == 0.0 and not math.isclose(
+                loss_value, 0.0, rel_tol=0.0, abs_tol=1e-12
+            ):
+                issues.append(f"row {index} {loss_field} is nonzero while disabled")
+            if expected_scale > 0.0:
+                active_rows += 1
+                if not math.isclose(loss_value, 0.0, rel_tol=0.0, abs_tol=1e-12):
+                    nonzero_loss_rows += 1
+            verified_rows += 1
+        if active_rows > 0 and nonzero_loss_rows == 0:
+            issues.append(f"{loss_field} is zero for all active schedule rows")
+        last_step = int(rows[-1]["step"])
+        scheduled_scale_at_last_step = consistency_weight_scale(
+            last_step,
+            start_step=int(schedule["start_step"]),
+            warmup_steps=int(schedule["warmup_steps"]),
+        )
+        evidence[name] = {
+            **schedule,
+            "scheduled_scale_at_last_step": scheduled_scale_at_last_step,
+            "expected_scale_at_last_step": (
+                scheduled_scale_at_last_step if weight > 0.0 else 0.0
+            ),
+            "verified_rows": verified_rows,
+            "active_rows": active_rows,
+            "nonzero_loss_rows": nonzero_loss_rows,
+        }
+    return {
+        "status": "invalid" if issues else "verified",
+        "config_path": config_path.resolve().as_posix(),
+        "config_sha256": file_sha256(config_path),
+        "schedules": evidence,
+    }, issues
+
+
 def audit_progress(
     run_dir: str | Path,
     *,
@@ -137,6 +237,7 @@ def audit_progress(
     evaluation_interval: int | None = None,
     required_checkpoint_steps: list[int] | tuple[int, ...] = (),
     integrity_policy: str = "legacy_compute",
+    config_path: str | Path | None = None,
 ) -> dict[str, Any]:
     if expected_steps < 1 or checkpoint_interval < 1 or grad_clip_norm <= 0.0:
         raise ValueError("expected_steps, checkpoint_interval, and grad_clip_norm must be positive")
@@ -162,6 +263,10 @@ def audit_progress(
                 issues.append(f"row {index} has non-finite {field}")
         if float(row.get("grad_norm", math.inf)) < 0.0:
             issues.append(f"row {index} has negative grad_norm")
+    schedule_audit, schedule_issues = _audit_consistency_schedules(
+        rows, config_path=Path(config_path) if config_path is not None else None
+    )
+    issues.extend(schedule_issues)
     last = rows[-1]
     last_step = int(last["step"])
     if last_step > expected_steps:
@@ -328,6 +433,7 @@ def audit_progress(
             "provenance_metadata_status": validation_metadata_status,
             "provenance_fields": list(validation_metadata_fields),
         },
+        "consistency_schedules": schedule_audit,
         "checkpoint": {
             "interval": checkpoint_interval,
             "status": checkpoint_status,
@@ -348,6 +454,7 @@ def main() -> None:
     parser.add_argument("--expected-steps", type=int, required=True)
     parser.add_argument("--checkpoint-interval", type=int, required=True)
     parser.add_argument("--evaluation-interval", type=int)
+    parser.add_argument("--config")
     parser.add_argument(
         "--required-checkpoint-steps",
         default="",
@@ -380,6 +487,7 @@ def main() -> None:
         evaluation_interval=args.evaluation_interval,
         required_checkpoint_steps=required_checkpoint_steps,
         integrity_policy=args.integrity_policy,
+        config_path=args.config,
     )
     write_json_report(args.output, report)
     print(args.output)

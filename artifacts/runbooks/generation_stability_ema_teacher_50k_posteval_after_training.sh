@@ -75,6 +75,7 @@ mkdir -p "$REPORT_ROOT"
 
 "$PYTHON" scripts/audit_generation_training_progress.py \
   --run-dir "$COFITOK_RUN" \
+  --config "$COFITOK_CONFIG" \
   --expected-steps 50000 \
   --checkpoint-interval 5000 \
   --evaluation-interval 1000 \
@@ -83,6 +84,7 @@ mkdir -p "$REPORT_ROOT"
 
 "$PYTHON" scripts/audit_generation_training_progress.py \
   --run-dir "$DENSE_RUN" \
+  --config "$DENSE_CONFIG" \
   --expected-steps 50000 \
   --checkpoint-interval 5000 \
   --evaluation-interval 1000 \

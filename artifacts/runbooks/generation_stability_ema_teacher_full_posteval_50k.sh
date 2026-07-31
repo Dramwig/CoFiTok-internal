@@ -13,6 +13,8 @@ EXPECTED_TARGET_REVISION=${EXPECTED_TARGET_REVISION:?set the clean full post-eva
 EXPECTED_TARGET_BRANCH=${EXPECTED_TARGET_BRANCH:?set the clean full post-evaluation branch}
 
 SCALING_GATE="$CHECKPOINT_ROOT/stability_scaling_50k_ema_teacher/reports/promotion_gate.json"
+COFITOK_CONFIG=configs/generation/imagenet256_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json
+DENSE_CONFIG=configs/generation/imagenet256_stability_rollout_x0_u2_ema_teacher_dense_300k.json
 OUTPUT_ROOT="$CHECKPOINT_ROOT/stability_full_300k_ema_teacher"
 REPORT_ROOT="$OUTPUT_ROOT/reports"
 COFITOK_RUN="$OUTPUT_ROOT/cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
@@ -54,6 +56,7 @@ mkdir -p "$REPORT_ROOT"
 
 "$PYTHON" scripts/audit_generation_training_progress.py \
   --run-dir "$COFITOK_RUN" \
+  --config "$COFITOK_CONFIG" \
   --expected-steps 300000 \
   --checkpoint-interval 5000 \
   --evaluation-interval 2000 \
@@ -63,6 +66,7 @@ mkdir -p "$REPORT_ROOT"
 
 "$PYTHON" scripts/audit_generation_training_progress.py \
   --run-dir "$DENSE_RUN" \
+  --config "$DENSE_CONFIG" \
   --expected-steps 300000 \
   --checkpoint-interval 5000 \
   --evaluation-interval 2000 \

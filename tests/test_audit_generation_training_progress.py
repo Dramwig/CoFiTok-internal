@@ -311,3 +311,173 @@ def test_audit_does_not_require_future_protected_checkpoint(tmp_path) -> None:
 
     assert report["status"] == "healthy"
     assert report["checkpoint"]["missing_required_steps"] == []
+
+
+def _write_schedule_config(
+    path,
+    *,
+    rollout_weight: float = 0.1,
+    teacher_weight: float = 0.25,
+) -> None:
+    path.write_text(
+        json.dumps(
+            {
+                "name": "schedule-audit",
+                "data": {},
+                "diffusion": {},
+                "model": {},
+                "loss": {
+                    "rollout_consistency_weight": rollout_weight,
+                    "rollout_consistency_start_step": 0,
+                    "rollout_consistency_warmup_steps": 1_000,
+                    "ema_teacher_consistency_weight": teacher_weight,
+                    "ema_teacher_consistency_start_step": 2_000,
+                    "ema_teacher_consistency_warmup_steps": 1_000,
+                },
+                "runtime": {},
+                "optimization": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+def _write_schedule_metrics(run_dir, *, corrupt: str = "") -> None:
+    run_dir.mkdir(parents=True, exist_ok=True)
+    rows = []
+    for step in (1, 500, 1_000, 2_000, 2_500, 3_000):
+        rollout_scale = min(step / 1_000, 1.0)
+        teacher_scale = 0.0 if step <= 2_000 else min((step - 2_000) / 1_000, 1.0)
+        rows.append(
+            {
+                "step": step,
+                "total": 0.1,
+                "epsilon": 0.08,
+                "grad_norm": 0.2,
+                "learning_rate": 1e-4,
+                "elapsed_seconds": float(step * 2),
+                "rollout_consistency_scale": rollout_scale,
+                "rollout_consistency": 0.0 if rollout_scale == 0.0 else 0.02,
+                "ema_teacher_consistency_scale": teacher_scale,
+                "ema_teacher_consistency": 0.0 if teacher_scale == 0.0 else 0.01,
+            }
+        )
+    if corrupt == "rollout_scale":
+        rows[1]["rollout_consistency_scale"] = 0.75
+    elif corrupt == "teacher_early_loss":
+        rows[2]["ema_teacher_consistency"] = 0.5
+    elif corrupt == "rollout_active_zero":
+        for row in rows:
+            row["rollout_consistency"] = 0.0
+    (run_dir / "train_metrics.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
+    )
+
+
+def test_audit_verifies_consistency_schedules_against_config(tmp_path) -> None:
+    config = tmp_path / "config.json"
+    _write_schedule_config(config)
+    _write_schedule_metrics(tmp_path)
+    report = audit_progress(
+        tmp_path,
+        expected_steps=4_000,
+        checkpoint_interval=5_000,
+        config_path=config,
+    )
+
+    assert report["status"] == "healthy"
+    schedules = report["consistency_schedules"]
+    assert schedules["status"] == "verified"
+    assert len(schedules["config_sha256"]) == 64
+    assert schedules["schedules"]["rollout_consistency"][
+        "expected_scale_at_last_step"
+    ] == 1.0
+    assert schedules["schedules"]["ema_teacher_consistency"][
+        "expected_scale_at_last_step"
+    ] == 1.0
+    assert schedules["schedules"]["rollout_consistency"]["active_rows"] == 6
+    assert schedules["schedules"]["rollout_consistency"]["nonzero_loss_rows"] == 6
+
+
+def test_audit_rejects_consistency_schedule_drift(tmp_path) -> None:
+    config = tmp_path / "config.json"
+    _write_schedule_config(config)
+    _write_schedule_metrics(tmp_path, corrupt="rollout_scale")
+    report = audit_progress(
+        tmp_path,
+        expected_steps=4_000,
+        checkpoint_interval=5_000,
+        config_path=config,
+    )
+
+    assert report["status"] == "invalid"
+    assert "row 1 rollout_consistency_scale differs from config schedule" in report["issues"]
+
+
+def test_audit_rejects_teacher_loss_before_schedule_start(tmp_path) -> None:
+    config = tmp_path / "config.json"
+    _write_schedule_config(config)
+    _write_schedule_metrics(tmp_path, corrupt="teacher_early_loss")
+    report = audit_progress(
+        tmp_path,
+        expected_steps=4_000,
+        checkpoint_interval=5_000,
+        config_path=config,
+    )
+
+    assert report["status"] == "invalid"
+    assert "row 2 ema_teacher_consistency is nonzero while disabled" in report["issues"]
+
+
+def test_audit_rejects_consistency_loss_that_is_zero_after_activation(tmp_path) -> None:
+    config = tmp_path / "config.json"
+    _write_schedule_config(config)
+    _write_schedule_metrics(tmp_path, corrupt="rollout_active_zero")
+    report = audit_progress(
+        tmp_path,
+        expected_steps=4_000,
+        checkpoint_interval=5_000,
+        config_path=config,
+    )
+
+    assert report["status"] == "invalid"
+    assert "rollout_consistency is zero for all active schedule rows" in report["issues"]
+
+
+def test_audit_uses_zero_effective_scale_when_consistency_weight_is_zero(tmp_path) -> None:
+    config = tmp_path / "config.json"
+    _write_schedule_config(config, rollout_weight=0.0, teacher_weight=0.0)
+    _write_schedule_metrics(tmp_path)
+    metrics_path = tmp_path / "train_metrics.jsonl"
+    rows = [json.loads(line) for line in metrics_path.read_text(encoding="utf-8").splitlines()]
+    for row in rows:
+        row["rollout_consistency_scale"] = 0.0
+        row["rollout_consistency"] = 0.0
+        row["ema_teacher_consistency_scale"] = 0.0
+        row["ema_teacher_consistency"] = 0.0
+    metrics_path.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=4_000,
+        checkpoint_interval=5_000,
+        config_path=config,
+    )
+
+    assert report["status"] == "healthy"
+    rollout = report["consistency_schedules"]["schedules"]["rollout_consistency"]
+    assert rollout["scheduled_scale_at_last_step"] == 1.0
+    assert rollout["expected_scale_at_last_step"] == 0.0
+    assert rollout["active_rows"] == 0
+
+
+def test_audit_keeps_schedule_check_optional_for_legacy_callers(tmp_path) -> None:
+    _write_metrics(tmp_path, [1, 50])
+
+    report = audit_progress(tmp_path, expected_steps=100, checkpoint_interval=500)
+
+    assert report["status"] == "healthy"
+    assert report["consistency_schedules"] == {"status": "not_requested"}

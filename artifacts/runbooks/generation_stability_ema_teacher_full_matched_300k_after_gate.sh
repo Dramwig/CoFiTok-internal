@@ -342,6 +342,7 @@ monitor_report_passes
 
 "$PYTHON" scripts/audit_generation_training_progress.py \
   --run-dir "$COFITOK_RUN" \
+  --config "$COFITOK_CONFIG" \
   --expected-steps 300000 \
   --checkpoint-interval 5000 \
   --evaluation-interval 2000 \
@@ -351,6 +352,7 @@ monitor_report_passes
 
 "$PYTHON" scripts/audit_generation_training_progress.py \
   --run-dir "$DENSE_RUN" \
+  --config "$DENSE_CONFIG" \
   --expected-steps 300000 \
   --checkpoint-interval 5000 \
   --evaluation-interval 2000 \

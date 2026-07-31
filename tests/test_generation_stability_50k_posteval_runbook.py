@@ -45,3 +45,17 @@ def test_stability_50k_posteval_cannot_launch_full_training() -> None:
 
     assert "generation_full_matched_300k_after_gate.sh" not in source
     assert "scripts/train_generation.py" not in source
+
+
+def test_stability_50k_posteval_audits_each_run_against_its_config() -> None:
+    source = RUNBOOK.read_text(encoding="utf-8")
+
+    cofitok_run = source.index('--run-dir "$COFITOK_RUN"')
+    cofitok_config = source.index('--config "$COFITOK_CONFIG"', cofitok_run)
+    dense_run = source.index('--run-dir "$DENSE_RUN"')
+    dense_config = source.index('--config "$DENSE_CONFIG"', dense_run)
+
+    assert cofitok_run < cofitok_config < source.index(
+        "--expected-steps", cofitok_run
+    )
+    assert dense_run < dense_config < source.index("--expected-steps", dense_run)

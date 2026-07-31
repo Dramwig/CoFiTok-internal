@@ -69,3 +69,17 @@ def test_shared_milestone_runner_accepts_isolated_project_identity() -> None:
     assert "PROJECT=${PROJECT:-" in source
     assert "PYTHON=${PYTHON:-python}" in source
     assert '"$PYTHON" scripts/preflight_generation_sampling.py' in source
+
+
+def test_stability_full_runbook_audits_each_run_against_its_config() -> None:
+    source = RUNBOOK.read_text(encoding="utf-8")
+
+    cofitok_run = source.index('--run-dir "$COFITOK_RUN"')
+    cofitok_config = source.index('--config "$COFITOK_CONFIG"', cofitok_run)
+    dense_run = source.index('--run-dir "$DENSE_RUN"')
+    dense_config = source.index('--config "$DENSE_CONFIG"', dense_run)
+
+    assert cofitok_run < cofitok_config < source.index(
+        "--expected-steps", cofitok_run
+    )
+    assert dense_run < dense_config < source.index("--expected-steps", dense_run)
