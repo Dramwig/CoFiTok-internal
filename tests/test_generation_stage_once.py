@@ -447,3 +447,183 @@ def test_running_worker_result_is_reread_after_parent_crash(
     assert output.read_text(encoding="utf-8") == "completed-by-live-worker"
     assert receipt["status"] == "completed"
     assert receipt["worker_exit_code"] == 0
+
+
+def test_missing_worker_sidecar_gets_startup_grace(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source.txt"
+    output = tmp_path / "output.txt"
+    state_path = tmp_path / "stage.json"
+    source.write_text("source", encoding="utf-8")
+    command = [sys.executable, "-c", "raise AssertionError('must not rerun')"]
+    outputs = _output_declarations([str(output)], [])
+    request = _request(
+        project=ROOT.resolve(),
+        cwd=tmp_path.resolve(),
+        command=command,
+        inputs=[file_identity(source)],
+        outputs=outputs,
+    )
+    worker_result_path = _worker_result_path(state_path.resolve(), 1)
+    state_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "role": "generation_stage_receipt",
+                "status": "running",
+                "hostname": "stale-host",
+                "pid": 99999999,
+                "child_pid": None,
+                "attempt": 1,
+                "request": request,
+                "attempts": [
+                    {
+                        "attempt": 1,
+                        "status": "starting",
+                        "worker_result_path": worker_result_path.as_posix(),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def finish_startup(
+        path: Path,
+        *,
+        timeout_seconds: float,
+        poll_seconds: float = 0.05,
+    ) -> bool:
+        assert path == worker_result_path
+        assert timeout_seconds > 0
+        output.write_text("completed-during-startup-grace", encoding="utf-8")
+        path.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "role": "generation_stage_worker_result",
+                    "status": "completed",
+                    "attempt": 1,
+                    "request_sha256": _request_sha256(request),
+                    "command": command,
+                    "cwd": tmp_path.resolve().as_posix(),
+                    "worker_pid": 424242,
+                    "child_pid": 434343,
+                    "exit_code": 0,
+                    "error_type": None,
+                    "error": None,
+                    "finished_at": "2026-07-31T00:00:01+00:00",
+                }
+            ),
+            encoding="utf-8",
+        )
+        return True
+
+    monkeypatch.setattr(
+        "scripts.run_generation_stage_once._wait_for_path",
+        finish_startup,
+    )
+
+    result = _run(
+        tmp_path,
+        command=command,
+        input_file=source,
+        output_file=output,
+    )
+
+    assert result["recovered"] is True
+    assert output.read_text(encoding="utf-8") == "completed-during-startup-grace"
+
+
+def test_live_command_child_is_waited_after_worker_exit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source.txt"
+    output = tmp_path / "output.txt"
+    state_path = tmp_path / "stage.json"
+    source.write_text("source", encoding="utf-8")
+    command = [sys.executable, "-c", "raise AssertionError('must not rerun')"]
+    outputs = _output_declarations([str(output)], [])
+    request = _request(
+        project=ROOT.resolve(),
+        cwd=tmp_path.resolve(),
+        command=command,
+        inputs=[file_identity(source)],
+        outputs=outputs,
+    )
+    worker_result_path = _worker_result_path(state_path.resolve(), 1)
+    worker_result_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "role": "generation_stage_worker_result",
+                "status": "running",
+                "attempt": 1,
+                "request_sha256": _request_sha256(request),
+                "command": command,
+                "cwd": tmp_path.resolve().as_posix(),
+                "worker_pid": 424242,
+                "child_pid": 434343,
+                "exit_code": -1,
+                "error_type": None,
+                "error": None,
+                "started_at": "2026-07-31T00:00:00+00:00",
+            }
+        ),
+        encoding="utf-8",
+    )
+    state_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "role": "generation_stage_receipt",
+                "status": "running",
+                "hostname": "stale-host",
+                "pid": 99999999,
+                "child_pid": 99999999,
+                "attempt": 1,
+                "request": request,
+                "attempts": [
+                    {
+                        "attempt": 1,
+                        "status": "running",
+                        "worker_result_path": worker_result_path.as_posix(),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def finish_child(pid: int, *, poll_seconds: float = 1.0) -> None:
+        assert pid == 434343
+        output.write_text("completed-by-detached-child", encoding="utf-8")
+        completed = json.loads(worker_result_path.read_text(encoding="utf-8"))
+        completed.update(
+            status="completed",
+            exit_code=0,
+            finished_at="2026-07-31T00:00:01+00:00",
+        )
+        worker_result_path.write_text(json.dumps(completed), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "scripts.run_generation_stage_once._process_exists",
+        lambda pid: pid == 434343,
+    )
+    monkeypatch.setattr(
+        "scripts.run_generation_stage_once._wait_for_process",
+        finish_child,
+    )
+
+    result = _run(
+        tmp_path,
+        command=command,
+        input_file=source,
+        output_file=output,
+    )
+
+    assert result["recovered"] is True
+    assert output.read_text(encoding="utf-8") == "completed-by-detached-child"

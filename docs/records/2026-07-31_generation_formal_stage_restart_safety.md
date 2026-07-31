@@ -49,11 +49,14 @@ sidecar and outputs, and completes the receipt without rerunning the command.
 
 Recovery also covers the narrow launch-to-receipt window where the parent has
 spawned the worker but has not yet persisted the worker PID. If the result
-sidecar still says `running`, the replay path waits for the recorded worker (or
-its command child when the worker has already disappeared), reloads the atomic
-sidecar, and only then decides whether to adopt or archive outputs. A live
-worker can therefore finish successfully without its stale in-memory
-`running` record being misclassified as a failed attempt.
+sidecar has not appeared yet, replay grants the independent worker a bounded
+startup grace before classifying the attempt as interrupted. If the sidecar
+still says `running`, replay waits for the recorded worker, reloads the atomic
+sidecar, and also waits for a still-live command child if the worker exited
+abnormally. Only then does it decide whether to adopt or archive outputs. A
+live worker can therefore finish successfully without its stale in-memory
+`running` record being misclassified as a failed attempt, while a detached
+command cannot keep writing into an archived or retried output path.
 
 This closes the success-to-receipt crash window for long checkpoint evaluation,
 50K FID/IS/precision/recall, export preflight, and smoke inference.

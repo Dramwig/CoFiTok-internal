@@ -21,6 +21,7 @@ ROLE = "generation_stage_receipt"
 WORKER_ROLE = "generation_stage_worker_result"
 REPLAY_ERROR_EXIT_CODE = 86
 WORKER_FAILURE_EXIT_CODE = 87
+WORKER_SIDECAR_GRACE_SECONDS = 5.0
 
 
 class StageReplayError(ValueError):
@@ -222,9 +223,29 @@ def _process_exists(pid: int) -> bool:
     return True
 
 
+def _optional_pid(value: Any, *, name: str) -> int:
+    if value is None:
+        return -1
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise StageReplayError(f"generation stage {name} is malformed")
+    return value
+
+
 def _wait_for_process(pid: int, *, poll_seconds: float = 1.0) -> None:
     while _process_exists(pid):
         time.sleep(poll_seconds)
+
+
+def _wait_for_path(
+    path: Path,
+    *,
+    timeout_seconds: float,
+    poll_seconds: float = 0.05,
+) -> bool:
+    deadline = time.monotonic() + timeout_seconds
+    while not path.is_file() and time.monotonic() < deadline:
+        time.sleep(poll_seconds)
+    return path.is_file()
 
 
 def _request(
@@ -477,7 +498,10 @@ def run_stage_once(
                 "outputs": actual_outputs,
             }
         if state.get("status") == "running":
-            child_pid = int(state.get("child_pid", -1))
+            child_pid = _optional_pid(
+                state.get("child_pid"),
+                name="receipt child PID",
+            )
             if _process_exists(child_pid):
                 _wait_for_process(child_pid)
             interrupted_attempt = int(state.get("attempt", len(attempts) or 1))
@@ -486,6 +510,11 @@ def run_stage_once(
                 interrupted_attempt,
             )
             worker_result = None
+            if not worker_result_path.is_file():
+                _wait_for_path(
+                    worker_result_path,
+                    timeout_seconds=WORKER_SIDECAR_GRACE_SECONDS,
+                )
             if worker_result_path.is_file():
                 worker_result = _validate_worker_result(
                     worker_result_path,
@@ -494,11 +523,26 @@ def run_stage_once(
                     expected_command=command,
                 )
             if worker_result is not None and worker_result["status"] == "running":
-                worker_pid = int(worker_result.get("worker_pid", -1))
-                command_child_pid = int(worker_result.get("child_pid", -1))
+                worker_pid = _optional_pid(
+                    worker_result.get("worker_pid"),
+                    name="worker PID",
+                )
+                command_child_pid = _optional_pid(
+                    worker_result.get("child_pid"),
+                    name="command child PID",
+                )
                 if _process_exists(worker_pid):
                     _wait_for_process(worker_pid)
-                elif _process_exists(command_child_pid):
+                worker_result = _validate_worker_result(
+                    worker_result_path,
+                    expected_attempt=interrupted_attempt,
+                    expected_request_sha256=request_sha256,
+                    expected_command=command,
+                )
+                if (
+                    worker_result["status"] == "running"
+                    and _process_exists(command_child_pid)
+                ):
                     _wait_for_process(command_child_pid)
                 if worker_result_path.is_file():
                     worker_result = _validate_worker_result(
