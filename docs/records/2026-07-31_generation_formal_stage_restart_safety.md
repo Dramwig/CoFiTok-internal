@@ -47,6 +47,14 @@ exits. If the parent wrapper is interrupted after the costly command succeeds,
 a later invocation waits for any still-live worker/child process, validates the
 sidecar and outputs, and completes the receipt without rerunning the command.
 
+Recovery also covers the narrow launch-to-receipt window where the parent has
+spawned the worker but has not yet persisted the worker PID. If the result
+sidecar still says `running`, the replay path waits for the recorded worker (or
+its command child when the worker has already disappeared), reloads the atomic
+sidecar, and only then decides whether to adopt or archive outputs. A live
+worker can therefore finish successfully without its stale in-memory
+`running` record being misclassified as a failed attempt.
+
 This closes the success-to-receipt crash window for long checkpoint evaluation,
 50K FID/IS/precision/recall, export preflight, and smoke inference.
 

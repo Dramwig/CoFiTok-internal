@@ -355,3 +355,95 @@ def test_successful_worker_result_recovers_parent_crash_without_rerun(tmp_path: 
     assert output.read_text(encoding="utf-8") == "completed-before-parent-crash"
     assert receipt["status"] == "completed"
     assert receipt["completed_outputs"] == _output_identities(outputs)
+
+
+def test_running_worker_result_is_reread_after_parent_crash(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source.txt"
+    output = tmp_path / "output.txt"
+    state_path = tmp_path / "stage.json"
+    source.write_text("source", encoding="utf-8")
+    command = [sys.executable, "-c", "raise AssertionError('must not rerun')"]
+    outputs = _output_declarations([str(output)], [])
+    request = _request(
+        project=ROOT.resolve(),
+        cwd=tmp_path.resolve(),
+        command=command,
+        inputs=[file_identity(source)],
+        outputs=outputs,
+    )
+    worker_result_path = _worker_result_path(state_path.resolve(), 1)
+    worker_result = {
+        "schema_version": 1,
+        "role": "generation_stage_worker_result",
+        "status": "running",
+        "attempt": 1,
+        "request_sha256": _request_sha256(request),
+        "command": command,
+        "cwd": tmp_path.resolve().as_posix(),
+        "worker_pid": 424242,
+        "child_pid": -1,
+        "exit_code": -1,
+        "error_type": None,
+        "error": None,
+        "started_at": "2026-07-31T00:00:00+00:00",
+    }
+    worker_result_path.write_text(json.dumps(worker_result), encoding="utf-8")
+
+    def finish_worker(pid: int, *, poll_seconds: float = 1.0) -> None:
+        assert pid == 424242
+        output.write_text("completed-by-live-worker", encoding="utf-8")
+        completed = json.loads(worker_result_path.read_text(encoding="utf-8"))
+        completed.update(
+            status="completed",
+            exit_code=0,
+            finished_at="2026-07-31T00:00:01+00:00",
+        )
+        worker_result_path.write_text(json.dumps(completed), encoding="utf-8")
+
+    monkeypatch.setattr(
+        "scripts.run_generation_stage_once._process_exists",
+        lambda pid: pid == 424242,
+    )
+    monkeypatch.setattr(
+        "scripts.run_generation_stage_once._wait_for_process",
+        finish_worker,
+    )
+    state_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "role": "generation_stage_receipt",
+                "status": "running",
+                "hostname": "stale-host",
+                "pid": 99999999,
+                "child_pid": 99999999,
+                "attempt": 1,
+                "request": request,
+                "attempts": [
+                    {
+                        "attempt": 1,
+                        "status": "running",
+                        "worker_result_path": worker_result_path.as_posix(),
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run(
+        tmp_path,
+        command=command,
+        input_file=source,
+        output_file=output,
+    )
+    receipt = json.loads(state_path.read_text(encoding="utf-8"))
+
+    assert result["recovered"] is True
+    assert result["reused"] is True
+    assert output.read_text(encoding="utf-8") == "completed-by-live-worker"
+    assert receipt["status"] == "completed"
+    assert receipt["worker_exit_code"] == 0

@@ -494,9 +494,19 @@ def run_stage_once(
                     expected_command=command,
                 )
             if worker_result is not None and worker_result["status"] == "running":
+                worker_pid = int(worker_result.get("worker_pid", -1))
                 command_child_pid = int(worker_result.get("child_pid", -1))
-                if _process_exists(command_child_pid):
+                if _process_exists(worker_pid):
+                    _wait_for_process(worker_pid)
+                elif _process_exists(command_child_pid):
                     _wait_for_process(command_child_pid)
+                if worker_result_path.is_file():
+                    worker_result = _validate_worker_result(
+                        worker_result_path,
+                        expected_attempt=interrupted_attempt,
+                        expected_request_sha256=request_sha256,
+                        expected_command=command,
+                    )
             if worker_result is not None and worker_result["exit_code"] == 0:
                 try:
                     completed_outputs = _output_identities(outputs)
