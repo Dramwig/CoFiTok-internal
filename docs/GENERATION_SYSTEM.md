@@ -225,7 +225,16 @@ repository or mutate an active training checkout.
   the receipt SHA256 and replay it before updating only
   `storage_capacity_current.json`; it cannot overwrite the original launch
   storage evidence. The runbook never calls the runtime selector.
-- Deployment is a third, earlier stage and is CPU-only.
+- A separate fail-closed readiness waiter closes the handoff between the long
+  50K post-evaluation and the 250M CUDA qualification. It runs from the exact
+  receipt-bound large-capacity checkout, requires the post-evaluation waiter to
+  finish successfully, verifies the passing `stability_scaling` gate including
+  all source-report hashes and exact training/evaluation revisions, waits for
+  an idle GPU, and then invokes only
+  `generation_stability_ema_teacher_full_readiness_after_gate.sh`. It can replay
+  an existing readiness artifact after restart. Its status always records
+  `full_training_launch_allowed=false`; it has no reference to the 300K training
+  runbook and cannot launch a trainer.- Deployment is a third, earlier stage and is CPU-only.
   `generation_deploy_large_capacity_readiness_checkout.sh` verifies the
   persistent bundle against the still-pinned formal repository, clones an
   isolated checkout under `checkpoints/generation/deployment/large_capacity`,
