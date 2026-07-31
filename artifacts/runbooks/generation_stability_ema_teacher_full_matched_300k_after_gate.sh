@@ -98,7 +98,7 @@ storage_preflight() {
     --reference-checkpoint "$REFERENCE_DENSE" \
     --checkpoint-count 16 \
     --checkpoint-size-multiplier 4.0 \
-    --sample-count 16384 \
+    --sample-count 116640 \
     --estimated-sample-kib 256 \
     --additional-gib 16 \
     --safety-margin-gib 64 >/dev/null

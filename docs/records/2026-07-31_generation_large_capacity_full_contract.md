@@ -56,6 +56,16 @@ schema v2 records:
 The stability completion audit requires this real full-training report and
 rejects a multiplier below `4.0` or inconsistent arithmetic.
 
+The first-launch storage report is stronger than the readiness-only report.
+Readiness retains the historical `16,384` training-time sample reserve so the
+already queued CUDA qualification artifact remains replayable. Before a full
+launch receipt can be written, the launch runbook must instead reserve
+`116,640` samples: the same `16,384` training-time allowance plus the exact
+`100,256` images required by matched formal 50K post-evaluation and prefix
+diagnostics. The terminal completion audit revalidates this aggregate runway.
+This prevents a 300K training launch that fits its checkpoints but can only
+discover after training that formal evaluation no longer fits on disk.
+
 ## Authorization boundary
 
 The full runbook still requires a source-bound passing stability 50K promotion

@@ -10,6 +10,7 @@ from cofitok.reporting import file_sha256, write_json_report
 try:
     from scripts.build_generation_full_readiness import (
         _read_json,
+        FULL_COMPLETION_SAMPLE_RESERVE,
         require_absent_training_state,
         source_identities,
         validate_full_storage_capacity,
@@ -18,6 +19,7 @@ try:
 except ModuleNotFoundError:
     from build_generation_full_readiness import (
         _read_json,
+        FULL_COMPLETION_SAMPLE_RESERVE,
         require_absent_training_state,
         source_identities,
         validate_full_storage_capacity,
@@ -98,6 +100,7 @@ def build_full_launch_receipt(
         expected_revision=expected_revision,
         expected_branch=expected_branch,
         expected_path=storage_path,
+        minimum_sample_count=FULL_COMPLETION_SAMPLE_RESERVE,
     )
     sources = source_identities(source_paths)
     selected_runtime = readiness["runtime_selection"]

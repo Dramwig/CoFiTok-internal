@@ -240,7 +240,7 @@ def test_stability_full_storage_requires_large_checkpoint_scaling(
     reference_bytes = 1_000
     checkpoint_bytes = 4_000
     checkpoint_reserve = 16 * checkpoint_bytes
-    sample_reserve = 16_384 * 256 * 1024
+    sample_reserve = 116_640 * 256 * 1024
     additional = 16 * 1024**3
     safety = 64 * 1024**3
     required = checkpoint_reserve + sample_reserve + additional + safety
@@ -267,7 +267,7 @@ def test_stability_full_storage_requires_large_checkpoint_scaling(
             "checkpoint_size_multiplier": 4.0,
             "checkpoint_bytes_each": checkpoint_bytes,
             "checkpoint_reserve_bytes": checkpoint_reserve,
-            "sample_count": 16_384,
+            "sample_count": 116_640,
             "estimated_sample_bytes_each": 256 * 1024,
             "sample_reserve_bytes": sample_reserve,
             "additional_bytes": additional,
@@ -284,6 +284,7 @@ def test_stability_full_storage_requires_large_checkpoint_scaling(
         expected_path=tmp_path,
     )
     assert evidence["checkpoint_size_multiplier"] == 4.0
+    assert evidence["sample_count"] == 116_640
 
     report["plan"]["checkpoint_size_multiplier"] = 3.99
     try:

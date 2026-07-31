@@ -38,6 +38,7 @@ try:
         verify_milestone_source_reports,
     )
     from scripts.build_generation_full_readiness import (
+        FULL_COMPLETION_SAMPLE_RESERVE,
         validate_full_storage_capacity,
         verify_readiness_report,
     )
@@ -65,6 +66,7 @@ except ModuleNotFoundError:
         verify_milestone_source_reports,
     )
     from build_generation_full_readiness import (
+        FULL_COMPLETION_SAMPLE_RESERVE,
         validate_full_storage_capacity,
         verify_readiness_report,
     )
@@ -507,6 +509,7 @@ def full_storage_capacity_evidence(
         expected_revision=expected_revision,
         expected_branch=expected_branch,
         expected_path=expected_path,
+        minimum_sample_count=FULL_COMPLETION_SAMPLE_RESERVE,
     )
 
 

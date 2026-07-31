@@ -33,11 +33,16 @@ def _write_json(path: Path, payload: dict) -> Path:
     return path
 
 
-def _storage_report(path: Path, *, multiplier: float = 4.0) -> dict:
+def _storage_report(
+    path: Path,
+    *,
+    multiplier: float = 4.0,
+    sample_count: int = 16_384,
+) -> dict:
     reference = 1_000
     checkpoint_bytes = math.ceil(reference * multiplier)
     checkpoint_reserve = 16 * checkpoint_bytes
-    sample_reserve = 16_384 * 256 * 1024
+    sample_reserve = sample_count * 256 * 1024
     additional = 16 * 1024**3
     safety = 64 * 1024**3
     required = checkpoint_reserve + sample_reserve + additional + safety
@@ -64,7 +69,7 @@ def _storage_report(path: Path, *, multiplier: float = 4.0) -> dict:
             "checkpoint_size_multiplier": multiplier,
             "checkpoint_bytes_each": checkpoint_bytes,
             "checkpoint_reserve_bytes": checkpoint_reserve,
-            "sample_count": 16_384,
+            "sample_count": sample_count,
             "estimated_sample_bytes_each": 256 * 1024,
             "sample_reserve_bytes": sample_reserve,
             "additional_bytes": additional,
@@ -132,6 +137,31 @@ def test_full_readiness_storage_requires_four_x_and_exact_arithmetic(
             expected_branch=BRANCH,
             expected_path=tmp_path,
         )
+
+
+def test_full_launch_storage_requires_formal_completion_runway(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(ValueError, match="sample_count was weakened"):
+        readiness.validate_full_storage_capacity(
+            _storage_report(tmp_path),
+            expected_revision=REVISION,
+            expected_branch=BRANCH,
+            expected_path=tmp_path,
+            minimum_sample_count=readiness.FULL_COMPLETION_SAMPLE_RESERVE,
+        )
+
+    evidence = readiness.validate_full_storage_capacity(
+        _storage_report(
+            tmp_path,
+            sample_count=readiness.FULL_COMPLETION_SAMPLE_RESERVE,
+        ),
+        expected_revision=REVISION,
+        expected_branch=BRANCH,
+        expected_path=tmp_path,
+        minimum_sample_count=readiness.FULL_COMPLETION_SAMPLE_RESERVE,
+    )
+    assert evidence["sample_count"] == 116_640
 
 
 def test_full_readiness_runtime_contract_uses_fixed_candidates_and_baseline(

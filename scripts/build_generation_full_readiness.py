@@ -45,6 +45,11 @@ RUNTIME_BASELINE = (1, 64)
 EXPECTED_EFFECTIVE_BATCH = 64
 EXPECTED_COFITOK_PARAMETERS = 250_153_763
 EXPECTED_DENSE_PARAMETERS = 250_135_043
+READINESS_SAMPLE_RESERVE = 16_384
+FORMAL_POSTEVAL_SAMPLE_RESERVE = 100_256
+FULL_COMPLETION_SAMPLE_RESERVE = (
+    READINESS_SAMPLE_RESERVE + FORMAL_POSTEVAL_SAMPLE_RESERVE
+)
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -89,7 +94,10 @@ def validate_full_storage_capacity(
     expected_revision: str,
     expected_branch: str,
     expected_path: Path,
+    minimum_sample_count: int = READINESS_SAMPLE_RESERVE,
 ) -> dict[str, Any]:
+    if minimum_sample_count < READINESS_SAMPLE_RESERVE:
+        raise ValueError("stability full minimum sample reserve was weakened")
     if (
         report.get("schema_version") != 2
         or report.get("role") != "generation_storage_capacity_preflight"
@@ -109,7 +117,7 @@ def validate_full_storage_capacity(
     plan = report.get("plan", {})
     minimums = {
         "checkpoint_count": 16,
-        "sample_count": 16_384,
+        "sample_count": minimum_sample_count,
         "estimated_sample_bytes_each": 256 * 1024,
         "additional_bytes": 16 * 1024**3,
         "safety_margin_bytes": 64 * 1024**3,
@@ -152,6 +160,7 @@ def validate_full_storage_capacity(
         "checkpoint_size_multiplier": multiplier,
         "checkpoint_bytes_each": checkpoint_bytes,
         "checkpoint_count": int(plan["checkpoint_count"]),
+        "sample_count": int(plan["sample_count"]),
         "required_free_bytes": required,
         "free_bytes": free,
         "headroom_bytes": free - required,

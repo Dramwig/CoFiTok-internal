@@ -84,11 +84,14 @@ def _patch_dependencies(
     monkeypatch.setattr(
         launch,
         "validate_full_storage_capacity",
-        lambda *a, **k: {
-            "required_free_bytes": 100,
-            "free_bytes": 200,
-            "headroom_bytes": 100,
-        },
+        lambda *a, **k: (
+            {
+                "required_free_bytes": 100,
+                "free_bytes": 200,
+                "headroom_bytes": 100,
+                "sample_count": k["minimum_sample_count"],
+            }
+        ),
     )
 
 
@@ -105,6 +108,7 @@ def test_full_launch_receipt_binds_sources_runtime_and_paths(
     assert report["role"] == "stability_full_training_launch_receipt"
     assert report["readiness_sha256"] == READINESS_SHA
     assert report["runtime_selection"]["effective_batch_size"] == 64
+    assert report["launch_storage_capacity"]["sample_count"] == 116_640
     assert report["training_state_absent_at_launch"] is True
     assert report["full_training_launch_authorized"] is True
     assert set(report["source_reports"]) == set(sources)
