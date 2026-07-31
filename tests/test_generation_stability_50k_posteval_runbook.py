@@ -15,6 +15,8 @@ def test_stability_50k_posteval_is_decision_and_revision_bound() -> None:
     assert "EXPECTED_STABILITY_DECISION_SHA256" in source
     assert "EXPECTED_TARGET_REVISION" in source
     assert "EXPECTED_TARGET_BRANCH" in source
+    assert "EXPECTED_TRAINING_REVISION" in source
+    assert "EXPECTED_TRAINING_BRANCH" in source
     assert "scripts/validate_generation_stability_scaling_decision.py" in source
     assert "scripts/build_generation_stability_50k_summary.py" in source
     assert source.index(
@@ -29,6 +31,10 @@ def test_stability_50k_posteval_uses_formal_ema_gate_protocol() -> None:
     assert source.count("--sample-steps 100") == 3
     assert source.count("--weights ema") >= 5
     assert "--source-profile stability_scaling" in source
+    assert '--expected-training-revision "$EXPECTED_TRAINING_REVISION"' in source
+    assert '--expected-training-branch "$EXPECTED_TRAINING_BRANCH"' in source
+    assert '--expected-evaluation-revision "$EXPECTED_TARGET_REVISION"' in source
+    assert '--expected-evaluation-branch "$EXPECTED_TARGET_BRANCH"' in source
     assert "--min-coarse-token-energy-ratio 0.05" in source
     assert "--sources-only" in source
     assert "scripts/validate_generation_gate_report.py" in source

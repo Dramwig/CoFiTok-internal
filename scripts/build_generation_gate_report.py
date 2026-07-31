@@ -34,6 +34,16 @@ def parse_args() -> argparse.Namespace:
         choices=sorted(GATE_SOURCE_SUFFIXES),
         help="Authoritative path profile; defaults to the scientific gate stage.",
     )
+    parser.add_argument("--expected-training-revision")
+    parser.add_argument(
+        "--expected-training-branch",
+        default="scale/generative-system",
+    )
+    parser.add_argument("--expected-evaluation-revision")
+    parser.add_argument(
+        "--expected-evaluation-branch",
+        default="scale/generative-system",
+    )
     parser.add_argument("--min-samples", type=int, default=10_000)
     parser.add_argument("--max-fid-regression", type=float, default=0.05)
     parser.add_argument("--max-absolute-fid", type=float, default=100.0)
@@ -250,6 +260,10 @@ def build_report(
     max_precision_regression: float = 0.05,
     max_recall_regression: float = 0.05,
     require_stride_partition: bool = False,
+    expected_training_revision: str | None = None,
+    expected_training_branch: str = "scale/generative-system",
+    expected_evaluation_revision: str | None = None,
+    expected_evaluation_branch: str = "scale/generative-system",
 ) -> dict[str, Any]:
     if stage not in {"scaling", "full"}:
         raise ValueError("stage must be scaling or full")
@@ -271,6 +285,17 @@ def build_report(
         for value in quality_thresholds.values()
     ):
         raise ValueError("precision/recall thresholds must be finite and in [0, 1]")
+    for name, revision in (
+        ("expected_training_revision", expected_training_revision),
+        ("expected_evaluation_revision", expected_evaluation_revision),
+    ):
+        if revision is not None and (
+            len(revision) != 40
+            or any(character not in "0123456789abcdef" for character in revision)
+        ):
+            raise ValueError(f"{name} must be a lowercase 40-character Git revision")
+    if not expected_training_branch or not expected_evaluation_branch:
+        raise ValueError("expected Git branches must be non-empty")
     cofitok_quality = _quality_metrics(cofitok_generation)
     dense_quality = _quality_metrics(dense_generation)
     cofitok_fid = cofitok_quality["frechet_inception_distance"]
@@ -348,6 +373,22 @@ def build_report(
     dense_revision = str(dense_training.get("git", {}).get("revision", ""))
     cofitok_branch = str(cofitok_training.get("git", {}).get("branch", ""))
     dense_branch = str(dense_training.get("git", {}).get("branch", ""))
+    required_evaluation_revision = expected_evaluation_revision
+    if required_evaluation_revision is None and stage == "full":
+        required_evaluation_revision = cofitok_revision
+
+    def evaluation_git_matches(identity: dict[str, Any]) -> bool:
+        revision = str(identity.get("revision", ""))
+        return (
+            len(revision) == 40
+            and identity.get("branch") == expected_evaluation_branch
+            and identity.get("tracked_dirty") is False
+            and (
+                required_evaluation_revision is None
+                or revision == required_evaluation_revision
+            )
+        )
+
     cofitok_cost = training_cost_summary(cofitok_training)
     dense_cost = training_cost_summary(dense_training)
     pair_contract = generation_pair_contract(
@@ -373,12 +414,18 @@ def build_report(
             "matched_training_revision",
             len(cofitok_revision) == 40
             and cofitok_revision == dense_revision
-            and cofitok_branch == dense_branch == "scale/generative-system",
+            and cofitok_branch == dense_branch == expected_training_branch
+            and (
+                expected_training_revision is None
+                or cofitok_revision == expected_training_revision
+            ),
             {
                 "cofitok_revision": cofitok_revision,
                 "dense_revision": dense_revision,
                 "cofitok_branch": cofitok_branch,
                 "dense_branch": dense_branch,
+                "expected_revision": expected_training_revision,
+                "expected_branch": expected_training_branch,
             },
         ),
         _gate(
@@ -440,19 +487,14 @@ def build_report(
         ),
         _gate(
             "matched_evaluator_code_provenance",
-            len(str(evaluator_git_pair[0].get("revision", ""))) == 40
-            and evaluator_git_pair[0] == evaluator_git_pair[1]
-            and evaluator_git_pair[0].get("branch") == "scale/generative-system"
-            and evaluator_git_pair[0].get("tracked_dirty") is False
-            and (
-                stage != "full"
-                or evaluator_git_pair[0].get("revision") == cofitok_revision
-            ),
+            evaluator_git_pair[0] == evaluator_git_pair[1]
+            and evaluation_git_matches(evaluator_git_pair[0]),
             {
                 "stage": stage,
                 "cofitok": evaluator_git_pair[0],
                 "dense_identity": evaluator_git_pair[1],
-                "full_training_revision": cofitok_revision if stage == "full" else None,
+                "expected_revision": required_evaluation_revision,
+                "expected_branch": expected_evaluation_branch,
             },
         ),
         _gate(
@@ -575,16 +617,14 @@ def build_report(
         ),
         _gate(
             "matched_sampling_code_provenance",
-            len(str(cofitok_sampling_git.get("revision", ""))) == 40
-            and cofitok_sampling_git == dense_sampling_git
-            and cofitok_sampling_git.get("branch") == "scale/generative-system"
-            and cofitok_sampling_git.get("tracked_dirty") is False
-            and (stage != "full" or cofitok_sampling_git.get("revision") == cofitok_revision),
+            cofitok_sampling_git == dense_sampling_git
+            and evaluation_git_matches(cofitok_sampling_git),
             {
                 "stage": stage,
                 "cofitok": cofitok_sampling_git,
                 "dense_identity": dense_sampling_git,
-                "full_training_revision": cofitok_revision if stage == "full" else None,
+                "expected_revision": required_evaluation_revision,
+                "expected_branch": expected_evaluation_branch,
             },
         ),
         _gate(
@@ -629,21 +669,14 @@ def build_report(
         ),
         _gate(
             "matched_checkpoint_evaluator_code_provenance",
-            len(str(checkpoint_evaluator_git_pair[0].get("revision", ""))) == 40
-            and checkpoint_evaluator_git_pair[0] == checkpoint_evaluator_git_pair[1]
-            and checkpoint_evaluator_git_pair[0].get("branch")
-            == "scale/generative-system"
-            and checkpoint_evaluator_git_pair[0].get("tracked_dirty") is False
-            and (
-                stage != "full"
-                or checkpoint_evaluator_git_pair[0].get("revision")
-                == cofitok_revision
-            ),
+            checkpoint_evaluator_git_pair[0] == checkpoint_evaluator_git_pair[1]
+            and evaluation_git_matches(checkpoint_evaluator_git_pair[0]),
             {
                 "stage": stage,
                 "cofitok": checkpoint_evaluator_git_pair[0],
                 "dense_identity": checkpoint_evaluator_git_pair[1],
-                "full_training_revision": cofitok_revision if stage == "full" else None,
+                "expected_revision": required_evaluation_revision,
+                "expected_branch": expected_evaluation_branch,
             },
         ),
         _gate(
@@ -760,6 +793,12 @@ def build_report(
         "stage": stage,
         "status": "pass" if passed else "fail",
         "decision": pass_decision if passed else "hold",
+        "provenance_contract": {
+            "training_revision": expected_training_revision,
+            "training_branch": expected_training_branch,
+            "evaluation_revision": required_evaluation_revision,
+            "evaluation_branch": expected_evaluation_branch,
+        },
         "thresholds": {
             "min_samples": min_samples,
             "max_fid_regression": max_fid_regression,
@@ -811,6 +850,10 @@ def main() -> None:
         max_precision_regression=args.max_precision_regression,
         max_recall_regression=args.max_recall_regression,
         require_stride_partition=args.source_profile == "stability_scaling",
+        expected_training_revision=args.expected_training_revision,
+        expected_training_branch=args.expected_training_branch,
+        expected_evaluation_revision=args.expected_evaluation_revision,
+        expected_evaluation_branch=args.expected_evaluation_branch,
     )
     report["source_reports"] = build_generation_gate_source_reports(
         stage=args.stage,

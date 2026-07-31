@@ -545,6 +545,88 @@ def test_generation_gate_rejects_dirty_checkpoint_evaluator_code() -> None:
     assert gate["passed"] is False
 
 
+def test_generation_gate_accepts_explicit_training_and_evaluation_identities() -> None:
+    training_revision = "1" * 40
+    evaluation_revision = "2" * 40
+    training_branch = "scale/generation-stability-50k-preflight"
+    evaluation_branch = "scale/generation-stability-50k-posteval"
+    cofitok_training = _training(100_500, 8)
+    dense_training = _training(100_000, 1)
+    cofitok_training["git"].update(
+        revision=training_revision,
+        branch=training_branch,
+    )
+    dense_training["git"].update(
+        revision=training_revision,
+        branch=training_branch,
+    )
+    cofitok_generation = _generation(20.5, 8, "a" * 64)
+    dense_generation = _generation(20.0, 1, "b" * 64)
+    for generation in (cofitok_generation, dense_generation):
+        generation["git"].update(
+            revision=evaluation_revision,
+            branch=evaluation_branch,
+        )
+        generation["sample_provenance"]["git"].update(
+            revision=evaluation_revision,
+            branch=evaluation_branch,
+        )
+    cofitok_checkpoint = _checkpoint(0.1, "a" * 64)
+    dense_checkpoint = _checkpoint(0.1, "b" * 64)
+    for checkpoint in (cofitok_checkpoint, dense_checkpoint):
+        checkpoint["git"].update(
+            revision=evaluation_revision,
+            branch=evaluation_branch,
+        )
+
+    report = build_report(
+        cofitok_training=cofitok_training,
+        dense_training=dense_training,
+        cofitok_generation=cofitok_generation,
+        dense_generation=dense_generation,
+        cofitok_checkpoint=cofitok_checkpoint,
+        dense_checkpoint=dense_checkpoint,
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+        expected_training_revision=training_revision,
+        expected_training_branch=training_branch,
+        expected_evaluation_revision=evaluation_revision,
+        expected_evaluation_branch=evaluation_branch,
+    )
+
+    assert report["status"] == "pass"
+    assert report["provenance_contract"] == {
+        "training_revision": training_revision,
+        "training_branch": training_branch,
+        "evaluation_revision": evaluation_revision,
+        "evaluation_branch": evaluation_branch,
+    }
+
+
+def test_generation_gate_rejects_wrong_explicit_evaluation_revision() -> None:
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(20.5, 8, "a" * 64),
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+        expected_evaluation_revision="2" * 40,
+    )
+
+    for name in (
+        "matched_evaluator_code_provenance",
+        "matched_sampling_code_provenance",
+        "matched_checkpoint_evaluator_code_provenance",
+    ):
+        gate = next(row for row in report["gates"] if row["name"] == name)
+        assert gate["passed"] is False
+
+
 def test_generation_gate_requires_positive_sampling_elapsed_time() -> None:
     cofitok = _generation(20.0, 8, "a" * 64)
     cofitok["sample_provenance"]["sampling_progress"][

@@ -11,6 +11,8 @@ EXPECTED_SOURCE_REVISION=59db142fc45d69dc92bb0333be5ac2d0162d9dc4
 EXPECTED_STABILITY_DECISION_SHA256=${EXPECTED_STABILITY_DECISION_SHA256:?set the passing 5K stability decision SHA256}
 EXPECTED_TARGET_REVISION=${EXPECTED_TARGET_REVISION:?set the clean deployed stability-scaling revision}
 EXPECTED_TARGET_BRANCH=${EXPECTED_TARGET_BRANCH:-scale/generation-stability}
+EXPECTED_TRAINING_REVISION=${EXPECTED_TRAINING_REVISION:-$EXPECTED_TARGET_REVISION}
+EXPECTED_TRAINING_BRANCH=${EXPECTED_TRAINING_BRANCH:-$EXPECTED_TARGET_BRANCH}
 
 COFITOK_CONFIG=configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json
 DENSE_CONFIG=configs/generation/imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k.json
@@ -54,8 +56,8 @@ mkdir -p "$REPORT_ROOT"
   --dense-training "$DENSE_RUN/training_report.json" \
   --decision-validation "$DECISION_VALIDATION" \
   --config-validation "$CONFIG_VALIDATION" \
-  --expected-revision "$EXPECTED_TARGET_REVISION" \
-  --expected-branch "$EXPECTED_TARGET_BRANCH" \
+  --expected-revision "$EXPECTED_TRAINING_REVISION" \
+  --expected-branch "$EXPECTED_TRAINING_BRANCH" \
   --output "$PAIR_SUMMARY" >/dev/null
 
 [[ -f "$COFITOK_CHECKPOINT" ]]
@@ -207,6 +209,10 @@ fi
   --output "$PROMOTION_GATE" \
   --stage scaling \
   --source-profile stability_scaling \
+  --expected-training-revision "$EXPECTED_TRAINING_REVISION" \
+  --expected-training-branch "$EXPECTED_TRAINING_BRANCH" \
+  --expected-evaluation-revision "$EXPECTED_TARGET_REVISION" \
+  --expected-evaluation-branch "$EXPECTED_TARGET_BRANCH" \
   --min-samples 10000 \
   --max-absolute-fid 100.0 \
   --min-coarse-token-energy-ratio 0.05 \
