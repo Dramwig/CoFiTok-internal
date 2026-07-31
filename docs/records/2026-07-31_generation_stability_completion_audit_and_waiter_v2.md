@@ -79,6 +79,10 @@ Git identity and CPU runtime-environment SHA256 in each EMA artifact export
 report. The release audit now requires export, GPU preflight, and inference
 smoke to bind the expected clean export revision; preflight and smoke must also
 share the same recomputed runtime environment.
+Commit `6af34e8641fc9cf4773e5c746739f3cb47b916a3` additionally requires the
+CoFiTok and dense exports to share one export runtime environment and one GPU
+preflight/smoke runtime environment; a self-consistent but cross-method drift is
+therefore rejected.
 
 Evidence:
 
