@@ -44,6 +44,13 @@ def _identity(path: Path) -> dict[str, Any]:
     }
 
 
+def _stable_identity(identity: dict[str, Any]) -> dict[str, Any]:
+    return {
+        key: identity[key]
+        for key in ("path", "bytes", "sha256", "device", "inode")
+    }
+
+
 def _receipt_path(deployment_root: Path, revision: str) -> Path:
     return deployment_root / "deployments" / revision / "deployment_receipt.json"
 
@@ -420,8 +427,8 @@ def verify_deployment_pack_dedup_result(
         current_source = _identity(source)
         current_target = _identity(target)
         if (
-            current_source != item["source"]
-            or current_target != item["target"]
+            _stable_identity(current_source) != _stable_identity(item["source"])
+            or _stable_identity(current_target) != _stable_identity(item["target"])
             or not os.path.samefile(source, target)
         ):
             raise ValueError("deployment pack dedup hardlink changed")

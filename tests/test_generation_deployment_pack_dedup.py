@@ -160,6 +160,14 @@ def test_apply_hardlinks_pack_and_preserves_git_identity(
         expected_result_sha256=file_sha256(result_path),
     )["status"] == "pass"
 
+    extra_link = tmp_path / "extra-pack-link"
+    os.link(result["applied"][0]["source"]["path"], extra_link)
+    assert dedup.verify_deployment_pack_dedup_result(
+        json.loads(result_path.read_text(encoding="utf-8")),
+        result_path=result_path,
+        expected_result_sha256=file_sha256(result_path),
+    )["status"] == "pass"
+
 
 def test_apply_rejects_allowlist_or_pack_drift_before_replacement(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
