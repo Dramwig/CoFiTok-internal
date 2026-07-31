@@ -1,0 +1,1946 @@
+{
+  "benchmark_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/runtime_preflight",
+  "candidates": [
+    {
+      "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+      "effective_batch_size": 64,
+      "eligible": true,
+      "gradient_accumulation_steps": 4,
+      "ineligible_reasons": [],
+      "max_memory_fraction": 0.1493647253005552,
+      "methods": {
+        "cofitok": {
+          "benchmark_steps": 8,
+          "checkpoint_written": false,
+          "config": {
+            "data": {
+              "batch_size": 16,
+              "channels": 3,
+              "class_conditional": true,
+              "dataset": "imagenet_256_10pct",
+              "image_size": 256,
+              "num_workers": 8,
+              "persistent_workers": true,
+              "prefetch_factor": 2,
+              "random_horizontal_flip_prob": 0.5,
+              "root": "/root/autodl-tmp/CoFiTok/datasets"
+            },
+            "diffusion": {
+              "beta_end": 0.02,
+              "beta_start": 0.0001,
+              "num_train_timesteps": 1000,
+              "prediction_target": "epsilon",
+              "schedule_type": "cosine"
+            },
+            "loss": {
+              "component_decorrelation_start_step": 0,
+              "component_decorrelation_warmup_steps": 0,
+              "component_decorrelation_weight": 0.0,
+              "denoise_path_component_weight": 0.1,
+              "denoise_path_energy_capacity_power": 0.5,
+              "denoise_path_energy_capacity_weight": 0.75,
+              "denoise_path_energy_mode": "hellinger_stable",
+              "denoise_path_energy_weight": 0.15,
+              "denoise_path_prefix_weight": 0.05,
+              "denoise_path_progress_mode": "token_capacity",
+              "denoise_path_progress_power": 1.0,
+              "ema_teacher_consistency_batch_fraction": 0.0625,
+              "ema_teacher_consistency_start_step": 30000,
+              "ema_teacher_consistency_warmup_steps": 10000,
+              "ema_teacher_consistency_weight": 0.25,
+              "energy_budget_scope": "batch",
+              "energy_budget_weight": 0.0,
+              "energy_target": [],
+              "epsilon_band_component_weight": 0.0,
+              "epsilon_band_prefix_weight": 0.0,
+              "epsilon_weight": 1.0,
+              "group_residual_size": 0,
+              "group_residual_weight": 0.0,
+              "low_snr_high_frequency_power": 0.5,
+              "low_snr_high_frequency_weight": 0.5,
+              "monotonic_margin": 0.0,
+              "monotonic_weight": 0.0,
+              "prefix_weight": 0.0,
+              "residual_component_weight": 0.0,
+              "rollout_consistency_batch_fraction": 0.125,
+              "rollout_consistency_clip_x0": true,
+              "rollout_consistency_mode": "clipped_x0",
+              "rollout_consistency_start_step": 0,
+              "rollout_consistency_timestep_delta": 10,
+              "rollout_consistency_unroll_steps": 2,
+              "rollout_consistency_warmup_steps": 10000,
+              "rollout_consistency_weight": 0.1,
+              "sampled_component_weight": 0.0,
+              "sampled_prefix_weight": 0.0,
+              "tail_early_dropout_prob": 0.0,
+              "tail_early_dropout_start": 1,
+              "tail_early_dropout_weight": 0.0,
+              "tail_endpoint_weight": 0.0,
+              "tail_floor_min_ratio": 0.0,
+              "tail_floor_weight": 0.0,
+              "tail_late_monotonic_margin": 0.0,
+              "tail_late_monotonic_start": 0,
+              "tail_late_monotonic_weight": 0.0,
+              "tail_late_prefix_start": 0,
+              "tail_late_prefix_weight": 0.0,
+              "tail_replay_weight": 0.0,
+              "zero_token_weight": 0.0
+            },
+            "model": {
+              "base_channels": 128,
+              "class_dropout_prob": 0.1,
+              "deep_synthesis_depth": 3,
+              "deep_synthesis_hidden_channels": 0,
+              "gamma_mode": "fixed_one",
+              "image_channels": 3,
+              "image_size": 256,
+              "num_classes": 1000,
+              "predictor_attention_resolutions": [
+                32,
+                16
+              ],
+              "predictor_channel_multipliers": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "predictor_depth": 3,
+              "predictor_dropout": 0.0,
+              "predictor_gradient_checkpointing": true,
+              "predictor_multiscale_levels": 2,
+              "predictor_num_heads": 8,
+              "predictor_num_res_blocks": 2,
+              "predictor_type": "scalable_unet",
+              "predictor_use_feedback": true,
+              "synthesis_active_token_channels": [],
+              "synthesis_kernel_size": 1,
+              "synthesis_mode": "fixed_basis",
+              "synthesis_token_strides": [],
+              "token_channel_schedule": [
+                4,
+                4,
+                8,
+                8,
+                8,
+                1,
+                1,
+                1
+              ],
+              "token_channels": 8,
+              "token_count": 8,
+              "token_spatial_strides": [
+                16,
+                16,
+                8,
+                8,
+                4,
+                1,
+                1,
+                1
+              ]
+            },
+            "name": "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k",
+            "optimization": {
+              "betas": [
+                0.9,
+                0.99
+              ],
+              "ema_decay": 0.9999,
+              "ema_warmup_steps": 2000,
+              "grad_clip_norm": 1.0,
+              "gradient_accumulation_steps": 4,
+              "learning_rate": 0.0001,
+              "log_interval": 50,
+              "min_learning_rate": 1e-05,
+              "visualization_count": 8,
+              "warmup_steps": 1000,
+              "weight_decay": 0.01
+            },
+            "runtime": {
+              "allow_tf32": true,
+              "checkpoint_interval": 5000,
+              "compile_model": false,
+              "cudnn_benchmark": false,
+              "device": "cuda",
+              "evaluation_interval": 1000,
+              "keep_last_checkpoints": 3,
+              "precision": "bf16",
+              "protected_checkpoint_steps": [],
+              "seed": 2027,
+              "steps": 50000
+            }
+          },
+          "config_path": "/tmp/cofitok-stability-50k-preflight-2c2c1f5/configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json",
+          "dataset_provenance": {
+            "dataset": "imagenet_256_10pct",
+            "dataset_root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct",
+            "formal": true,
+            "identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+            "issues": [],
+            "manifest": {
+              "bytes": 54885982,
+              "relative_path": "metadata/image_manifest.jsonl",
+              "sha256": "dcdd622564941ad418fffa960051f14f0ad41852c681ed9a8329c5e6f561cca7"
+            },
+            "schema_version": 1,
+            "splits": {
+              "train": 128161,
+              "val": 50000
+            },
+            "status": "pass"
+          },
+          "device": "cuda",
+          "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+          "device_total_memory_bytes": 101976440832,
+          "durations_seconds": [
+            3.946615867316723,
+            2.890127195045352,
+            2.8396806828677654,
+            3.0097007732838392,
+            2.8252517729997635,
+            2.8195295818150043,
+            2.8292045909911394,
+            2.8298962395638227
+          ],
+          "effective_batch_size": 64,
+          "git": {
+            "branch": "scale/generation-stability-50k-preflight",
+            "dirty": false,
+            "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+          },
+          "gradient_accumulation_steps": 4,
+          "images_per_second": 22.38641042457287,
+          "last_metrics": {
+            "component_decorrelation": 0.0,
+            "cumulative_elapsed_seconds": 23.99128770828247,
+            "denoise_path_component": 0.0281996070407331,
+            "denoise_path_energy": 0.009027003543451428,
+            "denoise_path_prefix": 0.24732289463281631,
+            "elapsed_seconds": 23.99128770828247,
+            "ema_decay": 0.0039996,
+            "ema_teacher_consistency": 0.0,
+            "ema_teacher_consistency_scale": 0.0,
+            "energy_budget": 0.0,
+            "epsilon": 0.9996887594461441,
+            "epsilon_band_component": 0.0,
+            "epsilon_band_prefix": 0.0,
+            "grad_norm": 765.6375122070312,
+            "group_residual": 0.0,
+            "learning_rate": 8.000000000000001e-07,
+            "low_snr_high_frequency": 0.5539392530918121,
+            "monotonic": 0.0,
+            "prefix": 0.0,
+            "residual_component": 0.0,
+            "rollout_consistency": 0.41694046556949615,
+            "rollout_consistency_scale": 0.0007999999797903001,
+            "sampled_budget": 0.0,
+            "sampled_component": 0.0,
+            "sampled_prefix": 0.0,
+            "samples_seen": 512,
+            "step": 8,
+            "tail_floor": 0.0,
+            "total": 1.2932318449020386,
+            "zero_token": 0.0
+          },
+          "mean_optimizer_step_seconds": 2.8588772735868893,
+          "measured_durations_seconds": [
+            2.8396806828677654,
+            3.0097007732838392,
+            2.8252517729997635,
+            2.8195295818150043,
+            2.8292045909911394,
+            2.8298962395638227
+          ],
+          "measured_steps": 6,
+          "median_optimizer_step_seconds": 2.829550415277481,
+          "micro_batch_size": 16,
+          "p95_optimizer_step_seconds": 3.0097007732838392,
+          "parameter_count": 62834083,
+          "peak_vram_bytes": 15231683072,
+          "role": "training_runtime_selection_only",
+          "runtime_environment": {
+            "device": {
+              "capability": [
+                12,
+                0
+              ],
+              "multi_processor_count": 188,
+              "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+              "total_memory_bytes": 101976440832,
+              "type": "cuda"
+            },
+            "environment_variables": {
+              "CUBLAS_WORKSPACE_CONFIG": null,
+              "CUDA_VISIBLE_DEVICES": null,
+              "PYTHONHASHSEED": null,
+              "PYTORCH_ALLOC_CONF": "expandable_segments:True"
+            },
+            "packages": {
+              "numpy": "2.2.6",
+              "pillow": "12.2.0",
+              "torch": "2.7.1+cu128",
+              "torchvision": "0.22.1+cu128",
+              "tqdm": "4.67.3"
+            },
+            "platform": {
+              "machine": "x86_64",
+              "release": "5.15.0-78-generic",
+              "system": "Linux"
+            },
+            "project_files": {
+              "pyproject.toml": {
+                "bytes": 791,
+                "path": "pyproject.toml",
+                "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+              },
+              "uv.lock": {
+                "bytes": 363675,
+                "path": "uv.lock",
+                "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+              }
+            },
+            "python": {
+              "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+              "implementation": "CPython",
+              "version": "3.10.20"
+            },
+            "schema_version": 1,
+            "torch": {
+              "cuda_matmul_allow_tf32": true,
+              "cuda_version": "12.8",
+              "cudnn_allow_tf32": true,
+              "cudnn_benchmark": false,
+              "cudnn_version": 90701,
+              "deterministic_algorithms": false,
+              "float32_matmul_precision": "high",
+              "num_interop_threads": 104,
+              "num_threads": 104,
+              "nvidia_driver_version": "590.44.01",
+              "version": "2.7.1+cu128"
+            }
+          },
+          "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+          "schema_version": 1,
+          "status": "completed",
+          "warmup_steps": 2
+        },
+        "dense_identity": {
+          "benchmark_steps": 8,
+          "checkpoint_written": false,
+          "config": {
+            "data": {
+              "batch_size": 16,
+              "channels": 3,
+              "class_conditional": true,
+              "dataset": "imagenet_256_10pct",
+              "image_size": 256,
+              "num_workers": 8,
+              "persistent_workers": true,
+              "prefetch_factor": 2,
+              "random_horizontal_flip_prob": 0.5,
+              "root": "/root/autodl-tmp/CoFiTok/datasets"
+            },
+            "diffusion": {
+              "beta_end": 0.02,
+              "beta_start": 0.0001,
+              "num_train_timesteps": 1000,
+              "prediction_target": "epsilon",
+              "schedule_type": "cosine"
+            },
+            "loss": {
+              "component_decorrelation_start_step": 0,
+              "component_decorrelation_warmup_steps": 0,
+              "component_decorrelation_weight": 0.0,
+              "denoise_path_component_weight": 0.0,
+              "denoise_path_energy_capacity_power": 0.5,
+              "denoise_path_energy_capacity_weight": 0.0,
+              "denoise_path_energy_mode": "mse",
+              "denoise_path_energy_weight": 0.0,
+              "denoise_path_prefix_weight": 0.0,
+              "denoise_path_progress_mode": "power",
+              "denoise_path_progress_power": 1.0,
+              "ema_teacher_consistency_batch_fraction": 0.0625,
+              "ema_teacher_consistency_start_step": 30000,
+              "ema_teacher_consistency_warmup_steps": 10000,
+              "ema_teacher_consistency_weight": 0.25,
+              "energy_budget_scope": "batch",
+              "energy_budget_weight": 0.0,
+              "energy_target": [],
+              "epsilon_band_component_weight": 0.0,
+              "epsilon_band_prefix_weight": 0.0,
+              "epsilon_weight": 1.0,
+              "group_residual_size": 0,
+              "group_residual_weight": 0.0,
+              "low_snr_high_frequency_power": 1.0,
+              "low_snr_high_frequency_weight": 0.0,
+              "monotonic_margin": 0.0,
+              "monotonic_weight": 0.0,
+              "prefix_weight": 0.0,
+              "residual_component_weight": 0.0,
+              "rollout_consistency_batch_fraction": 0.125,
+              "rollout_consistency_clip_x0": true,
+              "rollout_consistency_mode": "clipped_x0",
+              "rollout_consistency_start_step": 0,
+              "rollout_consistency_timestep_delta": 10,
+              "rollout_consistency_unroll_steps": 2,
+              "rollout_consistency_warmup_steps": 10000,
+              "rollout_consistency_weight": 0.1,
+              "sampled_component_weight": 0.0,
+              "sampled_prefix_weight": 0.0,
+              "tail_early_dropout_prob": 0.0,
+              "tail_early_dropout_start": 1,
+              "tail_early_dropout_weight": 0.0,
+              "tail_endpoint_weight": 0.0,
+              "tail_floor_min_ratio": 0.0,
+              "tail_floor_weight": 0.0,
+              "tail_late_monotonic_margin": 0.0,
+              "tail_late_monotonic_start": 0,
+              "tail_late_monotonic_weight": 0.0,
+              "tail_late_prefix_start": 0,
+              "tail_late_prefix_weight": 0.0,
+              "tail_replay_weight": 0.0,
+              "zero_token_weight": 0.0
+            },
+            "model": {
+              "base_channels": 128,
+              "class_dropout_prob": 0.1,
+              "deep_synthesis_depth": 3,
+              "deep_synthesis_hidden_channels": 0,
+              "gamma_mode": "fixed_one",
+              "image_channels": 3,
+              "image_size": 256,
+              "num_classes": 1000,
+              "predictor_attention_resolutions": [
+                32,
+                16
+              ],
+              "predictor_channel_multipliers": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "predictor_depth": 3,
+              "predictor_dropout": 0.0,
+              "predictor_gradient_checkpointing": true,
+              "predictor_multiscale_levels": 2,
+              "predictor_num_heads": 8,
+              "predictor_num_res_blocks": 2,
+              "predictor_type": "scalable_unet",
+              "predictor_use_feedback": false,
+              "synthesis_active_token_channels": [],
+              "synthesis_kernel_size": 1,
+              "synthesis_mode": "dense_identity",
+              "synthesis_token_strides": [],
+              "token_channel_schedule": [],
+              "token_channels": 3,
+              "token_count": 1,
+              "token_spatial_strides": []
+            },
+            "name": "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k",
+            "optimization": {
+              "betas": [
+                0.9,
+                0.99
+              ],
+              "ema_decay": 0.9999,
+              "ema_warmup_steps": 2000,
+              "grad_clip_norm": 1.0,
+              "gradient_accumulation_steps": 4,
+              "learning_rate": 0.0001,
+              "log_interval": 50,
+              "min_learning_rate": 1e-05,
+              "visualization_count": 8,
+              "warmup_steps": 1000,
+              "weight_decay": 0.01
+            },
+            "runtime": {
+              "allow_tf32": true,
+              "checkpoint_interval": 5000,
+              "compile_model": false,
+              "cudnn_benchmark": false,
+              "device": "cuda",
+              "evaluation_interval": 1000,
+              "keep_last_checkpoints": 3,
+              "precision": "bf16",
+              "protected_checkpoint_steps": [],
+              "seed": 2027,
+              "steps": 50000
+            }
+          },
+          "config_path": "/tmp/cofitok-stability-50k-preflight-2c2c1f5/configs/generation/imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k.json",
+          "dataset_provenance": {
+            "dataset": "imagenet_256_10pct",
+            "dataset_root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct",
+            "formal": true,
+            "identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+            "issues": [],
+            "manifest": {
+              "bytes": 54885982,
+              "relative_path": "metadata/image_manifest.jsonl",
+              "sha256": "dcdd622564941ad418fffa960051f14f0ad41852c681ed9a8329c5e6f561cca7"
+            },
+            "schema_version": 1,
+            "splits": {
+              "train": 128161,
+              "val": 50000
+            },
+            "status": "pass"
+          },
+          "device": "cuda",
+          "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+          "device_total_memory_bytes": 101976440832,
+          "durations_seconds": [
+            3.5357705987989902,
+            2.5607542544603348,
+            2.5603610146790743,
+            2.5620975866913795,
+            2.6740402784198523,
+            2.560364378616214,
+            2.562396664172411,
+            2.559972669929266
+          ],
+          "effective_batch_size": 64,
+          "git": {
+            "branch": "scale/generation-stability-50k-preflight",
+            "dirty": false,
+            "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+          },
+          "gradient_accumulation_steps": 4,
+          "images_per_second": 24.807431357149603,
+          "last_metrics": {
+            "component_decorrelation": 0.0,
+            "cumulative_elapsed_seconds": 21.576568126678467,
+            "denoise_path_component": 0.0,
+            "denoise_path_energy": 0.0,
+            "denoise_path_prefix": 0.0,
+            "elapsed_seconds": 21.576568126678467,
+            "ema_decay": 0.0039996,
+            "ema_teacher_consistency": 0.0,
+            "ema_teacher_consistency_scale": 0.0,
+            "energy_budget": 0.0,
+            "epsilon": 0.9996681362390518,
+            "epsilon_band_component": 0.0,
+            "epsilon_band_prefix": 0.0,
+            "grad_norm": 1.0221985578536987,
+            "group_residual": 0.0,
+            "learning_rate": 8.000000000000001e-07,
+            "low_snr_high_frequency": 0.0,
+            "monotonic": 0.0,
+            "prefix": 0.0,
+            "residual_component": 0.0,
+            "rollout_consistency": 0.4169280678033829,
+            "rollout_consistency_scale": 0.0007999999797903001,
+            "sampled_budget": 0.0,
+            "sampled_component": 0.0,
+            "sampled_prefix": 0.0,
+            "samples_seen": 512,
+            "step": 8,
+            "tail_floor": 0.0,
+            "total": 0.9997014999389648,
+            "zero_token": 0.0
+          },
+          "mean_optimizer_step_seconds": 2.579872098751366,
+          "measured_durations_seconds": [
+            2.5603610146790743,
+            2.5620975866913795,
+            2.6740402784198523,
+            2.560364378616214,
+            2.562396664172411,
+            2.559972669929266
+          ],
+          "measured_steps": 6,
+          "median_optimizer_step_seconds": 2.5612309826537967,
+          "micro_batch_size": 16,
+          "p95_optimizer_step_seconds": 2.6740402784198523,
+          "parameter_count": 62824707,
+          "peak_vram_bytes": 15035527680,
+          "role": "training_runtime_selection_only",
+          "runtime_environment": {
+            "device": {
+              "capability": [
+                12,
+                0
+              ],
+              "multi_processor_count": 188,
+              "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+              "total_memory_bytes": 101976440832,
+              "type": "cuda"
+            },
+            "environment_variables": {
+              "CUBLAS_WORKSPACE_CONFIG": null,
+              "CUDA_VISIBLE_DEVICES": null,
+              "PYTHONHASHSEED": null,
+              "PYTORCH_ALLOC_CONF": "expandable_segments:True"
+            },
+            "packages": {
+              "numpy": "2.2.6",
+              "pillow": "12.2.0",
+              "torch": "2.7.1+cu128",
+              "torchvision": "0.22.1+cu128",
+              "tqdm": "4.67.3"
+            },
+            "platform": {
+              "machine": "x86_64",
+              "release": "5.15.0-78-generic",
+              "system": "Linux"
+            },
+            "project_files": {
+              "pyproject.toml": {
+                "bytes": 791,
+                "path": "pyproject.toml",
+                "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+              },
+              "uv.lock": {
+                "bytes": 363675,
+                "path": "uv.lock",
+                "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+              }
+            },
+            "python": {
+              "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+              "implementation": "CPython",
+              "version": "3.10.20"
+            },
+            "schema_version": 1,
+            "torch": {
+              "cuda_matmul_allow_tf32": true,
+              "cuda_version": "12.8",
+              "cudnn_allow_tf32": true,
+              "cudnn_benchmark": false,
+              "cudnn_version": 90701,
+              "deterministic_algorithms": false,
+              "float32_matmul_precision": "high",
+              "num_interop_threads": 104,
+              "num_threads": 104,
+              "nvidia_driver_version": "590.44.01",
+              "version": "2.7.1+cu128"
+            }
+          },
+          "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+          "schema_version": 1,
+          "status": "completed",
+          "warmup_steps": 2
+        }
+      },
+      "micro_batch_size": 16,
+      "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+      "selection_score_seconds": 2.8588772735868893
+    },
+    {
+      "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+      "effective_batch_size": 64,
+      "eligible": true,
+      "gradient_accumulation_steps": 2,
+      "ineligible_reasons": [],
+      "max_memory_fraction": 0.28453129749646056,
+      "methods": {
+        "cofitok": {
+          "benchmark_steps": 8,
+          "checkpoint_written": false,
+          "config": {
+            "data": {
+              "batch_size": 32,
+              "channels": 3,
+              "class_conditional": true,
+              "dataset": "imagenet_256_10pct",
+              "image_size": 256,
+              "num_workers": 8,
+              "persistent_workers": true,
+              "prefetch_factor": 2,
+              "random_horizontal_flip_prob": 0.5,
+              "root": "/root/autodl-tmp/CoFiTok/datasets"
+            },
+            "diffusion": {
+              "beta_end": 0.02,
+              "beta_start": 0.0001,
+              "num_train_timesteps": 1000,
+              "prediction_target": "epsilon",
+              "schedule_type": "cosine"
+            },
+            "loss": {
+              "component_decorrelation_start_step": 0,
+              "component_decorrelation_warmup_steps": 0,
+              "component_decorrelation_weight": 0.0,
+              "denoise_path_component_weight": 0.1,
+              "denoise_path_energy_capacity_power": 0.5,
+              "denoise_path_energy_capacity_weight": 0.75,
+              "denoise_path_energy_mode": "hellinger_stable",
+              "denoise_path_energy_weight": 0.15,
+              "denoise_path_prefix_weight": 0.05,
+              "denoise_path_progress_mode": "token_capacity",
+              "denoise_path_progress_power": 1.0,
+              "ema_teacher_consistency_batch_fraction": 0.0625,
+              "ema_teacher_consistency_start_step": 30000,
+              "ema_teacher_consistency_warmup_steps": 10000,
+              "ema_teacher_consistency_weight": 0.25,
+              "energy_budget_scope": "batch",
+              "energy_budget_weight": 0.0,
+              "energy_target": [],
+              "epsilon_band_component_weight": 0.0,
+              "epsilon_band_prefix_weight": 0.0,
+              "epsilon_weight": 1.0,
+              "group_residual_size": 0,
+              "group_residual_weight": 0.0,
+              "low_snr_high_frequency_power": 0.5,
+              "low_snr_high_frequency_weight": 0.5,
+              "monotonic_margin": 0.0,
+              "monotonic_weight": 0.0,
+              "prefix_weight": 0.0,
+              "residual_component_weight": 0.0,
+              "rollout_consistency_batch_fraction": 0.125,
+              "rollout_consistency_clip_x0": true,
+              "rollout_consistency_mode": "clipped_x0",
+              "rollout_consistency_start_step": 0,
+              "rollout_consistency_timestep_delta": 10,
+              "rollout_consistency_unroll_steps": 2,
+              "rollout_consistency_warmup_steps": 10000,
+              "rollout_consistency_weight": 0.1,
+              "sampled_component_weight": 0.0,
+              "sampled_prefix_weight": 0.0,
+              "tail_early_dropout_prob": 0.0,
+              "tail_early_dropout_start": 1,
+              "tail_early_dropout_weight": 0.0,
+              "tail_endpoint_weight": 0.0,
+              "tail_floor_min_ratio": 0.0,
+              "tail_floor_weight": 0.0,
+              "tail_late_monotonic_margin": 0.0,
+              "tail_late_monotonic_start": 0,
+              "tail_late_monotonic_weight": 0.0,
+              "tail_late_prefix_start": 0,
+              "tail_late_prefix_weight": 0.0,
+              "tail_replay_weight": 0.0,
+              "zero_token_weight": 0.0
+            },
+            "model": {
+              "base_channels": 128,
+              "class_dropout_prob": 0.1,
+              "deep_synthesis_depth": 3,
+              "deep_synthesis_hidden_channels": 0,
+              "gamma_mode": "fixed_one",
+              "image_channels": 3,
+              "image_size": 256,
+              "num_classes": 1000,
+              "predictor_attention_resolutions": [
+                32,
+                16
+              ],
+              "predictor_channel_multipliers": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "predictor_depth": 3,
+              "predictor_dropout": 0.0,
+              "predictor_gradient_checkpointing": true,
+              "predictor_multiscale_levels": 2,
+              "predictor_num_heads": 8,
+              "predictor_num_res_blocks": 2,
+              "predictor_type": "scalable_unet",
+              "predictor_use_feedback": true,
+              "synthesis_active_token_channels": [],
+              "synthesis_kernel_size": 1,
+              "synthesis_mode": "fixed_basis",
+              "synthesis_token_strides": [],
+              "token_channel_schedule": [
+                4,
+                4,
+                8,
+                8,
+                8,
+                1,
+                1,
+                1
+              ],
+              "token_channels": 8,
+              "token_count": 8,
+              "token_spatial_strides": [
+                16,
+                16,
+                8,
+                8,
+                4,
+                1,
+                1,
+                1
+              ]
+            },
+            "name": "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k",
+            "optimization": {
+              "betas": [
+                0.9,
+                0.99
+              ],
+              "ema_decay": 0.9999,
+              "ema_warmup_steps": 2000,
+              "grad_clip_norm": 1.0,
+              "gradient_accumulation_steps": 2,
+              "learning_rate": 0.0001,
+              "log_interval": 50,
+              "min_learning_rate": 1e-05,
+              "visualization_count": 8,
+              "warmup_steps": 1000,
+              "weight_decay": 0.01
+            },
+            "runtime": {
+              "allow_tf32": true,
+              "checkpoint_interval": 5000,
+              "compile_model": false,
+              "cudnn_benchmark": false,
+              "device": "cuda",
+              "evaluation_interval": 1000,
+              "keep_last_checkpoints": 3,
+              "precision": "bf16",
+              "protected_checkpoint_steps": [],
+              "seed": 2027,
+              "steps": 50000
+            }
+          },
+          "config_path": "/tmp/cofitok-stability-50k-preflight-2c2c1f5/configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json",
+          "dataset_provenance": {
+            "dataset": "imagenet_256_10pct",
+            "dataset_root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct",
+            "formal": true,
+            "identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+            "issues": [],
+            "manifest": {
+              "bytes": 54885982,
+              "relative_path": "metadata/image_manifest.jsonl",
+              "sha256": "dcdd622564941ad418fffa960051f14f0ad41852c681ed9a8329c5e6f561cca7"
+            },
+            "schema_version": 1,
+            "splits": {
+              "train": 128161,
+              "val": 50000
+            },
+            "status": "pass"
+          },
+          "device": "cuda",
+          "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+          "device_total_memory_bytes": 101976440832,
+          "durations_seconds": [
+            3.966470781713724,
+            2.7820452731102705,
+            2.7815687619149685,
+            2.780433176085353,
+            2.781515557318926,
+            2.9388210400938988,
+            2.782139502465725,
+            2.7844853326678276
+          ],
+          "effective_batch_size": 64,
+          "git": {
+            "branch": "scale/generation-stability-50k-preflight",
+            "dirty": false,
+            "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+          },
+          "gradient_accumulation_steps": 2,
+          "images_per_second": 22.790719616095906,
+          "last_metrics": {
+            "component_decorrelation": 0.0,
+            "cumulative_elapsed_seconds": 23.59861707687378,
+            "denoise_path_component": 0.029053772799670696,
+            "denoise_path_energy": 0.011449594516307116,
+            "denoise_path_prefix": 0.24140390753746033,
+            "elapsed_seconds": 23.59861707687378,
+            "ema_decay": 0.0039996,
+            "ema_teacher_consistency": 0.0,
+            "ema_teacher_consistency_scale": 0.0,
+            "energy_budget": 0.0,
+            "epsilon": 0.9992350041866302,
+            "epsilon_band_component": 0.0,
+            "epsilon_band_prefix": 0.0,
+            "grad_norm": 939.540283203125,
+            "group_residual": 0.0,
+            "learning_rate": 8.000000000000001e-07,
+            "low_snr_high_frequency": 0.5760479867458344,
+            "monotonic": 0.0,
+            "prefix": 0.0,
+            "residual_component": 0.0,
+            "rollout_consistency": 0.6291519999504089,
+            "rollout_consistency_scale": 0.0007999999797903001,
+            "sampled_budget": 0.0,
+            "sampled_component": 0.0,
+            "sampled_prefix": 0.0,
+            "samples_seen": 512,
+            "step": 8,
+            "tail_floor": 0.0,
+            "total": 1.3040024042129517,
+            "zero_token": 0.0
+          },
+          "mean_optimizer_step_seconds": 2.808160561757783,
+          "measured_durations_seconds": [
+            2.7815687619149685,
+            2.780433176085353,
+            2.781515557318926,
+            2.9388210400938988,
+            2.782139502465725,
+            2.7844853326678276
+          ],
+          "measured_steps": 6,
+          "median_optimizer_step_seconds": 2.7818541321903467,
+          "micro_batch_size": 32,
+          "p95_optimizer_step_seconds": 2.9388210400938988,
+          "parameter_count": 62834083,
+          "peak_vram_bytes": 29015489024,
+          "role": "training_runtime_selection_only",
+          "runtime_environment": {
+            "device": {
+              "capability": [
+                12,
+                0
+              ],
+              "multi_processor_count": 188,
+              "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+              "total_memory_bytes": 101976440832,
+              "type": "cuda"
+            },
+            "environment_variables": {
+              "CUBLAS_WORKSPACE_CONFIG": null,
+              "CUDA_VISIBLE_DEVICES": null,
+              "PYTHONHASHSEED": null,
+              "PYTORCH_ALLOC_CONF": "expandable_segments:True"
+            },
+            "packages": {
+              "numpy": "2.2.6",
+              "pillow": "12.2.0",
+              "torch": "2.7.1+cu128",
+              "torchvision": "0.22.1+cu128",
+              "tqdm": "4.67.3"
+            },
+            "platform": {
+              "machine": "x86_64",
+              "release": "5.15.0-78-generic",
+              "system": "Linux"
+            },
+            "project_files": {
+              "pyproject.toml": {
+                "bytes": 791,
+                "path": "pyproject.toml",
+                "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+              },
+              "uv.lock": {
+                "bytes": 363675,
+                "path": "uv.lock",
+                "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+              }
+            },
+            "python": {
+              "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+              "implementation": "CPython",
+              "version": "3.10.20"
+            },
+            "schema_version": 1,
+            "torch": {
+              "cuda_matmul_allow_tf32": true,
+              "cuda_version": "12.8",
+              "cudnn_allow_tf32": true,
+              "cudnn_benchmark": false,
+              "cudnn_version": 90701,
+              "deterministic_algorithms": false,
+              "float32_matmul_precision": "high",
+              "num_interop_threads": 104,
+              "num_threads": 104,
+              "nvidia_driver_version": "590.44.01",
+              "version": "2.7.1+cu128"
+            }
+          },
+          "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+          "schema_version": 1,
+          "status": "completed",
+          "warmup_steps": 2
+        },
+        "dense_identity": {
+          "benchmark_steps": 8,
+          "checkpoint_written": false,
+          "config": {
+            "data": {
+              "batch_size": 32,
+              "channels": 3,
+              "class_conditional": true,
+              "dataset": "imagenet_256_10pct",
+              "image_size": 256,
+              "num_workers": 8,
+              "persistent_workers": true,
+              "prefetch_factor": 2,
+              "random_horizontal_flip_prob": 0.5,
+              "root": "/root/autodl-tmp/CoFiTok/datasets"
+            },
+            "diffusion": {
+              "beta_end": 0.02,
+              "beta_start": 0.0001,
+              "num_train_timesteps": 1000,
+              "prediction_target": "epsilon",
+              "schedule_type": "cosine"
+            },
+            "loss": {
+              "component_decorrelation_start_step": 0,
+              "component_decorrelation_warmup_steps": 0,
+              "component_decorrelation_weight": 0.0,
+              "denoise_path_component_weight": 0.0,
+              "denoise_path_energy_capacity_power": 0.5,
+              "denoise_path_energy_capacity_weight": 0.0,
+              "denoise_path_energy_mode": "mse",
+              "denoise_path_energy_weight": 0.0,
+              "denoise_path_prefix_weight": 0.0,
+              "denoise_path_progress_mode": "power",
+              "denoise_path_progress_power": 1.0,
+              "ema_teacher_consistency_batch_fraction": 0.0625,
+              "ema_teacher_consistency_start_step": 30000,
+              "ema_teacher_consistency_warmup_steps": 10000,
+              "ema_teacher_consistency_weight": 0.25,
+              "energy_budget_scope": "batch",
+              "energy_budget_weight": 0.0,
+              "energy_target": [],
+              "epsilon_band_component_weight": 0.0,
+              "epsilon_band_prefix_weight": 0.0,
+              "epsilon_weight": 1.0,
+              "group_residual_size": 0,
+              "group_residual_weight": 0.0,
+              "low_snr_high_frequency_power": 1.0,
+              "low_snr_high_frequency_weight": 0.0,
+              "monotonic_margin": 0.0,
+              "monotonic_weight": 0.0,
+              "prefix_weight": 0.0,
+              "residual_component_weight": 0.0,
+              "rollout_consistency_batch_fraction": 0.125,
+              "rollout_consistency_clip_x0": true,
+              "rollout_consistency_mode": "clipped_x0",
+              "rollout_consistency_start_step": 0,
+              "rollout_consistency_timestep_delta": 10,
+              "rollout_consistency_unroll_steps": 2,
+              "rollout_consistency_warmup_steps": 10000,
+              "rollout_consistency_weight": 0.1,
+              "sampled_component_weight": 0.0,
+              "sampled_prefix_weight": 0.0,
+              "tail_early_dropout_prob": 0.0,
+              "tail_early_dropout_start": 1,
+              "tail_early_dropout_weight": 0.0,
+              "tail_endpoint_weight": 0.0,
+              "tail_floor_min_ratio": 0.0,
+              "tail_floor_weight": 0.0,
+              "tail_late_monotonic_margin": 0.0,
+              "tail_late_monotonic_start": 0,
+              "tail_late_monotonic_weight": 0.0,
+              "tail_late_prefix_start": 0,
+              "tail_late_prefix_weight": 0.0,
+              "tail_replay_weight": 0.0,
+              "zero_token_weight": 0.0
+            },
+            "model": {
+              "base_channels": 128,
+              "class_dropout_prob": 0.1,
+              "deep_synthesis_depth": 3,
+              "deep_synthesis_hidden_channels": 0,
+              "gamma_mode": "fixed_one",
+              "image_channels": 3,
+              "image_size": 256,
+              "num_classes": 1000,
+              "predictor_attention_resolutions": [
+                32,
+                16
+              ],
+              "predictor_channel_multipliers": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "predictor_depth": 3,
+              "predictor_dropout": 0.0,
+              "predictor_gradient_checkpointing": true,
+              "predictor_multiscale_levels": 2,
+              "predictor_num_heads": 8,
+              "predictor_num_res_blocks": 2,
+              "predictor_type": "scalable_unet",
+              "predictor_use_feedback": false,
+              "synthesis_active_token_channels": [],
+              "synthesis_kernel_size": 1,
+              "synthesis_mode": "dense_identity",
+              "synthesis_token_strides": [],
+              "token_channel_schedule": [],
+              "token_channels": 3,
+              "token_count": 1,
+              "token_spatial_strides": []
+            },
+            "name": "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k",
+            "optimization": {
+              "betas": [
+                0.9,
+                0.99
+              ],
+              "ema_decay": 0.9999,
+              "ema_warmup_steps": 2000,
+              "grad_clip_norm": 1.0,
+              "gradient_accumulation_steps": 2,
+              "learning_rate": 0.0001,
+              "log_interval": 50,
+              "min_learning_rate": 1e-05,
+              "visualization_count": 8,
+              "warmup_steps": 1000,
+              "weight_decay": 0.01
+            },
+            "runtime": {
+              "allow_tf32": true,
+              "checkpoint_interval": 5000,
+              "compile_model": false,
+              "cudnn_benchmark": false,
+              "device": "cuda",
+              "evaluation_interval": 1000,
+              "keep_last_checkpoints": 3,
+              "precision": "bf16",
+              "protected_checkpoint_steps": [],
+              "seed": 2027,
+              "steps": 50000
+            }
+          },
+          "config_path": "/tmp/cofitok-stability-50k-preflight-2c2c1f5/configs/generation/imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k.json",
+          "dataset_provenance": {
+            "dataset": "imagenet_256_10pct",
+            "dataset_root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct",
+            "formal": true,
+            "identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+            "issues": [],
+            "manifest": {
+              "bytes": 54885982,
+              "relative_path": "metadata/image_manifest.jsonl",
+              "sha256": "dcdd622564941ad418fffa960051f14f0ad41852c681ed9a8329c5e6f561cca7"
+            },
+            "schema_version": 1,
+            "splits": {
+              "train": 128161,
+              "val": 50000
+            },
+            "status": "pass"
+          },
+          "device": "cuda",
+          "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+          "device_total_memory_bytes": 101976440832,
+          "durations_seconds": [
+            3.7794236559420824,
+            2.5354354083538055,
+            2.5357324425131083,
+            2.5378030743449926,
+            2.538025099784136,
+            2.5380835365504026,
+            2.6881371308118105,
+            2.53640010394156
+          ],
+          "effective_batch_size": 64,
+          "git": {
+            "branch": "scale/generation-stability-50k-preflight",
+            "dirty": false,
+            "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+          },
+          "gradient_accumulation_steps": 2,
+          "images_per_second": 24.9769396048021,
+          "last_metrics": {
+            "component_decorrelation": 0.0,
+            "cumulative_elapsed_seconds": 21.690135717391968,
+            "denoise_path_component": 0.0,
+            "denoise_path_energy": 0.0,
+            "denoise_path_prefix": 0.0,
+            "elapsed_seconds": 21.690135717391968,
+            "ema_decay": 0.0039996,
+            "ema_teacher_consistency": 0.0,
+            "ema_teacher_consistency_scale": 0.0,
+            "energy_budget": 0.0,
+            "epsilon": 0.9992140829563141,
+            "epsilon_band_component": 0.0,
+            "epsilon_band_prefix": 0.0,
+            "grad_norm": 1.0270402431488037,
+            "group_residual": 0.0,
+            "learning_rate": 8.000000000000001e-07,
+            "low_snr_high_frequency": 0.0,
+            "monotonic": 0.0,
+            "prefix": 0.0,
+            "residual_component": 0.0,
+            "rollout_consistency": 0.6291249394416809,
+            "rollout_consistency_scale": 0.0007999999797903001,
+            "sampled_budget": 0.0,
+            "sampled_component": 0.0,
+            "sampled_prefix": 0.0,
+            "samples_seen": 512,
+            "step": 8,
+            "tail_floor": 0.0,
+            "total": 0.9992644190788269,
+            "zero_token": 0.0
+          },
+          "mean_optimizer_step_seconds": 2.562363564657668,
+          "measured_durations_seconds": [
+            2.5357324425131083,
+            2.5378030743449926,
+            2.538025099784136,
+            2.5380835365504026,
+            2.6881371308118105,
+            2.53640010394156
+          ],
+          "measured_steps": 6,
+          "median_optimizer_step_seconds": 2.5379140870645642,
+          "micro_batch_size": 32,
+          "p95_optimizer_step_seconds": 2.6881371308118105,
+          "parameter_count": 62824707,
+          "peak_vram_bytes": 28619368960,
+          "role": "training_runtime_selection_only",
+          "runtime_environment": {
+            "device": {
+              "capability": [
+                12,
+                0
+              ],
+              "multi_processor_count": 188,
+              "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+              "total_memory_bytes": 101976440832,
+              "type": "cuda"
+            },
+            "environment_variables": {
+              "CUBLAS_WORKSPACE_CONFIG": null,
+              "CUDA_VISIBLE_DEVICES": null,
+              "PYTHONHASHSEED": null,
+              "PYTORCH_ALLOC_CONF": "expandable_segments:True"
+            },
+            "packages": {
+              "numpy": "2.2.6",
+              "pillow": "12.2.0",
+              "torch": "2.7.1+cu128",
+              "torchvision": "0.22.1+cu128",
+              "tqdm": "4.67.3"
+            },
+            "platform": {
+              "machine": "x86_64",
+              "release": "5.15.0-78-generic",
+              "system": "Linux"
+            },
+            "project_files": {
+              "pyproject.toml": {
+                "bytes": 791,
+                "path": "pyproject.toml",
+                "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+              },
+              "uv.lock": {
+                "bytes": 363675,
+                "path": "uv.lock",
+                "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+              }
+            },
+            "python": {
+              "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+              "implementation": "CPython",
+              "version": "3.10.20"
+            },
+            "schema_version": 1,
+            "torch": {
+              "cuda_matmul_allow_tf32": true,
+              "cuda_version": "12.8",
+              "cudnn_allow_tf32": true,
+              "cudnn_benchmark": false,
+              "cudnn_version": 90701,
+              "deterministic_algorithms": false,
+              "float32_matmul_precision": "high",
+              "num_interop_threads": 104,
+              "num_threads": 104,
+              "nvidia_driver_version": "590.44.01",
+              "version": "2.7.1+cu128"
+            }
+          },
+          "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+          "schema_version": 1,
+          "status": "completed",
+          "warmup_steps": 2
+        }
+      },
+      "micro_batch_size": 32,
+      "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+      "selection_score_seconds": 2.808160561757783
+    },
+    {
+      "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+      "effective_batch_size": 64,
+      "eligible": true,
+      "gradient_accumulation_steps": 1,
+      "ineligible_reasons": [],
+      "max_memory_fraction": 0.5522610885859398,
+      "methods": {
+        "cofitok": {
+          "benchmark_steps": 8,
+          "checkpoint_written": false,
+          "config": {
+            "data": {
+              "batch_size": 64,
+              "channels": 3,
+              "class_conditional": true,
+              "dataset": "imagenet_256_10pct",
+              "image_size": 256,
+              "num_workers": 8,
+              "persistent_workers": true,
+              "prefetch_factor": 2,
+              "random_horizontal_flip_prob": 0.5,
+              "root": "/root/autodl-tmp/CoFiTok/datasets"
+            },
+            "diffusion": {
+              "beta_end": 0.02,
+              "beta_start": 0.0001,
+              "num_train_timesteps": 1000,
+              "prediction_target": "epsilon",
+              "schedule_type": "cosine"
+            },
+            "loss": {
+              "component_decorrelation_start_step": 0,
+              "component_decorrelation_warmup_steps": 0,
+              "component_decorrelation_weight": 0.0,
+              "denoise_path_component_weight": 0.1,
+              "denoise_path_energy_capacity_power": 0.5,
+              "denoise_path_energy_capacity_weight": 0.75,
+              "denoise_path_energy_mode": "hellinger_stable",
+              "denoise_path_energy_weight": 0.15,
+              "denoise_path_prefix_weight": 0.05,
+              "denoise_path_progress_mode": "token_capacity",
+              "denoise_path_progress_power": 1.0,
+              "ema_teacher_consistency_batch_fraction": 0.0625,
+              "ema_teacher_consistency_start_step": 30000,
+              "ema_teacher_consistency_warmup_steps": 10000,
+              "ema_teacher_consistency_weight": 0.25,
+              "energy_budget_scope": "batch",
+              "energy_budget_weight": 0.0,
+              "energy_target": [],
+              "epsilon_band_component_weight": 0.0,
+              "epsilon_band_prefix_weight": 0.0,
+              "epsilon_weight": 1.0,
+              "group_residual_size": 0,
+              "group_residual_weight": 0.0,
+              "low_snr_high_frequency_power": 0.5,
+              "low_snr_high_frequency_weight": 0.5,
+              "monotonic_margin": 0.0,
+              "monotonic_weight": 0.0,
+              "prefix_weight": 0.0,
+              "residual_component_weight": 0.0,
+              "rollout_consistency_batch_fraction": 0.125,
+              "rollout_consistency_clip_x0": true,
+              "rollout_consistency_mode": "clipped_x0",
+              "rollout_consistency_start_step": 0,
+              "rollout_consistency_timestep_delta": 10,
+              "rollout_consistency_unroll_steps": 2,
+              "rollout_consistency_warmup_steps": 10000,
+              "rollout_consistency_weight": 0.1,
+              "sampled_component_weight": 0.0,
+              "sampled_prefix_weight": 0.0,
+              "tail_early_dropout_prob": 0.0,
+              "tail_early_dropout_start": 1,
+              "tail_early_dropout_weight": 0.0,
+              "tail_endpoint_weight": 0.0,
+              "tail_floor_min_ratio": 0.0,
+              "tail_floor_weight": 0.0,
+              "tail_late_monotonic_margin": 0.0,
+              "tail_late_monotonic_start": 0,
+              "tail_late_monotonic_weight": 0.0,
+              "tail_late_prefix_start": 0,
+              "tail_late_prefix_weight": 0.0,
+              "tail_replay_weight": 0.0,
+              "zero_token_weight": 0.0
+            },
+            "model": {
+              "base_channels": 128,
+              "class_dropout_prob": 0.1,
+              "deep_synthesis_depth": 3,
+              "deep_synthesis_hidden_channels": 0,
+              "gamma_mode": "fixed_one",
+              "image_channels": 3,
+              "image_size": 256,
+              "num_classes": 1000,
+              "predictor_attention_resolutions": [
+                32,
+                16
+              ],
+              "predictor_channel_multipliers": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "predictor_depth": 3,
+              "predictor_dropout": 0.0,
+              "predictor_gradient_checkpointing": true,
+              "predictor_multiscale_levels": 2,
+              "predictor_num_heads": 8,
+              "predictor_num_res_blocks": 2,
+              "predictor_type": "scalable_unet",
+              "predictor_use_feedback": true,
+              "synthesis_active_token_channels": [],
+              "synthesis_kernel_size": 1,
+              "synthesis_mode": "fixed_basis",
+              "synthesis_token_strides": [],
+              "token_channel_schedule": [
+                4,
+                4,
+                8,
+                8,
+                8,
+                1,
+                1,
+                1
+              ],
+              "token_channels": 8,
+              "token_count": 8,
+              "token_spatial_strides": [
+                16,
+                16,
+                8,
+                8,
+                4,
+                1,
+                1,
+                1
+              ]
+            },
+            "name": "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k",
+            "optimization": {
+              "betas": [
+                0.9,
+                0.99
+              ],
+              "ema_decay": 0.9999,
+              "ema_warmup_steps": 2000,
+              "grad_clip_norm": 1.0,
+              "gradient_accumulation_steps": 1,
+              "learning_rate": 0.0001,
+              "log_interval": 50,
+              "min_learning_rate": 1e-05,
+              "visualization_count": 8,
+              "warmup_steps": 1000,
+              "weight_decay": 0.01
+            },
+            "runtime": {
+              "allow_tf32": true,
+              "checkpoint_interval": 5000,
+              "compile_model": false,
+              "cudnn_benchmark": false,
+              "device": "cuda",
+              "evaluation_interval": 1000,
+              "keep_last_checkpoints": 3,
+              "precision": "bf16",
+              "protected_checkpoint_steps": [],
+              "seed": 2027,
+              "steps": 50000
+            }
+          },
+          "config_path": "/tmp/cofitok-stability-50k-preflight-2c2c1f5/configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json",
+          "dataset_provenance": {
+            "dataset": "imagenet_256_10pct",
+            "dataset_root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct",
+            "formal": true,
+            "identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+            "issues": [],
+            "manifest": {
+              "bytes": 54885982,
+              "relative_path": "metadata/image_manifest.jsonl",
+              "sha256": "dcdd622564941ad418fffa960051f14f0ad41852c681ed9a8329c5e6f561cca7"
+            },
+            "schema_version": 1,
+            "splits": {
+              "train": 128161,
+              "val": 50000
+            },
+            "status": "pass"
+          },
+          "device": "cuda",
+          "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+          "device_total_memory_bytes": 101976440832,
+          "durations_seconds": [
+            4.2747481018304825,
+            2.77500325627625,
+            2.776606786996126,
+            2.777132848277688,
+            2.7784360852092505,
+            2.777497362345457,
+            2.7797938231378794,
+            2.77834421209991
+          ],
+          "effective_batch_size": 64,
+          "git": {
+            "branch": "scale/generation-stability-50k-preflight",
+            "dirty": false,
+            "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+          },
+          "gradient_accumulation_steps": 1,
+          "images_per_second": 23.03841801901515,
+          "last_metrics": {
+            "component_decorrelation": 0.0,
+            "cumulative_elapsed_seconds": 23.71908211708069,
+            "denoise_path_component": 0.035594068467617035,
+            "denoise_path_energy": 0.006110494956374168,
+            "denoise_path_prefix": 0.25610730051994324,
+            "elapsed_seconds": 23.71908211708069,
+            "ema_decay": 0.0039996,
+            "ema_teacher_consistency": 0.0,
+            "ema_teacher_consistency_scale": 0.0,
+            "energy_budget": 0.0,
+            "epsilon": 0.9993106126785278,
+            "epsilon_band_component": 0.0,
+            "epsilon_band_prefix": 0.0,
+            "grad_norm": 535.0479736328125,
+            "group_residual": 0.0,
+            "learning_rate": 8.000000000000001e-07,
+            "low_snr_high_frequency": 0.5471538305282593,
+            "monotonic": 0.0,
+            "prefix": 0.0,
+            "residual_component": 0.0,
+            "rollout_consistency": 0.5395815372467041,
+            "rollout_consistency_scale": 0.0007999999797903001,
+            "sampled_budget": 0.0,
+            "sampled_component": 0.0,
+            "sampled_prefix": 0.0,
+            "samples_seen": 512,
+            "step": 8,
+            "tail_floor": 0.0,
+            "total": 1.2902119159698486,
+            "zero_token": 0.0
+          },
+          "mean_optimizer_step_seconds": 2.7779685196777186,
+          "measured_durations_seconds": [
+            2.776606786996126,
+            2.777132848277688,
+            2.7784360852092505,
+            2.777497362345457,
+            2.7797938231378794,
+            2.77834421209991
+          ],
+          "measured_steps": 6,
+          "median_optimizer_step_seconds": 2.7779207872226834,
+          "micro_batch_size": 64,
+          "p95_optimizer_step_seconds": 2.7797938231378794,
+          "parameter_count": 62834083,
+          "peak_vram_bytes": 56317620224,
+          "role": "training_runtime_selection_only",
+          "runtime_environment": {
+            "device": {
+              "capability": [
+                12,
+                0
+              ],
+              "multi_processor_count": 188,
+              "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+              "total_memory_bytes": 101976440832,
+              "type": "cuda"
+            },
+            "environment_variables": {
+              "CUBLAS_WORKSPACE_CONFIG": null,
+              "CUDA_VISIBLE_DEVICES": null,
+              "PYTHONHASHSEED": null,
+              "PYTORCH_ALLOC_CONF": "expandable_segments:True"
+            },
+            "packages": {
+              "numpy": "2.2.6",
+              "pillow": "12.2.0",
+              "torch": "2.7.1+cu128",
+              "torchvision": "0.22.1+cu128",
+              "tqdm": "4.67.3"
+            },
+            "platform": {
+              "machine": "x86_64",
+              "release": "5.15.0-78-generic",
+              "system": "Linux"
+            },
+            "project_files": {
+              "pyproject.toml": {
+                "bytes": 791,
+                "path": "pyproject.toml",
+                "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+              },
+              "uv.lock": {
+                "bytes": 363675,
+                "path": "uv.lock",
+                "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+              }
+            },
+            "python": {
+              "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+              "implementation": "CPython",
+              "version": "3.10.20"
+            },
+            "schema_version": 1,
+            "torch": {
+              "cuda_matmul_allow_tf32": true,
+              "cuda_version": "12.8",
+              "cudnn_allow_tf32": true,
+              "cudnn_benchmark": false,
+              "cudnn_version": 90701,
+              "deterministic_algorithms": false,
+              "float32_matmul_precision": "high",
+              "num_interop_threads": 104,
+              "num_threads": 104,
+              "nvidia_driver_version": "590.44.01",
+              "version": "2.7.1+cu128"
+            }
+          },
+          "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+          "schema_version": 1,
+          "status": "completed",
+          "warmup_steps": 2
+        },
+        "dense_identity": {
+          "benchmark_steps": 8,
+          "checkpoint_written": false,
+          "config": {
+            "data": {
+              "batch_size": 64,
+              "channels": 3,
+              "class_conditional": true,
+              "dataset": "imagenet_256_10pct",
+              "image_size": 256,
+              "num_workers": 8,
+              "persistent_workers": true,
+              "prefetch_factor": 2,
+              "random_horizontal_flip_prob": 0.5,
+              "root": "/root/autodl-tmp/CoFiTok/datasets"
+            },
+            "diffusion": {
+              "beta_end": 0.02,
+              "beta_start": 0.0001,
+              "num_train_timesteps": 1000,
+              "prediction_target": "epsilon",
+              "schedule_type": "cosine"
+            },
+            "loss": {
+              "component_decorrelation_start_step": 0,
+              "component_decorrelation_warmup_steps": 0,
+              "component_decorrelation_weight": 0.0,
+              "denoise_path_component_weight": 0.0,
+              "denoise_path_energy_capacity_power": 0.5,
+              "denoise_path_energy_capacity_weight": 0.0,
+              "denoise_path_energy_mode": "mse",
+              "denoise_path_energy_weight": 0.0,
+              "denoise_path_prefix_weight": 0.0,
+              "denoise_path_progress_mode": "power",
+              "denoise_path_progress_power": 1.0,
+              "ema_teacher_consistency_batch_fraction": 0.0625,
+              "ema_teacher_consistency_start_step": 30000,
+              "ema_teacher_consistency_warmup_steps": 10000,
+              "ema_teacher_consistency_weight": 0.25,
+              "energy_budget_scope": "batch",
+              "energy_budget_weight": 0.0,
+              "energy_target": [],
+              "epsilon_band_component_weight": 0.0,
+              "epsilon_band_prefix_weight": 0.0,
+              "epsilon_weight": 1.0,
+              "group_residual_size": 0,
+              "group_residual_weight": 0.0,
+              "low_snr_high_frequency_power": 1.0,
+              "low_snr_high_frequency_weight": 0.0,
+              "monotonic_margin": 0.0,
+              "monotonic_weight": 0.0,
+              "prefix_weight": 0.0,
+              "residual_component_weight": 0.0,
+              "rollout_consistency_batch_fraction": 0.125,
+              "rollout_consistency_clip_x0": true,
+              "rollout_consistency_mode": "clipped_x0",
+              "rollout_consistency_start_step": 0,
+              "rollout_consistency_timestep_delta": 10,
+              "rollout_consistency_unroll_steps": 2,
+              "rollout_consistency_warmup_steps": 10000,
+              "rollout_consistency_weight": 0.1,
+              "sampled_component_weight": 0.0,
+              "sampled_prefix_weight": 0.0,
+              "tail_early_dropout_prob": 0.0,
+              "tail_early_dropout_start": 1,
+              "tail_early_dropout_weight": 0.0,
+              "tail_endpoint_weight": 0.0,
+              "tail_floor_min_ratio": 0.0,
+              "tail_floor_weight": 0.0,
+              "tail_late_monotonic_margin": 0.0,
+              "tail_late_monotonic_start": 0,
+              "tail_late_monotonic_weight": 0.0,
+              "tail_late_prefix_start": 0,
+              "tail_late_prefix_weight": 0.0,
+              "tail_replay_weight": 0.0,
+              "zero_token_weight": 0.0
+            },
+            "model": {
+              "base_channels": 128,
+              "class_dropout_prob": 0.1,
+              "deep_synthesis_depth": 3,
+              "deep_synthesis_hidden_channels": 0,
+              "gamma_mode": "fixed_one",
+              "image_channels": 3,
+              "image_size": 256,
+              "num_classes": 1000,
+              "predictor_attention_resolutions": [
+                32,
+                16
+              ],
+              "predictor_channel_multipliers": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "predictor_depth": 3,
+              "predictor_dropout": 0.0,
+              "predictor_gradient_checkpointing": true,
+              "predictor_multiscale_levels": 2,
+              "predictor_num_heads": 8,
+              "predictor_num_res_blocks": 2,
+              "predictor_type": "scalable_unet",
+              "predictor_use_feedback": false,
+              "synthesis_active_token_channels": [],
+              "synthesis_kernel_size": 1,
+              "synthesis_mode": "dense_identity",
+              "synthesis_token_strides": [],
+              "token_channel_schedule": [],
+              "token_channels": 3,
+              "token_count": 1,
+              "token_spatial_strides": []
+            },
+            "name": "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k",
+            "optimization": {
+              "betas": [
+                0.9,
+                0.99
+              ],
+              "ema_decay": 0.9999,
+              "ema_warmup_steps": 2000,
+              "grad_clip_norm": 1.0,
+              "gradient_accumulation_steps": 1,
+              "learning_rate": 0.0001,
+              "log_interval": 50,
+              "min_learning_rate": 1e-05,
+              "visualization_count": 8,
+              "warmup_steps": 1000,
+              "weight_decay": 0.01
+            },
+            "runtime": {
+              "allow_tf32": true,
+              "checkpoint_interval": 5000,
+              "compile_model": false,
+              "cudnn_benchmark": false,
+              "device": "cuda",
+              "evaluation_interval": 1000,
+              "keep_last_checkpoints": 3,
+              "precision": "bf16",
+              "protected_checkpoint_steps": [],
+              "seed": 2027,
+              "steps": 50000
+            }
+          },
+          "config_path": "/tmp/cofitok-stability-50k-preflight-2c2c1f5/configs/generation/imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k.json",
+          "dataset_provenance": {
+            "dataset": "imagenet_256_10pct",
+            "dataset_root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct",
+            "formal": true,
+            "identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+            "issues": [],
+            "manifest": {
+              "bytes": 54885982,
+              "relative_path": "metadata/image_manifest.jsonl",
+              "sha256": "dcdd622564941ad418fffa960051f14f0ad41852c681ed9a8329c5e6f561cca7"
+            },
+            "schema_version": 1,
+            "splits": {
+              "train": 128161,
+              "val": 50000
+            },
+            "status": "pass"
+          },
+          "device": "cuda",
+          "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+          "device_total_memory_bytes": 101976440832,
+          "durations_seconds": [
+            4.0201781541109085,
+            2.524590553715825,
+            2.5285053122788668,
+            2.5280958004295826,
+            2.5282838363200426,
+            2.53250614926219,
+            2.5273272916674614,
+            2.527368338778615
+          ],
+          "effective_batch_size": 64,
+          "git": {
+            "branch": "scale/generation-stability-50k-preflight",
+            "dirty": false,
+            "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+          },
+          "gradient_accumulation_steps": 1,
+          "images_per_second": 25.309636496651652,
+          "last_metrics": {
+            "component_decorrelation": 0.0,
+            "cumulative_elapsed_seconds": 21.717798948287964,
+            "denoise_path_component": 0.0,
+            "denoise_path_energy": 0.0,
+            "denoise_path_prefix": 0.0,
+            "elapsed_seconds": 21.717798948287964,
+            "ema_decay": 0.0039996,
+            "ema_teacher_consistency": 0.0,
+            "ema_teacher_consistency_scale": 0.0,
+            "energy_budget": 0.0,
+            "epsilon": 0.9992903470993042,
+            "epsilon_band_component": 0.0,
+            "epsilon_band_prefix": 0.0,
+            "grad_norm": 0.9844332933425903,
+            "group_residual": 0.0,
+            "learning_rate": 8.000000000000001e-07,
+            "low_snr_high_frequency": 0.0,
+            "monotonic": 0.0,
+            "prefix": 0.0,
+            "residual_component": 0.0,
+            "rollout_consistency": 0.5395631790161133,
+            "rollout_consistency_scale": 0.0007999999797903001,
+            "sampled_budget": 0.0,
+            "sampled_component": 0.0,
+            "sampled_prefix": 0.0,
+            "samples_seen": 512,
+            "step": 8,
+            "tail_floor": 0.0,
+            "total": 0.9993335008621216,
+            "zero_token": 0.0
+          },
+          "mean_optimizer_step_seconds": 2.5286811214561262,
+          "measured_durations_seconds": [
+            2.5285053122788668,
+            2.5280958004295826,
+            2.5282838363200426,
+            2.53250614926219,
+            2.5273272916674614,
+            2.527368338778615
+          ],
+          "measured_steps": 6,
+          "median_optimizer_step_seconds": 2.5281898183748126,
+          "micro_batch_size": 64,
+          "p95_optimizer_step_seconds": 2.53250614926219,
+          "parameter_count": 62824707,
+          "peak_vram_bytes": 55528429568,
+          "role": "training_runtime_selection_only",
+          "runtime_environment": {
+            "device": {
+              "capability": [
+                12,
+                0
+              ],
+              "multi_processor_count": 188,
+              "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+              "total_memory_bytes": 101976440832,
+              "type": "cuda"
+            },
+            "environment_variables": {
+              "CUBLAS_WORKSPACE_CONFIG": null,
+              "CUDA_VISIBLE_DEVICES": null,
+              "PYTHONHASHSEED": null,
+              "PYTORCH_ALLOC_CONF": "expandable_segments:True"
+            },
+            "packages": {
+              "numpy": "2.2.6",
+              "pillow": "12.2.0",
+              "torch": "2.7.1+cu128",
+              "torchvision": "0.22.1+cu128",
+              "tqdm": "4.67.3"
+            },
+            "platform": {
+              "machine": "x86_64",
+              "release": "5.15.0-78-generic",
+              "system": "Linux"
+            },
+            "project_files": {
+              "pyproject.toml": {
+                "bytes": 791,
+                "path": "pyproject.toml",
+                "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+              },
+              "uv.lock": {
+                "bytes": 363675,
+                "path": "uv.lock",
+                "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+              }
+            },
+            "python": {
+              "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+              "implementation": "CPython",
+              "version": "3.10.20"
+            },
+            "schema_version": 1,
+            "torch": {
+              "cuda_matmul_allow_tf32": true,
+              "cuda_version": "12.8",
+              "cudnn_allow_tf32": true,
+              "cudnn_benchmark": false,
+              "cudnn_version": 90701,
+              "deterministic_algorithms": false,
+              "float32_matmul_precision": "high",
+              "num_interop_threads": 104,
+              "num_threads": 104,
+              "nvidia_driver_version": "590.44.01",
+              "version": "2.7.1+cu128"
+            }
+          },
+          "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+          "schema_version": 1,
+          "status": "completed",
+          "warmup_steps": 2
+        }
+      },
+      "micro_batch_size": 64,
+      "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+      "selection_score_seconds": 2.7779685196777186
+    }
+  ],
+  "config_sha256": {
+    "cofitok": "4b9bf0d89f639983df6f5c046deb36ad6bd65dac8ec8f9b587721dbcef688f02",
+    "dense_identity": "fab927c9809d751da0ebb07c39697e6f108273eb60242c2510b316f040c283b3"
+  },
+  "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+  "git_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+  "policy": {
+    "expected_effective_batch_size": 64,
+    "max_memory_fraction": 0.9,
+    "score": "minimize_worst_method_mean_optimizer_step_seconds",
+    "shared_candidate_required": true
+  },
+  "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+  "schema_version": 2,
+  "selected": {
+    "effective_batch_size": 64,
+    "estimated_speedup_over_16x4": 1.0291251514680797,
+    "gradient_accumulation_steps": 1,
+    "max_memory_fraction": 0.5522610885859398,
+    "micro_batch_size": 64,
+    "selection_score_seconds": 2.7779685196777186
+  },
+  "selection_lock": {
+    "benchmark_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/runtime_preflight",
+    "benchmark_steps": 8,
+    "candidates": [
+      {
+        "gradient_accumulation_steps": 4,
+        "micro_batch_size": 16
+      },
+      {
+        "gradient_accumulation_steps": 2,
+        "micro_batch_size": 32
+      },
+      {
+        "gradient_accumulation_steps": 1,
+        "micro_batch_size": 64
+      }
+    ],
+    "config_sha256": {
+      "cofitok": "4b9bf0d89f639983df6f5c046deb36ad6bd65dac8ec8f9b587721dbcef688f02",
+      "dense_identity": "fab927c9809d751da0ebb07c39697e6f108273eb60242c2510b316f040c283b3"
+    },
+    "expected_effective_batch_size": 64,
+    "git": {
+      "branch": "scale/generation-stability-50k-preflight",
+      "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+      "tracked_dirty": false
+    },
+    "max_memory_fraction": 0.9,
+    "mode": "freeze_on_training_state",
+    "schema_version": 1,
+    "training_run_dirs": [
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_rollout_x0_u2_ema_teacher"
+    ],
+    "training_target_steps": 50000,
+    "warmup_steps": 2
+  },
+  "status": "selected"
+}

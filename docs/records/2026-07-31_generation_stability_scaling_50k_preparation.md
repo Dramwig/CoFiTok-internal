@@ -194,3 +194,64 @@ artifacts/reports/generation/stability_probe_2026-07-29/
 
 This receipt authorizes preparation only. It does not launch or authorize
 matched 50K training by itself, and it does not authorize full 300K.
+
+## Actual matched 50K launch
+
+After the preparation receipt, the final 5K decision, target revision, clean
+worktree, idle GPU, output-root absence, config contract, and storage headroom
+were rechecked. The gated runbook was then launched from the isolated target
+worktree at `2026-07-31 10:59:34 CST`:
+
+```text
+output root:
+  /root/autodl-tmp/CoFiTok/checkpoints/generation/
+    stability_scaling_50k_ema_teacher
+target revision:
+  2c2c1f5166b73d4f28df93b276901671ac1a7836
+target branch:
+  scale/generation-stability-50k-preflight
+runbook PID: 315094
+monitor PID: 319121
+watchdog PID: 319138
+trainer PID: 319202
+```
+
+The runbook benchmarked the three matched effective-batch-64 candidates and
+selected `micro_batch_size=64`, `gradient_accumulation_steps=1`. The selected
+score was `2.77796852` seconds with a measured peak-memory fraction of
+`0.55226109`; the runtime environment SHA256 is
+`d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e`.
+
+The first authoritative monitor refresh reported:
+
+```text
+status/stage:          running / cofitok_training
+issues:                []
+manifest:              verified
+monitor step/rows:     100 / 3
+metrics snapshot:      step 150 / 9,600 images / 4 rows
+rollout schedule:      3/3 checked, no mismatch or missing step
+EMA-teacher schedule:  3/3 checked, no mismatch or missing step
+GPU:                   76,043 / 97,887 MiB, 99% utilization
+```
+
+At step 150 the rollout scale was the expected float32 warmup value
+`0.014999999664723873`; EMA-teacher scale was correctly zero before step
+30,000. The watchdog reported `running / child_and_monitor_active`. No
+checkpoint was expected or available yet because the first required-integrity
+boundary is step 5,000.
+
+The official repository remained clean and unchanged at `1ebcc152`; the
+training worktree remained clean at `2c2c1f5`. No second launch was attempted.
+The launch receipt and all small source snapshots are stored in:
+
+```text
+artifacts/reports/generation/stability_probe_2026-07-29/
+  pair5k_rollout_x0_u2_ema_teacher/completion/stability_50k_launch/
+```
+
+This is an early-running receipt, not a completion or quality result. CoFiTok
+must finish 50,000 steps before the matched dense member starts. Both members
+must then pass checkpoint integrity, formal EMA sampling, and the mechanism
+gate before any full ImageNet-256 scaling decision. Full 300K remains
+unauthorized.

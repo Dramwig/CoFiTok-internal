@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-07-31T11:11:44.2203424+08:00",
+  "scope": "matched_stability_50k_launch",
+  "target_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+  "target_branch": "scale/generation-stability-50k-preflight",
+  "source_training_revision": "59db142fc45d69dc92bb0333be5ac2d0162d9dc4",
+  "training_launched": true,
+  "files": {
+    "cofitok_run_manifest.snapshot.json": {
+      "bytes": 7905,
+      "sha256": "f7d29d2c3ea73349f86361fe3896b720deee6579b8e8113322a49fccb160267c"
+    },
+    "cofitok_train_metrics.initial.snapshot.jsonl": {
+      "bytes": 3696,
+      "sha256": "45519639fcf70e75ed4536ab45c072d8842e3f0f7f9d90a92922cf2e5670a619"
+    },
+    "cofitok_training_watchdog.initial.snapshot.json": {
+      "bytes": 1921,
+      "sha256": "45b31f01a06a911717d6c2d5a3e28778f1cd55bc7ed6ac6ae9b79576d61558cc"
+    },
+    "config_validation.snapshot.json": {
+      "bytes": 14511,
+      "sha256": "f0bc0e1d99074bdc5dc5244fde06fb2783a840308f0b573ce4078a91c32f2407"
+    },
+    "decision_validation.snapshot.json": {
+      "bytes": 1773,
+      "sha256": "a8e052b31b7756d8161a902df2e29daad7c53968d445395c503cb2fc1d178f36"
+    },
+    "LAUNCH_RECEIPT.json": {
+      "bytes": 3204,
+      "sha256": "d2df0309067399a6beae778e33fcc0332f62803273b963d0dced2bd3c5c70dcc"
+    },
+    "pair_monitor.initial.snapshot.json": {
+      "bytes": 13278,
+      "sha256": "8ade09c82bbf1bdf8682b743ac8e2bdd5286a82d2d98af2bc9c8f17873ffc6d3"
+    },
+    "runtime_selection.snapshot.json": {
+      "bytes": 75322,
+      "sha256": "f7befbcdbc6644fc066a71b85cb1df5cae5b922c526f09fe0000ae252b324663"
+    },
+    "storage_capacity.snapshot.json": {
+      "bytes": 983,
+      "sha256": "3bfb1c2aa4abbcbd3403aceb94f761e8bef6b125c3e95712495df9ac0d92994c"
+    }
+  }
+}
