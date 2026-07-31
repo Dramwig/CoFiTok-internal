@@ -7,12 +7,15 @@ from pathlib import Path
 SCALING_COFITOK_RUN_ID = "imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3"
 SCALING_DENSE_RUN_ID = "imagenet256_10pct_fixed_basis_dense_50k_v3"
 SCALING_REPORT_ID = "imagenet256_10pct_fixed_basis_matched_50k_v3"
+STABILITY_PROBE_ROOT_ID = "stability_probe_2026-07-29"
+STABILITY_DECISION_ID = "scaling_decision5k_rollout_x0_u2_ema_teacher_to_50k"
 STABILITY_SCALING_ROOT_ID = "stability_scaling_50k_ema_teacher"
 STABILITY_SCALING_COFITOK_RUN_ID = "cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
 STABILITY_SCALING_DENSE_RUN_ID = "dense_rollout_x0_u2_ema_teacher"
 STABILITY_FULL_ROOT_ID = "stability_full_300k_ema_teacher"
 STABILITY_FULL_COFITOK_RUN_ID = "cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
 STABILITY_FULL_DENSE_RUN_ID = "dense_rollout_x0_u2_ema_teacher"
+STABILITY_EXPORT_ROOT_ID = "exports/stability_full_300k_ema_teacher"
 FULL_COFITOK_RUN_ID = "imagenet256_full_cofitok_k8_300k"
 FULL_DENSE_RUN_ID = "imagenet256_full_dense_300k"
 FULL_REPORT_ID = "imagenet256_full_matched_300k"
@@ -77,4 +80,46 @@ def generation_deployment_attestation_paths(
             evidence_root / f"{stem}.runbook-syntax.json"
         ),
         "DEPLOYMENT_PYTEST": evidence_root / f"{stem}.pytest.xml",
+    }
+
+
+def generation_stability_workspace_paths(
+    *,
+    output_root: str | Path,
+) -> dict[str, Path]:
+    output = Path(output_root).resolve()
+    probe_root = output / STABILITY_PROBE_ROOT_ID
+    scaling_root = output / STABILITY_SCALING_ROOT_ID
+    scaling_reports = scaling_root / "reports"
+    scaling_cofitok = scaling_root / STABILITY_SCALING_COFITOK_RUN_ID
+    scaling_dense = scaling_root / STABILITY_SCALING_DENSE_RUN_ID
+    full_root = output / STABILITY_FULL_ROOT_ID
+    full_reports = full_root / "reports"
+    full_cofitok = full_root / STABILITY_FULL_COFITOK_RUN_ID
+    full_dense = full_root / STABILITY_FULL_DENSE_RUN_ID
+    export_root = output / STABILITY_EXPORT_ROOT_ID
+    return {
+        "STABILITY_DECISION": (
+            probe_root / STABILITY_DECISION_ID / "scaling_decision.json"
+        ),
+        "STABILITY_SCALING_ROOT": scaling_root,
+        "STABILITY_SCALING_COFITOK_RUN": scaling_cofitok,
+        "STABILITY_SCALING_DENSE_RUN": scaling_dense,
+        "STABILITY_SCALING_MONITOR": scaling_root / "pair_monitor.json",
+        "STABILITY_SCALING_REPORT_ROOT": scaling_reports,
+        "STABILITY_SCALING_PAIR_SUMMARY": scaling_reports / "pair_summary.json",
+        "STABILITY_SCALING_GATE": scaling_reports / "promotion_gate.json",
+        "STABILITY_FULL_ROOT": full_root,
+        "STABILITY_FULL_COFITOK_RUN": full_cofitok,
+        "STABILITY_FULL_DENSE_RUN": full_dense,
+        "STABILITY_FULL_MONITOR": full_root / "pair_monitor.json",
+        "STABILITY_FULL_REPORT_ROOT": full_reports,
+        "STABILITY_FULL_GATE": full_reports / "final_generation_gate.json",
+        "STABILITY_EXPORT_ROOT": export_root,
+        "STABILITY_COFITOK_INFERENCE_ARTIFACT": (
+            export_root / "cofitok_k8_ema_inference.pt"
+        ),
+        "STABILITY_DENSE_INFERENCE_ARTIFACT": (
+            export_root / "dense_identity_ema_inference.pt"
+        ),
     }

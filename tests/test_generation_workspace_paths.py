@@ -9,6 +9,7 @@ from cofitok.generation_paths import (
     SCALING_DENSE_RUN_ID,
     SCALING_REPORT_ID,
     generation_deployment_attestation_paths,
+    generation_stability_workspace_paths,
     generation_workspace_paths,
 )
 from scripts import print_generation_workspace_paths
@@ -97,6 +98,32 @@ def test_deployment_attestation_paths_are_target_versioned(tmp_path: Path) -> No
     ):
         assert revision in paths[name].name
         assert paths[name].parent == paths["DEPLOYMENT_EVIDENCE_ROOT"]
+
+
+def test_stability_workspace_paths_keep_every_stage_isolated(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "generation"
+    paths = generation_stability_workspace_paths(output_root=output)
+
+    assert paths["STABILITY_DECISION"].name == "scaling_decision.json"
+    assert (
+        paths["STABILITY_SCALING_GATE"]
+        == paths["STABILITY_SCALING_REPORT_ROOT"] / "promotion_gate.json"
+    )
+    assert (
+        paths["STABILITY_FULL_GATE"]
+        == paths["STABILITY_FULL_REPORT_ROOT"] / "final_generation_gate.json"
+    )
+    assert (
+        paths["STABILITY_COFITOK_INFERENCE_ARTIFACT"].parent
+        == paths["STABILITY_EXPORT_ROOT"]
+    )
+    assert (
+        paths["STABILITY_SCALING_ROOT"]
+        != paths["STABILITY_FULL_ROOT"]
+        != paths["STABILITY_EXPORT_ROOT"]
+    )
 
 
 def test_deployment_attestation_rejects_abbreviated_revision(tmp_path: Path) -> None:

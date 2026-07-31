@@ -1212,7 +1212,23 @@ def _inference_export_evidence(
     generation_reports: dict[str, dict[str, Any]],
     training_reports: dict[str, dict[str, Any]],
     final_gate: dict[str, Any],
+    *,
+    expected_export_revision: str | None = None,
+    expected_export_branch: str | None = None,
 ) -> dict[str, Any]:
+    if (expected_export_revision is None) != (expected_export_branch is None):
+        raise ValueError(
+            "inference export revision and branch must be provided together"
+        )
+    expected_execution_git = (
+        None
+        if expected_export_revision is None
+        else {
+            "revision": expected_export_revision,
+            "branch": expected_export_branch,
+            "tracked_dirty": False,
+        }
+    )
     evidence = {}
     release_authorizations = {}
     for method, expected_smoke_count in (("cofitok", 4), ("dense_identity", 2)):
@@ -1224,7 +1240,7 @@ def _inference_export_evidence(
         expected_environment_sha = source_training.get(
             "runtime_environment_sha256"
         )
-        expected_git = source_training.get("git")
+        expected_source_git = source_training.get("git")
         expected_authorization = source_training.get("training_authorization")
         if not isinstance(expected_authorization, dict):
             raise ValueError(
@@ -1254,7 +1270,7 @@ def _inference_export_evidence(
         if (
             export.get("source_runtime_environment_sha256")
             != expected_environment_sha
-            or export.get("source_git") != expected_git
+            or export.get("source_git") != expected_source_git
             or export.get("source_training_authorization")
             != expected_authorization
         ):
@@ -1289,7 +1305,7 @@ def _inference_export_evidence(
                 "branch": verified_file.get("source_git_branch"),
                 "dirty": verified_file.get("source_git_dirty"),
             }
-            != expected_git
+            != expected_source_git
             or verified_file.get("source_training_authorization")
             != expected_authorization
             or verified_file.get("release_authorization")
@@ -1315,7 +1331,7 @@ def _inference_export_evidence(
         if (
             preflight.get("source_runtime_environment_sha256")
             != expected_environment_sha
-            or preflight.get("source_git") != expected_git
+            or preflight.get("source_git") != expected_source_git
             or preflight.get("training_authorization")
             != expected_authorization
             or preflight.get("release_authorization")
@@ -1362,7 +1378,7 @@ def _inference_export_evidence(
         if (
             checkpoint.get("source_runtime_environment_sha256")
             != expected_environment_sha
-            or checkpoint.get("source_git") != expected_git
+            or checkpoint.get("source_git") != expected_source_git
             or checkpoint.get("training_authorization")
             != expected_authorization
             or checkpoint.get("release_authorization")
@@ -1403,13 +1419,49 @@ def _inference_export_evidence(
                 or verified.get("height") != 256
             ):
                 raise ValueError(f"{method} inference smoke PNG differs from report")
+        execution_environment_sha = None
+        if expected_execution_git is not None:
+            if preflight.get("git") != expected_execution_git:
+                raise ValueError(
+                    f"{method} export preflight execution Git provenance differs"
+                )
+            if smoke.get("git") != expected_execution_git:
+                raise ValueError(
+                    f"{method} export smoke execution Git provenance differs"
+                )
+            preflight_environment = preflight.get("runtime_environment")
+            smoke_environment = smoke.get("runtime_environment")
+            if not isinstance(preflight_environment, dict) or not isinstance(
+                smoke_environment,
+                dict,
+            ):
+                raise ValueError(
+                    f"{method} export execution runtime environment is missing"
+                )
+            preflight_environment_sha = runtime_environment_sha256(
+                preflight_environment
+            )
+            smoke_environment_sha = runtime_environment_sha256(smoke_environment)
+            if (
+                preflight.get("runtime_environment_sha256")
+                != preflight_environment_sha
+                or smoke.get("runtime_environment_sha256")
+                != smoke_environment_sha
+                or preflight_environment_sha != smoke_environment_sha
+            ):
+                raise ValueError(
+                    f"{method} export execution runtime environment differs"
+                )
+            execution_environment_sha = preflight_environment_sha
         evidence[method] = {
             "artifact_path": verified_file["path"],
             "artifact_sha256": artifact_sha,
             "artifact_bytes": artifact_bytes,
             "source_checkpoint_bytes": source_bytes,
             "source_runtime_environment_sha256": expected_environment_sha,
-            "source_git": expected_git,
+            "source_git": expected_source_git,
+            "execution_git": expected_execution_git,
+            "execution_runtime_environment_sha256": execution_environment_sha,
             "training_authorization": expected_authorization,
             "release_authorization": release_authorization,
             "smoke_output_count": expected_smoke_count,

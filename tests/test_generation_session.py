@@ -225,6 +225,9 @@ def test_inference_cli_core_writes_atomic_provenance_report(tmp_path) -> None:
     assert report["checkpoint"]["checkpoint_step"] == 23
     assert report["inference_api"] == INFERENCE_API
     assert report["sampling_protocol_schema"] == "cofitok_ddim_sampling_v1"
+    assert report["git"]["tracked_dirty"] is not None
+    assert report["runtime_environment"]["schema_version"] == 1
+    assert len(report["runtime_environment_sha256"]) == 64
     assert report["request"]["seeds"] == [7, 9]
     assert report["request"]["class_ids"] == [3, 3]
     assert report["request"]["prefix_budgets"] == [1, 2]

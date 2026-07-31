@@ -6,7 +6,11 @@ from pathlib import Path
 from typing import Any
 
 from cofitok.reporting import file_sha256, write_json_report
-from scripts.validate_generation_training_pair import validate_training_pair
+
+try:
+    from scripts.validate_generation_training_pair import validate_training_pair
+except ModuleNotFoundError:
+    from validate_generation_training_pair import validate_training_pair
 
 
 EXPECTED_STEPS = 50_000

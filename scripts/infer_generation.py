@@ -5,8 +5,12 @@ import time
 from pathlib import Path
 from typing import Any
 
+from cofitok.environment import capture_runtime_environment, runtime_environment_sha256
 from cofitok.generation import GenerationRequest, GenerationSession, save_tensor_png
-from cofitok.reporting import file_sha256, write_json_report
+from cofitok.reporting import file_sha256, git_provenance, write_json_report
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _integers(raw: str, *, name: str) -> list[int]:
@@ -94,6 +98,12 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
             False,
         ),
     )
+    runtime_environment = capture_runtime_environment(
+        session.device,
+        project_root=PROJECT_ROOT,
+    )
+    runtime_environment_sha = runtime_environment_sha256(runtime_environment)
+    execution_git = git_provenance(PROJECT_ROOT)
     seeds = _resolve_seeds(args.seeds, seed=args.seed, num_images=args.num_images)
     labels = _resolve_labels(args.class_ids, count=len(seeds), num_classes=session.num_classes)
     budgets = _resolve_budgets(args.prefix_budgets, token_count=session.token_count)
@@ -170,6 +180,9 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
     report = {
         "schema_version": 1,
         "status": "completed",
+        "git": execution_git,
+        "runtime_environment": runtime_environment,
+        "runtime_environment_sha256": runtime_environment_sha,
         "inference_api": last_metadata["inference_api"],
         "sampling_protocol_schema": last_metadata["sampling"]["protocol_schema"],
         "checkpoint": {
