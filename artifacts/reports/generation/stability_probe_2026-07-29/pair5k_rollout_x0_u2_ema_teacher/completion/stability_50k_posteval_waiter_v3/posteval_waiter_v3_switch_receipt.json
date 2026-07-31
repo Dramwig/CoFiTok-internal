@@ -1,0 +1,71 @@
+{
+  "bundle": {
+    "bytes": 19603,
+    "path": "/tmp/cofitok-stability-waiter-v3-08b67cc.bundle",
+    "sha256": "7c8c24c72db0f9035d827d13b2c0791a3983af6a559e9c0aadeee2f179f8a7d7"
+  },
+  "captured_at": "2026-07-31T05:24:39.581931+00:00",
+  "files": {
+    "pair_monitor_after_waiter_v3_switch.json": {
+      "bytes": 13292,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/pair_monitor_after_waiter_v3_switch.json",
+      "sha256": "8e682c612ae78e97d1cea89930725e9230bf3c0c2976f4444efcf48d0ff29eb8"
+    },
+    "posteval_waiter_08b67cc.json": {
+      "bytes": 1028,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/posteval_waiter_08b67cc.json",
+      "sha256": "bc9722c10ce6391b9c70a2c3df8188fdb2579d4a2fb6e452b0d79edb094c2e53"
+    },
+    "posteval_waiter_v2_before_08b67cc.json": {
+      "bytes": 1030,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/posteval_waiter_v2_before_08b67cc.json",
+      "sha256": "bb74b1054281ece806a3009593c5e7560f96f418d98ab62cdf47231c722e6ded"
+    }
+  },
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "rehearsal": {
+    "excluded_tests": [
+      "tests/test_aaai27_experiment_structure.py"
+    ],
+    "linux_collected_tests_excluding_paper_layout": 786,
+    "linux_passed_tests": 783,
+    "linux_skipped_tests": 3,
+    "linux_targeted_passed_tests": 15,
+    "official_repository_head": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "official_repository_head_moved": false,
+    "runbook_syntax_checked": 95,
+    "runbook_syntax_failed": 0,
+    "target_branch": "scale/generation-stability-50k-posteval-v3",
+    "target_revision": "08b67cc58026adf3e052a3eeab48b4bc0834cfd4"
+  },
+  "role": "generation_stability_50k_posteval_waiter_v3_switch",
+  "schema_version": 1,
+  "status": "completed",
+  "training": {
+    "branch": "scale/generation-stability-50k-preflight",
+    "monitor_issues": [],
+    "monitor_stage": "cofitok_training",
+    "monitor_status": "running",
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "samples_seen": 188800,
+    "step": 2950,
+    "trainer_pid": 319202
+  },
+  "waiter_switch": {
+    "active_branch": "scale/generation-stability-50k-posteval-v3",
+    "active_pid": 25861,
+    "active_revision": "08b67cc58026adf3e052a3eeab48b4bc0834cfd4",
+    "child_pid": null,
+    "detail": "waiting_for_completed_training_pair",
+    "formal_300k_allowed": false,
+    "gpu_compute_pids_after": [
+      319202
+    ],
+    "gpu_compute_pids_before": [
+      319202
+    ],
+    "pair_summary_existed_at_switch": false,
+    "status": "waiting",
+    "superseded_pid": 900875
+  }
+}

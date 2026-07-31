@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "role": "generation_stability_50k_posteval_waiter_v3_handoff",
+  "training_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+  "evaluation_revision": "08b67cc58026adf3e052a3eeab48b4bc0834cfd4",
+  "active_waiter_pid": 25861,
+  "trainer_pid": 319202,
+  "formal_300k_allowed": false,
+  "files": {
+    "pair_monitor_after_waiter_v3_switch.json": {
+      "bytes": 13292,
+      "sha256": "8e682c612ae78e97d1cea89930725e9230bf3c0c2976f4444efcf48d0ff29eb8"
+    },
+    "posteval_waiter_08b67cc.json": {
+      "bytes": 1028,
+      "sha256": "bc9722c10ce6391b9c70a2c3df8188fdb2579d4a2fb6e452b0d79edb094c2e53"
+    },
+    "posteval_waiter_v2_before_08b67cc.json": {
+      "bytes": 1030,
+      "sha256": "bb74b1054281ece806a3009593c5e7560f96f418d98ab62cdf47231c722e6ded"
+    },
+    "posteval_waiter_v3_switch_receipt.json": {
+      "bytes": 2712,
+      "sha256": "197ea304348129a49a9ccacc928b64a7ee57ca829c3fb8b86a1001d009151d19"
+    }
+  }
+}
