@@ -73,6 +73,13 @@ training, final 50K sampling, final scientific gate, or inference release has
 passed. Full 300K remains unauthorized until the 50K promotion gate and its
 source-bound validator pass.
 
+Follow-up commit
+`edb2a0dfeb5670974abe253c735d408630f84034` also records the execution
+Git identity and CPU runtime-environment SHA256 in each EMA artifact export
+report. The release audit now requires export, GPU preflight, and inference
+smoke to bind the expected clean export revision; preflight and smoke must also
+share the same recomputed runtime environment.
+
 Evidence:
 
 `artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/stability_completion_audit_and_waiter_v2/`
