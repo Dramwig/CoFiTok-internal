@@ -28,9 +28,9 @@ The focused readiness, runbook, entrypoint, and completion-audit suite completed
 - full launch containing no runtime selector;
 - completion audit binding the externally supplied readiness SHA256.
 
-## Persistent bundle
+## Rehearsal bundle
 
-The deployable bundle is:
+The isolated rehearsal used the implementation-commit bundle:
 
 `/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment_bundles/
 cofitok-generation-large-capacity-50145a9-from-1ebcc15.bundle`
@@ -48,6 +48,12 @@ The formal server repository itself successfully ran `git bundle verify`.
 An earlier 36,849-byte bundle based only on `c1efb12` was rejected by the
 formal repository because that prerequisite object is absent there; it was
 removed from the persistent deployment-bundle directory to prevent misuse.
+After this validation record was committed, the implementation bundle was
+superseded by a new bundle advertising the branch's final handoff HEAD. The
+authoritative current bundle path, bytes, SHA256, advertised head, and
+prerequisites are intentionally maintained in the repository-external project
+`AGENTS.md` handoff so recording them does not recursively change the Git head
+they identify. Do not use the rehearsal bundle as the current deployment input.
 
 ## Isolated Linux rehearsal
 
