@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-07-31T11:44:19.5849803+08:00",
+  "status": "waiting",
+  "scope": "stability_50k_formal_postevaluation_handoff",
+  "training": {
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "branch": "scale/generation-stability-50k-preflight",
+    "worktree": "/tmp/cofitok-stability-50k-preflight-2c2c1f5",
+    "tracked_dirty": false,
+    "monitor_status": "running",
+    "monitor_stage": "cofitok_training",
+    "monitor_issues": [],
+    "snapshot_step": 850,
+    "snapshot_metric_rows": 18,
+    "manifest_status": "verified"
+  },
+  "evaluation": {
+    "revision": "caab51348d546e98858d1203f2958d9e396e2d18",
+    "branch": "scale/generation-stability-50k-posteval",
+    "worktree": "/tmp/cofitok-stability-50k-posteval-caab513",
+    "tracked_dirty": false
+  },
+  "source_gate": {
+    "decision_sha256": "d5a6fc017f20c7d024abfab1967ba6bc966b624e3a77e9246292ddaaf7dc1da4",
+    "source_revision": "59db142fc45d69dc92bb0333be5ac2d0162d9dc4"
+  },
+  "bundle": {
+    "path": "/tmp/cofitok-stability-posteval-caab513.bundle",
+    "base": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "head": "caab51348d546e98858d1203f2958d9e396e2d18",
+    "bytes": 482968,
+    "sha256": "08783631747bcc4eae186443f5c923a94afaa0c1b4098f675092314858b4075e",
+    "advertised_head_count": 1,
+    "prerequisite_verified": true
+  },
+  "verification": {
+    "local_tests_passed": 759,
+    "local_tests_skipped": 3,
+    "remote_tests_passed": 756,
+    "remote_tests_skipped": 2,
+    "remote_excluded_layout_tests": 4,
+    "remote_excluded_layout_reason": "isolated /tmp worktree has no sibling paper directory",
+    "remote_runbooks_bash_n_passed": 91,
+    "remote_runbooks_bash_n_total": 91
+  },
+  "waiter": {
+    "pid": 442981,
+    "status": "waiting",
+    "detail": "waiting_for_completed_training_pair",
+    "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/posteval_waiter.json",
+    "timeout_seconds": 604800,
+    "poll_seconds": 300,
+    "monitor_silence_seconds": 900
+  },
+  "provenance_contract": {
+    "training_identity_explicit": true,
+    "evaluation_identity_explicit": true,
+    "legacy_default_branch": "scale/generative-system",
+    "stability_training_branch": "scale/generation-stability-50k-preflight",
+    "stability_evaluation_branch": "scale/generation-stability-50k-posteval"
+  },
+  "remote_state": {
+    "official_repository_revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "official_repository_moved": false,
+    "training_worktree_moved": false
+  },
+  "authorization": {
+    "formal_postevaluation_may_start_only_after_pair_pass": true,
+    "waiter_pass_implies_scientific_gate_pass": false,
+    "promotion_gate_validation_required": true,
+    "formal_300k_allowed": false
+  }
+}

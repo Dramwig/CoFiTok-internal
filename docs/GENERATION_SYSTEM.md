@@ -212,6 +212,19 @@ repository or mutate an active training checkout.
   samples per method, 1,024-image timestep-500 mechanism evaluation, and an
   independent `stability_scaling` source-path profile. It can write and verify
   a scaling gate but cannot invoke full training.
+- Stability post-evaluation uses separate, explicit training and evaluation
+  Git identities. This prevents the gate builder's legacy
+  `scale/generative-system` default from rejecting the intentionally isolated
+  stability branches, while preserving that default for existing generation
+  paths. The source pair remains bound to its original training revision;
+  sampling, distribution metrics, and checkpoint evaluation must share the
+  exact clean post-evaluation revision.
+- `generation_stability_ema_teacher_50k_posteval_waiter.sh` waits only for the
+  exact training monitor and a complete source-bound pair summary, fails on
+  stale/failed/mismatched state, and launches formal EMA post-evaluation only
+  after the GPU is idle. Its successful exit is operational evidence, not a
+  scientific scaling decision: `promotion_gate.json` must independently pass
+  complete validation. The waiter cannot launch full 300K training.
 
 The failed learned-synthesis v2 pair keeps its original run and report
 directories as immutable evidence. The historical fixed-basis v3 attempt uses

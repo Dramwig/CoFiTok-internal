@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-07-31T11:44:19.5849803+08:00",
+  "scope": "stability_50k_formal_postevaluation_handoff",
+  "training_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+  "training_branch": "scale/generation-stability-50k-preflight",
+  "evaluation_revision": "caab51348d546e98858d1203f2958d9e396e2d18",
+  "evaluation_branch": "scale/generation-stability-50k-posteval",
+  "files": {
+    "pair_monitor.concurrent.snapshot.json": {
+      "bytes": 13281,
+      "sha256": "699a531d971e13a9d946198345909d15622e3e722efd091636db56451aa03e4e"
+    },
+    "POSTEVAL_HANDOFF_RECEIPT.json": {
+      "bytes": 2793,
+      "sha256": "48b6f6b013349c315c15d00b36dee31cde1d8a6446e1c51b54e5349495c66362"
+    },
+    "posteval_waiter.initial.snapshot.json": {
+      "bytes": 1027,
+      "sha256": "bcdba54cef5e0f932e6d6ee8a1350ea8e1f0037a0a36712f8601ff9cc33ab320"
+    }
+  }
+}
