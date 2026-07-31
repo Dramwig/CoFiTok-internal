@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-07-31T10:51:53.4774275+08:00",
+  "target_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+  "target_branch": "scale/generation-stability-50k-preflight",
+  "source_training_revision": "59db142fc45d69dc92bb0333be5ac2d0162d9dc4",
+  "training_launched": false,
+  "files": {
+    "config_validation.snapshot.json": {
+      "bytes": 14511,
+      "sha256": "f0bc0e1d99074bdc5dc5244fde06fb2783a840308f0b573ce4078a91c32f2407"
+    },
+    "decision_validation.snapshot.json": {
+      "bytes": 1773,
+      "sha256": "a8e052b31b7756d8161a902df2e29daad7c53968d445395c503cb2fc1d178f36"
+    },
+    "PREPARATION_RECEIPT.json": {
+      "bytes": 1961,
+      "sha256": "118e0d102f224299c593ed57ead20ca838222c9e0ee5f7487149e204cacc4016"
+    },
+    "storage_capacity.snapshot.json": {
+      "bytes": 983,
+      "sha256": "11647c22281d7db971eb1baac81e13d4b5312b8e5ca0194a518475cc18e968eb"
+    }
+  }
+}

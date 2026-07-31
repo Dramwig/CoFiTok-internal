@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-07-31T10:51:53.4774275+08:00",
+  "status": "pass",
+  "scope": "stability_50k_preparation_only",
+  "training_launched": false,
+  "runtime_selector_executed": false,
+  "output_root_created": false,
+  "target": {
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "branch": "scale/generation-stability-50k-preflight",
+    "worktree": "/tmp/cofitok-stability-50k-preflight-2c2c1f5",
+    "tracked_dirty": false
+  },
+  "source_gate": {
+    "revision": "59db142fc45d69dc92bb0333be5ac2d0162d9dc4",
+    "decision_sha256": "d5a6fc017f20c7d024abfab1967ba6bc966b624e3a77e9246292ddaaf7dc1da4",
+    "decision": "authorize_fresh_matched_50k_preparation",
+    "authorized_next_stage": "fresh_matched_50k_preparation",
+    "validation_status": "pass"
+  },
+  "config": {
+    "status": "pass",
+    "schema": "cofitok_generation_training_recipe_v4",
+    "stage": "stability_scaling",
+    "cofitok_parameter_count": 62834083,
+    "dense_parameter_count": 62824707,
+    "relative_parameter_gap": 0.00014924064826915946
+  },
+  "storage": {
+    "status": "pass",
+    "free_bytes": 230249512960,
+    "required_free_bytes": 118385312804,
+    "headroom_bytes": 111864200156
+  },
+  "verification": {
+    "generation_tests_collected": 748,
+    "generation_tests_passed": 746,
+    "existing_skips": 2,
+    "excluded_layout_tests": 4,
+    "excluded_layout_reason": "isolated /tmp worktree has no sibling paper directory",
+    "tracked_runbooks_bash_n_passed": 90,
+    "tracked_runbooks_bash_n_total": 90
+  },
+  "remote_state": {
+    "official_repository_revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "active_5k_checkout_revision": "59db142fc45d69dc92bb0333be5ac2d0162d9dc4",
+    "active_5k_checkout_dirty": false,
+    "gpu_compute_processes": 0
+  },
+  "authorization": {
+    "stability_50k_preparation_allowed": true,
+    "stability_50k_training_allowed_by_this_receipt": false,
+    "formal_300k_allowed": false
+  }
+}

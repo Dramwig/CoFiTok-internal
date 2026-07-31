@@ -123,3 +123,74 @@ The next evidence boundaries are protected checkpoints 2,500, 3,750, and 5,000;
 then runs under the same pinned 5K revision, followed by raw n=8 and two-seed
 n=64 qualification. Until that final decision exists and passes, formal 50K and
 full 300K remain unauthorized.
+
+## Final 5K qualification
+
+The fresh matched 5K pair and its post-evaluation completed after the initial
+preparation snapshot. The pair passed all four protected checkpoints, both
+members completed exactly 5,000 steps and 320,000 images, and the n8 plus two
+n64 seeds passed every configured mechanism gate. The final decision is:
+
+```text
+status:                pass
+decision:              authorize_fresh_matched_50k_preparation
+authorized next stage: fresh_matched_50k_preparation
+source revision:       59db142fc45d69dc92bb0333be5ac2d0162d9dc4
+decision SHA256:       d5a6fc017f20c7d024abfab1967ba6bc966b624e3a77e9246292ddaaf7dc1da4
+```
+
+Target revision `2c2c1f5` rehashed all qualification files and rebuilt the
+decision exactly. The complete source evidence is recorded in:
+
+```text
+artifacts/reports/generation/stability_probe_2026-07-29/
+  pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/
+```
+
+## Preparation-only preflight
+
+The executable training target is fixed at
+`2c2c1f5166b73d4f28df93b276901671ac1a7836`. All later local commits through
+the evidence archive change only documentation and small reports; no
+`src/`, `scripts/`, `configs/`, `artifacts/runbooks/`, tests, or packaging file
+differs from this target.
+
+An independent server worktree was created at:
+
+```text
+path:   /tmp/cofitok-stability-50k-preflight-2c2c1f5
+branch: scale/generation-stability-50k-preflight
+HEAD:   2c2c1f5166b73d4f28df93b276901671ac1a7836
+```
+
+Preparation-only checks passed:
+
+```text
+decision rehash/rebuild:          pass
+recipe schema/stage:              v4 / stability_scaling
+pair config contract:             pass
+parameters CoFiTok/dense:         62,834,083 / 62,824,707
+parameter gap:                    +0.014924%
+storage free/required/headroom:   230,249,512,960 /
+                                  118,385,312,804 /
+                                  111,864,200,156 bytes
+generation tests:                 746 passed, 2 existing skips
+tracked runbook syntax:           90/90 passed
+```
+
+Four AAAI LaTeX layout tests were excluded because a standalone `/tmp`
+worktree has no sibling `paper/` directory; the complete generation test set
+otherwise passed. The official repository remained at `1ebcc152`, the active
+5K checkout remained clean at `59db142`, the GPU was idle at final inspection,
+and `/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher`
+was not created.
+
+The preparation receipt and source reports are stored in:
+
+```text
+artifacts/reports/generation/stability_probe_2026-07-29/
+  pair5k_rollout_x0_u2_ema_teacher/completion/stability_50k_preflight/
+```
+
+This receipt authorizes preparation only. It does not launch or authorize
+matched 50K training by itself, and it does not authorize full 300K.
