@@ -1231,6 +1231,8 @@ def _inference_export_evidence(
     )
     evidence = {}
     release_authorizations = {}
+    export_environment_shas = set()
+    inference_environment_shas = set()
     for method, expected_smoke_count in (("cofitok", 4), ("dense_identity", 2)):
         export = exports[f"{method}_export"]
         preflight = exports[f"{method}_preflight"]
@@ -1446,6 +1448,7 @@ def _inference_export_evidence(
                 raise ValueError(
                     f"{method} export execution runtime environment differs"
                 )
+            export_environment_shas.add(export_environment_sha)
             if preflight.get("git") != expected_execution_git:
                 raise ValueError(
                     f"{method} export preflight execution Git provenance differs"
@@ -1478,6 +1481,7 @@ def _inference_export_evidence(
                     f"{method} export execution runtime environment differs"
                 )
             execution_environment_sha = preflight_environment_sha
+            inference_environment_shas.add(execution_environment_sha)
         evidence[method] = {
             "artifact_path": verified_file["path"],
             "artifact_sha256": artifact_sha,
@@ -1497,6 +1501,13 @@ def _inference_export_evidence(
         }
     if release_authorizations["cofitok"] != release_authorizations["dense_identity"]:
         raise ValueError("CoFiTok and dense artifacts used different release authorizations")
+    if expected_execution_git is not None and (
+        len(export_environment_shas) != 1
+        or len(inference_environment_shas) != 1
+    ):
+        raise ValueError(
+            "CoFiTok and dense artifacts used different execution environments"
+        )
     return evidence
 
 

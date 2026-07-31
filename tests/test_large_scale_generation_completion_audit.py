@@ -2584,6 +2584,39 @@ def test_inference_release_audit_binds_execution_revision_and_environment() -> N
         )
 
 
+def test_inference_release_audit_rejects_cross_method_environment_drift() -> None:
+    kwargs = _kwargs()
+    generation = {
+        "cofitok": kwargs["cofitok_generation"],
+        "dense_identity": kwargs["dense_generation"],
+    }
+    training = {
+        "cofitok": kwargs["cofitok_full_training"],
+        "dense_identity": kwargs["dense_full_training"],
+    }
+    execution = kwargs["inference_exports"]["dense_identity_export"][
+        "execution"
+    ]
+    execution["runtime_environment"]["environment_variables"][
+        "PYTHONHASHSEED"
+    ] = "314159"
+    execution["runtime_environment_sha256"] = runtime_environment_sha256(
+        execution["runtime_environment"]
+    )
+
+    with pytest.raises(ValueError, match="different execution environments"):
+        _inference_export_evidence(
+            kwargs["inference_exports"],
+            kwargs["inference_artifact_files"],
+            kwargs["inference_smoke_files"],
+            generation,
+            training,
+            kwargs["final_gate"],
+            expected_export_revision=FULL_REVISION,
+            expected_export_branch="scale/generative-system",
+        )
+
+
 def test_completion_audit_rejects_missing_or_tampered_smoke_pngs() -> None:
     kwargs = _kwargs()
     kwargs["inference_smoke_files"]["cofitok"] = {
