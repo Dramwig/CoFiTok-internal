@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 import torch
@@ -29,10 +32,14 @@ from cofitok.generation_gate_sources import (
     GATE_SOURCE_SUFFIXES,
     build_generation_gate_source_reports,
 )
+from cofitok.environment import runtime_environment_sha256
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
 from cofitok.training.checkpointing import checkpoint_integrity_path
+
+
+ROOT = Path(__file__).resolve().parents[1]
 from scripts.preflight_generation_sampling import run_sampling_preflight
 
 
@@ -364,6 +371,37 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     assert preflight["release_authorization"] == report[
         "release_authorization"
     ]
+
+    cli_report_path = tmp_path / "cli_export_report.json"
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(ROOT / "src")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/export_generation_inference_artifact.py"),
+            "--checkpoint",
+            str(source),
+            "--output",
+            str(artifact),
+            "--release-gate",
+            str(release_gate),
+            "--report",
+            str(cli_report_path),
+        ],
+        cwd=ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    cli_report = json.loads(cli_report_path.read_text(encoding="utf-8"))
+    execution = cli_report["execution"]
+    assert len(execution["git"]["revision"]) == 40
+    assert execution["runtime_environment"]["device"]["type"] == "cpu"
+    assert execution["runtime_environment_sha256"] == (
+        runtime_environment_sha256(execution["runtime_environment"])
+    )
 
 
 def test_ema_export_rejects_source_without_deployment_provenance(tmp_path) -> None:

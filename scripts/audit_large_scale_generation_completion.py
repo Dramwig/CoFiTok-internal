@@ -1420,7 +1420,32 @@ def _inference_export_evidence(
             ):
                 raise ValueError(f"{method} inference smoke PNG differs from report")
         execution_environment_sha = None
+        export_environment_sha = None
         if expected_execution_git is not None:
+            export_execution = export.get("execution")
+            if not isinstance(export_execution, dict):
+                raise ValueError(
+                    f"{method} export execution provenance is missing"
+                )
+            if export_execution.get("git") != expected_execution_git:
+                raise ValueError(
+                    f"{method} export execution Git provenance differs"
+                )
+            export_environment = export_execution.get("runtime_environment")
+            if not isinstance(export_environment, dict):
+                raise ValueError(
+                    f"{method} export execution runtime environment is missing"
+                )
+            export_environment_sha = runtime_environment_sha256(
+                export_environment
+            )
+            if (
+                export_execution.get("runtime_environment_sha256")
+                != export_environment_sha
+            ):
+                raise ValueError(
+                    f"{method} export execution runtime environment differs"
+                )
             if preflight.get("git") != expected_execution_git:
                 raise ValueError(
                     f"{method} export preflight execution Git provenance differs"
@@ -1461,6 +1486,7 @@ def _inference_export_evidence(
             "source_runtime_environment_sha256": expected_environment_sha,
             "source_git": expected_source_git,
             "execution_git": expected_execution_git,
+            "export_runtime_environment_sha256": export_environment_sha,
             "execution_runtime_environment_sha256": execution_environment_sha,
             "training_authorization": expected_authorization,
             "release_authorization": release_authorization,

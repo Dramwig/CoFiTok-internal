@@ -1167,6 +1167,11 @@ def _inference_exports() -> dict:
                 training_authorization
             ),
             "release_authorization": copy.deepcopy(release_authorization),
+            "execution": {
+                "git": dict(execution_git),
+                "runtime_environment": copy.deepcopy(execution_environment),
+                "runtime_environment_sha256": environment_sha,
+            },
             "artifact_sha256": artifact_sha,
             "artifact_bytes": 400,
             "artifact": artifact,
@@ -2560,6 +2565,9 @@ def test_inference_release_audit_binds_execution_revision_and_environment() -> N
     assert evidence["cofitok"]["execution_git"]["revision"] == FULL_REVISION
     assert len(
         evidence["cofitok"]["execution_runtime_environment_sha256"]
+    ) == 64
+    assert len(
+        evidence["cofitok"]["export_runtime_environment_sha256"]
     ) == 64
 
     kwargs["inference_exports"]["cofitok_smoke"]["git"]["revision"] = "c" * 40
