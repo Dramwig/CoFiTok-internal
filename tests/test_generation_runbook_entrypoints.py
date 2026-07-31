@@ -9,6 +9,9 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+COMMAND_PATTERN = re.compile(
+    r'(?:python|"?\$PYTHON"?)\s+scripts/([A-Za-z0-9_]+\.py)'
+)
 RUNBOOKS = (
     "generation_attest_deployed_revision.sh",
     "generation_10pct_matched_50k_2026-07-12.sh",
@@ -18,12 +21,21 @@ RUNBOOKS = (
     "generation_export_inference_artifacts.sh",
     "generation_full_matched_300k_after_gate.sh",
     "generation_complete_pipeline_after_10pct.sh",
+    "generation_stability_ema_teacher_matched_50k_after_gate.sh",
+    "generation_stability_ema_teacher_50k_posteval_waiter.sh",
+    "generation_stability_ema_teacher_50k_posteval_after_training.sh",
+    "generation_stability_ema_teacher_full_matched_300k_after_gate.sh",
+    "generation_stability_ema_teacher_full_posteval_50k.sh",
+    "generation_stability_ema_teacher_export_inference_artifacts.sh",
+    "generation_stability_ema_teacher_completion_audit.sh",
 )
 ENTRYPOINTS = {
+    "audit_generation_stability_completion.py",
     "audit_generation_training_progress.py",
     "audit_large_scale_generation_completion.py",
     "build_generation_gate_report.py",
     "build_generation_milestone_report.py",
+    "build_generation_stability_50k_summary.py",
     "build_generation_visual_audit.py",
     "build_large_scale_generation_comparison.py",
     "check_generation_storage_capacity.py",
@@ -37,6 +49,7 @@ ENTRYPOINTS = {
     "monitor_generation_pair.py",
     "preflight_generation_sampling.py",
     "print_generation_workspace_paths.py",
+    "run_generation_stability_50k_posteval_waiter.py",
     "run_generation_training_watchdog.py",
     "select_generation_sampling_batch.py",
     "select_generation_training_runtime.py",
@@ -44,6 +57,7 @@ ENTRYPOINTS = {
     "validate_generation_configs.py",
     "validate_generation_gate_report.py",
     "validate_generation_milestone_report.py",
+    "validate_generation_stability_scaling_decision.py",
     "validate_generation_training_completion.py",
     "validate_generation_training_pair.py",
     "write_generation_pipeline_status.py",
@@ -75,7 +89,7 @@ def _runbook_contracts() -> dict[str, set[str]]:
         lines = (ROOT / "artifacts/runbooks" / name).read_text(encoding="utf-8").splitlines()
         index = 0
         while index < len(lines):
-            match = re.search(r"python scripts/([A-Za-z0-9_]+\.py)", lines[index])
+            match = COMMAND_PATTERN.search(lines[index])
             if match is None:
                 index += 1
                 continue
@@ -86,9 +100,7 @@ def _runbook_contracts() -> dict[str, set[str]]:
             command = "\n".join(command_lines)
             parts = re.split(r"(?m)^\s*--\s*\\\s*$", command, maxsplit=1)
             for part in parts:
-                nested_match = re.search(
-                    r"python scripts/([A-Za-z0-9_]+\.py)", part
-                )
+                nested_match = COMMAND_PATTERN.search(part)
                 if nested_match is None:
                     continue
                 script = nested_match.group(1)
