@@ -1,0 +1,32 @@
+{
+    "schema_version":  1,
+    "status":  "completed",
+    "role":  "generation_stability_50k_posteval_waiter_v4_schedule_audit_handoff",
+    "training_revision":  "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "evaluation_revision":  "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "active_waiter_pid":  281834,
+    "trainer_pid":  319202,
+    "formal_300k_allowed":  false,
+    "files":  {
+                  "cofitok_live_schedule_audit.json":  {
+                                                           "bytes":  4666,
+                                                           "sha256":  "385f3735374f7c52491fe6408af19e0fff0bcfd074adbb8e1c3d1224cd6b9bf2"
+                                                       },
+                  "pair_monitor_after_waiter_v4_switch.json":  {
+                                                                   "bytes":  14371,
+                                                                   "sha256":  "96bf2b2450a49901ac87a9d763d53620b60a4012f49857e7c1e3ef84ab52e624"
+                                                               },
+                  "posteval_waiter_c1efb12.json":  {
+                                                       "bytes":  1030,
+                                                       "sha256":  "8ef1ddc436a13a942cb651fe03d202d9ebaff63b6c04f45d033344bd5a160f90"
+                                                   },
+                  "posteval_waiter_v3_before_c1efb12.json":  {
+                                                                 "bytes":  1027,
+                                                                 "sha256":  "7b96349649baa40691d4ca820155413d3a86b56041b7b3210e84726c7b52e723"
+                                                             },
+                  "waiter_v4_schedule_audit_receipt.json":  {
+                                                                "bytes":  3797,
+                                                                "sha256":  "2d49d96e7ba5080ce4c906c3ce2d3544375bb558d5e89c475fa33e33ef94a709"
+                                                            }
+              }
+}

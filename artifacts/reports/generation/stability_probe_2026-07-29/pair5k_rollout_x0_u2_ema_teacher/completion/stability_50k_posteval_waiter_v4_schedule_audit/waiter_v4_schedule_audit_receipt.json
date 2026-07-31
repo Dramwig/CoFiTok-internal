@@ -1,0 +1,101 @@
+{
+  "bundle": {
+    "advertised_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "bytes": 16155,
+    "path": "/tmp/cofitok-stability-schedule-audit-c1efb12.bundle",
+    "prerequisite_revision": "08b67cc58026adf3e052a3eeab48b4bc0834cfd4",
+    "sha256": "9c16b936b93daab2db8fdf3733d5da59a222f8feb8e7ac93c01ec51d40f647c7"
+  },
+  "captured_at": "2026-07-31T08:23:33Z",
+  "files": {
+    "cofitok_live_schedule_audit.json": {
+      "bytes": 4666,
+      "path": "/tmp/cofitok-c1efb12-live-schedule-audit.json",
+      "sha256": "385f3735374f7c52491fe6408af19e0fff0bcfd074adbb8e1c3d1224cd6b9bf2"
+    },
+    "pair_monitor_after_waiter_v4_switch.json": {
+      "bytes": 14371,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/pair_monitor.json",
+      "sha256": "96bf2b2450a49901ac87a9d763d53620b60a4012f49857e7c1e3ef84ab52e624"
+    },
+    "posteval_waiter_c1efb12.json": {
+      "bytes": 1030,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/posteval_waiter.json",
+      "sha256": "8ef1ddc436a13a942cb651fe03d202d9ebaff63b6c04f45d033344bd5a160f90"
+    },
+    "posteval_waiter_v3_before_c1efb12.json": {
+      "bytes": 1027,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/posteval_waiter_v3_before_c1efb12.json",
+      "sha256": "7b96349649baa40691d4ca820155413d3a86b56041b7b3210e84726c7b52e723"
+    }
+  },
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "live_audit": {
+    "checkpoint_integrity_status": "verified",
+    "config_sha256": "4b9bf0d89f639983df6f5c046deb36ad6bd65dac8ec8f9b587721dbcef688f02",
+    "ema_teacher_consistency": {
+      "active_rows": 0,
+      "expected_scale_at_last_step": 0.0,
+      "nonzero_loss_rows": 0,
+      "start_step": 30000,
+      "verified_rows": 135,
+      "warmup_steps": 10000,
+      "weight": 0.25
+    },
+    "issues": [],
+    "last_step": 6700,
+    "metric_row_count": 135,
+    "rollout_consistency": {
+      "active_rows": 135,
+      "expected_scale_at_last_step": 0.67,
+      "nonzero_loss_rows": 135,
+      "start_step": 0,
+      "verified_rows": 135,
+      "warmup_steps": 10000,
+      "weight": 0.1
+    },
+    "schedule_status": "verified",
+    "status": "healthy",
+    "validation_event_count": 6,
+    "warnings": []
+  },
+  "rehearsal": {
+    "code_suite_collected_excluding_paper_layout": 796,
+    "code_suite_passed": 794,
+    "code_suite_skipped": 2,
+    "cuda_visible_devices": "-1",
+    "official_repository_head": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "official_repository_head_moved": false,
+    "paper_layout_collected": 4,
+    "paper_layout_passed": 4,
+    "runbook_syntax_checked": 95,
+    "runbook_syntax_failed": 0,
+    "target_branch": "scale/generation-stability-50k-posteval-v4",
+    "target_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289"
+  },
+  "role": "generation_stability_50k_posteval_waiter_v4_schedule_audit",
+  "schema_version": 1,
+  "status": "completed",
+  "training": {
+    "branch": "scale/generation-stability-50k-preflight",
+    "monitor_issues": [],
+    "monitor_stage": "cofitok_training",
+    "monitor_status": "running",
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "samples_seen_at_monitor_snapshot": 432000,
+    "step_at_monitor_snapshot": 6750,
+    "trainer_pid": 319202
+  },
+  "waiter_switch": {
+    "active_branch": "scale/generation-stability-50k-posteval-v4",
+    "active_pid": 281834,
+    "active_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "child_pid": null,
+    "detail": "waiting_for_completed_training_pair",
+    "formal_300k_allowed": false,
+    "gpu_compute_pids_after": [319202],
+    "gpu_compute_pids_before": [319202],
+    "status": "waiting",
+    "superseded_pid": 25861
+  }
+}
