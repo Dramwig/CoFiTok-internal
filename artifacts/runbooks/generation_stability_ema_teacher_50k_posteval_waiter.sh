@@ -20,6 +20,16 @@ exec "$PYTHON" scripts/run_generation_stability_50k_posteval_waiter.py \
   --project "$PROJECT" \
   --monitor-report "$OUTPUT_ROOT/pair_monitor.json" \
   --pair-summary "$OUTPUT_ROOT/reports/pair_summary.json" \
+  --pair-summary-builder \
+    "$PROJECT/scripts/build_generation_stability_50k_summary.py" \
+  --cofitok-training \
+    "$OUTPUT_ROOT/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json" \
+  --dense-training \
+    "$OUTPUT_ROOT/dense_rollout_x0_u2_ema_teacher/training_report.json" \
+  --decision-validation \
+    "$OUTPUT_ROOT/reports/stability_decision_validation.json" \
+  --config-validation \
+    "$OUTPUT_ROOT/reports/config_validation.json" \
   --status-output "$OUTPUT_ROOT/reports/posteval_waiter.json" \
   --posteval-runbook \
     "$PROJECT/artifacts/runbooks/generation_stability_ema_teacher_50k_posteval_after_training.sh" \

@@ -18,6 +18,12 @@ ROLE = "generation_stability_50k_posteval_waiter"
 EXPECTED_PAIR_STEPS = 50_000
 EXPECTED_PAIR_IMAGES = 3_200_000
 EXPECTED_EFFECTIVE_BATCH = 64
+SUMMARY_SOURCE_NAMES = (
+    "cofitok_training",
+    "dense_training",
+    "decision_validation",
+    "config_validation",
+)
 
 
 def _read_object(path: Path) -> dict[str, Any]:
@@ -189,6 +195,116 @@ def _source(path: Path) -> dict[str, Any]:
     }
 
 
+def prepare_pair_summary(
+    *,
+    project: Path,
+    pair_summary: Path,
+    pair_summary_builder: Path,
+    source_paths: dict[str, Path],
+    expected_training_revision: str,
+    expected_training_branch: str,
+    expected_evaluation_revision: str,
+    expected_evaluation_branch: str,
+) -> dict[str, Any]:
+    project = project.resolve()
+    pair_summary = pair_summary.resolve()
+    builder = pair_summary_builder.resolve()
+    expected_builder = (
+        project / "scripts" / "build_generation_stability_50k_summary.py"
+    ).resolve()
+    if builder != expected_builder or not builder.is_file():
+        raise ValueError("pair summary builder is not the bound evaluation checkout script")
+    if set(source_paths) != set(SUMMARY_SOURCE_NAMES):
+        raise ValueError("pair summary source paths are incomplete")
+
+    resolved_sources = {name: path.resolve() for name, path in source_paths.items()}
+    missing = [str(path) for path in resolved_sources.values() if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(
+            "pair summary source reports are missing: " + ", ".join(missing)
+        )
+
+    created = False
+    if not pair_summary.is_file():
+        _verify_evaluation_checkout(
+            project,
+            expected_revision=expected_evaluation_revision,
+            expected_branch=expected_evaluation_branch,
+        )
+        environment = os.environ.copy()
+        environment["PYTHONPATH"] = str((project / "src").resolve())
+        command = [
+            sys.executable,
+            str(builder),
+            "--cofitok-training",
+            str(resolved_sources["cofitok_training"]),
+            "--dense-training",
+            str(resolved_sources["dense_training"]),
+            "--decision-validation",
+            str(resolved_sources["decision_validation"]),
+            "--config-validation",
+            str(resolved_sources["config_validation"]),
+            "--expected-revision",
+            expected_training_revision,
+            "--expected-branch",
+            expected_training_branch,
+            "--output",
+            str(pair_summary),
+        ]
+        result = subprocess.run(
+            command,
+            cwd=project,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            diagnostic = (result.stderr or result.stdout).strip()
+            raise RuntimeError(
+                "source-bound pair summary builder failed"
+                + (f": {diagnostic[-4000:]}" if diagnostic else "")
+            )
+        if not pair_summary.is_file():
+            raise RuntimeError("pair summary builder succeeded without creating output")
+        created = True
+
+    summary = _read_object(pair_summary)
+    observation = validate_pair_summary(
+        summary,
+        expected_training_revision=expected_training_revision,
+        expected_training_branch=expected_training_branch,
+    )
+    expected_sources = {
+        name: _source(path) for name, path in resolved_sources.items()
+    }
+    if summary.get("sources") != expected_sources:
+        raise ValueError("pair summary source provenance mismatch")
+    return {
+        **observation,
+        "preparation": (
+            "rebuilt_after_completed_training"
+            if created
+            else "reused_existing_source_bound_summary"
+        ),
+        "sources": expected_sources,
+    }
+
+
+def prepare_pair_summary_if_authorized(
+    monitor_observation: dict[str, Any],
+    **prepare_kwargs: Any,
+) -> dict[str, Any] | None:
+    authorized = (
+        monitor_observation.get("status") == "pass"
+        and monitor_observation.get("stage") == "complete"
+        and not monitor_observation.get("issues")
+    )
+    if not authorized:
+        return None
+    return prepare_pair_summary(**prepare_kwargs)
+
+
 def _status(
     *,
     status: str,
@@ -225,6 +341,11 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--project", type=Path, required=True)
     parser.add_argument("--monitor-report", type=Path, required=True)
     parser.add_argument("--pair-summary", type=Path, required=True)
+    parser.add_argument("--pair-summary-builder", type=Path, required=True)
+    parser.add_argument("--cofitok-training", type=Path, required=True)
+    parser.add_argument("--dense-training", type=Path, required=True)
+    parser.add_argument("--decision-validation", type=Path, required=True)
+    parser.add_argument("--config-validation", type=Path, required=True)
     parser.add_argument("--status-output", type=Path, required=True)
     parser.add_argument("--posteval-runbook", type=Path, required=True)
     parser.add_argument("--checkpoint-root", type=Path, required=True)
@@ -266,6 +387,12 @@ def main() -> int:
         expected_revision=args.expected_evaluation_revision,
         expected_branch=args.expected_evaluation_branch,
     )
+    summary_sources = {
+        "cofitok_training": args.cofitok_training,
+        "dense_training": args.dense_training,
+        "decision_validation": args.decision_validation,
+        "config_validation": args.config_validation,
+    }
     deadline = time.monotonic() + args.timeout_seconds
     monitor_observation: dict[str, Any] | None = None
     summary_observation: dict[str, Any] | None = None
@@ -284,18 +411,40 @@ def main() -> int:
                     "stability 50K training monitor reached "
                     f"{monitor_observation['status']}"
                 )
-            pair_ready = (
+            if monitor_observation["status"] == "pass" and (
+                monitor_observation["stage"] != "complete"
+                or monitor_observation["issues"]
+            ):
+                raise RuntimeError(
+                    "stability 50K monitor reported pass without a clean complete stage"
+                )
+            if (
                 monitor_observation["status"] == "pass"
                 and monitor_observation["stage"] == "complete"
                 and not monitor_observation["issues"]
-                and args.pair_summary.is_file()
-            )
-            if pair_ready:
-                summary_observation = validate_pair_summary(
-                    _read_object(args.pair_summary),
-                    expected_training_revision=args.expected_training_revision,
-                    expected_training_branch=args.expected_training_branch,
+                and not args.pair_summary.is_file()
+            ):
+                write_json_report(
+                    args.status_output,
+                    _status(
+                        status="running",
+                        detail="building_source_bound_pair_summary",
+                        expected=expected,
+                        monitor=monitor_observation,
+                    ),
                 )
+            summary_observation = prepare_pair_summary_if_authorized(
+                monitor_observation,
+                project=project,
+                pair_summary=args.pair_summary,
+                pair_summary_builder=args.pair_summary_builder,
+                source_paths=summary_sources,
+                expected_training_revision=args.expected_training_revision,
+                expected_training_branch=args.expected_training_branch,
+                expected_evaluation_revision=args.expected_evaluation_revision,
+                expected_evaluation_branch=args.expected_evaluation_branch,
+            )
+            if summary_observation is not None:
                 gpu_pids = _gpu_compute_pids()
                 if not gpu_pids:
                     break
