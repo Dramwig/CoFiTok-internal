@@ -74,3 +74,23 @@ def test_stability_full_posteval_audits_each_run_against_its_config() -> None:
         "--expected-steps", cofitok_run
     )
     assert dense_run < dense_config < source.index("--expected-steps", dense_run)
+
+
+def test_stability_full_posteval_receipts_high_cost_partial_stages() -> None:
+    source = RUNBOOK.read_text(encoding="utf-8")
+
+    assert source.count("scripts/run_generation_stage_once.py") == 7
+    for receipt in (
+        "cofitok_checkpoint_eval.json",
+        "dense_checkpoint_eval.json",
+        "cofitok_generation_metrics.json",
+        "dense_generation_metrics.json",
+        "visual_audit.json",
+        "final_gate.json",
+        "comparison.json",
+    ):
+        assert receipt in source
+    assert source.count("--input-file \"$DATASET_MANIFEST\"") == 4
+    assert source.count('--input-tree "$DATA"') == 2
+    assert '--input-tree "$COFITOK_RUN/samples_50k_ddim250_cfg15/prefix_8"' in source
+    assert '--input-tree "$DENSE_RUN/samples_50k_ddim250_cfg15/prefix_1"' in source

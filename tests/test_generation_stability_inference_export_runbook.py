@@ -61,3 +61,20 @@ def test_inference_documentation_uses_release_authorized_stability_paths() -> No
     assert "--require-release-authorization" in documentation
     assert "imagenet256_full_cofitok_k8_300k" not in documentation
     assert "exports/imagenet256_full_300k" not in documentation
+
+
+def test_stability_export_receipts_every_partial_success_boundary() -> None:
+    source = RUNBOOK.read_text(encoding="utf-8")
+
+    assert source.count("scripts/run_generation_stage_once.py") == 6
+    for receipt in (
+        "cofitok_export.json",
+        "dense_export.json",
+        "cofitok_export_preflight.json",
+        "dense_export_preflight.json",
+        "cofitok_export_smoke.json",
+        "dense_export_smoke.json",
+    ):
+        assert receipt in source
+    assert source.count("--output-tree") == 2
+    assert "--overwrite" not in source

@@ -15,6 +15,7 @@ from scripts.audit_generation_stability_completion import (
     full_storage_capacity_evidence,
     gate_evidence,
     monitor_evidence,
+    _verify_visual_panels,
 )
 
 
@@ -144,6 +145,7 @@ def test_stability_completion_runbook_is_a_read_only_exact_identity_gate() -> No
     source = RUNBOOK.read_text(encoding="utf-8")
 
     assert "scripts/audit_generation_stability_completion.py" in source
+    assert "Path(sys.argv[1]).unlink(missing_ok=True)" in source
     assert "EXPECTED_DECISION_SHA256=${" in source
     assert "EXPECTED_SCALING_GATE_SHA256=${" in source
     assert "EXPECTED_SCALING_TRAINING_REVISION=${" in source
@@ -384,3 +386,45 @@ def test_stability_completion_replays_training_sources_from_deployed_checkout() 
     assert '"dense_config": training_project' in source
     assert '"project_root": training_project' in source
     assert source.count('"require_current_formal_repository": False') == 2
+
+def test_visual_panel_verifier_rehashes_and_decodes_every_png(tmp_path: Path) -> None:
+    from PIL import Image
+
+    root = tmp_path / "visual_audit"
+    root.mkdir()
+    panels = {}
+    for name in ("cofitok", "dense_identity", "cofitok_prefix_paths"):
+        path = root / f"{name}.png"
+        Image.new("RGB", (8, 6), color=(10, 20, 30)).save(path)
+        panels[name] = {
+            "path": path.resolve().as_posix(),
+            "sha256": file_sha256(path),
+        }
+    report = {"panels": panels}
+
+    evidence = _verify_visual_panels(report, expected_root=root)
+    assert set(evidence) == set(panels)
+    assert all(row["mode"] == "RGB" for row in evidence.values())
+
+    (root / "cofitok.png").write_bytes(b"replaced")
+    with pytest.raises(ValueError, match="SHA256 differs"):
+        _verify_visual_panels(report, expected_root=root)
+
+
+def test_visual_panel_verifier_rejects_unreported_png(tmp_path: Path) -> None:
+    from PIL import Image
+
+    root = tmp_path / "visual_audit"
+    root.mkdir()
+    panels = {}
+    for name in ("cofitok", "dense_identity", "cofitok_prefix_paths"):
+        path = root / f"{name}.png"
+        Image.new("RGB", (4, 4)).save(path)
+        panels[name] = {
+            "path": path.resolve().as_posix(),
+            "sha256": file_sha256(path),
+        }
+    Image.new("RGB", (4, 4)).save(root / "unreported.png")
+
+    with pytest.raises(ValueError, match="PNG set differs"):
+        _verify_visual_panels({"panels": panels}, expected_root=root)

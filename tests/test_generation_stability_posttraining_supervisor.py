@@ -186,6 +186,42 @@ def test_stage_runner_stops_on_nonretryable_audit_report(
     assert calls[-1]["detail"] == "completion_audit_nonretryable_report"
 
 
+def test_stage_runner_stops_immediately_when_replay_is_rejected(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict] = []
+    launches = 0
+
+    class Child:
+        pid = 23
+
+        @staticmethod
+        def wait() -> int:
+            return supervisor.STAGE_REPLAY_ERROR_EXIT_CODE
+
+    def popen(*args, **kwargs):
+        nonlocal launches
+        del args, kwargs
+        launches += 1
+        return Child()
+
+    monkeypatch.setattr(supervisor.subprocess, "Popen", popen)
+    with pytest.raises(RuntimeError, match="replay validation failed"):
+        supervisor._run_stage(
+            name="inference_export",
+            runbook=tmp_path / "export.sh",
+            project=tmp_path,
+            environment={},
+            max_attempts=3,
+            retry_seconds=1.0,
+            write_status=lambda **kwargs: calls.append(kwargs),
+        )
+
+    assert launches == 1
+    assert calls[-1]["detail"] == "inference_export_replay_rejected"
+
+
 def test_posttraining_supervisor_runbook_cannot_launch_training() -> None:
     root = Path(__file__).resolve().parents[1]
     source = (
@@ -201,3 +237,15 @@ def test_posttraining_supervisor_runbook_cannot_launch_training() -> None:
     assert "generation_stability_ema_teacher_completion_audit.sh" in source
     assert "generation_stability_ema_teacher_full_matched_300k_after_gate.sh" not in source
     assert "train_generation.py" not in source
+
+
+def test_supervisor_always_replays_posteval_before_accepting_existing_gate() -> None:
+    source = Path(supervisor.__file__).read_text(encoding="utf-8")
+    stage_call = source.index('name="full_postevaluation"')
+    gate_check = source.index(
+        'if not final_gate_path.is_file():',
+        stage_call,
+    )
+
+    assert stage_call < gate_check
+    assert 'if not final_gate_path.is_file():\n        _run_stage(' not in source

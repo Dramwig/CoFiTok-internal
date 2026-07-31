@@ -21,6 +21,7 @@ FULL_MONITOR_NAME = "generation_stability_ema_teacher_full_matched_300k"
 FULL_LAUNCH_ROLE = "stability_full_training_launch_receipt"
 FINAL_GATE_PROFILE = "stability_full"
 COMPLETION_PROFILE = "stability_generation_system_v1"
+STAGE_REPLAY_ERROR_EXIT_CODE = 86
 FULL_LAUNCH_SOURCE_NAMES = {
     "deployment_receipt",
     "promotion_gate",
@@ -336,6 +337,16 @@ def _run_stage(
         exit_code = child.wait()
         if exit_code == 0:
             return
+        if exit_code == STAGE_REPLAY_ERROR_EXIT_CODE:
+            write_status(
+                status="failed",
+                detail=f"{name}_replay_rejected",
+                stage=name,
+                attempt=attempt,
+                child_pid=child.pid,
+                child_exit_code=exit_code,
+            )
+            raise RuntimeError(f"{name} replay validation failed")
         if nonretryable_report is not None and nonretryable_report.is_file():
             report = _read_object(nonretryable_report)
             if report.get("status") in {"failed", "incomplete"}:
@@ -495,40 +506,6 @@ def main() -> int:
             ),
         )
 
-    if completion_path.is_file():
-        if not final_gate_path.is_file():
-            raise ValueError("completion audit exists without a final gate")
-        observed_gate = validate_gate(
-            _read_object(final_gate_path),
-            gate_path=final_gate_path,
-            expected_training_revision=args.expected_full_training_revision,
-            expected_training_branch=args.expected_full_training_branch,
-            expected_evaluation_revision=args.expected_evaluation_revision,
-            expected_evaluation_branch=args.expected_evaluation_branch,
-        )
-        observed_completion = validate_completion(
-            _read_object(completion_path),
-            expected={
-                "decision_sha256": args.expected_decision_sha256,
-                "scaling_gate_sha256": args.expected_scaling_gate_sha256,
-                "full_readiness_sha256": args.expected_full_readiness_sha256,
-                "full_launch_receipt_sha256": args.expected_full_launch_receipt_sha256,
-                "final_gate_sha256": observed_gate["sha256"],
-                "scaling_training_revision": args.expected_scaling_training_revision,
-                "scaling_training_branch": args.expected_scaling_training_branch,
-                "scaling_evaluation_revision": args.expected_scaling_evaluation_revision,
-                "scaling_evaluation_branch": args.expected_scaling_evaluation_branch,
-                "full_training_revision": args.expected_full_training_revision,
-                "full_training_branch": args.expected_full_training_branch,
-                "full_evaluation_revision": args.expected_evaluation_revision,
-                "full_evaluation_branch": args.expected_evaluation_branch,
-                "export_revision": args.expected_evaluation_revision,
-                "export_branch": args.expected_evaluation_branch,
-            },
-        )
-        publish(status="pass", detail="stability_generation_system_completed")
-        return 0
-
     deadline = time.monotonic() + args.timeout_seconds
     while True:
         if args.full_monitor.is_file():
@@ -570,16 +547,15 @@ def main() -> int:
             "EXPECTED_TARGET_BRANCH": args.expected_evaluation_branch,
         }
     )
-    if not final_gate_path.is_file():
-        _run_stage(
-            name="full_postevaluation",
-            runbook=args.posteval_runbook.resolve(),
-            project=project,
-            environment=environment,
-            max_attempts=args.max_stage_attempts,
-            retry_seconds=args.retry_seconds,
-            write_status=publish,
-        )
+    _run_stage(
+        name="full_postevaluation",
+        runbook=args.posteval_runbook.resolve(),
+        project=project,
+        environment=environment,
+        max_attempts=args.max_stage_attempts,
+        retry_seconds=args.retry_seconds,
+        write_status=publish,
+    )
     if not final_gate_path.is_file():
         raise RuntimeError("full post-evaluation completed without a final gate")
     observed_gate = validate_gate(

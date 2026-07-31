@@ -29,6 +29,13 @@ export PYTHONPATH=src
 [[ "$(git rev-parse HEAD)" == "$EXPECTED_AUDIT_REVISION" ]]
 [[ "$(git branch --show-current)" == "$EXPECTED_AUDIT_BRANCH" ]]
 [[ -z "$(git status --porcelain --untracked-files=no)" ]]
+"$PYTHON" - "$OUTPUT" <<'PY'
+import sys
+from pathlib import Path
+
+Path(sys.argv[1]).unlink(missing_ok=True)
+PY
+
 mkdir -p "$REPORT_ROOT"
 
 "$PYTHON" scripts/audit_generation_stability_completion.py \

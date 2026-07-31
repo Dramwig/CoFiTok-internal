@@ -6,6 +6,8 @@ import re
 from pathlib import Path
 from typing import Any, Callable
 
+from PIL import Image
+
 from cofitok.environment import runtime_environment_sha256
 from cofitok.generation import sampling_protocol_contract
 from cofitok.generation.stability_scaling import (
@@ -698,6 +700,66 @@ def formal_generation_evidence(
     }
 
 
+def _verify_visual_panels(
+    visual: dict[str, Any],
+    *,
+    expected_root: Path,
+) -> dict[str, Any]:
+    root = expected_root.resolve()
+    if expected_root.is_symlink() or not root.is_dir():
+        raise ValueError("formal visual-audit directory is missing or symlinked")
+    panels = visual.get("panels")
+    if not isinstance(panels, dict) or set(panels) != {
+        "cofitok",
+        "dense_identity",
+        "cofitok_prefix_paths",
+    }:
+        raise ValueError("formal visual-audit panel set differs")
+    evidence = {}
+    paths = set()
+    for name, panel in panels.items():
+        if not isinstance(panel, dict):
+            raise ValueError(f"formal visual-audit panel is malformed: {name}")
+        declared = Path(str(panel.get("path", "")))
+        if not declared.is_absolute() or declared.is_symlink():
+            raise ValueError(f"formal visual-audit panel path is invalid: {name}")
+        resolved = declared.resolve(strict=True)
+        if (
+            declared.as_posix() != resolved.as_posix()
+            or not resolved.is_relative_to(root)
+            or resolved.suffix.lower() != ".png"
+            or resolved in paths
+        ):
+            raise ValueError(f"formal visual-audit panel path differs: {name}")
+        paths.add(resolved)
+        actual_sha256 = file_sha256(resolved)
+        if actual_sha256 != panel.get("sha256"):
+            raise ValueError(f"formal visual-audit panel SHA256 differs: {name}")
+        with Image.open(resolved) as image:
+            image.verify()
+        with Image.open(resolved) as image:
+            mode = image.mode
+            width, height = image.size
+        if mode != "RGB" or width < 1 or height < 1:
+            raise ValueError(f"formal visual-audit panel image is invalid: {name}")
+        evidence[name] = {
+            "path": resolved.as_posix(),
+            "bytes": resolved.stat().st_size,
+            "sha256": actual_sha256,
+            "mode": mode,
+            "width": width,
+            "height": height,
+        }
+    discovered = {
+        path.resolve()
+        for path in root.glob("*.png")
+        if path.is_file()
+    }
+    if discovered != paths:
+        raise ValueError("formal visual-audit PNG set differs from its report")
+    return evidence
+
+
 def runtime_and_visual_evidence(
     selection: dict[str, Any],
     visual: dict[str, Any],
@@ -705,6 +767,7 @@ def runtime_and_visual_evidence(
     *,
     expected_revision: str,
     expected_branch: str,
+    expected_visual_root: Path | None = None,
 ) -> dict[str, Any]:
     _raise_load_error(selection)
     _raise_load_error(visual)
@@ -754,12 +817,21 @@ def runtime_and_visual_evidence(
             != provenance.get("sample_set_sha256")
         ):
             raise ValueError(f"visual audit {method} source identity differs")
+    visual_panels = (
+        None
+        if expected_visual_root is None
+        else _verify_visual_panels(
+            visual,
+            expected_root=expected_visual_root,
+        )
+    )
     return {
         "sampling_batch_size": batch_size,
         "sampling_runtime_environment_sha256": selection.get(
             "runtime_environment_sha256"
         ),
         "visual_prefix_budgets": visual["prefix_budgets"],
+        "visual_panels": visual_panels,
     }
 
 
@@ -1366,6 +1438,7 @@ def main() -> None:
                     "full_evaluation_revision"
                 ],
                 expected_branch=args.expected_full_evaluation_branch,
+                expected_visual_root=full_reports / "visual_audit",
             ),
         ),
         _check(

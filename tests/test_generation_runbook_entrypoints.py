@@ -59,6 +59,7 @@ ENTRYPOINTS = {
     "run_generation_stability_50k_posteval_waiter.py",
     "run_generation_stability_full_readiness_waiter.py",
     "run_generation_stability_posttraining_supervisor.py",
+    "run_generation_stage_once.py",
     "run_generation_training_watchdog.py",
     "select_generation_sampling_batch.py",
     "select_generation_training_runtime.py",

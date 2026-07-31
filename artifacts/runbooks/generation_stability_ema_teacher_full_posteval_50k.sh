@@ -25,6 +25,8 @@ EVAL_CACHE="$CHECKPOINT_ROOT/eval_cache/torch_fidelity"
 SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/sampling_50k"
 SAMPLING_SELECTION="$REPORT_ROOT/sampling_runtime_selection.json"
 FINAL_GATE="$REPORT_ROOT/final_generation_gate.json"
+STAGE_STATE_ROOT="$REPORT_ROOT/stage_receipts"
+DATASET_MANIFEST="$CHECKPOINT_ROOT/../../datasets/imagenet_256/metadata/image_manifest.jsonl"
 
 cd "$PROJECT"
 export PYTHONPATH=src
@@ -37,7 +39,8 @@ export PYTHONPATH=src
 [[ -f "$COFITOK_CHECKPOINT" ]]
 [[ -f "$DENSE_CHECKPOINT" ]]
 [[ -f "$OFFICIAL_RELATED" ]]
-mkdir -p "$REPORT_ROOT"
+[[ -f "$DATASET_MANIFEST" ]]
+mkdir -p "$REPORT_ROOT" "$STAGE_STATE_ROOT"
 
 "$PYTHON" scripts/validate_generation_gate_report.py \
   --gate "$SCALING_GATE" \
@@ -112,7 +115,17 @@ if [[ ! "$SAMPLING_BATCH" =~ ^[0-9]+$ ]]; then
   exit 10
 fi
 
-"$PYTHON" scripts/evaluate_generation_checkpoint.py \
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/cofitok_checkpoint_eval.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$COFITOK_CHECKPOINT" \
+  --input-file "$COFITOK_CHECKPOINT.integrity.json" \
+  --input-file "$COFITOK_CONFIG" \
+  --input-file "$DATASET_MANIFEST" \
+  --output-tree "$COFITOK_RUN/checkpoint_eval_ema_t500_1024" \
+  -- \
+  "$PYTHON" scripts/evaluate_generation_checkpoint.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/checkpoint_eval_ema_t500_1024" \
   --num-images 1024 \
@@ -121,7 +134,17 @@ fi
   --weights ema \
   --precision bf16
 
-"$PYTHON" scripts/evaluate_generation_checkpoint.py \
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/dense_checkpoint_eval.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$DENSE_CHECKPOINT" \
+  --input-file "$DENSE_CHECKPOINT.integrity.json" \
+  --input-file "$DENSE_CONFIG" \
+  --input-file "$DATASET_MANIFEST" \
+  --output-tree "$DENSE_RUN/checkpoint_eval_ema_t500_1024" \
+  -- \
+  "$PYTHON" scripts/evaluate_generation_checkpoint.py \
   --checkpoint "$DENSE_CHECKPOINT" \
   --output-dir "$DENSE_RUN/checkpoint_eval_ema_t500_1024" \
   --num-images 1024 \
@@ -154,7 +177,19 @@ fi
   --precision bf16 \
   --resume
 
-"$PYTHON" scripts/evaluate_generation_metrics.py \
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/cofitok_generation_metrics.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_manifest.json" \
+  --input-file "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_progress.json" \
+  --input-file "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
+  --input-file "$DATASET_MANIFEST" \
+  --input-tree "$DATA" \
+  --input-tree "$COFITOK_RUN/samples_50k_ddim250_cfg15/prefix_8" \
+  --output-tree "$COFITOK_RUN/samples_50k_ddim250_cfg15/metrics" \
+  -- \
+  "$PYTHON" scripts/evaluate_generation_metrics.py \
   --real-dir "$DATA" \
   --generated-dir "$COFITOK_RUN/samples_50k_ddim250_cfg15/prefix_8" \
   --sampling-report "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
@@ -162,7 +197,19 @@ fi
   --cache-root "$EVAL_CACHE" \
   --min-samples 50000
 
-"$PYTHON" scripts/evaluate_generation_metrics.py \
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/dense_generation_metrics.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_manifest.json" \
+  --input-file "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_progress.json" \
+  --input-file "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
+  --input-file "$DATASET_MANIFEST" \
+  --input-tree "$DATA" \
+  --input-tree "$DENSE_RUN/samples_50k_ddim250_cfg15/prefix_1" \
+  --output-tree "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics" \
+  -- \
+  "$PYTHON" scripts/evaluate_generation_metrics.py \
   --real-dir "$DATA" \
   --generated-dir "$DENSE_RUN/samples_50k_ddim250_cfg15/prefix_1" \
   --sampling-report "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
@@ -183,7 +230,19 @@ fi
   --precision bf16 \
   --resume
 
-"$PYTHON" scripts/build_generation_visual_audit.py \
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/visual_audit.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
+  --input-file "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
+  --input-file "$COFITOK_RUN/prefix_diagnostic_64_ddim250_cfg15/sampling_report.json" \
+  --input-tree "$COFITOK_RUN/samples_50k_ddim250_cfg15/prefix_8" \
+  --input-tree "$DENSE_RUN/samples_50k_ddim250_cfg15/prefix_1" \
+  --input-tree "$COFITOK_RUN/prefix_diagnostic_64_ddim250_cfg15" \
+  --output-tree "$REPORT_ROOT/visual_audit" \
+  -- \
+  "$PYTHON" scripts/build_generation_visual_audit.py \
   --cofitok-sampling-report "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
   --dense-sampling-report "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
   --prefix-sampling-report "$COFITOK_RUN/prefix_diagnostic_64_ddim250_cfg15/sampling_report.json" \
@@ -194,7 +253,20 @@ fi
   --prefix-budgets 1,2,4,8 \
   --output-dir "$REPORT_ROOT/visual_audit"
 
-"$PYTHON" scripts/build_generation_gate_report.py \
+
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/final_gate.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$COFITOK_RUN/training_report.json" \
+  --input-file "$DENSE_RUN/training_report.json" \
+  --input-file "$COFITOK_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
+  --input-file "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
+  --input-file "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --input-file "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --output-file "$FINAL_GATE" \
+  -- \
+  "$PYTHON" scripts/build_generation_gate_report.py \
   --cofitok-training "$COFITOK_RUN/training_report.json" \
   --dense-training "$DENSE_RUN/training_report.json" \
   --cofitok-generation "$COFITOK_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
@@ -236,7 +308,19 @@ then
     --stage full >/dev/null
 fi
 
-"$PYTHON" scripts/build_large_scale_generation_comparison.py \
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/comparison.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$COFITOK_RUN/training_report.json" \
+  --input-file "$DENSE_RUN/training_report.json" \
+  --input-file "$COFITOK_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
+  --input-file "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
+  --input-file "$FINAL_GATE" \
+  --input-file "$OFFICIAL_RELATED" \
+  --output-tree "$REPORT_ROOT/comparison" \
+  -- \
+  "$PYTHON" scripts/build_large_scale_generation_comparison.py \
   --cofitok-training "$COFITOK_RUN/training_report.json" \
   --dense-training "$DENSE_RUN/training_report.json" \
   --cofitok-generation "$COFITOK_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
