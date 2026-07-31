@@ -14,7 +14,15 @@ RECIPE_STAGES = {
     "stability_scaling",
     "stability_full",
 }
-ALLOWED_RUNTIME_BATCHES = {(16, 4), (32, 2), (64, 1)}
+ALLOWED_RUNTIME_BATCHES = {
+    (1, 64),
+    (2, 32),
+    (4, 16),
+    (8, 8),
+    (16, 4),
+    (32, 2),
+    (64, 1),
+}
 
 
 def _normalized(value: Any) -> Any:
@@ -80,7 +88,7 @@ def _expected_shared(stage: str) -> dict[str, Any]:
         "diffusion.prediction_target": "epsilon",
         "model.image_channels": 3,
         "model.image_size": 256,
-        "model.base_channels": 128,
+        "model.base_channels": 256 if stage == "stability_full" else 128,
         "model.predictor_type": "scalable_unet",
         "model.predictor_channel_multipliers": [1, 2, 3, 4],
         "model.predictor_num_res_blocks": 2,

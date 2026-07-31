@@ -109,6 +109,9 @@ def test_stability_full_recipe_scales_the_qualified_mechanism_to_300k() -> None:
 
     assert contract["valid"] is True, contract["issues"]
     assert contract["issues"] == []
+    assert contract["expected_shared"]["model.base_channels"] == 256
+    assert contract["observed"]["cofitok"]["model.base_channels"] == 256
+    assert contract["observed"]["dense_identity"]["model.base_channels"] == 256
     assert contract["effective_batches"]["cofitok"]["effective_batch_size"] == 64
     assert contract["expected_shared"]["loss.rollout_consistency_warmup_steps"] == 60_000
     assert contract["expected_shared"]["loss.ema_teacher_consistency_start_step"] == 180_000
@@ -229,12 +232,29 @@ def test_recipe_allows_selected_runtime_with_same_effective_batch() -> None:
     assert contract["valid"] is True, contract["issues"]
 
 
-def test_recipe_rejects_unbenchmarked_runtime_with_same_effective_batch() -> None:
+def test_recipe_accepts_large_capacity_runtime_with_same_effective_batch() -> None:
     cofitok = _config("imagenet256_cofitok_k8_300k.json")
     dense = _config("imagenet256_dense_300k.json")
     for config in (cofitok, dense):
         config["data"]["batch_size"] = 1
         config["optimization"]["gradient_accumulation_steps"] = 64
+
+    contract = generation_training_recipe_contract(cofitok, dense, stage="full")
+
+    assert contract["valid"] is True, contract["issues"]
+    assert contract["effective_batches"]["cofitok"] == {
+        "micro_batch_size": 1,
+        "gradient_accumulation_steps": 64,
+        "effective_batch_size": 64,
+    }
+
+
+def test_recipe_rejects_runtime_outside_the_benchmarked_effective_batch_grid() -> None:
+    cofitok = _config("imagenet256_cofitok_k8_300k.json")
+    dense = _config("imagenet256_dense_300k.json")
+    for config in (cofitok, dense):
+        config["data"]["batch_size"] = 3
+        config["optimization"]["gradient_accumulation_steps"] = 21
 
     contract = generation_training_recipe_contract(cofitok, dense, stage="full")
 

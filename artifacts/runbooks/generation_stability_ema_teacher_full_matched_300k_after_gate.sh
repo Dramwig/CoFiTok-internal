@@ -54,6 +54,7 @@ mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
   --reference-checkpoint "$REFERENCE_COFITOK" \
   --reference-checkpoint "$REFERENCE_DENSE" \
   --checkpoint-count 16 \
+  --checkpoint-size-multiplier 4.0 \
   --sample-count 16384 \
   --estimated-sample-kib 256 \
   --additional-gib 16 \
@@ -71,7 +72,8 @@ runtime_selected="$("$PYTHON" scripts/select_generation_training_runtime.py \
   --output "$RUNTIME_SELECTION" \
   --training-run-dir "$COFITOK_RUN" \
   --training-run-dir "$DENSE_RUN" \
-  --candidates 16x4,32x2,64x1 \
+  --candidates 1x64,2x32,4x16,8x8,16x4 \
+  --baseline-candidate 1x64 \
   --effective-batch-size 64 \
   --benchmark-steps 8 \
   --warmup-steps 2 \

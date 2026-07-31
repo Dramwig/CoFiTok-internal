@@ -40,7 +40,10 @@ correction is developed independently on `scale/generation-stability`.
   `rgbtail3` layout, Hellinger-stable capacity objective, low-SNR
   high-frequency term, two-step clipped-`x0` rollout consistency, and late EMA
   teacher consistency for both matched methods. Runtime selection may change
-  micro-batch and accumulation only while their product remains 64.
+  micro-batch and accumulation only while their product remains 64. The
+  qualified `stability_scaling` stage remains at 128 base channels;
+  the dormant `stability_full` stage is a separate 256-channel capacity
+  tier and cannot alter or reinterpret the 50K evidence.
 - Production training uses bf16, gradient accumulation, gradient clipping,
   cosine LR, EMA, isolated DataLoader RNG, atomic checkpoints, retention, and
   exact model/optimizer/scheduler/RNG/sampler recovery.
@@ -200,6 +203,12 @@ repository or mutate an active training checkout.
   branch/revision, and pair contract, while explicitly setting
   `formal_300k_authorization_allowed=false`. A formal EMA sampling and mechanism
   gate is still required.
+- The dormant `stability_full` pair uses `base_channels=256` with
+  CoFiTok `250,153,763` parameters and dense identity `250,135,043`,
+  a relative gap of `+0.007484%`. This is an approximately 250M-parameter
+  matched capacity tier; the 62.8M parameter counts above remain the exact 50K
+  qualification architecture. Full training is still source-bound to a passing
+  50K promotion gate and is not authorized by this configuration change alone.
 - Stability mechanism evaluation derives the coarse/tail partition from
   `token_spatial_strides`: the `rgbtail3` layout measures coarse utilization
   over tokens 1-5 and treats tokens 6-8 as the full-resolution tail. The
@@ -603,8 +612,11 @@ Missing evidence is `in_progress`, contradictory evidence is `failed`, and only
 the full chain is `complete`. See
 `docs/records/2026-07-12_large_scale_generation_completion_audit.md`.
 
-Before full 300K training starts, both methods run the same checkpoint-free
-training-runtime candidates `16x4`, `32x2`, and `64x1`. Selection preserves
+Before the legacy 128-channel full 300K path starts, both methods run the same
+checkpoint-free training-runtime candidates `16x4`, `32x2`, and `64x1`.
+The 256-channel stability-full path instead benchmarks
+`1x64`, `2x32`, `4x16`, `8x8`, and `16x4`, with `1x64` as
+the explicit fail-closed baseline. Selection preserves
 effective batch 64, requires both methods to fit below 90% VRAM, and minimizes
 the slower method's synchronized optimizer-step time. The selected microbatch
 and accumulation are applied to every full-training segment. Every completed
@@ -615,7 +627,8 @@ completion audit both reject environment or tracked-Git drift. The selector is
 also state-aware: before either formal run contains training state it may build
 or refresh the shared selection, but once either run directory is non-empty it
 only validates and reuses the existing report. That frozen report binds both
-run paths, all three candidates, the 300K horizon, benchmark horizon, config
+run paths, the complete candidate set and explicit baseline, the 300K horizon,
+benchmark horizon, config
 SHA256 values, clean branch/revision, dataset identity, and runtime environment.
 A missing or drifted report fails before any benchmark subprocess or model load.
 See
@@ -693,6 +706,11 @@ space for conservative checkpoint copies, planned PNGs, evaluator caches, and a
 safety margin; insufficient capacity exits non-retryably before large artifacts
 are created. See
 `docs/records/2026-07-13_generation_storage_capacity_preflight.md`.
+For the 256-channel stability-full pair, the training preflight multiplies the
+largest measured 128-channel reference checkpoint by `4.0` before reserving
+16 checkpoint slots. The report stores the reference bytes, multiplier,
+rounded-up planned bytes, and reserve arithmetic; the stability completion
+audit requires schema v2 and refuses a multiplier below `4.0`.
 
 The full 300K matched run also publishes a generic read-only operational monitor
 with optimizer-step freshness, finite-metric checks, checkpoint cadence, process,

@@ -27,6 +27,7 @@ def build_storage_capacity_report(
     free_bytes: int,
     checkpoint_count: int,
     checkpoint_bytes: int,
+    checkpoint_size_multiplier: float = 1.0,
     sample_count: int,
     estimated_sample_bytes: int,
     additional_bytes: int,
@@ -38,6 +39,11 @@ def build_storage_capacity_report(
     counts = (checkpoint_count, checkpoint_bytes, sample_count, estimated_sample_bytes)
     if not stage or any(value < 0 for value in counts):
         raise ValueError("storage capacity plan has invalid non-negative inputs")
+    if (
+        not math.isfinite(checkpoint_size_multiplier)
+        or checkpoint_size_multiplier < 1.0
+    ):
+        raise ValueError("checkpoint size multiplier must be finite and at least one")
     if additional_bytes < 0 or safety_margin_bytes < 0:
         raise ValueError("storage capacity reserves must be non-negative")
     if total_bytes < 1 or used_bytes < 0 or free_bytes < 0:
@@ -45,12 +51,15 @@ def build_storage_capacity_report(
     if used_bytes + free_bytes > total_bytes:
         raise ValueError("filesystem usage exceeds total capacity")
 
-    checkpoint_reserve = checkpoint_count * checkpoint_bytes
+    planned_checkpoint_bytes = math.ceil(
+        checkpoint_bytes * checkpoint_size_multiplier
+    )
+    checkpoint_reserve = checkpoint_count * planned_checkpoint_bytes
     sample_reserve = sample_count * estimated_sample_bytes
     required = checkpoint_reserve + sample_reserve + additional_bytes + safety_margin_bytes
     passed = free_bytes >= required
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "role": "generation_storage_capacity_preflight",
         "stage": stage,
         "status": "pass" if passed else "fail",
@@ -65,7 +74,9 @@ def build_storage_capacity_report(
         },
         "plan": {
             "checkpoint_count": checkpoint_count,
-            "checkpoint_bytes_each": checkpoint_bytes,
+            "reference_checkpoint_bytes_each": checkpoint_bytes,
+            "checkpoint_size_multiplier": checkpoint_size_multiplier,
+            "checkpoint_bytes_each": planned_checkpoint_bytes,
             "checkpoint_reserve_bytes": checkpoint_reserve,
             "sample_count": sample_count,
             "estimated_sample_bytes_each": estimated_sample_bytes,
@@ -94,6 +105,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--stage", required=True)
     parser.add_argument("--reference-checkpoint", action="append", default=[])
     parser.add_argument("--checkpoint-count", type=int, default=0)
+    parser.add_argument(
+        "--checkpoint-size-multiplier",
+        type=_non_negative_float,
+        default=1.0,
+        help=(
+            "Multiply the largest measured reference checkpoint before reserving "
+            "space; values below one are rejected."
+        ),
+    )
     parser.add_argument("--sample-count", type=int, required=True)
     parser.add_argument("--estimated-sample-kib", type=_non_negative_float, default=256.0)
     parser.add_argument("--additional-gib", type=_non_negative_float, default=16.0)
@@ -108,6 +128,8 @@ def main() -> None:
         raise SystemExit(f"storage capacity path is not a directory: {path}")
     if args.checkpoint_count < 0 or args.sample_count < 0:
         raise SystemExit("checkpoint and sample counts must be non-negative")
+    if args.checkpoint_size_multiplier < 1.0:
+        raise SystemExit("checkpoint size multiplier must be at least one")
 
     references = [Path(value).resolve() for value in args.reference_checkpoint]
     missing = [str(value) for value in references if not value.is_file()]
@@ -126,6 +148,7 @@ def main() -> None:
         free_bytes=usage.free,
         checkpoint_count=args.checkpoint_count,
         checkpoint_bytes=checkpoint_bytes,
+        checkpoint_size_multiplier=args.checkpoint_size_multiplier,
         sample_count=args.sample_count,
         estimated_sample_bytes=int(round(args.estimated_sample_kib * KIB)),
         additional_bytes=int(round(args.additional_gib * GIB)),

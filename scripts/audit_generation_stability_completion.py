@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 from pathlib import Path
 from typing import Any, Callable
@@ -21,6 +22,7 @@ try:
     from scripts.audit_large_scale_generation_completion import (
         _comparison_evidence,
         _inference_export_evidence,
+        _runtime_selection_evidence,
         _verify_checkpoint_file,
         _verify_formal_real_set_files,
         _verify_formal_sample_files,
@@ -40,6 +42,7 @@ except ModuleNotFoundError:
     from audit_large_scale_generation_completion import (
         _comparison_evidence,
         _inference_export_evidence,
+        _runtime_selection_evidence,
         _verify_checkpoint_file,
         _verify_formal_real_set_files,
         _verify_formal_sample_files,
@@ -473,6 +476,82 @@ def full_training_evidence(
     )
 
 
+def full_storage_capacity_evidence(
+    report: dict[str, Any],
+    *,
+    expected_revision: str,
+    expected_branch: str,
+    expected_path: Path,
+) -> dict[str, Any]:
+    _raise_load_error(report)
+    if (
+        report.get("schema_version") != 2
+        or report.get("role") != "generation_storage_capacity_preflight"
+        or report.get("stage") != "full_training"
+        or report.get("status") != "pass"
+    ):
+        raise ValueError("stability full storage capacity report is invalid")
+    if report.get("git") != {
+        "revision": expected_revision,
+        "branch": expected_branch,
+        "tracked_dirty": False,
+    }:
+        raise ValueError("stability full storage capacity Git identity differs")
+    filesystem = report.get("filesystem", {})
+    observed_path = Path(str(filesystem.get("path", ""))).resolve()
+    if observed_path != expected_path.resolve():
+        raise ValueError("stability full storage capacity path differs")
+    plan = report.get("plan", {})
+    minimums = {
+        "checkpoint_count": 16,
+        "sample_count": 16_384,
+        "estimated_sample_bytes_each": 256 * 1024,
+        "additional_bytes": 16 * 1024**3,
+        "safety_margin_bytes": 64 * 1024**3,
+    }
+    for key, minimum in minimums.items():
+        if int(plan.get(key, -1)) < minimum:
+            raise ValueError(f"stability full storage reserve {key} was weakened")
+    reference_bytes = int(plan.get("reference_checkpoint_bytes_each", -1))
+    multiplier = float(plan.get("checkpoint_size_multiplier", math.nan))
+    planned_checkpoint_bytes = int(plan.get("checkpoint_bytes_each", -1))
+    if reference_bytes < 1 or not math.isfinite(multiplier) or multiplier < 4.0:
+        raise ValueError("stability full checkpoint scaling was weakened")
+    if planned_checkpoint_bytes != math.ceil(reference_bytes * multiplier):
+        raise ValueError("stability full checkpoint scaling arithmetic differs")
+    checkpoint_reserve = int(plan["checkpoint_count"]) * planned_checkpoint_bytes
+    sample_reserve = int(plan["sample_count"]) * int(
+        plan["estimated_sample_bytes_each"]
+    )
+    if checkpoint_reserve != int(plan.get("checkpoint_reserve_bytes", -1)):
+        raise ValueError("stability full checkpoint reserve arithmetic differs")
+    if sample_reserve != int(plan.get("sample_reserve_bytes", -1)):
+        raise ValueError("stability full sample reserve arithmetic differs")
+    required = (
+        checkpoint_reserve
+        + sample_reserve
+        + int(plan["additional_bytes"])
+        + int(plan["safety_margin_bytes"])
+    )
+    if required != int(plan.get("required_free_bytes", -1)):
+        raise ValueError("stability full storage requirement arithmetic differs")
+    total = int(filesystem.get("total_bytes", -1))
+    used = int(filesystem.get("used_bytes", -1))
+    free = int(filesystem.get("free_bytes", -1))
+    if total < 1 or used < 0 or free < required or used + free > total:
+        raise ValueError("stability full storage filesystem headroom is invalid")
+    if int(report.get("headroom_bytes", -1)) != free - required:
+        raise ValueError("stability full storage headroom arithmetic differs")
+    return {
+        "reference_checkpoint_bytes_each": reference_bytes,
+        "checkpoint_size_multiplier": multiplier,
+        "checkpoint_bytes_each": planned_checkpoint_bytes,
+        "required_free_bytes": required,
+        "free_bytes": free,
+        "headroom_bytes": free - required,
+    }
+
+
 def milestone_evidence(
     reports: dict[int, dict[str, Any]],
     checkpoint_files: dict[int, dict[str, dict[str, Any]]],
@@ -815,6 +894,12 @@ def main() -> None:
     }
 
     full_monitor = _read_optional(paths["STABILITY_FULL_MONITOR"])
+    full_runtime_selection = _read_optional(
+        full_reports / "runtime_selection.json"
+    )
+    full_storage_capacity = _read_optional(
+        full_reports / "storage_capacity.json"
+    )
     full_training = {
         "cofitok": _read_optional(full_cofitok / "training_report.json"),
         "dense_identity": _read_optional(full_dense / "training_report.json"),
@@ -1058,6 +1143,48 @@ def main() -> None:
                     expected_branch=args.expected_full_training_branch,
                 ),
             },
+        ),
+        _check(
+            "stability_full_runtime_selection",
+            [
+                full_runtime_selection,
+                *full_training_present,
+            ],
+            lambda: _runtime_selection_evidence(
+                full_runtime_selection,
+                full_training,
+                expected_revision=expectations["full_training_revision"],
+                expected_branch=args.expected_full_training_branch,
+                expected_candidates=[
+                    {"micro_batch_size": 1, "gradient_accumulation_steps": 64},
+                    {"micro_batch_size": 2, "gradient_accumulation_steps": 32},
+                    {"micro_batch_size": 4, "gradient_accumulation_steps": 16},
+                    {"micro_batch_size": 8, "gradient_accumulation_steps": 8},
+                    {"micro_batch_size": 16, "gradient_accumulation_steps": 4},
+                ],
+                expected_baseline={
+                    "micro_batch_size": 1,
+                    "gradient_accumulation_steps": 64,
+                },
+                expected_run_dirs=[
+                    full_cofitok.as_posix(),
+                    full_dense.as_posix(),
+                ],
+                expected_benchmark_root=(
+                    paths["STABILITY_FULL_ROOT"]
+                    / "runtime_preflight/training"
+                ).as_posix(),
+            ),
+        ),
+        _check(
+            "stability_full_storage_capacity",
+            [full_storage_capacity],
+            lambda: full_storage_capacity_evidence(
+                full_storage_capacity,
+                expected_revision=expectations["full_training_revision"],
+                expected_branch=args.expected_full_training_branch,
+                expected_path=output_root,
+            ),
         ),
         _check(
             "stability_full_milestones",

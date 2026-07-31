@@ -83,3 +83,11 @@ def test_stability_full_runbook_audits_each_run_against_its_config() -> None:
         "--expected-steps", cofitok_run
     )
     assert dense_run < dense_config < source.index("--expected-steps", dense_run)
+
+
+def test_stability_full_runbook_uses_large_capacity_runtime_and_storage_budget() -> None:
+    source = RUNBOOK.read_text(encoding="utf-8")
+
+    assert "--candidates 1x64,2x32,4x16,8x8,16x4" in source
+    assert "--baseline-candidate 1x64" in source
+    assert "--checkpoint-size-multiplier 4.0" in source

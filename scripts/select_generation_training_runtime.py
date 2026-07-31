@@ -55,21 +55,31 @@ def _validated_dataset_identity_sha(report: dict[str, Any]) -> str | None:
         return None
 
 
+def parse_runtime_candidate(
+    value: str,
+    *,
+    expected_effective_batch: int,
+) -> tuple[int, int]:
+    match = CANDIDATE_PATTERN.fullmatch(value.strip())
+    if match is None:
+        raise ValueError(f"invalid runtime candidate: {value}")
+    candidate = (int(match.group("micro")), int(match.group("accum")))
+    if candidate[0] * candidate[1] != expected_effective_batch:
+        raise ValueError(f"runtime candidate {value} changes effective batch")
+    return candidate
+
+
 def parse_candidates(value: str, *, expected_effective_batch: int) -> list[tuple[int, int]]:
     candidates = []
     for raw in value.split(","):
-        match = CANDIDATE_PATTERN.fullmatch(raw.strip())
-        if match is None:
-            raise ValueError(f"invalid runtime candidate: {raw}")
-        candidate = (int(match.group("micro")), int(match.group("accum")))
-        if candidate[0] * candidate[1] != expected_effective_batch:
-            raise ValueError(f"runtime candidate {raw} changes effective batch")
+        candidate = parse_runtime_candidate(
+            raw,
+            expected_effective_batch=expected_effective_batch,
+        )
         if candidate not in candidates:
             candidates.append(candidate)
     if not candidates:
         raise ValueError("at least one runtime candidate is required")
-    if (16, 4) not in candidates:
-        raise ValueError("runtime candidates must retain the conservative 16x4 baseline")
     return candidates
 
 
@@ -78,9 +88,17 @@ def select_runtime_candidate(
     *,
     expected_effective_batch: int,
     max_memory_fraction: float,
+    baseline_candidate: tuple[int, int] = (16, 4),
+    schema_version: int | None = None,
 ) -> dict[str, Any]:
     if not 0.0 < max_memory_fraction < 1.0:
         raise ValueError("max_memory_fraction must be between zero and one")
+    if baseline_candidate[0] * baseline_candidate[1] != expected_effective_batch:
+        raise ValueError("runtime baseline changes effective batch")
+    if schema_version is None:
+        schema_version = 2 if baseline_candidate == (16, 4) else 3
+    if schema_version not in {2, 3}:
+        raise ValueError("runtime selection schema is unsupported")
     eligible = []
     normalized = []
     environment_provenance_issues = []
@@ -193,18 +211,34 @@ def select_runtime_candidate(
         (
             row
             for row in normalized
-            if int(row["micro_batch_size"]) == 16
-            and int(row["gradient_accumulation_steps"]) == 4
+            if int(row["micro_batch_size"]) == baseline_candidate[0]
+            and int(row["gradient_accumulation_steps"]) == baseline_candidate[1]
         ),
         None,
     )
     if baseline is None or not baseline["eligible"]:
-        raise ValueError("conservative 16x4 runtime baseline did not pass")
+        tag = f"{baseline_candidate[0]}x{baseline_candidate[1]}"
+        raise ValueError(f"{tag} runtime baseline did not pass")
     speedup = float(baseline["selection_score_seconds"]) / float(
         selected["selection_score_seconds"]
     )
-    return {
-        "schema_version": 2,
+    selected_summary = {
+        "micro_batch_size": int(selected["micro_batch_size"]),
+        "gradient_accumulation_steps": int(
+            selected["gradient_accumulation_steps"]
+        ),
+        "effective_batch_size": expected_effective_batch,
+        "selection_score_seconds": float(selected["selection_score_seconds"]),
+        "max_memory_fraction": float(selected["max_memory_fraction"]),
+    }
+    if schema_version == 2:
+        if baseline_candidate != (16, 4):
+            raise ValueError("runtime selection schema v2 requires the 16x4 baseline")
+        selected_summary["estimated_speedup_over_16x4"] = speedup
+    else:
+        selected_summary["estimated_speedup_over_baseline"] = speedup
+    report = {
+        "schema_version": schema_version,
         "status": "selected",
         "policy": {
             "shared_candidate_required": True,
@@ -212,20 +246,20 @@ def select_runtime_candidate(
             "expected_effective_batch_size": expected_effective_batch,
             "max_memory_fraction": max_memory_fraction,
         },
-        "selected": {
-            "micro_batch_size": int(selected["micro_batch_size"]),
-            "gradient_accumulation_steps": int(
-                selected["gradient_accumulation_steps"]
-            ),
-            "effective_batch_size": expected_effective_batch,
-            "selection_score_seconds": float(selected["selection_score_seconds"]),
-            "max_memory_fraction": float(selected["max_memory_fraction"]),
-            "estimated_speedup_over_16x4": speedup,
-        },
+        "selected": selected_summary,
         "runtime_environment_sha256": selected["runtime_environment_sha256"],
         "dataset_identity_sha256": selected["dataset_identity_sha256"],
         "candidates": normalized,
     }
+    if schema_version == 3:
+        report["baseline"] = {
+            "micro_batch_size": baseline_candidate[0],
+            "gradient_accumulation_steps": baseline_candidate[1],
+            "effective_batch_size": expected_effective_batch,
+            "selection_score_seconds": float(baseline["selection_score_seconds"]),
+            "max_memory_fraction": float(baseline["max_memory_fraction"]),
+        }
+    return report
 
 
 def _expected_config(path: Path, micro_batch: int, accumulation: int) -> dict[str, Any]:
@@ -262,6 +296,7 @@ def _selection_contract(
     *,
     run_dirs: list[Path],
     candidates: list[tuple[int, int]],
+    baseline_candidate: tuple[int, int] = (16, 4),
     expected_effective_batch: int,
     benchmark_steps: int,
     warmup_steps: int,
@@ -272,8 +307,9 @@ def _selection_contract(
     config_sha256: dict[str, str],
     benchmark_root: Path,
 ) -> dict[str, Any]:
-    return {
-        "schema_version": 1,
+    legacy_baseline = baseline_candidate == (16, 4)
+    contract = {
+        "schema_version": 1 if legacy_baseline else 2,
         "mode": "freeze_on_training_state",
         "training_run_dirs": [path.as_posix() for path in run_dirs],
         "candidates": [
@@ -296,6 +332,12 @@ def _selection_contract(
         "config_sha256": dict(config_sha256),
         "benchmark_root": benchmark_root.as_posix(),
     }
+    if not legacy_baseline:
+        contract["baseline_candidate"] = {
+            "micro_batch_size": baseline_candidate[0],
+            "gradient_accumulation_steps": baseline_candidate[1],
+        }
+    return contract
 
 
 def _current_runtime_environment_sha(
@@ -324,7 +366,8 @@ def validate_frozen_runtime_selection(
     dense_config: Path,
     current_runtime_environment_sha256: str,
 ) -> tuple[int, int]:
-    if selection.get("schema_version") != 2 or selection.get("status") != "selected":
+    schema_version = int(selection.get("schema_version", -1))
+    if schema_version not in {2, 3} or selection.get("status") != "selected":
         raise ValueError("frozen runtime selection is incomplete or unsupported")
     if selection.get("selection_lock") != expected_contract:
         raise ValueError("frozen runtime selection contract changed")
@@ -388,12 +431,23 @@ def validate_frozen_runtime_selection(
                     f"frozen {method} {micro_batch}x{accumulation} benchmark changed"
                 )
 
+    baseline_payload = expected_contract.get("baseline_candidate")
+    baseline_candidate = (
+        (
+            int(baseline_payload["micro_batch_size"]),
+            int(baseline_payload["gradient_accumulation_steps"]),
+        )
+        if isinstance(baseline_payload, dict)
+        else (16, 4)
+    )
     recomputed = select_runtime_candidate(
         deepcopy(candidates),
         expected_effective_batch=int(
             expected_contract["expected_effective_batch_size"]
         ),
         max_memory_fraction=float(expected_contract["max_memory_fraction"]),
+        baseline_candidate=baseline_candidate,
+        schema_version=schema_version,
     )
     for key in (
         "schema_version",
@@ -406,6 +460,8 @@ def validate_frozen_runtime_selection(
     ):
         if selection.get(key) != recomputed.get(key):
             raise ValueError(f"frozen runtime selection {key} is not reproducible")
+    if schema_version == 3 and selection.get("baseline") != recomputed.get("baseline"):
+        raise ValueError("frozen runtime selection baseline is not reproducible")
     selected = recomputed["selected"]
     return (
         int(selected["micro_batch_size"]),
@@ -604,6 +660,11 @@ def main() -> None:
         ),
     )
     parser.add_argument("--candidates", default="16x4,32x2,64x1")
+    parser.add_argument(
+        "--baseline-candidate",
+        default="16x4",
+        help="Candidate used as the measured speedup and fail-closed feasibility baseline.",
+    )
     parser.add_argument("--effective-batch-size", type=int, default=64)
     parser.add_argument("--benchmark-steps", type=int, default=8)
     parser.add_argument("--warmup-steps", type=int, default=2)
@@ -673,6 +734,12 @@ def main() -> None:
         args.candidates,
         expected_effective_batch=args.effective_batch_size,
     )
+    baseline_candidate = parse_runtime_candidate(
+        args.baseline_candidate,
+        expected_effective_batch=args.effective_batch_size,
+    )
+    if baseline_candidate not in candidates:
+        raise ValueError("runtime baseline candidate is absent from candidates")
     cofitok_base = load_config(cofitok_config)
     dense_base = load_config(dense_config)
     if cofitok_base.runtime.steps != dense_base.runtime.steps:
@@ -684,6 +751,7 @@ def main() -> None:
     selection_contract = _selection_contract(
         run_dirs=run_dirs,
         candidates=candidates,
+        baseline_candidate=baseline_candidate,
         expected_effective_batch=args.effective_batch_size,
         benchmark_steps=args.benchmark_steps,
         warmup_steps=args.warmup_steps,
@@ -778,6 +846,7 @@ def main() -> None:
         rows,
         expected_effective_batch=args.effective_batch_size,
         max_memory_fraction=args.max_memory_fraction,
+        baseline_candidate=baseline_candidate,
     )
     selection["git_revision"] = revision
     selection["config_sha256"] = config_sha256

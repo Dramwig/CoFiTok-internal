@@ -3,8 +3,11 @@ from __future__ import annotations
 import copy
 from pathlib import Path
 
+import pytest
+
 from cofitok.configs import config_to_dict, load_config
 from cofitok.generation_pair import generation_pair_contract
+from scripts.validate_generation_configs import validate_pair
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -170,6 +173,7 @@ def test_ema_teacher_300k_pair_scales_the_stability_windows() -> None:
     )
 
     for config in (cofitok, dense):
+        assert config["model"]["base_channels"] == 256
         assert config["runtime"]["steps"] == 300_000
         assert config["runtime"]["protected_checkpoint_steps"] == [
             50_000,
@@ -183,3 +187,27 @@ def test_ema_teacher_300k_pair_scales_the_stability_windows() -> None:
 
     report = generation_pair_contract(cofitok, dense)
     assert report["valid"] is True, report["issues"]
+
+
+def test_ema_teacher_300k_pair_has_exact_large_capacity_parameter_counts() -> None:
+    report = validate_pair(
+        load_config(
+            ROOT
+            / "configs/generation/"
+            "imagenet256_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json"
+        ),
+        load_config(
+            ROOT
+            / "configs/generation/"
+            "imagenet256_stability_rollout_x0_u2_ema_teacher_dense_300k.json"
+        ),
+        max_parameter_gap=0.02,
+        stage="stability_full",
+    )
+
+    assert report["status"] == "pass", report["mismatches"]
+    assert report["cofitok"]["parameter_count"] == 250_153_763
+    assert report["dense"]["parameter_count"] == 250_135_043
+    assert report["relative_parameter_gap"] == pytest.approx(
+        0.0000748395737577641
+    )

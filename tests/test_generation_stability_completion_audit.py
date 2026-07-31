@@ -9,6 +9,7 @@ import sys
 from cofitok.reporting import file_sha256
 from scripts.audit_generation_stability_completion import (
     aggregate_checks,
+    full_storage_capacity_evidence,
     gate_evidence,
     monitor_evidence,
 )
@@ -209,4 +210,71 @@ def test_stability_completion_cli_reports_empty_workspace_as_incomplete(
     assert report["status"] == "incomplete"
     assert report["complete"] is False
     assert report["failed_checks"] == []
-    assert len(report["missing_checks"]) == 13
+    assert len(report["missing_checks"]) == 15
+    assert "stability_full_runtime_selection" in report["missing_checks"]
+    assert "stability_full_storage_capacity" in report["missing_checks"]
+
+
+def test_stability_full_storage_requires_large_checkpoint_scaling(
+    tmp_path: Path,
+) -> None:
+    reference_bytes = 1_000
+    checkpoint_bytes = 4_000
+    checkpoint_reserve = 16 * checkpoint_bytes
+    sample_reserve = 16_384 * 256 * 1024
+    additional = 16 * 1024**3
+    safety = 64 * 1024**3
+    required = checkpoint_reserve + sample_reserve + additional + safety
+    free = required + 1024
+    report = {
+        "schema_version": 2,
+        "role": "generation_storage_capacity_preflight",
+        "stage": "full_training",
+        "status": "pass",
+        "git": {
+            "revision": "a" * 40,
+            "branch": "scale/generation-large-capacity",
+            "tracked_dirty": False,
+        },
+        "filesystem": {
+            "path": tmp_path.as_posix(),
+            "total_bytes": free + 1024,
+            "used_bytes": 1024,
+            "free_bytes": free,
+        },
+        "plan": {
+            "checkpoint_count": 16,
+            "reference_checkpoint_bytes_each": reference_bytes,
+            "checkpoint_size_multiplier": 4.0,
+            "checkpoint_bytes_each": checkpoint_bytes,
+            "checkpoint_reserve_bytes": checkpoint_reserve,
+            "sample_count": 16_384,
+            "estimated_sample_bytes_each": 256 * 1024,
+            "sample_reserve_bytes": sample_reserve,
+            "additional_bytes": additional,
+            "safety_margin_bytes": safety,
+            "required_free_bytes": required,
+        },
+        "headroom_bytes": free - required,
+    }
+
+    evidence = full_storage_capacity_evidence(
+        report,
+        expected_revision="a" * 40,
+        expected_branch="scale/generation-large-capacity",
+        expected_path=tmp_path,
+    )
+    assert evidence["checkpoint_size_multiplier"] == 4.0
+
+    report["plan"]["checkpoint_size_multiplier"] = 3.99
+    try:
+        full_storage_capacity_evidence(
+            report,
+            expected_revision="a" * 40,
+            expected_branch="scale/generation-large-capacity",
+            expected_path=tmp_path,
+        )
+    except ValueError as error:
+        assert "scaling" in str(error)
+    else:
+        raise AssertionError("weakened stability checkpoint scaling was accepted")

@@ -20,6 +20,7 @@ from scripts.select_generation_training_runtime import (
     _expected_config,
     _selection_contract,
     parse_candidates,
+    parse_runtime_candidate,
     reuse_runtime_selection_after_training_start,
     select_runtime_candidate,
     validate_frozen_runtime_selection,
@@ -165,7 +166,7 @@ def _frozen_selection(tmp_path: Path) -> tuple[dict, dict, list[Path], Path, Pat
     return selection, contract, run_dirs, cofitok_config, dense_config
 
 
-def test_parse_candidates_preserves_effective_batch_and_baseline() -> None:
+def test_parse_candidates_preserves_effective_batch() -> None:
     assert parse_candidates("16x4,32x2,64x1", expected_effective_batch=64) == [
         (16, 4),
         (32, 2),
@@ -174,8 +175,11 @@ def test_parse_candidates_preserves_effective_batch_and_baseline() -> None:
 
     with pytest.raises(ValueError, match="changes effective batch"):
         parse_candidates("16x4,32x1", expected_effective_batch=64)
-    with pytest.raises(ValueError, match="16x4 baseline"):
-        parse_candidates("32x2,64x1", expected_effective_batch=64)
+    assert parse_candidates("1x64,2x32", expected_effective_batch=64) == [
+        (1, 64),
+        (2, 32),
+    ]
+    assert parse_runtime_candidate("1x64", expected_effective_batch=64) == (1, 64)
 
 
 def test_selector_minimizes_worst_method_runtime() -> None:
@@ -187,6 +191,7 @@ def test_selector_minimizes_worst_method_runtime() -> None:
         ],
         expected_effective_batch=64,
         max_memory_fraction=0.9,
+        schema_version=2,
     )
 
     assert report["selected"]["micro_batch_size"] == 32
@@ -230,6 +235,27 @@ def test_selector_fails_closed_when_conservative_baseline_fails() -> None:
             expected_effective_batch=64,
             max_memory_fraction=0.9,
         )
+
+
+def test_selector_binds_large_capacity_baseline() -> None:
+    report = select_runtime_candidate(
+        [
+            _candidate(1, 64, _method(4.0), _method(3.8)),
+            _candidate(2, 32, _method(3.2), _method(3.0)),
+            _candidate(4, 16, _method(2.8), _method(2.9)),
+        ],
+        expected_effective_batch=64,
+        max_memory_fraction=0.9,
+        baseline_candidate=(1, 64),
+    )
+
+    assert report["schema_version"] == 3
+    assert report["baseline"]["micro_batch_size"] == 1
+    assert report["baseline"]["gradient_accumulation_steps"] == 64
+    assert report["selected"]["micro_batch_size"] == 4
+    assert report["selected"]["estimated_speedup_over_baseline"] == pytest.approx(
+        4.0 / 2.9
+    )
 
 
 def test_selector_rejects_invalid_or_drifted_runtime_environment() -> None:

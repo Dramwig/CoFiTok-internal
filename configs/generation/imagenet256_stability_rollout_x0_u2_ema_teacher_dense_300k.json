@@ -22,7 +22,7 @@
     "image_size": 256,
     "token_count": 1,
     "token_channels": 3,
-    "base_channels": 128,
+    "base_channels": 256,
     "predictor_type": "scalable_unet",
     "predictor_use_feedback": false,
     "predictor_channel_multipliers": [1, 2, 3, 4],

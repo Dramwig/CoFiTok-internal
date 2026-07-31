@@ -301,31 +301,41 @@ def _runtime_selection_evidence(
     training_reports: dict[str, dict[str, Any]],
     *,
     expected_revision: str,
+    expected_branch: str = "scale/generative-system",
+    expected_candidates: list[dict[str, int]] | None = None,
+    expected_baseline: dict[str, int] | None = None,
+    expected_run_dirs: list[str] | None = None,
+    expected_benchmark_root: str | None = None,
 ) -> dict[str, Any]:
-    if selection.get("schema_version") != 2:
+    schema_version = int(selection.get("schema_version", -1))
+    if schema_version not in {2, 3}:
         raise ValueError("full training runtime selection schema is unsupported")
     if selection.get("status") != "selected":
         raise ValueError("full training runtime selection is incomplete")
     if selection.get("git_revision") != expected_revision:
         raise ValueError("runtime selection revision differs from full training")
     selection_lock = selection.get("selection_lock")
-    expected_candidates = [
+    expected_candidates = expected_candidates or [
         {"micro_batch_size": 16, "gradient_accumulation_steps": 4},
         {"micro_batch_size": 32, "gradient_accumulation_steps": 2},
         {"micro_batch_size": 64, "gradient_accumulation_steps": 1},
     ]
-    expected_run_dirs = [
+    expected_baseline = expected_baseline or {
+        "micro_batch_size": 16,
+        "gradient_accumulation_steps": 4,
+    }
+    expected_run_dirs = expected_run_dirs or [
         "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_full_cofitok_k8_300k",
         "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_full_dense_300k",
     ]
-    expected_benchmark_root = (
+    expected_benchmark_root = expected_benchmark_root or (
         "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
         "runtime_preflight/full_imagenet256_300k"
     )
     if not isinstance(selection_lock, dict):
         raise ValueError("full runtime selection lock is missing")
     if (
-        selection_lock.get("schema_version") != 1
+        selection_lock.get("schema_version") != (2 if schema_version == 3 else 1)
         or selection_lock.get("mode") != "freeze_on_training_state"
         or selection_lock.get("training_run_dirs") != expected_run_dirs
         or selection_lock.get("candidates") != expected_candidates
@@ -337,10 +347,22 @@ def _runtime_selection_evidence(
         or selection_lock.get("benchmark_root") != expected_benchmark_root
     ):
         raise ValueError("full runtime selection lock contract differs")
+    if schema_version == 3:
+        if selection_lock.get("baseline_candidate") != expected_baseline:
+            raise ValueError("full runtime selection baseline lock differs")
+        baseline = selection.get("baseline", {})
+        if (
+            int(baseline.get("micro_batch_size", -1))
+            != expected_baseline["micro_batch_size"]
+            or int(baseline.get("gradient_accumulation_steps", -1))
+            != expected_baseline["gradient_accumulation_steps"]
+            or int(baseline.get("effective_batch_size", -1)) != 64
+        ):
+            raise ValueError("full runtime selection baseline evidence differs")
     lock_git = selection_lock.get("git", {})
     if lock_git != {
         "revision": expected_revision,
-        "branch": "scale/generative-system",
+        "branch": expected_branch,
         "tracked_dirty": False,
     }:
         raise ValueError("full runtime selection lock Git state differs")
@@ -388,6 +410,19 @@ def _runtime_selection_evidence(
         or selected_candidates[0].get("eligible") is not True
     ):
         raise ValueError("selected full runtime benchmark evidence is invalid")
+    baseline_candidates = [
+        row
+        for row in candidates
+        if int(row.get("micro_batch_size", -1))
+        == expected_baseline["micro_batch_size"]
+        and int(row.get("gradient_accumulation_steps", -1))
+        == expected_baseline["gradient_accumulation_steps"]
+    ]
+    if (
+        len(baseline_candidates) != 1
+        or baseline_candidates[0].get("eligible") is not True
+    ):
+        raise ValueError("full runtime baseline benchmark evidence is invalid")
     selected_environment_sha = str(selection.get("runtime_environment_sha256", ""))
     if len(selected_environment_sha) != 64:
         raise ValueError("selected full runtime environment SHA256 is malformed")
@@ -442,7 +477,7 @@ def _runtime_selection_evidence(
                 raise ValueError(f"{method} training benchmark dataset differs")
             if (
                 git.get("revision") != expected_revision
-                or git.get("branch") != "scale/generative-system"
+                or git.get("branch") != expected_branch
                 or git.get("dirty") is not False
             ):
                 raise ValueError(f"{method} training benchmark Git state differs")
@@ -480,13 +515,43 @@ def _runtime_selection_evidence(
             expected_dataset="imagenet_256",
         )["identity_sha256"] != selected_dataset_sha:
             raise ValueError(f"{method} training dataset differs from runtime selection")
+    speedup_key = (
+        "estimated_speedup_over_baseline"
+        if schema_version == 3
+        else "estimated_speedup_over_16x4"
+    )
+    speedup = float(selected.get(speedup_key, math.nan))
+    if not math.isfinite(speedup) or speedup <= 0.0:
+        raise ValueError("full runtime selection speedup is invalid")
+    selected_score = float(
+        selected_candidates[0].get("selection_score_seconds", math.nan)
+    )
+    baseline_score = float(
+        baseline_candidates[0].get("selection_score_seconds", math.nan)
+    )
+    if (
+        not math.isfinite(selected_score)
+        or selected_score <= 0.0
+        or not math.isfinite(baseline_score)
+        or baseline_score <= 0.0
+        or not math.isclose(speedup, baseline_score / selected_score)
+    ):
+        raise ValueError("full runtime selection score arithmetic differs")
+    if schema_version == 3:
+        baseline = selection["baseline"]
+        if (
+            float(selected.get("selection_score_seconds", math.nan))
+            != selected_score
+            or float(baseline.get("selection_score_seconds", math.nan))
+            != baseline_score
+        ):
+            raise ValueError("full runtime baseline score differs")
     return {
         "micro_batch_size": micro_batch,
         "gradient_accumulation_steps": accumulation,
         "effective_batch_size": effective_batch,
-        "estimated_speedup_over_16x4": float(
-            selected["estimated_speedup_over_16x4"]
-        ),
+        "baseline": dict(expected_baseline),
+        "estimated_speedup_over_baseline": speedup,
         "runtime_environment_sha256": selected_environment_sha,
         "dataset_identity_sha256": selected_dataset_sha,
     }
@@ -2070,6 +2135,9 @@ def _storage_capacity_evidence(
         if observed_path != normalized_expected_path:
             raise ValueError(f"storage capacity path differs for {stage}")
         plan = report.get("plan", {})
+        schema_version = int(report.get("schema_version", 1))
+        if schema_version not in {1, 2}:
+            raise ValueError(f"storage capacity schema is unsupported for {stage}")
         if int(plan.get("estimated_sample_bytes_each", -1)) < 256 * KIB:
             raise ValueError(f"storage sample-size estimate was weakened for {stage}")
         for key, minimum in minimums.items():
@@ -2077,6 +2145,14 @@ def _storage_capacity_evidence(
                 raise ValueError(f"storage capacity reserve {key} was weakened for {stage}")
         if stage == "full_training" and int(plan.get("checkpoint_bytes_each", 0)) < 1:
             raise ValueError("full-training storage plan lacks measured checkpoint bytes")
+        if schema_version == 2:
+            reference_bytes = int(plan.get("reference_checkpoint_bytes_each", -1))
+            multiplier = float(plan.get("checkpoint_size_multiplier", math.nan))
+            if reference_bytes < 0 or not math.isfinite(multiplier) or multiplier < 1.0:
+                raise ValueError(f"storage checkpoint scaling is invalid for {stage}")
+            expected_checkpoint_bytes = math.ceil(reference_bytes * multiplier)
+            if expected_checkpoint_bytes != int(plan.get("checkpoint_bytes_each", -1)):
+                raise ValueError(f"storage checkpoint scaling arithmetic differs for {stage}")
         checkpoint_reserve = int(plan.get("checkpoint_count", -1)) * int(
             plan.get("checkpoint_bytes_each", -1)
         )
