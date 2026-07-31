@@ -6,6 +6,7 @@ PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
 CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation}
 EXPECTED_DECISION_SHA256=${EXPECTED_DECISION_SHA256:?set the passing 5K decision SHA256}
 EXPECTED_SCALING_GATE_SHA256=${EXPECTED_SCALING_GATE_SHA256:?set the passing 50K gate SHA256}
+EXPECTED_FULL_READINESS_SHA256=${EXPECTED_FULL_READINESS_SHA256:?set the immutable full readiness SHA256}
 EXPECTED_FINAL_GATE_SHA256=${EXPECTED_FINAL_GATE_SHA256:?set the passing full gate SHA256}
 EXPECTED_FULL_TRAINING_REVISION=${EXPECTED_FULL_TRAINING_REVISION:?set the full training revision}
 EXPECTED_FULL_TRAINING_BRANCH=${EXPECTED_FULL_TRAINING_BRANCH:?set the full training branch}
@@ -38,6 +39,7 @@ mkdir -p "$REPORT_ROOT"
   --expected-scaling-evaluation-revision "$SCALING_EVALUATION_REVISION" \
   --expected-scaling-evaluation-branch "$SCALING_EVALUATION_BRANCH" \
   --expected-scaling-gate-sha256 "$EXPECTED_SCALING_GATE_SHA256" \
+  --expected-full-readiness-sha256 "$EXPECTED_FULL_READINESS_SHA256" \
   --expected-full-training-revision "$EXPECTED_FULL_TRAINING_REVISION" \
   --expected-full-training-branch "$EXPECTED_FULL_TRAINING_BRANCH" \
   --expected-full-evaluation-revision "$EXPECTED_FULL_EVALUATION_REVISION" \
@@ -46,4 +48,3 @@ mkdir -p "$REPORT_ROOT"
   --expected-export-revision "$EXPECTED_AUDIT_REVISION" \
   --expected-export-branch "$EXPECTED_AUDIT_BRANCH" \
   --output "$OUTPUT"
-

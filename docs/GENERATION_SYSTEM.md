@@ -209,6 +209,16 @@ repository or mutate an active training checkout.
   matched capacity tier; the 62.8M parameter counts above remain the exact 50K
   qualification architecture. Full training is still source-bound to a passing
   50K promotion gate and is not authorized by this configuration change alone.
+- The 250M CUDA qualification and the 300K launch are two separate operations.
+  `generation_stability_ema_teacher_full_readiness_after_gate.sh` runs only
+  after the passing source-bound 50K gate, requires an idle GPU and absent
+  formal training state, validates the exact 250M pair, captures the 4x storage
+  reserve, benchmarks all five runtime candidates, and writes immutable
+  `full_training_readiness.json` before exiting. It never starts the monitor or
+  trainer. The full 300K runbook requires the readiness SHA256, replays every
+  bound source and the current CUDA environment, reads the selected runtime
+  from that artifact, performs a fresh launch-time storage check, and only then
+  enters the resumable milestone loop. It never calls the runtime selector.
 - Stability mechanism evaluation derives the coarse/tail partition from
   `token_spatial_strides`: the `rgbtail3` layout measures coarse utilization
   over tokens 1-5 and treats tokens 6-8 as the full-resolution tail. The
@@ -614,7 +624,7 @@ the full chain is `complete`. See
 
 Before the legacy 128-channel full 300K path starts, both methods run the same
 checkpoint-free training-runtime candidates `16x4`, `32x2`, and `64x1`.
-The 256-channel stability-full path instead benchmarks
+The independent 256-channel stability-full readiness path instead benchmarks
 `1x64`, `2x32`, `4x16`, `8x8`, and `16x4`, with `1x64` as
 the explicit fail-closed baseline. Selection preserves
 effective batch 64, requires both methods to fit below 90% VRAM, and minimizes
@@ -623,14 +633,15 @@ and accumulation are applied to every full-training segment. Every completed
 benchmark records the canonical Python/PyTorch/CUDA/GPU/project-lock runtime
 environment; all candidates, both methods, and the subsequent full training
 reports must share one exact environment SHA. Cached benchmark reuse and the
-completion audit both reject environment or tracked-Git drift. The selector is
-also state-aware: before either formal run contains training state it may build
-or refresh the shared selection, but once either run directory is non-empty it
-only validates and reuses the existing report. That frozen report binds both
-run paths, the complete candidate set and explicit baseline, the 300K horizon,
-benchmark horizon, config
-SHA256 values, clean branch/revision, dataset identity, and runtime environment.
-A missing or drifted report fails before any benchmark subprocess or model load.
+completion audit both reject environment or tracked-Git drift. Readiness can be
+built only once while both formal run directories contain no state. That frozen
+report binds both run paths, the complete candidate set and explicit baseline,
+the 300K horizon, benchmark horizon, config SHA256 values, clean
+branch/revision, dataset identity, and runtime environment.
+A missing or drifted readiness source fails before full-training model load.
+The completion audit replays the artifact on the later evaluation revision
+without requiring the training directories to remain empty, while still
+requiring the externally supplied SHA256 used to authorize launch.
 See
 `docs/records/2026-07-12_generation_training_runtime_selection.md`.
 
@@ -706,11 +717,13 @@ space for conservative checkpoint copies, planned PNGs, evaluator caches, and a
 safety margin; insufficient capacity exits non-retryably before large artifacts
 are created. See
 `docs/records/2026-07-13_generation_storage_capacity_preflight.md`.
-For the 256-channel stability-full pair, the training preflight multiplies the
+For the 256-channel stability-full pair, readiness preflight multiplies the
 largest measured 128-channel reference checkpoint by `4.0` before reserving
 16 checkpoint slots. The report stores the reference bytes, multiplier,
 rounded-up planned bytes, and reserve arithmetic; the stability completion
-audit requires schema v2 and refuses a multiplier below `4.0`.
+audit requires schema v2 and refuses a multiplier below `4.0`. The 300K launch
+writes a separate `storage_capacity_launch.json`, so disk consumption between
+CUDA qualification and launch cannot silently invalidate the earlier reserve.
 
 The full 300K matched run also publishes a generic read-only operational monitor
 with optimizer-step freshness, finite-metric checks, checkpoint cadence, process,

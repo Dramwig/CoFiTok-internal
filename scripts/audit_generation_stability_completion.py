@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import re
 from pathlib import Path
 from typing import Any, Callable
@@ -33,6 +32,10 @@ try:
         validate_milestone_report,
         verify_milestone_source_reports,
     )
+    from scripts.build_generation_full_readiness import (
+        validate_full_storage_capacity,
+        verify_readiness_report,
+    )
     from scripts.build_generation_stability_50k_summary import build_summary
     from scripts.build_large_scale_generation_comparison import (
         verify_comparison_source_reports,
@@ -52,6 +55,10 @@ except ModuleNotFoundError:
     from build_generation_milestone_report import (
         validate_milestone_report,
         verify_milestone_source_reports,
+    )
+    from build_generation_full_readiness import (
+        validate_full_storage_capacity,
+        verify_readiness_report,
     )
     from build_generation_stability_50k_summary import build_summary
     from build_large_scale_generation_comparison import (
@@ -484,71 +491,36 @@ def full_storage_capacity_evidence(
     expected_path: Path,
 ) -> dict[str, Any]:
     _raise_load_error(report)
-    if (
-        report.get("schema_version") != 2
-        or report.get("role") != "generation_storage_capacity_preflight"
-        or report.get("stage") != "full_training"
-        or report.get("status") != "pass"
-    ):
-        raise ValueError("stability full storage capacity report is invalid")
-    if report.get("git") != {
-        "revision": expected_revision,
-        "branch": expected_branch,
-        "tracked_dirty": False,
-    }:
-        raise ValueError("stability full storage capacity Git identity differs")
-    filesystem = report.get("filesystem", {})
-    observed_path = Path(str(filesystem.get("path", ""))).resolve()
-    if observed_path != expected_path.resolve():
-        raise ValueError("stability full storage capacity path differs")
-    plan = report.get("plan", {})
-    minimums = {
-        "checkpoint_count": 16,
-        "sample_count": 16_384,
-        "estimated_sample_bytes_each": 256 * 1024,
-        "additional_bytes": 16 * 1024**3,
-        "safety_margin_bytes": 64 * 1024**3,
-    }
-    for key, minimum in minimums.items():
-        if int(plan.get(key, -1)) < minimum:
-            raise ValueError(f"stability full storage reserve {key} was weakened")
-    reference_bytes = int(plan.get("reference_checkpoint_bytes_each", -1))
-    multiplier = float(plan.get("checkpoint_size_multiplier", math.nan))
-    planned_checkpoint_bytes = int(plan.get("checkpoint_bytes_each", -1))
-    if reference_bytes < 1 or not math.isfinite(multiplier) or multiplier < 4.0:
-        raise ValueError("stability full checkpoint scaling was weakened")
-    if planned_checkpoint_bytes != math.ceil(reference_bytes * multiplier):
-        raise ValueError("stability full checkpoint scaling arithmetic differs")
-    checkpoint_reserve = int(plan["checkpoint_count"]) * planned_checkpoint_bytes
-    sample_reserve = int(plan["sample_count"]) * int(
-        plan["estimated_sample_bytes_each"]
+    return validate_full_storage_capacity(
+        report,
+        expected_revision=expected_revision,
+        expected_branch=expected_branch,
+        expected_path=expected_path,
     )
-    if checkpoint_reserve != int(plan.get("checkpoint_reserve_bytes", -1)):
-        raise ValueError("stability full checkpoint reserve arithmetic differs")
-    if sample_reserve != int(plan.get("sample_reserve_bytes", -1)):
-        raise ValueError("stability full sample reserve arithmetic differs")
-    required = (
-        checkpoint_reserve
-        + sample_reserve
-        + int(plan["additional_bytes"])
-        + int(plan["safety_margin_bytes"])
-    )
-    if required != int(plan.get("required_free_bytes", -1)):
-        raise ValueError("stability full storage requirement arithmetic differs")
-    total = int(filesystem.get("total_bytes", -1))
-    used = int(filesystem.get("used_bytes", -1))
-    free = int(filesystem.get("free_bytes", -1))
-    if total < 1 or used < 0 or free < required or used + free > total:
-        raise ValueError("stability full storage filesystem headroom is invalid")
-    if int(report.get("headroom_bytes", -1)) != free - required:
-        raise ValueError("stability full storage headroom arithmetic differs")
+
+
+def full_readiness_evidence(
+    report: dict[str, Any],
+    *,
+    readiness_path: Path,
+    expected_sha256: str,
+    verification_kwargs: dict[str, Any],
+) -> dict[str, Any]:
+    _raise_load_error(report)
+    if file_sha256(readiness_path) != expected_sha256:
+        raise ValueError("stability full readiness SHA256 differs")
+    verified = verify_readiness_report(report, **verification_kwargs)
     return {
-        "reference_checkpoint_bytes_each": reference_bytes,
-        "checkpoint_size_multiplier": multiplier,
-        "checkpoint_bytes_each": planned_checkpoint_bytes,
-        "required_free_bytes": required,
-        "free_bytes": free,
-        "headroom_bytes": free - required,
+        "readiness_sha256": expected_sha256,
+        "runtime_selection": verified["runtime_selection"],
+        "config_contract": verified["config_contract"],
+        "storage_capacity": verified["storage_capacity"],
+        "training_state_absent_at_build": verified[
+            "training_state_absent_at_build"
+        ],
+        "full_training_launch_allowed": verified[
+            "full_training_launch_allowed"
+        ],
     }
 
 
@@ -793,6 +765,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-scaling-evaluation-revision", required=True)
     parser.add_argument("--expected-scaling-evaluation-branch", required=True)
     parser.add_argument("--expected-scaling-gate-sha256", required=True)
+    parser.add_argument("--expected-full-readiness-sha256", required=True)
     parser.add_argument("--expected-full-training-revision", required=True)
     parser.add_argument("--expected-full-training-branch", required=True)
     parser.add_argument("--expected-full-evaluation-revision", required=True)
@@ -844,6 +817,10 @@ def main() -> None:
         "scaling_gate_sha256": _validate_sha256(
             args.expected_scaling_gate_sha256,
             name="scaling gate SHA256",
+        ),
+        "full_readiness_sha256": _validate_sha256(
+            args.expected_full_readiness_sha256,
+            name="full readiness SHA256",
         ),
         "final_gate_sha256": _validate_sha256(
             args.expected_final_gate_sha256,
@@ -897,8 +874,17 @@ def main() -> None:
     full_runtime_selection = _read_optional(
         full_reports / "runtime_selection.json"
     )
+    full_config_validation = _read_optional(
+        full_reports / "config_validation.json"
+    )
     full_storage_capacity = _read_optional(
         full_reports / "storage_capacity.json"
+    )
+    full_launch_storage_capacity = _read_optional(
+        full_reports / "storage_capacity_launch.json"
+    )
+    full_readiness = _read_optional(
+        full_reports / "full_training_readiness.json"
     )
     full_training = {
         "cofitok": _read_optional(full_cofitok / "training_report.json"),
@@ -1103,6 +1089,48 @@ def main() -> None:
             ),
         ),
         _check(
+            "stability_full_training_readiness",
+            [
+                full_readiness,
+                scaling_gate,
+                full_config_validation,
+                full_storage_capacity,
+                full_runtime_selection,
+            ],
+            lambda: full_readiness_evidence(
+                full_readiness,
+                readiness_path=full_reports / "full_training_readiness.json",
+                expected_sha256=expectations["full_readiness_sha256"],
+                verification_kwargs={
+                    "source_paths": {
+                        "promotion_gate": paths["STABILITY_SCALING_GATE"],
+                        "cofitok_config": project
+                        / "configs/generation/imagenet256_stability_rgbtail3_"
+                        "rollout_x0_u2_ema_teacher_k8_300k.json",
+                        "dense_config": project
+                        / "configs/generation/imagenet256_stability_"
+                        "rollout_x0_u2_ema_teacher_dense_300k.json",
+                        "config_validation": full_reports
+                        / "config_validation.json",
+                        "storage_capacity": full_reports
+                        / "storage_capacity.json",
+                        "runtime_selection": full_reports
+                        / "runtime_selection.json",
+                    },
+                    "training_run_dirs": [full_cofitok, full_dense],
+                    "benchmark_root": paths["STABILITY_FULL_ROOT"]
+                    / "runtime_preflight/training",
+                    "storage_path": output_root,
+                    "project_root": project,
+                    "expected_revision": expectations["full_training_revision"],
+                    "expected_branch": args.expected_full_training_branch,
+                    "require_current_runtime_environment": False,
+                    "require_current_git": False,
+                    "require_training_state_absent": False,
+                },
+            ),
+        ),
+        _check(
             "stability_full_monitor",
             [full_monitor],
             lambda: monitor_evidence(
@@ -1178,9 +1206,9 @@ def main() -> None:
         ),
         _check(
             "stability_full_storage_capacity",
-            [full_storage_capacity],
+            [full_launch_storage_capacity],
             lambda: full_storage_capacity_evidence(
-                full_storage_capacity,
+                full_launch_storage_capacity,
                 expected_revision=expectations["full_training_revision"],
                 expected_branch=args.expected_full_training_branch,
                 expected_path=output_root,

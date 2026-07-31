@@ -5,6 +5,7 @@ PROJECT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
 CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation}
 EXPECTED_SCALING_GATE_SHA256=${EXPECTED_SCALING_GATE_SHA256:?set the passing stability scaling gate SHA256}
+EXPECTED_READINESS_SHA256=${EXPECTED_READINESS_SHA256:?set the immutable stability-full readiness SHA256}
 EXPECTED_TARGET_REVISION=${EXPECTED_TARGET_REVISION:?set the clean stability-full training revision}
 EXPECTED_TARGET_BRANCH=${EXPECTED_TARGET_BRANCH:?set the clean stability-full training branch}
 
@@ -19,7 +20,11 @@ REPORT_ROOT="$OUTPUT_ROOT/reports"
 COFITOK_RUN="$OUTPUT_ROOT/cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
 DENSE_RUN="$OUTPUT_ROOT/dense_rollout_x0_u2_ema_teacher"
 RUNTIME_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/training"
+CONFIG_VALIDATION="$REPORT_ROOT/config_validation.json"
+STORAGE_CAPACITY="$REPORT_ROOT/storage_capacity.json"
 RUNTIME_SELECTION="$REPORT_ROOT/runtime_selection.json"
+READINESS="$REPORT_ROOT/full_training_readiness.json"
+LAUNCH_STORAGE_CAPACITY="$REPORT_ROOT/storage_capacity_launch.json"
 MONITOR_REPORT="$OUTPUT_ROOT/pair_monitor.json"
 MONITOR_LOG="$OUTPUT_ROOT/pair_monitor.log"
 MONITOR_PID_FILE="$OUTPUT_ROOT/pair_monitor.pid"
@@ -34,22 +39,49 @@ export PYTHONPATH=src
 [[ -f "$GATE" ]]
 [[ -f "$REFERENCE_COFITOK" ]]
 [[ -f "$REFERENCE_DENSE" ]]
+[[ -f "$READINESS" ]]
 [[ "$(sha256sum "$GATE" | awk '{print $1}')" == "$EXPECTED_SCALING_GATE_SHA256" ]]
+[[ "$(sha256sum "$READINESS" | awk '{print $1}')" == "$EXPECTED_READINESS_SHA256" ]]
 mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
 
 "$PYTHON" scripts/validate_generation_gate_report.py \
   --gate "$GATE" \
   --stage scaling >/dev/null
 
-"$PYTHON" scripts/validate_generation_configs.py \
+if nvidia-smi --query-compute-apps=pid --format=csv,noheader | grep -q '[0-9]'; then
+  printf 'refusing stability full training launch while the GPU is busy\n' >&2
+  exit 9
+fi
+
+runtime_selected="$("$PYTHON" scripts/validate_generation_full_readiness.py \
+  --project-root "$PROJECT" \
+  --readiness "$READINESS" \
+  --expected-readiness-sha256 "$EXPECTED_READINESS_SHA256" \
+  --promotion-gate "$GATE" \
   --cofitok-config "$COFITOK_CONFIG" \
   --dense-config "$DENSE_CONFIG" \
-  --stage stability_full \
-  --output "$REPORT_ROOT/config_validation.json" >/dev/null
+  --config-validation "$CONFIG_VALIDATION" \
+  --storage-capacity "$STORAGE_CAPACITY" \
+  --runtime-selection "$RUNTIME_SELECTION" \
+  --training-run-dir "$COFITOK_RUN" \
+  --training-run-dir "$DENSE_RUN" \
+  --benchmark-root "$RUNTIME_BENCHMARK_ROOT" \
+  --storage-path "$CHECKPOINT_ROOT" \
+  --expected-revision "$EXPECTED_TARGET_REVISION" \
+  --expected-branch "$EXPECTED_TARGET_BRANCH" \
+  --require-current-runtime-environment \
+  --print-selected-runtime)"
+read -r SELECTED_MICRO_BATCH SELECTED_ACCUMULATION <<<"$runtime_selected"
+if [[ ! "$SELECTED_MICRO_BATCH" =~ ^[0-9]+$ \
+  || ! "$SELECTED_ACCUMULATION" =~ ^[0-9]+$ \
+  || $((SELECTED_MICRO_BATCH * SELECTED_ACCUMULATION)) -ne 64 ]]; then
+  printf 'invalid readiness-selected stability-full runtime: %s\n' "$runtime_selected" >&2
+  exit 10
+fi
 
 "$PYTHON" scripts/check_generation_storage_capacity.py \
   --path "$CHECKPOINT_ROOT" \
-  --output "$REPORT_ROOT/storage_capacity.json" \
+  --output "$LAUNCH_STORAGE_CAPACITY" \
   --stage full_training \
   --reference-checkpoint "$REFERENCE_COFITOK" \
   --reference-checkpoint "$REFERENCE_DENSE" \
@@ -59,32 +91,6 @@ mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
   --estimated-sample-kib 256 \
   --additional-gib 16 \
   --safety-margin-gib 64 >/dev/null
-
-if nvidia-smi --query-compute-apps=pid --format=csv,noheader | grep -q '[0-9]'; then
-  printf 'refusing stability full runtime selection while the GPU is busy\n' >&2
-  exit 9
-fi
-
-runtime_selected="$("$PYTHON" scripts/select_generation_training_runtime.py \
-  --cofitok-config "$COFITOK_CONFIG" \
-  --dense-config "$DENSE_CONFIG" \
-  --output-root "$RUNTIME_BENCHMARK_ROOT" \
-  --output "$RUNTIME_SELECTION" \
-  --training-run-dir "$COFITOK_RUN" \
-  --training-run-dir "$DENSE_RUN" \
-  --candidates 1x64,2x32,4x16,8x8,16x4 \
-  --baseline-candidate 1x64 \
-  --effective-batch-size 64 \
-  --benchmark-steps 8 \
-  --warmup-steps 2 \
-  --max-memory-fraction 0.90)"
-read -r SELECTED_MICRO_BATCH SELECTED_ACCUMULATION <<<"$runtime_selected"
-if [[ ! "$SELECTED_MICRO_BATCH" =~ ^[0-9]+$ \
-  || ! "$SELECTED_ACCUMULATION" =~ ^[0-9]+$ \
-  || $((SELECTED_MICRO_BATCH * SELECTED_ACCUMULATION)) -ne 64 ]]; then
-  printf 'invalid selected stability-full runtime: %s\n' "$runtime_selected" >&2
-  exit 10
-fi
 
 monitor_report_passes() {
   "$PYTHON" - "$MONITOR_REPORT" "$MONITOR_NAME" \

@@ -6,7 +6,10 @@ from pathlib import Path
 import subprocess
 import sys
 
+import pytest
+
 from cofitok.reporting import file_sha256
+from scripts import audit_generation_stability_completion as stability_audit
 from scripts.audit_generation_stability_completion import (
     aggregate_checks,
     full_storage_capacity_evidence,
@@ -143,6 +146,7 @@ def test_stability_completion_runbook_is_a_read_only_exact_identity_gate() -> No
     assert "scripts/audit_generation_stability_completion.py" in source
     assert "EXPECTED_DECISION_SHA256=${" in source
     assert "EXPECTED_SCALING_GATE_SHA256=${" in source
+    assert "EXPECTED_FULL_READINESS_SHA256=${" in source
     assert "EXPECTED_FINAL_GATE_SHA256=${" in source
     assert "EXPECTED_FULL_TRAINING_REVISION=${" in source
     assert "EXPECTED_FULL_EVALUATION_REVISION=${" in source
@@ -177,6 +181,8 @@ def test_stability_completion_cli_reports_empty_workspace_as_incomplete(
         "scaling-eval",
         "--expected-scaling-gate-sha256",
         "d" * 64,
+        "--expected-full-readiness-sha256",
+        "0" * 64,
         "--expected-full-training-revision",
         "e" * 40,
         "--expected-full-training-branch",
@@ -210,7 +216,8 @@ def test_stability_completion_cli_reports_empty_workspace_as_incomplete(
     assert report["status"] == "incomplete"
     assert report["complete"] is False
     assert report["failed_checks"] == []
-    assert len(report["missing_checks"]) == 15
+    assert len(report["missing_checks"]) == 16
+    assert "stability_full_training_readiness" in report["missing_checks"]
     assert "stability_full_runtime_selection" in report["missing_checks"]
     assert "stability_full_storage_capacity" in report["missing_checks"]
 
@@ -278,3 +285,40 @@ def test_stability_full_storage_requires_large_checkpoint_scaling(
         assert "scaling" in str(error)
     else:
         raise AssertionError("weakened stability checkpoint scaling was accepted")
+
+
+def test_stability_completion_rejects_replaced_readiness_file(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "full_training_readiness.json"
+    path.write_text('{"status":"pass"}\n', encoding="ascii")
+    expected_sha = file_sha256(path)
+    monkeypatch.setattr(
+        stability_audit,
+        "verify_readiness_report",
+        lambda report, **kwargs: {
+            "runtime_selection": {},
+            "config_contract": {},
+            "storage_capacity": {},
+            "training_state_absent_at_build": True,
+            "full_training_launch_allowed": True,
+        },
+    )
+
+    evidence = stability_audit.full_readiness_evidence(
+        {"status": "pass"},
+        readiness_path=path,
+        expected_sha256=expected_sha,
+        verification_kwargs={},
+    )
+    assert evidence["readiness_sha256"] == expected_sha
+
+    path.write_text('{"status":"replaced"}\n', encoding="ascii")
+    with pytest.raises(ValueError, match="readiness SHA256 differs"):
+        stability_audit.full_readiness_evidence(
+            {"status": "replaced"},
+            readiness_path=path,
+            expected_sha256=expected_sha,
+            verification_kwargs={},
+        )
