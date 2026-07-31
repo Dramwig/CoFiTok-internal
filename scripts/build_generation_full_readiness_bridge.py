@@ -135,14 +135,16 @@ def _critical_manifest(project: Path, revision: str) -> list[dict[str, str]]:
         "ls-tree",
         "-r",
         "--full-tree",
-        "--format=%(objectname)%x09%(path)",
         revision,
         "--",
         *TRAINING_CRITICAL_PATHS,
     )
     rows = []
     for line in result.stdout.splitlines():
-        object_id, path = line.split("\t", 1)
+        metadata, path = line.split("\t", 1)
+        _mode, object_type, object_id = metadata.split(" ", 2)
+        if object_type != "blob":
+            raise ValueError(f"training-critical Git entry is not a blob: {path}")
         rows.append({"path": path, "git_blob": object_id})
     if not rows:
         raise ValueError("training-critical Git manifest is empty")

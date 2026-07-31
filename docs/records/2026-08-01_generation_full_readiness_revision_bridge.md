@@ -60,7 +60,14 @@ independent `stability_full_readiness_revision_bridge` check and replays the
 bridge before accepting launch, training, post-evaluation, export, or final
 completion evidence.
 
+The first Linux isolated deployment attempt for `35a9b99` failed before receipt
+creation because the server Git version does not support `git ls-tree --format`.
+The deployment helper removed its temporary checkout and left the formal
+repository unchanged. The manifest builder now parses the stable default
+`ls-tree` record format, preserving the same blob/path contract across old and
+new Git versions.
+
 The final target revision and deployment receipt are intentionally not written
-here until this change is committed, bundled, validated on Linux, and deployed
-to a new immutable checkout. The active readiness waiter is not replaced, and
-the active matched 50K queue is not modified.
+here until the compatibility fix is committed, bundled, validated on Linux,
+and deployed to a new immutable checkout. The active readiness waiter is not
+replaced, and the active matched 50K queue is not modified.
