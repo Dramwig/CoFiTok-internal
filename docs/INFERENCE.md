@@ -24,7 +24,8 @@ through session metadata and CLI reports.
 
 ## CLI
 
-Formal experiments remain server-only. Once a completed checkpoint exists:
+Formal experiments remain server-only. Once the stability-full training pair
+has completed, a training checkpoint can be used for scientific inspection:
 
 ```bash
 cd /root/autodl-tmp/CoFiTok/CoFiTok-internal
@@ -33,7 +34,7 @@ conda activate pf-vlm
 export PYTHONPATH=src
 
 python scripts/infer_generation.py \
-  --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_full_cofitok_k8_300k/checkpoint_step_00300000.pt \
+  --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_300k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00300000.pt \
   --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/inference/example \
   --class-ids 207 \
   --seeds 11,12,13,14 \
@@ -50,15 +51,16 @@ and SHA256 for every output. Existing reports/images are not overwritten unless
 
 ## EMA-only deployment artifact
 
-After final completion, prefer the smaller verified artifact for routine
-inference:
+After the stability final gate, inference export, and completion audit pass,
+use the smaller release-authorized artifact for routine inference:
 
 ```bash
 python scripts/infer_generation.py \
-  --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/generation/exports/imagenet256_full_300k/cofitok_k8_ema_inference.pt \
+  --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/generation/exports/stability_full_300k_ema_teacher/cofitok_k8_ema_inference.pt \
   --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/inference/deployed \
   --class-ids 207 --seeds 101,102 --prefix-budgets 8 \
-  --sample-steps 250 --guidance-scale 1.5 --weights ema --precision bf16
+  --sample-steps 250 --guidance-scale 1.5 --weights ema --precision bf16 \
+  --require-release-authorization
 ```
 
 The artifact contains EMA-applied weights only. Keep `--weights ema`; requesting
@@ -69,6 +71,12 @@ promotion authorization, and the exact passing full readiness gate. Formal
 export requires `--release-gate`; artifacts are rejected when either gate
 identity differs at export reuse, load, preflight, smoke inference, or terminal
 completion audit.
+
+The matched dense control is exported separately as
+`dense_identity_ema_inference.pt` in the same directory. Neither artifact path
+is considered deployable merely because a file exists: production loading must
+keep `--require-release-authorization`, which verifies the embedded final-gate
+identity before model deserialization.
 
 ## Formal sampling
 

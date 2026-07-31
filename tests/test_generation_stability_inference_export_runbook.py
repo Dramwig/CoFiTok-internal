@@ -42,3 +42,22 @@ def test_stability_export_uses_new_paths_and_cannot_train() -> None:
     assert "imagenet256_full_cofitok_k8_300k" not in source
     assert "scripts/train_generation.py" not in source
     assert "generation_stability_ema_teacher_full_matched_300k_after_gate.sh" not in source
+
+
+def test_inference_documentation_uses_release_authorized_stability_paths() -> None:
+    documentation = (ROOT / "docs/INFERENCE.md").read_text(encoding="utf-8")
+    runbook = RUNBOOK.read_text(encoding="utf-8")
+
+    assert (
+        "stability_full_300k_ema_teacher/"
+        "cofitok_rgbtail3_rollout_x0_u2_ema_teacher/"
+        "checkpoint_step_00300000.pt"
+    ) in documentation
+    assert (
+        "exports/stability_full_300k_ema_teacher/"
+        "cofitok_k8_ema_inference.pt"
+    ) in documentation
+    assert "dense_identity_ema_inference.pt" in documentation
+    assert "--require-release-authorization" in documentation
+    assert "imagenet256_full_cofitok_k8_300k" not in documentation
+    assert "exports/imagenet256_full_300k" not in documentation
