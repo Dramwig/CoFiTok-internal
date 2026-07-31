@@ -17,23 +17,48 @@ from cofitok.reporting import file_sha256, write_json_report, write_text_report
 EXTERNAL_ALIASES = {"d_ar", "mar", "retok"}
 EXTERNAL_METHODS = {"d_ar": "D-AR", "mar": "MAR", "retok": "ReTok"}
 COMPARISON_REPORT_SCHEMA_VERSION = 5
-SOURCE_REPORT_SUFFIXES = {
-    "cofitok_training": (
-        "imagenet256_full_cofitok_k8_300k/training_report.json"
-    ),
-    "dense_training": "imagenet256_full_dense_300k/training_report.json",
-    "cofitok_generation": (
-        "imagenet256_full_cofitok_k8_300k/samples_50k_ddim250_cfg15/metrics/"
-        "generation_metrics_report.json"
-    ),
-    "dense_generation": (
-        "imagenet256_full_dense_300k/samples_50k_ddim250_cfg15/metrics/"
-        "generation_metrics_report.json"
-    ),
-    "final_gate": (
-        "artifacts/reports/generation/imagenet256_full_matched_300k/"
-        "final_generation_gate.json"
-    ),
+SOURCE_REPORT_PROFILES = {
+    "full": {
+        "cofitok_training": (
+            "imagenet256_full_cofitok_k8_300k/training_report.json"
+        ),
+        "dense_training": "imagenet256_full_dense_300k/training_report.json",
+        "cofitok_generation": (
+            "imagenet256_full_cofitok_k8_300k/samples_50k_ddim250_cfg15/metrics/"
+            "generation_metrics_report.json"
+        ),
+        "dense_generation": (
+            "imagenet256_full_dense_300k/samples_50k_ddim250_cfg15/metrics/"
+            "generation_metrics_report.json"
+        ),
+        "final_gate": (
+            "artifacts/reports/generation/imagenet256_full_matched_300k/"
+            "final_generation_gate.json"
+        ),
+    },
+    "stability_full": {
+        "cofitok_training": (
+            "stability_full_300k_ema_teacher/"
+            "cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json"
+        ),
+        "dense_training": (
+            "stability_full_300k_ema_teacher/"
+            "dense_rollout_x0_u2_ema_teacher/training_report.json"
+        ),
+        "cofitok_generation": (
+            "stability_full_300k_ema_teacher/"
+            "cofitok_rgbtail3_rollout_x0_u2_ema_teacher/"
+            "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
+        ),
+        "dense_generation": (
+            "stability_full_300k_ema_teacher/"
+            "dense_rollout_x0_u2_ema_teacher/"
+            "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
+        ),
+        "final_gate": (
+            "stability_full_300k_ema_teacher/reports/final_generation_gate.json"
+        ),
+    },
 }
 
 
@@ -55,10 +80,13 @@ def source_report_identity(path: str | Path) -> dict[str, Any]:
 
 def _validate_source_report_identities(
     source_reports: dict[str, dict[str, Any]],
+    *,
+    source_profile: str = "full",
 ) -> None:
-    if set(source_reports) != set(SOURCE_REPORT_SUFFIXES):
+    expected = SOURCE_REPORT_PROFILES.get(source_profile)
+    if expected is None or set(source_reports) != set(expected):
         raise ValueError("comparison source-report set is incomplete")
-    for name, expected_suffix in SOURCE_REPORT_SUFFIXES.items():
+    for name, expected_suffix in expected.items():
         identity = source_reports[name]
         path = str(identity.get("path", "")).replace("\\", "/")
         sha256 = str(identity.get("sha256", ""))
@@ -75,14 +103,22 @@ def verify_comparison_source_reports(report: dict[str, Any]) -> dict[str, Any]:
     source_reports = report.get("source_reports")
     if not isinstance(source_reports, dict):
         raise ValueError("comparison report is missing source-report identities")
-    _validate_source_report_identities(source_reports)
+    source_profile = str(report.get("source_profile", "full"))
+    _validate_source_report_identities(
+        source_reports,
+        source_profile=source_profile,
+    )
     verified = {}
     for name, expected in source_reports.items():
         actual = source_report_identity(expected["path"])
         if actual != expected:
             raise ValueError(f"comparison source report changed after binding: {name}")
         verified[name] = actual
-    return {"status": "verified", "source_reports": verified}
+    return {
+        "status": "verified",
+        "source_profile": source_profile,
+        "source_reports": verified,
+    }
 
 
 def _finite_metric(report: dict[str, Any], key: str) -> float:
@@ -278,12 +314,16 @@ def build_report(
     official_source_path: str,
     official_source_sha256: str,
     source_reports: dict[str, dict[str, Any]],
+    source_profile: str = "full",
 ) -> dict[str, Any]:
     if len(official_source_sha256) != 64:
         raise ValueError("official related-method source SHA256 is malformed")
     if final_gate.get("stage") != "full":
         raise ValueError("large-scale comparison requires a full-stage gate report")
-    _validate_source_report_identities(source_reports)
+    _validate_source_report_identities(
+        source_reports,
+        source_profile=source_profile,
+    )
     formal_contracts = {
         "cofitok": sampling_protocol_contract(
             cofitok_generation["sample_provenance"]["sampling"],
@@ -381,6 +421,7 @@ def build_report(
     return {
         "schema_version": COMPARISON_REPORT_SCHEMA_VERSION,
         "status": "ready" if ready else "hold",
+        "source_profile": source_profile,
         "final_gate": {
             "status": final_gate.get("status"),
             "decision": final_gate.get("decision"),
@@ -539,6 +580,11 @@ def main() -> None:
     parser.add_argument("--dense-generation", required=True)
     parser.add_argument("--final-gate", required=True)
     parser.add_argument("--official-related", required=True)
+    parser.add_argument(
+        "--source-profile",
+        choices=sorted(SOURCE_REPORT_PROFILES),
+        default="full",
+    )
     parser.add_argument("--output-dir", required=True)
     args = parser.parse_args()
 
@@ -561,6 +607,7 @@ def main() -> None:
         source_reports={
             name: source_report_identity(path) for name, path in source_paths.items()
         },
+        source_profile=args.source_profile,
     )
     output_dir = Path(args.output_dir)
     write_json_report(output_dir / "large_scale_generation_comparison.json", report)

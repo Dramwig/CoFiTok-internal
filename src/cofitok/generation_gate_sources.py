@@ -11,6 +11,9 @@ from cofitok.generation_paths import (
     STABILITY_SCALING_COFITOK_RUN_ID,
     STABILITY_SCALING_DENSE_RUN_ID,
     STABILITY_SCALING_ROOT_ID,
+    STABILITY_FULL_COFITOK_RUN_ID,
+    STABILITY_FULL_DENSE_RUN_ID,
+    STABILITY_FULL_ROOT_ID,
 )
 from cofitok.reporting import file_sha256
 
@@ -97,11 +100,42 @@ GATE_SOURCE_SUFFIXES = {
             "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
         ),
     },
+    "stability_full": {
+        "cofitok_training": (
+            f"checkpoints/generation/{STABILITY_FULL_ROOT_ID}/"
+            f"{STABILITY_FULL_COFITOK_RUN_ID}/training_report.json"
+        ),
+        "dense_training": (
+            f"checkpoints/generation/{STABILITY_FULL_ROOT_ID}/"
+            f"{STABILITY_FULL_DENSE_RUN_ID}/training_report.json"
+        ),
+        "cofitok_generation": (
+            f"checkpoints/generation/{STABILITY_FULL_ROOT_ID}/"
+            f"{STABILITY_FULL_COFITOK_RUN_ID}/"
+            "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
+        ),
+        "dense_generation": (
+            f"checkpoints/generation/{STABILITY_FULL_ROOT_ID}/"
+            f"{STABILITY_FULL_DENSE_RUN_ID}/"
+            "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
+        ),
+        "cofitok_checkpoint_eval": (
+            f"checkpoints/generation/{STABILITY_FULL_ROOT_ID}/"
+            f"{STABILITY_FULL_COFITOK_RUN_ID}/"
+            "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
+        ),
+        "dense_checkpoint_eval": (
+            f"checkpoints/generation/{STABILITY_FULL_ROOT_ID}/"
+            f"{STABILITY_FULL_DENSE_RUN_ID}/"
+            "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
+        ),
+    },
 }
 GATE_SOURCE_PROFILE_STAGES = {
     "scaling": "scaling",
     "stability_scaling": "scaling",
     "full": "full",
+    "stability_full": "full",
 }
 
 

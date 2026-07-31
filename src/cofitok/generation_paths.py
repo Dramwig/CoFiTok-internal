@@ -10,6 +10,9 @@ SCALING_REPORT_ID = "imagenet256_10pct_fixed_basis_matched_50k_v3"
 STABILITY_SCALING_ROOT_ID = "stability_scaling_50k_ema_teacher"
 STABILITY_SCALING_COFITOK_RUN_ID = "cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
 STABILITY_SCALING_DENSE_RUN_ID = "dense_rollout_x0_u2_ema_teacher"
+STABILITY_FULL_ROOT_ID = "stability_full_300k_ema_teacher"
+STABILITY_FULL_COFITOK_RUN_ID = "cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
+STABILITY_FULL_DENSE_RUN_ID = "dense_rollout_x0_u2_ema_teacher"
 FULL_COFITOK_RUN_ID = "imagenet256_full_cofitok_k8_300k"
 FULL_DENSE_RUN_ID = "imagenet256_full_dense_300k"
 FULL_REPORT_ID = "imagenet256_full_matched_300k"
@@ -41,6 +44,16 @@ def generation_workspace_paths(
         "FULL_DENSE_RUN": output / FULL_DENSE_RUN_ID,
         "FULL_REPORT_ROOT": full_report,
         "FULL_GATE": full_report / "final_generation_gate.json",
+        "STABILITY_FULL_COFITOK_RUN": (
+            output / STABILITY_FULL_ROOT_ID / STABILITY_FULL_COFITOK_RUN_ID
+        ),
+        "STABILITY_FULL_DENSE_RUN": (
+            output / STABILITY_FULL_ROOT_ID / STABILITY_FULL_DENSE_RUN_ID
+        ),
+        "STABILITY_FULL_REPORT_ROOT": output / STABILITY_FULL_ROOT_ID / "reports",
+        "STABILITY_FULL_GATE": (
+            output / STABILITY_FULL_ROOT_ID / "reports/final_generation_gate.json"
+        ),
     }
 
 

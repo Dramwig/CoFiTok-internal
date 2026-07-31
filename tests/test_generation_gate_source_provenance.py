@@ -87,6 +87,33 @@ def test_stability_scaling_source_profile_is_independent_from_gate_stage(
     assert verified["source_profile"] == "stability_scaling"
 
 
+def test_stability_full_source_profile_is_independent_from_legacy_full(
+    tmp_path: Path,
+) -> None:
+    paths = {}
+    for index, (name, suffix) in enumerate(
+        GATE_SOURCE_SUFFIXES["stability_full"].items()
+    ):
+        path = tmp_path / suffix
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"name": name, "index": index}), encoding="utf-8")
+        paths[name] = path
+    gate = {
+        "stage": "full",
+        "source_profile": "stability_full",
+        "source_reports": build_generation_gate_source_reports(
+            stage="full",
+            profile="stability_full",
+            paths=paths,
+        ),
+    }
+
+    verified = verify_generation_gate_source_reports(gate)
+
+    assert verified["stage"] == "full"
+    assert verified["source_profile"] == "stability_full"
+
+
 def test_generation_gate_source_profile_rejects_cross_stage_binding(
     tmp_path: Path,
 ) -> None:

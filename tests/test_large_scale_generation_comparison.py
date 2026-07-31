@@ -9,6 +9,7 @@ from cofitok.generation import (
     sampling_protocol_contract,
 )
 from scripts.build_large_scale_generation_comparison import (
+    SOURCE_REPORT_PROFILES,
     build_report,
     render_csv,
     render_markdown,
@@ -390,3 +391,21 @@ def test_comparison_source_verification_detects_changed_file(tmp_path) -> None:
     )
     with pytest.raises(ValueError, match="changed after binding: cofitok_generation"):
         verify_comparison_source_reports(report)
+
+
+def test_comparison_accepts_stability_full_source_profile(tmp_path) -> None:
+    source_reports = {}
+    for name, suffix in SOURCE_REPORT_PROFILES["stability_full"].items():
+        path = tmp_path / suffix
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('{"status":"completed"}\n', encoding="utf-8")
+        source_reports[name] = source_report_identity(path)
+
+    report = _report()
+    report["source_profile"] = "stability_full"
+    report["source_reports"] = source_reports
+
+    verified = verify_comparison_source_reports(report)
+
+    assert verified["status"] == "verified"
+    assert verified["source_profile"] == "stability_full"
