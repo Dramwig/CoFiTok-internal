@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "role": "stability_completion_audit_and_posteval_waiter_handoff",
+  "captured_at": "2026-07-31T04:51:00.387132+00:00",
+  "training": {
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "branch": "scale/generation-stability-50k-preflight",
+    "gpu_pid": 319202,
+    "step_at_followup_verification": 2300,
+    "samples_seen_at_followup_verification": 147200,
+    "monitor_status": "running",
+    "monitor_stage": "cofitok_training",
+    "monitor_issues": []
+  },
+  "posteval_waiter": {
+    "superseded_pid": 442981,
+    "active_pid": 900875,
+    "revision": "aed20142a496c3c16f9b2e8c8aba4a465fbaf4d7",
+    "branch": "scale/generation-stability-50k-posteval-v2",
+    "status": "waiting",
+    "detail": "waiting_for_completed_training_pair",
+    "formal_300k_allowed": false
+  },
+  "rehearsal": {
+    "target_revision": "aed20142a496c3c16f9b2e8c8aba4a465fbaf4d7",
+    "linux_collected_tests_excluding_paper_layout": 780,
+    "linux_passed_tests": 777,
+    "linux_skipped_tests": 3,
+    "excluded_tests": [
+      "tests/test_aaai27_experiment_structure.py"
+    ],
+    "runbook_syntax_checked": 95,
+    "runbook_syntax_failed": 0,
+    "official_repository_head": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "official_repository_head_moved": false
+  },
+  "files": {
+    "pair_monitor_at_waiter_switch.json": {
+      "bytes": 13294,
+      "sha256": "96636ecafe637af72e604c2efc97913de1cbfe7d1d8b5b0472bd3b678591def6"
+    },
+    "posteval_waiter_aed2014.json": {
+      "bytes": 1030,
+      "sha256": "68fb19fe954ea1a7d928ffb2dc2ad6fc54f5a25f16c586a1556567bac1f67ea9"
+    },
+    "posteval_waiter_caab513_superseded.json": {
+      "bytes": 1027,
+      "sha256": "a29de731346ddceaae980ffc4d1c9f1fe3cb724f470c29525cf02a873e9bae52"
+    }
+  }
+}

@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from PIL import Image
+import pytest
 
 from cofitok.diffusion import select_sampling_timesteps
 from cofitok.configs import config_to_dict, load_config
@@ -31,6 +32,7 @@ from cofitok.reporting import file_sha256
 from cofitok.training.authorization import build_generation_training_authorization
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
+    _inference_export_evidence,
     _verify_deployment_bundle_source,
     _verify_formal_real_set_files,
     _verify_formal_sample_files,
@@ -1130,9 +1132,15 @@ def _full_training_monitor() -> dict:
 
 def _inference_exports() -> dict:
     output = {}
-    environment_sha = runtime_environment_sha256(_runtime_environment())
+    execution_environment = _runtime_environment()
+    environment_sha = runtime_environment_sha256(execution_environment)
     training_authorization = _full_training_authorization()
     release_authorization = _full_release_authorization()
+    execution_git = {
+        "revision": FULL_REVISION,
+        "branch": "scale/generative-system",
+        "tracked_dirty": False,
+    }
     source_git = {
         "dirty": False,
         "revision": FULL_REVISION,
@@ -1166,6 +1174,9 @@ def _inference_exports() -> dict:
         }
         output[f"{method}_preflight"] = {
             "status": "passed",
+            "git": dict(execution_git),
+            "runtime_environment": copy.deepcopy(execution_environment),
+            "runtime_environment_sha256": environment_sha,
             "checkpoint_sha256": artifact_sha,
             "artifact_type": "cofitok_generation_inference",
             "weights": "ema_export",
@@ -1178,6 +1189,9 @@ def _inference_exports() -> dict:
         }
         output[f"{method}_smoke"] = {
             "status": "completed",
+            "git": dict(execution_git),
+            "runtime_environment": copy.deepcopy(execution_environment),
+            "runtime_environment_sha256": environment_sha,
             "output_count": count,
             "checkpoint": {
                 "checkpoint_sha256": artifact_sha,
@@ -2519,6 +2533,47 @@ def test_completion_audit_rejects_export_from_stale_training_checkpoint() -> Non
 
     assert report["status"] == "failed"
     assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_inference_release_audit_binds_execution_revision_and_environment() -> None:
+    kwargs = _kwargs()
+    generation = {
+        "cofitok": kwargs["cofitok_generation"],
+        "dense_identity": kwargs["dense_generation"],
+    }
+    training = {
+        "cofitok": kwargs["cofitok_full_training"],
+        "dense_identity": kwargs["dense_full_training"],
+    }
+
+    evidence = _inference_export_evidence(
+        kwargs["inference_exports"],
+        kwargs["inference_artifact_files"],
+        kwargs["inference_smoke_files"],
+        generation,
+        training,
+        kwargs["final_gate"],
+        expected_export_revision=FULL_REVISION,
+        expected_export_branch="scale/generative-system",
+    )
+
+    assert evidence["cofitok"]["execution_git"]["revision"] == FULL_REVISION
+    assert len(
+        evidence["cofitok"]["execution_runtime_environment_sha256"]
+    ) == 64
+
+    kwargs["inference_exports"]["cofitok_smoke"]["git"]["revision"] = "c" * 40
+    with pytest.raises(ValueError, match="smoke execution Git"):
+        _inference_export_evidence(
+            kwargs["inference_exports"],
+            kwargs["inference_artifact_files"],
+            kwargs["inference_smoke_files"],
+            generation,
+            training,
+            kwargs["final_gate"],
+            expected_export_revision=FULL_REVISION,
+            expected_export_branch="scale/generative-system",
+        )
 
 
 def test_completion_audit_rejects_missing_or_tampered_smoke_pngs() -> None:
