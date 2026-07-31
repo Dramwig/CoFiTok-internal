@@ -2319,12 +2319,12 @@
   "reference_roots": [
     {
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29",
       "policy": "authoritative"
     },
     {
       "label": "tracked_records",
-      "path": "/tmp/cofitok-retention-rehearsal/docs/records",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/docs/records",
       "policy": "authoritative"
     }
   ],
@@ -3420,7 +3420,7 @@
     {
       "bytes": 29641,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "81c4e968646cc6aead60a4d4572337581ca182da3fb80b2a2da2ba32ca8309ea",
       "strength": "strong"
@@ -3428,7 +3428,7 @@
     {
       "bytes": 261592,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "d6c058c5342e5d4bef29da07a690c307a59c16b7fe1683faa29410e944514e76",
       "strength": "strong"
@@ -3436,7 +3436,7 @@
     {
       "bytes": 6160,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "2296cbd8fcac8a4f04b3a0ff7299ccef03fc3b9dab796d2e5cfbb47c5ec27f18",
       "strength": "strong"
@@ -3444,7 +3444,7 @@
     {
       "bytes": 160506,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "6b1602336bcfd295f1812f1c4b248c78cfa2f9326a01ba9a35e0633ec2def187",
       "strength": "strong"
@@ -3452,7 +3452,7 @@
     {
       "bytes": 29661,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_hf05/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_hf05/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "938536adb8ec82c3e65c70114f53e9b77562492952a87859af5f5b78d9163c0e",
       "strength": "strong"
@@ -3460,7 +3460,7 @@
     {
       "bytes": 261831,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_hf05/ema/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_hf05/ema/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "036a9266613944399010e9e7408057b839cfdb4c3c22f4d0e274dd8544577dff",
       "strength": "strong"
@@ -3468,7 +3468,7 @@
     {
       "bytes": 29680,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_hf05/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_hf05/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "fe19c015f9ec5c3972f77a38c0b5640e7941008836ee69de83a2dc51b241454a",
       "strength": "strong"
@@ -3476,7 +3476,7 @@
     {
       "bytes": 264686,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_hf05/model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_hf05/model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "21138feef294ec049d26b574aa6abdeba60bdbf5c503303dfa063110d3cfdadb",
       "strength": "strong"
@@ -3484,7 +3484,7 @@
     {
       "bytes": 29624,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_model/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_model/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "c6b024cd6e597a2a1ab6bf8dc2be146c2b376e5baf4fc8806bde8c2cc87958ca",
       "strength": "strong"
@@ -3492,7 +3492,7 @@
     {
       "bytes": 264680,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "5b84cad9cb57381196b8edeb565efa348902e68eed315ecca8f1908f60ced9aa",
       "strength": "strong"
@@ -3500,7 +3500,7 @@
     {
       "bytes": 6165,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_model/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_model/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "a701925732db7844c97f10fe40d51eda3210efa780572d8886a50a872c0ef2e2",
       "strength": "strong"
@@ -3508,7 +3508,7 @@
     {
       "bytes": 162229,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_model/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_model/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "5fe30a40a19599a46418861dc0d21a40901033ae963f228b2e941b9e88a7cae3",
       "strength": "strong"
@@ -3516,7 +3516,7 @@
     {
       "bytes": 29949,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "6aff55823d7e90efc502f2de169b2c216229acae77e7ecbedb45d9a18b0eec93",
       "strength": "strong"
@@ -3524,7 +3524,7 @@
     {
       "bytes": 261966,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout/ema/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout/ema/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "7725563968908b53747284efa7fbde7e94cdcba49f1d1124565aad7a44be4af8",
       "strength": "strong"
@@ -3532,7 +3532,7 @@
     {
       "bytes": 29984,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "e69958433645dda52e0e3f7def2bc27e53d02b08da24c2e89a1f755321bb273d",
       "strength": "strong"
@@ -3540,7 +3540,7 @@
     {
       "bytes": 264597,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout/model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout/model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "1eafdf0f661c5e6119126c5ed8755bea62db46c68540ddccbe6e786be476f902",
       "strength": "strong"
@@ -3548,7 +3548,7 @@
     {
       "bytes": 30010,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "92905075dd7619ed5b52b14fa3b4d4063e92e712ee6ba62e010df54e69e15de2",
       "strength": "strong"
@@ -3556,7 +3556,7 @@
     {
       "bytes": 263124,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/ema/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/ema/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "68afabc53ba20b19b019e02c3d7e437faff1eaa1a816b2ae9193d24573a0a356",
       "strength": "strong"
@@ -3564,7 +3564,7 @@
     {
       "bytes": 6513,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/ema/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/ema/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "ce8844e5c632f37dac06c85bd45d1307b16dff77b02eb0212891aa2b9e68b44f",
       "strength": "strong"
@@ -3572,7 +3572,7 @@
     {
       "bytes": 161860,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/ema/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/ema/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "c2f8b45f31f99707340c1d3f379de064733be8edee08efb8f85d16407132998e",
       "strength": "strong"
@@ -3580,7 +3580,7 @@
     {
       "bytes": 29992,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "a687c4aa92ec6665781d258e1674b7c6007729a472fc55eaf5847a8b43cf51dc",
       "strength": "strong"
@@ -3588,7 +3588,7 @@
     {
       "bytes": 264734,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "38127e022133cca8d02d5fc373f5ec8f664244442cb2b9d89bb1655362838ab9",
       "strength": "strong"
@@ -3596,7 +3596,7 @@
     {
       "bytes": 6523,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/model/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/model/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "b5dadf97ebb79107fc0601173cfb8366a6efbc02095f651dd4ab0db854d9af50",
       "strength": "strong"
@@ -3604,7 +3604,7 @@
     {
       "bytes": 163225,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/model/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0/model/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "c8cf73b05163ebd9471e6d98f4caf5a7e46507ba3f182e4c9ddf733d8d4161ac",
       "strength": "strong"
@@ -3612,7 +3612,7 @@
     {
       "bytes": 30079,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "610fb081c3af81a89fbbb2563238668926ea05823b2baf13ae13db242bc37985",
       "strength": "strong"
@@ -3620,7 +3620,7 @@
     {
       "bytes": 264297,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/ema/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/ema/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "0714ecc63345533986fd7d23e590daf5d343bc751ec017cdc4e169684096ee68",
       "strength": "strong"
@@ -3628,7 +3628,7 @@
     {
       "bytes": 6579,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/ema/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/ema/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "a450a380bdb0667965f40fa7aecb6e46423c21e02201aa955bf47f4428d4c01b",
       "strength": "strong"
@@ -3636,7 +3636,7 @@
     {
       "bytes": 161573,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/ema/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/ema/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "7bd77416c92d4a9032e637eecf384a0f94a49eb35cff85f34b6909d1c046a715",
       "strength": "strong"
@@ -3644,7 +3644,7 @@
     {
       "bytes": 30151,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "01c1488d9747ede70d76950f3621bd4703ecca33167f9fb0a3e0f82b24af9cc5",
       "strength": "strong"
@@ -3652,7 +3652,7 @@
     {
       "bytes": 264800,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "4e72a7e80c5d08e2248959b99c61860b745f61037e5f55144714bd1509ca21ba",
       "strength": "strong"
@@ -3660,7 +3660,7 @@
     {
       "bytes": 6587,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/model/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/model/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "169b909b8ee4605f1f1f73dfce0c261df8694ce404a3f2fda5c563c0ef6df804",
       "strength": "strong"
@@ -3668,7 +3668,7 @@
     {
       "bytes": 162508,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/model/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2/model/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "e7bf7bc07500752b35ec7198ac575a69ba4be0b573f47add831a0fb4ae52acd6",
       "strength": "strong"
@@ -3676,7 +3676,7 @@
     {
       "bytes": 30333,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "1e2a0dfd7db9cc090a762ceb17cc7a11eb28a21044a38f846c63b5a963f196df",
       "strength": "strong"
@@ -3684,7 +3684,7 @@
     {
       "bytes": 263017,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/ema/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/ema/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "b9de7a8ace1b353d85674535c56fefba3d766a683283b19d805225344ec2537b",
       "strength": "strong"
@@ -3692,7 +3692,7 @@
     {
       "bytes": 6841,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/ema/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/ema/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "afbafb789d5d9c71dc937a862bced7eff91900812826b304ba80dcc43f3f15b7",
       "strength": "strong"
@@ -3700,7 +3700,7 @@
     {
       "bytes": 162113,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/ema/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/ema/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "916fdfa0c25fb0c317eb80e321f9a45b930f00daccd281086f043f18bc8f92b2",
       "strength": "strong"
@@ -3708,7 +3708,7 @@
     {
       "bytes": 30361,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "fd1b4b941f9eb800a094ff0646196dc3156394f6bfdee20c0fbb18fe2615b183",
       "strength": "strong"
@@ -3716,7 +3716,7 @@
     {
       "bytes": 265105,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "8cdf21be3832da389944209e6c918a68c339efccf085d6bba44a3b50ac13e59c",
       "strength": "strong"
@@ -3724,7 +3724,7 @@
     {
       "bytes": 6833,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/model/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/model/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "1c55415e4c878fde0ee7d89f5a6f8b987e9516e03961b9ee00afebc6193b8d1b",
       "strength": "strong"
@@ -3732,7 +3732,7 @@
     {
       "bytes": 162758,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/model/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher/model/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "27590e5ba05dac3921441089ca294b42e432634b30ae5bcd6bad1d40c8e99dec",
       "strength": "strong"
@@ -3740,7 +3740,7 @@
     {
       "bytes": 265610,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher_n64_seed2029/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher_n64_seed2029/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "1b0e7e0940b2ad8cc3d2c273da4c12a70e46a0a1de8d1d904c071fd3698564d6",
       "strength": "strong"
@@ -3748,7 +3748,7 @@
     {
       "bytes": 163535,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher_n64_seed2029/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher_n64_seed2029/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "b764d6acd21c7d99b2302bd7cfa1e2b398bd1b2e0935a8a79a70ae132100fffb",
       "strength": "strong"
@@ -3756,7 +3756,7 @@
     {
       "bytes": 265665,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher_n64_seed2039/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher_n64_seed2039/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "cf5ffe55b109f05e0af3128e1eb6c12ad9fcc5a416b01bc459fd123e9a704428",
       "strength": "strong"
@@ -3764,7 +3764,7 @@
     {
       "bytes": 163609,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher_n64_seed2039/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_ema_teacher_n64_seed2039/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "88a0960af670f5785606327a69ae0715b267317f7ce804b0890e56cb2d1b165f",
       "strength": "strong"
@@ -3772,7 +3772,7 @@
     {
       "bytes": 265299,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_n64_seed2029/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_n64_seed2029/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "f254cdcc9f31e72ef157cfe441ee4419fcdfcf869ee08e1247258978b333760a",
       "strength": "strong"
@@ -3780,7 +3780,7 @@
     {
       "bytes": 163475,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_n64_seed2029/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_n64_seed2029/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "854dce6a20e591c84231a82582f2565c689ed6636985b4d5e900145d47479e61",
       "strength": "strong"
@@ -3788,7 +3788,7 @@
     {
       "bytes": 265629,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_n64_seed2039/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_n64_seed2039/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "3f68007c350680f9a10974bd242a9176a572c3ad5d9364f26f5641f1852e85b5",
       "strength": "strong"
@@ -3796,7 +3796,7 @@
     {
       "bytes": 163313,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_n64_seed2039/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation1k_rollout_x0_u2_n64_seed2039/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "2d8b2ee7a43ea89cd21ba6168450c2b7e3ddb7b8d6cf6930e210d702e8337c1a",
       "strength": "strong"
@@ -3804,7 +3804,7 @@
     {
       "bytes": 30114,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "90fbf2b5c347a762bc2368ee40c8e5d4ea6398b44a124d947f6898c02683fafb",
       "strength": "strong"
@@ -3812,7 +3812,7 @@
     {
       "bytes": 265039,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/ema/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/ema/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "2a105825a2644d2d6e348ce0e10fc75c5044bbf4c1e89ae919a436231d8bf709",
       "strength": "strong"
@@ -3820,7 +3820,7 @@
     {
       "bytes": 6571,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/ema/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/ema/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "6440f26ee2f9580badcaddfbd35ca0b1955737e4ae46afa28ab57d11f4d6f612",
       "strength": "strong"
@@ -3828,7 +3828,7 @@
     {
       "bytes": 163415,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/ema/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/ema/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "eeff4669709a0eb7a4928a440b7b285ebb0fa99014947d43aa6ee8c48bb1f0f6",
       "strength": "strong"
@@ -3836,7 +3836,7 @@
     {
       "bytes": 30121,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "a8b29317ef871d7ce7eb6a70a9c70184dbf0aa924e4da5051b139bcffa02be96",
       "strength": "strong"
@@ -3844,7 +3844,7 @@
     {
       "bytes": 265387,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "affa7d34f8323032802827a245bfd419a4f415c584015926891b57e396659325",
       "strength": "strong"
@@ -3852,7 +3852,7 @@
     {
       "bytes": 6565,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/model/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/model/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "d297358cd9bd15267bbfa27276d7c7c59fd554b2540312bf1347aeba31808119",
       "strength": "strong"
@@ -3860,7 +3860,7 @@
     {
       "bytes": 163551,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/model/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0/model/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "9d1ca9df2437e3d11e07fe9b9c949b442db7b4db14125233297767f9cac2a9a3",
       "strength": "strong"
@@ -3868,7 +3868,7 @@
     {
       "bytes": 265607,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64/ema/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64/ema/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "e297ae3985d47cb344524f6278e4bbfa40e1fe389561fd2d70a6d1a2cda375ff",
       "strength": "strong"
@@ -3876,7 +3876,7 @@
     {
       "bytes": 163506,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64/ema/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64/ema/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "05908e8571532ec2f893dc11a6260235858238c0f828f77036289c0016ba62b9",
       "strength": "strong"
@@ -3884,7 +3884,7 @@
     {
       "bytes": 265281,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64/model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64/model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "95a6737367b592a75103ce05b61e48a03398d7d21441cdf7b1d72ad79319e23e",
       "strength": "strong"
@@ -3892,7 +3892,7 @@
     {
       "bytes": 163542,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64/model/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64/model/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "e009245c1290fdec834dd5ba08126151accca447a75ef16cd64d222388c5da3e",
       "strength": "strong"
@@ -3900,7 +3900,7 @@
     {
       "bytes": 265556,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039/ema/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039/ema/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "82f328b8a822ee06beda454a15569537480fbb324b51e8391cfef1916ddb77ee",
       "strength": "strong"
@@ -3908,7 +3908,7 @@
     {
       "bytes": 163509,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039/ema/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039/ema/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "e9c9a6bbae74fa40ed0e7875e90f068d1e2826aeff5ab999a3c72934a79a600e",
       "strength": "strong"
@@ -3916,7 +3916,7 @@
     {
       "bytes": 265388,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039/model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039/model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "3cccda690c27d2d8e611028b136ab0181de778a5195cf7879bab3f61b0cfaffb",
       "strength": "strong"
@@ -3924,7 +3924,7 @@
     {
       "bytes": 163515,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039/model/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039/model/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "fcbe159e4177c48f6e734aef2f3f1c29c65839dd709beafe3245c1727ecea12e",
       "strength": "strong"
@@ -3932,7 +3932,7 @@
     {
       "bytes": 265220,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039_cfg10/model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039_cfg10/model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "1cd7c2c6d6754ad2549396485b25d3bfc1c66efb829942e935c76f41a817b8d3",
       "strength": "strong"
@@ -3940,7 +3940,7 @@
     {
       "bytes": 163475,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039_cfg10/model/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_n64_seed2039_cfg10/model/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "fb4a5d9f647f7a1a8d2b134d73b2704f1ad45e7025ab36a55acd1a565716e5b0",
       "strength": "strong"
@@ -3948,7 +3948,7 @@
     {
       "bytes": 30100,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "6dccbc99663af8fee942972fdfc8be7b15fce10dff491a9bb40eca3232ec74ce",
       "strength": "strong"
@@ -3956,7 +3956,7 @@
     {
       "bytes": 264247,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/ema/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/ema/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "87139a37c5c21e09cb77734c9b086010d290d4b988230f3918aabbe21dc4d858",
       "strength": "strong"
@@ -3964,7 +3964,7 @@
     {
       "bytes": 6632,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/ema/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/ema/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "5615d79fb45da337ca5806702480ca732faad5b79594fc99b8a137f2f2839f7a",
       "strength": "strong"
@@ -3972,7 +3972,7 @@
     {
       "bytes": 163011,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/ema/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/ema/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "acc1ffaa896f4b3087f37f97abe6eb454aa970305454027b386b5822f3cb841c",
       "strength": "strong"
@@ -3980,7 +3980,7 @@
     {
       "bytes": 30143,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "75724872f14b7ca3a47f5725bdd86b1299adbe734232575ddc7cc51f5c5e87a2",
       "strength": "strong"
@@ -3988,7 +3988,7 @@
     {
       "bytes": 265487,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "86940925c804652e0fd6f59ac5cab5c6156f17e6a5ee4215c32134995cb4c905",
       "strength": "strong"
@@ -3996,7 +3996,7 @@
     {
       "bytes": 6638,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/model/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/model/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "6e659fb561441d8d79b971eaee37b79e36b2755d9b2adfa5def5b29a81017ea3",
       "strength": "strong"
@@ -4004,7 +4004,7 @@
     {
       "bytes": 163498,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/model/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2/model/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "873ab344e84d9830b093b35ae9214cd9d3c59432fd1010d2c7c96afef3524f87",
       "strength": "strong"
@@ -4012,7 +4012,7 @@
     {
       "bytes": 265642,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_ema_n64_seed2029/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_ema_n64_seed2029/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "31c5477981e8890469c93bed11dedecde8d0cab37facc62c3c8e84e46ed693dc",
       "strength": "strong"
@@ -4020,7 +4020,7 @@
     {
       "bytes": 163539,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_ema_n64_seed2029/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_ema_n64_seed2029/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "d324985aa6d8dec42b9606c98b996ea7a234877cebcb9fa53c6c3904b75777fa",
       "strength": "strong"
@@ -4028,7 +4028,7 @@
     {
       "bytes": 265599,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_ema_n64_seed2039/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_ema_n64_seed2039/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "0aa79dd63955d8e87cdd29b4f9275635d3d222bf06ef380ca5db32eb234565be",
       "strength": "strong"
@@ -4036,7 +4036,7 @@
     {
       "bytes": 163565,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_ema_n64_seed2039/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_ema_n64_seed2039/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "18350ce191766b8d39fbf4779376bddf38ab5d2fb8cb876b2b2f5f679c5110c8",
       "strength": "strong"
@@ -4044,7 +4044,7 @@
     {
       "bytes": 265351,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00001250/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00001250/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "235e7e982a06eb7493f9d8cc141995af254b35e41e77137fbca5f22c23890ac2",
       "strength": "strong"
@@ -4052,7 +4052,7 @@
     {
       "bytes": 163031,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00001250/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00001250/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "1a6959eebbb55dca3abcb253110cf646ca62273ff3af7bd94b4f27165729c313",
       "strength": "strong"
@@ -4060,7 +4060,7 @@
     {
       "bytes": 265222,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00002500/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00002500/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "1121e153c5b039ab6060a3dcd92e99cb801e5463aa918ebf3c6a15180cf49f4c",
       "strength": "strong"
@@ -4068,7 +4068,7 @@
     {
       "bytes": 163496,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00002500/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00002500/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "e86b645f696d3cfe1b63ad2145d8885acc5372947ec86d81777da715cd995a59",
       "strength": "strong"
@@ -4076,7 +4076,7 @@
     {
       "bytes": 265494,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00003750/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00003750/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "66d218b6c6c89b516956317428668ad1cadf23be5cdca00aa17136d0ad2998e2",
       "strength": "strong"
@@ -4084,7 +4084,7 @@
     {
       "bytes": 163602,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00003750/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation5k_rollout_x0_u2_raw_milestones/step_00003750/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "425f8eae50fc8e8d02a6e5a50410bfd28cf02b5075c9463d682f2f9dd1fa088b",
       "strength": "strong"
@@ -4092,7 +4092,7 @@
     {
       "bytes": 29985,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation750_rollout_x0/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation750_rollout_x0/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "5fc723f8c90f75b3c52643fc33e3a0d25cade815c4fc6b33bee21084594d1374",
       "strength": "strong"
@@ -4100,7 +4100,7 @@
     {
       "bytes": 264734,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/evaluation750_rollout_x0/model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/evaluation750_rollout_x0/model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "637f80e5d99c7603f6e3ee90c12bbb0a9f1e20cc47d0639d982c47cdb22334d6",
       "strength": "strong"
@@ -4108,7 +4108,7 @@
     {
       "bytes": 9075,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k/cofitok_rgbtail3/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k/cofitok_rgbtail3/training_report.json",
       "policy": "authoritative",
       "sha256": "76e951c51f3afb2227f6eebfcadf515cfeb577805bd39e30f0c20957564f23bb",
       "strength": "strong"
@@ -4116,7 +4116,7 @@
     {
       "bytes": 8779,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k/dense_identity/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k/dense_identity/training_report.json",
       "policy": "authoritative",
       "sha256": "b6daad090fb50ff3a6e2da0264ef4828e332b7ad7f94224896f06dca7cb738dc",
       "strength": "strong"
@@ -4124,7 +4124,7 @@
     {
       "bytes": 9092,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_hf05/cofitok_rgbtail3_hf05/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_hf05/cofitok_rgbtail3_hf05/training_report.json",
       "policy": "authoritative",
       "sha256": "0eb512559db33599f8473d5e5a2538171e1c310a83b6c8fe3aa39a615b3fade4",
       "strength": "strong"
@@ -4132,7 +4132,7 @@
     {
       "bytes": 9462,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout/cofitok_rgbtail3_rollout/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout/cofitok_rgbtail3_rollout/training_report.json",
       "policy": "authoritative",
       "sha256": "345cd26ba5bfdaa532d60db28c68dacc2ec941a03c09f40e9e9269af6480ca55",
       "strength": "strong"
@@ -4140,7 +4140,7 @@
     {
       "bytes": 9521,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0/cofitok_rgbtail3_rollout_x0/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0/cofitok_rgbtail3_rollout_x0/training_report.json",
       "policy": "authoritative",
       "sha256": "f30114a1337933b7367a1c765c329e41e66b62cde9f4b815e1a8afde11bb77f7",
       "strength": "strong"
@@ -4148,7 +4148,7 @@
     {
       "bytes": 9219,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0/dense_identity/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0/dense_identity/training_report.json",
       "policy": "authoritative",
       "sha256": "981f9c4c640937edd569737128f73795b8f7e146baa9c8d3ad2c8db7a47ba183",
       "strength": "strong"
@@ -4156,7 +4156,7 @@
     {
       "bytes": 619,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2/cofitok_rgbtail3_rollout_x0_u2/latest.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2/cofitok_rgbtail3_rollout_x0_u2/latest.json",
       "policy": "authoritative",
       "sha256": "86c0bcf7d861ef35718be0b26584fb10f240f1b59aae139750a3f63bf1af5fe8",
       "strength": "strong"
@@ -4164,7 +4164,7 @@
     {
       "bytes": 9577,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2/cofitok_rgbtail3_rollout_x0_u2/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2/cofitok_rgbtail3_rollout_x0_u2/training_report.json",
       "policy": "authoritative",
       "sha256": "88b5d387209a7a45ceda4ce1b41db18e819866c90adfdf64b852889f4b1a7bd1",
       "strength": "strong"
@@ -4172,7 +4172,7 @@
     {
       "bytes": 619,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2/dense_rollout_x0_u2/latest.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2/dense_rollout_x0_u2/latest.json",
       "policy": "authoritative",
       "sha256": "34232177c368fb44f8f443fdb51b4f274415aa5adda05733679b216e005a1dae",
       "strength": "strong"
@@ -4180,7 +4180,7 @@
     {
       "bytes": 9280,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2/dense_rollout_x0_u2/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2/dense_rollout_x0_u2/training_report.json",
       "policy": "authoritative",
       "sha256": "5fa4f47b6ecf7804bdcce1f15c6138e16822c92264ee8d57b1fabe41b12296c3",
       "strength": "strong"
@@ -4188,7 +4188,7 @@
     {
       "bytes": 619,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/latest.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/latest.json",
       "policy": "authoritative",
       "sha256": "785684844d713e1f474ce9ae6eafb7b8302fe80996625db662feb13f17123e62",
       "strength": "strong"
@@ -4196,7 +4196,7 @@
     {
       "bytes": 10067,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json",
       "policy": "authoritative",
       "sha256": "e3db90536f019585ca264e22db6ed87e72c592a5a2857b4ace3f6c3ebe2ec94a",
       "strength": "strong"
@@ -4204,7 +4204,7 @@
     {
       "bytes": 619,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/dense_rollout_x0_u2_ema_teacher/latest.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/dense_rollout_x0_u2_ema_teacher/latest.json",
       "policy": "authoritative",
       "sha256": "f85719428279378a710cbd741dad08a7781c171060f790a69afb8e27c08f35dc",
       "strength": "strong"
@@ -4212,7 +4212,7 @@
     {
       "bytes": 9772,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/dense_rollout_x0_u2_ema_teacher/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher/dense_rollout_x0_u2_ema_teacher/training_report.json",
       "policy": "authoritative",
       "sha256": "c40ef1d8133b5abe328bece50b915c58e92aa795d76aab84dbbc96df3d053d41",
       "strength": "strong"
@@ -4220,7 +4220,7 @@
     {
       "bytes": 28783,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher_monitor.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair1k_rollout_x0_u2_ema_teacher_monitor.json",
       "policy": "authoritative",
       "sha256": "ca7d68ac8a9b38910eb074097c92b37b468584170aa9d0516dd6a796f18d8976",
       "strength": "strong"
@@ -4228,7 +4228,7 @@
     {
       "bytes": 619,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0/cofitok_rgbtail3_rollout_x0/latest.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0/cofitok_rgbtail3_rollout_x0/latest.json",
       "policy": "authoritative",
       "sha256": "880389f16da0876d433e11b7f0ec981b9dd08620d63dd5682e42f9090e696978",
       "strength": "strong"
@@ -4236,7 +4236,7 @@
     {
       "bytes": 9581,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0/cofitok_rgbtail3_rollout_x0/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0/cofitok_rgbtail3_rollout_x0/training_report.json",
       "policy": "authoritative",
       "sha256": "f2c94b355814d0cbba8765ed9c92827f1cf70fe2254fd2030207f92b32266548",
       "strength": "strong"
@@ -4244,7 +4244,7 @@
     {
       "bytes": 619,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0/dense_identity/latest.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0/dense_identity/latest.json",
       "policy": "authoritative",
       "sha256": "fafbff5f1027693964978bdd46e6bcd83b98f82736ef5879dcd7c32288a23804",
       "strength": "strong"
@@ -4252,7 +4252,7 @@
     {
       "bytes": 9282,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0/dense_identity/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0/dense_identity/training_report.json",
       "policy": "authoritative",
       "sha256": "870911074cd73058915725b9145e0e5099c5c74194a8ed69c1607a74330bff6f",
       "strength": "strong"
@@ -4260,7 +4260,7 @@
     {
       "bytes": 9641,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2/cofitok_rgbtail3_rollout_x0_u2/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2/cofitok_rgbtail3_rollout_x0_u2/training_report.json",
       "policy": "authoritative",
       "sha256": "b709fdbbff4a2daa600fa54a1138e5c9ec4d90016e76a1cec9d1da0578ed6b43",
       "strength": "strong"
@@ -4268,7 +4268,7 @@
     {
       "bytes": 9341,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2/dense_rollout_x0_u2/training_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2/dense_rollout_x0_u2/training_report.json",
       "policy": "authoritative",
       "sha256": "2feb2bbf044f4413fa9c4b2fa2759077ecbd2919908d7313fcc9868a5eb430a6",
       "strength": "strong"
@@ -4276,7 +4276,7 @@
     {
       "bytes": 2324,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/SOURCE_MANIFEST.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/SOURCE_MANIFEST.json",
       "policy": "authoritative",
       "sha256": "2ea01e0d73dd622e5caab7e47c7b3e91ae1911f429bafbf4f279a4623626b81b",
       "strength": "strong"
@@ -4284,7 +4284,7 @@
     {
       "bytes": 29221,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/authoritative_monitor.snapshot.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/authoritative_monitor.snapshot.json",
       "policy": "authoritative",
       "sha256": "251de5a75ef7108c324a844a246a4f6ecccb9fc1eb70a59e28b6c9b236510842",
       "strength": "strong"
@@ -4292,7 +4292,7 @@
     {
       "bytes": 10132,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/cofitok_training_report.snapshot.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/cofitok_training_report.snapshot.json",
       "policy": "authoritative",
       "sha256": "3de577d830d2ba07fc399296e98ebefd66d1ea9f3ccfe3552f98ccc4243ad4c7",
       "strength": "strong"
@@ -4300,7 +4300,7 @@
     {
       "bytes": 619,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/dense_latest.snapshot.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/dense_latest.snapshot.json",
       "policy": "authoritative",
       "sha256": "365f2f980465055385fb3ea90b9f8908aca208baca89e1cf3e1126ceb357505b",
       "strength": "strong"
@@ -4308,7 +4308,7 @@
     {
       "bytes": 9831,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/dense_training_report.snapshot.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/dense_training_report.snapshot.json",
       "policy": "authoritative",
       "sha256": "d884cced7b58d03cb88402bc87b90bf7c7f8cd29186eceb4b4e1f5bf17d00474",
       "strength": "strong"
@@ -4316,7 +4316,7 @@
     {
       "bytes": 9116,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/pair_summary.snapshot.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/pair_summary.snapshot.json",
       "policy": "authoritative",
       "sha256": "44c5bbf1af28dd5e233452f19772e58cc5502b33485de24af57a30cb9bd4648e",
       "strength": "strong"
@@ -4324,7 +4324,7 @@
     {
       "bytes": 37044,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/provenance_observer_164c96e.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/provenance_observer_164c96e.json",
       "policy": "authoritative",
       "sha256": "a739f20d14c77b560a80d83d6c2b06047a54aa74ab579806f55c49882b234532",
       "strength": "strong"
@@ -4332,7 +4332,7 @@
     {
       "bytes": 265566,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/robust_seed2029/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/robust_seed2029/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "bee80ff21586368870a3a1362d1f7e78009fd6419e53dcfdc8544d7df68738b3",
       "strength": "strong"
@@ -4340,7 +4340,7 @@
     {
       "bytes": 163763,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/robust_seed2029/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/robust_seed2029/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "fd60e5e8e65ab8762678d0ffe2c38248df6182fd5755d1e0376b657be314a8fe",
       "strength": "strong"
@@ -4348,7 +4348,7 @@
     {
       "bytes": 265696,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/robust_seed2039/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/robust_seed2039/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "4b0e1760b8fbe79c98c6a3debfd70e6149662aa215512698fd434b1021f69157",
       "strength": "strong"
@@ -4356,7 +4356,7 @@
     {
       "bytes": 163747,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/robust_seed2039/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/robust_seed2039/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "07034bd94c871a7238e69a1645ef22701ffb9f1ae0ad41c03915f05db9709cb7",
       "strength": "strong"
@@ -4364,7 +4364,7 @@
     {
       "bytes": 30462,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/ema/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "ee6442bb549ff9bce6b0e31940e207dcc1bf7cfca5609ec51787841a4e9a6c01",
       "strength": "strong"
@@ -4372,7 +4372,7 @@
     {
       "bytes": 264701,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/ema/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/ema/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "764f37ae1d0dec7d9ed41d2356be8f3460803d2a9808925f35a1e45b0f58f3b3",
       "strength": "strong"
@@ -4380,7 +4380,7 @@
     {
       "bytes": 6900,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/ema/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/ema/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "ae14cc1e0b9989ff101aa85bb505600032ac95d09270b87f43336b4e5a4e0ca1",
       "strength": "strong"
@@ -4388,7 +4388,7 @@
     {
       "bytes": 163678,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/ema/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/ema/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "a98a825e90602e04011a4dc1e8a075a66d2fec39970978d5fd9d8e61922b778d",
       "strength": "strong"
@@ -4396,7 +4396,7 @@
     {
       "bytes": 30431,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/model/cofitok_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "7a8ee94a0a741d500793112a8501d74d643a362e42077b9bcde10ccceb99aeca",
       "strength": "strong"
@@ -4404,7 +4404,7 @@
     {
       "bytes": 265717,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/model/cofitok_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/model/cofitok_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "c39703bf11f1568b7f77fe568410e418829092525a6bd73bc21bef2cc7d5667f",
       "strength": "strong"
@@ -4412,7 +4412,7 @@
     {
       "bytes": 6893,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/model/dense_checkpoint/checkpoint_evaluation_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/model/dense_checkpoint/checkpoint_evaluation_report.json",
       "policy": "authoritative",
       "sha256": "4e645cdfd1b15c6a7d633ecf289e2b39bdcb94fe7cdb545b7bdbc53cff971b3e",
       "strength": "strong"
@@ -4420,7 +4420,7 @@
     {
       "bytes": 163830,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/model/dense_rollout/rollout_stability_report.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/raw_gate/screening/model/dense_rollout/rollout_stability_report.json",
       "policy": "authoritative",
       "sha256": "1d1e3f3c02de0045b405e3dde95806612e578db6162198215d7578e0b43bfcfa",
       "strength": "strong"
@@ -4428,7 +4428,7 @@
     {
       "bytes": 4666,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/stability_50k_posteval_waiter_v4_schedule_audit/cofitok_live_schedule_audit.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/stability_50k_posteval_waiter_v4_schedule_audit/cofitok_live_schedule_audit.json",
       "policy": "authoritative",
       "sha256": "385f3735374f7c52491fe6408af19e0fff0bcfd074adbb8e1c3d1224cd6b9bf2",
       "strength": "strong"
@@ -4436,7 +4436,7 @@
     {
       "bytes": 14371,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/stability_50k_posteval_waiter_v4_schedule_audit/pair_monitor_after_waiter_v4_switch.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/completion/stability_50k_posteval_waiter_v4_schedule_audit/pair_monitor_after_waiter_v4_switch.json",
       "policy": "authoritative",
       "sha256": "96bf2b2450a49901ac87a9d763d53620b60a4012f49857e7c1e3ef84ab52e624",
       "strength": "strong"
@@ -4444,7 +4444,7 @@
     {
       "bytes": 12828,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/events/teacher_activation_step_00003025/provenance_observer_164c96e.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/events/teacher_activation_step_00003025/provenance_observer_164c96e.json",
       "policy": "authoritative",
       "sha256": "0d66528439ba02d1ed00dbe6b94d4ee0194da1f0b41f58a1774e20b5879173f6",
       "strength": "strong"
@@ -4452,7 +4452,7 @@
     {
       "bytes": 1180,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00002500/SOURCE_MANIFEST.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00002500/SOURCE_MANIFEST.json",
       "policy": "authoritative",
       "sha256": "74f9001eb51fd0e4570246a85703e85ddf86910140550b3ada3b215fe96022d9",
       "strength": "strong"
@@ -4460,7 +4460,7 @@
     {
       "bytes": 619,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00002500/latest.snapshot.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00002500/latest.snapshot.json",
       "policy": "authoritative",
       "sha256": "9177fa7731747f9ed087555d201da05ea74060859af0fcb973c7d63a30aa79b8",
       "strength": "strong"
@@ -4468,7 +4468,7 @@
     {
       "bytes": 12793,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00002500/provenance_observer_164c96e.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00002500/provenance_observer_164c96e.json",
       "policy": "authoritative",
       "sha256": "51de2b9fae0f0202f264ec8569510177049a0838777dc6de88d95b8d5ec7ff8d",
       "strength": "strong"
@@ -4476,7 +4476,7 @@
     {
       "bytes": 1579,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00003750/SOURCE_MANIFEST.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00003750/SOURCE_MANIFEST.json",
       "policy": "authoritative",
       "sha256": "aa6e406ebe83d7e721aa08ee1d4be5ecb05c4a24e26a7d73ebac1fd8860e0e45",
       "strength": "strong"
@@ -4484,7 +4484,7 @@
     {
       "bytes": 619,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00003750/latest.snapshot.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00003750/latest.snapshot.json",
       "policy": "authoritative",
       "sha256": "ecd28b56e360641e9930ad75f283eed98ff463b131dd237faef7680ead786627",
       "strength": "strong"
@@ -4492,7 +4492,7 @@
     {
       "bytes": 13491,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00003750/provenance_observer_164c96e.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00003750/provenance_observer_164c96e.json",
       "policy": "authoritative",
       "sha256": "7ccec9d2daa742fddaacfe1ce49eb7987f798ace9c37e719bbe76e573c1924d5",
       "strength": "strong"
@@ -4500,7 +4500,7 @@
     {
       "bytes": 1864,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00005000_cofitok/SOURCE_MANIFEST.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00005000_cofitok/SOURCE_MANIFEST.json",
       "policy": "authoritative",
       "sha256": "931e54364d04ef3954c55031f714f373e83a09b8fd3197293b14a4f73d2b01c9",
       "strength": "strong"
@@ -4508,7 +4508,7 @@
     {
       "bytes": 619,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00005000_cofitok/latest.snapshot.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00005000_cofitok/latest.snapshot.json",
       "policy": "authoritative",
       "sha256": "97575ff92c0e20ffd1a80d2b64448e0588aa348aa7e7a05171c23182ba35d2c3",
       "strength": "strong"
@@ -4516,7 +4516,7 @@
     {
       "bytes": 28083,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00005000_cofitok/provenance_observer_164c96e.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00005000_cofitok/provenance_observer_164c96e.json",
       "policy": "authoritative",
       "sha256": "9f19b52c8445f9e2b9634750277298077aa1861aa33669b413a33811309a4398",
       "strength": "strong"
@@ -4524,7 +4524,7 @@
     {
       "bytes": 10132,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00005000_cofitok/training_report.snapshot.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/milestones/step_00005000_cofitok/training_report.snapshot.json",
       "policy": "authoritative",
       "sha256": "3de577d830d2ba07fc399296e98ebefd66d1ea9f3ccfe3552f98ccc4243ad4c7",
       "strength": "strong"
@@ -4532,7 +4532,7 @@
     {
       "bytes": 27546,
       "label": "tracked_probe",
-      "path": "/tmp/cofitok-retention-rehearsal/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_monitor.json",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/artifacts/reports/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_monitor.json",
       "policy": "authoritative",
       "sha256": "bb133e7c96ef17a1b9d972ee9c42fad4ab45b347243271934f0cabc8c2dc36e4",
       "strength": "strong"
@@ -4540,7 +4540,7 @@
     {
       "bytes": 4103,
       "label": "tracked_records",
-      "path": "/tmp/cofitok-retention-rehearsal/docs/records/2026-07-12_generation_10pct_50k_launch.md",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/docs/records/2026-07-12_generation_10pct_50k_launch.md",
       "policy": "authoritative",
       "sha256": "64208620f44b6127ccc9847afd0ec5eb908fa79fd64885ed96dfe8f4c6ef421d",
       "strength": "strong"
@@ -4548,7 +4548,7 @@
     {
       "bytes": 3122,
       "label": "tracked_records",
-      "path": "/tmp/cofitok-retention-rehearsal/docs/records/2026-07-21_generation_capacity_path_hellinger_probe_v7_result.md",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/docs/records/2026-07-21_generation_capacity_path_hellinger_probe_v7_result.md",
       "policy": "authoritative",
       "sha256": "ba7c7aaa78ede242698ad02c1276b01a46e5c21da8d53c296b970b87ef94f6f0",
       "strength": "strong"
@@ -4556,7 +4556,7 @@
     {
       "bytes": 4943,
       "label": "tracked_records",
-      "path": "/tmp/cofitok-retention-rehearsal/docs/records/2026-07-25_generation_fixed_basis_probe_v8_result.md",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/docs/records/2026-07-25_generation_fixed_basis_probe_v8_result.md",
       "policy": "authoritative",
       "sha256": "24749cc6738abeafe1d74ba64df97e842f3de4609cb1fe85a2b88a732c8dbf75",
       "strength": "strong"
@@ -4564,7 +4564,7 @@
     {
       "bytes": 47442,
       "label": "tracked_records",
-      "path": "/tmp/cofitok-retention-rehearsal/docs/records/2026-07-25_generation_fixed_basis_v3_matched_50k_launch.md",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/docs/records/2026-07-25_generation_fixed_basis_v3_matched_50k_launch.md",
       "policy": "authoritative",
       "sha256": "99423526e664ee0f3c11381e2a13980d3cb77c085230befdbe71a29fe5672f04",
       "strength": "strong"
@@ -4572,7 +4572,7 @@
     {
       "bytes": 2940,
       "label": "tracked_records",
-      "path": "/tmp/cofitok-retention-rehearsal/docs/records/2026-07-26_generation_cuda_exact_resume_hotfix.md",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/docs/records/2026-07-26_generation_cuda_exact_resume_hotfix.md",
       "policy": "authoritative",
       "sha256": "c168044b7643fe6c46a7aabd7b1160f8cff9a95a46dc06f6d1c72beadee4da7c",
       "strength": "strong"
@@ -4580,9 +4580,17 @@
     {
       "bytes": 46041,
       "label": "tracked_records",
-      "path": "/tmp/cofitok-retention-rehearsal/docs/records/2026-07-29_generation_rollout_stability_diagnosis_and_probe.md",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/docs/records/2026-07-29_generation_rollout_stability_diagnosis_and_probe.md",
       "policy": "authoritative",
       "sha256": "6a9a618d9d293ac9376e090f3ed6d5ec4dfd982113c3185b8892a39c1a6628fb",
+      "strength": "strong"
+    },
+    {
+      "bytes": 3204,
+      "label": "tracked_records",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/docs/records/2026-08-01_generation_checkpoint_retention_readonly_audit.md",
+      "policy": "authoritative",
+      "sha256": "60415ddd11c5f16779660ce3a9bb2ae935f54f1fef158a6fb210f0880bb6b43b",
       "strength": "strong"
     }
   ],
@@ -4935,7 +4943,7 @@
     "currently_reclaimable_bytes": 0,
     "invalid_integrity_count": 0,
     "potential_archive_candidate_bytes": 0,
-    "unresolved_reference_count": 100
+    "unresolved_reference_count": 102
   },
   "unresolved_references": [
     {
@@ -5337,6 +5345,14 @@
     {
       "checkpoint_name": "checkpoint_step_00001250.pt",
       "source_index": 281
+    },
+    {
+      "checkpoint_name": "checkpoint_step_00000500.pt",
+      "source_index": 282
+    },
+    {
+      "checkpoint_name": "checkpoint_step_00003750.pt",
+      "source_index": 282
     }
   ]
 }

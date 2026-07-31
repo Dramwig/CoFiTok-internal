@@ -56,7 +56,7 @@ currently_reclaimable_bytes: 0
 archive_readiness: blocked
 ```
 
-There are 100 unresolved reference occurrences. They are not missing checkpoint
+There are 102 unresolved reference occurrences. They are not missing checkpoint
 files. They are legacy basename-only references such as
 `checkpoint_step_00000500.pt` or `checkpoint_step_00003750.pt` that cannot be
 uniquely assigned across multiple runs retaining the same filename. The affected
@@ -65,9 +65,9 @@ checkpoints therefore remain `indeterminate`.
 The dynamic runway result was:
 
 ```text
-free bytes: 187,463,581,696
+free bytes: 186,991,734,784
 required free bytes: 180,880,415,360
-current headroom: 6,583,166,336
+current headroom: 6,111,319,424
 status: pass
 potential archive bytes counted as current capacity: false
 ```
@@ -82,6 +82,27 @@ checkpoint is approved for archive or deletion by this result.
 - New runbook: `bash -n` passed in the Linux isolated checkout.
 - Real inventory build and independent replay produced identical summaries.
 
+The implementation commit `08d48504ac4898321b0c873574599bcfa063813f` was
+deployed to the isolated checkout:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850
+```
+
+Its incremental bundle is `39,458,491` bytes with SHA256
+`8022d60e003ffd1e39b9c5bc7c0fd86f6de444fb370ca6275f46248b0165ac8f`.
+The deployment validation passed `865` tests with `2` skips and checked
+`101/101` tracked runbooks. The deployment receipt SHA256 is
+`a4313b14e81fdaaf47929cab604fbf48a31594c85149c890c40fb2d7ae91432b`.
+The receipt explicitly keeps `readiness_executed=false`,
+`full_training_launch_allowed=false`, and
+`formal_generation_completion_claimed=false`.
+
+The authoritative persistent inventory SHA256 is
+`62ae7388983e046fc0d0afbb7db2059e1afb5c2674880881e20411cd66f68cd5`;
+the runway report SHA256 is
+`c8ab71b2d36cdf18530a937d394c19adbfcec02c1d254ca5101e9c69777e290c`.
+
 The active stability 50K queue and readiness waiter were not changed. During
-the final audit snapshot CoFiTok was at step 22,900/50,000, dense was at 0, and
+the final audit snapshot CoFiTok was at step 23,100/50,000, dense was at 0, and
 the pair monitor reported no issues.
