@@ -227,8 +227,9 @@ def test_stability_completion_cli_reports_empty_workspace_as_incomplete(
     assert report["status"] == "incomplete"
     assert report["complete"] is False
     assert report["failed_checks"] == []
-    assert len(report["missing_checks"]) == 17
+    assert len(report["missing_checks"]) == 18
     assert "stability_full_training_readiness" in report["missing_checks"]
+    assert "stability_full_readiness_revision_bridge" in report["missing_checks"]
     assert "stability_full_launch_receipt" in report["missing_checks"]
     assert "stability_full_runtime_selection" in report["missing_checks"]
     assert "stability_full_storage_capacity" in report["missing_checks"]

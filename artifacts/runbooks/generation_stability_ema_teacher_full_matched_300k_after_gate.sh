@@ -6,6 +6,7 @@ PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
 CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation}
 EXPECTED_SCALING_GATE_SHA256=${EXPECTED_SCALING_GATE_SHA256:?set the passing stability scaling gate SHA256}
 EXPECTED_READINESS_SHA256=${EXPECTED_READINESS_SHA256:?set the immutable stability-full readiness SHA256}
+EXPECTED_READINESS_BRIDGE_SHA256=${EXPECTED_READINESS_BRIDGE_SHA256:?set the immutable readiness revision bridge SHA256}
 EXPECTED_FULL_LAUNCH_RECEIPT_SHA256=${EXPECTED_FULL_LAUNCH_RECEIPT_SHA256:-}
 EXPECTED_DEPLOYMENT_RECEIPT_SHA256=${EXPECTED_DEPLOYMENT_RECEIPT_SHA256:?set the isolated deployment receipt SHA256}
 EXPECTED_TARGET_REVISION=${EXPECTED_TARGET_REVISION:?set the clean stability-full training revision}
@@ -26,6 +27,7 @@ CONFIG_VALIDATION="$REPORT_ROOT/config_validation.json"
 STORAGE_CAPACITY="$REPORT_ROOT/storage_capacity.json"
 RUNTIME_SELECTION="$REPORT_ROOT/runtime_selection.json"
 READINESS="$REPORT_ROOT/full_training_readiness.json"
+READINESS_BRIDGE="$REPORT_ROOT/full_training_readiness_bridge.json"
 LAUNCH_STORAGE_CAPACITY="$REPORT_ROOT/storage_capacity_launch.json"
 CURRENT_STORAGE_CAPACITY="$REPORT_ROOT/storage_capacity_current.json"
 FULL_LAUNCH_RECEIPT="$REPORT_ROOT/full_training_launch_receipt.json"
@@ -45,9 +47,11 @@ export PYTHONPATH=src
 [[ -f "$REFERENCE_COFITOK" ]]
 [[ -f "$REFERENCE_DENSE" ]]
 [[ -f "$READINESS" ]]
+[[ -f "$READINESS_BRIDGE" ]]
 [[ -f "$DEPLOYMENT_RECEIPT" ]]
 [[ "$(sha256sum "$GATE" | awk '{print $1}')" == "$EXPECTED_SCALING_GATE_SHA256" ]]
 [[ "$(sha256sum "$READINESS" | awk '{print $1}')" == "$EXPECTED_READINESS_SHA256" ]]
+[[ "$(sha256sum "$READINESS_BRIDGE" | awk '{print $1}')" == "$EXPECTED_READINESS_BRIDGE_SHA256" ]]
 [[ "$(sha256sum "$DEPLOYMENT_RECEIPT" | awk '{print $1}')" == "$EXPECTED_DEPLOYMENT_RECEIPT_SHA256" ]]
 mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
 
@@ -60,25 +64,20 @@ if nvidia-smi --query-compute-apps=pid --format=csv,noheader | grep -q '[0-9]'; 
   exit 9
 fi
 
-runtime_selected="$("$PYTHON" scripts/validate_generation_full_readiness.py \
+runtime_selected="$("$PYTHON" scripts/validate_generation_full_readiness_bridge.py \
   --project-root "$PROJECT" \
+  --bridge "$READINESS_BRIDGE" \
+  --expected-bridge-sha256 "$EXPECTED_READINESS_BRIDGE_SHA256" \
   --readiness "$READINESS" \
   --expected-readiness-sha256 "$EXPECTED_READINESS_SHA256" \
-  --deployment-receipt "$DEPLOYMENT_RECEIPT" \
-  --promotion-gate "$GATE" \
-  --cofitok-config "$COFITOK_CONFIG" \
-  --dense-config "$DENSE_CONFIG" \
-  --config-validation "$CONFIG_VALIDATION" \
-  --storage-capacity "$STORAGE_CAPACITY" \
-  --runtime-selection "$RUNTIME_SELECTION" \
-  --training-run-dir "$COFITOK_RUN" \
-  --training-run-dir "$DENSE_RUN" \
-  --benchmark-root "$RUNTIME_BENCHMARK_ROOT" \
-  --storage-path "$CHECKPOINT_ROOT" \
-  --expected-revision "$EXPECTED_TARGET_REVISION" \
-  --expected-branch "$EXPECTED_TARGET_BRANCH" \
-  --allow-later-formal-repository \
-  --require-current-runtime-environment \
+  --source-deployment-receipt "$("$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1]))["source_deployment_receipt"]["path"])' "$READINESS_BRIDGE")" \
+  --expected-source-deployment-receipt-sha256 "$("$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1]))["source_deployment_receipt"]["sha256"])' "$READINESS_BRIDGE")" \
+  --target-deployment-receipt "$DEPLOYMENT_RECEIPT" \
+  --expected-target-deployment-receipt-sha256 "$EXPECTED_DEPLOYMENT_RECEIPT_SHA256" \
+  --expected-source-revision "$("$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1]))["source_git"]["revision"])' "$READINESS_BRIDGE")" \
+  --expected-source-branch "$("$PYTHON" -c 'import json,sys; print(json.load(open(sys.argv[1]))["source_git"]["branch"])' "$READINESS_BRIDGE")" \
+  --expected-target-revision "$EXPECTED_TARGET_REVISION" \
+  --expected-target-branch "$EXPECTED_TARGET_BRANCH" \
   --print-selected-runtime)"
 read -r SELECTED_MICRO_BATCH SELECTED_ACCUMULATION <<<"$runtime_selected"
 if [[ ! "$SELECTED_MICRO_BATCH" =~ ^[0-9]+$ \
@@ -110,6 +109,7 @@ launch_receipt_args=(
   --deployment-receipt "$DEPLOYMENT_RECEIPT"
   --promotion-gate "$GATE"
   --full-readiness "$READINESS"
+  --readiness-bridge "$READINESS_BRIDGE"
   --expected-readiness-sha256 "$EXPECTED_READINESS_SHA256"
   --cofitok-config "$COFITOK_CONFIG"
   --dense-config "$DENSE_CONFIG"
@@ -166,6 +166,7 @@ else
     --deployment-receipt "$DEPLOYMENT_RECEIPT" \
     --promotion-gate "$GATE" \
     --full-readiness "$READINESS" \
+    --readiness-bridge "$READINESS_BRIDGE" \
     --expected-readiness-sha256 "$EXPECTED_READINESS_SHA256" \
     --cofitok-config "$COFITOK_CONFIG" \
     --dense-config "$DENSE_CONFIG" \

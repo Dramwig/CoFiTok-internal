@@ -67,6 +67,7 @@ def test_full_launch_receipt_rehashes_every_bound_source(tmp_path: Path) -> None
         "deployment_receipt",
         "promotion_gate",
         "full_readiness",
+        "readiness_bridge",
         "cofitok_config",
         "dense_config",
         "config_validation",
@@ -80,7 +81,7 @@ def test_full_launch_receipt_rehashes_every_bound_source(tmp_path: Path) -> None
     sources["promotion_gate"]["sha256"] = "c" * 64
     sources["full_readiness"]["sha256"] = "d" * 64
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "pass",
         "role": supervisor.FULL_LAUNCH_ROLE,
         "stage": "stability_full",
@@ -116,7 +117,7 @@ def test_full_launch_receipt_rehashes_every_bound_source(tmp_path: Path) -> None
         expected_training_branch=TRAINING_BRANCH,
         checkpoint_root=tmp_path,
     )
-    assert evidence["source_count"] == 9
+    assert evidence["source_count"] == 10
 
     Path(sources["dense_config"]["path"]).write_text("replaced", encoding="ascii")
     with pytest.raises(ValueError, match="dense_config"):

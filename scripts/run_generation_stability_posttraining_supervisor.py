@@ -26,6 +26,7 @@ FULL_LAUNCH_SOURCE_NAMES = {
     "deployment_receipt",
     "promotion_gate",
     "full_readiness",
+    "readiness_bridge",
     "cofitok_config",
     "dense_config",
     "config_validation",
@@ -108,7 +109,7 @@ def validate_full_launch_receipt(
         "tracked_dirty": False,
     }
     if (
-        report.get("schema_version") != 1
+        report.get("schema_version") != 2
         or report.get("status") != "pass"
         or report.get("role") != FULL_LAUNCH_ROLE
         or report.get("stage") != "stability_full"

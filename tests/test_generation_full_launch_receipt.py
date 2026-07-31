@@ -20,6 +20,7 @@ def _source_paths(tmp_path: Path) -> dict[str, Path]:
         "deployment_receipt",
         "promotion_gate",
         "full_readiness",
+        "readiness_bridge",
         "cofitok_config",
         "dense_config",
         "config_validation",
@@ -28,20 +29,49 @@ def _source_paths(tmp_path: Path) -> dict[str, Path]:
         "launch_storage_capacity",
     ):
         path = tmp_path / f"{name}.json"
-        path.write_text(json.dumps({"name": name}), encoding="utf-8")
+        payload = {"name": name}
+        if name == "readiness_bridge":
+            payload = {
+                "source_git": {
+                    "revision": "f" * 40,
+                    "branch": BRANCH,
+                    "tracked_dirty": False,
+                },
+                "target_git": {
+                    "revision": REVISION,
+                    "branch": BRANCH,
+                    "tracked_dirty": False,
+                },
+                "source_deployment_receipt": {
+                    "path": (tmp_path / "source_deployment.json").as_posix(),
+                    "sha256": "1" * 64,
+                },
+            }
+        path.write_text(json.dumps(payload), encoding="utf-8")
         paths[name] = path
     return paths
 
 
-def _readiness() -> dict:
+def _bridge() -> dict:
     return {
-        "git": {
+        "source_git": {
+            "revision": "f" * 40,
+            "branch": BRANCH,
+            "tracked_dirty": False,
+        },
+        "target_git": {
             "revision": REVISION,
             "branch": BRANCH,
             "tracked_dirty": False,
         },
         "promotion_authorization": {"gate_sha256": "c" * 64},
-        "deployment": {"receipt_sha256": "d" * 64},
+        "training_semantics_identical": True,
+        "full_training_runbook": {
+            "controlled_preamble_upgrade": True,
+            "source_preamble_sha256": "2" * 64,
+            "normalized_target_preamble_sha256": "2" * 64,
+            "training_execution_sha256": "3" * 64,
+        },
         "runtime_selection": {
             "micro_batch_size": 4,
             "gradient_accumulation_steps": 16,
@@ -80,7 +110,7 @@ def _patch_dependencies(
             else file_sha256(Path(path))
         ),
     )
-    monkeypatch.setattr(launch, "verify_readiness_report", lambda *a, **k: _readiness())
+    monkeypatch.setattr(launch, "verify_readiness_bridge", lambda *a, **k: _bridge())
     monkeypatch.setattr(
         launch,
         "validate_full_storage_capacity",
@@ -108,6 +138,13 @@ def test_full_launch_receipt_binds_sources_runtime_and_paths(
     assert report["role"] == "stability_full_training_launch_receipt"
     assert report["readiness_sha256"] == READINESS_SHA
     assert report["runtime_selection"]["effective_batch_size"] == 64
+    assert report["schema_version"] == 2
+    assert report["readiness_bridge"]["training_semantics_identical"] is True
+    assert report["readiness_bridge"]["controlled_preamble_upgrade"] is True
+    assert report["readiness_bridge"]["source_preamble_sha256"] == report[
+        "readiness_bridge"
+    ]["normalized_target_preamble_sha256"]
+    assert len(report["readiness_bridge"]["training_execution_sha256"]) == 64
     assert report["launch_storage_capacity"]["sample_count"] == 116_640
     assert report["training_state_absent_at_launch"] is True
     assert report["full_training_launch_authorized"] is True

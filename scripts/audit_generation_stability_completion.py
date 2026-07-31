@@ -45,6 +45,9 @@ try:
     from scripts.build_generation_full_launch_receipt import (
         verify_full_launch_receipt,
     )
+    from scripts.build_generation_full_readiness_bridge import (
+        verify_readiness_bridge,
+    )
     from scripts.build_generation_stability_50k_summary import build_summary
     from scripts.build_large_scale_generation_comparison import (
         verify_comparison_source_reports,
@@ -73,6 +76,7 @@ except ModuleNotFoundError:
     from build_generation_full_launch_receipt import (
         verify_full_launch_receipt,
     )
+    from build_generation_full_readiness_bridge import verify_readiness_bridge
     from build_generation_stability_50k_summary import build_summary
     from build_large_scale_generation_comparison import (
         verify_comparison_source_reports,
@@ -567,6 +571,45 @@ def full_launch_receipt_evidence(
         ],
     }
 
+
+def full_readiness_bridge_evidence(
+    report: dict[str, Any],
+    *,
+    bridge_path: Path,
+    verification_kwargs: dict[str, Any],
+) -> dict[str, Any]:
+    _raise_load_error(report)
+    verified = verify_readiness_bridge(
+        report,
+        bridge_path=bridge_path,
+        expected_bridge_sha256=file_sha256(bridge_path),
+        **verification_kwargs,
+    )
+    return {
+        "bridge_sha256": file_sha256(bridge_path),
+        "source_git": verified["source_git"],
+        "target_git": verified["target_git"],
+        "training_semantics_identical": verified[
+            "training_semantics_identical"
+        ],
+        "runtime_environment_sha256": verified[
+            "target_runtime_environment_sha256"
+        ],
+        "critical_blob_count": len(verified["training_critical_manifest"]),
+        "controlled_preamble_upgrade": verified["full_training_runbook"][
+            "controlled_preamble_upgrade"
+        ],
+        "source_preamble_sha256": verified["full_training_runbook"][
+            "source_preamble_sha256"
+        ],
+        "normalized_target_preamble_sha256": verified[
+            "full_training_runbook"
+        ]["normalized_target_preamble_sha256"],
+        "training_execution_sha256": verified["full_training_runbook"][
+            "training_execution_sha256"
+        ],
+    }
+
 def milestone_evidence(
     reports: dict[int, dict[str, Any]],
     checkpoint_files: dict[int, dict[str, dict[str, Any]]],
@@ -1005,6 +1048,8 @@ def main() -> None:
     full_readiness = _read_optional(
         full_reports / "full_training_readiness.json"
     )
+    full_readiness_bridge_path = full_reports / "full_training_readiness_bridge.json"
+    full_readiness_bridge = _read_optional(full_readiness_bridge_path)
     full_launch_receipt_path = full_reports / "full_training_launch_receipt.json"
     full_launch_receipt = _read_optional(full_launch_receipt_path)
 
@@ -1274,10 +1319,58 @@ def main() -> None:
             ),
         ),
         _check(
+            "stability_full_readiness_revision_bridge",
+            [full_readiness_bridge, full_readiness, deployment_receipt],
+            lambda: full_readiness_bridge_evidence(
+                full_readiness_bridge,
+                bridge_path=full_readiness_bridge_path,
+                verification_kwargs={
+                    "project_root": training_project,
+                    "readiness_path": full_reports
+                    / "full_training_readiness.json",
+                    "expected_readiness_sha256": expectations[
+                        "full_readiness_sha256"
+                    ],
+                    "source_deployment_receipt": Path(
+                        str(
+                            full_readiness_bridge.get(
+                                "source_deployment_receipt", {}
+                            ).get("path", "")
+                        )
+                    ),
+                    "expected_source_deployment_receipt_sha256": str(
+                        full_readiness_bridge.get(
+                            "source_deployment_receipt", {}
+                        ).get("sha256", "")
+                    ),
+                    "target_deployment_receipt": deployment_receipt_path,
+                    "expected_target_deployment_receipt_sha256": file_sha256(
+                        deployment_receipt_path
+                    ),
+                    "expected_source_revision": str(
+                        full_readiness_bridge.get("source_git", {}).get(
+                            "revision", ""
+                        )
+                    ),
+                    "expected_source_branch": str(
+                        full_readiness_bridge.get("source_git", {}).get(
+                            "branch", ""
+                        )
+                    ),
+                    "expected_target_revision": expectations[
+                        "full_training_revision"
+                    ],
+                    "expected_target_branch": args.expected_full_training_branch,
+                    "require_current_target_git": False,
+                },
+            ),
+        ),
+        _check(
             "stability_full_launch_receipt",
             [
                 full_launch_receipt,
                 full_readiness,
+                full_readiness_bridge,
                 deployment_receipt,
                 scaling_gate,
                 full_config_validation,
@@ -1295,6 +1388,7 @@ def main() -> None:
                         "promotion_gate": paths["STABILITY_SCALING_GATE"],
                         "full_readiness": full_reports
                         / "full_training_readiness.json",
+                        "readiness_bridge": full_readiness_bridge_path,
                         "cofitok_config": training_project
                         / "configs/generation/imagenet256_stability_rgbtail3_"
                         "rollout_x0_u2_ema_teacher_k8_300k.json",

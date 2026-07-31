@@ -14,7 +14,9 @@ try:
         require_absent_training_state,
         source_identities,
         validate_full_storage_capacity,
-        verify_readiness_report,
+    )
+    from scripts.build_generation_full_readiness_bridge import (
+        verify_readiness_bridge,
     )
 except ModuleNotFoundError:
     from build_generation_full_readiness import (
@@ -23,27 +25,12 @@ except ModuleNotFoundError:
         require_absent_training_state,
         source_identities,
         validate_full_storage_capacity,
-        verify_readiness_report,
     )
+    from build_generation_full_readiness_bridge import verify_readiness_bridge
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 ROLE = "stability_full_training_launch_receipt"
-
-
-def _readiness_sources(source_paths: dict[str, Path]) -> dict[str, Path]:
-    return {
-        name: source_paths[name]
-        for name in (
-            "deployment_receipt",
-            "promotion_gate",
-            "cofitok_config",
-            "dense_config",
-            "config_validation",
-            "storage_capacity",
-            "runtime_selection",
-        )
-    }
 
 
 def build_full_launch_receipt(
@@ -65,6 +52,7 @@ def build_full_launch_receipt(
         "deployment_receipt",
         "promotion_gate",
         "full_readiness",
+        "readiness_bridge",
         "cofitok_config",
         "dense_config",
         "config_validation",
@@ -81,19 +69,30 @@ def build_full_launch_receipt(
     if require_training_state_absent:
         require_absent_training_state(training_run_dirs)
 
-    readiness = verify_readiness_report(
-        _read_json(source_paths["full_readiness"]),
-        source_paths=_readiness_sources(source_paths),
-        training_run_dirs=training_run_dirs,
-        benchmark_root=benchmark_root,
-        storage_path=storage_path,
+    bridge_report = _read_json(source_paths["readiness_bridge"])
+    source_git = bridge_report.get("source_git", {})
+    target_git = bridge_report.get("target_git", {})
+    source_deployment = bridge_report.get("source_deployment_receipt", {})
+    bridge = verify_readiness_bridge(
+        bridge_report,
+        bridge_path=source_paths["readiness_bridge"],
+        expected_bridge_sha256=file_sha256(source_paths["readiness_bridge"]),
         project_root=project_root,
-        expected_revision=expected_revision,
-        expected_branch=expected_branch,
-        require_current_runtime_environment=require_current_runtime_environment,
-        require_current_formal_repository=require_current_formal_repository,
-        require_current_git=require_current_git,
-        require_training_state_absent=False,
+        readiness_path=source_paths["full_readiness"],
+        expected_readiness_sha256=expected_readiness_sha256,
+        source_deployment_receipt=Path(str(source_deployment.get("path", ""))),
+        expected_source_deployment_receipt_sha256=str(
+            source_deployment.get("sha256", "")
+        ),
+        target_deployment_receipt=source_paths["deployment_receipt"],
+        expected_target_deployment_receipt_sha256=file_sha256(
+            source_paths["deployment_receipt"]
+        ),
+        expected_source_revision=str(source_git.get("revision", "")),
+        expected_source_branch=str(source_git.get("branch", "")),
+        expected_target_revision=expected_revision,
+        expected_target_branch=expected_branch,
+        require_current_target_git=require_current_git,
     )
     launch_storage = validate_full_storage_capacity(
         _read_json(source_paths["launch_storage_capacity"]),
@@ -103,14 +102,14 @@ def build_full_launch_receipt(
         minimum_sample_count=FULL_COMPLETION_SAMPLE_RESERVE,
     )
     sources = source_identities(source_paths)
-    selected_runtime = readiness["runtime_selection"]
+    selected_runtime = bridge["runtime_selection"]
     expected_git = {
         "revision": expected_revision,
         "branch": expected_branch,
         "tracked_dirty": False,
     }
-    if readiness.get("git") != expected_git:
-        raise ValueError("stability full launch readiness Git identity differs")
+    if target_git != expected_git:
+        raise ValueError("stability full readiness bridge target identity differs")
     return {
         "schema_version": SCHEMA_VERSION,
         "status": "pass",
@@ -119,8 +118,31 @@ def build_full_launch_receipt(
         "git": expected_git,
         "source_reports": sources,
         "readiness_sha256": expected_readiness_sha256,
-        "promotion_authorization": readiness["promotion_authorization"],
-        "deployment": readiness["deployment"],
+        "readiness_bridge": {
+            "sha256": sources["readiness_bridge"]["sha256"],
+            "source_git": bridge["source_git"],
+            "target_git": bridge["target_git"],
+            "training_semantics_identical": bridge[
+                "training_semantics_identical"
+            ],
+            "controlled_preamble_upgrade": bridge["full_training_runbook"][
+                "controlled_preamble_upgrade"
+            ],
+            "source_preamble_sha256": bridge["full_training_runbook"][
+                "source_preamble_sha256"
+            ],
+            "normalized_target_preamble_sha256": bridge[
+                "full_training_runbook"
+            ]["normalized_target_preamble_sha256"],
+            "training_execution_sha256": bridge["full_training_runbook"][
+                "training_execution_sha256"
+            ],
+        },
+        "promotion_authorization": bridge["promotion_authorization"],
+        "deployment": {
+            "receipt_sha256": sources["deployment_receipt"]["sha256"],
+            "checkout_git": expected_git,
+        },
         "runtime_selection": selected_runtime,
         "launch_storage_capacity": launch_storage,
         "training_run_dirs": [
@@ -154,6 +176,7 @@ def _common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--deployment-receipt", type=Path, required=True)
     parser.add_argument("--promotion-gate", type=Path, required=True)
     parser.add_argument("--full-readiness", type=Path, required=True)
+    parser.add_argument("--readiness-bridge", type=Path, required=True)
     parser.add_argument("--expected-readiness-sha256", required=True)
     parser.add_argument("--cofitok-config", type=Path, required=True)
     parser.add_argument("--dense-config", type=Path, required=True)
@@ -174,6 +197,7 @@ def source_paths_from_args(args: argparse.Namespace) -> dict[str, Path]:
         "deployment_receipt": args.deployment_receipt,
         "promotion_gate": args.promotion_gate,
         "full_readiness": args.full_readiness,
+        "readiness_bridge": args.readiness_bridge,
         "cofitok_config": args.cofitok_config,
         "dense_config": args.dense_config,
         "config_validation": args.config_validation,

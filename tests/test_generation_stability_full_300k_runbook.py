@@ -19,9 +19,7 @@ def test_stability_full_runbook_is_gate_and_identity_bound() -> None:
 
     gate_hash = source.index('sha256sum "$GATE"')
     gate_validation = source.index("scripts/validate_generation_gate_report.py")
-    readiness_validation = source.index(
-        "scripts/validate_generation_full_readiness.py"
-    )
+    readiness_validation = source.index("scripts/validate_generation_full_readiness_bridge.py")
     storage_validation = source.index("scripts/check_generation_storage_capacity.py")
     training = source.index("start_monitor")
     assert (
@@ -34,12 +32,20 @@ def test_stability_full_runbook_is_gate_and_identity_bound() -> None:
     assert "EXPECTED_SCALING_GATE_SHA256=${" in source
     assert "EXPECTED_DEPLOYMENT_RECEIPT_SHA256=${" in source
     assert "EXPECTED_READINESS_SHA256=${" in source
+    assert "EXPECTED_READINESS_BRIDGE_SHA256=${" in source
     assert "EXPECTED_TARGET_REVISION=${" in source
     assert "EXPECTED_TARGET_BRANCH=${" in source
     assert '--expected-checkpoint-revision "$EXPECTED_TARGET_REVISION"' in source
     assert "--expected-recipe-stage stability_full" in source
     assert "scripts/select_generation_training_runtime.py" not in source
     assert "--deployment-receipt" in source
+    assert '--bridge "$READINESS_BRIDGE"' in source
+    assert "--source-deployment-receipt" in source
+    assert "--target-deployment-receipt" in source
+    assert "--expected-source-revision" in source
+    assert "--expected-source-branch" in source
+    assert "--expected-target-revision" in source
+    assert "--expected-target-branch" in source
     assert "storage_capacity_launch.json" in source
 
 
@@ -149,7 +155,8 @@ def test_stability_full_runbook_uses_immutable_launch_receipt_for_resume() -> No
     assert "refusing unreceipted stability full training state" in source
     assert "storage_capacity_current.json" in source
     assert 'rm -f -- "$LAUNCH_STORAGE_CAPACITY"' in source
-    assert "--allow-later-formal-repository" in source
+    assert "--allow-later-formal-repository" not in source
+    assert '--readiness-bridge "$READINESS_BRIDGE"' in source
     assert source.count('storage_preflight "$LAUNCH_STORAGE_CAPACITY"') == 1
     assert source.count('storage_preflight "$CURRENT_STORAGE_CAPACITY"') == 1
     assert (
