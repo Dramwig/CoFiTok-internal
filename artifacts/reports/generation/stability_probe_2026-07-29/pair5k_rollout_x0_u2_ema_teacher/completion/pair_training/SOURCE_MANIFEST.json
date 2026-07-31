@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-07-31T10:07:39.1084719+08:00",
+  "remote_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29",
+  "training_revision": "59db142fc45d69dc92bb0333be5ac2d0162d9dc4",
+  "observer_revision": "164c96e71dd97f0ac85a4f906c5a86cf768b7390",
+  "stage": "matched_5k_stability_gate",
+  "checkpoint_payloads_copied": false,
+  "pair": {
+    "status": "completed",
+    "completed_steps_per_member": 5000,
+    "images_seen_per_member": 320000,
+    "validation_ratio": 0.9979161021445417,
+    "parameter_ratio_delta": 0.00014924064826926653,
+    "formal_scaling_authorization_allowed": false
+  },
+  "observer_snapshot": {
+    "status": "pass",
+    "stage": "complete",
+    "issues": 0,
+    "updated_at": "2026-07-31T02:04:19.459417+00:00"
+  },
+  "authoritative_monitor_snapshot": {
+    "status": "pass",
+    "stage": "complete",
+    "issues": 0
+  },
+  "files": {
+    "authoritative_monitor.snapshot.json": {
+      "bytes": 29221,
+      "sha256": "251de5a75ef7108c324a844a246a4f6ecccb9fc1eb70a59e28b6c9b236510842"
+    },
+    "cofitok_training_report.snapshot.json": {
+      "bytes": 10132,
+      "sha256": "3de577d830d2ba07fc399296e98ebefd66d1ea9f3ccfe3552f98ccc4243ad4c7"
+    },
+    "dense_checkpoint_step_00005000.pt.integrity.json": {
+      "bytes": 549,
+      "sha256": "1a77ed4a0ad1f4463bcdd21e552d57d0a58cb1cfb557da60f4793f64825c39be"
+    },
+    "dense_latest.snapshot.json": {
+      "bytes": 619,
+      "sha256": "365f2f980465055385fb3ea90b9f8908aca208baca89e1cf3e1126ceb357505b"
+    },
+    "dense_run_manifest.snapshot.json": {
+      "bytes": 7720,
+      "sha256": "6bede166ec6177fae3eb75edce5bc2cc020256934f250f8852cae033f50b4e17"
+    },
+    "dense_train_metrics.snapshot.jsonl": {
+      "bytes": 174935,
+      "sha256": "1c90167c7bd8782295d855b9d85bcd6a42779c7b99052991b41a424f272b1efc"
+    },
+    "dense_training_report.snapshot.json": {
+      "bytes": 9831,
+      "sha256": "d884cced7b58d03cb88402bc87b90bf7c7f8cd29186eceb4b4e1f5bf17d00474"
+    },
+    "pair_summary.snapshot.json": {
+      "bytes": 9116,
+      "sha256": "44c5bbf1af28dd5e233452f19772e58cc5502b33485de24af57a30cb9bd4648e"
+    },
+    "provenance_observer_164c96e.json": {
+      "bytes": 37044,
+      "sha256": "a739f20d14c77b560a80d83d6c2b06047a54aa74ab579806f55c49882b234532"
+    }
+  }
+}

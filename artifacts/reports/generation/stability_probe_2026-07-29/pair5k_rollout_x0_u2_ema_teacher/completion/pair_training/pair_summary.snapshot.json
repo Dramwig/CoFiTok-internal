@@ -1,0 +1,207 @@
+{
+  "cofitok": {
+    "checkpoint_sha256": "cb432c75ccbc4eba00dab878e43dd0e45740ebdd9a6b95e0cd014ce97b6d6450",
+    "elapsed_seconds": 14222.479915857315,
+    "ema_teacher_consistency": 0.0019236642983742058,
+    "milestones": {
+      "1250": {
+        "checkpoint": "checkpoint_step_00001250.pt",
+        "checkpoint_bytes": 1006321770,
+        "checkpoint_sha256": "f234c142aaa39e21520bcf8ec2d3458feeef85c26c8431209dfab62d4a9610c9",
+        "integrity_manifest": {
+          "bytes": 549,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00001250.pt.integrity.json",
+          "sha256": "1856a42f2bd24840ea9eb78d97712ca444a5d01aac7e14615242796a6943e5dc"
+        }
+      },
+      "2500": {
+        "checkpoint": "checkpoint_step_00002500.pt",
+        "checkpoint_bytes": 1006321770,
+        "checkpoint_sha256": "bc9e7942f9fac143064a901a78f33ddf7bd638c8df4d2409481e1305a794d6df",
+        "integrity_manifest": {
+          "bytes": 549,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00002500.pt.integrity.json",
+          "sha256": "8ba61c2e9c4e56f36bd1122375bae665c748122d6f230d878cb03312f85b5970"
+        }
+      },
+      "3750": {
+        "checkpoint": "checkpoint_step_00003750.pt",
+        "checkpoint_bytes": 1006321770,
+        "checkpoint_sha256": "4906500378f77a8ba1af22836e7fd97bf30e89aa6bb908db58fdc120f2219a0c",
+        "integrity_manifest": {
+          "bytes": 549,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00003750.pt.integrity.json",
+          "sha256": "44df7658fb860cce19c6db3d001f580b5876e9e2168f4c7355314aa7c6a4ae34"
+        }
+      },
+      "5000": {
+        "checkpoint": "checkpoint_step_00005000.pt",
+        "checkpoint_bytes": 1006321770,
+        "checkpoint_sha256": "cb432c75ccbc4eba00dab878e43dd0e45740ebdd9a6b95e0cd014ce97b6d6450",
+        "integrity_manifest": {
+          "bytes": 549,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00005000.pt.integrity.json",
+          "sha256": "c5f1c6906096bff6402a2ab83c2d3031c20916e5cc17669bb4f6407a2711fbb0"
+        }
+      }
+    },
+    "parameter_count": 62834083,
+    "peak_vram_bytes": 15238400000,
+    "training_report": {
+      "bytes": 10132,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json",
+      "sha256": "3de577d830d2ba07fc399296e98ebefd66d1ea9f3ccfe3552f98ccc4243ad4c7"
+    },
+    "validation_epsilon_mse": 0.018617089837789536
+  },
+  "completed_steps": 5000,
+  "dense": {
+    "checkpoint_sha256": "92bc9aa315eec1e06f201961dbc7d5638cdadf471bc4dbdab0a781252254ecab",
+    "elapsed_seconds": 12996.32558465004,
+    "ema_teacher_consistency": 0.002213084604591131,
+    "milestones": {
+      "1250": {
+        "checkpoint": "checkpoint_step_00001250.pt",
+        "checkpoint_bytes": 1006120150,
+        "checkpoint_sha256": "227ca21455f1bc27295cd9ff8f325b6960932da373122192e10053cb17d1463a",
+        "integrity_manifest": {
+          "bytes": 549,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00001250.pt.integrity.json",
+          "sha256": "f26f414263b6ca408d4435f074e89364cdaabcee4b40575601de56d89b56fce3"
+        }
+      },
+      "2500": {
+        "checkpoint": "checkpoint_step_00002500.pt",
+        "checkpoint_bytes": 1006120150,
+        "checkpoint_sha256": "16711ab7b400bd36ab758b0ece897c240f27739412993c82bd889699928ebcdc",
+        "integrity_manifest": {
+          "bytes": 549,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00002500.pt.integrity.json",
+          "sha256": "31497fca63aaf715f92fc212df2fa01b2746c7df3e048599f130736c02aea6a6"
+        }
+      },
+      "3750": {
+        "checkpoint": "checkpoint_step_00003750.pt",
+        "checkpoint_bytes": 1006120150,
+        "checkpoint_sha256": "60438bd241776e08d6ef98c7874b55772b065893e06496737015b7012900f6dc",
+        "integrity_manifest": {
+          "bytes": 549,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00003750.pt.integrity.json",
+          "sha256": "2d8eef4b3debcd387062b8882e9d300cdbbcfbc57d7739c022d0030f44dbd332"
+        }
+      },
+      "5000": {
+        "checkpoint": "checkpoint_step_00005000.pt",
+        "checkpoint_bytes": 1006120150,
+        "checkpoint_sha256": "92bc9aa315eec1e06f201961dbc7d5638cdadf471bc4dbdab0a781252254ecab",
+        "integrity_manifest": {
+          "bytes": 549,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00005000.pt.integrity.json",
+          "sha256": "1a77ed4a0ad1f4463bcdd21e552d57d0a58cb1cfb557da60f4793f64825c39be"
+        }
+      }
+    },
+    "parameter_count": 62824707,
+    "peak_vram_bytes": 15043995648,
+    "training_report": {
+      "bytes": 9831,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/pair5k_rollout_x0_u2_ema_teacher/dense_rollout_x0_u2_ema_teacher/training_report.json",
+      "sha256": "d884cced7b58d03cb88402bc87b90bf7c7f8cd29186eceb4b4e1f5bf17d00474"
+    },
+    "validation_epsilon_mse": 0.018655966967344284
+  },
+  "ema_teacher_contract": {
+    "batch_fraction": 0.0625,
+    "start_step": 3000,
+    "warmup_steps": 1000,
+    "weight": 0.25
+  },
+  "formal_scaling_authorization_allowed": false,
+  "generation_pair_contract": {
+    "dense_nonzero_auxiliary_losses": [],
+    "factorization_model_fields": [
+      "deep_synthesis_depth",
+      "deep_synthesis_hidden_channels",
+      "gamma_mode",
+      "predictor_use_feedback",
+      "synthesis_active_token_channels",
+      "synthesis_kernel_size",
+      "synthesis_mode",
+      "synthesis_token_strides",
+      "token_channel_schedule",
+      "token_channels",
+      "token_count",
+      "token_spatial_strides"
+    ],
+    "identities": {
+      "cofitok_feedback": true,
+      "cofitok_synthesis": "fixed_basis",
+      "cofitok_token_count": 8,
+      "dense_feedback": false,
+      "dense_synthesis": "dense_identity",
+      "dense_token_count": 1
+    },
+    "issues": [],
+    "matched_config_sections": [
+      "data",
+      "diffusion",
+      "runtime",
+      "optimization"
+    ],
+    "mismatched_config_sections": [],
+    "mismatched_shared_model_fields": [],
+    "mismatched_shared_training_loss_fields": [],
+    "primary_epsilon_weight": 1.0,
+    "shared_model_fields": [
+      "base_channels",
+      "class_dropout_prob",
+      "image_channels",
+      "image_size",
+      "num_classes",
+      "predictor_attention_resolutions",
+      "predictor_channel_multipliers",
+      "predictor_depth",
+      "predictor_dropout",
+      "predictor_gradient_checkpointing",
+      "predictor_multiscale_levels",
+      "predictor_num_heads",
+      "predictor_num_res_blocks",
+      "predictor_type"
+    ],
+    "shared_training_loss_fields": [
+      "ema_teacher_consistency_batch_fraction",
+      "ema_teacher_consistency_start_step",
+      "ema_teacher_consistency_warmup_steps",
+      "ema_teacher_consistency_weight",
+      "epsilon_weight",
+      "rollout_consistency_batch_fraction",
+      "rollout_consistency_clip_x0",
+      "rollout_consistency_mode",
+      "rollout_consistency_start_step",
+      "rollout_consistency_timestep_delta",
+      "rollout_consistency_unroll_steps",
+      "rollout_consistency_warmup_steps",
+      "rollout_consistency_weight"
+    ],
+    "valid": true
+  },
+  "git_revision": "59db142fc45d69dc92bb0333be5ac2d0162d9dc4",
+  "images_seen": 320000,
+  "parameter_ratio_delta": 0.00014924064826926653,
+  "schema_version": 2,
+  "sources": {
+    "active_5k_benchmark": {
+      "bytes": 5451,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/runtime_benchmark_rollout_x0_u2_ema_teacher_5k_2026-07-31/benchmark_summary.json",
+      "sha256": "066a03a0bf9f6a7d40cd98de41468974d5d4e0d629a259c4a550026e6e399305"
+    },
+    "scaling_decision": {
+      "bytes": 4371,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_probe_2026-07-29/scaling_decision1k_rollout_x0_u2_ema_teacher/scaling_decision.json",
+      "sha256": "7f2e6e691e26ef24f18d42e0f337229a35f2eec1a774e82f12141bb15dc48c9d"
+    }
+  },
+  "stage": "matched_5k_stability_gate",
+  "status": "completed",
+  "validation_ratio": 0.9979161021445417
+}

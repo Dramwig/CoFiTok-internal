@@ -277,3 +277,40 @@ The observer reported a verified run manifest and no issues. This resolves a
 stale wording ambiguity in `docs/GENERATION_SYSTEM.md`, which previously said
 all dense auxiliary losses had to be zero without distinguishing shared
 stabilization from factorization-only objectives.
+
+## Matched 5K training completion
+
+Both members completed the exact 5,000-step, 320,000-image budget. The strict
+observer and authoritative monitor independently reported `pass`, stage
+`complete`, with no issues:
+
+| metric | CoFiTok | dense |
+|---|---:|---:|
+| parameters | 62,834,083 | 62,824,707 |
+| final validation epsilon MSE | 0.0186170898 | 0.0186559670 |
+| elapsed seconds | 14,222.4799 | 12,996.3256 |
+| peak VRAM bytes | 15,238,400,000 | 15,043,995,648 |
+| final checkpoint SHA256 | `cb432c75...b6d6450` | `92bc9aa3...54ecab` |
+
+The exact parameter delta is `+0.014924%`, CoFiTok validation MSE is `0.2084%`
+lower, and CoFiTok wall time is `9.4346%` higher. Endpoint validation is
+therefore effectively matched at this budget; the small difference is not a
+standalone quality claim. The pair summary revalidated all eight milestone
+checkpoint/sidecar pairs, clean revision, exact images seen, shared config
+sections, shared model and stabilization fields, factorized/dense identities,
+and zero dense factorization-only auxiliary losses.
+
+The small final training evidence is stored at:
+
+```text
+artifacts/reports/generation/stability_probe_2026-07-29/
+  pair5k_rollout_x0_u2_ema_teacher/completion/pair_training/
+```
+
+Its source manifest binds the pair summary, both monitor snapshots, both
+training reports, dense final sidecar/latest/run-manifest, and the complete
+201-row dense metrics history. No checkpoint payload was copied. The pair
+summary deliberately preserves
+`formal_scaling_authorization_allowed=false`; raw n8 and robust n64 mechanism
+evaluation must still pass before the dormant stability 50K runbook can be
+authorized.
