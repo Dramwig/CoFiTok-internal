@@ -92,6 +92,35 @@ def test_stability_scaling_recipe_preserves_the_qualified_5k_mechanism() -> None
     assert contract["observed"]["cofitok"]["loss.low_snr_high_frequency_weight"] == 0.5
 
 
+def test_stability_full_recipe_scales_the_qualified_mechanism_to_300k() -> None:
+    cofitok = _config(
+        "imagenet256_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json"
+    )
+    dense = _config(
+        "imagenet256_stability_rollout_x0_u2_ema_teacher_dense_300k.json"
+    )
+
+    assert infer_generation_training_stage(cofitok, dense) == "stability_full"
+    contract = generation_training_recipe_contract(
+        cofitok,
+        dense,
+        stage="stability_full",
+    )
+
+    assert contract["valid"] is True, contract["issues"]
+    assert contract["issues"] == []
+    assert contract["effective_batches"]["cofitok"]["effective_batch_size"] == 64
+    assert contract["expected_shared"]["loss.rollout_consistency_warmup_steps"] == 60_000
+    assert contract["expected_shared"]["loss.ema_teacher_consistency_start_step"] == 180_000
+    assert contract["expected_shared"]["loss.ema_teacher_consistency_warmup_steps"] == 60_000
+    assert contract["expected_shared"]["runtime.protected_checkpoint_steps"] == [
+        50_000,
+        100_000,
+        200_000,
+        300_000,
+    ]
+
+
 def test_stability_recipe_rejects_identically_shifted_teacher_window() -> None:
     cofitok = _config(
         "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json"
