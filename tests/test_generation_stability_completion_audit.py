@@ -146,12 +146,18 @@ def test_stability_completion_runbook_is_a_read_only_exact_identity_gate() -> No
     assert "scripts/audit_generation_stability_completion.py" in source
     assert "EXPECTED_DECISION_SHA256=${" in source
     assert "EXPECTED_SCALING_GATE_SHA256=${" in source
+    assert "EXPECTED_SCALING_TRAINING_REVISION=${" in source
+    assert "EXPECTED_SCALING_TRAINING_BRANCH=${" in source
+    assert "EXPECTED_SCALING_EVALUATION_REVISION=${" in source
+    assert "EXPECTED_SCALING_EVALUATION_BRANCH=${" in source
     assert "EXPECTED_FULL_READINESS_SHA256=${" in source
     assert "EXPECTED_FULL_LAUNCH_RECEIPT_SHA256=${" in source
     assert "EXPECTED_FINAL_GATE_SHA256=${" in source
     assert "EXPECTED_FULL_TRAINING_REVISION=${" in source
     assert "EXPECTED_FULL_EVALUATION_REVISION=${" in source
     assert "EXPECTED_AUDIT_REVISION=${" in source
+    assert "caab51348d546e98858d1203f2958d9e396e2d18" not in source
+    assert "\nSCALING_EVALUATION_REVISION=" not in source
     assert "scripts/train_generation.py" not in source
     assert "scripts/generate_samples.py" not in source
     assert "generation_stability_ema_teacher_full_matched_300k_after_gate.sh" not in source

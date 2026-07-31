@@ -798,6 +798,15 @@ reported as an explicit legacy exception rather than retroactively claiming
 evidence it did not record. See
 `docs/records/2026-07-13_generation_dataset_provenance.md`.
 
+A source-bound post-training supervisor can be started only after a human has
+separately authorized full training and supplied the immutable full launch
+receipt SHA256. It does not launch training. It waits for the exact 300K monitor
+to pass, then runs formal 50K post-evaluation, validates the full scientific
+gate, exports release-authorized EMA artifacts, and invokes the terminal audit.
+Execution-stage failures receive bounded retries, while a failed scientific
+gate or a failed/incomplete completion report stops permanently. Existing
+final-gate or completion files are rehashed and must match the current complete
+expectation map before reuse.
 After the final gate, both methods export separate EMA-only deployment
 artifacts. Their type-specific sidecars are verified before deserialization;
 source training checkpoint SHA, runtime-environment SHA, Git identity, step,
@@ -816,6 +825,10 @@ smoke tests with release authorization required. Their reports carry this
 policy bit, and the completion audit fails unless all four production loads
 prove that the release gate was enforced before deserialization.
 
+The stability completion runbook takes the 50K training and evaluation
+revisions/branches as explicit required inputs. It contains no historical
+post-evaluation revision constant, so a later v4 source-bound gate cannot be
+silently audited against an obsolete checkout identity.
 The terminal completion audit does not trust those JSON reports alone. It
 rehashes both physical step-300K exact-resume checkpoints through their
 integrity sidecars and separately rehashes both exported EMA artifacts.
