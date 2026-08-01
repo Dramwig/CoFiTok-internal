@@ -1,0 +1,26 @@
+{
+  "archive_or_deletion_authorized": false,
+  "current_headroom_bytes": 10563147136,
+  "currently_reclaimable_bytes": 0,
+  "filesystem": {
+    "free_bytes": 191443562496,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
+    "total_bytes": 1073741824000,
+    "used_bytes": 882298261504
+  },
+  "physical_checkpoint_hashes_replayed": false,
+  "potential_archive_bytes_counted_as_current_capacity": false,
+  "potential_archive_candidate_bytes": 0,
+  "projected_headroom_after_unapproved_archive_bytes": 10563147136,
+  "read_only": true,
+  "required_free_bytes": 180880415360,
+  "retention_inventory": {
+    "bytes": 220769,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/retention_audit_2026-08-01/checkpoint_retention_inventory.json",
+    "sha256": "62ae7388983e046fc0d0afbb7db2059e1afb5c2674880881e20411cd66f68cd5"
+  },
+  "retention_inventory_verification": "expected_sha256_binding",
+  "role": "generation_checkpoint_retention_runway",
+  "schema_version": 1,
+  "status": "pass"
+}

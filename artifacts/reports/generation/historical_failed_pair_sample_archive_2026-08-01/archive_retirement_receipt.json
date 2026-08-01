@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "role": "generation_sample_archive_retirement_receipt",
+  "status": "pass",
+  "archive": {
+    "local_path": "C:/Users/zixi-/CoFiTok-archive/generation/historical_failed_compressed_rankcomplete_pairs_2026-08-01/historical_failed_compressed_rankcomplete_pairs_2026-08-01.tar",
+    "bytes": 6474926080,
+    "sha256": "9946c301024e41816e207d6f749cb4385a9af96fb2364736a37fcf8b633438e7",
+    "audit": {
+      "path": "archive_audit.json",
+      "bytes": 14756,
+      "sha256": "9e95cc35a4911440ab3d66a8dc066819853cc6164528b6392059a51e8b9d6219",
+      "status": "pass",
+      "root_count": 6,
+      "regular_file_count": 40534,
+      "sample_count": 40512,
+      "logical_file_bytes": 6402280151
+    }
+  },
+  "selection_basis": {
+    "generation_evidence_only": true,
+    "checkpoints_reports_and_run_directories_retained": true,
+    "pairs": [
+      {
+        "alias": "imagenet256_10pct_compressed_matched_50k",
+        "promotion_gate_path": "artifacts/reports/generation/imagenet256_10pct_compressed_matched_50k_failed_04a_2026-07-19/promotion_gate.json",
+        "promotion_gate_bytes": 28743,
+        "promotion_gate_sha256": "2c2d27401834e4d0fd2138ec886595f84ffa96679fad5be9bc189c717fba7eaf",
+        "status": "fail",
+        "decision": "hold",
+        "failed_gates": [
+          "fid_within_tolerance",
+          "absolute_fid_quality",
+          "endpoint_within_tolerance",
+          "ordered_prefix_path"
+        ]
+      },
+      {
+        "alias": "imagenet256_10pct_rankcomplete_matched_50k_v2",
+        "promotion_gate_path": "artifacts/reports/generation/imagenet256_10pct_rankcomplete_matched_50k_v2/promotion_gate.json",
+        "promotion_gate_bytes": 30634,
+        "promotion_gate_sha256": "a3ac8ec7ee515ff5fe1eb04062f48c0b5ade2e548afd64322210dc969377cfe1",
+        "status": "fail",
+        "decision": "hold",
+        "failed_gates": [
+          "fid_within_tolerance",
+          "absolute_fid_quality",
+          "endpoint_within_tolerance"
+        ]
+      }
+    ]
+  },
+  "retired_sources": [
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_compressed_cofitok_k8_50k/samples_gate10k_ddim100_cfg15",
+      "file_count": 10004,
+      "logical_du_bytes": 1912337256,
+      "allocated_du_bytes": 1925746688,
+      "sample_count": 10000,
+      "sample_set_sha256": "68b200c595e7b1651f850897f91cb3f708ed8b76382ffe3963fbd6853a36ab01"
+    },
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_compressed_cofitok_k8_50k/prefix_diagnostic_64_ddim100_cfg15",
+      "file_count": 259,
+      "logical_du_bytes": 28084580,
+      "allocated_du_bytes": 28565504,
+      "sample_count": 256,
+      "sample_set_sha256_by_prefix": {
+        "1": "7f92897296ca0884bec48ef4120d07900e1c734ad3124da35001c93cd83ffc9b",
+        "2": "59e5f86bd1071938ecf46a3bf76f81d18e8a6c922755215796404ab1056b43bc",
+        "4": "67a4e19614466736c9ad67662930f471a33a244f2987bd172f188ef844803366",
+        "8": "a8b906048b8e208e9b41b1eff2089fc0c1ff80ed4bf1e601afd9a811043f6344"
+      }
+    },
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_compressed_dense_50k/samples_gate10k_ddim100_cfg15",
+      "file_count": 10004,
+      "logical_du_bytes": 1351061345,
+      "allocated_du_bytes": 1371787264,
+      "sample_count": 10000,
+      "sample_set_sha256": "6575504b94a50fd36748494aacaa76cd0f0b5f87f945d16871f148adcf0584d3"
+    },
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2/samples_gate10k_ddim100_cfg15",
+      "file_count": 10004,
+      "logical_du_bytes": 1715671426,
+      "allocated_du_bytes": 1736282112,
+      "sample_count": 10000,
+      "sample_set_sha256": "cdea02e267e88514357a80530317ab873a20460cad3dba01a321007be87cdb40"
+    },
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2/prefix_diagnostic_64_ddim100_cfg15",
+      "file_count": 259,
+      "logical_du_bytes": 34124999,
+      "allocated_du_bytes": 34668544,
+      "sample_count": 256,
+      "sample_set_sha256_by_prefix": {
+        "1": "db3d2cdb222af517b56428c4a347dfbb3418121ff5189d5bf2711f8983d511f6",
+        "2": "86d50365a00c1569dc387c7096b9ad64ac647191861fcc7ede8a86eeb7a30ae6",
+        "4": "3b104af489403feabf35e58f847cccf5b6c8db62d55687423b9699eef072371a",
+        "8": "64c27f036dc338ebbefae6c5a2180bd6cd43e0185f6893a8cf50123b7b9b09b2"
+      }
+    },
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_dense_50k_v2/samples_gate10k_ddim100_cfg15",
+      "file_count": 10004,
+      "logical_du_bytes": 1362181377,
+      "allocated_du_bytes": 1382707200,
+      "sample_count": 10000,
+      "sample_set_sha256": "5c71990f73778f8619ed85619770dcb8b22b0f87f5c74241c1b0cf3758b8b37f"
+    }
+  ],
+  "retirement": {
+    "source_root_count": 6,
+    "declared_logical_source_bytes": 6403460983,
+    "declared_allocated_source_bytes": 6479757312,
+    "source_roots_absent_after_removal": true,
+    "remote_staging_tar_absent_after_removal": true,
+    "remote_staging_tar_removed_bytes": 6474926080,
+    "free_bytes_with_archive_staging": 178488901632,
+    "free_bytes_after_source_removal_with_staging": 184968998912,
+    "free_bytes_after_staging_removal": 191443927040,
+    "observed_source_removal_free_byte_delta": 6480097280,
+    "observed_staging_removal_free_byte_delta": 6474928128,
+    "observed_two_stage_free_byte_delta": 12955025408
+  },
+  "active_training_health_after_source_removal": {
+    "run": "stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+    "trainer_pid": 918650,
+    "last_metric_step": 37450,
+    "metric_values_finite": true,
+    "monitor_status": "running",
+    "monitor_issues": [],
+    "gpu_memory_mib": 85294
+  },
+  "restore_contract": {
+    "target_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
+    "all_six_source_roots_must_be_absent_before_restore": true,
+    "archive_sha256_must_match_before_transfer_or_extract": true,
+    "post_restore_archive_audit_required": true,
+    "note": "Reports that retain the original remote sample paths require restoration before direct replay. Restore only the archived sample and prefix-diagnostic roots; do not replace retained run directories or checkpoints."
+  },
+  "active_training_affected": false,
+  "archive_is_generation_evidence_not_a_checkpoint": true,
+  "checkpoint_retention_policy_changed": false
+}
