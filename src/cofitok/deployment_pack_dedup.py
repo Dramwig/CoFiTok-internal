@@ -171,6 +171,7 @@ def build_deployment_pack_dedup_plan(
     actions = []
     counts = {"eligible": 0, "already_linked": 0, "required": 0, "indeterminate": 0}
     potential_bytes = 0
+    currently_saved_bytes = 0
     for checkout in checkouts:
         reasons = []
         if checkout["path"] == canonical.as_posix():
@@ -187,6 +188,16 @@ def build_deployment_pack_dedup_plan(
                 key = (Path(target["path"]).name, target["bytes"], target["sha256"])
                 source = canonical_files.get(key)
                 item_reasons = list(reasons)
+                already_linked_to_canonical = (
+                    source is not None
+                    and target["device"] == source["device"]
+                    and target["inode"] == source["inode"]
+                )
+                if (
+                    checkout["path"] != canonical.as_posix()
+                    and already_linked_to_canonical
+                ):
+                    currently_saved_bytes += target["bytes"]
                 if "canonical_checkout" in item_reasons or "active_process_checkout" in item_reasons:
                     disposition = "required"
                 elif source is None:
@@ -230,7 +241,7 @@ def build_deployment_pack_dedup_plan(
             "checkout_count": len(checkouts),
             "counts_by_disposition": counts,
             "potential_physical_bytes_saved": potential_bytes,
-            "currently_saved_bytes": 0,
+            "currently_saved_bytes": currently_saved_bytes,
         },
     }
 

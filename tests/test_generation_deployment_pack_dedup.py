@@ -247,6 +247,24 @@ def test_replanning_after_partial_atomic_link_is_recoverable(tmp_path: Path) -> 
         "eligible",
     }
     assert recovered["summary"]["potential_physical_bytes_saved"] > 0
+    assert recovered["summary"]["currently_saved_bytes"] == first["target"]["bytes"]
+
+    active_recovered = dedup.build_deployment_pack_dedup_plan(
+        deployment_root=fixture["root"],
+        canonical_checkout=fixture["canonical"],
+        active_checkout_paths={first["checkout"]},
+    )
+    active_item = next(
+        item
+        for item in active_recovered["actions"]
+        if item["target"]["path"] == first["target"]["path"]
+    )
+    assert active_item["disposition"] == "required"
+    assert "active_process_checkout" in active_item["reasons"]
+    assert (
+        active_recovered["summary"]["currently_saved_bytes"]
+        == first["target"]["bytes"]
+    )
 
 
 def test_active_process_scan_includes_cwd_and_other_command_lines(
