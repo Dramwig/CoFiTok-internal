@@ -21,9 +21,11 @@ export PYTHONPATH="$PROJECT_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
 
 "$PYTHON_BIN" "$PROJECT_ROOT/scripts/validate_generation_checkpoint_retention_inventory.py" \
   --inventory "$REPORT_ROOT/checkpoint_retention_inventory.json"
+INVENTORY_SHA256="$(sha256sum "$REPORT_ROOT/checkpoint_retention_inventory.json" | awk '{print $1}')"
 
 "$PYTHON_BIN" "$PROJECT_ROOT/scripts/check_generation_retention_runway.py" \
   --retention-inventory "$REPORT_ROOT/checkpoint_retention_inventory.json" \
+  --expected-retention-inventory-sha256 "$INVENTORY_SHA256" \
   --path "$GENERATION_ROOT" \
   --required-free-bytes "$REQUIRED_FREE_BYTES" \
   --output "$REPORT_ROOT/retention_runway.json"

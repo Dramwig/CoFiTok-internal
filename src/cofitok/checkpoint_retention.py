@@ -346,7 +346,9 @@ def build_checkpoint_retention_inventory(
     }
 
 
-def verify_checkpoint_retention_inventory(report: dict[str, Any]) -> dict[str, Any]:
+def _validate_checkpoint_retention_inventory_policy(
+    report: dict[str, Any],
+) -> dict[str, Any]:
     if report.get("schema_version") != SCHEMA_VERSION or report.get("role") != ROLE:
         raise ValueError("checkpoint retention inventory identity is invalid")
     if (
@@ -355,6 +357,11 @@ def verify_checkpoint_retention_inventory(report: dict[str, Any]) -> dict[str, A
         or report.get("summary", {}).get("currently_reclaimable_bytes") != 0
     ):
         raise ValueError("checkpoint retention inventory weakens read-only policy")
+    return report
+
+
+def verify_checkpoint_retention_inventory(report: dict[str, Any]) -> dict[str, Any]:
+    _validate_checkpoint_retention_inventory_policy(report)
     roots = []
     for root in report.get("reference_roots", []):
         policy = root.get("policy")
@@ -371,17 +378,40 @@ def verify_checkpoint_retention_inventory(report: dict[str, Any]) -> dict[str, A
     return report
 
 
+def verify_checkpoint_retention_inventory_binding(
+    report: dict[str, Any],
+    *,
+    report_path: Path,
+    expected_sha256: str,
+) -> dict[str, Any]:
+    _validate_checkpoint_retention_inventory_policy(report)
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
+        raise ValueError("expected checkpoint retention inventory SHA256 is invalid")
+    path = report_path.resolve()
+    if not path.is_file() or file_sha256(path) != expected_sha256:
+        raise ValueError("checkpoint retention inventory SHA256 differs")
+    persisted = json.loads(path.read_text(encoding="utf-8"))
+    if persisted != report:
+        raise ValueError("checkpoint retention inventory bytes differ from report")
+    return report
+
+
 def build_retention_runway_report(
     *,
     retention_report: dict[str, Any],
     retention_report_path: Path,
+    expected_retention_report_sha256: str,
     filesystem_path: Path,
     total_bytes: int,
     used_bytes: int,
     free_bytes: int,
     required_free_bytes: int,
 ) -> dict[str, Any]:
-    verify_checkpoint_retention_inventory(retention_report)
+    verify_checkpoint_retention_inventory_binding(
+        retention_report,
+        report_path=retention_report_path,
+        expected_sha256=expected_retention_report_sha256,
+    )
     if min(total_bytes, used_bytes, free_bytes, required_free_bytes) < 0:
         raise ValueError("retention runway bytes must be non-negative")
     if used_bytes + free_bytes > total_bytes:
@@ -395,6 +425,8 @@ def build_retention_runway_report(
         "read_only": True,
         "archive_or_deletion_authorized": False,
         "retention_inventory": _identity(retention_report_path),
+        "retention_inventory_verification": "expected_sha256_binding",
+        "physical_checkpoint_hashes_replayed": False,
         "filesystem": {
             "path": filesystem_path.resolve().as_posix(),
             "total_bytes": total_bytes,

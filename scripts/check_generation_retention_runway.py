@@ -14,6 +14,11 @@ def main() -> None:
         description="Check generation runway without counting unapproved archive candidates."
     )
     parser.add_argument("--retention-inventory", type=Path, required=True)
+    parser.add_argument(
+        "--expected-retention-inventory-sha256",
+        required=True,
+        help="Pinned SHA256 from an independently replayed physical inventory.",
+    )
     parser.add_argument("--path", type=Path, required=True)
     parser.add_argument("--required-free-bytes", type=int, required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -23,6 +28,7 @@ def main() -> None:
     report = build_retention_runway_report(
         retention_report=inventory,
         retention_report_path=args.retention_inventory,
+        expected_retention_report_sha256=args.expected_retention_inventory_sha256,
         filesystem_path=args.path,
         total_bytes=usage.total,
         used_bytes=usage.used,

@@ -182,6 +182,7 @@ def test_runway_never_counts_unapproved_archive_candidates(tmp_path: Path) -> No
     runway = build_retention_runway_report(
         retention_report=inventory,
         retention_report_path=inventory_path,
+        expected_retention_report_sha256=file_sha256(inventory_path),
         filesystem_path=tmp_path,
         total_bytes=1000,
         used_bytes=400,
@@ -194,3 +195,48 @@ def test_runway_never_counts_unapproved_archive_candidates(tmp_path: Path) -> No
     assert runway["currently_reclaimable_bytes"] == 0
     assert runway["potential_archive_bytes_counted_as_current_capacity"] is False
     assert runway["projected_headroom_after_unapproved_archive_bytes"] > -50
+    assert runway["retention_inventory_verification"] == "expected_sha256_binding"
+    assert runway["physical_checkpoint_hashes_replayed"] is False
+
+
+def test_runway_binds_locked_inventory_without_rehashing_checkpoints(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "probe"
+    _, middle, _ = _completed_run(root)
+    inventory = build_checkpoint_retention_inventory(
+        inventory_root=root,
+        reference_roots=[],
+        physical_hash=True,
+    )
+    inventory_path = tmp_path / "retention.json"
+    write_json_report(inventory_path, inventory)
+    expected_sha256 = file_sha256(inventory_path)
+
+    middle.write_bytes(b"changed after the independently replayed inventory")
+    runway = build_retention_runway_report(
+        retention_report=inventory,
+        retention_report_path=inventory_path,
+        expected_retention_report_sha256=expected_sha256,
+        filesystem_path=tmp_path,
+        total_bytes=1000,
+        used_bytes=400,
+        free_bytes=600,
+        required_free_bytes=500,
+    )
+
+    assert runway["status"] == "pass"
+    assert runway["physical_checkpoint_hashes_replayed"] is False
+
+    inventory_path.write_text("{}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="SHA256 differs"):
+        build_retention_runway_report(
+            retention_report=inventory,
+            retention_report_path=inventory_path,
+            expected_retention_report_sha256=expected_sha256,
+            filesystem_path=tmp_path,
+            total_bytes=1000,
+            used_bytes=400,
+            free_bytes=600,
+            required_free_bytes=500,
+        )
