@@ -1,0 +1,41 @@
+{
+  "role": "generation_deployment_pack_dedup_evidence_manifest",
+  "schema_version": 1,
+  "files": [
+    {
+      "path": "deployment_receipt_e971fbd.json",
+      "bytes": 2224,
+      "sha256": "aa0aa98ac94977dc3c80d6017776d240dcaef985a0b33c84e8d1b55979cddd35"
+    },
+    {
+      "path": "incremental_plan_e971fbd.json",
+      "bytes": 98429,
+      "sha256": "7364f006bc9c62e4e176322def5a3020838dc7aac566c14f64e4928ceaa5cfdc"
+    },
+    {
+      "path": "incremental_result_e971fbd.json",
+      "bytes": 4618,
+      "sha256": "4178bd63be537c0671d6692b50ad7783796ff10e9a5f5399ccdb853b095de464"
+    },
+    {
+      "path": "initial_plan.json",
+      "bytes": 82921,
+      "sha256": "60a9d5872a9fbab2bedb244dcc59fc2f823fca42134b61574c88d222f6da3b2b"
+    },
+    {
+      "path": "initial_result.json",
+      "bytes": 16334,
+      "sha256": "91a174163cf18be6dd78a12cd2766b5d730c8fe20316dfceb1c8d761efd5a734"
+    },
+    {
+      "path": "post_plan_e971fbd.json",
+      "bytes": 98663,
+      "sha256": "e3ee61157346cce88fa5eb194f541d7e307c47b61fb310c166ac1d17348e41cc"
+    },
+    {
+      "path": "runbook_syntax_e971fbd.json",
+      "bytes": 8471,
+      "sha256": "9b57f0054eb290bf5cf2a8effb686e9a619477cffc869db56823c1b99421fafd"
+    }
+  ]
+}

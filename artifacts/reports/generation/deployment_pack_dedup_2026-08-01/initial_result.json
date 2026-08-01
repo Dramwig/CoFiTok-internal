@@ -1,0 +1,366 @@
+{
+  "allowed_checkouts": [
+    "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-27edb63",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-2f8da43",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-847658e",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-b4fb415",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-b8ba139",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-caa66eb",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-f89bdc2"
+  ],
+  "applied": [
+    {
+      "source": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      },
+      "target": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      }
+    },
+    {
+      "source": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      },
+      "target": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      }
+    },
+    {
+      "source": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      },
+      "target": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-27edb63/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      }
+    },
+    {
+      "source": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      },
+      "target": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-27edb63/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      }
+    },
+    {
+      "source": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      },
+      "target": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-2f8da43/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      }
+    },
+    {
+      "source": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      },
+      "target": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-2f8da43/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      }
+    },
+    {
+      "source": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      },
+      "target": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-847658e/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      }
+    },
+    {
+      "source": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      },
+      "target": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-847658e/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      }
+    },
+    {
+      "source": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      },
+      "target": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-b4fb415/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      }
+    },
+    {
+      "source": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      },
+      "target": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-b4fb415/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      }
+    },
+    {
+      "source": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      },
+      "target": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-b8ba139/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      }
+    },
+    {
+      "source": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      },
+      "target": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-b8ba139/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      }
+    },
+    {
+      "source": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      },
+      "target": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-caa66eb/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      }
+    },
+    {
+      "source": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      },
+      "target": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-caa66eb/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      }
+    },
+    {
+      "source": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      },
+      "target": {
+        "bytes": 136765204,
+        "device": 2304,
+        "inode": 21484977484,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-f89bdc2/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.pack",
+        "sha256": "2fdf502275d6b1dedcc372f27288e76cfd0a5653f92db532ca3d8769248eb8d5"
+      }
+    },
+    {
+      "source": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      },
+      "target": {
+        "bytes": 175764,
+        "device": 2304,
+        "inode": 21484977499,
+        "link_count": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-f89bdc2/.git/objects/pack/pack-e0bcf1d95176bb18271f0d6e86b6a33d4fa14c87.idx",
+        "sha256": "dcccd33fbd0ad08391ddc06f4a8c26ba425a14ab6bc8711c7608bffbb01d1b8c"
+      }
+    }
+  ],
+  "destructive_deletion_performed": false,
+  "expected_physical_bytes_saved": 1095527744,
+  "filesystem_free_bytes_after": 187278901248,
+  "filesystem_free_bytes_before": 186183368704,
+  "observed_free_bytes_delta": 1095532544,
+  "plan": {
+    "bytes": 82921,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/maintenance/pack_dedup_2026-08-01/plan.json",
+    "sha256": "60a9d5872a9fbab2bedb244dcc59fc2f823fca42134b61574c88d222f6da3b2b"
+  },
+  "read_only": false,
+  "role": "generation_deployment_pack_dedup_result",
+  "schema_version": 1,
+  "status": "pass",
+  "verified_checkouts": [
+    {
+      "deployment_receipt_replay": "pass",
+      "git_fsck": "pass",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850",
+      "revision": "08d48504ac4898321b0c873574599bcfa063813f"
+    },
+    {
+      "deployment_receipt_replay": "pass",
+      "git_fsck": "pass",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-27edb63",
+      "revision": "27edb632d8cb9a642040ba6fcd3b1a0d682e6c79"
+    },
+    {
+      "deployment_receipt_replay": "pass",
+      "git_fsck": "pass",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-2f8da43",
+      "revision": "2f8da43a5643541ef547fee76c334bde0e4c3fcc"
+    },
+    {
+      "deployment_receipt_replay": "pass",
+      "git_fsck": "pass",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-847658e",
+      "revision": "847658eb5bad1a888f6efe80690ab7ca5244329a"
+    },
+    {
+      "deployment_receipt_replay": "pass",
+      "git_fsck": "pass",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-b4fb415",
+      "revision": "b4fb415c51c608e68ea5e9484646eb10047f7181"
+    },
+    {
+      "deployment_receipt_replay": "pass",
+      "git_fsck": "pass",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-b8ba139",
+      "revision": "b8ba139ae8710baedaa0e2f11d9bfa66f73909dc"
+    },
+    {
+      "deployment_receipt_replay": "pass",
+      "git_fsck": "pass",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-caa66eb",
+      "revision": "caa66eba2e513fc28fe11c9763b1dedbb7f3fc87"
+    },
+    {
+      "deployment_receipt_replay": "pass",
+      "git_fsck": "pass",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-f89bdc2",
+      "revision": "f89bdc29af3ea66b9e12292b0c438abf75fcfd7d"
+    }
+  ]
+}
