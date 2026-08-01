@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "role": "generation_stability_training_milestone_waiter_launch",
+  "status": "pass",
+  "milestone_step": 45000,
+  "observer": {
+    "source_path": "artifacts/operations/generation/stability_50k_milestone_waiter.py",
+    "source_revision": "8bf4bb73ec05543a6e0317ef00a72fed5ac2a3b4",
+    "source_bytes": 15043,
+    "source_sha256": "84c04e91dfb846f1ef3eeabe88e7be1b5d6fd6b02121c0fb2908163f886af99e",
+    "remote_path": "/tmp/cofitok_stability_40k_milestone_waiter_84c04e9.py",
+    "pid": 942412,
+    "poll_seconds": 60,
+    "timeout_seconds": 36000,
+    "metrics_stale_seconds": 1800,
+    "read_only": true,
+    "gpu_allocation_expected": false,
+    "signals_training_processes": false,
+    "loads_checkpoint_into_model": false
+  },
+  "audit_identity": {
+    "project_root": "/tmp/cofitok-stability-schedule-audit-c1efb12",
+    "revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "branch": "scale/generation-stability-50k-posteval-v4",
+    "tracked_dirty": false,
+    "config_sha256": "4b9bf0d89f639983df6f5c046deb36ad6bd65dac8ec8f9b587721dbcef688f02"
+  },
+  "training_identity": {
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "branch": "scale/generation-stability-50k-preflight",
+    "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
+  },
+  "audit_contract": {
+    "expected_steps": 50000,
+    "checkpoint_interval": 5000,
+    "evaluation_interval": 1000,
+    "integrity_policy": "required",
+    "required_checkpoint_steps_at_milestone": [
+      36545,
+      40000,
+      45000
+    ],
+    "required_validation_event_count": 45,
+    "validation_provenance_required": true,
+    "rollout_consistency_schedule_required": true,
+    "ema_teacher_consistency_schedule_required": true,
+    "all_active_consistency_rows_must_have_nonzero_loss": true,
+    "issues_and_warnings_must_be_empty": true
+  },
+  "launch_snapshot": {
+    "path": "milestone_waiter_initial.json",
+    "bytes": 2234,
+    "sha256": "03b5b5b6b1a28d40fa9589edec080e5d885be00bea0bf5722defd30f61f13211",
+    "observer_status": "waiting",
+    "observer_last_step": 38250,
+    "observer_audit_attempts": 0,
+    "progress_report_exists": false
+  },
+  "verification": {
+    "targeted_tests": {
+      "status": "pass",
+      "passed": 33
+    },
+    "full_pytest": {
+      "status": "pass",
+      "collected": 893,
+      "passed": 887,
+      "skipped": 6
+    }
+  },
+  "authorization": {
+    "posteval_authorized_by_this_observer": false,
+    "full_training_launch_allowed": false,
+    "formal_generation_completion_claimed": false
+  }
+}

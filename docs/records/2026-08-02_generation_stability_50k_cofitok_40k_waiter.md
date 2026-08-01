@@ -99,3 +99,26 @@ Machine-readable launch evidence and the initial status snapshot are stored in
 Passing the 40K audit will prove recovery and schedule integrity only. It does
 not prove sample quality, train the dense matched member, authorize post-eval,
 pass the promotion gate, or authorize full 300K training.
+
+## Pre-launched 45K successor observer
+
+The same tested source was also launched before 40K as a separate bounded
+45K observer. This avoids a manual handoff after the first observer exits and
+does not duplicate an audit: each process writes to a distinct milestone
+directory and requires a different exact rolling recovery set.
+
+```text
+PID: 942412
+milestone: 45000
+required checkpoints: 36545 / 40000 / 45000
+poll interval: 60 seconds
+bounded timeout: 36000 seconds
+initial last step: 38250
+initial status sha256: 03b5b5b6b1a28d40fa9589edec080e5d885be00bea0bf5722defd30f61f13211
+```
+
+At 45K it requires 45 scheduled validation events and the same config, Git,
+checkpoint-integrity, schedule, and nonzero-active-loss invariants as the 40K
+observer. It remains read-only and cannot authorize post-evaluation or full
+training. Machine-readable launch evidence is stored under
+`artifacts/reports/generation/stability_scaling_50k_2026-08-01/cofitok_step_00045000/`.
