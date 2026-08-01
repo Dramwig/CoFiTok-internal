@@ -1,0 +1,41 @@
+{
+  "role": "generation_stability_scaling_50k_cofitok_step_35000_evidence_manifest",
+  "schema_version": 1,
+  "files": [
+    {
+      "path": "checkpoint_step_00035000.pt.integrity.json",
+      "bytes": 590,
+      "sha256": "98fb4d6f909de31fc5cee065f86f21e08ad35e78bf9a3ae421335f1997a2d4da"
+    },
+    {
+      "path": "latest.json",
+      "bytes": 660,
+      "sha256": "0cffa916f78aa69608984d51d8d9db90e6ee7ea5ed16ec9777dd50d1c8a7f98f"
+    },
+    {
+      "path": "pair_monitor.json",
+      "bytes": 15723,
+      "sha256": "7d27314eb838446ec2236dda136681bdb58c821e62fba2cfe4f5be4a35880a0f"
+    },
+    {
+      "path": "posteval_waiter.json",
+      "bytes": 1030,
+      "sha256": "77fa8ddfaa13bc199962c8d5f48cafd286da9f78a1bf6eb39fe4941d6ccb8a47"
+    },
+    {
+      "path": "progress_audit.json",
+      "bytes": 4768,
+      "sha256": "3fcfb04a79cf4eeff1310b3e0627ed7066b81e2335ca21db1c1298d1611f39da"
+    },
+    {
+      "path": "run_manifest.json",
+      "bytes": 7905,
+      "sha256": "f7d29d2c3ea73349f86361fe3896b720deee6579b8e8113322a49fccb160267c"
+    },
+    {
+      "path": "training_watchdog.json",
+      "bytes": 1923,
+      "sha256": "b78ceb447ea3b2fd4cb5a590b4f82666a85a841184ada57c10447bd21ab77e57"
+    }
+  ]
+}

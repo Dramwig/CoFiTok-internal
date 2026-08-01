@@ -1,0 +1,28 @@
+{
+  "child_exit_code": null,
+  "child_pid": null,
+  "detail": "waiting_for_completed_training_pair",
+  "expected": {
+    "evaluation_branch": "scale/generation-stability-50k-posteval-v4",
+    "evaluation_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "formal_300k_allowed": false,
+    "monitor_name": "generation_stability_ema_teacher_matched_50k",
+    "stability_decision_sha256": "d5a6fc017f20c7d024abfab1967ba6bc966b624e3a77e9246292ddaaf7dc1da4",
+    "training_branch": "scale/generation-stability-50k-preflight",
+    "training_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+  },
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "monitor": {
+    "age_seconds": 195.560597,
+    "issues": [],
+    "stage": "cofitok_training",
+    "status": "running",
+    "updated_at": "2026-08-01T06:43:53.125508+00:00"
+  },
+  "pair_summary": null,
+  "pid": 281834,
+  "role": "generation_stability_50k_posteval_waiter",
+  "schema_version": 1,
+  "status": "waiting",
+  "updated_at": "2026-08-01T06:47:08.686143+00:00"
+}

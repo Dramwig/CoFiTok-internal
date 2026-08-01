@@ -1,0 +1,59 @@
+{
+  "child_exit_code": null,
+  "child_pid": 319202,
+  "command": [
+    "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+    "scripts/train_generation.py",
+    "--config",
+    "configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json",
+    "--output-dir",
+    "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+    "--micro-batch-size",
+    "64",
+    "--gradient-accumulation-steps",
+    "1"
+  ],
+  "expected_monitor_name": "generation_stability_ema_teacher_matched_50k",
+  "finished_at": null,
+  "history": [],
+  "hostname": "",
+  "invocation": 1,
+  "launched_at": "2026-07-31T03:02:44.494571+00:00",
+  "monitor": {
+    "issues": [],
+    "monitor": "generation_stability_ema_teacher_matched_50k",
+    "runs": {
+      "cofitok": {
+        "complete": false,
+        "last_step": 35750,
+        "progress_fraction": 0.715
+      },
+      "dense_identity": {
+        "complete": false,
+        "last_step": 0,
+        "progress_fraction": 0.0
+      }
+    },
+    "stage": "cofitok_training",
+    "status": "running",
+    "updated_at": "2026-08-01T06:48:53.270491+00:00"
+  },
+  "monitor_pid": 319121,
+  "monitor_pid_file": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/pair_monitor.pid",
+  "monitor_process_alive": true,
+  "monitor_report_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/pair_monitor.json",
+  "pid": 319138,
+  "reason": "child_and_monitor_active",
+  "role": "generation_training_watchdog",
+  "schema_version": 1,
+  "status": "running",
+  "timing": {
+    "monitor_process_grace_seconds": 120.0,
+    "monitor_silence_seconds": 900.0,
+    "poll_seconds": 30.0,
+    "startup_grace_seconds": 600.0,
+    "termination_grace_seconds": 60.0
+  },
+  "updated_at": "2026-08-01T06:50:37.539536+00:00",
+  "watchdog_exit_code": null
+}
