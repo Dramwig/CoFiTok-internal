@@ -1,0 +1,62 @@
+{
+  "bundle": {
+    "advertised_heads": [
+      {
+        "ref": "refs/heads/scale/generation-large-capacity",
+        "revision": "1604dc45c21ec73d9debf8a81e3d7367cd9fb220"
+      }
+    ],
+    "bytes": 39499901,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment_bundles/cofitok-generation-large-capacity-1604dc4-from-1ebcc15.bundle",
+    "prerequisites": [
+      "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+      "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+    ],
+    "sha256": "0baaf43696a778cb8fc39202752bed04bfbee0a65556fc77a5458bed62c628b0",
+    "verification": "git_bundle_verify_pass"
+  },
+  "checkout": {
+    "git": {
+      "branch": "scale/generation-large-capacity",
+      "revision": "1604dc45c21ec73d9debf8a81e3d7367cd9fb220",
+      "tracked_dirty": false
+    },
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-1604dc4"
+  },
+  "formal_generation_completion_claimed": false,
+  "formal_repository": {
+    "git": {
+      "branch": "scale/generative-system",
+      "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+      "tracked_dirty": false
+    },
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal"
+  },
+  "full_training_launch_allowed": false,
+  "readiness_executed": false,
+  "readiness_execution_allowed": true,
+  "role": "generation_large_capacity_isolated_deployment",
+  "schema_version": 1,
+  "status": "pass",
+  "validation": {
+    "pytest": {
+      "bytes": 124679,
+      "errors": 0,
+      "failures": 0,
+      "maximum_skipped": 5,
+      "minimum_passed": 800,
+      "passed": 874,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/deployments/1604dc45c21ec73d9debf8a81e3d7367cd9fb220/pytest.xml",
+      "sha256": "908638b2f69c2629f681f50ba057fc14a37e4d7fb27fb77bf90e645619267744",
+      "skipped": 2,
+      "tests": 876
+    },
+    "runbook_syntax": {
+      "bytes": 8471,
+      "checked_count": 101,
+      "failed_count": 0,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/deployments/1604dc45c21ec73d9debf8a81e3d7367cd9fb220/runbook_syntax.json",
+      "sha256": "b08c87fa4458e99be894a2d4df290a5e0d0f1e231069d539862732eb5b4a3ce3"
+    }
+  }
+}
