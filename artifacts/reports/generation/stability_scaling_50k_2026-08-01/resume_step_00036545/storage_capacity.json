@@ -1,0 +1,31 @@
+{
+  "checked_at": "2026-08-01T15:00:05.684030+00:00",
+  "filesystem": {
+    "free_bytes": 181532778496,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
+    "total_bytes": 1073741824000,
+    "used_bytes": 892209045504
+  },
+  "git": {
+    "branch": "scale/generation-stability-50k-preflight",
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "tracked_dirty": false
+  },
+  "headroom_bytes": 63147465692,
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "plan": {
+    "additional_bytes": 34359738368,
+    "checkpoint_bytes_each": 1006321770,
+    "checkpoint_count": 10,
+    "checkpoint_reserve_bytes": 10063217700,
+    "estimated_sample_bytes_each": 262144,
+    "required_free_bytes": 118385312804,
+    "safety_margin_bytes": 68719476736,
+    "sample_count": 20000,
+    "sample_reserve_bytes": 5242880000
+  },
+  "role": "generation_storage_capacity_preflight",
+  "schema_version": 1,
+  "stage": "stability_scaling_matched_50k",
+  "status": "pass"
+}

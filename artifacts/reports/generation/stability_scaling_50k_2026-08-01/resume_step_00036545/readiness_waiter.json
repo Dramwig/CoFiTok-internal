@@ -1,0 +1,48 @@
+{
+  "child_exit_code": null,
+  "child_pid": null,
+  "deployment": {
+    "checkout": {
+      "git": {
+        "branch": "scale/generation-large-capacity",
+        "revision": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+        "tracked_dirty": false
+      },
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-5dd3488"
+    },
+    "full_training_launch_allowed": false,
+    "readiness_execution_allowed": true,
+    "receipt_sha256": "46c72437bf0e44ad7e815ad7b3bb3e29af0f7e1664ab177c031c58e18a0a0758"
+  },
+  "detail": "waiting_for_passing_stability_gate",
+  "expected": {
+    "deployment_receipt_sha256": "46c72437bf0e44ad7e815ad7b3bb3e29af0f7e1664ab177c031c58e18a0a0758",
+    "evaluation_branch": "scale/generation-stability-50k-posteval-v4",
+    "evaluation_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "full_training_launch_allowed": false,
+    "readiness_branch": "scale/generation-large-capacity",
+    "readiness_execution_allowed": true,
+    "readiness_revision": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+    "source_profile": "stability_scaling",
+    "training_branch": "scale/generation-stability-50k-preflight",
+    "training_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+  },
+  "full_training_launch_allowed": false,
+  "gate": null,
+  "gpu_pids": [
+    918650
+  ],
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "pid": 919564,
+  "posteval": {
+    "complete": false,
+    "detail": "waiting_for_completed_training_pair",
+    "status": "waiting",
+    "updated_at": "2026-08-01T15:07:11.480323+00:00"
+  },
+  "readiness": null,
+  "role": "generation_stability_full_readiness_waiter",
+  "schema_version": 1,
+  "status": "waiting",
+  "updated_at": "2026-08-01T15:07:11.753535+00:00"
+}

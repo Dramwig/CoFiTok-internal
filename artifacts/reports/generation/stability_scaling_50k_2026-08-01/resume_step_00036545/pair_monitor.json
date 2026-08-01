@@ -1,0 +1,538 @@
+{
+  "disk": {
+    "free_bytes": 181532778496,
+    "total_bytes": 1073741824000,
+    "used_bytes": 892209045504
+  },
+  "git": {
+    "branch": "scale/generation-stability-50k-preflight",
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "tracked_dirty": false
+  },
+  "gpu": [
+    {
+      "index": 0,
+      "memory_total_mib": 97887,
+      "memory_used_mib": 77217,
+      "temperature_c": 68,
+      "utilization_percent": 100
+    }
+  ],
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "issues": [],
+  "monitor": "generation_stability_ema_teacher_matched_50k",
+  "processes": {
+    "runbook": [
+      "918098 bash artifacts/runbooks/generation_stability_ema_teacher_matched_50k_after_gate.sh"
+    ],
+    "training": [
+      "918584 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/run_generation_training_watchdog.py --monitor-report /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/pair_monitor.json --monitor-pid-file /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/pair_monitor.pid --expected-monitor-name generation_stability_ema_teacher_matched_50k --status-output /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_watchdog.json --poll-seconds 30 --startup-grace-seconds 600 --monitor-silence-seconds 900 --monitor-process-grace-seconds 120 --termination-grace-seconds 60 -- /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918650 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918852 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918853 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918854 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918855 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918856 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918857 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918858 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918859 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918869 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918870 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918871 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918872 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918873 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918874 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918875 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto",
+      "918882 /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --resume auto"
+    ]
+  },
+  "runs": {
+    "cofitok": {
+      "activity_age_seconds": 129.66087436676025,
+      "checkpoint_integrity": {
+        "expected_checkpoint_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+        "latest_binding": {
+          "checkpoint": "checkpoint_step_00036545.pt",
+          "checkpoint_bytes": 1006321642,
+          "checkpoint_sha256": "3b02917393ac00d49ece5c61ac357b6e638096919e17c835bdbef6c810544c2e",
+          "integrity_manifest": "checkpoint_step_00036545.pt.integrity.json",
+          "path": "latest.json",
+          "pending_issues": [],
+          "status": "metadata_verified",
+          "step": 36545,
+          "verification": "metadata_only_no_payload_hash"
+        },
+        "manifests": [
+          {
+            "checkpoint": "checkpoint_step_00030000.pt",
+            "checkpoint_bytes": 1006321834,
+            "checkpoint_sha256": "a3d418bbaadea87cf89f5080b449cff28fdfaf9124ff48e2e80b62a713acd924",
+            "git_dirty": false,
+            "git_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+            "integrity_manifest": "checkpoint_step_00030000.pt.integrity.json",
+            "status": "metadata_verified",
+            "step": 30000,
+            "verification": "metadata_only_no_payload_hash"
+          },
+          {
+            "checkpoint": "checkpoint_step_00035000.pt",
+            "checkpoint_bytes": 1006321770,
+            "checkpoint_sha256": "98ce7eac9ef77da24dda42a96d1e17a5a047f60665fb30c10ed286a98c807f10",
+            "git_dirty": false,
+            "git_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+            "integrity_manifest": "checkpoint_step_00035000.pt.integrity.json",
+            "status": "metadata_verified",
+            "step": 35000,
+            "verification": "metadata_only_no_payload_hash"
+          },
+          {
+            "checkpoint": "checkpoint_step_00036545.pt",
+            "checkpoint_bytes": 1006321642,
+            "checkpoint_sha256": "3b02917393ac00d49ece5c61ac357b6e638096919e17c835bdbef6c810544c2e",
+            "git_dirty": false,
+            "git_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+            "integrity_manifest": "checkpoint_step_00036545.pt.integrity.json",
+            "status": "metadata_verified",
+            "step": 36545,
+            "verification": "metadata_only_no_payload_hash"
+          }
+        ],
+        "policy": "required",
+        "verification": "metadata_only_no_payload_hash"
+      },
+      "checkpoints": [
+        {
+          "bytes": 1006321834,
+          "name": "checkpoint_step_00030000.pt",
+          "step": 30000
+        },
+        {
+          "bytes": 1006321770,
+          "name": "checkpoint_step_00035000.pt",
+          "step": 35000
+        },
+        {
+          "bytes": 1006321642,
+          "name": "checkpoint_step_00036545.pt",
+          "step": 36545
+        }
+      ],
+      "complete": false,
+      "exists": true,
+      "expected_steps": 50000,
+      "health_issues": [],
+      "last_metric": {
+        "component_decorrelation": 0.0,
+        "cumulative_elapsed_seconds": 102353.79254579544,
+        "denoise_path_component": 0.10845569521188736,
+        "denoise_path_energy": 0.00498192198574543,
+        "denoise_path_prefix": 0.09557114541530609,
+        "elapsed_seconds": 156.51325821876526,
+        "ema_decay": 0.9999,
+        "ema_teacher_consistency": 0.0002941781422123313,
+        "ema_teacher_consistency_scale": 0.6600000262260437,
+        "energy_budget": 0.0,
+        "epsilon": 0.03481413051486015,
+        "epsilon_band_component": 0.0,
+        "epsilon_band_prefix": 0.0,
+        "grad_norm": 0.22670210897922516,
+        "group_residual": 0.0,
+        "learning_rate": 2.5610635731103804e-05,
+        "low_snr_high_frequency": 0.004291967488825321,
+        "monotonic": 0.0,
+        "prefix": 0.0,
+        "residual_component": 0.0,
+        "rollout_consistency": 0.0321035236120224,
+        "rollout_consistency_scale": 1.0,
+        "sampled_budget": 0.0,
+        "sampled_component": 0.0,
+        "sampled_prefix": 0.0,
+        "samples_seen": 2342400,
+        "step": 36600,
+        "tail_floor": 0.0,
+        "total": 0.05659041926264763,
+        "zero_token": 0.0
+      },
+      "last_step": 36600,
+      "metric_rows": 734,
+      "progress_fraction": 0.732,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+      "run_manifest": {
+        "checkpoint_interval": 5000,
+        "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+        "git_dirty": false,
+        "git_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+        "path": "run_manifest.json",
+        "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+        "schedule_contracts": {
+          "ema_teacher_consistency": {
+            "checked_rows": 734,
+            "mismatched_steps": [],
+            "missing_steps": [],
+            "start_step": 30000,
+            "warmup_steps": 10000,
+            "weight": 0.25
+          },
+          "rollout_consistency": {
+            "checked_rows": 734,
+            "mismatched_steps": [],
+            "missing_steps": [],
+            "start_step": 0,
+            "warmup_steps": 10000,
+            "weight": 0.1
+          }
+        },
+        "status": "verified",
+        "target_steps": 50000
+      },
+      "training_report": {
+        "completed_steps": 36545,
+        "config": {
+          "data": {
+            "batch_size": 64,
+            "channels": 3,
+            "class_conditional": true,
+            "dataset": "imagenet_256_10pct",
+            "image_size": 256,
+            "num_workers": 8,
+            "persistent_workers": true,
+            "prefetch_factor": 2,
+            "random_horizontal_flip_prob": 0.5,
+            "root": "/root/autodl-tmp/CoFiTok/datasets"
+          },
+          "diffusion": {
+            "beta_end": 0.02,
+            "beta_start": 0.0001,
+            "num_train_timesteps": 1000,
+            "prediction_target": "epsilon",
+            "schedule_type": "cosine"
+          },
+          "loss": {
+            "component_decorrelation_start_step": 0,
+            "component_decorrelation_warmup_steps": 0,
+            "component_decorrelation_weight": 0.0,
+            "denoise_path_component_weight": 0.1,
+            "denoise_path_energy_capacity_power": 0.5,
+            "denoise_path_energy_capacity_weight": 0.75,
+            "denoise_path_energy_mode": "hellinger_stable",
+            "denoise_path_energy_weight": 0.15,
+            "denoise_path_prefix_weight": 0.05,
+            "denoise_path_progress_mode": "token_capacity",
+            "denoise_path_progress_power": 1.0,
+            "ema_teacher_consistency_batch_fraction": 0.0625,
+            "ema_teacher_consistency_start_step": 30000,
+            "ema_teacher_consistency_warmup_steps": 10000,
+            "ema_teacher_consistency_weight": 0.25,
+            "energy_budget_scope": "batch",
+            "energy_budget_weight": 0.0,
+            "energy_target": [],
+            "epsilon_band_component_weight": 0.0,
+            "epsilon_band_prefix_weight": 0.0,
+            "epsilon_weight": 1.0,
+            "group_residual_size": 0,
+            "group_residual_weight": 0.0,
+            "low_snr_high_frequency_power": 0.5,
+            "low_snr_high_frequency_weight": 0.5,
+            "monotonic_margin": 0.0,
+            "monotonic_weight": 0.0,
+            "prefix_weight": 0.0,
+            "residual_component_weight": 0.0,
+            "rollout_consistency_batch_fraction": 0.125,
+            "rollout_consistency_clip_x0": true,
+            "rollout_consistency_mode": "clipped_x0",
+            "rollout_consistency_start_step": 0,
+            "rollout_consistency_timestep_delta": 10,
+            "rollout_consistency_unroll_steps": 2,
+            "rollout_consistency_warmup_steps": 10000,
+            "rollout_consistency_weight": 0.1,
+            "sampled_component_weight": 0.0,
+            "sampled_prefix_weight": 0.0,
+            "tail_early_dropout_prob": 0.0,
+            "tail_early_dropout_start": 1,
+            "tail_early_dropout_weight": 0.0,
+            "tail_endpoint_weight": 0.0,
+            "tail_floor_min_ratio": 0.0,
+            "tail_floor_weight": 0.0,
+            "tail_late_monotonic_margin": 0.0,
+            "tail_late_monotonic_start": 0,
+            "tail_late_monotonic_weight": 0.0,
+            "tail_late_prefix_start": 0,
+            "tail_late_prefix_weight": 0.0,
+            "tail_replay_weight": 0.0,
+            "zero_token_weight": 0.0
+          },
+          "model": {
+            "base_channels": 128,
+            "class_dropout_prob": 0.1,
+            "deep_synthesis_depth": 3,
+            "deep_synthesis_hidden_channels": 0,
+            "gamma_mode": "fixed_one",
+            "image_channels": 3,
+            "image_size": 256,
+            "num_classes": 1000,
+            "predictor_attention_resolutions": [
+              32,
+              16
+            ],
+            "predictor_channel_multipliers": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "predictor_depth": 3,
+            "predictor_dropout": 0.0,
+            "predictor_gradient_checkpointing": true,
+            "predictor_multiscale_levels": 2,
+            "predictor_num_heads": 8,
+            "predictor_num_res_blocks": 2,
+            "predictor_type": "scalable_unet",
+            "predictor_use_feedback": true,
+            "synthesis_active_token_channels": [],
+            "synthesis_kernel_size": 1,
+            "synthesis_mode": "fixed_basis",
+            "synthesis_token_strides": [],
+            "token_channel_schedule": [
+              4,
+              4,
+              8,
+              8,
+              8,
+              1,
+              1,
+              1
+            ],
+            "token_channels": 8,
+            "token_count": 8,
+            "token_spatial_strides": [
+              16,
+              16,
+              8,
+              8,
+              4,
+              1,
+              1,
+              1
+            ]
+          },
+          "name": "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k",
+          "optimization": {
+            "betas": [
+              0.9,
+              0.99
+            ],
+            "ema_decay": 0.9999,
+            "ema_warmup_steps": 2000,
+            "grad_clip_norm": 1.0,
+            "gradient_accumulation_steps": 1,
+            "learning_rate": 0.0001,
+            "log_interval": 50,
+            "min_learning_rate": 1e-05,
+            "visualization_count": 8,
+            "warmup_steps": 1000,
+            "weight_decay": 0.01
+          },
+          "runtime": {
+            "allow_tf32": true,
+            "checkpoint_interval": 5000,
+            "compile_model": false,
+            "cudnn_benchmark": false,
+            "device": "cuda",
+            "evaluation_interval": 1000,
+            "keep_last_checkpoints": 3,
+            "precision": "bf16",
+            "protected_checkpoint_steps": [],
+            "seed": 2027,
+            "steps": 50000
+          }
+        },
+        "config_path": "/tmp/cofitok-stability-50k-preflight-2c2c1f5/configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json",
+        "cuda_version": "12.8",
+        "dataset_provenance": {
+          "dataset": "imagenet_256_10pct",
+          "dataset_root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct",
+          "formal": true,
+          "identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+          "issues": [],
+          "manifest": {
+            "bytes": 54885982,
+            "relative_path": "metadata/image_manifest.jsonl",
+            "sha256": "dcdd622564941ad418fffa960051f14f0ad41852c681ed9a8329c5e6f561cca7"
+          },
+          "schema_version": 1,
+          "splits": {
+            "train": 128161,
+            "val": 50000
+          },
+          "status": "pass"
+        },
+        "device": "cuda",
+        "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+        "elapsed_seconds": 102200.455899477,
+        "final_metrics": {
+          "component_decorrelation": 0.0,
+          "cumulative_elapsed_seconds": 102197.27924776077,
+          "denoise_path_component": 0.10591594874858856,
+          "denoise_path_energy": 0.004568277392536402,
+          "denoise_path_prefix": 0.09009496867656708,
+          "elapsed_seconds": 102197.27924776077,
+          "ema_decay": 0.9999,
+          "ema_teacher_consistency": 0.0002500465780030936,
+          "ema_teacher_consistency_scale": 0.6545000076293945,
+          "energy_budget": 0.0,
+          "epsilon": 0.029634173959493637,
+          "epsilon_band_component": 0.0,
+          "epsilon_band_prefix": 0.0,
+          "grad_norm": 1.6197494268417358,
+          "group_residual": 0.0,
+          "learning_rate": 2.5730984369685074e-05,
+          "low_snr_high_frequency": 0.004292280413210392,
+          "monotonic": 0.0,
+          "prefix": 0.0,
+          "residual_component": 0.0,
+          "rollout_consistency": 0.05886778607964516,
+          "rollout_consistency_scale": 1.0,
+          "sampled_budget": 0.0,
+          "sampled_component": 0.0,
+          "sampled_prefix": 0.0,
+          "samples_seen": 2338880,
+          "step": 36545,
+          "tail_floor": 0.0,
+          "total": 0.05348959192633629,
+          "zero_token": 0.0
+        },
+        "git": {
+          "branch": "scale/generation-stability-50k-preflight",
+          "dirty": false,
+          "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+        },
+        "latest_checkpoint": {
+          "checkpoint": "checkpoint_step_00036545.pt",
+          "checkpoint_bytes": 1006321642,
+          "checkpoint_format_version": 1,
+          "checkpoint_sha256": "3b02917393ac00d49ece5c61ac357b6e638096919e17c835bdbef6c810544c2e",
+          "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+          "git_branch": "scale/generation-stability-50k-preflight",
+          "git_dirty": false,
+          "git_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+          "integrity_manifest": "checkpoint_step_00036545.pt.integrity.json",
+          "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+          "schema_version": 1,
+          "step": 36545
+        },
+        "metrics_resume_reconciliation": null,
+        "output_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+        "parameter_count": 62834083,
+        "peak_vram_bytes": 56326106624,
+        "resume": null,
+        "resume_revision_transition": null,
+        "runtime_environment": {
+          "device": {
+            "capability": [
+              12,
+              0
+            ],
+            "multi_processor_count": 188,
+            "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+            "total_memory_bytes": 101976440832,
+            "type": "cuda"
+          },
+          "environment_variables": {
+            "CUBLAS_WORKSPACE_CONFIG": null,
+            "CUDA_VISIBLE_DEVICES": null,
+            "PYTHONHASHSEED": null,
+            "PYTORCH_ALLOC_CONF": "expandable_segments:True"
+          },
+          "packages": {
+            "numpy": "2.2.6",
+            "pillow": "12.2.0",
+            "torch": "2.7.1+cu128",
+            "torchvision": "0.22.1+cu128",
+            "tqdm": "4.67.3"
+          },
+          "platform": {
+            "machine": "x86_64",
+            "release": "5.15.0-78-generic",
+            "system": "Linux"
+          },
+          "project_files": {
+            "pyproject.toml": {
+              "bytes": 791,
+              "path": "pyproject.toml",
+              "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+            },
+            "uv.lock": {
+              "bytes": 363675,
+              "path": "uv.lock",
+              "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+            }
+          },
+          "python": {
+            "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+            "implementation": "CPython",
+            "version": "3.10.20"
+          },
+          "schema_version": 1,
+          "torch": {
+            "cuda_matmul_allow_tf32": true,
+            "cuda_version": "12.8",
+            "cudnn_allow_tf32": true,
+            "cudnn_benchmark": false,
+            "cudnn_version": 90701,
+            "deterministic_algorithms": false,
+            "float32_matmul_precision": "high",
+            "num_interop_threads": 104,
+            "num_threads": 104,
+            "nvidia_driver_version": "590.44.01",
+            "version": "2.7.1+cu128"
+          }
+        },
+        "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+        "segment_elapsed_seconds": 102200.455899477,
+        "stop_requested": true,
+        "stop_signal": 15,
+        "target_steps": 50000,
+        "torch_version": "2.7.1+cu128",
+        "trainable_parameter_count": 62834083,
+        "training_authorization": null,
+        "training_complete": false
+      }
+    },
+    "dense_identity": {
+      "activity_age_seconds": null,
+      "checkpoint_integrity": {
+        "expected_checkpoint_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+        "latest_binding": {
+          "path": "latest.json",
+          "status": "not_available"
+        },
+        "manifests": [],
+        "policy": "required",
+        "verification": "metadata_only_no_payload_hash"
+      },
+      "checkpoints": [],
+      "complete": false,
+      "exists": false,
+      "expected_steps": 50000,
+      "health_issues": [],
+      "last_metric": null,
+      "last_step": 0,
+      "metric_rows": 0,
+      "progress_fraction": 0.0,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_rollout_x0_u2_ema_teacher",
+      "run_manifest": {
+        "path": "run_manifest.json",
+        "status": "not_available"
+      },
+      "training_report": null
+    }
+  },
+  "schema_version": 2,
+  "stage": "cofitok_training",
+  "status": "running",
+  "thresholds": {
+    "idle_failure_grace_seconds": 600.0,
+    "stall_seconds": 1800.0
+  },
+  "updated_at": "2026-08-01T15:04:05.854759+00:00"
+}
