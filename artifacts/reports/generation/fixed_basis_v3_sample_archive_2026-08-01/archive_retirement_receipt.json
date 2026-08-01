@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "role": "generation_sample_archive_retirement_receipt",
+  "status": "pass",
+  "archive": {
+    "local_path": "C:/Users/zixi-/CoFiTok-archive/generation/imagenet256_10pct_fixed_basis_v3_samples_2026-08-01/imagenet256_10pct_fixed_basis_v3_samples_2026-08-01_r2.tar",
+    "bytes": 3423416320,
+    "sha256": "7d34b3c24f40c5c426a10c42286feaadcd391c787d238f2b3d61c8ae8557ecf6",
+    "audit": {
+      "path": "archive_audit.json",
+      "bytes": 7883,
+      "sha256": "7bd53ffb22e845d1ccbcfaa82b32aeef33b3d4b9f177ada1aa07bef2b27716a3",
+      "status": "pass",
+      "root_count": 3,
+      "regular_file_count": 20267,
+      "sample_count": 20256,
+      "logical_file_bytes": 3387380474
+    }
+  },
+  "retired_sources": [
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15",
+      "file_count": 10004,
+      "logical_du_bytes": 1957015752,
+      "allocated_du_bytes": 1979527168,
+      "sample_count": 10000,
+      "sample_set_sha256": "1e88b4a727c939280dbf2689e3ba2ffcb81d9ee490d3900c55265f2a710659c1"
+    },
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15",
+      "file_count": 259,
+      "logical_du_bytes": 33744685,
+      "allocated_du_bytes": 34279424,
+      "sample_count": 256,
+      "sample_set_sha256_by_prefix": {
+        "1": "7672c5d41df35a1f0ec0f0669b9e038cb5933e47e5acf67c7357f5dc9428c2da",
+        "2": "7abfdd2248a6b3ea06a6b8eb40e4396cc5b8cacef25bd86e74ae7098513d9029",
+        "4": "d22eba34d511875c15457214cb124dff19c1fdf733d2bc308094d8a43b2e9d4f",
+        "8": "536799ba6f31db24585197a0f98401ee4c089481cef19f468a262fb0855e0dac"
+      }
+    },
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15",
+      "file_count": 10004,
+      "logical_du_bytes": 1397210453,
+      "allocated_du_bytes": 1417883648,
+      "sample_count": 10000,
+      "sample_set_sha256": "d3e615ab019f9b1fd21ebc4acafbd473404193db6c0cdfb56cec737ebd43cdd4"
+    }
+  ],
+  "retirement": {
+    "source_root_count": 3,
+    "declared_allocated_source_bytes": 3431690240,
+    "source_roots_absent_after_removal": true,
+    "remote_staging_tar_absent_after_removal": true,
+    "remote_staging_tar_removed_bytes": 3423416320,
+    "free_bytes_before_archive_staging": 181533130752,
+    "free_bytes_with_archive_staging": 178109706240,
+    "free_bytes_after_source_removal_with_staging": 181541396480,
+    "free_bytes_after_staging_removal": 184964812800,
+    "observed_net_free_bytes_gained": 3431682048
+  },
+  "restore_contract": {
+    "target_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
+    "all_three_source_roots_must_be_absent_before_restore": true,
+    "archive_sha256_must_match_before_transfer_or_extract": true,
+    "post_restore_archive_audit_required": true,
+    "note": "Reports that retain the original remote sample paths require restoration before direct replay."
+  },
+  "active_training_affected": false,
+  "archive_is_generation_evidence_not_a_checkpoint": true,
+  "checkpoint_retention_policy_changed": false
+}

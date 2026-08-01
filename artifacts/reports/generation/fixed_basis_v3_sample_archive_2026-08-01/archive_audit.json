@@ -1,0 +1,137 @@
+{
+  "archive": "C:/Users/zixi-/CoFiTok-archive/generation/imagenet256_10pct_fixed_basis_v3_samples_2026-08-01/imagenet256_10pct_fixed_basis_v3_samples_2026-08-01_r2.tar",
+  "archive_bytes": 3423416320,
+  "archive_sha256": "7d34b3c24f40c5c426a10c42286feaadcd391c787d238f2b3d61c8ae8557ecf6",
+  "member_policy": {
+    "absolute_paths_allowed": false,
+    "extra_roots_allowed": false,
+    "links_allowed": false,
+    "path_traversal_allowed": false
+  },
+  "remote_source_deletion_performed": false,
+  "restore_contract": {
+    "existing_source_roots_must_be_absent": true,
+    "post_restore_archive_audit_required": true,
+    "target_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation"
+  },
+  "roots": [
+    {
+      "archive_root": "imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15",
+      "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/checkpoint_step_00050000.pt",
+      "checkpoint_sha256": "6591bd55418e0c7fa712047d29355703cba5da7026d76f5044589820def84ae4",
+      "file_count": 10004,
+      "git": {
+        "branch": "scale/generative-system",
+        "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+        "tracked_dirty": false
+      },
+      "logical_bytes": 1956728831,
+      "metadata_sha256": {
+        "sampling_manifest.json": "ddc896748c9323a86b978166ecdc7d199cf176df4716faad0d13efae1102018a",
+        "sampling_progress.json": "910926f0a1c904a04795115254d594bfbdb85e6835412b056656f3bb88b7140c",
+        "sampling_report.json": "5dd453c7b46c0ea451d3b1b052644d2c9e010db12e59f923afb8da81b47de7ec"
+      },
+      "runtime_environment_sha256": "dabbf101270ec83c4e22fac4bf1c5e65c04268e68dbfb687136629c84fb6f23b",
+      "sample_sets": {
+        "8": {
+          "archive_directory": "imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8",
+          "count": 10000,
+          "logical_bytes": 1956706195,
+          "sha256": "1e88b4a727c939280dbf2689e3ba2ffcb81d9ee490d3900c55265f2a710659c1",
+          "source_directory": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8"
+        }
+      },
+      "source_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15"
+    },
+    {
+      "archive_root": "imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15",
+      "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/checkpoint_step_00050000.pt",
+      "checkpoint_sha256": "6591bd55418e0c7fa712047d29355703cba5da7026d76f5044589820def84ae4",
+      "file_count": 259,
+      "git": {
+        "branch": "scale/generative-system",
+        "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+        "tracked_dirty": false
+      },
+      "logical_bytes": 33728111,
+      "metadata_sha256": {
+        "sampling_manifest.json": "244af37dd48dbd5d7f358850f780f8733be41d11d8595e3650c601707026ae62",
+        "sampling_progress.json": "6d5984e38588f2dc8b7939f8ef0cfe1465a45a080280d77aed3bbefc8e3f118d",
+        "sampling_report.json": "37b4b080d3c18bbf089f13b268e673232c01fe9ec8df82c5013b7a366cd5d578"
+      },
+      "runtime_environment_sha256": "dabbf101270ec83c4e22fac4bf1c5e65c04268e68dbfb687136629c84fb6f23b",
+      "sample_sets": {
+        "1": {
+          "archive_directory": "imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1",
+          "count": 64,
+          "logical_bytes": 7096887,
+          "sha256": "7672c5d41df35a1f0ec0f0669b9e038cb5933e47e5acf67c7357f5dc9428c2da",
+          "source_directory": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1"
+        },
+        "2": {
+          "archive_directory": "imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2",
+          "count": 64,
+          "logical_bytes": 6638722,
+          "sha256": "7abfdd2248a6b3ea06a6b8eb40e4396cc5b8cacef25bd86e74ae7098513d9029",
+          "source_directory": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2"
+        },
+        "4": {
+          "archive_directory": "imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4",
+          "count": 64,
+          "logical_bytes": 7457494,
+          "sha256": "d22eba34d511875c15457214cb124dff19c1fdf733d2bc308094d8a43b2e9d4f",
+          "source_directory": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4"
+        },
+        "8": {
+          "archive_directory": "imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8",
+          "count": 64,
+          "logical_bytes": 12522583,
+          "sha256": "536799ba6f31db24585197a0f98401ee4c089481cef19f468a262fb0855e0dac",
+          "source_directory": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8"
+        }
+      },
+      "source_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15"
+    },
+    {
+      "archive_root": "imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15",
+      "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/checkpoint_step_00050000.pt",
+      "checkpoint_sha256": "c2d09aee0c979cf3bcf378f65d78c3d189b5efb3ddc583b6408d4031b4ea67f3",
+      "file_count": 10004,
+      "git": {
+        "branch": "scale/generative-system",
+        "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+        "tracked_dirty": false
+      },
+      "logical_bytes": 1396923532,
+      "metadata_sha256": {
+        "sampling_manifest.json": "beb5a7147e4323e0d4451389de8848bc975ddd2f70b8e1d57e2e8908963e38fb",
+        "sampling_progress.json": "9cdc8033dd3dab5938470faa03e3f8d419f4b5b9051fb02f80e8bffeefa28c3e",
+        "sampling_report.json": "07b5c700bc56f633ece56117a317b7ffed52c5f07b92f10d8b4bc4e4e53b6077"
+      },
+      "runtime_environment_sha256": "dabbf101270ec83c4e22fac4bf1c5e65c04268e68dbfb687136629c84fb6f23b",
+      "sample_sets": {
+        "1": {
+          "archive_directory": "imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1",
+          "count": 10000,
+          "logical_bytes": 1396900968,
+          "sha256": "d3e615ab019f9b1fd21ebc4acafbd473404193db6c0cdfb56cec737ebd43cdd4",
+          "source_directory": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1"
+        }
+      },
+      "source_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15"
+    }
+  ],
+  "schema_version": 1,
+  "status": "pass",
+  "summary": {
+    "logical_file_bytes": 3387380474,
+    "regular_file_count": 20267,
+    "root_count": 3,
+    "sample_count": 20256,
+    "source_roots": [
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15"
+    ]
+  }
+}
