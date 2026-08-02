@@ -82,7 +82,7 @@ validates the completed CoFiTok checkpoint trust boundary, binds the frozen
 GPU or duplicate queue, and launches only the dense member from the original
 training revision. It never launches full 300K.
 
-The remediation commit is
+The initial remediation commit is
 `00549fe3ec4ea5334c76e7249537224104ee44be`. Its bundle from the server's
 available prerequisites is `39,681,857` bytes with SHA256
 `833e7902c251e61ade15c68fc8b55d047c9982d4578a58a9a5a8a6998f734177`.
@@ -92,12 +92,17 @@ was created at
 `scale/generation-stability-dense-recovery-control-00549fe`. The official
 repository HEAD and immutable training checkout were not moved.
 
+A source-binding increment then fast-forwarded only the isolated controller to
+`e5c9ed7bd4590f5dd6dd0d78308c2ff8e868b58a`. The incremental bundle is
+`7,036` bytes with SHA256
+`fa8e41d2531cd89bfbfef23610838a38f3ebb3f3ce11bc38bab11bb76889ef0b`.
+
 `PREFLIGHT_ONLY=true` then completed with `status=prepared`. It independently
 revalidated the CoFiTok completion/checkpoint, frozen runtime SHA and `64x1`
 selection, exact config hashes, matched config contract, both clean Git
 identities, and storage. It did not start a runbook child, monitor, watchdog,
 trainer, or GPU process. The fresh storage report records
-`187,577,434,112 / 118,385,312,804 / 69,192,121,308` bytes for
+`187,569,545,216 / 118,385,312,804 / 69,184,232,412` bytes for
 free/required/headroom.
 
 The recovery runbook deliberately does not create `pair_summary.json`.

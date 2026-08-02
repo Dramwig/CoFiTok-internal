@@ -26,11 +26,19 @@
     "effective_batch_size": 64
   },
   "recovery_control": {
-    "revision": "00549fe3ec4ea5334c76e7249537224104ee44be",
+    "revision": "e5c9ed7bd4590f5dd6dd0d78308c2ff8e868b58a",
     "branch": "scale/generation-stability-dense-recovery-control-00549fe",
     "checkout": "/tmp/cofitok-stability-dense-recovery-control-00549fe",
-    "bundle_bytes": 39681857,
-    "bundle_sha256": "833e7902c251e61ade15c68fc8b55d047c9982d4578a58a9a5a8a6998f734177",
+    "base_bundle": {
+      "bytes": 39681857,
+      "sha256": "833e7902c251e61ade15c68fc8b55d047c9982d4578a58a9a5a8a6998f734177",
+      "target_revision": "00549fe3ec4ea5334c76e7249537224104ee44be"
+    },
+    "source_binding_increment": {
+      "bytes": 7036,
+      "sha256": "fa8e41d2531cd89bfbfef23610838a38f3ebb3f3ce11bc38bab11bb76889ef0b",
+      "target_revision": "e5c9ed7bd4590f5dd6dd0d78308c2ff8e868b58a"
+    },
     "preflight_status": "prepared",
     "preflight_only": true,
     "process_launched": false
@@ -53,11 +61,11 @@
     },
     "remote/dense_recovery_status_prepared.json": {
       "bytes": 663,
-      "sha256": "0adf4531cff86b8de253b56553bd5fd7efa3fe02d391091109ab822eb7308397"
+      "sha256": "c1ccd851355390f1d8af7fa1477149cfd231d586204f46f691d882453475ae0c"
     },
     "remote/dense_recovery_storage_capacity.json": {
       "bytes": 982,
-      "sha256": "34885774c24a328b48a743198bc3a493c4fd0b024609a05ad0ded7b6c1375053"
+      "sha256": "e6d3100cce664333831896e8cf0598cc4c165f5c93a296bbf475c71afa159392"
     },
     "remote/cofitok_checkpoint_step_00050000.pt.integrity.json": {
       "bytes": 590,

@@ -23,11 +23,16 @@ At capture time, no matched-queue process remained and the dense run directory
 did not exist. GPU PID `362355` belonged to FieldScope and was left untouched.
 Full ImageNet-256 300K training remains unauthorized.
 
-Recovery-control commit `00549fe3ec4ea5334c76e7249537224104ee44be` was
+Recovery-control commit `e5c9ed7bd4590f5dd6dd0d78308c2ff8e868b58a` was
 deployed into a new isolated checkout. Its non-executing preflight completed as
 `prepared`, revalidating the completed CoFiTok trust boundary, frozen runtime,
-matched configs, and `69,192,121,308` bytes of storage headroom. No queue or
+matched configs, and `69,184,232,412` bytes of storage headroom. No queue or
 GPU process was launched.
+
+The recovery runbook intentionally leaves `pair_summary.json` absent. The
+exact post-eval waiter must create it from the original locked config report,
+preventing an equivalent-but-different recovery report path from weakening
+source provenance.
 
 `manifest.json` binds every copied file by byte count and SHA256. The raw
 checkpoint and transition log remain only at their authoritative remote paths.

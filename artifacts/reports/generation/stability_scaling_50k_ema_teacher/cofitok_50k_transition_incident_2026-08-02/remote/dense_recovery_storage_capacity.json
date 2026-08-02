@@ -1,17 +1,17 @@
 {
-  "checked_at": "2026-08-02T04:12:09.304869+00:00",
+  "checked_at": "2026-08-02T04:18:34.187389+00:00",
   "filesystem": {
-    "free_bytes": 187577434112,
+    "free_bytes": 187569545216,
     "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
     "total_bytes": 1073741824000,
-    "used_bytes": 886164389888
+    "used_bytes": 886172278784
   },
   "git": {
     "branch": "scale/generation-stability-50k-preflight",
     "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
     "tracked_dirty": false
   },
-  "headroom_bytes": 69192121308,
+  "headroom_bytes": 69184232412,
   "hostname": "autodl-container-azfd082n2h-d63aaa37",
   "plan": {
     "additional_bytes": 34359738368,

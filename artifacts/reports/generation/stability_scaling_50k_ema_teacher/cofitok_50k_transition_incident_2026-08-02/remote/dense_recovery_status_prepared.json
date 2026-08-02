@@ -1,13 +1,13 @@
 {
   "controller": {
     "branch": "scale/generation-stability-dense-recovery-control-00549fe",
-    "revision": "00549fe3ec4ea5334c76e7249537224104ee44be"
+    "revision": "e5c9ed7bd4590f5dd6dd0d78308c2ff8e868b58a"
   },
   "detail": "dense recovery preflight passed; no process was launched",
   "exit_code": null,
   "full_training_launch_allowed": false,
   "hostname": "autodl-container-azfd082n2h-d63aaa37",
-  "pid": 371282,
+  "pid": 372825,
   "role": "generation_stability_ema_teacher_dense_recovery",
   "schema_version": 1,
   "status": "prepared",
@@ -15,5 +15,5 @@
     "branch": "scale/generation-stability-50k-preflight",
     "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
   },
-  "updated_at": "2026-08-02T04:12:09.558019+00:00"
+  "updated_at": "2026-08-02T04:18:34.464630+00:00"
 }
