@@ -22,11 +22,13 @@ MONITOR_NAME=generation_10pct_fixed_basis_v3_matched_pair
 RUNTIME_SELECTION="$REPORT_ROOT/runtime_selection.json"
 RUNTIME_COMPATIBILITY="$REPORT_ROOT/runtime_selection_resume_compatibility.json"
 mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
+CURRENT_BRANCH=$(git branch --show-current)
 
 require_complete() {
   python scripts/validate_generation_training_completion.py \
     --training-report "$1" --config "$2" --expected-steps 50000 \
     --expected-revision "$(git rev-parse HEAD)" \
+    --expected-branch "$CURRENT_BRANCH" \
     --expected-micro-batch-size "$SELECTED_MICRO_BATCH" \
     --expected-gradient-accumulation-steps "$SELECTED_ACCUMULATION" >/dev/null
 }

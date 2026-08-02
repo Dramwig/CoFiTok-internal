@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 
+import pytest
+
 from scripts.audit_generation_training_progress import audit_progress
 
 
@@ -159,6 +161,80 @@ def test_audit_uses_latest_elapsed_segment_after_resume(tmp_path) -> None:
     assert report["status"] == "healthy"
     assert report["current_segment_start_step"] == 550
     assert report["seconds_per_step"] == 2.0
+
+
+def test_audit_explicitly_accepts_a_bound_stale_pause_report_after_resume(
+    tmp_path,
+) -> None:
+    _write_metrics(tmp_path, [1, 500, 550])
+    (tmp_path / "training_report.json").write_text(
+        json.dumps(
+            {
+                "completed_steps": 500,
+                "target_steps": 1_000,
+                "training_complete": False,
+                "stop_requested": True,
+                "latest_checkpoint": {"step": 500},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    strict = audit_progress(
+        tmp_path,
+        expected_steps=1_000,
+        checkpoint_interval=1_000,
+    )
+    resumed = audit_progress(
+        tmp_path,
+        expected_steps=1_000,
+        checkpoint_interval=1_000,
+        allow_stale_incomplete_training_report=True,
+    )
+
+    assert strict["status"] == "invalid"
+    assert resumed["status"] == "healthy"
+    assert resumed["issues"] == []
+    assert resumed["training_report"]["status"] == (
+        "stale_incomplete_resume_report"
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutation", "value"),
+    [
+        ("training_complete", True),
+        ("stop_requested", False),
+        ("target_steps", 2_000),
+        ("latest_checkpoint", {"step": 499}),
+    ],
+)
+def test_audit_does_not_mask_an_unbound_stale_training_report(
+    tmp_path, mutation, value
+) -> None:
+    _write_metrics(tmp_path, [1, 500, 550])
+    report = {
+        "completed_steps": 500,
+        "target_steps": 1_000,
+        "training_complete": False,
+        "stop_requested": True,
+        "latest_checkpoint": {"step": 500},
+    }
+    report[mutation] = value
+    (tmp_path / "training_report.json").write_text(
+        json.dumps(report), encoding="utf-8"
+    )
+
+    audited = audit_progress(
+        tmp_path,
+        expected_steps=1_000,
+        checkpoint_interval=1_000,
+        allow_stale_incomplete_training_report=True,
+    )
+
+    assert audited["status"] == "invalid"
+    assert audited["training_report"]["status"] == "mismatched"
+    assert "training report completed_steps does not match metrics" in audited["issues"]
 
 
 def test_audit_warns_when_scheduled_validation_is_not_logged(tmp_path) -> None:

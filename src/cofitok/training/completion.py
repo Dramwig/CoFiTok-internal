@@ -23,10 +23,15 @@ def validate_completed_generation_training(
     config_path: str | Path,
     expected_steps: int,
     expected_revision: str,
+    expected_branch: str,
     expected_micro_batch_size: int | None = None,
     expected_gradient_accumulation_steps: int | None = None,
 ) -> dict[str, Any]:
-    if expected_steps < 1 or len(expected_revision) != 40:
+    if (
+        expected_steps < 1
+        or len(expected_revision) != 40
+        or not expected_branch.strip()
+    ):
         raise ValueError("completion expectation is invalid")
     runtime_overrides = (
         expected_micro_batch_size,
@@ -67,7 +72,7 @@ def validate_completed_generation_training(
     git = report.get("git", {})
     if (
         git.get("revision") != expected_revision
-        or git.get("branch") != "scale/generative-system"
+        or git.get("branch") != expected_branch
         or git.get("dirty") is not False
     ):
         raise ValueError("training report Git identity differs")

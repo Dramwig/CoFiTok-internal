@@ -27,12 +27,14 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   printf 'Hellinger capacity-path probe requires a clean tracked worktree\n' >&2
   exit 66
 fi
+CURRENT_BRANCH=$(git branch --show-current)
 
 require_complete() {
   python scripts/validate_generation_training_completion.py \
     --training-report "$RUN/training_report.json" \
     --config "$CONFIG" --expected-steps 5000 \
-    --expected-revision "$(git rev-parse HEAD)" >/dev/null
+    --expected-revision "$(git rev-parse HEAD)" \
+    --expected-branch "$CURRENT_BRANCH" >/dev/null
 }
 
 monitor_report_passes() {

@@ -23,6 +23,7 @@ RUNBOOKS = (
     "generation_full_matched_300k_after_gate.sh",
     "generation_complete_pipeline_after_10pct.sh",
     "generation_stability_ema_teacher_matched_50k_after_gate.sh",
+    "generation_stability_ema_teacher_dense_recovery_after_transition_failure.sh",
     "generation_stability_ema_teacher_50k_posteval_waiter.sh",
     "generation_stability_ema_teacher_50k_posteval_after_training.sh",
     "generation_stability_ema_teacher_full_readiness_after_gate.sh",

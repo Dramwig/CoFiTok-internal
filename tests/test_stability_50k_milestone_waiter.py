@@ -138,6 +138,7 @@ def test_audit_command_binds_config_and_all_recovery_steps(tmp_path: Path) -> No
         "35000,36545,40000"
     )
     assert command[command.index("--integrity-policy") + 1] == "required"
+    assert "--allow-stale-incomplete-training-report" in command
 
 
 @pytest.mark.parametrize("inherited_pythonpath", [None, "existing/pythonpath"])

@@ -238,6 +238,7 @@ def audit_progress(
     required_checkpoint_steps: list[int] | tuple[int, ...] = (),
     integrity_policy: str = "legacy_compute",
     config_path: str | Path | None = None,
+    allow_stale_incomplete_training_report: bool = False,
 ) -> dict[str, Any]:
     if expected_steps < 1 or checkpoint_interval < 1 or grad_clip_norm <= 0.0:
         raise ValueError("expected_steps, checkpoint_interval, and grad_clip_norm must be positive")
@@ -338,11 +339,29 @@ def audit_progress(
     warnings.extend(integrity_warnings)
 
     training_report = None
+    training_report_status = "absent"
     training_report_path = root / "training_report.json"
     if training_report_path.is_file():
         with training_report_path.open("r", encoding="utf-8") as handle:
             training_report = json.load(handle)
-        if int(training_report.get("completed_steps", -1)) != last_step:
+        report_step = int(training_report.get("completed_steps", -1))
+        stale_incomplete_report = (
+            allow_stale_incomplete_training_report
+            and report_step < last_step
+            and training_report.get("training_complete") is False
+            and training_report.get("stop_requested") is True
+            and int(training_report.get("target_steps", -1)) == expected_steps
+            and int(
+                (training_report.get("latest_checkpoint") or {}).get("step", -1)
+            )
+            == report_step
+        )
+        if report_step == last_step:
+            training_report_status = "current"
+        elif stale_incomplete_report:
+            training_report_status = "stale_incomplete_resume_report"
+        else:
+            training_report_status = "mismatched"
             issues.append("training report completed_steps does not match metrics")
 
     recent = rows[-min(len(rows), 10) :]
@@ -434,6 +453,24 @@ def audit_progress(
             "provenance_fields": list(validation_metadata_fields),
         },
         "consistency_schedules": schedule_audit,
+        "training_report": {
+            "path": (
+                training_report_path.resolve().as_posix()
+                if training_report is not None
+                else None
+            ),
+            "status": training_report_status,
+            "completed_steps": (
+                int(training_report.get("completed_steps", -1))
+                if training_report is not None
+                else None
+            ),
+            "training_complete": (
+                training_report.get("training_complete")
+                if training_report is not None
+                else None
+            ),
+        },
         "checkpoint": {
             "interval": checkpoint_interval,
             "status": checkpoint_status,
@@ -472,6 +509,14 @@ def main() -> None:
     )
     parser.add_argument("--output", required=True)
     parser.add_argument("--allow-invalid", action="store_true")
+    parser.add_argument(
+        "--allow-stale-incomplete-training-report",
+        action="store_true",
+        help=(
+            "accept a prior stop-requested incomplete report that is behind resumed "
+            "canonical metrics; all other report/metrics mismatches remain invalid"
+        ),
+    )
     args = parser.parse_args()
     required_checkpoint_steps = [
         int(value.strip())
@@ -488,6 +533,9 @@ def main() -> None:
         required_checkpoint_steps=required_checkpoint_steps,
         integrity_policy=args.integrity_policy,
         config_path=args.config,
+        allow_stale_incomplete_training_report=(
+            args.allow_stale_incomplete_training_report
+        ),
     )
     write_json_report(args.output, report)
     print(args.output)

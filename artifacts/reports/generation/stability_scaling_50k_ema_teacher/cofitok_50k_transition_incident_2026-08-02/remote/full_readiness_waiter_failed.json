@@ -1,0 +1,29 @@
+{
+  "child_exit_code": null,
+  "child_pid": null,
+  "deployment": null,
+  "detail": "RuntimeError: stability 50K post-evaluation failed",
+  "expected": {
+    "deployment_receipt_sha256": "46c72437bf0e44ad7e815ad7b3bb3e29af0f7e1664ab177c031c58e18a0a0758",
+    "evaluation_branch": "scale/generation-stability-50k-posteval-v4",
+    "evaluation_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "full_training_launch_allowed": false,
+    "readiness_branch": "scale/generation-large-capacity",
+    "readiness_execution_allowed": true,
+    "readiness_revision": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+    "source_profile": "stability_scaling",
+    "training_branch": "scale/generation-stability-50k-preflight",
+    "training_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+  },
+  "full_training_launch_allowed": false,
+  "gate": null,
+  "gpu_pids": [],
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "pid": 919564,
+  "posteval": null,
+  "readiness": null,
+  "role": "generation_stability_full_readiness_waiter",
+  "schema_version": 1,
+  "status": "failed",
+  "updated_at": "2026-08-02T01:47:30.930763+00:00"
+}

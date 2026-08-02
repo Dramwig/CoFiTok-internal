@@ -14,6 +14,7 @@ from cofitok.training.completion import validate_completed_generation_training
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs/generation/smoke_random_cpu.json"
 REVISION = "a" * 40
+BRANCH = "scale/generative-system"
 
 
 def _write(path: Path, payload: dict) -> None:
@@ -38,7 +39,7 @@ def _completed_run(tmp_path: Path) -> Path:
             "config": config_to_dict(load_config(CONFIG)),
             "git": {
                 "revision": REVISION,
-                "branch": "scale/generative-system",
+                "branch": BRANCH,
                 "dirty": False,
             },
             "latest_checkpoint": latest,
@@ -57,6 +58,7 @@ def test_completed_training_is_safe_to_skip_only_with_current_identity(
         config_path=CONFIG,
         expected_steps=2,
         expected_revision=REVISION,
+        expected_branch=BRANCH,
     )
 
     assert report["completed_steps"] == 2
@@ -76,6 +78,7 @@ def test_completed_training_binds_selected_runtime_overrides(tmp_path: Path) -> 
             config_path=CONFIG,
             expected_steps=2,
             expected_revision=REVISION,
+            expected_branch=BRANCH,
         )
 
     completed = validate_completed_generation_training(
@@ -83,6 +86,7 @@ def test_completed_training_binds_selected_runtime_overrides(tmp_path: Path) -> 
         config_path=CONFIG,
         expected_steps=2,
         expected_revision=REVISION,
+        expected_branch=BRANCH,
         expected_micro_batch_size=4,
         expected_gradient_accumulation_steps=2,
     )
@@ -101,11 +105,12 @@ def test_completed_training_requires_a_complete_runtime_override_pair(
             config_path=CONFIG,
             expected_steps=2,
             expected_revision=REVISION,
+            expected_branch=BRANCH,
             expected_micro_batch_size=4,
         )
 
 
-@pytest.mark.parametrize("mutation", ["revision", "config", "latest"])
+@pytest.mark.parametrize("mutation", ["revision", "branch", "config", "latest"])
 def test_completed_training_rejects_stale_or_inconsistent_identity(
     tmp_path: Path, mutation: str
 ) -> None:
@@ -114,6 +119,8 @@ def test_completed_training_rejects_stale_or_inconsistent_identity(
     report = json.loads(report_path.read_text(encoding="utf-8"))
     if mutation == "revision":
         report["git"]["revision"] = "b" * 40
+    elif mutation == "branch":
+        report["git"]["branch"] = "scale/another-branch"
     elif mutation == "config":
         report["config"] = copy.deepcopy(report["config"])
         report["config"]["loss"]["epsilon_weight"] = 0.5
@@ -129,4 +136,23 @@ def test_completed_training_rejects_stale_or_inconsistent_identity(
             config_path=CONFIG,
             expected_steps=2,
             expected_revision=REVISION,
+            expected_branch=BRANCH,
         )
+
+
+def test_completed_training_accepts_an_explicit_nonlegacy_branch(tmp_path: Path) -> None:
+    run = _completed_run(tmp_path)
+    report_path = run / "training_report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report["git"]["branch"] = "scale/generation-stability-50k-preflight"
+    _write(report_path, report)
+
+    completed = validate_completed_generation_training(
+        report_path=report_path,
+        config_path=CONFIG,
+        expected_steps=2,
+        expected_revision=REVISION,
+        expected_branch="scale/generation-stability-50k-preflight",
+    )
+
+    assert completed["git"]["branch"] == "scale/generation-stability-50k-preflight"

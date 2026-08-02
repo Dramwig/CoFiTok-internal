@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-08-02T12:00:14+08:00",
+  "scope": "cofitok_50k_completion_and_dense_transition_failure",
+  "training_identity": {
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "branch": "scale/generation-stability-50k-preflight"
+  },
+  "cofitok_checkpoint": {
+    "remote_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00050000.pt",
+    "bytes": 1006325418,
+    "sha256": "ec7b9a0981f1d45420a9a86cdb80339d6d87b87fa77891c234db3d1b84376c2a",
+    "payload_synced_locally": false
+  },
+  "transition_log": {
+    "remote_path": "/tmp/generation_stability_ema_teacher_matched_50k_resume_2026-08-01.log",
+    "bytes": 19952,
+    "sha256": "36b7876a54648f1bf42f535fa8d360014208c8af7055ecd22cd86ed97f17d1eb",
+    "failure": "ValueError: training report Git identity differs"
+  },
+  "frozen_runtime": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/runtime_selection.json",
+    "sha256": "f7befbcdbc6644fc066a71b85cb1df5cae5b922c526f09fe0000ae252b324663",
+    "micro_batch_size": 64,
+    "gradient_accumulation_steps": 1,
+    "effective_batch_size": 64
+  },
+  "remote_state_at_capture": {
+    "dense_run_exists": false,
+    "related_queue_processes": [],
+    "free_bytes": 187909763072,
+    "gpu_process": {
+      "pid": 362355,
+      "process_name": "/root/autodl-tmp/FieldScope/.venv/bin/python",
+      "used_memory_mib": 15412
+    },
+    "full_training_launch_allowed": false
+  },
+  "files": {
+    "remote/cofitok_checkpoint_step_00050000.pt.integrity.json": {
+      "bytes": 590,
+      "sha256": "4f3f6f3f401f34131f902b016baf41897b35f95d242bb023981feff4a36226a8"
+    },
+    "remote/cofitok_latest.json": {
+      "bytes": 660,
+      "sha256": "9060cfd44184ee96f43d11d569f8ec481656d936fb2a4e613b57c4ad4d79771a"
+    },
+    "remote/cofitok_step_00040000_milestone_waiter_failed.json": {
+      "bytes": 3036,
+      "sha256": "fca17af54045c0ba090d65017563930ba68cf848faf53a9f162b986abcdf44b7"
+    },
+    "remote/cofitok_step_00040000_progress_audit_invalid.json": {
+      "bytes": 5010,
+      "sha256": "6737206446517abd7a5a7eb4fcb46561fa03b89c0b2d2e56709bc416d68122d7"
+    },
+    "remote/cofitok_step_00045000_milestone_waiter_failed.json": {
+      "bytes": 3035,
+      "sha256": "85c8860f110032c96957c92d53d90eede9b5358b20b2f1600a472c04a67783eb"
+    },
+    "remote/cofitok_step_00045000_progress_audit_invalid.json": {
+      "bytes": 5004,
+      "sha256": "3f8c1621d8ebbb714f37d03c07c8c3c525ced9f8b7cffe4134dd2afcb974d612"
+    },
+    "remote/cofitok_training_report.json": {
+      "bytes": 10628,
+      "sha256": "8eeeb5e1cac3a3fe38d20fbc26be7af88788910f4dc86c5d34548be50a1b77fd"
+    },
+    "remote/cofitok_training_watchdog.json": {
+      "bytes": 2236,
+      "sha256": "8a35b4f0f3c05e1c08d2a0282f6968f52ed4ed83e11d0c99616a0a42181a695f"
+    },
+    "remote/full_readiness_waiter_failed.json": {
+      "bytes": 1134,
+      "sha256": "bf12cf955ecced8c1af1b7f48c416fd259ad2ef5168c884cc84922985ba8fd9c"
+    },
+    "remote/pair_monitor_failed.json": {
+      "bytes": 20073,
+      "sha256": "4d796c63f98ebd3038a0bacc6f6569ba604248ca147669280664b1150c67d56b"
+    },
+    "remote/posteval_waiter_failed.json": {
+      "bytes": 892,
+      "sha256": "947713ae4439deb541c6add80093bb6886a8bec11a9aca022bf8fa2689f58ed5"
+    }
+  }
+}

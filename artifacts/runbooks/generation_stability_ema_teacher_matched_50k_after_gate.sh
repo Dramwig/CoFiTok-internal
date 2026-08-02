@@ -73,6 +73,7 @@ require_complete() {
     --config "$2" \
     --expected-steps 50000 \
     --expected-revision "$EXPECTED_TARGET_REVISION" \
+    --expected-branch "$EXPECTED_TARGET_BRANCH" \
     --expected-micro-batch-size "$SELECTED_MICRO_BATCH" \
     --expected-gradient-accumulation-steps "$SELECTED_ACCUMULATION" \
     >/dev/null

@@ -14,6 +14,7 @@ def main() -> None:
     parser.add_argument("--config", required=True)
     parser.add_argument("--expected-steps", type=int, required=True)
     parser.add_argument("--expected-revision", required=True)
+    parser.add_argument("--expected-branch", required=True)
     parser.add_argument("--expected-micro-batch-size", type=int)
     parser.add_argument("--expected-gradient-accumulation-steps", type=int)
     args = parser.parse_args()
@@ -22,6 +23,7 @@ def main() -> None:
         config_path=args.config,
         expected_steps=args.expected_steps,
         expected_revision=args.expected_revision,
+        expected_branch=args.expected_branch,
         expected_micro_batch_size=args.expected_micro_batch_size,
         expected_gradient_accumulation_steps=(
             args.expected_gradient_accumulation_steps

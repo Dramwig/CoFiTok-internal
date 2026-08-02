@@ -109,6 +109,7 @@ def audit_command(
         ",".join(str(step) for step in required_checkpoint_steps),
         "--integrity-policy",
         "required",
+        "--allow-stale-incomplete-training-report",
         "--output",
         str(output),
     ]
