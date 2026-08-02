@@ -328,8 +328,13 @@ repository or mutate an active training checkout.
   `scale/generation-stability-full-control-quality-27ed` at
   `9019dd3f0f504e799c03496ec41a653b61deaa02`: all 66 training-critical blobs
   and the full-training execution suffix remain identical to `5dd3488...`.
-  This target is local-only and un-deployed; its existence does not create a
-  bridge, deployment receipt, launch receipt, or full-training authorization.
+  A prerequisite-aware 64,538-byte incremental bundle was verified locally and
+  against the clean remote `5dd3488...` checkout, then deleted without fetch,
+  merge, or checkout mutation. The receipt is
+  `artifacts/reports/generation/readiness_compatible_quality_control_target_2026-08-03/incremental_bundle_rehearsal_receipt.json`.
+  The target remains un-fetched and un-deployed; its existence and rehearsal do
+  not create a bridge, deployment receipt, launch receipt, or full-training
+  authorization.
 - Stability post-evaluation uses separate, explicit training and evaluation
   Git identities. This prevents the gate builder's legacy
   `scale/generative-system` default from rejecting the intentionally isolated

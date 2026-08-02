@@ -53,10 +53,37 @@ changed. A temporary parent-layout junction restored the canonical structure,
 after which the suite passed. The junction and isolated worktree were removed;
 the canonical paper tree was not modified.
 
+## Incremental bundle rehearsal
+
+An ephemeral prerequisite-aware bundle was created from the active readiness
+source through the dedicated target and verified locally and on `pro6000`:
+
+```text
+source prerequisite  5dd3488ac9b30274f4960195e252cc9fdb161002
+advertised head       9019dd3f0f504e799c03496ec41a653b61deaa02
+advertised refs       1
+bundle bytes          64,538
+bundle SHA256         8beb9d60757e84ded9d426d6b086bef20b1b206a3dc9cb55b79e19ebd0465ad3
+incremental commits   9
+incremental objects   129
+```
+
+Remote `git bundle verify` ran against the clean authoritative readiness
+checkout, proving that the pinned prerequisite exists. The checkout remained
+at the same HEAD and branch with an empty porcelain status before and after.
+No fetch or merge was run, and the only GPU compute process remained the active
+dense trainer PID `541878` at `77,970 MiB`. The exact temporary bundle was then
+deleted locally and remotely. The machine-readable receipt is:
+
+```text
+artifacts/reports/generation/readiness_compatible_quality_control_target_2026-08-03/incremental_bundle_rehearsal_receipt.json
+```
+
 ## Boundary
 
-This target has not been bundled, deployed, or executed remotely. No bridge,
-deployment receipt, launch receipt, or full-training authorization exists for
-it. Deployment remains blocked until the active dense 50K run, frozen formal
+The target was packaged only into the deleted rehearsal bundle. Its objects
+were not fetched, merged, deployed, or executed remotely. No bridge, deployment
+receipt, launch receipt, or full-training authorization exists for it.
+Deployment remains blocked until the active dense 50K run, frozen formal
 post-evaluation, and source-bound supplemental quality evaluation finish. A
 milestone or supplemental pass alone still cannot authorize full 300K.

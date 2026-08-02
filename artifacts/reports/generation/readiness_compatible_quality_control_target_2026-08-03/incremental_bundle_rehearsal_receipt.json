@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "role": "readiness_compatible_quality_control_incremental_bundle_rehearsal",
+  "status": "pass",
+  "observed_at": "2026-08-03T06:07:53.2848219+08:00",
+  "source": {
+    "checkout": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-5dd3488",
+    "branch": "scale/generation-large-capacity",
+    "revision": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+    "clean_before": true,
+    "clean_after": true,
+    "head_unchanged": true,
+    "branch_unchanged": true
+  },
+  "target": {
+    "branch": "scale/generation-stability-full-control-quality-27ed",
+    "revision": "9019dd3f0f504e799c03496ec41a653b61deaa02",
+    "parent": "27edb632d8cb9a642040ba6fcd3b1a0d682e6c79",
+    "source_is_ancestor": true,
+    "compatibility_evidence": {
+      "training_critical_blob_count": 66,
+      "training_critical_blobs_identical": true,
+      "full_training_execution_suffix_identical": true,
+      "full_training_execution_suffix_sha256": "1a4e559c3c8828ceee9907f45e2de2d4513a77f37e4458eb50755ee53ab6382c"
+    }
+  },
+  "bundle": {
+    "ephemeral": true,
+    "bytes": 64538,
+    "sha256": "8beb9d60757e84ded9d426d6b086bef20b1b206a3dc9cb55b79e19ebd0465ad3",
+    "hash_algorithm": "sha1",
+    "commit_count": 9,
+    "object_count": 129,
+    "advertised_head_count": 1,
+    "advertised_heads": [
+      {
+        "revision": "9019dd3f0f504e799c03496ec41a653b61deaa02",
+        "ref": "refs/heads/scale/generation-stability-full-control-quality-27ed"
+      }
+    ],
+    "required_prerequisites": [
+      "5dd3488ac9b30274f4960195e252cc9fdb161002"
+    ],
+    "local_bundle_verify": "pass",
+    "remote_bundle_verify": "pass",
+    "remote_bytes_match": true,
+    "remote_sha256_match": true,
+    "retained_for_deployment": false
+  },
+  "remote_rehearsal": {
+    "host": "pro6000",
+    "temporary_path": "/tmp/cofitok-stability-full-control-quality-9019dd3.bundle",
+    "checkout_head_before": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+    "checkout_head_after": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+    "checkout_branch_before": "scale/generation-large-capacity",
+    "checkout_branch_after": "scale/generation-large-capacity",
+    "checkout_status_before": [],
+    "checkout_status_after": [],
+    "fetch_performed": false,
+    "merge_performed": false,
+    "checkout_modified": false,
+    "gpu_compute_before": [
+      {
+        "pid": 541878,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 77970
+      }
+    ],
+    "gpu_compute_after": [
+      {
+        "pid": 541878,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 77970
+      }
+    ],
+    "remote_temporary_file_cleaned": true
+  },
+  "local_cleanup": {
+    "temporary_path": "C:/Users/zixi-/AppData/Local/Temp/cofitok-stability-full-control-quality-9019dd3.bundle",
+    "temporary_file_cleaned": true,
+    "project_codex_bundles_directory_touched": false
+  },
+  "authorization": {
+    "deployment_performed": false,
+    "readiness_bridge_created": false,
+    "deployment_receipt_created": false,
+    "full_training_launch_receipt_created": false,
+    "full_training_launch_allowed": false,
+    "full_training_launch_authorized": false,
+    "full_training_launched": false,
+    "formal_completion": false
+  }
+}
