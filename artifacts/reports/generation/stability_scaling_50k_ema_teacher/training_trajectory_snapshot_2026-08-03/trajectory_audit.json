@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "role": "generation_stability_training_trajectory_audit",
+  "status": "in_progress",
+  "decision": "continue_existing_dense_and_frozen_posteval",
+  "sources": {
+    "frozen_posteval_runbook": {
+      "path": "/tmp/cofitok-stability-schedule-audit-c1efb12/artifacts/runbooks/generation_stability_ema_teacher_50k_posteval_after_training.sh",
+      "git_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+      "sha256": "6cf80146c1696aa0bed9a4a370b41c42aa5be9dc03f753c4c81ce6b54278b064"
+    },
+    "cofitok_metrics_prefix": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/train_metrics.jsonl",
+      "through_step": 50000,
+      "rows": 1002,
+      "bytes": 947182,
+      "sha256": "f954677f1a6a62819405b321aab92b06ff60e5d0dcd04a614f5558e22c448d1a"
+    },
+    "dense_metrics_prefix": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_rollout_x0_u2_ema_teacher/train_metrics.jsonl",
+      "through_step": 18000,
+      "rows": 361,
+      "bytes": 315243,
+      "sha256": "ec6a4fe96a7fb56a58c01aba62c01bdcffedf5bf1200d6eefa1d3c239a244977"
+    }
+  },
+  "checks": {
+    "cofitok_finite": true,
+    "dense_finite": true,
+    "strict_steps": true,
+    "samples_seen_equals_step_times_64": true,
+    "matched_validation_events": 18,
+    "cofitok_training_image_count": 0,
+    "dense_training_image_count": 0
+  },
+  "matched_validation": {
+    "step_start": 1000,
+    "step_end": 18000,
+    "event_interval": 1000,
+    "event_count": 18,
+    "mean_cofitok_to_dense_ratio": 0.9969411133737585,
+    "median_cofitok_to_dense_ratio": 0.9999053762572929,
+    "minimum_cofitok_to_dense_ratio": 0.9549209356703359,
+    "maximum_cofitok_to_dense_ratio": 1.011451815719032,
+    "maximum_cofitok_regression": 0.011451815719031977,
+    "maximum_cofitok_improvement": -0.04507906432966413,
+    "event_table": {
+      "path": "matched_validation.csv",
+      "bytes": 1661,
+      "sha256": "a4272d874b5f9ae735837776f8c2c6fceed622d8e7eccc3c2e123d19e0335ca9"
+    }
+  },
+  "cofitok_50k_validation_segments": {
+    "pre_teacher_1k_29k": {
+      "events": 29,
+      "mean": 0.03116991088308137,
+      "minimum": 0.024662211537361145,
+      "maximum": 0.04094996303319931
+    },
+    "teacher_boundary_30k": {
+      "events": 1,
+      "mean": 0.02494034171104431,
+      "minimum": 0.02494034171104431,
+      "maximum": 0.02494034171104431
+    },
+    "teacher_warmup_31k_40k": {
+      "events": 10,
+      "mean": 0.026784691959619522,
+      "minimum": 0.024010643362998962,
+      "maximum": 0.03042898140847683
+    },
+    "teacher_full_41k_50k": {
+      "events": 10,
+      "mean": 0.028369319438934327,
+      "minimum": 0.02275921031832695,
+      "maximum": 0.03428051620721817
+    }
+  },
+  "cofitok_final_checkpoint": {
+    "step": 50000,
+    "bytes": 1006325418,
+    "sha256": "ec7b9a0981f1d45420a9a86cdb80339d6d87b87fa77891c234db3d1b84376c2a",
+    "integrity_sidecar": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00050000.pt.integrity.json",
+      "bytes": 590,
+      "sha256": "4f3f6f3f401f34131f902b016baf41897b35f95d242bb023981feff4a36226a8"
+    },
+    "latest_json": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/latest.json",
+      "bytes": 660,
+      "sha256": "9060cfd44184ee96f43d11d569f8ec481656d936fb2a4e613b57c4ad4d79771a"
+    },
+    "training_report": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json",
+      "bytes": 10628,
+      "sha256": "8eeeb5e1cac3a3fe38d20fbc26be7af88788910f4dc86c5d34548be50a1b77fd"
+    },
+    "git_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "git_branch": "scale/generation-stability-50k-preflight",
+    "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+    "samples_seen": 3200000,
+    "validation_events": 50,
+    "final_validation_epsilon_mse": 0.02931838296353817
+  },
+  "claim_boundary": {
+    "training_space_only": true,
+    "sample_quality_evaluated": false,
+    "free_rollout_quality_evaluated": false,
+    "frozen_posteval_includes_rollout_stability": false,
+    "stable_inference_release_evaluated": false,
+    "ema_teacher_causal_effect_established": false,
+    "supplements_formal_posteval": false,
+    "full_training_launch_allowed": false,
+    "interpretation": "Matched one-step validation remains close through dense step 18000; this cannot establish free-generation quality."
+  }
+}
