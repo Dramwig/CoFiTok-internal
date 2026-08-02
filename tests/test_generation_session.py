@@ -27,6 +27,7 @@ from cofitok.inference_replay import (
     validate_completed_inference_evidence,
 )
 from cofitok.models import CoFiTokTiny
+from cofitok.output_lock import OutputLockError, exclusive_output_lock
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
 from cofitok.training.checkpointing import checkpoint_integrity_path
@@ -278,6 +279,24 @@ def _inference_args(checkpoint: Path, output_dir: Path) -> argparse.Namespace:
         resume=False,
         overwrite=False,
     )
+
+
+def test_inference_cli_locks_output_before_loading_checkpoint(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output_dir = tmp_path / "inference"
+    args = _inference_args(tmp_path / "not_loaded.pt", output_dir)
+    monkeypatch.setattr(
+        inference_cli.GenerationSession,
+        "from_checkpoint",
+        lambda *args, **kwargs: pytest.fail("checkpoint loaded before output lock"),
+    )
+
+    with exclusive_output_lock(output_dir, role="test_holder"):
+        with pytest.raises(OutputLockError, match="already locked"):
+            run_inference(args)
+    assert not output_dir.exists()
 
 
 def test_inference_cli_resume_reuses_completed_outputs_after_failure(

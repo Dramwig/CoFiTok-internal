@@ -24,6 +24,7 @@ from cofitok.inference_replay import (
     validate_output_directory_layout,
     write_progress,
 )
+from cofitok.output_lock import exclusive_output_lock
 from cofitok.reporting import file_sha256, git_provenance, write_json_report
 
 
@@ -174,7 +175,7 @@ def _report_base(
     }
 
 
-def run_inference(args: argparse.Namespace) -> dict[str, Any]:
+def _run_inference_locked(args: argparse.Namespace) -> dict[str, Any]:
     if args.batch_size < 1:
         raise ValueError("batch-size must be positive")
     resume = bool(getattr(args, "resume", False))
@@ -472,6 +473,14 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
     }
     write_json_report(report_path, report)
     return report
+
+
+def run_inference(args: argparse.Namespace) -> dict[str, Any]:
+    with exclusive_output_lock(
+        args.output_dir,
+        role="generation_inference",
+    ):
+        return _run_inference_locked(args)
 
 
 def main() -> None:

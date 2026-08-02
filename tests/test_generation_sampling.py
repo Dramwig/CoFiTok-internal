@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 import torch
 
+import scripts.generate_samples as sampling_cli
 from cofitok.configs import DiffusionConfig
 from cofitok.diffusion import DiffusionSchedule, ddim_sample, predict_epsilon
 from cofitok.models.cofitok import CoFiTokOutput
+from cofitok.output_lock import OutputLockError, exclusive_output_lock
 from scripts.generate_samples import (
     _batch_complete,
     _prepare_sampling_manifest,
@@ -36,6 +39,28 @@ class _ZeroModel(torch.nn.Module):
             prefix_epsilons=prefixes,
             epsilon=zeros,
         )
+
+
+def test_sampling_cli_locks_output_before_loading_checkpoint(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output_dir = tmp_path / "formal_samples"
+    monkeypatch.setattr(
+        sampling_cli,
+        "parse_args",
+        lambda: SimpleNamespace(output_dir=str(output_dir)),
+    )
+    monkeypatch.setattr(
+        sampling_cli.GenerationSession,
+        "from_checkpoint",
+        lambda *args, **kwargs: pytest.fail("checkpoint loaded before output lock"),
+    )
+
+    with exclusive_output_lock(output_dir, role="test_holder"):
+        with pytest.raises(OutputLockError, match="already locked"):
+            sampling_cli.main()
+    assert not output_dir.exists()
 
 
 class _ClassModel(torch.nn.Module):

@@ -20,6 +20,7 @@ from cofitok.generation import (
     GenerationSession,
 )
 from cofitok.image_integrity import is_valid_png, sample_set_sha256
+from cofitok.output_lock import exclusive_output_lock
 from cofitok.reporting import file_sha256, git_provenance, write_json_report
 from cofitok.sampling_progress import (
     build_sampling_progress,
@@ -197,8 +198,7 @@ def _prepare_sampling_manifest(
     write_json_report(path, manifest)
 
 
-def main() -> None:
-    args = parse_args()
+def _run_sampling(args: argparse.Namespace) -> None:
     if args.num_samples < 1 or args.batch_size < 1:
         raise ValueError("num-samples and batch-size must be positive")
     if args.start_index < 0:
@@ -424,6 +424,15 @@ def main() -> None:
             ),
         )
         raise
+
+
+def main() -> None:
+    args = parse_args()
+    with exclusive_output_lock(
+        args.output_dir,
+        role="generation_sampling",
+    ):
+        _run_sampling(args)
 
 
 if __name__ == "__main__":
