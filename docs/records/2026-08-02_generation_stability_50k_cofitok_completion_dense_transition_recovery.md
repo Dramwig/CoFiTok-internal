@@ -133,6 +133,15 @@ GPU PID `362355` was a FieldScope process using 15,412 MiB. It was not killed,
 paused, signaled, or otherwise modified. Dense recovery therefore remains
 prepared but not launched until the GPU becomes idle.
 
+The authoritative dense state path is
+`/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_rollout_x0_u2_ema_teacher`.
+At `2026-08-02T12:28:43+08:00` that directory was confirmed absent. The
+similarly named `dense_rgbtail3_rollout_x0_u2_ema_teacher` path is not the run
+directory selected by the frozen recovery runbook and must not be used to
+decide whether a launch is fresh or resumable. The active launch-monitor prompt
+was updated to bind this exact path; no remote training or GPU process was
+started or modified by that correction.
+
 Evidence:
 
 `artifacts/reports/generation/stability_scaling_50k_ema_teacher/cofitok_50k_transition_incident_2026-08-02/`
