@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-08-02T05:08:25+00:00",
+  "scope": "stability_dense_identity_50k_recovery_launch",
+  "controller": {
+    "revision": "5f57757a2162507c6166dbfe976246df6ae1af91",
+    "branch": "scale/generation-stability-dense-recovery-control-00549fe",
+    "checkout": "/tmp/cofitok-stability-dense-recovery-control-00549fe",
+    "pid": 511801
+  },
+  "training": {
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "branch": "scale/generation-stability-50k-preflight",
+    "checkout": "/tmp/cofitok-stability-50k-preflight-2c2c1f5",
+    "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_rollout_x0_u2_ema_teacher",
+    "target_steps": 50000,
+    "effective_batch_size": 64,
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e"
+  },
+  "initial_progress": {
+    "monitor_status": "running",
+    "monitor_stage": "dense_identity_training",
+    "latest_step": 100,
+    "samples_seen": 6400,
+    "issues": []
+  },
+  "posteval": {
+    "revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "branch": "scale/generation-stability-50k-posteval-v4",
+    "pid": 717145,
+    "status": "waiting"
+  },
+  "readiness": {
+    "revision": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+    "branch": "scale/generation-large-capacity",
+    "pid": 748183,
+    "status": "waiting",
+    "deployment_receipt_sha256": "46c72437bf0e44ad7e815ad7b3bb3e29af0f7e1664ab177c031c58e18a0a0758",
+    "full_training_launch_allowed": false
+  },
+  "files": {
+    "process_identity_audit.json": {
+      "bytes": 1461,
+      "sha256": "a17b5b8288d6b578bc27e0cb6f569a93e4ce365ab36f0753360524e6b22f9779"
+    },
+    "remote/dense_recovery_status_running.json": {
+      "bytes": 668,
+      "sha256": "4605d8d0c480bc5ffb78731ac6a177415ef17262a9c8464a34337eb0f230a8d9"
+    },
+    "remote/dense_recovery_storage_capacity.json": {
+      "bytes": 982,
+      "sha256": "c4390a016e242296e9990ff8dddb74be0f5ffd598f92676d2221449dc0f4198d"
+    },
+    "remote/dense_run_manifest.json": {
+      "bytes": 7671,
+      "sha256": "a049a97d8a4e9f4dc4761a9269e50ae55f53ec28b9971d14a7d968bfd7e9f9fe"
+    },
+    "remote/dense_train_metrics_initial.jsonl": {
+      "bytes": 2596,
+      "sha256": "ccf67802c90190f0bdf481e56023b0d8f78aade29fab96b6143a098d5ddd29f3"
+    },
+    "remote/dense_training_watchdog_running.json": {
+      "bytes": 1929,
+      "sha256": "ac872d1aae47309f85dae43dd3fc65db71d19cd9f71d5d38ac37dcc84fde728e"
+    },
+    "remote/pair_monitor_running.json": {
+      "bytes": 29698,
+      "sha256": "3abf1fad2d13462491807402a41ba3730dd45ed0617e52136a09cfd9a0e4f94e"
+    },
+    "remote/posteval_waiter_waiting.json": {
+      "bytes": 1039,
+      "sha256": "aadfd18d5cc5da2e46746606a45f300de0bddd1d8a87370a846bba14dcfca063"
+    },
+    "remote/readiness_waiter_waiting.json": {
+      "bytes": 1766,
+      "sha256": "79038aa50107e7398ee3197819756899a387fea10e685a08f0b1cbeb4c7b5a88"
+    }
+  },
+  "cofitok_relaunched": false,
+  "full_300k_authorized": false
+}

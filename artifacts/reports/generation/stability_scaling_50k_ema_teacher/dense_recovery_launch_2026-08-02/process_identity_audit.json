@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-08-02T05:08:25+00:00",
+  "status": "pass",
+  "controller": {
+    "pid": 511801,
+    "revision": "5f57757a2162507c6166dbfe976246df6ae1af91",
+    "branch": "scale/generation-stability-dense-recovery-control-00549fe",
+    "root_process_count": 1,
+    "lock_probe_exit_code": 1
+  },
+  "training": {
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "branch": "scale/generation-stability-50k-preflight",
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+    "parameter_count": 62824707,
+    "effective_batch_size": 64,
+    "latest_step": 100,
+    "samples_seen": 6400,
+    "metrics_finite": true,
+    "metrics_steps_strictly_increasing": true
+  },
+  "processes": {
+    "pair_monitor": {
+      "pid": 530064,
+      "count": 1
+    },
+    "watchdog": {
+      "pid": 537704,
+      "count": 1
+    },
+    "gpu_trainer_leader": {
+      "pid": 541878,
+      "count": 1,
+      "cwd": "/tmp/cofitok-stability-50k-preflight-2c2c1f5"
+    },
+    "posteval_waiter": {
+      "pid": 717145,
+      "count": 1
+    },
+    "readiness_waiter": {
+      "pid": 748183,
+      "count": 1
+    }
+  },
+  "storage": {
+    "free_bytes": 186847199232,
+    "required_bytes": 118385312804,
+    "headroom_bytes": 68461886428,
+    "status": "pass"
+  },
+  "safety": {
+    "cofitok_relaunched": false,
+    "full_300k_process_present": false,
+    "full_training_launch_allowed": false
+  }
+}

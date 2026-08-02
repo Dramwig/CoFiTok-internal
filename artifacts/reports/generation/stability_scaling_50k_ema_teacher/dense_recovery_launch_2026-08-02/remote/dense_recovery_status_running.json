@@ -1,0 +1,19 @@
+{
+  "controller": {
+    "branch": "scale/generation-stability-dense-recovery-control-00549fe",
+    "revision": "5f57757a2162507c6166dbfe976246df6ae1af91"
+  },
+  "detail": "launching dense-only member at the immutable training revision",
+  "exit_code": null,
+  "full_training_launch_allowed": false,
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "pid": 511801,
+  "role": "generation_stability_ema_teacher_dense_recovery",
+  "schema_version": 1,
+  "status": "running",
+  "training": {
+    "branch": "scale/generation-stability-50k-preflight",
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+  },
+  "updated_at": "2026-08-02T05:03:14.198499+00:00"
+}
