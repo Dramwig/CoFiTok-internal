@@ -28,6 +28,7 @@ TRAINING_CONTENTION="$OUTPUT_ROOT/pair_monitor.json"
 FINAL_GATE="$REPORT_ROOT/final_generation_gate.json"
 STAGE_STATE_ROOT="$REPORT_ROOT/stage_receipts"
 DATASET_MANIFEST="$CHECKPOINT_ROOT/../../datasets/imagenet_256/metadata/image_manifest.jsonl"
+POSTEVAL_LOCK="$OUTPUT_ROOT/posteval.lock"
 
 cd "$PROJECT"
 export PYTHONPATH=src
@@ -42,6 +43,12 @@ export PYTHONPATH=src
 [[ -f "$OFFICIAL_RELATED" ]]
 [[ -f "$DATASET_MANIFEST" ]]
 [[ -f "$TRAINING_CONTENTION" ]]
+command -v flock >/dev/null
+exec 8>"$POSTEVAL_LOCK"
+if ! flock -n 8; then
+  printf 'refusing concurrent stability full post-evaluation\n' >&2
+  exit 75
+fi
 mkdir -p "$REPORT_ROOT" "$STAGE_STATE_ROOT"
 
 "$PYTHON" scripts/validate_generation_gate_report.py \

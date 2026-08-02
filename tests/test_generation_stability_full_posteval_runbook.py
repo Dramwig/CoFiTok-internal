@@ -97,3 +97,16 @@ def test_stability_full_posteval_receipts_high_cost_partial_stages() -> None:
     assert source.count('--input-tree "$DATA"') == 2
     assert '--input-tree "$COFITOK_RUN/samples_50k_ddim250_cfg15/prefix_8"' in source
     assert '--input-tree "$DENSE_RUN/samples_50k_ddim250_cfg15/prefix_1"' in source
+
+
+def test_stability_full_posteval_is_exclusive_before_writing_evidence() -> None:
+    source = RUNBOOK.read_text(encoding="utf-8")
+
+    lock = source.index('exec 8>"$POSTEVAL_LOCK"')
+    acquisition = source.index("flock -n 8", lock)
+    first_evidence_write = source.index("scripts/validate_generation_gate_report.py")
+    first_gpu_work = source.index("scripts/select_generation_sampling_batch.py")
+    assert "command -v flock >/dev/null" in source
+    assert 'POSTEVAL_LOCK="$OUTPUT_ROOT/posteval.lock"' in source
+    assert lock < acquisition < first_evidence_write < first_gpu_work
+    assert "exit 75" in source

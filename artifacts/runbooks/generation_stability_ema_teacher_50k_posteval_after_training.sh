@@ -29,6 +29,7 @@ PROMOTION_GATE="$REPORT_ROOT/promotion_gate.json"
 EVAL_CACHE="$CHECKPOINT_ROOT/eval_cache/torch_fidelity"
 SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/gate10k_sampling"
 SAMPLING_SELECTION="$REPORT_ROOT/sampling_runtime_selection.json"
+POSTEVAL_LOCK="$OUTPUT_ROOT/posteval.lock"
 
 cd "$PROJECT"
 export PYTHONPATH=src
@@ -36,6 +37,13 @@ export PYTHONPATH=src
 [[ "$(git rev-parse HEAD)" == "$EXPECTED_TARGET_REVISION" ]]
 [[ "$(git branch --show-current)" == "$EXPECTED_TARGET_BRANCH" ]]
 [[ -z "$(git status --porcelain --untracked-files=no)" ]]
+command -v flock >/dev/null
+mkdir -p "$OUTPUT_ROOT"
+exec 8>"$POSTEVAL_LOCK"
+if ! flock -n 8; then
+  printf 'refusing concurrent stability 50K post-evaluation\n' >&2
+  exit 75
+fi
 mkdir -p "$REPORT_ROOT"
 
 "$PYTHON" scripts/validate_generation_stability_scaling_decision.py \

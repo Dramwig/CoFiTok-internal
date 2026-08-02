@@ -74,3 +74,18 @@ def test_stability_50k_posteval_audits_each_run_against_its_config() -> None:
         "--expected-steps", cofitok_run
     )
     assert dense_run < dense_config < source.index("--expected-steps", dense_run)
+
+
+def test_stability_50k_posteval_is_exclusive_before_writing_evidence() -> None:
+    source = RUNBOOK.read_text(encoding="utf-8")
+
+    lock = source.index('exec 8>"$POSTEVAL_LOCK"')
+    acquisition = source.index("flock -n 8", lock)
+    first_evidence_write = source.index(
+        "scripts/validate_generation_stability_scaling_decision.py"
+    )
+    first_gpu_work = source.index("scripts/select_generation_sampling_batch.py")
+    assert "command -v flock >/dev/null" in source
+    assert 'POSTEVAL_LOCK="$OUTPUT_ROOT/posteval.lock"' in source
+    assert lock < acquisition < first_evidence_write < first_gpu_work
+    assert "exit 75" in source
