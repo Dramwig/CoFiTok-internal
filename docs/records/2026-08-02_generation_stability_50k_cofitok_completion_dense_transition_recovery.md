@@ -100,6 +100,12 @@ trainer, or GPU process. The fresh storage report records
 `187,577,434,112 / 118,385,312,804 / 69,192,121,308` bytes for
 free/required/headroom.
 
+The recovery runbook deliberately does not create `pair_summary.json`.
+After the monitor proves both training members complete, the exact post-eval
+waiter must be the only component that builds that summary from the original
+locked `config_validation.json`; this preserves the waiter's source-path and
+SHA binding instead of substituting the equivalent recovery-preflight report.
+
 Validation:
 
 ```text

@@ -47,6 +47,8 @@ def test_dense_recovery_launches_only_dense_and_refuses_resource_conflicts() -> 
     assert text.count("scripts/train_generation.py") == 1
     assert training_call in text
     assert '--config "$COFITOK_CONFIG" \\\n        --output-dir "$COFITOK_RUN"' not in text
+    assert "build_generation_stability_50k_summary.py" not in text
+    assert 'PAIR_SUMMARY="$REPORT_ROOT/pair_summary.json"' not in text
     assert "refusing dense recovery while another stability 50K queue process exists" in text
     assert "refusing dense recovery while the GPU is busy" in text
     assert "RECOVERY_EXECUTION_ALLOWED" in text

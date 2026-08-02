@@ -27,7 +27,6 @@ DENSE_CONFIG=configs/generation/imagenet256_10pct_stability_rollout_x0_u2_ema_te
 RUNTIME_SELECTION="$REPORT_ROOT/runtime_selection.json"
 CONFIG_VALIDATION="$REPORT_ROOT/dense_recovery_config_validation.json"
 STORAGE_VALIDATION="$REPORT_ROOT/dense_recovery_storage_capacity.json"
-PAIR_SUMMARY="$REPORT_ROOT/pair_summary.json"
 MONITOR_REPORT="$OUTPUT_ROOT/pair_monitor.json"
 MONITOR_LOG="$OUTPUT_ROOT/pair_monitor_dense_recovery.log"
 MONITOR_PID_FILE="$OUTPUT_ROOT/pair_monitor_dense_recovery.pid"
@@ -364,14 +363,6 @@ require_complete \
   "$TRAINING_PROJECT/$DENSE_CONFIG"
 snapshot_monitor
 monitor_report_passes
-training_python scripts/build_generation_stability_50k_summary.py \
-  --cofitok-training "$COFITOK_RUN/training_report.json" \
-  --dense-training "$DENSE_RUN/training_report.json" \
-  --decision-validation "$REPORT_ROOT/stability_decision_validation.json" \
-  --config-validation "$CONFIG_VALIDATION" \
-  --expected-revision "$EXPECTED_TRAINING_REVISION" \
-  --expected-branch "$EXPECTED_TRAINING_BRANCH" \
-  --output "$PAIR_SUMMARY"
 
 completed=true
-write_status pass "matched CoFiTok/dense 50K training pair completed; post-eval remains separate"
+write_status pass "matched CoFiTok/dense 50K training pair completed; source-bound summary and post-eval remain separate"
