@@ -111,11 +111,20 @@ waiter must be the only component that builds that summary from the original
 locked `config_validation.json`; this preserves the waiter's source-path and
 SHA binding instead of substituting the equivalent recovery-preflight report.
 
+Before any status write, checkpoint validation, monitor launch, or trainer
+launch, the recovery controller now takes a non-blocking `flock` on
+`stability_scaling_50k_ema_teacher/dense_recovery.lock` and holds file
+descriptor 6 for the controller lifetime. A concurrent controller exits 15
+without overwriting the active controller's status. This closes the remaining
+TOCTOU window between duplicate-process observation and monitor launch while
+leaving the immutable training checkout unchanged.
+
 Validation:
 
 ```text
 targeted regression tests: 50 passed
-full pytest: 903 collected / 897 passed / 6 skipped
+full pytest before controller-lock hardening: 903 collected / 897 passed / 6 skipped
+full pytest after controller-lock hardening: 904 collected / 898 passed / 6 skipped
 runbook entrypoint contract: passed
 git diff --check: passed
 recovery runbook bash -n on pro6000: passed

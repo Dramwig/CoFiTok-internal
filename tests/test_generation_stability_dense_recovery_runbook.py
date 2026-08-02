@@ -56,3 +56,17 @@ def test_dense_recovery_launches_only_dense_and_refuses_resource_conflicts() -> 
     assert text.index("check_generation_storage_capacity.py") < text.index("start_monitor\n")
     assert '"full_training_launch_allowed": False' in text
     assert "300000" not in text
+
+
+def test_dense_recovery_holds_a_nonblocking_single_controller_lock() -> None:
+    text = RUNBOOK.read_text(encoding="utf-8")
+
+    assert 'RECOVERY_LOCK="$OUTPUT_ROOT/dense_recovery.lock"' in text
+    assert "command -v flock >/dev/null" in text
+    assert 'exec 6>"$RECOVERY_LOCK"' in text
+    assert "flock -n 6" in text
+    assert "refusing concurrent dense recovery controller" in text
+    assert text.index("flock -n 6") < text.index(
+        'write_status running "validating completed CoFiTok and frozen matched runtime"'
+    )
+    assert text.index("flock -n 6") < text.index("start_monitor\n")

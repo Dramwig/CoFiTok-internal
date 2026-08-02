@@ -32,6 +32,7 @@ MONITOR_LOG="$OUTPUT_ROOT/pair_monitor_dense_recovery.log"
 MONITOR_PID_FILE="$OUTPUT_ROOT/pair_monitor_dense_recovery.pid"
 MONITOR_NAME=generation_stability_ema_teacher_matched_50k
 RECOVERY_STATUS="$REPORT_ROOT/dense_recovery_status.json"
+RECOVERY_LOCK="$OUTPUT_ROOT/dense_recovery.lock"
 
 write_status() {
   local status="$1"
@@ -184,6 +185,13 @@ snapshot_monitor() {
 [[ "$(git -C "$TRAINING_PROJECT" rev-parse HEAD)" == "$EXPECTED_TRAINING_REVISION" ]]
 [[ "$(git -C "$TRAINING_PROJECT" branch --show-current)" == "$EXPECTED_TRAINING_BRANCH" ]]
 [[ -z "$(git -C "$TRAINING_PROJECT" status --porcelain --untracked-files=no)" ]]
+command -v flock >/dev/null
+mkdir -p "$OUTPUT_ROOT"
+exec 6>"$RECOVERY_LOCK"
+if ! flock -n 6; then
+  printf 'refusing concurrent dense recovery controller\n' >&2
+  exit 15
+fi
 mkdir -p "$REPORT_ROOT"
 write_status running "validating completed CoFiTok and frozen matched runtime"
 
