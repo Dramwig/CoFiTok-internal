@@ -1008,3 +1008,14 @@ It explicitly prohibits total-loss and wall-clock comparisons and keeps quality,
 promotion, formal-50K substitution, and full-training authorization false. The
 first stability report through 10K is recorded in
 `docs/records/2026-08-02_generation_stability_matched_10k_training_trajectory.md`.
+The schema-v2 schedule-aware extensions at 12K and the checkpoint-aligned 20K
+boundary are recorded in
+`docs/records/2026-08-03_generation_stability_matched_12k_schedule_trajectory.md`
+and
+`docs/records/2026-08-03_generation_stability_matched_20k_schedule_trajectory.md`.
+Through 20K, the 20 matched validation events split evenly by lower epsilon MSE
+and the ratio of means differs by only `-0.291554%` for CoFiTok; this is evidence
+of a closely matched, finite training trajectory, not free-rollout or generation
+quality evidence. EMA-teacher consistency has not reached its 30K start in that
+window, and exact matched 50K completion plus formal EMA post-evaluation remains
+required.

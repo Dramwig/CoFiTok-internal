@@ -1,0 +1,783 @@
+{
+  "builder": {
+    "bytes": 26360,
+    "path": "scripts/build_generation_matched_training_trajectory.py",
+    "sha256": "0491b733b7e4839f86e80c10964a9bf01be0be94ec7f75c95ec597c6cf127968"
+  },
+  "claim_boundary": {
+    "formal_50k_gate_substitute": false,
+    "full_training_launch_allowed": false,
+    "promotion_authorization_allowed": false,
+    "quality_claim_allowed": false,
+    "required_next_evidence": "exact healthy matched 50K completion followed by formal EMA post-eval",
+    "sample_quality_metrics_present": false,
+    "schedule_regime_quality_claim_allowed": false,
+    "supports": [
+      "matched resolved training contract through the cutoff",
+      "source-bound fixed-validation epsilon trajectory through the cutoff",
+      "predeclared fixed-validation summaries by shared schedule regime"
+    ]
+  },
+  "comparison_policy": {
+    "reason": "CoFiTok total loss includes factorization-only auxiliaries, and the dense run experienced externally observed GPU contention.",
+    "shared_primary_training_epsilon_reported_descriptively": true,
+    "shared_rollout_consistency_reported_descriptively": true,
+    "total_loss_comparison_allowed": false,
+    "training_wall_clock_comparison_allowed": false
+  },
+  "contract": {
+    "cofitok_parameter_count": 62834083,
+    "dataset": "imagenet_256_10pct",
+    "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+    "dense_parameter_count": 62824707,
+    "effective_batch_size": 64,
+    "evaluation_interval": 1000,
+    "generation_pair_contract": {
+      "dense_nonzero_auxiliary_losses": [],
+      "factorization_model_fields": [
+        "deep_synthesis_depth",
+        "deep_synthesis_hidden_channels",
+        "gamma_mode",
+        "predictor_use_feedback",
+        "synthesis_active_token_channels",
+        "synthesis_kernel_size",
+        "synthesis_mode",
+        "synthesis_token_strides",
+        "token_channel_schedule",
+        "token_channels",
+        "token_count",
+        "token_spatial_strides"
+      ],
+      "identities": {
+        "cofitok_feedback": true,
+        "cofitok_synthesis": "fixed_basis",
+        "cofitok_token_count": 8,
+        "dense_feedback": false,
+        "dense_synthesis": "dense_identity",
+        "dense_token_count": 1
+      },
+      "issues": [],
+      "matched_config_sections": [
+        "data",
+        "diffusion",
+        "runtime",
+        "optimization"
+      ],
+      "mismatched_config_sections": [],
+      "mismatched_shared_model_fields": [],
+      "mismatched_shared_training_loss_fields": [],
+      "primary_epsilon_weight": 1.0,
+      "shared_model_fields": [
+        "base_channels",
+        "class_dropout_prob",
+        "image_channels",
+        "image_size",
+        "num_classes",
+        "predictor_attention_resolutions",
+        "predictor_channel_multipliers",
+        "predictor_depth",
+        "predictor_dropout",
+        "predictor_gradient_checkpointing",
+        "predictor_multiscale_levels",
+        "predictor_num_heads",
+        "predictor_num_res_blocks",
+        "predictor_type"
+      ],
+      "shared_training_loss_fields": [
+        "ema_teacher_consistency_batch_fraction",
+        "ema_teacher_consistency_start_step",
+        "ema_teacher_consistency_warmup_steps",
+        "ema_teacher_consistency_weight",
+        "epsilon_weight",
+        "rollout_consistency_batch_fraction",
+        "rollout_consistency_clip_x0",
+        "rollout_consistency_mode",
+        "rollout_consistency_start_step",
+        "rollout_consistency_timestep_delta",
+        "rollout_consistency_unroll_steps",
+        "rollout_consistency_warmup_steps",
+        "rollout_consistency_weight"
+      ],
+      "valid": true
+    },
+    "git": {
+      "branch": "scale/generation-stability-50k-preflight",
+      "dirty": false,
+      "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+    },
+    "log_interval": 50,
+    "relative_parameter_gap": 0.00014924064826915946,
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e"
+  },
+  "cutoff_step": 20000,
+  "images_seen_per_method": 1280000,
+  "paired_fixed_validation": {
+    "events": [
+      {
+        "cofitok_epsilon_mse": 0.04094996303319931,
+        "cofitok_minus_dense": 0.0002112947404384613,
+        "dense_epsilon_mse": 0.04073866829276085,
+        "lower_mse": "dense_identity",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 0.10000000149011612
+        },
+        "relative_delta": 0.005186589284657785,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "warmup"
+        },
+        "step": 1000,
+        "validation_batch_index": 0,
+        "validation_event_index": 0,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03270487114787102,
+        "cofitok_minus_dense": -0.00047921761870384216,
+        "dense_epsilon_mse": 0.03318408876657486,
+        "lower_mse": "cofitok",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 0.20000000298023224
+        },
+        "relative_delta": -0.014441186620334166,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "warmup"
+        },
+        "step": 2000,
+        "validation_batch_index": 1,
+        "validation_event_index": 1,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03815802186727524,
+        "cofitok_minus_dense": 9.521469473838806e-05,
+        "dense_epsilon_mse": 0.03806280717253685,
+        "lower_mse": "dense_identity",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 0.30000001192092896
+        },
+        "relative_delta": 0.00250151530618287,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "warmup"
+        },
+        "step": 3000,
+        "validation_batch_index": 2,
+        "validation_event_index": 2,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.02965588867664337,
+        "cofitok_minus_dense": 0.00023030675947666168,
+        "dense_epsilon_mse": 0.02942558191716671,
+        "lower_mse": "dense_identity",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 0.4000000059604645
+        },
+        "relative_delta": 0.007826752929643918,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "warmup"
+        },
+        "step": 4000,
+        "validation_batch_index": 3,
+        "validation_event_index": 3,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03134603798389435,
+        "cofitok_minus_dense": -0.00020758435130119324,
+        "dense_epsilon_mse": 0.03155362233519554,
+        "lower_mse": "cofitok",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 0.5
+        },
+        "relative_delta": -0.00657878037253585,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "warmup"
+        },
+        "step": 5000,
+        "validation_batch_index": 4,
+        "validation_event_index": 4,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03630029037594795,
+        "cofitok_minus_dense": -0.00042115896940231323,
+        "dense_epsilon_mse": 0.036721449345350266,
+        "lower_mse": "cofitok",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 0.6000000238418579
+        },
+        "relative_delta": -0.011469018159971976,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "warmup"
+        },
+        "step": 6000,
+        "validation_batch_index": 5,
+        "validation_event_index": 5,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03175073489546776,
+        "cofitok_minus_dense": 0.00035948678851127625,
+        "dense_epsilon_mse": 0.03139124810695648,
+        "lower_mse": "dense_identity",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 0.699999988079071
+        },
+        "relative_delta": 0.011451815719031953,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "warmup"
+        },
+        "step": 7000,
+        "validation_batch_index": 6,
+        "validation_event_index": 6,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.024662211537361145,
+        "cofitok_minus_dense": 2.7593225240707397e-05,
+        "dense_epsilon_mse": 0.024634618312120438,
+        "lower_mse": "dense_identity",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 0.800000011920929
+        },
+        "relative_delta": 0.001120099564405725,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "warmup"
+        },
+        "step": 8000,
+        "validation_batch_index": 7,
+        "validation_event_index": 7,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.02920091710984707,
+        "cofitok_minus_dense": -1.5722587704658508e-05,
+        "dense_epsilon_mse": 0.029216639697551727,
+        "lower_mse": "cofitok",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 0.8999999761581421
+        },
+        "relative_delta": -0.0005381381249663703,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "warmup"
+        },
+        "step": 9000,
+        "validation_batch_index": 8,
+        "validation_event_index": 8,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.031669922173023224,
+        "cofitok_minus_dense": 1.1045485734939575e-05,
+        "dense_epsilon_mse": 0.031658876687288284,
+        "lower_mse": "dense_identity",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 1.0
+        },
+        "relative_delta": 0.00034889063955243155,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "full_scale"
+        },
+        "step": 10000,
+        "validation_batch_index": 9,
+        "validation_event_index": 9,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03211623430252075,
+        "cofitok_minus_dense": -0.00011900067329406738,
+        "dense_epsilon_mse": 0.03223523497581482,
+        "lower_mse": "cofitok",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 1.0
+        },
+        "relative_delta": -0.0036916334992858034,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "full_scale"
+        },
+        "step": 11000,
+        "validation_batch_index": 10,
+        "validation_event_index": 10,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03208285570144653,
+        "cofitok_minus_dense": -0.001514539122581482,
+        "dense_epsilon_mse": 0.033597394824028015,
+        "lower_mse": "cofitok",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 1.0
+        },
+        "relative_delta": -0.04507906432966408,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "full_scale"
+        },
+        "step": 12000,
+        "validation_batch_index": 11,
+        "validation_event_index": 11,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.028874576091766357,
+        "cofitok_minus_dense": -9.454786777496338e-05,
+        "dense_epsilon_mse": 0.02896912395954132,
+        "lower_mse": "cofitok",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 1.0
+        },
+        "relative_delta": -0.003263746183937431,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "full_scale"
+        },
+        "step": 13000,
+        "validation_batch_index": 12,
+        "validation_event_index": 12,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03349035605788231,
+        "cofitok_minus_dense": 9.822100400924683e-05,
+        "dense_epsilon_mse": 0.03339213505387306,
+        "lower_mse": "dense_identity",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 1.0
+        },
+        "relative_delta": 0.0029414412660580818,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "full_scale"
+        },
+        "step": 14000,
+        "validation_batch_index": 13,
+        "validation_event_index": 13,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03144429996609688,
+        "cofitok_minus_dense": -0.00025151297450065613,
+        "dense_epsilon_mse": 0.031695812940597534,
+        "lower_mse": "cofitok",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 1.0
+        },
+        "relative_delta": -0.00793521134706427,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "full_scale"
+        },
+        "step": 15000,
+        "validation_batch_index": 14,
+        "validation_event_index": 14,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03378083556890488,
+        "cofitok_minus_dense": -0.00012441352009773254,
+        "dense_epsilon_mse": 0.03390524908900261,
+        "lower_mse": "cofitok",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 1.0
+        },
+        "relative_delta": -0.0036694471635097614,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "full_scale"
+        },
+        "step": 16000,
+        "validation_batch_index": 15,
+        "validation_event_index": 15,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.0325872004032135,
+        "cofitok_minus_dense": 0.00028134509921073914,
+        "dense_epsilon_mse": 0.03230585530400276,
+        "lower_mse": "dense_identity",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 1.0
+        },
+        "relative_delta": 0.008708795868836815,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "full_scale"
+        },
+        "step": 17000,
+        "validation_batch_index": 16,
+        "validation_event_index": 16,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.031175415962934494,
+        "cofitok_minus_dense": 4.7326087951660156e-05,
+        "dense_epsilon_mse": 0.031128089874982834,
+        "lower_mse": "dense_identity",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 1.0
+        },
+        "relative_delta": 0.001520365950552443,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "full_scale"
+        },
+        "step": 18000,
+        "validation_batch_index": 17,
+        "validation_event_index": 17,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.027303483337163925,
+        "cofitok_minus_dense": -6.14263117313385e-05,
+        "dense_epsilon_mse": 0.027364909648895264,
+        "lower_mse": "cofitok",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 1.0
+        },
+        "relative_delta": -0.002244710927953614,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "full_scale"
+        },
+        "step": 19000,
+        "validation_batch_index": 18,
+        "validation_event_index": 18,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03050481341779232,
+        "cofitok_minus_dense": 5.659647285938263e-05,
+        "dense_epsilon_mse": 0.030448216944932938,
+        "lower_mse": "dense_identity",
+        "observed_schedule_scales": {
+          "ema_teacher_consistency": 0.0,
+          "rollout_consistency": 1.0
+        },
+        "relative_delta": 0.0018587779035383277,
+        "schedule_phases": {
+          "ema_teacher_consistency": "inactive",
+          "rollout_consistency": "full_scale"
+        },
+        "step": 20000,
+        "validation_batch_index": 19,
+        "validation_event_index": 19,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      }
+    ],
+    "pairing_basis": "same validation steps, event indices, batch indices, image counts, and fixed noise seed",
+    "schedule_regimes": {
+      "basis": "predeclared shared loss schedules from both resolved manifests",
+      "by_schedule": {
+        "ema_teacher_consistency": [
+          {
+            "event_steps": [
+              1000,
+              2000,
+              3000,
+              4000,
+              5000,
+              6000,
+              7000,
+              8000,
+              9000,
+              10000,
+              11000,
+              12000,
+              13000,
+              14000,
+              15000,
+              16000,
+              17000,
+              18000,
+              19000,
+              20000
+            ],
+            "first_step": 1000,
+            "last_step": 20000,
+            "phase": "inactive",
+            "summary": {
+              "cofitok_lower_event_count": 10,
+              "cofitok_mean_epsilon_mse": 0.03198794648051262,
+              "dense_lower_event_count": 10,
+              "dense_mean_epsilon_mse": 0.03208148116245866,
+              "endpoint_relative_delta": 0.0018587779035383277,
+              "event_count": 20,
+              "max_absolute_relative_delta": 0.04507906432966408,
+              "mean_absolute_delta": 0.0002353777177631855,
+              "mean_cofitok_minus_dense": -9.35346819460392e-05,
+              "median_absolute_delta": 0.00012170709669589996,
+              "relative_delta_of_means": -0.0029155350238471434,
+              "tie_event_count": 0
+            }
+          }
+        ],
+        "rollout_consistency": [
+          {
+            "event_steps": [
+              1000,
+              2000,
+              3000,
+              4000,
+              5000,
+              6000,
+              7000,
+              8000,
+              9000
+            ],
+            "first_step": 1000,
+            "last_step": 9000,
+            "phase": "warmup",
+            "summary": {
+              "cofitok_lower_event_count": 4,
+              "cofitok_mean_epsilon_mse": 0.03274765962527858,
+              "dense_lower_event_count": 5,
+              "dense_mean_epsilon_mse": 0.03276985821624597,
+              "endpoint_relative_delta": -0.0005381381249663703,
+              "event_count": 9,
+              "max_absolute_relative_delta": 0.014441186620334166,
+              "mean_absolute_delta": 0.00022750885950194465,
+              "mean_cofitok_minus_dense": -2.219859096739027e-05,
+              "median_absolute_delta": 0.0002112947404384613,
+              "relative_delta_of_means": -0.0006774088194372767,
+              "tie_event_count": 0
+            }
+          },
+          {
+            "event_steps": [
+              10000,
+              11000,
+              12000,
+              13000,
+              14000,
+              15000,
+              16000,
+              17000,
+              18000,
+              19000,
+              20000
+            ],
+            "first_step": 10000,
+            "last_step": 20000,
+            "phase": "full_scale",
+            "summary": {
+              "cofitok_lower_event_count": 6,
+              "cofitok_mean_epsilon_mse": 0.03136636299843138,
+              "dense_lower_event_count": 5,
+              "dense_mean_epsilon_mse": 0.031518263572996315,
+              "endpoint_relative_delta": 0.0018587779035383277,
+              "event_count": 11,
+              "max_absolute_relative_delta": 0.04507906432966408,
+              "mean_absolute_delta": 0.00024181587452238256,
+              "mean_cofitok_minus_dense": -0.00015190057456493378,
+              "median_absolute_delta": 9.822100400924683e-05,
+              "relative_delta_of_means": -0.004819446166922615,
+              "tie_event_count": 0
+            }
+          }
+        ]
+      },
+      "contracts": {
+        "ema_teacher_consistency": {
+          "enabled": true,
+          "full_scale_step": 40000,
+          "start_step": 30000,
+          "warmup_steps": 10000,
+          "weight": 0.25
+        },
+        "rollout_consistency": {
+          "enabled": true,
+          "full_scale_step": 10000,
+          "start_step": 0,
+          "warmup_steps": 10000,
+          "weight": 0.1
+        }
+      },
+      "individual_regime_significance_claim_allowed": false
+    },
+    "summary": {
+      "cofitok_lower_event_count": 10,
+      "cofitok_mean_epsilon_mse": 0.03198794648051262,
+      "dense_lower_event_count": 10,
+      "dense_mean_epsilon_mse": 0.03208148116245866,
+      "endpoint_relative_delta": 0.0018587779035383277,
+      "event_count": 20,
+      "max_absolute_relative_delta": 0.04507906432966408,
+      "mean_absolute_delta": 0.0002353777177631855,
+      "mean_cofitok_minus_dense": -9.35346819460392e-05,
+      "median_absolute_delta": 0.00012170709669589996,
+      "relative_delta_of_means": -0.0029155350238471434,
+      "tie_event_count": 0
+    }
+  },
+  "role": "matched_training_trajectory_diagnostic",
+  "schema_version": 2,
+  "sources": {
+    "cofitok_manifest": {
+      "bytes": 8401,
+      "path": "artifacts/reports/generation/stability_scaling_50k_ema_teacher/matched_20k_schedule_trajectory_2026-08-03/source/cofitok_run_manifest.json",
+      "sha256": "3b554762a5ee75d77fbf66af616c6eaab31ae24dd7a6f40f1f9d4f747bc06519"
+    },
+    "cofitok_metrics": {
+      "bound_prefix": {
+        "bytes": 376084,
+        "last_step": 20000,
+        "row_count": 401,
+        "sha256": "199c725ace63ca7cbe6cac4f055e015354039df66956c049a566bd2ddba6eb62"
+      },
+      "observed_file": {
+        "bytes": 376084,
+        "path": "artifacts/reports/generation/stability_scaling_50k_ema_teacher/matched_20k_schedule_trajectory_2026-08-03/source/cofitok_train_metrics_through_step_00020000.jsonl",
+        "sha256": "199c725ace63ca7cbe6cac4f055e015354039df66956c049a566bd2ddba6eb62"
+      },
+      "origin": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/train_metrics.jsonl"
+    },
+    "dense_manifest": {
+      "bytes": 7671,
+      "path": "artifacts/reports/generation/stability_scaling_50k_ema_teacher/matched_20k_schedule_trajectory_2026-08-03/source/dense_run_manifest.json",
+      "sha256": "a049a97d8a4e9f4dc4761a9269e50ae55f53ec28b9971d14a7d968bfd7e9f9fe"
+    },
+    "dense_metrics": {
+      "bound_prefix": {
+        "bytes": 349918,
+        "last_step": 20000,
+        "row_count": 401,
+        "sha256": "a8d9c37cb386cd2cea6eb801d70cf8e323081c2b6642983b131865d3fef3b1b4"
+      },
+      "observed_file": {
+        "bytes": 349918,
+        "path": "artifacts/reports/generation/stability_scaling_50k_ema_teacher/matched_20k_schedule_trajectory_2026-08-03/source/dense_train_metrics_through_step_00020000.jsonl",
+        "sha256": "a8d9c37cb386cd2cea6eb801d70cf8e323081c2b6642983b131865d3fef3b1b4"
+      },
+      "origin": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_rollout_x0_u2_ema_teacher/train_metrics.jsonl"
+    }
+  },
+  "status": "pass",
+  "trajectories": {
+    "cofitok": {
+      "all_numeric_metrics_finite": true,
+      "endpoint": {
+        "epsilon": 0.03505758196115494,
+        "rollout_consistency": 0.08430346101522446,
+        "rollout_consistency_scale": 1.0
+      },
+      "first_step": 1,
+      "last_step": 20000,
+      "row_count": 401,
+      "samples_seen": 1280000,
+      "samples_seen_exact": true,
+      "steps_exact": true,
+      "validation_event_count": 20,
+      "validation_provenance_complete": true,
+      "validation_steps": [
+        1000,
+        2000,
+        3000,
+        4000,
+        5000,
+        6000,
+        7000,
+        8000,
+        9000,
+        10000,
+        11000,
+        12000,
+        13000,
+        14000,
+        15000,
+        16000,
+        17000,
+        18000,
+        19000,
+        20000
+      ]
+    },
+    "dense_identity": {
+      "all_numeric_metrics_finite": true,
+      "endpoint": {
+        "epsilon": 0.035035476088523865,
+        "rollout_consistency": 0.08724909275770187,
+        "rollout_consistency_scale": 1.0
+      },
+      "first_step": 1,
+      "last_step": 20000,
+      "row_count": 401,
+      "samples_seen": 1280000,
+      "samples_seen_exact": true,
+      "steps_exact": true,
+      "validation_event_count": 20,
+      "validation_provenance_complete": true,
+      "validation_steps": [
+        1000,
+        2000,
+        3000,
+        4000,
+        5000,
+        6000,
+        7000,
+        8000,
+        9000,
+        10000,
+        11000,
+        12000,
+        13000,
+        14000,
+        15000,
+        16000,
+        17000,
+        18000,
+        19000,
+        20000
+      ]
+    }
+  }
+}
