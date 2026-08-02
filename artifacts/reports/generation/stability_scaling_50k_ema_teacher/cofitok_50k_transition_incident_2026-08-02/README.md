@@ -23,5 +23,11 @@ At capture time, no matched-queue process remained and the dense run directory
 did not exist. GPU PID `362355` belonged to FieldScope and was left untouched.
 Full ImageNet-256 300K training remains unauthorized.
 
+Recovery-control commit `00549fe3ec4ea5334c76e7249537224104ee44be` was
+deployed into a new isolated checkout. Its non-executing preflight completed as
+`prepared`, revalidating the completed CoFiTok trust boundary, frozen runtime,
+matched configs, and `69,192,121,308` bytes of storage headroom. No queue or
+GPU process was launched.
+
 `manifest.json` binds every copied file by byte count and SHA256. The raw
 checkpoint and transition log remain only at their authoritative remote paths.
