@@ -78,3 +78,8 @@ def test_stability_export_receipts_every_partial_success_boundary() -> None:
         assert receipt in source
     assert source.count("--output-tree") == 2
     assert "--overwrite" not in source
+    assert source.count("--resume") == 2
+    assert source.count("--output-file \"$COFITOK_EXPORT_MANIFEST\"") == 1
+    assert source.count("--output-file \"$DENSE_EXPORT_MANIFEST\"") == 1
+    assert source.count("--input-file \"$COFITOK_EXPORT_MANIFEST\"") == 2
+    assert source.count("--input-file \"$DENSE_EXPORT_MANIFEST\"") == 2

@@ -22,7 +22,9 @@ from cofitok.generation import (
     GenerationRequest,
     GenerationSession,
     export_ema_inference_artifact,
+    inference_export_manifest_path,
     verify_inference_artifact,
+    verify_inference_export_manifest,
     verify_generation_release_receipt,
     write_generation_release_receipt,
 )
@@ -36,6 +38,7 @@ from cofitok.generation_gate_sources import (
 )
 from cofitok.environment import runtime_environment_sha256
 from cofitok.models import CoFiTokTiny
+from cofitok.output_lock import exclusive_output_lock
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
 from cofitok.training.checkpointing import checkpoint_integrity_path
@@ -291,6 +294,8 @@ def _completion_audit_path(
             "artifact_path": report["artifact"],
             "artifact_sha256": report["artifact_sha256"],
             "artifact_bytes": report["artifact_bytes"],
+            "export_manifest": report["export_manifest"],
+            "source_checkpoint_sha256": report["source_checkpoint_sha256"],
             "source_checkpoint_bytes": report["source_checkpoint_bytes"],
             "source_runtime_environment_sha256": report[
                 "source_runtime_environment_sha256"
@@ -401,6 +406,19 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     assert report["release_authorization"]["decision"] == (
         "large_scale_generation_ready"
     )
+    manifest_path = inference_export_manifest_path(artifact)
+    manifest = verify_inference_export_manifest(
+        manifest_path,
+        expected_artifact=artifact,
+    )
+    assert report["export_manifest"] == {
+        "path": manifest_path.resolve().as_posix(),
+        "bytes": manifest_path.stat().st_size,
+        "sha256": file_sha256(manifest_path),
+    }
+    assert manifest["source"]["sha256"] == report["source_checkpoint_sha256"]
+    assert manifest["target"]["artifact"] == artifact.resolve().as_posix()
+    assert manifest["release_authorization"] == report["release_authorization"]
 
     request = GenerationRequest(
         seeds=(9,),
@@ -458,6 +476,7 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     ]
 
     cli_report_path = tmp_path / "cli_export_report.json"
+    cli_artifact = tmp_path / "cli_cofitok_ema_inference.pt"
     environment = dict(os.environ)
     environment["PYTHONPATH"] = str(ROOT / "src")
     result = subprocess.run(
@@ -467,9 +486,10 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
             "--checkpoint",
             str(source),
             "--output",
-            str(artifact),
+            str(cli_artifact),
             "--release-gate",
             str(release_gate),
+            "--resume",
             "--report",
             str(cli_report_path),
         ],
@@ -487,6 +507,13 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     assert execution["runtime_environment_sha256"] == (
         runtime_environment_sha256(execution["runtime_environment"])
     )
+    cli_manifest = verify_inference_export_manifest(
+        inference_export_manifest_path(cli_artifact),
+        expected_artifact=cli_artifact,
+    )
+    assert cli_manifest["execution"] == execution
+    assert cli_report["resume_requested"] is True
+    assert cli_report["partial_outputs_recovered"] is False
 
 
 def test_ema_export_rejects_source_without_deployment_provenance(tmp_path) -> None:
@@ -497,6 +524,150 @@ def test_ema_export_rejects_source_without_deployment_provenance(tmp_path) -> No
             source,
             tmp_path / "unprovenanced_inference.pt",
         )
+
+
+def test_completed_export_replay_preserves_all_bound_bytes(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    first = export_ema_inference_artifact(source, artifact)
+    paths = (
+        artifact,
+        checkpoint_integrity_path(artifact),
+        inference_export_manifest_path(artifact),
+    )
+    before = {
+        path: (path.stat().st_mtime_ns, path.stat().st_size, file_sha256(path))
+        for path in paths
+    }
+
+    replay = export_ema_inference_artifact(source, artifact, resume=True)
+
+    after = {
+        path: (path.stat().st_mtime_ns, path.stat().st_size, file_sha256(path))
+        for path in paths
+    }
+    assert replay["reused"] is True
+    assert replay["resume_requested"] is True
+    assert replay["partial_outputs_recovered"] is False
+    assert replay["artifact_sha256"] == first["artifact_sha256"]
+    assert after == before
+
+
+def test_partial_export_requires_manifest_bound_explicit_resume(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    export_ema_inference_artifact(source, artifact)
+    checkpoint_integrity_path(artifact).unlink()
+    stale = artifact.parent / f"{artifact.name}.tmp-stale"
+    stale.write_bytes(b"partial temporary")
+
+    with pytest.raises(ValueError, match="requires explicit resume"):
+        export_ema_inference_artifact(source, artifact)
+    assert artifact.is_file()
+    assert stale.is_file()
+
+    recovered = export_ema_inference_artifact(source, artifact, resume=True)
+
+    assert recovered["reused"] is False
+    assert recovered["resume_requested"] is True
+    assert recovered["partial_outputs_recovered"] is True
+    assert not stale.exists()
+    verify_inference_artifact(artifact)
+    verify_inference_export_manifest(
+        inference_export_manifest_path(artifact),
+        expected_artifact=artifact,
+    )
+
+
+def test_partial_export_without_manifest_is_never_deleted(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    export_ema_inference_artifact(source, artifact)
+    checkpoint_integrity_path(artifact).unlink()
+    inference_export_manifest_path(artifact).unlink()
+    artifact_sha = file_sha256(artifact)
+
+    with pytest.raises(ValueError, match="lacks a matching export manifest"):
+        export_ema_inference_artifact(source, artifact, resume=True)
+
+    assert artifact.is_file()
+    assert file_sha256(artifact) == artifact_sha
+    assert not checkpoint_integrity_path(artifact).exists()
+    assert not inference_export_manifest_path(artifact).exists()
+
+
+def test_partial_export_rejects_manifest_drift_before_deserialization(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    source = _training_checkpoint(tmp_path)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    export_ema_inference_artifact(source, artifact)
+    checkpoint_integrity_path(artifact).unlink()
+    manifest_path = inference_export_manifest_path(artifact)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["execution"] = {"unbound": "environment"}
+    write_json_report(manifest_path, manifest)
+
+    def fail_if_deserialized(*args, **kwargs):
+        raise AssertionError("checkpoint was deserialized before manifest rejection")
+
+    monkeypatch.setattr(torch, "load", fail_if_deserialized)
+    with pytest.raises(ValueError, match="manifest request differs"):
+        export_ema_inference_artifact(source, artifact, resume=True)
+    assert artifact.is_file()
+
+
+def test_complete_but_tampered_export_is_not_repaired_by_resume(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    export_ema_inference_artifact(source, artifact)
+    payload = bytearray(artifact.read_bytes())
+    payload[len(payload) // 2] ^= 1
+    artifact.write_bytes(payload)
+    tampered_sha = file_sha256(artifact)
+
+    with pytest.raises(ValueError, match="SHA256 mismatch"):
+        export_ema_inference_artifact(source, artifact, resume=True)
+
+    assert file_sha256(artifact) == tampered_sha
+    assert checkpoint_integrity_path(artifact).is_file()
+    assert inference_export_manifest_path(artifact).is_file()
+
+
+def test_concurrent_export_fails_closed_before_creating_outputs(tmp_path) -> None:
+    source = _training_checkpoint(tmp_path)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    report = tmp_path / "export_report.json"
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(ROOT / "src")
+
+    with exclusive_output_lock(artifact, role="test_export_owner"):
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts/export_generation_inference_artifact.py"),
+                "--checkpoint",
+                str(source),
+                "--output",
+                str(artifact),
+                "--report",
+                str(report),
+                "--resume",
+            ],
+            cwd=ROOT,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    assert result.returncode != 0
+    assert "already locked" in result.stderr
+    assert not artifact.exists()
+    assert not checkpoint_integrity_path(artifact).exists()
+    assert not inference_export_manifest_path(artifact).exists()
+    assert not report.exists()
 
 
 def test_inference_artifact_rejects_model_weights_and_tampering(tmp_path) -> None:
@@ -637,6 +808,31 @@ def test_completion_receipt_authorizes_consumer_load_and_preflight(tmp_path) -> 
     assert preflight["status"] == "passed"
     assert preflight["completion_authorization"] == authorization
     assert preflight["completion_authorization_required"] is True
+
+
+def test_release_receipt_requires_bound_export_manifest_at_consumption(tmp_path) -> None:
+    artifact, _, receipt = _release_receipt_fixture(tmp_path)
+    manifest = inference_export_manifest_path(artifact)
+    manifest.unlink()
+
+    with pytest.raises(FileNotFoundError, match="release source is missing"):
+        verify_generation_release_receipt(receipt, artifact)
+
+
+def test_release_artifact_remains_portable_after_source_checkpoint_archival(
+    tmp_path,
+) -> None:
+    artifact, _, receipt = _release_receipt_fixture(tmp_path)
+    manifest = json.loads(
+        inference_export_manifest_path(artifact).read_text(encoding="utf-8")
+    )
+    source = Path(manifest["source"]["path"])
+    checkpoint_integrity_path(source).unlink()
+    source.unlink()
+
+    authorization = verify_generation_release_receipt(receipt, artifact)
+
+    assert authorization["method"] == "cofitok"
 
 
 def test_stability_completion_profile_publishes_release_receipt(tmp_path) -> None:
@@ -795,3 +991,7 @@ def test_formal_export_runbook_binds_full_release_gate() -> None:
     ).read_text(encoding="utf-8")
 
     assert runbook.count('--release-gate "$FINAL_GATE"') == 2
+    assert runbook.count("--resume") == 2
+    assert runbook.count(".export_manifest.json") == 2
+    assert runbook.count('test -f "$COFITOK_EXPORT_MANIFEST"') == 1
+    assert runbook.count('test -f "$DENSE_EXPORT_MANIFEST"') == 1

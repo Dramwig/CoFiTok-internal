@@ -86,6 +86,19 @@ export requires `--release-gate`; artifacts are rejected when either gate
 identity differs at export reuse, load, preflight, smoke inference, or terminal
 completion audit.
 
+Each artifact also has an adjacent
+`<artifact>.export_manifest.json`. Before checkpoint deserialization, the
+exporter atomically freezes this manifest with the source checkpoint and
+integrity-sidecar SHA/bytes, source step/runtime/Git/training authorization,
+exact target paths, final release-gate binding, and exporter Git/runtime
+identity. A non-blocking adjacent output lock admits only one exporter. Formal
+runbooks always pass `--resume`: a fresh target still starts normally, while an
+interrupted target is recoverable only when its existing manifest is byte-for-
+byte equivalent to the current request. Artifact-only or sidecar-only state
+without that manifest is never deleted; a complete but corrupt pair is never
+auto-repaired. Exact completed replay preserves artifact, sidecar, and manifest
+bytes and mtimes.
+
 The matched dense control is exported separately as
 `dense_identity_ema_inference.pt` in the same directory. Neither artifact path
 is considered deployable merely because a file exists: production loading must
@@ -97,7 +110,11 @@ generation-system audit passes. For routine production use, also pass
 `--completion-receipt` and `--require-completion-authorization`. Before
 deserialization, the loader rehashes the receipt and its bound completion audit,
 requires the unique passing inference-artifact check, and matches the selected
-artifact's physical SHA/bytes plus training and release provenance. This
+artifact's physical SHA/bytes, source-checkpoint SHA, export-manifest identity,
+and training/release provenance. Receipt creation independently reopens the
+manifest and its source/gate bindings. Routine receipt verification requires the
+unchanged manifest but does not reopen the large source checkpoint, so the
+released EMA artifact remains portable after that checkpoint is archived. This
 distinguishes a quality-gated export—which must exist before the terminal audit
 can run—from an artifact whose full training, evaluation, comparison,
 reproducibility, smoke, and deployment evidence has actually passed.

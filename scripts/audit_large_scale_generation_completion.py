@@ -18,7 +18,11 @@ from cofitok.generation import (
     SAMPLING_REPORT_SCHEMA_VERSION,
     sampling_protocol_contract,
 )
-from cofitok.generation.artifact import verify_inference_artifact
+from cofitok.generation.artifact import (
+    inference_export_manifest_path,
+    verify_inference_artifact,
+    verify_inference_export_manifest,
+)
 from cofitok.generation_authorization import validate_generation_gate_binding
 from cofitok.generation_cost import training_cost_summary
 from cofitok.gpu_contention import validate_gpu_contention_evidence
@@ -1350,6 +1354,13 @@ def _inference_export_evidence(
         release_authorizations[method] = release_authorization
         if export.get("status") != "completed" or export.get("verified") is not True:
             raise ValueError(f"{method} inference export is incomplete")
+        if export.get("resume_requested") is not True or not isinstance(
+            export.get("partial_outputs_recovered"),
+            bool,
+        ):
+            raise ValueError(
+                f"{method} inference export lacks explicit resume evidence"
+            )
         if export.get("weights") != "ema_export":
             raise ValueError(f"{method} inference export is not EMA-only")
         if int(export.get("checkpoint_step", -1)) != 300_000:
@@ -1383,6 +1394,51 @@ def _inference_export_evidence(
             "artifact_integrity_manifest"
         ):
             raise ValueError(f"{method} inference artifact integrity path differs")
+        export_manifest = export.get("export_manifest")
+        verified_manifest = verified_file.get("export_manifest")
+        manifest_payload = verified_file.get("export_manifest_payload")
+        if (
+            not isinstance(export_manifest, dict)
+            or export_manifest != verified_manifest
+            or not isinstance(manifest_payload, dict)
+        ):
+            raise ValueError(f"{method} inference export manifest differs")
+        manifest_source = manifest_payload.get("source")
+        manifest_target = manifest_payload.get("target")
+        expected_manifest_authorization = {
+            "authorization_stage": expected_authorization["stage"],
+            "authorization_decision": expected_authorization["decision"],
+            "authorization_gate_bytes": expected_authorization["gate_bytes"],
+            "authorization_gate_sha256": expected_authorization["gate_sha256"],
+            "authorization_gate_identity_sha256": expected_authorization[
+                "gate_identity_sha256"
+            ],
+        }
+        if (
+            manifest_payload.get("artifact_type")
+            != "cofitok_generation_inference"
+            or manifest_payload.get("artifact_format_version") != 4
+            or manifest_payload.get("weights") != "ema_export"
+            or not isinstance(manifest_source, dict)
+            or manifest_source.get("path") != export.get("source_checkpoint")
+            or manifest_source.get("bytes") != source_bytes
+            or manifest_source.get("sha256")
+            != export.get("source_checkpoint_sha256")
+            or manifest_source.get("step") != 300_000
+            or manifest_source.get("runtime_environment_sha256")
+            != expected_environment_sha
+            or manifest_source.get("git") != expected_source_git
+            or manifest_source.get("training_authorization")
+            != expected_manifest_authorization
+            or not isinstance(manifest_target, dict)
+            or manifest_target.get("artifact") != export.get("artifact")
+            or manifest_target.get("integrity_manifest")
+            != export.get("artifact_integrity_manifest")
+            or manifest_payload.get("release_authorization")
+            != release_authorization
+            or manifest_payload.get("execution") != export.get("execution")
+        ):
+            raise ValueError(f"{method} inference export manifest provenance differs")
         if (
             verified_file.get("artifact_sha256") != artifact_sha
             or int(verified_file.get("artifact_bytes", -1)) != artifact_bytes
@@ -1587,6 +1643,8 @@ def _inference_export_evidence(
             "artifact_path": verified_file["path"],
             "artifact_sha256": artifact_sha,
             "artifact_bytes": artifact_bytes,
+            "export_manifest": export_manifest,
+            "source_checkpoint_sha256": export["source_checkpoint_sha256"],
             "source_checkpoint_bytes": source_bytes,
             "source_runtime_environment_sha256": expected_environment_sha,
             "source_git": expected_source_git,
@@ -2794,6 +2852,16 @@ def _verify_checkpoint_file(path: Path) -> dict[str, Any]:
 def _verify_inference_artifact_file(path: Path) -> dict[str, Any]:
     try:
         integrity = verify_inference_artifact(path)
+        manifest_path = inference_export_manifest_path(path)
+        export_manifest_payload = verify_inference_export_manifest(
+            manifest_path,
+            expected_artifact=path,
+        )
+        export_manifest = {
+            "path": manifest_path.resolve().as_posix(),
+            "bytes": manifest_path.stat().st_size,
+            "sha256": file_sha256(manifest_path),
+        }
     except (OSError, KeyError, TypeError, ValueError) as error:
         return {
             "status": "invalid",
@@ -2804,6 +2872,8 @@ def _verify_inference_artifact_file(path: Path) -> dict[str, Any]:
         "status": "verified",
         "path": path.resolve().as_posix(),
         "integrity_manifest": checkpoint_integrity_path(path).resolve().as_posix(),
+        "export_manifest": export_manifest,
+        "export_manifest_payload": export_manifest_payload,
         **integrity,
     }
 

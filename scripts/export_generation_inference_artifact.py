@@ -25,23 +25,33 @@ def main() -> None:
         default="",
         help="Passing full generation gate required for a formal deployment artifact.",
     )
-    args = parser.parse_args()
-    report = export_ema_inference_artifact(
-        args.checkpoint,
-        args.output,
-        release_gate=args.release_gate or None,
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help=(
+            "Resume only a manifest-bound interrupted export; a completed exact "
+            "artifact is replayed without rewriting bytes."
+        ),
     )
+    args = parser.parse_args()
     runtime_environment = capture_runtime_environment(
         torch.device("cpu"),
         project_root=PROJECT_ROOT,
     )
-    report["execution"] = {
+    execution = {
         "git": git_provenance(PROJECT_ROOT),
         "runtime_environment": runtime_environment,
         "runtime_environment_sha256": runtime_environment_sha256(
             runtime_environment
         ),
     }
+    report = export_ema_inference_artifact(
+        args.checkpoint,
+        args.output,
+        release_gate=args.release_gate or None,
+        resume=args.resume,
+        execution=execution,
+    )
     write_json_report(Path(args.report), report)
     print(args.report)
 

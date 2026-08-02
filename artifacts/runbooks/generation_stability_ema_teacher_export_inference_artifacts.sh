@@ -16,6 +16,8 @@ EXPORT_ROOT="$CHECKPOINT_ROOT/exports/stability_full_300k_ema_teacher"
 REPORT_ROOT="$FULL_ROOT/reports/exports"
 COFITOK_ARTIFACT="$EXPORT_ROOT/cofitok_k8_ema_inference.pt"
 DENSE_ARTIFACT="$EXPORT_ROOT/dense_identity_ema_inference.pt"
+COFITOK_EXPORT_MANIFEST="$COFITOK_ARTIFACT.export_manifest.json"
+DENSE_EXPORT_MANIFEST="$DENSE_ARTIFACT.export_manifest.json"
 STAGE_STATE_ROOT="$REPORT_ROOT/stage_receipts"
 
 cd "$PROJECT"
@@ -48,12 +50,14 @@ fi
   --input-file "$FINAL_GATE" \
   --output-file "$COFITOK_ARTIFACT" \
   --output-file "$COFITOK_ARTIFACT.integrity.json" \
+  --output-file "$COFITOK_EXPORT_MANIFEST" \
   --output-file "$REPORT_ROOT/cofitok_export_report.json" \
   -- \
   "$PYTHON" scripts/export_generation_inference_artifact.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output "$COFITOK_ARTIFACT" \
   --release-gate "$FINAL_GATE" \
+  --resume \
   --report "$REPORT_ROOT/cofitok_export_report.json"
 
 "$PYTHON" scripts/run_generation_stage_once.py \
@@ -65,12 +69,14 @@ fi
   --input-file "$FINAL_GATE" \
   --output-file "$DENSE_ARTIFACT" \
   --output-file "$DENSE_ARTIFACT.integrity.json" \
+  --output-file "$DENSE_EXPORT_MANIFEST" \
   --output-file "$REPORT_ROOT/dense_export_report.json" \
   -- \
   "$PYTHON" scripts/export_generation_inference_artifact.py \
   --checkpoint "$DENSE_CHECKPOINT" \
   --output "$DENSE_ARTIFACT" \
   --release-gate "$FINAL_GATE" \
+  --resume \
   --report "$REPORT_ROOT/dense_export_report.json"
 
 "$PYTHON" scripts/run_generation_stage_once.py \
@@ -79,6 +85,7 @@ fi
   --cwd "$PROJECT" \
   --input-file "$COFITOK_ARTIFACT" \
   --input-file "$COFITOK_ARTIFACT.integrity.json" \
+  --input-file "$COFITOK_EXPORT_MANIFEST" \
   --input-file "$REPORT_ROOT/cofitok_export_report.json" \
   --input-file "$FINAL_GATE" \
   --output-file "$REPORT_ROOT/cofitok_export_preflight.json" \
@@ -102,6 +109,7 @@ fi
   --cwd "$PROJECT" \
   --input-file "$DENSE_ARTIFACT" \
   --input-file "$DENSE_ARTIFACT.integrity.json" \
+  --input-file "$DENSE_EXPORT_MANIFEST" \
   --input-file "$REPORT_ROOT/dense_export_report.json" \
   --input-file "$FINAL_GATE" \
   --output-file "$REPORT_ROOT/dense_export_preflight.json" \
@@ -125,6 +133,7 @@ fi
   --cwd "$PROJECT" \
   --input-file "$COFITOK_ARTIFACT" \
   --input-file "$COFITOK_ARTIFACT.integrity.json" \
+  --input-file "$COFITOK_EXPORT_MANIFEST" \
   --input-file "$REPORT_ROOT/cofitok_export_report.json" \
   --input-file "$REPORT_ROOT/cofitok_export_preflight.json" \
   --input-file "$FINAL_GATE" \
@@ -151,6 +160,7 @@ fi
   --cwd "$PROJECT" \
   --input-file "$DENSE_ARTIFACT" \
   --input-file "$DENSE_ARTIFACT.integrity.json" \
+  --input-file "$DENSE_EXPORT_MANIFEST" \
   --input-file "$REPORT_ROOT/dense_export_report.json" \
   --input-file "$REPORT_ROOT/dense_export_preflight.json" \
   --input-file "$FINAL_GATE" \

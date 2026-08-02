@@ -5,7 +5,11 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from cofitok.generation.artifact import verify_inference_artifact
+from cofitok.generation.artifact import (
+    inference_export_manifest_path,
+    verify_inference_artifact,
+    verify_inference_export_manifest,
+)
 from cofitok.reporting import file_sha256, write_json_report
 
 
@@ -93,14 +97,24 @@ def _artifact_receipt_row(method: str, evidence: Mapping[str, Any]) -> dict[str,
     if not path.is_absolute():
         raise ValueError(f"{method} completion artifact path is not absolute")
     sha256 = str(evidence.get("artifact_sha256", ""))
+    source_checkpoint_sha256 = str(
+        evidence.get("source_checkpoint_sha256", "")
+    )
+    export_manifest = evidence.get("export_manifest")
     smoke_sha256 = evidence.get("smoke_output_sha256")
     if (
         len(sha256) != 64
+        or len(source_checkpoint_sha256) != 64
         or int(evidence.get("artifact_bytes", 0)) < 1
         or int(evidence.get("source_checkpoint_bytes", 0)) < 1
         or not isinstance(evidence.get("source_git"), Mapping)
         or not isinstance(evidence.get("training_authorization"), Mapping)
         or not isinstance(evidence.get("release_authorization"), Mapping)
+        or not isinstance(export_manifest, Mapping)
+        or set(export_manifest) != {"path", "bytes", "sha256"}
+        or not Path(str(export_manifest.get("path", ""))).is_absolute()
+        or int(export_manifest.get("bytes", 0)) < 1
+        or len(str(export_manifest.get("sha256", ""))) != 64
         or int(evidence.get("smoke_output_count", 0)) < 1
         or not isinstance(smoke_sha256, list)
         or len(smoke_sha256) != int(evidence["smoke_output_count"])
@@ -112,6 +126,7 @@ def _artifact_receipt_row(method: str, evidence: Mapping[str, Any]) -> dict[str,
         "artifact_sha256": sha256,
         "artifact_bytes": int(evidence["artifact_bytes"]),
         "checkpoint_step": 300_000,
+        "source_checkpoint_sha256": source_checkpoint_sha256,
         "source_checkpoint_bytes": int(evidence["source_checkpoint_bytes"]),
         "source_runtime_environment_sha256": evidence.get(
             "source_runtime_environment_sha256"
@@ -126,6 +141,7 @@ def _artifact_receipt_row(method: str, evidence: Mapping[str, Any]) -> dict[str,
         ),
         "training_authorization": dict(evidence["training_authorization"]),
         "release_authorization": dict(evidence["release_authorization"]),
+        "export_manifest": dict(export_manifest),
         "smoke_output_count": int(evidence["smoke_output_count"]),
         "smoke_output_sha256": list(smoke_sha256),
     }
@@ -175,6 +191,8 @@ def _validate_artifact_against_row(
         or int(row.get("artifact_bytes", -1))
         != int(integrity.get("artifact_bytes", -2))
         or int(row.get("checkpoint_step", -1)) != int(integrity.get("step", -2))
+        or row.get("source_checkpoint_sha256")
+        != integrity.get("source_checkpoint_sha256")
         or row.get("source_runtime_environment_sha256")
         != integrity.get("source_runtime_environment_sha256")
         or row.get("source_git") != source_git
@@ -186,6 +204,75 @@ def _validate_artifact_against_row(
         raise ValueError(f"{method} inference artifact differs from release receipt")
 
 
+def _validate_manifest_against_row(
+    method: str,
+    row: Mapping[str, Any],
+    *,
+    verify_sources: bool,
+) -> None:
+    artifact = Path(str(row.get("path", ""))).resolve()
+    expected_path = inference_export_manifest_path(artifact).resolve()
+    descriptor = row.get("export_manifest")
+    if not isinstance(descriptor, Mapping):
+        raise ValueError(f"{method} release receipt lacks export manifest")
+    actual_descriptor = _file_identity(expected_path)
+    if dict(descriptor) != actual_descriptor:
+        raise ValueError(f"{method} inference export manifest differs from release receipt")
+    if verify_sources:
+        manifest = verify_inference_export_manifest(
+            expected_path,
+            expected_artifact=artifact,
+        )
+    else:
+        manifest = _read_object(
+            expected_path,
+            name=f"{method} inference export manifest",
+        )
+    source = manifest.get("source")
+    target = manifest.get("target")
+    execution = manifest.get("execution")
+    training_authorization = row.get("training_authorization")
+    expected_manifest_authorization = (
+        None
+        if not isinstance(training_authorization, Mapping)
+        else {
+            "authorization_stage": training_authorization.get("stage"),
+            "authorization_decision": training_authorization.get("decision"),
+            "authorization_gate_bytes": training_authorization.get("gate_bytes"),
+            "authorization_gate_sha256": training_authorization.get("gate_sha256"),
+            "authorization_gate_identity_sha256": training_authorization.get(
+                "gate_identity_sha256"
+            ),
+        }
+    )
+    execution_git = None if not isinstance(execution, Mapping) else execution.get("git")
+    execution_environment_sha = (
+        None
+        if not isinstance(execution, Mapping)
+        else execution.get("runtime_environment_sha256")
+    )
+    if (
+        not isinstance(source, Mapping)
+        or source.get("sha256") != row.get("source_checkpoint_sha256")
+        or int(source.get("bytes", -1))
+        != int(row.get("source_checkpoint_bytes", -2))
+        or int(source.get("step", -1)) != int(row.get("checkpoint_step", -2))
+        or source.get("runtime_environment_sha256")
+        != row.get("source_runtime_environment_sha256")
+        or source.get("git") != row.get("source_git")
+        or source.get("training_authorization")
+        != expected_manifest_authorization
+        or not isinstance(target, Mapping)
+        or target.get("artifact") != artifact.as_posix()
+        or manifest.get("release_authorization")
+        != row.get("release_authorization")
+        or execution_git != row.get("execution_git")
+        or execution_environment_sha
+        != row.get("export_runtime_environment_sha256")
+    ):
+        raise ValueError(f"{method} inference export manifest provenance differs")
+
+
 def write_generation_release_receipt(
     completion_audit: str | Path,
     output: str | Path,
@@ -195,6 +282,7 @@ def write_generation_release_receipt(
     for method, row in payload["artifacts"].items():
         integrity = verify_inference_artifact(row["path"])
         _validate_artifact_against_row(method, row, integrity)
+        _validate_manifest_against_row(method, row, verify_sources=True)
     target = Path(output)
     if target.exists():
         existing = _read_object(target, name="generation release receipt")
@@ -248,6 +336,7 @@ def verify_generation_release_receipt(
         else verify_inference_artifact(artifact)
     )
     _validate_artifact_against_row(method, row, integrity)
+    _validate_manifest_against_row(method, row, verify_sources=False)
     receipt_identity = _file_identity(receipt_path)
     return {
         "receipt": receipt_identity,

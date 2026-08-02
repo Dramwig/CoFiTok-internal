@@ -1245,15 +1245,28 @@ def _inference_exports() -> dict:
         ("cofitok", "a" * 64, "f" * 64, 4),
         ("dense_identity", "b" * 64, "9" * 64, 2),
     ):
+        source_checkpoint = (
+            "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
+            f"imagenet256_full_{method}_300k/checkpoint_step_00300000.pt"
+        )
         artifact = (
             "/root/autodl-tmp/CoFiTok/checkpoints/generation/exports/"
             f"imagenet256_full_300k/{method}_ema_inference.pt"
         )
+        export_manifest = {
+            "path": f"{artifact}.export_manifest.json",
+            "bytes": 700,
+            "sha256": ("7" if method == "cofitok" else "8") * 64,
+        }
         output[f"{method}_export"] = {
             "status": "completed",
             "verified": True,
             "weights": "ema_export",
+            "reused": False,
+            "resume_requested": True,
+            "partial_outputs_recovered": False,
             "checkpoint_step": 300_000,
+            "source_checkpoint": source_checkpoint,
             "source_checkpoint_sha256": source_sha,
             "source_checkpoint_bytes": 1_000,
             "source_runtime_environment_sha256": environment_sha,
@@ -1271,6 +1284,7 @@ def _inference_exports() -> dict:
             "artifact_bytes": 400,
             "artifact": artifact,
             "artifact_integrity_manifest": f"{artifact}.integrity.json",
+            "export_manifest": export_manifest,
         }
         output[f"{method}_preflight"] = {
             "status": "passed",
@@ -1383,6 +1397,7 @@ def _full_checkpoint_files() -> dict:
 
 def _inference_artifact_files() -> dict:
     output = {}
+    exports = _inference_exports()
     environment_sha = runtime_environment_sha256(_runtime_environment())
     training_authorization = _full_training_authorization()
     release_authorization = _full_release_authorization()
@@ -1394,10 +1409,54 @@ def _inference_artifact_files() -> dict:
             "/root/autodl-tmp/CoFiTok/checkpoints/generation/exports/"
             f"imagenet256_full_300k/{method}_ema_inference.pt"
         )
+        export = exports[f"{method}_export"]
+        source_checkpoint = export["source_checkpoint"]
+        manifest_payload = {
+            "schema_version": 1,
+            "role": "cofitok_generation_inference_export_manifest",
+            "artifact_type": "cofitok_generation_inference",
+            "artifact_format_version": 4,
+            "weights": "ema_export",
+            "source": {
+                "path": source_checkpoint,
+                "bytes": 1_000,
+                "sha256": source_sha,
+                "step": 300_000,
+                "checkpoint_format_version": 1,
+                "integrity_manifest": {
+                    "path": f"{source_checkpoint}.integrity.json",
+                    "bytes": 300,
+                    "sha256": "6" * 64,
+                },
+                "runtime_environment_sha256": environment_sha,
+                "git": {
+                    "dirty": False,
+                    "revision": FULL_REVISION,
+                    "branch": "scale/generative-system",
+                },
+                "training_authorization": {
+                    "authorization_stage": training_authorization["stage"],
+                    "authorization_decision": training_authorization["decision"],
+                    "authorization_gate_bytes": training_authorization["gate_bytes"],
+                    "authorization_gate_sha256": training_authorization["gate_sha256"],
+                    "authorization_gate_identity_sha256": training_authorization[
+                        "gate_identity_sha256"
+                    ],
+                },
+            },
+            "target": {
+                "artifact": path,
+                "integrity_manifest": f"{path}.integrity.json",
+            },
+            "release_authorization": copy.deepcopy(release_authorization),
+            "execution": copy.deepcopy(export["execution"]),
+        }
         output[method] = {
             "status": "verified",
             "path": path,
             "integrity_manifest": f"{path}.integrity.json",
+            "export_manifest": copy.deepcopy(export["export_manifest"]),
+            "export_manifest_payload": manifest_payload,
             "artifact_sha256": artifact_sha,
             "artifact_bytes": 400,
             "source_checkpoint_sha256": source_sha,
@@ -2724,6 +2783,9 @@ def test_inference_release_audit_rejects_cross_method_environment_drift() -> Non
     execution["runtime_environment_sha256"] = runtime_environment_sha256(
         execution["runtime_environment"]
     )
+    kwargs["inference_artifact_files"]["dense_identity"][
+        "export_manifest_payload"
+    ]["execution"] = copy.deepcopy(execution)
 
     with pytest.raises(ValueError, match="different execution environments"):
         _inference_export_evidence(
@@ -2793,6 +2855,44 @@ def test_completion_audit_rejects_corrupted_inference_artifact_bytes() -> None:
         "path": "/corrupted/dense_identity_ema_inference.pt",
         "error": "Inference artifact SHA256 mismatch",
     }
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_rejects_missing_inference_export_manifest() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_artifact_files"]["cofitok"] = {
+        "status": "invalid",
+        "path": kwargs["inference_exports"]["cofitok_export"]["artifact"],
+        "error": "inference export manifest is missing",
+    }
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_rejects_export_manifest_descriptor_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_exports"]["cofitok_export"]["export_manifest"][
+        "sha256"
+    ] = "d" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_rejects_export_manifest_execution_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_artifact_files"]["dense_identity"][
+        "export_manifest_payload"
+    ]["execution"]["git"]["revision"] = "d" * 40
 
     report = build_completion_audit(**kwargs)
 

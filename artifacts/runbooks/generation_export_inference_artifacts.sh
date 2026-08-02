@@ -6,6 +6,8 @@ OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
 EXPORT_ROOT="$OUTPUT_ROOT/exports/imagenet256_full_300k"
 COFITOK_ARTIFACT="$EXPORT_ROOT/cofitok_k8_ema_inference.pt"
 DENSE_ARTIFACT="$EXPORT_ROOT/dense_identity_ema_inference.pt"
+COFITOK_EXPORT_MANIFEST="$COFITOK_ARTIFACT.export_manifest.json"
+DENSE_EXPORT_MANIFEST="$DENSE_ARTIFACT.export_manifest.json"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -26,12 +28,17 @@ test -f "$FINAL_GATE"
 python scripts/export_generation_inference_artifact.py \
   --checkpoint "$COFITOK_CHECKPOINT" --output "$COFITOK_ARTIFACT" \
   --release-gate "$FINAL_GATE" \
+  --resume \
   --report "$REPORT_ROOT/cofitok_export_report.json"
 
 python scripts/export_generation_inference_artifact.py \
   --checkpoint "$DENSE_CHECKPOINT" --output "$DENSE_ARTIFACT" \
   --release-gate "$FINAL_GATE" \
+  --resume \
   --report "$REPORT_ROOT/dense_export_report.json"
+
+test -f "$COFITOK_EXPORT_MANIFEST"
+test -f "$DENSE_EXPORT_MANIFEST"
 
 python scripts/preflight_generation_sampling.py \
   --checkpoint "$COFITOK_ARTIFACT" \
