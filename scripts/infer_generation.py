@@ -2,11 +2,28 @@ from __future__ import annotations
 
 import argparse
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from cofitok.diffusion import select_sampling_timesteps
 from cofitok.environment import capture_runtime_environment, runtime_environment_sha256
 from cofitok.generation import GenerationRequest, GenerationSession, save_tensor_png
+from cofitok.generation.protocol import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
+from cofitok.inference_replay import (
+    INFERENCE_MANIFEST_ROLE,
+    INFERENCE_MANIFEST_SCHEMA_VERSION,
+    INFERENCE_REPORT_SCHEMA_VERSION,
+    file_identity,
+    load_progress,
+    prepare_manifest,
+    read_json_object,
+    reject_symlink_chain,
+    reusable_completed_report,
+    validate_report_binding,
+    validate_output_directory_layout,
+    write_progress,
+)
 from cofitok.reporting import file_sha256, git_provenance, write_json_report
 
 
@@ -82,13 +99,88 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--weights", choices=["ema", "model"], default="ema")
     parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
     parser.add_argument("--require-release-authorization", action="store_true")
+    parser.add_argument("--resume", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _checkpoint_metadata(session: GenerationSession) -> dict[str, Any]:
+    loaded = session.loaded
+    return {
+        "checkpoint": loaded.checkpoint_path.as_posix(),
+        "checkpoint_sha256": loaded.checkpoint_sha256,
+        "checkpoint_integrity_manifest": (
+            loaded.checkpoint_integrity_manifest.as_posix()
+        ),
+        "checkpoint_step": loaded.checkpoint_step,
+        "weights": loaded.weights,
+        "artifact_type": loaded.artifact_type,
+        "source_checkpoint_sha256": loaded.source_checkpoint_sha256,
+        "source_runtime_environment_sha256": (
+            loaded.source_runtime_environment_sha256
+        ),
+        "source_git": loaded.source_git_provenance,
+        "training_authorization": loaded.training_authorization,
+        "release_authorization": loaded.release_authorization,
+        "release_authorization_required": (
+            loaded.release_authorization_required
+        ),
+    }
+
+
+def _expected_outputs(
+    output_dir: Path,
+    *,
+    seeds: list[int],
+    labels: list[int] | None,
+    budgets: list[int],
+) -> list[dict[str, Any]]:
+    outputs = []
+    for budget in budgets:
+        for index, seed in enumerate(seeds):
+            label = labels[index] if labels is not None else None
+            class_tag = f"class_{label:04d}" if label is not None else "unconditional"
+            filename = f"seed_{seed:019d}_{class_tag}_prefix_{budget:02d}.png"
+            outputs.append(
+                {
+                    "path": (output_dir / filename).resolve().as_posix(),
+                    "filename": filename,
+                    "seed": seed,
+                    "class_id": label,
+                    "prefix_budget": budget,
+                }
+            )
+    return outputs
+
+
+def _report_base(
+    manifest: dict[str, Any],
+    manifest_identity: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "schema_version": INFERENCE_REPORT_SCHEMA_VERSION,
+        "git": manifest["git"],
+        "runtime_environment": manifest["runtime_environment"],
+        "runtime_environment_sha256": manifest["runtime_environment_sha256"],
+        "inference_api": manifest["inference_api"],
+        "sampling_protocol_schema": manifest["sampling_protocol_schema"],
+        "checkpoint": manifest["checkpoint"],
+        "request": manifest["request"],
+        "manifest": manifest_identity,
+    }
 
 
 def run_inference(args: argparse.Namespace) -> dict[str, Any]:
     if args.batch_size < 1:
         raise ValueError("batch-size must be positive")
+    resume = bool(getattr(args, "resume", False))
+    overwrite = bool(getattr(args, "overwrite", False))
+    if resume and overwrite:
+        raise ValueError("inference --resume and --overwrite are mutually exclusive")
     session = GenerationSession.from_checkpoint(
         args.checkpoint,
         weights=args.weights,
@@ -110,24 +202,181 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
     identities = list(zip(seeds, labels if labels is not None else [None] * len(seeds)))
     if len(set(identities)) != len(identities):
         raise ValueError("duplicate seed/class requests would overwrite the same image")
-    output_dir = Path(args.output_dir)
+    output_dir = reject_symlink_chain(args.output_dir, name="inference output directory")
     output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = output_dir.resolve()
     report_path = (
-        Path(args.report)
+        reject_symlink_chain(args.report, name="inference report")
         if getattr(args, "report", "")
         else output_dir / "inference_report.json"
     )
-    if report_path.exists() and not args.overwrite:
-        raise FileExistsError(f"Inference report already exists: {report_path}")
+    report_path = report_path.resolve()
+    manifest_path = output_dir / "inference_manifest.json"
+    progress_path = output_dir / "inference_progress.json"
+    if report_path in {manifest_path, progress_path}:
+        raise ValueError("inference report must differ from manifest and progress paths")
+    expected_outputs = _expected_outputs(
+        output_dir,
+        seeds=seeds,
+        labels=labels,
+        budgets=budgets,
+    )
+    validate_output_directory_layout(
+        output_dir,
+        expected_outputs=expected_outputs,
+    )
+    if report_path.exists() and not report_path.is_file():
+        raise ValueError(f"inference report is not a regular file: {report_path}")
+    if not resume and not overwrite:
+        existing = [
+            path
+            for path in (manifest_path, progress_path, report_path)
+            if path.exists() or path.is_symlink()
+        ]
+        existing.extend(
+            Path(row["path"])
+            for row in expected_outputs
+            if Path(row["path"]).exists() or Path(row["path"]).is_symlink()
+        )
+        if existing:
+            raise FileExistsError(
+                "Inference outputs already exist: "
+                + ", ".join(path.as_posix() for path in existing)
+            )
+    request = {
+        "seeds": seeds,
+        "class_ids": labels,
+        "prefix_budgets": budgets,
+        "batch_size": args.batch_size,
+        "sample_steps": args.sample_steps,
+        "actual_timesteps": select_sampling_timesteps(
+            session.schedule.num_train_timesteps,
+            args.sample_steps,
+        ),
+        "guidance_scale": args.guidance_scale,
+        "guidance_rescale": args.guidance_rescale,
+        "cfg_batch_mode": args.cfg_batch_mode,
+        "eta": args.eta,
+        "clip_x0": True,
+        "precision": args.precision,
+        "image_shape": [
+            session.loaded.config.model.image_channels,
+            session.loaded.config.model.image_size,
+            session.loaded.config.model.image_size,
+        ],
+    }
+    manifest = {
+        "schema_version": INFERENCE_MANIFEST_SCHEMA_VERSION,
+        "role": INFERENCE_MANIFEST_ROLE,
+        "git": execution_git,
+        "runtime_environment": runtime_environment,
+        "runtime_environment_sha256": runtime_environment_sha,
+        "inference_api": dict(INFERENCE_API),
+        "sampling_protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+        "checkpoint": _checkpoint_metadata(session),
+        "request": request,
+        "output_root": output_dir.as_posix(),
+        "report": report_path.as_posix(),
+        "expected_outputs": expected_outputs,
+    }
+    manifest_identity = prepare_manifest(
+        manifest_path,
+        manifest,
+        resume=resume,
+        overwrite=overwrite,
+    )
+    progress_existed = progress_path.is_file()
+    state = load_progress(
+        progress_path,
+        manifest_identity=manifest_identity,
+        expected_outputs=expected_outputs,
+        resume=resume,
+        overwrite=overwrite,
+    )
+    existing_report = None
+    if resume and report_path.is_file():
+        if not progress_existed:
+            raise ValueError("existing inference report is missing its progress evidence")
+        existing_report = read_json_object(report_path, name="inference report")
+        validate_report_binding(
+            existing_report,
+            manifest_identity=manifest_identity,
+            manifest=manifest,
+        )
+        if (
+            existing_report.get("status") == "completed"
+            and existing_report.get("progress") != file_identity(progress_path)
+        ):
+            raise ValueError("completed inference progress identity differs")
+        if reusable_completed_report(
+            existing_report,
+            progress_path=progress_path,
+            progress_status=state["status"],
+            expected_outputs=expected_outputs,
+            valid_outputs=state["outputs"],
+        ):
+            return {**existing_report, "reused": True}
+
+    valid_outputs = dict(state["outputs"])
+    for output in expected_outputs:
+        path = reject_symlink_chain(output["path"], name="inference output")
+        if path.exists() and not path.is_file():
+            raise ValueError(f"inference output is not a regular file: {path}")
+        if path.exists() and output["filename"] not in valid_outputs and not (
+            resume or overwrite
+        ):
+            raise FileExistsError(f"Inference output already exists: {path}")
+
+    attempt_count = int(state["attempt_count"]) + 1
+    prior_elapsed = float(state["cumulative_elapsed_seconds"])
     started = time.perf_counter()
-    outputs = []
-    last_metadata = None
+
+    def ordered_outputs() -> list[dict[str, Any]]:
+        return [
+            valid_outputs[row["filename"]]
+            for row in expected_outputs
+            if row["filename"] in valid_outputs
+        ]
+
+    progress_identity = write_progress(
+        progress_path,
+        manifest_identity=manifest_identity,
+        expected_output_count=len(expected_outputs),
+        outputs=ordered_outputs(),
+        status="running",
+        attempt_count=attempt_count,
+        cumulative_elapsed_seconds=prior_elapsed,
+        updated_at=_now(),
+    )
+    write_json_report(
+        report_path,
+        {
+            **_report_base(manifest, manifest_identity),
+            "status": "running",
+            "progress": progress_identity,
+            "attempt_count": attempt_count,
+            "expected_output_count": len(expected_outputs),
+            "completed_output_count": len(valid_outputs),
+            "outputs": ordered_outputs(),
+            "updated_at": _now(),
+        },
+    )
     try:
         for budget in budgets:
-            for start in range(0, len(seeds), args.batch_size):
-                stop = min(len(seeds), start + args.batch_size)
-                batch_seeds = tuple(seeds[start:stop])
-                batch_labels = tuple(labels[start:stop]) if labels is not None else None
+            missing = [
+                output
+                for output in expected_outputs
+                if output["prefix_budget"] == budget
+                and output["filename"] not in valid_outputs
+            ]
+            for start in range(0, len(missing), args.batch_size):
+                batch = missing[start : start + args.batch_size]
+                batch_seeds = tuple(int(output["seed"]) for output in batch)
+                batch_labels = (
+                    tuple(int(output["class_id"]) for output in batch)
+                    if labels is not None
+                    else None
+                )
                 result = session.generate(
                     GenerationRequest(
                         seeds=batch_seeds,
@@ -141,82 +390,85 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
                         precision=args.precision,
                     )
                 )
-                last_metadata = result.metadata
-                for offset, image in enumerate(result.images):
-                    index = start + offset
-                    label = labels[index] if labels is not None else None
-                    class_tag = f"class_{label:04d}" if label is not None else "unconditional"
-                    filename = (
-                        f"seed_{seeds[index]:019d}_{class_tag}_prefix_{budget:02d}.png"
-                    )
+                if len(result.images) != len(batch):
+                    raise RuntimeError("inference batch output count differs")
+                for output, image in zip(batch, result.images, strict=True):
                     path = save_tensor_png(
                         image,
-                        output_dir / filename,
-                        overwrite=args.overwrite,
+                        output["path"],
+                        overwrite=resume or overwrite,
                     )
-                    outputs.append(
-                        {
-                            "path": path.resolve().as_posix(),
-                            "filename": filename,
-                            "sha256": file_sha256(path),
-                            "seed": seeds[index],
-                            "class_id": label,
-                            "prefix_budget": budget,
-                        }
+                    valid_outputs[output["filename"]] = {
+                        **output,
+                        "path": path.resolve().as_posix(),
+                        "sha256": file_sha256(path),
+                    }
+                    progress_identity = write_progress(
+                        progress_path,
+                        manifest_identity=manifest_identity,
+                        expected_output_count=len(expected_outputs),
+                        outputs=ordered_outputs(),
+                        status="running",
+                        attempt_count=attempt_count,
+                        cumulative_elapsed_seconds=(
+                            prior_elapsed + time.perf_counter() - started
+                        ),
+                        updated_at=_now(),
                     )
+        outputs = ordered_outputs()
+        if len(outputs) != len(expected_outputs):
+            raise RuntimeError("inference did not produce every expected output")
     except BaseException as error:
+        cumulative_elapsed = prior_elapsed + time.perf_counter() - started
+        progress_identity = write_progress(
+            progress_path,
+            manifest_identity=manifest_identity,
+            expected_output_count=len(expected_outputs),
+            outputs=ordered_outputs(),
+            status="failed",
+            attempt_count=attempt_count,
+            cumulative_elapsed_seconds=cumulative_elapsed,
+            updated_at=_now(),
+            error=error,
+        )
         failure = {
-            "schema_version": 1,
+            **_report_base(manifest, manifest_identity),
             "status": "failed",
-            "checkpoint": str(Path(args.checkpoint).resolve()),
-            "completed_output_count": len(outputs),
+            "progress": progress_identity,
+            "attempt_count": attempt_count,
+            "expected_output_count": len(expected_outputs),
+            "completed_output_count": len(valid_outputs),
+            "outputs": ordered_outputs(),
+            "elapsed_seconds": cumulative_elapsed,
+            "attempt_elapsed_seconds": cumulative_elapsed - prior_elapsed,
             "error_type": type(error).__name__,
             "error": str(error),
+            "updated_at": _now(),
         }
         write_json_report(report_path, failure)
         raise
-    if last_metadata is None:
-        raise RuntimeError("inference produced no output")
+    cumulative_elapsed = prior_elapsed + time.perf_counter() - started
+    progress_identity = write_progress(
+        progress_path,
+        manifest_identity=manifest_identity,
+        expected_output_count=len(expected_outputs),
+        outputs=outputs,
+        status="completed",
+        attempt_count=attempt_count,
+        cumulative_elapsed_seconds=cumulative_elapsed,
+        updated_at=_now(),
+    )
     report = {
-        "schema_version": 1,
+        **_report_base(manifest, manifest_identity),
         "status": "completed",
-        "git": execution_git,
-        "runtime_environment": runtime_environment,
-        "runtime_environment_sha256": runtime_environment_sha,
-        "inference_api": last_metadata["inference_api"],
-        "sampling_protocol_schema": last_metadata["sampling"]["protocol_schema"],
-        "checkpoint": {
-            key: last_metadata[key]
-            for key in (
-                "checkpoint",
-                "checkpoint_sha256",
-                "checkpoint_integrity_manifest",
-                "checkpoint_step",
-                "weights",
-                "artifact_type",
-                "source_checkpoint_sha256",
-                "source_runtime_environment_sha256",
-                "source_git",
-                "training_authorization",
-                "release_authorization",
-                "release_authorization_required",
-            )
-        },
-        "request": {
-            "seeds": seeds,
-            "class_ids": labels,
-            "prefix_budgets": budgets,
-            "batch_size": args.batch_size,
-            "sample_steps": args.sample_steps,
-            "guidance_scale": args.guidance_scale,
-            "guidance_rescale": args.guidance_rescale,
-            "cfg_batch_mode": args.cfg_batch_mode,
-            "eta": args.eta,
-            "precision": args.precision,
-        },
+        "progress": progress_identity,
+        "attempt_count": attempt_count,
         "output_count": len(outputs),
         "outputs": outputs,
-        "elapsed_seconds": time.perf_counter() - started,
+        "elapsed_seconds": cumulative_elapsed,
+        "attempt_elapsed_seconds": cumulative_elapsed - prior_elapsed,
+        "reused": False,
+        "updated_at": _now(),
     }
     write_json_report(report_path, report)
     return report

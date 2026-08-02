@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 import torch
 
+import scripts.infer_generation as inference_cli
 from cofitok.configs import (
     DataConfig,
     DiffusionConfig,
@@ -21,6 +22,10 @@ from cofitok.configs import (
 )
 from cofitok.generation import GenerationRequest, GenerationSession
 from cofitok.generation.protocol import INFERENCE_API, sampling_protocol_contract
+from cofitok.inference_replay import (
+    INFERENCE_REPORT_SCHEMA_VERSION,
+    validate_completed_inference_evidence,
+)
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
@@ -221,6 +226,7 @@ def test_inference_cli_core_writes_atomic_provenance_report(tmp_path) -> None:
     )
 
     assert report["status"] == "completed"
+    assert report["schema_version"] == INFERENCE_REPORT_SCHEMA_VERSION
     assert report["output_count"] == 4
     assert report["checkpoint"]["checkpoint_step"] == 23
     assert report["inference_api"] == INFERENCE_API
@@ -232,9 +238,212 @@ def test_inference_cli_core_writes_atomic_provenance_report(tmp_path) -> None:
     assert report["request"]["class_ids"] == [3, 3]
     assert report["request"]["prefix_budgets"] == [1, 2]
     assert (output_dir / "inference_report.json").is_file()
+    assert (output_dir / "inference_manifest.json").is_file()
+    assert (output_dir / "inference_progress.json").is_file()
+    progress = json.loads(
+        (output_dir / "inference_progress.json").read_text(encoding="utf-8")
+    )
+    assert progress["status"] == "completed"
+    assert progress["completed_output_count"] == 4
+    replay = validate_completed_inference_evidence(
+        report,
+        expected_root=output_dir,
+    )
+    assert replay["status"] == "verified"
+    assert replay["output_count"] == 4
     for output in report["outputs"]:
         assert len(output["sha256"]) == 64
         assert (output_dir / output["filename"]).is_file()
+
+
+def _inference_args(checkpoint: Path, output_dir: Path) -> argparse.Namespace:
+    return argparse.Namespace(
+        checkpoint=str(checkpoint),
+        output_dir=str(output_dir),
+        report="",
+        class_ids="3",
+        seeds="7,9",
+        seed=0,
+        num_images=1,
+        prefix_budgets="1,2",
+        batch_size=1,
+        sample_steps=1,
+        guidance_scale=1.0,
+        guidance_rescale=0.0,
+        cfg_batch_mode="batched",
+        eta=0.0,
+        weights="ema",
+        precision="fp32",
+        require_release_authorization=False,
+        resume=False,
+        overwrite=False,
+    )
+
+
+def test_inference_cli_resume_reuses_completed_outputs_after_failure(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    checkpoint = _checkpoint(tmp_path)
+    output_dir = tmp_path / "recoverable_inference"
+    args = _inference_args(checkpoint, output_dir)
+    original_save = inference_cli.save_tensor_png
+    save_calls = 0
+
+    def interrupt_second_save(image, path, *, overwrite=False):
+        nonlocal save_calls
+        save_calls += 1
+        if save_calls == 2:
+            raise RuntimeError("simulated inference interruption")
+        return original_save(image, path, overwrite=overwrite)
+
+    monkeypatch.setattr(inference_cli, "save_tensor_png", interrupt_second_save)
+    with pytest.raises(RuntimeError, match="simulated inference interruption"):
+        run_inference(args)
+
+    failed_progress = json.loads(
+        (output_dir / "inference_progress.json").read_text(encoding="utf-8")
+    )
+    assert failed_progress["status"] == "failed"
+    assert failed_progress["completed_output_count"] == 1
+    retained = Path(failed_progress["outputs"][0]["path"])
+    retained_sha = file_sha256(retained)
+    retained_mtime = retained.stat().st_mtime_ns
+
+    monkeypatch.setattr(inference_cli, "save_tensor_png", original_save)
+    args.resume = True
+    completed = run_inference(args)
+
+    assert completed["status"] == "completed"
+    assert completed["attempt_count"] == 2
+    assert completed["output_count"] == 4
+    assert file_sha256(retained) == retained_sha
+    assert retained.stat().st_mtime_ns == retained_mtime
+
+
+def test_inference_cli_completed_resume_is_read_only(tmp_path) -> None:
+    checkpoint = _checkpoint(tmp_path)
+    output_dir = tmp_path / "completed_inference"
+    args = _inference_args(checkpoint, output_dir)
+    first = run_inference(args)
+    evidence = [
+        output_dir / "inference_manifest.json",
+        output_dir / "inference_progress.json",
+        output_dir / "inference_report.json",
+        *[Path(row["path"]) for row in first["outputs"]],
+    ]
+    identities = {
+        path.as_posix(): (file_sha256(path), path.stat().st_mtime_ns)
+        for path in evidence
+    }
+
+    args.resume = True
+    reused = run_inference(args)
+
+    assert reused["status"] == "completed"
+    assert reused["reused"] is True
+    assert {
+        path.as_posix(): (file_sha256(path), path.stat().st_mtime_ns)
+        for path in evidence
+    } == identities
+
+
+def test_inference_cli_resume_rejects_request_drift(tmp_path) -> None:
+    checkpoint = _checkpoint(tmp_path)
+    output_dir = tmp_path / "drifted_inference"
+    args = _inference_args(checkpoint, output_dir)
+    first = run_inference(args)
+    output = Path(first["outputs"][0]["path"])
+    identity = (file_sha256(output), output.stat().st_mtime_ns)
+
+    args.resume = True
+    args.sample_steps = 2
+    with pytest.raises(ValueError, match="manifest does not match"):
+        run_inference(args)
+
+    assert (file_sha256(output), output.stat().st_mtime_ns) == identity
+
+
+def test_inference_cli_resume_regenerates_only_corrupt_output(tmp_path) -> None:
+    checkpoint = _checkpoint(tmp_path)
+    output_dir = tmp_path / "corrupt_inference"
+    args = _inference_args(checkpoint, output_dir)
+    first = run_inference(args)
+    target = Path(first["outputs"][0]["path"])
+    expected_sha = first["outputs"][0]["sha256"]
+    untouched = Path(first["outputs"][1]["path"])
+    untouched_identity = (file_sha256(untouched), untouched.stat().st_mtime_ns)
+    target.write_bytes(b"corrupt")
+
+    args.resume = True
+    recovered = run_inference(args)
+
+    assert recovered["status"] == "completed"
+    assert recovered["attempt_count"] == 2
+    assert file_sha256(target) == expected_sha
+    assert (file_sha256(untouched), untouched.stat().st_mtime_ns) == untouched_identity
+
+
+def test_inference_cli_completed_resume_rejects_progress_tamper(tmp_path) -> None:
+    checkpoint = _checkpoint(tmp_path)
+    output_dir = tmp_path / "tampered_progress"
+    args = _inference_args(checkpoint, output_dir)
+    run_inference(args)
+    progress_path = output_dir / "inference_progress.json"
+    progress = json.loads(progress_path.read_text(encoding="utf-8"))
+    progress["cumulative_elapsed_seconds"] += 1.0
+    write_json_report(progress_path, progress)
+
+    args.resume = True
+    with pytest.raises(ValueError, match="progress identity differs"):
+        run_inference(args)
+
+
+def test_inference_cli_rejects_unexpected_png_before_control_writes(tmp_path) -> None:
+    checkpoint = _checkpoint(tmp_path)
+    output_dir = tmp_path / "mixed_inference"
+    output_dir.mkdir()
+    unexpected = output_dir / "leftover_from_another_request.png"
+    unexpected.write_bytes(b"owned-existing-output")
+    identity = (file_sha256(unexpected), unexpected.stat().st_mtime_ns)
+    args = _inference_args(checkpoint, output_dir)
+    args.overwrite = True
+
+    with pytest.raises(ValueError, match="unexpected PNG files"):
+        run_inference(args)
+
+    assert (file_sha256(unexpected), unexpected.stat().st_mtime_ns) == identity
+    assert not (output_dir / "inference_manifest.json").exists()
+    assert not (output_dir / "inference_progress.json").exists()
+    assert not (output_dir / "inference_report.json").exists()
+
+
+def test_inference_cli_resume_rejects_missing_progress_evidence(tmp_path) -> None:
+    checkpoint = _checkpoint(tmp_path)
+    output_dir = tmp_path / "missing_progress"
+    args = _inference_args(checkpoint, output_dir)
+    run_inference(args)
+    report_path = output_dir / "inference_report.json"
+    report_identity = (file_sha256(report_path), report_path.stat().st_mtime_ns)
+    (output_dir / "inference_progress.json").unlink()
+
+    args.resume = True
+    with pytest.raises(ValueError, match="missing its progress evidence"):
+        run_inference(args)
+
+    assert (file_sha256(report_path), report_path.stat().st_mtime_ns) == report_identity
+    assert not (output_dir / "inference_progress.json").exists()
+
+
+def test_completed_inference_evidence_rehashes_physical_pngs(tmp_path) -> None:
+    checkpoint = _checkpoint(tmp_path)
+    output_dir = tmp_path / "tampered_output"
+    args = _inference_args(checkpoint, output_dir)
+    report = run_inference(args)
+    Path(report["outputs"][0]["path"]).write_bytes(b"tampered")
+
+    with pytest.raises(ValueError, match="digest differs from physical PNG"):
+        validate_completed_inference_evidence(report, expected_root=output_dir)
 
 
 def test_formal_sampling_cli_runs_checkpoint_to_png_and_report(tmp_path) -> None:

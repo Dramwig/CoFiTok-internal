@@ -722,8 +722,16 @@ Stable inference is exposed through `cofitok.generation.GenerationSession` and
 immutable `GenerationRequest` objects. The class/seed/prefix CLI and formal
 sampler share this implementation; both attach checkpoint integrity and exact
 protocol provenance. Final 50K evidence must declare inference API version 1.
+Routine inference also freezes a source-bound manifest before its first PNG and
+atomically advances per-output progress. Exact `--resume` rehashes and preserves
+valid outputs, regenerates only missing or corrupt seed/class/prefix identities,
+and rejects checkpoint/request/Git/runtime/control-evidence drift. A completed
+resume performs no writes. Export smoke completion is accepted only after the
+terminal audit independently rehashes the manifest and completed progress chain;
+legacy smoke reports are not release evidence.
 See `docs/INFERENCE.md` and
-`docs/records/2026-07-12_stable_generation_session.md`.
+`docs/records/2026-07-12_stable_generation_session.md` plus
+`docs/records/2026-08-02_generation_inference_exact_resume.md`.
 The formal sampler also has an end-to-end CPU checkpoint-to-PNG subprocess
 test and derives actual DDIM timesteps from `GenerationSession.schedule`, so
 the exact 10K/50K CLI entry point is covered beyond lower-level sampler tests.

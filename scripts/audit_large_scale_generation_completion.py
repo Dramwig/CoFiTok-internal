@@ -10,6 +10,7 @@ from typing import Any, Callable
 
 from PIL import Image
 
+from cofitok.diffusion import select_sampling_timesteps
 from cofitok.environment import runtime_environment_sha256
 from cofitok.data.provenance import validate_dataset_provenance
 from cofitok.generation import (
@@ -31,6 +32,10 @@ from cofitok.image_integrity import (
     IMAGE_TREE_DIGEST_SCHEMA,
     image_tree_sha256,
     sample_set_sha256,
+)
+from cofitok.inference_replay import (
+    INFERENCE_REPORT_SCHEMA_VERSION,
+    validate_completed_inference_evidence,
 )
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training.checkpointing import (
@@ -1257,6 +1262,17 @@ def _verify_inference_smoke_outputs(
         }
         if discovered != paths:
             raise ValueError("inference smoke directory PNG set differs from report")
+        replay_evidence = (
+            validate_completed_inference_evidence(
+                report,
+                expected_root=root,
+            )
+            if int(report.get("schema_version", -1)) == 2
+            else {
+                "status": "legacy_unverified",
+                "reason": "inference report predates resumable evidence",
+            }
+        )
     except (KeyError, OSError, TypeError, ValueError) as error:
         return {
             "status": "invalid",
@@ -1268,6 +1284,7 @@ def _verify_inference_smoke_outputs(
         "root": root.as_posix(),
         "output_count": len(verified),
         "outputs": sorted(verified, key=lambda row: row["path"]),
+        "replay_evidence": replay_evidence,
     }
 
 
@@ -1407,9 +1424,14 @@ def _inference_export_evidence(
         ):
             raise ValueError(f"{method} export preflight source identity differs")
         checkpoint = smoke.get("checkpoint", {})
-        if smoke.get("status") != "completed" or int(
+        if (
+            smoke.get("schema_version") != INFERENCE_REPORT_SCHEMA_VERSION
+            or smoke.get("status") != "completed"
+            or int(
             smoke.get("output_count", -1)
-        ) != expected_smoke_count:
+            )
+            != expected_smoke_count
+        ):
             raise ValueError(f"{method} inference export smoke is incomplete")
         expected_budgets = [1, 8] if method == "cofitok" else [1]
         expected_request = {
@@ -1418,11 +1440,14 @@ def _inference_export_evidence(
             "prefix_budgets": expected_budgets,
             "batch_size": 2,
             "sample_steps": 10,
+            "actual_timesteps": select_sampling_timesteps(1_000, 10),
             "guidance_scale": 1.5,
             "guidance_rescale": 0.0,
             "cfg_batch_mode": "batched",
             "eta": 0.0,
+            "clip_x0": True,
             "precision": "bf16",
+            "image_shape": [3, 256, 256],
         }
         if smoke.get("request") != expected_request:
             raise ValueError(f"{method} inference export smoke request differs")
@@ -1472,6 +1497,10 @@ def _inference_export_evidence(
             raise ValueError(
                 f"{method} inference smoke files are invalid: "
                 f"{verified_smoke.get('error', 'verification failed')}"
+            )
+        if verified_smoke.get("replay_evidence", {}).get("status") != "verified":
+            raise ValueError(
+                f"{method} inference smoke lacks verified resume evidence"
             )
         verified_by_path = {
             row["path"]: row for row in verified_smoke.get("outputs", [])

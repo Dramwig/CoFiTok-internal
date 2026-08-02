@@ -28,6 +28,7 @@ from cofitok.generation_gate import (
 )
 from cofitok.generation_authorization import build_generation_gate_binding
 from cofitok.image_integrity import image_tree_sha256, sample_set_sha256
+from cofitok.inference_replay import INFERENCE_REPORT_SCHEMA_VERSION
 from cofitok.reporting import file_sha256
 from cofitok.training.authorization import build_generation_training_authorization
 from scripts.audit_large_scale_generation_completion import (
@@ -1255,6 +1256,7 @@ def _inference_exports() -> dict:
             "release_authorization_required": True,
         }
         output[f"{method}_smoke"] = {
+            "schema_version": INFERENCE_REPORT_SCHEMA_VERSION,
             "status": "completed",
             "git": dict(execution_git),
             "runtime_environment": copy.deepcopy(execution_environment),
@@ -1282,11 +1284,14 @@ def _inference_exports() -> dict:
                 "prefix_budgets": [1, 8] if method == "cofitok" else [1],
                 "batch_size": 2,
                 "sample_steps": 10,
+                "actual_timesteps": select_sampling_timesteps(1_000, 10),
                 "guidance_scale": 1.5,
                 "guidance_rescale": 0.0,
                 "cfg_batch_mode": "batched",
                 "eta": 0.0,
+                "clip_x0": True,
                 "precision": "bf16",
+                "image_shape": [3, 256, 256],
             },
             "outputs": [
                 {
@@ -1386,6 +1391,13 @@ def _inference_smoke_files() -> dict:
             "status": "verified",
             "root": str(Path(rows[0]["path"]).parent),
             "output_count": len(rows),
+            "replay_evidence": {
+                "status": "verified",
+                "manifest_sha256": "7" * 64,
+                "progress_sha256": "8" * 64,
+                "attempt_count": 1,
+                "output_count": len(rows),
+            },
             "outputs": [
                 {
                     "path": row["path"],
@@ -2685,6 +2697,18 @@ def test_completion_audit_rejects_missing_or_tampered_smoke_pngs() -> None:
         "status": "invalid",
         "root": "/missing/smoke/cofitok",
         "error": "inference smoke output SHA256 differs",
+    }
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["deployable_ema_inference_artifacts"]
+
+
+def test_completion_audit_requires_verified_inference_resume_evidence() -> None:
+    kwargs = _kwargs()
+    kwargs["inference_smoke_files"]["cofitok"]["replay_evidence"] = {
+        "status": "legacy_unverified"
     }
 
     report = build_completion_audit(**kwargs)

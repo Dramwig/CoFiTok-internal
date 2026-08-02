@@ -46,8 +46,20 @@ python scripts/infer_generation.py \
 One class ID is broadcast to every seed; otherwise provide one class ID per
 seed. Filenames encode seed, class, and prefix. PNG publication is atomic and
 `inference_report.json` records the checkpoint identity, request, elapsed time,
-and SHA256 for every output. Existing reports/images are not overwritten unless
-`--overwrite` is explicit.
+and SHA256 for every output. Before the first image, the CLI atomically freezes
+`inference_manifest.json`, binding the checkpoint, clean Git state, runtime
+environment, complete request, report path, and every expected output identity.
+`inference_progress.json` is updated after each published PNG.
+
+If a process is interrupted, rerun the identical command with `--resume`.
+Already completed files are rehashed and reused without changing their bytes or
+mtime; missing or digest-mismatched files are regenerated from their original
+seed/class/prefix streams. A completed resume is read-only. Checkpoint, request,
+Git, runtime, manifest, progress, or completed-report drift fails closed.
+`--resume` and `--overwrite` are mutually exclusive. Existing reports/images
+are otherwise not replaced unless `--overwrite` is explicit. Unexpected PNGs,
+including leftovers from a different request, are rejected before any control
+file is changed; use a separate clean output directory rather than mixing runs.
 
 ## EMA-only deployment artifact
 
@@ -77,6 +89,11 @@ The matched dense control is exported separately as
 is considered deployable merely because a file exists: production loading must
 keep `--require-release-authorization`, which verifies the embedded final-gate
 identity before model deserialization.
+
+The terminal completion audit additionally reopens and hashes each export smoke
+manifest and progress file. A final release therefore requires both physical
+PNG verification and a completed source-bound inference-resume chain; a legacy
+smoke report without that evidence cannot pass.
 
 ## Formal sampling
 
