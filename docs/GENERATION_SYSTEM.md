@@ -272,6 +272,14 @@ repository or mutate an active training checkout.
   schema-v3 `stability_scaling`/`stability_full` gates cannot omit it. Historical
   schema-v2 gates remain replayable so locked evidence is not retroactively
   invalidated.
+- Schema-v4 `stability_scaling` gates also make distribution support a blocking
+  decision input instead of merely reporting it. CoFiTok precision and recall
+  must each be at least `0.10`, and neither may be more than `0.05` below the
+  matched dense member. These are deliberately low non-collapse floors for the
+  10% scaling decision; they do not replace the stricter full-stage `0.30`
+  floors and do not constitute an ImageNet generation-quality claim. Historical
+  schema-v2/v3 gates remain replayable, but every newly built stability-scaling
+  gate must contain the named `scaling_precision_recall_quality` evidence row.
 - Stability post-evaluation uses separate, explicit training and evaluation
   Git identities. This prevents the gate builder's legacy
   `scale/generative-system` default from rejecting the intentionally isolated
@@ -335,7 +343,10 @@ separately labeled.
    CoFiTok FID at most 100.0, no more than 5% FID or endpoint-MSE regression
    against dense, ordered-prefix rank 1, at least 5% of normalized component
    energy in compressed tokens 1-6, exact zero-token synthesis, and a
-   shuffled-token mismatch.
+   shuffled-token mismatch. Newly built schema-v4 `stability_scaling` gates
+   additionally require CoFiTok precision and recall each at least 0.10 and no
+   more than 0.05 below matched dense, so a superficially acceptable FID cannot
+   hide precision or recall collapse.
 4. Full gate: matched 300K-step runs on full `imagenet_256`, 50K EMA samples,
    official FID plus IS/precision/recall, prefix diagnostics, and checkpoint
    hashes. Declare the system ready only if CoFiTok keeps its prefix-control
@@ -349,12 +360,14 @@ separately labeled.
 The 10% gate is an engineering and architecture decision point. It is not a
 replacement for the full-data result and must not overwrite locked paper tables.
 The precision/recall floors are conservative non-collapse readiness checks, not
-a generation-SOTA claim. The final completion audit binds FID/precision/recall
+a generation-SOTA claim: stability scaling uses 0.10 while the full gate keeps
+the stronger 0.30 floor. The final completion audit binds FID/precision/recall
 back to the formal generation reports and rejects a gate with weaker thresholds.
 Before either authorization is consumed, `validate_generation_gate_report.py`
 also requires the complete named gate set, rejects duplicate or failed checks,
 recomputes the core inequalities from the report summary, and cross-checks the
-FID, endpoint, ordering, zero-token, shuffle, and full precision/recall evidence.
+FID, endpoint, ordering, zero-token, shuffle, scaling distribution-support, and
+full precision/recall evidence.
 The 300K runbook and completion audit call this same contract, so editing only a
 gate's status or decision cannot authorize an expensive downstream stage.
 Formal gate files also bind all six authoritative source reports: CoFiTok/dense

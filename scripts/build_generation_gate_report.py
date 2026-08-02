@@ -356,6 +356,7 @@ def build_report(
     max_precision_regression: float = 0.05,
     max_recall_regression: float = 0.05,
     require_stride_partition: bool = False,
+    require_scaling_distribution_support: bool = False,
     expected_training_revision: str | None = None,
     expected_training_branch: str = "scale/generative-system",
     expected_evaluation_revision: str | None = None,
@@ -363,6 +364,10 @@ def build_report(
 ) -> dict[str, Any]:
     if stage not in {"scaling", "full"}:
         raise ValueError("stage must be scaling or full")
+    if require_scaling_distribution_support and stage != "scaling":
+        raise ValueError(
+            "scaling distribution-support enforcement requires the scaling stage"
+        )
     if not math.isfinite(max_absolute_fid) or max_absolute_fid <= 0.0:
         raise ValueError("max_absolute_fid must be finite and positive")
     if (
@@ -878,6 +883,30 @@ def build_report(
             },
         ),
     ]
+    if require_scaling_distribution_support:
+        gates.append(
+            _gate(
+                "scaling_precision_recall_quality",
+                cofitok_quality["precision"] is not None
+                and dense_quality["precision"] is not None
+                and cofitok_quality["recall"] is not None
+                and dense_quality["recall"] is not None
+                and cofitok_quality["precision"] >= min_precision
+                and cofitok_quality["recall"] >= min_recall
+                and cofitok_quality["precision"]
+                >= dense_quality["precision"] - max_precision_regression
+                and cofitok_quality["recall"]
+                >= dense_quality["recall"] - max_recall_regression,
+                {
+                    "enforced": True,
+                    "cofitok_precision": cofitok_quality["precision"],
+                    "dense_precision": dense_quality["precision"],
+                    "cofitok_recall": cofitok_quality["recall"],
+                    "dense_recall": dense_quality["recall"],
+                    **quality_thresholds,
+                },
+            )
+        )
     if rollout_stability_qualification is not None:
         rollout_stability = _rollout_stability_evidence(
             rollout_stability_qualification,
@@ -955,7 +984,7 @@ def main() -> None:
         and not args.rollout_stability_qualification
     ):
         raise ValueError(
-            "schema-v3 stability gates require rollout-stability qualification"
+            "schema-v4 stability gates require rollout-stability qualification"
         )
     report = build_report(
         cofitok_training=_read(args.cofitok_training),
@@ -980,6 +1009,9 @@ def main() -> None:
         max_precision_regression=args.max_precision_regression,
         max_recall_regression=args.max_recall_regression,
         require_stride_partition=args.source_profile == "stability_scaling",
+        require_scaling_distribution_support=(
+            source_profile == "stability_scaling"
+        ),
         expected_training_revision=args.expected_training_revision,
         expected_training_branch=args.expected_training_branch,
         expected_evaluation_revision=args.expected_evaluation_revision,

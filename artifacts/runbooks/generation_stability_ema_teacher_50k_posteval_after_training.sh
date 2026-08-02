@@ -277,6 +277,10 @@ fi
   --min-samples 10000 \
   --max-absolute-fid 100.0 \
   --min-coarse-token-energy-ratio 0.05 \
+  --min-precision 0.10 \
+  --min-recall 0.10 \
+  --max-precision-regression 0.05 \
+  --max-recall-regression 0.05 \
   --allow-fail
 
 "$PYTHON" scripts/validate_generation_gate_report.py \

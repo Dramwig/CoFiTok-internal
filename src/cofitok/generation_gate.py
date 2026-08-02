@@ -6,8 +6,8 @@ import math
 from typing import Any
 
 
-GENERATION_GATE_SCHEMA_VERSION = 3
-SUPPORTED_GENERATION_GATE_SCHEMA_VERSIONS = frozenset({2, 3})
+GENERATION_GATE_SCHEMA_VERSION = 4
+SUPPORTED_GENERATION_GATE_SCHEMA_VERSIONS = frozenset({2, 3, 4})
 
 _STAGE_DECISIONS = {
     "scaling": "promote_to_full_imagenet256",
@@ -72,6 +72,13 @@ REQUIRED_GENERATION_GATE_THRESHOLDS = {
     },
 }
 
+_STABILITY_SCALING_DISTRIBUTION_SUPPORT_THRESHOLDS = {
+    "min_precision": ("min", 0.10),
+    "min_recall": ("min", 0.10),
+    "max_precision_regression": ("max", 0.05),
+    "max_recall_regression": ("max", 0.05),
+}
+
 
 def generation_gate_identity_sha256(gate: dict[str, Any]) -> str:
     canonical = json.dumps(
@@ -93,12 +100,29 @@ def _finite_number(value: Any, *, name: str) -> float:
     return numeric
 
 
-def _validate_thresholds(gate: dict[str, Any], *, stage: str) -> dict[str, float]:
+def _requires_scaling_distribution_support(
+    gate: dict[str, Any], *, stage: str, schema_version: int
+) -> bool:
+    return (
+        stage == "scaling"
+        and schema_version >= 4
+        and gate.get("source_profile") == "stability_scaling"
+    )
+
+
+def _validate_thresholds(
+    gate: dict[str, Any], *, stage: str, schema_version: int
+) -> dict[str, float]:
     raw = gate.get("thresholds")
     if not isinstance(raw, dict):
         raise ValueError("generation gate thresholds are missing")
+    required = dict(REQUIRED_GENERATION_GATE_THRESHOLDS[stage])
+    if _requires_scaling_distribution_support(
+        gate, stage=stage, schema_version=schema_version
+    ):
+        required.update(_STABILITY_SCALING_DISTRIBUTION_SUPPORT_THRESHOLDS)
     validated: dict[str, float] = {}
-    for name, (direction, boundary) in REQUIRED_GENERATION_GATE_THRESHOLDS[stage].items():
+    for name, (direction, boundary) in required.items():
         value = _finite_number(raw.get(name), name=f"threshold {name}")
         if (direction == "max" and value > boundary) or (
             direction == "min" and value < boundary
@@ -111,7 +135,13 @@ def _validate_thresholds(gate: dict[str, Any], *, stage: str) -> dict[str, float
     return validated
 
 
-def _validate_summary(gate: dict[str, Any], *, stage: str, thresholds: dict[str, float]) -> None:
+def _validate_summary(
+    gate: dict[str, Any],
+    *,
+    stage: str,
+    schema_version: int,
+    thresholds: dict[str, float],
+) -> None:
     summary = gate.get("summary")
     if not isinstance(summary, dict):
         raise ValueError("generation gate summary is missing")
@@ -146,7 +176,9 @@ def _validate_summary(gate: dict[str, Any], *, stage: str, thresholds: dict[str,
     if coarse_ratio < thresholds["min_coarse_token_energy_ratio"]:
         raise ValueError("generation gate summary violates the coarse-token utilization threshold")
 
-    if stage == "full":
+    if stage == "full" or _requires_scaling_distribution_support(
+        gate, stage=stage, schema_version=schema_version
+    ):
         cofitok_precision = _finite_number(
             summary.get("cofitok_precision"), name="summary cofitok_precision"
         )
@@ -178,6 +210,7 @@ def _validate_scientific_gate_evidence(
     gate: dict[str, Any],
     *,
     stage: str,
+    schema_version: int,
     thresholds: dict[str, float],
     indexed: dict[str, dict[str, Any]],
 ) -> None:
@@ -407,6 +440,29 @@ def _validate_scientific_gate_evidence(
         for name in ("cofitok_precision", "dense_precision", "cofitok_recall", "dense_recall"):
             require_same(name, quality.get(name), summary.get(name))
 
+    if _requires_scaling_distribution_support(
+        gate, stage=stage, schema_version=schema_version
+    ):
+        quality = evidence("scaling_precision_recall_quality")
+        if quality.get("enforced") is not True:
+            raise ValueError(
+                "stability scaling gate does not enforce precision/recall quality"
+            )
+        for name in (
+            "min_precision",
+            "min_recall",
+            "max_precision_regression",
+            "max_recall_regression",
+        ):
+            require_same(name, quality.get(name), thresholds[name])
+        for name in (
+            "cofitok_precision",
+            "dense_precision",
+            "cofitok_recall",
+            "dense_recall",
+        ):
+            require_same(name, quality.get(name), summary.get(name))
+
 
 def validate_generation_gate_authorization(
     gate: dict[str, Any], *, expected_stage: str
@@ -444,14 +500,29 @@ def validate_generation_gate_authorization(
         and "rollout_stability_diagnostic" not in indexed
     ):
         missing.append("rollout_stability_diagnostic")
+    if (
+        _requires_scaling_distribution_support(
+            gate, stage=expected_stage, schema_version=schema_version
+        )
+        and "scaling_precision_recall_quality" not in indexed
+    ):
+        missing.append("scaling_precision_recall_quality")
     if missing:
         raise ValueError("generation gate lacks required checks: " + ", ".join(missing))
 
-    thresholds = _validate_thresholds(gate, stage=expected_stage)
-    _validate_summary(gate, stage=expected_stage, thresholds=thresholds)
+    thresholds = _validate_thresholds(
+        gate, stage=expected_stage, schema_version=schema_version
+    )
+    _validate_summary(
+        gate,
+        stage=expected_stage,
+        schema_version=schema_version,
+        thresholds=thresholds,
+    )
     _validate_scientific_gate_evidence(
         gate,
         stage=expected_stage,
+        schema_version=schema_version,
         thresholds=thresholds,
         indexed=indexed,
     )

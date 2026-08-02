@@ -51,6 +51,10 @@ def test_stability_50k_posteval_uses_formal_ema_gate_protocol() -> None:
     assert '--expected-evaluation-revision "$EXPECTED_TARGET_REVISION"' in source
     assert '--expected-evaluation-branch "$EXPECTED_TARGET_BRANCH"' in source
     assert "--min-coarse-token-energy-ratio 0.05" in source
+    assert "--min-precision 0.10" in source
+    assert "--min-recall 0.10" in source
+    assert "--max-precision-regression 0.05" in source
+    assert "--max-recall-regression 0.05" in source
     assert "--sources-only" in source
     assert "scripts/validate_generation_gate_report.py" in source
 

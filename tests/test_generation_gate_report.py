@@ -1070,3 +1070,66 @@ def test_full_generation_gate_enforces_precision_recall_floor_and_retention(
     )
     assert report["status"] == "fail"
     assert gate["passed"] is False
+
+
+@pytest.mark.parametrize(
+    ("precision", "recall"),
+    [(0.09, 0.40), (0.60, 0.09), (0.54, 0.40), (0.60, 0.34)],
+)
+def test_stability_scaling_gate_enforces_distribution_support_floor_and_retention(
+    precision, recall
+) -> None:
+    cofitok = _generation(19.0, 8, "a" * 64)
+    dense = _generation(19.0, 1, "b" * 64)
+    cofitok["metrics"]["precision"] = precision
+    cofitok["metrics"]["recall"] = recall
+    dense["metrics"]["precision"] = 0.60
+    dense["metrics"]["recall"] = 0.40
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=cofitok,
+        dense_generation=dense,
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+        min_precision=0.10,
+        min_recall=0.10,
+        require_scaling_distribution_support=True,
+    )
+
+    gate = next(
+        gate
+        for gate in report["gates"]
+        if gate["name"] == "scaling_precision_recall_quality"
+    )
+    assert report["status"] == "fail"
+    assert gate["passed"] is False
+
+
+def test_stability_scaling_gate_accepts_noncollapsed_matched_distribution_support() -> None:
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(19.0, 8, "a" * 64),
+        dense_generation=_generation(19.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.1, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+        min_precision=0.10,
+        min_recall=0.10,
+        require_scaling_distribution_support=True,
+    )
+
+    gate = next(
+        gate
+        for gate in report["gates"]
+        if gate["name"] == "scaling_precision_recall_quality"
+    )
+    assert report["status"] == "pass"
+    assert gate["passed"] is True
+    assert gate["evidence"]["enforced"] is True

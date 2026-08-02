@@ -31,7 +31,7 @@ from cofitok.training.checkpointing import (
 )
 
 
-def _gate(stage: str = "scaling") -> dict:
+def _gate(stage: str = "scaling", *, source_profile: str | None = None) -> dict:
     full = stage == "full"
     summary = {
         "cofitok_fid": 19.5 if full else 90.0,
@@ -122,9 +122,28 @@ def _gate(stage: str = "scaling") -> dict:
                     "dense_recall",
                 )},
             }
+        if name == "scaling_precision_recall_quality":
+            return {
+                "enforced": True,
+                **{key: thresholds[key] for key in (
+                    "min_precision",
+                    "min_recall",
+                    "max_precision_regression",
+                    "max_recall_regression",
+                )},
+                **{key: summary[key] for key in (
+                    "cofitok_precision",
+                    "dense_precision",
+                    "cofitok_recall",
+                    "dense_recall",
+                )},
+            }
         return {}
 
-    return {
+    required_gates = set(REQUIRED_GENERATION_GATES[stage])
+    if source_profile == "stability_scaling":
+        required_gates.add("scaling_precision_recall_quality")
+    gate = {
         "schema_version": GENERATION_GATE_SCHEMA_VERSION,
         "stage": stage,
         "status": "pass",
@@ -134,10 +153,13 @@ def _gate(stage: str = "scaling") -> dict:
         "thresholds": thresholds,
         "gates": [
             {"name": name, "passed": True, "evidence": evidence(name)}
-            for name in sorted(REQUIRED_GENERATION_GATES[stage])
+            for name in sorted(required_gates)
         ],
         "summary": summary,
     }
+    if source_profile is not None:
+        gate["source_profile"] = source_profile
+    return gate
 
 
 def _bind_gate_sources(gate: dict, tmp_path: Path) -> dict[str, Path]:
@@ -156,6 +178,58 @@ def _bind_gate_sources(gate: dict, tmp_path: Path) -> dict[str, Path]:
         paths=paths,
     )
     return paths
+
+
+def _bind_rollout_stability(gate: dict) -> dict:
+    evidence = {
+        "valid": True,
+        "checks": {
+            "schema": True,
+            "status": True,
+            "weights": True,
+            "checkpoint_step": True,
+            "checkpoint_images": True,
+            "checkpoint_identity": True,
+            "qualification_gates": True,
+            "pair_contract": True,
+            "rollout_protocol": True,
+        },
+        "schema_version": 2,
+        "status": "pass",
+        "weights": "ema",
+        "checkpoint_step": 50_000,
+        "checkpoint_evaluated_images": 1024,
+        "cofitok_checkpoint_sha256": "a" * 64,
+        "dense_checkpoint_sha256": "b" * 64,
+        "evaluation_git_revision": "d" * 40,
+        "evaluation_git_branch": "scale/generative-system",
+        "failed_gates": [],
+        "pair_contract_valid": True,
+        "rollout_protocol": {
+            "num_images": 64,
+            "sample_steps": 100,
+            "guidance_scale": 1.5,
+            "guidance_rescale": 0.0,
+            "cfg_batch_mode": "batched",
+            "clip_x0": True,
+            "precision": "bf16",
+        },
+    }
+    gate["gates"].append(
+        {
+            "name": "rollout_stability_diagnostic",
+            "passed": True,
+            "evidence": evidence,
+        }
+    )
+    gate["diagnostic_reports"] = {
+        "rollout_stability_qualification": {
+            "path": "/reports/ema_rollout_stability/qualification_report.json",
+            "bytes": 123,
+            "sha256": "c" * 64,
+        }
+    }
+    return evidence
 
 
 def test_scaling_gate_authorizes_only_the_locked_contract() -> None:
@@ -177,12 +251,28 @@ def test_legacy_schema_v2_stability_gate_remains_replayable() -> None:
     assert evidence["schema_version"] == 2
 
 
-def test_schema_v3_stability_gate_requires_rollout_diagnostic() -> None:
-    gate = _gate()
-    gate["source_profile"] = "stability_scaling"
+def test_schema_v4_stability_gate_requires_rollout_diagnostic() -> None:
+    gate = _gate(source_profile="stability_scaling")
 
     with pytest.raises(ValueError, match="rollout_stability_diagnostic"):
         validate_generation_gate_authorization(gate, expected_stage="scaling")
+
+
+def test_legacy_schema_v3_stability_gate_remains_replayable_without_new_quality_gate() -> None:
+    gate = _gate(source_profile="stability_scaling")
+    gate["schema_version"] = 3
+    gate["gates"] = [
+        row
+        for row in gate["gates"]
+        if row["name"] != "scaling_precision_recall_quality"
+    ]
+    _bind_rollout_stability(gate)
+
+    evidence = validate_generation_gate_authorization(
+        gate, expected_stage="scaling"
+    )
+
+    assert evidence["schema_version"] == 3
 
 
 @pytest.mark.parametrize(
@@ -251,61 +341,48 @@ def test_scaling_gate_accepts_roundoff_in_derived_coarse_energy_sum() -> None:
 
 
 def test_scaling_gate_validates_optional_ema_rollout_stability() -> None:
-    gate = _gate()
-    gate["source_profile"] = "stability_scaling"
-    evidence = {
-        "valid": True,
-        "checks": {
-            "schema": True,
-            "status": True,
-            "weights": True,
-            "checkpoint_step": True,
-            "checkpoint_images": True,
-            "checkpoint_identity": True,
-            "qualification_gates": True,
-            "pair_contract": True,
-            "rollout_protocol": True,
-        },
-        "schema_version": 2,
-        "status": "pass",
-        "weights": "ema",
-        "checkpoint_step": 50_000,
-        "checkpoint_evaluated_images": 1024,
-        "cofitok_checkpoint_sha256": "a" * 64,
-        "dense_checkpoint_sha256": "b" * 64,
-        "evaluation_git_revision": "d" * 40,
-        "evaluation_git_branch": "scale/generative-system",
-        "failed_gates": [],
-        "pair_contract_valid": True,
-        "rollout_protocol": {
-            "num_images": 64,
-            "sample_steps": 100,
-            "guidance_scale": 1.5,
-            "guidance_rescale": 0.0,
-            "cfg_batch_mode": "batched",
-            "clip_x0": True,
-            "precision": "bf16",
-        },
-    }
-    gate["gates"].append(
-        {
-            "name": "rollout_stability_diagnostic",
-            "passed": True,
-            "evidence": evidence,
-        }
-    )
-    gate["diagnostic_reports"] = {
-        "rollout_stability_qualification": {
-            "path": "/reports/ema_rollout_stability/qualification_report.json",
-            "bytes": 123,
-            "sha256": "c" * 64,
-        }
-    }
+    gate = _gate(source_profile="stability_scaling")
+    evidence = _bind_rollout_stability(gate)
 
     validate_generation_gate_authorization(gate, expected_stage="scaling")
 
     evidence["rollout_protocol"]["guidance_scale"] = 1.0
     with pytest.raises(ValueError, match="rollout-stability protocol"):
+        validate_generation_gate_authorization(gate, expected_stage="scaling")
+
+
+@pytest.mark.parametrize(
+    ("threshold", "value"),
+    (
+        ("min_precision", 0.099),
+        ("min_recall", 0.099),
+        ("max_precision_regression", 0.051),
+        ("max_recall_regression", 0.051),
+    ),
+)
+def test_schema_v4_stability_scaling_rejects_weakened_distribution_support_thresholds(
+    threshold: str, value: float
+) -> None:
+    gate = _gate(source_profile="stability_scaling")
+    _bind_rollout_stability(gate)
+    gate["thresholds"][threshold] = value
+
+    with pytest.raises(ValueError, match=threshold):
+        validate_generation_gate_authorization(gate, expected_stage="scaling")
+
+
+def test_schema_v4_stability_scaling_recomputes_distribution_support() -> None:
+    gate = _gate(source_profile="stability_scaling")
+    _bind_rollout_stability(gate)
+    gate["summary"]["cofitok_recall"] = 0.09
+    quality = next(
+        row
+        for row in gate["gates"]
+        if row["name"] == "scaling_precision_recall_quality"
+    )
+    quality["evidence"]["cofitok_recall"] = 0.09
+
+    with pytest.raises(ValueError, match="minimum recall"):
         validate_generation_gate_authorization(gate, expected_stage="scaling")
 
 
