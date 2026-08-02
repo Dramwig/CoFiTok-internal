@@ -291,6 +291,23 @@ repository or mutate an active training checkout.
   files, and a clean builder Git identity. It is explicitly non-authorizing:
   it cannot replace the original gate or rollout qualification and always sets
   `full_training_launch_allowed=false`.
+- The current frozen schema-v2 post-evaluation also has a separate, resumable
+  follow-up runbook:
+  `generation_stability_frozen_50k_supplemental_after_posteval.sh`. It first
+  verifies the exact successful v4 post-evaluation waiter and original gate,
+  then refuses a busy GPU. From one clean supplemental checkout it reruns the
+  matched 1,024-image EMA timestep-500 checkpoint evaluations and adds matched
+  64-image EMA DDIM-100 free-rollout evaluations. Rerunning the checkpoint
+  diagnostics is intentional: the checkpoint and rollout reports must share
+  the same supplemental evaluation Git identity, so the frozen checkout's
+  older checkpoint reports cannot be mixed with later rollout reports. Five
+  high-cost/source-bound stages use immutable receipts and exact replay; a
+  sixth CPU-only step reconstructs the distribution-support qualification from
+  the original gate. The final combined report is `pass` only when the base
+  gate, distribution-support check, and EMA rollout qualification all pass.
+  It remains diagnostic-only: it does not replace the original gate or
+  readiness receipt, does not invoke a trainer, and fixes
+  `full_training_launch_allowed=false`.
 - Stability post-evaluation uses separate, explicit training and evaluation
   Git identities. This prevents the gate builder's legacy
   `scale/generative-system` default from rejecting the intentionally isolated
