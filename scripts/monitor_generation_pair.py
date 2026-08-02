@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from cofitok.gpu_contention import update_gpu_contention_evidence
 from cofitok.monitoring import (
     CHECKPOINT_INTEGRITY_POLICIES,
     build_monitor_report,
@@ -30,6 +31,103 @@ def _processes(pattern: str) -> list[str]:
         check=False,
     )
     return [line for line in result.stdout.splitlines() if line.strip()]
+
+
+def _process_records(lines: list[str]) -> list[dict[str, Any]]:
+    records = []
+    for line in lines:
+        raw_pid, separator, _ = line.strip().partition(" ")
+        if not separator:
+            continue
+        try:
+            pid = int(raw_pid)
+            proc = Path("/proc") / str(pid)
+            argv = (
+                (proc / "cmdline")
+                .read_bytes()
+                .replace(b"\0", b" ")
+                .decode(errors="replace")
+                .strip()
+            )
+            stat = (proc / "stat").read_text(encoding="utf-8").rsplit(")", 1)[
+                1
+            ].split()
+            records.append(
+                {
+                    "pid": pid,
+                    "start_ticks": int(stat[19]),
+                    "argv": argv,
+                    "cwd": (proc / "cwd").resolve().as_posix(),
+                }
+            )
+        except (FileNotFoundError, IndexError, OSError, PermissionError, ValueError):
+            continue
+    return records
+
+
+def _gpu_compute_processes() -> tuple[list[dict[str, Any]], bool]:
+    result = subprocess.run(
+        [
+            "nvidia-smi",
+            "--query-compute-apps=pid,used_memory,process_name",
+            "--format=csv,noheader,nounits",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return [], False
+    compute = []
+    complete = True
+    for line in result.stdout.splitlines():
+        values = [value.strip() for value in line.split(",", 2)]
+        if len(values) != 3:
+            complete = False
+            continue
+        try:
+            pid = int(values[0])
+            used_memory_mib = int(values[1])
+            proc = Path("/proc") / str(pid)
+            argv = (
+                (proc / "cmdline")
+                .read_bytes()
+                .replace(b"\0", b" ")
+                .decode(errors="replace")
+                .strip()
+            )
+            stat = (proc / "stat").read_text(encoding="utf-8").rsplit(")", 1)[
+                1
+            ].split()
+            compute.append(
+                {
+                    "pid": pid,
+                    "start_ticks": int(stat[19]),
+                    "argv": argv,
+                    "cwd": (proc / "cwd").resolve().as_posix(),
+                    "process_name": values[2],
+                    "used_memory_mib": used_memory_mib,
+                }
+            )
+        except (FileNotFoundError, IndexError, OSError, PermissionError, ValueError):
+            complete = False
+            continue
+    return compute, complete
+
+
+def _previous_gpu_contention(path: Path) -> dict[str, Any] | None:
+    if not path.is_file():
+        return None
+    with path.open(encoding="utf-8") as handle:
+        payload = json.load(handle)
+    if not isinstance(payload, dict):
+        raise ValueError("prior pair monitor report is not a JSON object")
+    evidence = payload.get("gpu_contention")
+    if evidence is None:
+        return None
+    if not isinstance(evidence, dict):
+        raise ValueError("prior pair monitor GPU contention evidence is malformed")
+    return evidence
 
 
 def _gpu_status() -> list[dict[str, Any]]:
@@ -181,6 +279,7 @@ def main(defaults: dict[str, Any] | None = None) -> None:
 
     output_root = Path(args.output_root)
     output = Path(args.output)
+    previous_gpu_contention = _previous_gpu_contention(output)
     while True:
         now = time.time()
         git_state = _git_state()
@@ -208,9 +307,11 @@ def main(defaults: dict[str, Any] | None = None) -> None:
             ),
         }
         usage = shutil.disk_usage(output_root)
+        training_processes = _processes(args.training_process_pattern)
+        updated_at = datetime.now(timezone.utc).isoformat()
         report = build_monitor_report(
             runs=runs,
-            training_processes=_processes(args.training_process_pattern),
+            training_processes=training_processes,
             runbook_processes=_processes(args.runbook_process_pattern),
             stall_seconds=args.stall_seconds,
             idle_failure_grace_seconds=args.idle_failure_grace_seconds,
@@ -220,11 +321,22 @@ def main(defaults: dict[str, Any] | None = None) -> None:
                 "free_bytes": usage.free,
             },
             gpu=_gpu_status(),
-            updated_at=datetime.now(timezone.utc).isoformat(),
+            updated_at=updated_at,
             hostname=socket.gethostname(),
             monitor_name=args.monitor_name,
             git=git_state,
         )
+        gpu_compute_processes, gpu_query_complete = _gpu_compute_processes()
+        report["gpu_contention"] = update_gpu_contention_evidence(
+            previous_gpu_contention,
+            pair_report=report,
+            training_processes=_process_records(training_processes),
+            gpu_compute_processes=gpu_compute_processes,
+            observed_at=updated_at,
+            poll_seconds=args.poll_seconds,
+            gpu_query_complete=gpu_query_complete,
+        )
+        previous_gpu_contention = report["gpu_contention"]
         _write_atomic(output, report)
         print(json.dumps({"status": report["status"], "stage": report["stage"]}))
         if args.once or report["status"] in {"pass", "failed", "stalled"}:

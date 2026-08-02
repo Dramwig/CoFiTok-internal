@@ -330,6 +330,8 @@ def test_full_posteval_revalidates_gate_sources_and_training_pair() -> None:
     assert "validate_generation_training_pair.py" in runbook
     assert '--authorization-gate "$SCALING_GATE"' in runbook
     assert "posteval_training_pair_validation.json" in runbook
+    assert "generation_full_matched_300k_monitor.json" in runbook
+    assert '--training-contention "$TRAINING_CONTENTION"' in runbook
 
 
 def test_formal_full_trainer_refuses_to_start_without_authorization(tmp_path) -> None:

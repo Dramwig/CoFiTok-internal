@@ -708,7 +708,7 @@ def _official_related() -> dict:
 def _comparison() -> dict:
     official = _official_related()
     return {
-        "schema_version": 5,
+        "schema_version": 6,
         "status": "ready",
         "final_gate": {
             "status": "pass",
@@ -718,6 +718,10 @@ def _comparison() -> dict:
             "primary_direct_tier": "matched_training_direct",
             "external_context_tier": "official_pretrained_contextual",
             "cross_tier_numeric_ranking_allowed": False,
+            "training_wall_clock_direct_comparison_allowed": True,
+            "training_wall_clock_comparison_reason": (
+                "exclusive_gpu_observation_coverage"
+            ),
         },
         "official_context_source": {
             "path": "/reports/official_related_methods_table.json",
@@ -725,6 +729,15 @@ def _comparison() -> dict:
             "schema_version": 1,
         },
         "source_reports": _comparison_source_reports(),
+        "training_contention": {
+            "status": "verified",
+            "direct_comparison_allowed": True,
+            "measurement": "raw_process_wall_clock",
+            "reason": "exclusive_gpu_observation_coverage",
+            "coverage_complete": True,
+            "unrelated_gpu_compute_observed": False,
+            "observation_count": 10,
+        },
         "matched_training_rows": [
             {
                 "method": "CoFiTok K=8",
@@ -738,6 +751,12 @@ def _comparison() -> dict:
                 "training_images_seen": 19_200_000,
                 "training_elapsed_seconds": 100_000.0,
                 "training_images_per_second": 192.0,
+                "training_time_measurement": "raw_process_wall_clock",
+                "training_wall_clock_directly_comparable": True,
+                "training_throughput_directly_comparable": True,
+                "training_wall_clock_comparison_reason": (
+                    "exclusive_gpu_observation_coverage"
+                ),
                 "peak_vram_bytes": 24 * 1024**3,
                 "sample_count": 50_000,
                 "sample_batch_size": 64,
@@ -793,6 +812,12 @@ def _comparison() -> dict:
                 "training_images_seen": 19_200_000,
                 "training_elapsed_seconds": 100_000.0,
                 "training_images_per_second": 192.0,
+                "training_time_measurement": "raw_process_wall_clock",
+                "training_wall_clock_directly_comparable": True,
+                "training_throughput_directly_comparable": True,
+                "training_wall_clock_comparison_reason": (
+                    "exclusive_gpu_observation_coverage"
+                ),
                 "peak_vram_bytes": 24 * 1024**3,
                 "sample_count": 50_000,
                 "sample_batch_size": 64,
@@ -897,6 +922,11 @@ def _comparison_source_reports() -> dict:
             "path": f"{root}/CoFiTok-internal/artifacts/reports/generation/imagenet256_full_matched_300k/final_generation_gate.json",
             "bytes": 100,
             "sha256": "5" * 64,
+        },
+        "training_contention": {
+            "path": f"{root}/checkpoints/generation/generation_full_matched_300k_monitor.json",
+            "bytes": 100,
+            "sha256": "6" * 64,
         },
     }
 
@@ -1127,6 +1157,38 @@ def _full_training_monitor() -> dict:
             "tracked_dirty": False,
         },
         "runs": runs,
+        "gpu_contention": {
+            "schema_version": 1,
+            "role": "generation_gpu_contention_evidence",
+            "status": "pass_exclusive",
+            "binding": {
+                "monitor_name": "generation_full_matched_300k",
+                "training_revision": FULL_REVISION,
+                "training_branch": "scale/generative-system",
+            },
+            "poll_seconds": 300.0,
+            "observation_count": 10,
+            "coverage": {
+                "started_before_training": True,
+                "saw_training_active": True,
+                "completed_after_training": True,
+                "maximum_gap_seconds": 300.0,
+                "continuous": True,
+                "all_gpu_queries_complete": True,
+                "complete": True,
+            },
+            "unrelated_gpu_compute": {
+                "observed": False,
+                "observation_count": 0,
+                "identity_overflow": False,
+                "identities": [],
+            },
+            "training_wall_clock": {
+                "measurement": "raw_process_wall_clock",
+                "direct_comparison_allowed": True,
+                "reason": "exclusive_gpu_observation_coverage",
+            },
+        },
     }
 
 

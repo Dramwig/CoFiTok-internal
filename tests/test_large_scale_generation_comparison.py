@@ -154,6 +154,61 @@ def _source_reports() -> dict:
             "bytes": 100,
             "sha256": "5" * 64,
         },
+        "training_contention": {
+            "path": f"{root}/checkpoints/generation/generation_full_matched_300k_monitor.json",
+            "bytes": 100,
+            "sha256": "6" * 64,
+        },
+    }
+
+
+def _contention(*, direct: bool = True) -> dict:
+    reason = (
+        "exclusive_gpu_observation_coverage"
+        if direct
+        else "external_gpu_contention_observed"
+    )
+    return {
+        "monitor": "generation_full_matched_300k",
+        "status": "pass",
+        "stage": "complete",
+        "git": {
+            "revision": "a" * 40,
+            "branch": "scale/generative-system",
+            "tracked_dirty": False,
+        },
+        "gpu_contention": {
+            "schema_version": 1,
+            "role": "generation_gpu_contention_evidence",
+            "status": "pass_exclusive" if direct else "pass_observational_only",
+            "binding": {
+                "monitor_name": "generation_full_matched_300k",
+                "training_revision": "a" * 40,
+                "training_branch": "scale/generative-system",
+            },
+            "poll_seconds": 300.0,
+            "observation_count": 10,
+            "coverage": {
+                "complete": True,
+                "started_before_training": True,
+                "saw_training_active": True,
+                "completed_after_training": True,
+                "continuous": True,
+                "all_gpu_queries_complete": True,
+                "maximum_gap_seconds": 300.0,
+            },
+            "unrelated_gpu_compute": {
+                "observed": not direct,
+                "identity_overflow": False,
+                "observation_count": 1 if not direct else 0,
+                "identities": ([{"identity_key": "99:100"}] if not direct else []),
+            },
+            "training_wall_clock": {
+                "measurement": "raw_process_wall_clock",
+                "direct_comparison_allowed": direct,
+                "reason": reason,
+            },
+        },
     }
 
 
@@ -205,7 +260,11 @@ def _gate(status: str = "pass") -> dict:
     }
 
 
-def _report(official: dict | None = None, gate: dict | None = None) -> dict:
+def _report(
+    official: dict | None = None,
+    gate: dict | None = None,
+    contention: dict | None = None,
+) -> dict:
     return build_report(
         cofitok_training=_training(62_950_800, 8),
         dense_training=_training(62_824_707, 1),
@@ -213,6 +272,7 @@ def _report(official: dict | None = None, gate: dict | None = None) -> dict:
         dense_generation=_generation(11.8, "b" * 64, "d" * 64, 1),
         final_gate=gate or _gate(),
         official_related=official or _official(),
+        training_contention=contention or _contention(),
         official_source_path="/reports/official_related_methods_table.json",
         official_source_sha256="e" * 64,
         source_reports=_source_reports(),
@@ -223,7 +283,7 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     report = _report()
 
     assert report["status"] == "ready"
-    assert report["schema_version"] == 5
+    assert report["schema_version"] == 6
     assert report["source_reports"] == _source_reports()
     assert len(report["matched_training_rows"]) == 2
     assert len(report["official_context_rows"]) == 3
@@ -238,6 +298,9 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     assert report["official_context_source"]["sha256"] == "e" * 64
     assert report["matched_training_rows"][0]["effective_batch_size"] == 64
     assert report["matched_training_rows"][0]["training_images_seen"] == 19_200_000
+    assert report["matched_training_rows"][0][
+        "training_wall_clock_directly_comparable"
+    ] is True
     assert report["matched_training_rows"][0]["peak_vram_bytes"] == 24 * 1024**3
     assert report["matched_training_rows"][0]["sampling_images_per_second"] == 5.0
     assert report["matched_training_rows"][0]["sample_batch_size"] == 64
@@ -248,12 +311,28 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     assert "VRAM GiB" in render_markdown(report)
     assert "sample img/s" in render_markdown(report)
     assert "sample batch" in render_markdown(report)
+    assert "train h (raw)" in render_markdown(report)
     assert "matched_training_direct" in render_csv(report)
     assert "official_pretrained_contextual" in render_csv(report)
 
 
 def test_comparison_preserves_hold_decision() -> None:
     assert _report(gate=_gate("fail"))["status"] == "hold"
+
+
+def test_comparison_labels_contended_training_time_as_observational_only() -> None:
+    report = _report(contention=_contention(direct=False))
+
+    assert report["comparison_policy"][
+        "training_wall_clock_direct_comparison_allowed"
+    ] is False
+    assert all(
+        row["training_wall_clock_directly_comparable"] is False
+        for row in report["matched_training_rows"]
+    )
+    markdown = render_markdown(report)
+    assert "raw observations only" in markdown
+    assert "external_gpu_contention_observed" in markdown
 
 
 def test_comparison_rejects_mismatched_real_set() -> None:
@@ -268,6 +347,7 @@ def test_comparison_rejects_mismatched_real_set() -> None:
             dense_generation=dense,
             final_gate=_gate(),
             official_related=_official(),
+            training_contention=_contention(),
             official_source_path="/reports/official_related_methods_table.json",
             official_source_sha256="e" * 64,
             source_reports=_source_reports(),
@@ -302,6 +382,7 @@ def test_comparison_rejects_incomplete_sampling_progress() -> None:
             dense_generation=_generation(11.8, "b" * 64, "d" * 64, 1),
             final_gate=_gate(),
             official_related=_official(),
+            training_contention=_contention(),
             official_source_path="/reports/official_related_methods_table.json",
             official_source_sha256="e" * 64,
             source_reports=_source_reports(),
@@ -338,6 +419,7 @@ def test_comparison_rejects_matched_weakened_sampling_protocol() -> None:
             dense_generation=dense,
             final_gate=_gate(),
             official_related=_official(),
+            training_contention=_contention(),
             official_source_path="/reports/official_related_methods_table.json",
             official_source_sha256="e" * 64,
             source_reports=_source_reports(),
@@ -356,6 +438,7 @@ def test_comparison_rejects_out_of_range_matched_metrics() -> None:
             dense_generation=_generation(11.8, "b" * 64, "d" * 64, 1),
             final_gate=_gate(),
             official_related=_official(),
+            training_contention=_contention(),
             official_source_path="/reports/official_related_methods_table.json",
             official_source_sha256="e" * 64,
             source_reports=_source_reports(),
@@ -374,6 +457,8 @@ def test_comparison_source_verification_detects_changed_file(tmp_path) -> None:
         / "imagenet256_full_dense_300k/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json",
         "final_gate": tmp_path
         / "artifacts/reports/generation/imagenet256_full_matched_300k/final_generation_gate.json",
+        "training_contention": tmp_path
+        / "generation_full_matched_300k_monitor.json",
     }
     for path in paths.values():
         path.parent.mkdir(parents=True, exist_ok=True)

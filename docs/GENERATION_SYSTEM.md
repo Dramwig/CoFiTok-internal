@@ -514,10 +514,20 @@ The matched direct panel also reports compute instead of assuming equal cost
 from equal steps. Checkpoints carry cumulative elapsed time and peak VRAM across
 segmented resumes. `cofitok.generation_cost.training_cost_summary` validates
 effective batch and exact images seen, then exposes training hours,
-images/second, and peak memory in the final JSON/Markdown/CSV comparison. The
+images/second, and peak memory in the final JSON/Markdown/CSV comparison. Pair
+monitor schema now accumulates exact GPU compute identities across every poll,
+including PID/start ticks/argv/cwd, process memory, observation gaps, and any
+unrelated process. Comparison schema v6 binds that terminal monitor as a sixth
+source. Training wall time and img/s remain published as raw observations, but
+they are eligible for a direct efficiency ranking only when observation coverage
+starts before training, remains continuous through pair completion, and never
+sees unrelated GPU compute. Contended or incomplete runs retain direct
+quality/budget comparability while their wall-clock fields are explicitly
+observational-only. The
 full paired-config preflight confirms 62,836,011 vs 62,824,707 parameters
 (+0.017993%). See
-`docs/records/2026-07-12_generation_matched_compute_accounting.md`.
+`docs/records/2026-07-12_generation_matched_compute_accounting.md` and
+`docs/records/2026-08-02_generation_gpu_contention_provenance.md`.
 `cofitok.generation_pair.generation_pair_contract` additionally compares every
 shared resolved model field, all data/diffusion/runtime/optimization fields,
 the positive primary epsilon loss, and exact factorized-versus-dense identities.
@@ -643,10 +653,11 @@ the pinned 10% pair and promotion gate, full matched 300K pair, training audits,
 all four milestones, formal paired 50K sampling, final gate, and final comparison.
 The formal pair is accepted only when its real-set tree digest, content-addressed
 cache key, and evaluator environment are identical and bound through the gate
-and comparison schema v5, including the exact formal sampling protocol fields.
-The comparison binds both training reports, both 50K metrics reports, and the
-final gate by authoritative path, byte count, and SHA256; the completion audit
-rereads those files before accepting any displayed metric or cost field.
+and comparison schema v6, including the exact formal sampling protocol fields
+and GPU-contention policy. The comparison binds both training reports, both 50K
+metrics reports, the final gate, and the terminal pair monitor by authoritative
+path, byte count, and SHA256; the completion audit rereads those files before
+accepting any displayed metric or cost field.
 Missing evidence is `in_progress`, contradictory evidence is `failed`, and only
 the full chain is `complete`. See
 `docs/records/2026-07-12_large_scale_generation_completion_audit.md`.

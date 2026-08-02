@@ -6,6 +6,7 @@ DATA=/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val
 OUTPUT_ROOT=/root/autodl-tmp/CoFiTok/checkpoints/generation
 OFFICIAL_RELATED="$PROJECT/artifacts/reports/baselines/official_related_methods_2026-07-11_final/official_related_methods_table.json"
 SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/imagenet256_full_50k_sampling"
+TRAINING_CONTENTION="$OUTPUT_ROOT/generation_full_matched_300k_monitor.json"
 
 source /root/miniconda3/etc/profile.d/conda.sh
 conda activate pf-vlm
@@ -40,6 +41,7 @@ python scripts/validate_generation_training_pair.py \
 test -f "$COFITOK_CHECKPOINT"
 test -f "$DENSE_CHECKPOINT"
 test -f "$OFFICIAL_RELATED"
+test -f "$TRAINING_CONTENTION"
 
 python scripts/check_generation_storage_capacity.py \
   --path "$OUTPUT_ROOT" \
@@ -135,4 +137,5 @@ python scripts/build_large_scale_generation_comparison.py \
   --dense-generation "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
   --final-gate "$REPORT_ROOT/final_generation_gate.json" \
   --official-related "$OFFICIAL_RELATED" \
+  --training-contention "$TRAINING_CONTENTION" \
   --output-dir "$REPORT_ROOT/comparison"

@@ -20,6 +20,7 @@ from cofitok.generation import (
 from cofitok.generation.artifact import verify_inference_artifact
 from cofitok.generation_authorization import validate_generation_gate_binding
 from cofitok.generation_cost import training_cost_summary
+from cofitok.gpu_contention import validate_gpu_contention_evidence
 from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.generation_gate_sources import verify_generation_gate_source_reports
 from cofitok.generation_paths import (
@@ -1731,6 +1732,7 @@ def _comparison_evidence(
     report: dict[str, Any],
     generation_reports: dict[str, dict[str, Any]],
     training_reports: dict[str, dict[str, Any]],
+    training_contention_report: dict[str, Any],
     official_related: dict[str, Any],
     official_related_sha256: str,
     source_verification: dict[str, Any],
@@ -1749,6 +1751,11 @@ def _comparison_evidence(
         or source_verification.get("source_reports") != report.get("source_reports")
     ):
         raise ValueError("comparison source-report verification differs")
+    training_contention = validate_gpu_contention_evidence(
+        training_contention_report
+    )
+    if report.get("training_contention") != training_contention:
+        raise ValueError("comparison training contention summary differs")
     rows = report.get("matched_training_rows", [])
     if len(rows) != 2 or any(int(row.get("sample_count", -1)) != 50_000 for row in rows):
         raise ValueError("large-scale comparison lacks the matched 50K pair")
@@ -1759,6 +1766,13 @@ def _comparison_evidence(
         raise ValueError("comparison external tier is mislabeled")
     if policy.get("cross_tier_numeric_ranking_allowed") is not False:
         raise ValueError("comparison incorrectly permits cross-tier numeric ranking")
+    if (
+        policy.get("training_wall_clock_direct_comparison_allowed")
+        is not training_contention["direct_comparison_allowed"]
+        or policy.get("training_wall_clock_comparison_reason")
+        != training_contention["reason"]
+    ):
+        raise ValueError("comparison training wall-clock policy differs")
     source = report.get("official_context_source", {})
     if (
         source.get("sha256") != official_related_sha256
@@ -1789,6 +1803,14 @@ def _comparison_evidence(
             or int(row.get("sample_count", -1)) != 50_000
             or row.get("protocol_note")
             != "Same data, backbone family, optimizer, steps, and evaluator."
+            or row.get("training_time_measurement")
+            != training_contention["measurement"]
+            or row.get("training_wall_clock_directly_comparable")
+            is not training_contention["direct_comparison_allowed"]
+            or row.get("training_throughput_directly_comparable")
+            is not training_contention["direct_comparison_allowed"]
+            or row.get("training_wall_clock_comparison_reason")
+            != training_contention["reason"]
         ):
             raise ValueError(f"comparison {method} matched protocol metadata differs")
         if row.get("checkpoint_sha256") != provenance.get("checkpoint_sha256"):
@@ -2562,6 +2584,7 @@ def build_completion_audit(
                 official_related_sha256,
                 cofitok_full_training,
                 dense_full_training,
+                full_training_monitor,
             ],
             lambda: _comparison_evidence(
                 comparison,
@@ -2570,6 +2593,7 @@ def build_completion_audit(
                     "cofitok": cofitok_full_training,
                     "dense_identity": dense_full_training,
                 },
+                full_training_monitor,
                 official_related,
                 official_related_sha256,
                 comparison_source_verification,

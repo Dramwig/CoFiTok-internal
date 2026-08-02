@@ -10,13 +10,14 @@ from typing import Any
 
 from cofitok.generation import sampling_protocol_contract
 from cofitok.generation_cost import training_cost_summary
+from cofitok.gpu_contention import validate_gpu_contention_evidence
 from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
 from cofitok.reporting import file_sha256, write_json_report, write_text_report
 
 
 EXTERNAL_ALIASES = {"d_ar", "mar", "retok"}
 EXTERNAL_METHODS = {"d_ar": "D-AR", "mar": "MAR", "retok": "ReTok"}
-COMPARISON_REPORT_SCHEMA_VERSION = 5
+COMPARISON_REPORT_SCHEMA_VERSION = 6
 SOURCE_REPORT_PROFILES = {
     "full": {
         "cofitok_training": (
@@ -35,6 +36,7 @@ SOURCE_REPORT_PROFILES = {
             "artifacts/reports/generation/imagenet256_full_matched_300k/"
             "final_generation_gate.json"
         ),
+        "training_contention": "generation_full_matched_300k_monitor.json",
     },
     "stability_full": {
         "cofitok_training": (
@@ -57,6 +59,9 @@ SOURCE_REPORT_PROFILES = {
         ),
         "final_gate": (
             "stability_full_300k_ema_teacher/reports/final_generation_gate.json"
+        ),
+        "training_contention": (
+            "stability_full_300k_ema_teacher/pair_monitor.json"
         ),
     },
 }
@@ -149,6 +154,7 @@ def _matched_row(
     method: str,
     training: dict[str, Any],
     generation: dict[str, Any],
+    training_contention: dict[str, Any],
 ) -> dict[str, Any]:
     provenance = generation["sample_provenance"]
     sampling = provenance["sampling"]
@@ -191,6 +197,14 @@ def _matched_row(
         "training_images_seen": training_cost["samples_seen"],
         "training_elapsed_seconds": training_cost["elapsed_seconds"],
         "training_images_per_second": training_cost["images_per_second"],
+        "training_time_measurement": training_contention["measurement"],
+        "training_wall_clock_directly_comparable": training_contention[
+            "direct_comparison_allowed"
+        ],
+        "training_throughput_directly_comparable": training_contention[
+            "direct_comparison_allowed"
+        ],
+        "training_wall_clock_comparison_reason": training_contention["reason"],
         "peak_vram_bytes": training_cost["peak_vram_bytes"],
         "sample_count": sample_count,
         "sample_batch_size": int(sampling["batch_size"]),
@@ -311,6 +325,7 @@ def build_report(
     dense_generation: dict[str, Any],
     final_gate: dict[str, Any],
     official_related: dict[str, Any],
+    training_contention: dict[str, Any],
     official_source_path: str,
     official_source_sha256: str,
     source_reports: dict[str, dict[str, Any]],
@@ -324,6 +339,7 @@ def build_report(
         source_reports,
         source_profile=source_profile,
     )
+    contention = validate_gpu_contention_evidence(training_contention)
     formal_contracts = {
         "cofitok": sampling_protocol_contract(
             cofitok_generation["sample_provenance"]["sampling"],
@@ -347,8 +363,18 @@ def build_report(
                 + ", ".join(contract["issues"])
             )
     matched = [
-        _matched_row("CoFiTok K=8", cofitok_training, cofitok_generation),
-        _matched_row("Dense identity", dense_training, dense_generation),
+        _matched_row(
+            "CoFiTok K=8",
+            cofitok_training,
+            cofitok_generation,
+            contention,
+        ),
+        _matched_row(
+            "Dense identity",
+            dense_training,
+            dense_generation,
+            contention,
+        ),
     ]
     if matched[0]["evaluator"] != matched[1]["evaluator"]:
         raise ValueError("matched methods used different evaluator implementations")
@@ -430,6 +456,10 @@ def build_report(
             "primary_direct_tier": "matched_training_direct",
             "external_context_tier": "official_pretrained_contextual",
             "cross_tier_numeric_ranking_allowed": False,
+            "training_wall_clock_direct_comparison_allowed": contention[
+                "direct_comparison_allowed"
+            ],
+            "training_wall_clock_comparison_reason": contention["reason"],
             "reason": (
                 "External rows use official pretrained checkpoints and the ADM TensorFlow "
                 "evaluator; CoFiTok and dense use matched training plus torch-fidelity."
@@ -441,6 +471,7 @@ def build_report(
             "schema_version": official_related.get("schema_version"),
         },
         "source_reports": source_reports,
+        "training_contention": contention,
         "matched_training_rows": matched,
         "official_context_rows": external,
         "matched_summary": {
@@ -466,7 +497,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "## Matched training (direct comparison)",
         "",
-        "| method | params | steps | eff. batch | train images | train h | train img/s | VRAM GiB | samples | sample batch | sample h | sample img/s | FID | IS | precision | recall |",
+        "| method | params | steps | eff. batch | train images | train h (raw) | train img/s (raw) | VRAM GiB | samples | sample batch | sample h | sample img/s | FID | IS | precision | recall |",
         "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for row in report["matched_training_rows"]:
@@ -492,6 +523,18 @@ def render_markdown(report: dict[str, Any]) -> str:
         )
     lines.extend(
         [
+            "",
+            (
+                "Training wall-clock and throughput are directly comparable."
+                if report["comparison_policy"][
+                    "training_wall_clock_direct_comparison_allowed"
+                ]
+                else (
+                    "Training wall-clock and throughput are raw observations only; "
+                    "do not interpret them as a model-efficiency ranking "
+                    f"(`{report['comparison_policy']['training_wall_clock_comparison_reason']}`)."
+                )
+            ),
             "",
             "## Official pretrained context (not a direct ranking)",
             "",
@@ -534,6 +577,10 @@ def render_csv(report: dict[str, Any]) -> str:
         "training_images_seen",
         "training_elapsed_seconds",
         "training_images_per_second",
+        "training_time_measurement",
+        "training_wall_clock_directly_comparable",
+        "training_throughput_directly_comparable",
+        "training_wall_clock_comparison_reason",
         "peak_vram_bytes",
         "sample_count",
         "real_image_count",
@@ -580,6 +627,7 @@ def main() -> None:
     parser.add_argument("--dense-generation", required=True)
     parser.add_argument("--final-gate", required=True)
     parser.add_argument("--official-related", required=True)
+    parser.add_argument("--training-contention", required=True)
     parser.add_argument(
         "--source-profile",
         choices=sorted(SOURCE_REPORT_PROFILES),
@@ -594,6 +642,7 @@ def main() -> None:
         "cofitok_generation": Path(args.cofitok_generation),
         "dense_generation": Path(args.dense_generation),
         "final_gate": Path(args.final_gate),
+        "training_contention": Path(args.training_contention),
     }
     report = build_report(
         cofitok_training=_read(source_paths["cofitok_training"]),
@@ -602,6 +651,7 @@ def main() -> None:
         dense_generation=_read(source_paths["dense_generation"]),
         final_gate=_read(source_paths["final_gate"]),
         official_related=_read(args.official_related),
+        training_contention=_read(args.training_contention),
         official_source_path=Path(args.official_related).resolve().as_posix(),
         official_source_sha256=file_sha256(args.official_related),
         source_reports={

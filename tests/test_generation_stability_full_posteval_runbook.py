@@ -50,6 +50,9 @@ def test_stability_full_comparison_keeps_official_methods_contextual() -> None:
 
     assert "scripts/build_large_scale_generation_comparison.py" in source
     assert "--official-related" in source
+    assert 'TRAINING_CONTENTION="$OUTPUT_ROOT/pair_monitor.json"' in source
+    assert '--training-contention "$TRAINING_CONTENTION"' in source
+    assert '--input-file "$TRAINING_CONTENTION"' in source
     assert "--source-profile stability_full" in source
     assert "generation_stability_ema_teacher_full_matched_300k_after_gate.sh" not in source
 

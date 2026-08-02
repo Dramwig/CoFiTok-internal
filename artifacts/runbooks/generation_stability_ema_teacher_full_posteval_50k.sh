@@ -24,6 +24,7 @@ DENSE_CHECKPOINT="$DENSE_RUN/checkpoint_step_00300000.pt"
 EVAL_CACHE="$CHECKPOINT_ROOT/eval_cache/torch_fidelity"
 SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/sampling_50k"
 SAMPLING_SELECTION="$REPORT_ROOT/sampling_runtime_selection.json"
+TRAINING_CONTENTION="$OUTPUT_ROOT/pair_monitor.json"
 FINAL_GATE="$REPORT_ROOT/final_generation_gate.json"
 STAGE_STATE_ROOT="$REPORT_ROOT/stage_receipts"
 DATASET_MANIFEST="$CHECKPOINT_ROOT/../../datasets/imagenet_256/metadata/image_manifest.jsonl"
@@ -40,6 +41,7 @@ export PYTHONPATH=src
 [[ -f "$DENSE_CHECKPOINT" ]]
 [[ -f "$OFFICIAL_RELATED" ]]
 [[ -f "$DATASET_MANIFEST" ]]
+[[ -f "$TRAINING_CONTENTION" ]]
 mkdir -p "$REPORT_ROOT" "$STAGE_STATE_ROOT"
 
 "$PYTHON" scripts/validate_generation_gate_report.py \
@@ -318,6 +320,7 @@ fi
   --input-file "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
   --input-file "$FINAL_GATE" \
   --input-file "$OFFICIAL_RELATED" \
+  --input-file "$TRAINING_CONTENTION" \
   --output-tree "$REPORT_ROOT/comparison" \
   -- \
   "$PYTHON" scripts/build_large_scale_generation_comparison.py \
@@ -327,5 +330,6 @@ fi
   --dense-generation "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
   --final-gate "$FINAL_GATE" \
   --official-related "$OFFICIAL_RELATED" \
+  --training-contention "$TRAINING_CONTENTION" \
   --source-profile stability_full \
   --output-dir "$REPORT_ROOT/comparison"
