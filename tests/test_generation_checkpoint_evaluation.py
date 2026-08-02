@@ -76,6 +76,46 @@ def _write_cpu_checkpoint(path: Path) -> None:
     )
 
 
+def _run_checkpoint_evaluator(
+    checkpoint: Path,
+    output: Path,
+    *,
+    resume: bool = False,
+    timestep: int = 1,
+    check: bool = True,
+) -> subprocess.CompletedProcess[str]:
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(ROOT / "src")
+    command = [
+        sys.executable,
+        str(ROOT / "scripts/evaluate_generation_checkpoint.py"),
+        "--checkpoint",
+        str(checkpoint),
+        "--output-dir",
+        str(output),
+        "--num-images",
+        "2",
+        "--timestep",
+        str(timestep),
+        "--random-orders",
+        "1",
+        "--weights",
+        "ema",
+        "--precision",
+        "fp32",
+    ]
+    if resume:
+        command.append("--resume")
+    return subprocess.run(
+        command,
+        cwd=ROOT,
+        env=environment,
+        check=check,
+        capture_output=True,
+        text=True,
+    )
+
+
 def test_component_orders_are_deterministic_and_deduplicated() -> None:
     first = component_orders(token_count=4, random_orders=16, seed=7)
     second = component_orders(token_count=4, random_orders=16, seed=7)
@@ -118,36 +158,12 @@ def test_checkpoint_evaluator_cli_records_git_provenance(tmp_path) -> None:
     checkpoint = tmp_path / "checkpoint.pt"
     output = tmp_path / "evaluation"
     _write_cpu_checkpoint(checkpoint)
-    environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(ROOT / "src")
-
-    subprocess.run(
-        [
-            sys.executable,
-            str(ROOT / "scripts/evaluate_generation_checkpoint.py"),
-            "--checkpoint",
-            str(checkpoint),
-            "--output-dir",
-            str(output),
-            "--num-images",
-            "2",
-            "--timestep",
-            "1",
-            "--random-orders",
-            "1",
-            "--weights",
-            "ema",
-            "--precision",
-            "fp32",
-        ],
-        cwd=ROOT,
-        env=environment,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    _run_checkpoint_evaluator(checkpoint, output)
     report = json.loads(
         (output / "checkpoint_evaluation_report.json").read_text(encoding="utf-8")
+    )
+    manifest = json.loads(
+        (output / "checkpoint_evaluation_manifest.json").read_text(encoding="utf-8")
     )
     revision = subprocess.run(
         ["git", "rev-parse", "HEAD"],
@@ -157,9 +173,15 @@ def test_checkpoint_evaluator_cli_records_git_provenance(tmp_path) -> None:
         text=True,
     ).stdout.strip()
 
+    assert report["schema_version"] == 2
     assert report["status"] == "completed"
     assert report["git"]["revision"] == revision
     assert isinstance(report["git"]["tracked_dirty"], bool)
+    assert report["request"] == manifest["request"]
+    assert report["manifest"]["path"] == (
+        output / "checkpoint_evaluation_manifest.json"
+    ).resolve().as_posix()
+    assert len(report["manifest"]["sha256"]) == 64
     assert len(report["metrics"]["component_energy_ratio"]) == 2
     assert len(report["metrics"]["target_component_energy_ratio"]) == 2
     assert len(
@@ -167,3 +189,93 @@ def test_checkpoint_evaluator_cli_records_git_provenance(tmp_path) -> None:
     ) == 2
     assert report["metrics"]["component_energy_uniform_mse_per_sample_mean"] >= 0.0
     assert report["metrics"]["target_component_energy_uniform_mse_per_sample_mean"] >= 0.0
+
+
+def test_checkpoint_evaluator_resume_reuses_completed_report(tmp_path) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    output = tmp_path / "evaluation"
+    _write_cpu_checkpoint(checkpoint)
+    _run_checkpoint_evaluator(checkpoint, output)
+    report_path = output / "checkpoint_evaluation_report.json"
+    original_bytes = report_path.read_bytes()
+    original_mtime = report_path.stat().st_mtime_ns
+
+    resumed = _run_checkpoint_evaluator(checkpoint, output, resume=True)
+
+    assert "reused completed checkpoint evaluation" in resumed.stdout
+    assert report_path.read_bytes() == original_bytes
+    assert report_path.stat().st_mtime_ns == original_mtime
+
+
+def test_checkpoint_evaluator_resume_can_start_fresh(tmp_path) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    output = tmp_path / "evaluation"
+    _write_cpu_checkpoint(checkpoint)
+
+    completed = _run_checkpoint_evaluator(checkpoint, output, resume=True)
+
+    assert "wrote" in completed.stdout
+    assert (output / "checkpoint_evaluation_manifest.json").is_file()
+    assert (output / "checkpoint_evaluation_report.json").is_file()
+
+
+def test_checkpoint_evaluator_resume_reruns_incomplete_manifest(tmp_path) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    output = tmp_path / "evaluation"
+    _write_cpu_checkpoint(checkpoint)
+    _run_checkpoint_evaluator(checkpoint, output)
+    (output / "checkpoint_evaluation_report.json").unlink()
+
+    completed = _run_checkpoint_evaluator(checkpoint, output, resume=True)
+
+    assert "wrote" in completed.stdout
+    assert (output / "checkpoint_evaluation_report.json").is_file()
+
+
+def test_checkpoint_evaluator_resume_rejects_request_drift(tmp_path) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    output = tmp_path / "evaluation"
+    _write_cpu_checkpoint(checkpoint)
+    _run_checkpoint_evaluator(checkpoint, output)
+    report_path = output / "checkpoint_evaluation_report.json"
+    original_bytes = report_path.read_bytes()
+
+    resumed = _run_checkpoint_evaluator(
+        checkpoint,
+        output,
+        resume=True,
+        timestep=2,
+        check=False,
+    )
+
+    assert resumed.returncode != 0
+    assert "resume manifest does not match the request" in resumed.stderr
+    assert report_path.read_bytes() == original_bytes
+
+
+def test_checkpoint_evaluator_resume_rejects_inconsistent_report(tmp_path) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    output = tmp_path / "evaluation"
+    _write_cpu_checkpoint(checkpoint)
+    _run_checkpoint_evaluator(checkpoint, output)
+    report_path = output / "checkpoint_evaluation_report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    report["metrics"]["evaluated_images"] = 1
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+
+    resumed = _run_checkpoint_evaluator(checkpoint, output, resume=True, check=False)
+
+    assert resumed.returncode != 0
+    assert "evidence is inconsistent" in resumed.stderr
+
+
+def test_checkpoint_evaluator_requires_resume_for_existing_evidence(tmp_path) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    output = tmp_path / "evaluation"
+    _write_cpu_checkpoint(checkpoint)
+    _run_checkpoint_evaluator(checkpoint, output)
+
+    repeated = _run_checkpoint_evaluator(checkpoint, output, check=False)
+
+    assert repeated.returncode != 0
+    assert "pass --resume to validate it" in repeated.stderr

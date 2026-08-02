@@ -33,7 +33,7 @@ export PYTHONPATH=src
 "$PYTHON" scripts/evaluate_generation_checkpoint.py \
   --checkpoint "$CHECKPOINT" --output-dir "$MILESTONE_DIR/checkpoint_eval" \
   --num-images 256 --timestep 500 --random-orders "$RANDOM_ORDERS" \
-  --weights ema --precision bf16
+  --weights ema --precision bf16 --resume
 
 "$PYTHON" scripts/generate_samples.py \
   --checkpoint "$CHECKPOINT" --output-dir "$SAMPLES" \

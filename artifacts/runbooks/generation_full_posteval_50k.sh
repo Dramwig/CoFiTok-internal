@@ -67,12 +67,12 @@ fi
 python scripts/evaluate_generation_checkpoint.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/checkpoint_eval_ema_t500_1024" \
-  --num-images 1024 --timestep 500 --random-orders 16 --weights ema --precision bf16
+  --num-images 1024 --timestep 500 --random-orders 16 --weights ema --precision bf16 --resume
 
 python scripts/evaluate_generation_checkpoint.py \
   --checkpoint "$DENSE_CHECKPOINT" \
   --output-dir "$DENSE_RUN/checkpoint_eval_ema_t500_1024" \
-  --num-images 1024 --timestep 500 --random-orders 0 --weights ema --precision bf16
+  --num-images 1024 --timestep 500 --random-orders 0 --weights ema --precision bf16 --resume
 
 python scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \

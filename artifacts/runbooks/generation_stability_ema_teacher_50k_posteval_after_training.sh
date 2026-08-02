@@ -126,7 +126,8 @@ fi
   --timestep 500 \
   --random-orders 16 \
   --weights ema \
-  --precision bf16
+  --precision bf16 \
+  --resume
 
 "$PYTHON" scripts/evaluate_generation_checkpoint.py \
   --checkpoint "$DENSE_CHECKPOINT" \
@@ -135,7 +136,8 @@ fi
   --timestep 500 \
   --random-orders 0 \
   --weights ema \
-  --precision bf16
+  --precision bf16 \
+  --resume
 
 "$PYTHON" scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \

@@ -118,6 +118,8 @@ def test_shared_milestone_runner_accepts_isolated_project_identity() -> None:
     assert "PROJECT=${PROJECT:-" in source
     assert "PYTHON=${PYTHON:-python}" in source
     assert '"$PYTHON" scripts/preflight_generation_sampling.py' in source
+    assert '"$PYTHON" scripts/evaluate_generation_checkpoint.py' in source
+    assert "--weights ema --precision bf16 --resume" in source
 
 
 def test_stability_full_runbook_audits_each_run_against_its_config() -> None:

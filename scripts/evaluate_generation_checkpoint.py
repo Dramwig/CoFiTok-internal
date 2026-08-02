@@ -4,6 +4,7 @@ import argparse
 import math
 import time
 from pathlib import Path
+from typing import Any
 
 import torch
 
@@ -11,9 +12,22 @@ from cofitok.configs import config_to_dict
 from cofitok.data import build_dataloader
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.generation import load_generation_model
+from cofitok.generation.artifact import (
+    INFERENCE_ARTIFACT_TYPE,
+    verify_inference_artifact,
+)
+from cofitok.inference_replay import (
+    file_identity,
+    read_json_object,
+    reject_symlink_chain,
+)
 from cofitok.metrics import normalized_curve_auc
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import git_provenance, write_json_report
+from cofitok.training.checkpointing import (
+    checkpoint_integrity_path,
+    verify_training_checkpoint,
+)
 from cofitok.training.losses import (
     component_energy_target_ratios,
     denoise_path_prefix_epsilon_targets,
@@ -23,6 +37,12 @@ from cofitok.training.runtime import autocast_context
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+CHECKPOINT_EVALUATION_MANIFEST_SCHEMA_VERSION = 1
+CHECKPOINT_EVALUATION_REPORT_SCHEMA_VERSION = 2
+CHECKPOINT_EVALUATION_MANIFEST_ROLE = "generation_checkpoint_evaluation_manifest"
+CHECKPOINT_EVALUATION_REPORT_ROLE = "generation_checkpoint_evaluation_report"
+MANIFEST_FILENAME = "checkpoint_evaluation_manifest.json"
+REPORT_FILENAME = "checkpoint_evaluation_report.json"
 
 
 def parse_args() -> argparse.Namespace:
@@ -35,7 +55,247 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=2027)
     parser.add_argument("--weights", choices=["ema", "model"], default="ema")
     parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help=(
+            "Reuse an exactly bound completed report or rerun an incomplete evaluation "
+            "from its immutable manifest."
+        ),
+    )
     return parser.parse_args()
+
+
+def _checkpoint_identity_from_integrity(
+    checkpoint: Path,
+    integrity_path: Path,
+    integrity: dict[str, Any],
+    *,
+    artifact_type: str,
+) -> dict[str, Any]:
+    if artifact_type == INFERENCE_ARTIFACT_TYPE:
+        bytes_key = "artifact_bytes"
+        sha_key = "artifact_sha256"
+        format_key = "artifact_format_version"
+    else:
+        bytes_key = "checkpoint_bytes"
+        sha_key = "checkpoint_sha256"
+        format_key = "checkpoint_format_version"
+    checkpoint_bytes = int(integrity.get(bytes_key, -1))
+    checkpoint_sha256 = str(integrity.get(sha_key, ""))
+    checkpoint_step = int(integrity.get("step", -1))
+    checkpoint_format_version = int(integrity.get(format_key, -1))
+    if (
+        checkpoint_bytes < 1
+        or checkpoint.stat().st_size != checkpoint_bytes
+        or len(checkpoint_sha256) != 64
+        or checkpoint_step < 1
+        or checkpoint_format_version < 1
+    ):
+        raise ValueError("Checkpoint integrity metadata is incomplete")
+    return {
+        "path": checkpoint.resolve().as_posix(),
+        "bytes": checkpoint_bytes,
+        "sha256": checkpoint_sha256,
+        "integrity_manifest": file_identity(integrity_path),
+        "step": checkpoint_step,
+        "format_version": checkpoint_format_version,
+        "artifact_type": artifact_type,
+    }
+
+
+def _verified_checkpoint_identity(path: str | Path) -> dict[str, Any]:
+    checkpoint = reject_symlink_chain(path, name="checkpoint evaluation checkpoint")
+    if not checkpoint.is_file():
+        raise FileNotFoundError(f"Checkpoint does not exist: {checkpoint}")
+    integrity_path = reject_symlink_chain(
+        checkpoint_integrity_path(checkpoint),
+        name="checkpoint evaluation integrity manifest",
+    )
+    integrity_hint = read_json_object(
+        integrity_path,
+        name="checkpoint evaluation integrity manifest",
+    )
+    is_inference_artifact = (
+        integrity_hint.get("artifact_type") == INFERENCE_ARTIFACT_TYPE
+    )
+    integrity = (
+        verify_inference_artifact(checkpoint)
+        if is_inference_artifact
+        else verify_training_checkpoint(checkpoint)
+    )
+    return _checkpoint_identity_from_integrity(
+        checkpoint,
+        integrity_path,
+        integrity,
+        artifact_type=(
+            INFERENCE_ARTIFACT_TYPE if is_inference_artifact else "training_checkpoint"
+        ),
+    )
+
+
+def _loaded_checkpoint_identity(loaded: Any) -> dict[str, Any]:
+    checkpoint = reject_symlink_chain(
+        loaded.checkpoint_path,
+        name="checkpoint evaluation checkpoint",
+    )
+    integrity_path = reject_symlink_chain(
+        loaded.checkpoint_integrity_manifest,
+        name="checkpoint evaluation integrity manifest",
+    )
+    integrity = read_json_object(
+        integrity_path,
+        name="checkpoint evaluation integrity manifest",
+    )
+    identity = _checkpoint_identity_from_integrity(
+        checkpoint,
+        integrity_path,
+        integrity,
+        artifact_type=str(loaded.artifact_type),
+    )
+    if (
+        identity["sha256"] != loaded.checkpoint_sha256
+        or identity["step"] != loaded.checkpoint_step
+    ):
+        raise ValueError("Loaded checkpoint identity differs from its integrity manifest")
+    return identity
+
+
+def _request(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "num_images": int(args.num_images),
+        "timestep": int(args.timestep),
+        "random_orders": int(args.random_orders),
+        "seed": int(args.seed),
+        "weights": str(args.weights),
+        "precision": str(args.precision),
+    }
+
+
+def _manifest(
+    *,
+    checkpoint: dict[str, Any],
+    request: dict[str, Any],
+    git: dict[str, Any],
+    output_dir: Path,
+    report_path: Path,
+) -> dict[str, Any]:
+    return {
+        "schema_version": CHECKPOINT_EVALUATION_MANIFEST_SCHEMA_VERSION,
+        "role": CHECKPOINT_EVALUATION_MANIFEST_ROLE,
+        "git": git,
+        "checkpoint": checkpoint,
+        "request": request,
+        "output_dir": output_dir.resolve().as_posix(),
+        "report": report_path.resolve().as_posix(),
+    }
+
+
+def _prepare_output_directory(
+    output_dir: str | Path,
+    *,
+    resume: bool,
+) -> tuple[Path, Path, Path]:
+    output = reject_symlink_chain(
+        output_dir,
+        name="checkpoint evaluation output directory",
+    )
+    if output.exists() and not output.is_dir():
+        raise ValueError(f"Checkpoint evaluation output is not a directory: {output}")
+    output.mkdir(parents=True, exist_ok=True)
+    output = output.resolve()
+    manifest_path = output / MANIFEST_FILENAME
+    report_path = output / REPORT_FILENAME
+    allowed = {MANIFEST_FILENAME, REPORT_FILENAME}
+    unexpected = sorted(
+        path.name for path in output.iterdir() if path.name not in allowed
+    )
+    if unexpected:
+        raise ValueError(
+            "Checkpoint evaluation output contains unexpected files: "
+            + ", ".join(unexpected)
+        )
+    for path, name in (
+        (manifest_path, "checkpoint evaluation manifest"),
+        (report_path, "checkpoint evaluation report"),
+    ):
+        reject_symlink_chain(path, name=name)
+        if path.exists() and not path.is_file():
+            raise ValueError(f"{name} is not a regular file: {path}")
+    if report_path.is_file() and not manifest_path.is_file():
+        raise ValueError("Checkpoint evaluation report exists without its manifest")
+    if not resume and (manifest_path.exists() or report_path.exists()):
+        raise FileExistsError(
+            "Checkpoint evaluation evidence already exists; pass --resume to validate it"
+        )
+    return output, manifest_path, report_path
+
+
+def _validate_completed_report(
+    report: dict[str, Any],
+    *,
+    manifest: dict[str, Any],
+    manifest_identity: dict[str, Any],
+) -> None:
+    request = manifest["request"]
+    checkpoint = manifest["checkpoint"]
+    if (
+        report.get("schema_version") != CHECKPOINT_EVALUATION_REPORT_SCHEMA_VERSION
+        or report.get("role") != CHECKPOINT_EVALUATION_REPORT_ROLE
+        or report.get("status") != "completed"
+        or report.get("manifest") != manifest_identity
+        or report.get("git") != manifest.get("git")
+        or report.get("request") != request
+        or report.get("checkpoint") != checkpoint.get("path")
+        or report.get("checkpoint_sha256") != checkpoint.get("sha256")
+        or report.get("checkpoint_integrity_manifest")
+        != checkpoint.get("integrity_manifest", {}).get("path")
+        or report.get("checkpoint_step") != checkpoint.get("step")
+        or report.get("weights") != request.get("weights")
+        or report.get("precision") != request.get("precision")
+    ):
+        raise ValueError("Completed checkpoint evaluation report binding differs")
+    config = report.get("config")
+    metrics = report.get("metrics")
+    runtime = report.get("runtime")
+    if (
+        not isinstance(config, dict)
+        or not isinstance(metrics, dict)
+        or not isinstance(runtime, dict)
+    ):
+        raise ValueError("Completed checkpoint evaluation report is malformed")
+    try:
+        token_count = int(config["model"]["token_count"])
+        train_timesteps = int(config["diffusion"]["num_train_timesteps"])
+        elapsed_seconds = float(runtime["elapsed_seconds"])
+    except (KeyError, TypeError, ValueError) as error:
+        raise ValueError("Completed checkpoint evaluation provenance is malformed") from error
+    expected_orders = component_orders(
+        token_count,
+        int(request["random_orders"]),
+        int(request["seed"]),
+    )
+    metric_orders = metrics.get("orders")
+    if not isinstance(metric_orders, dict):
+        raise ValueError("Completed checkpoint evaluation orders are malformed")
+    observed_orders = {
+        name: row.get("order") if isinstance(row, dict) else None
+        for name, row in metric_orders.items()
+    }
+    if (
+        not 0 <= int(request["timestep"]) < train_timesteps
+        or int(metrics.get("evaluated_images", -1)) != int(request["num_images"])
+        or int(metrics.get("timestep", -1)) != int(request["timestep"])
+        or int(metrics.get("order_count", -1)) != len(expected_orders)
+        or observed_orders != expected_orders
+        or not math.isfinite(elapsed_seconds)
+        or elapsed_seconds <= 0.0
+        or not isinstance(runtime.get("device"), str)
+        or not runtime["device"]
+        or not isinstance(runtime.get("torch_version"), str)
+        or not runtime["torch_version"]
+    ):
+        raise ValueError("Completed checkpoint evaluation evidence is inconsistent")
 
 
 def component_orders(token_count: int, random_orders: int, seed: int) -> dict[str, list[int]]:
@@ -342,7 +602,63 @@ def main() -> None:
     args = parse_args()
     if args.num_images < 1:
         raise ValueError("num-images must be positive")
-    loaded = load_generation_model(args.checkpoint, weights=args.weights)
+    if args.random_orders < 0:
+        raise ValueError("random-orders must be non-negative")
+    output_dir, manifest_path, report_path = _prepare_output_directory(
+        args.output_dir,
+        resume=args.resume,
+    )
+    evaluator_git = git_provenance(PROJECT_ROOT)
+    request = _request(args)
+    loaded = None
+    if manifest_path.is_file():
+        checkpoint_identity = _verified_checkpoint_identity(args.checkpoint)
+        expected_manifest = _manifest(
+            checkpoint=checkpoint_identity,
+            request=request,
+            git=evaluator_git,
+            output_dir=output_dir,
+            report_path=report_path,
+        )
+        existing_manifest = read_json_object(
+            manifest_path,
+            name="checkpoint evaluation manifest",
+        )
+        if existing_manifest != expected_manifest:
+            raise ValueError(
+                "Checkpoint evaluation resume manifest does not match the request"
+            )
+        manifest_identity = file_identity(manifest_path)
+        if report_path.is_file():
+            existing_report = read_json_object(
+                report_path,
+                name="checkpoint evaluation report",
+            )
+            _validate_completed_report(
+                existing_report,
+                manifest=expected_manifest,
+                manifest_identity=manifest_identity,
+            )
+            print(f"reused completed checkpoint evaluation {report_path}")
+            return
+        loaded = load_generation_model(args.checkpoint, weights=args.weights)
+        if _loaded_checkpoint_identity(loaded) != checkpoint_identity:
+            raise ValueError("Loaded checkpoint identity differs from the resume manifest")
+    else:
+        loaded = load_generation_model(args.checkpoint, weights=args.weights)
+        checkpoint_identity = _loaded_checkpoint_identity(loaded)
+        expected_manifest = _manifest(
+            checkpoint=checkpoint_identity,
+            request=request,
+            git=evaluator_git,
+            output_dir=output_dir,
+            report_path=report_path,
+        )
+        write_json_report(manifest_path, expected_manifest)
+        manifest_identity = file_identity(manifest_path)
+
+    if loaded is None:
+        raise RuntimeError("Checkpoint evaluation model was not loaded")
     checkpoint_path = loaded.checkpoint_path
     config = loaded.config
     if not 0 <= args.timestep < config.diffusion.num_train_timesteps:
@@ -352,7 +668,6 @@ def main() -> None:
     schedule = DiffusionSchedule(config.diffusion, device=device)
     loader = build_dataloader(config.data, split="val", drop_last=False)
     orders = component_orders(config.model.token_count, args.random_orders, args.seed)
-    evaluator_git = git_provenance(PROJECT_ROOT)
     start = time.time()
     metrics = evaluate(
         model=model,
@@ -371,9 +686,12 @@ def main() -> None:
         seed=args.seed,
     )
     report = {
-        "schema_version": 1,
+        "schema_version": CHECKPOINT_EVALUATION_REPORT_SCHEMA_VERSION,
+        "role": CHECKPOINT_EVALUATION_REPORT_ROLE,
         "status": "completed",
         "git": evaluator_git,
+        "manifest": manifest_identity,
+        "request": request,
         "checkpoint": checkpoint_path.resolve().as_posix(),
         "checkpoint_sha256": loaded.checkpoint_sha256,
         "checkpoint_integrity_manifest": loaded.checkpoint_integrity_manifest.as_posix(),
@@ -388,9 +706,6 @@ def main() -> None:
             "torch_version": torch.__version__,
         },
     }
-    output_dir = Path(args.output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    report_path = output_dir / "checkpoint_evaluation_report.json"
     write_json_report(report_path, report)
     print(f"wrote {report_path}")
 

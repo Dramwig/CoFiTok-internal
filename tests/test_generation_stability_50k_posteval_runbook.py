@@ -30,6 +30,19 @@ def test_stability_50k_posteval_uses_formal_ema_gate_protocol() -> None:
     assert source.count("--num-samples 10000") == 2
     assert source.count("--sample-steps 100") == 3
     assert source.count("--weights ema") >= 5
+    assert source.count("scripts/evaluate_generation_checkpoint.py") == 2
+    assert (
+        "--random-orders 16 \\\n"
+        "  --weights ema \\\n"
+        "  --precision bf16 \\\n"
+        "  --resume"
+    ) in source
+    assert (
+        "--random-orders 0 \\\n"
+        "  --weights ema \\\n"
+        "  --precision bf16 \\\n"
+        "  --resume"
+    ) in source
     assert "--source-profile stability_scaling" in source
     assert '--expected-training-revision "$EXPECTED_TRAINING_REVISION"' in source
     assert '--expected-training-branch "$EXPECTED_TRAINING_BRANCH"' in source
