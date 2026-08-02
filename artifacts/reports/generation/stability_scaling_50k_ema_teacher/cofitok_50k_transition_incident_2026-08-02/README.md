@@ -24,10 +24,15 @@ did not exist. GPU PID `362355` belonged to FieldScope and was left untouched.
 Full ImageNet-256 300K training remains unauthorized.
 
 Recovery-control commit `e5c9ed7bd4590f5dd6dd0d78308c2ff8e868b58a` was
-deployed into a new isolated checkout. Its non-executing preflight completed as
-`prepared`, revalidating the completed CoFiTok trust boundary, frozen runtime,
-matched configs, and `69,184,232,412` bytes of storage headroom. No queue or
-GPU process was launched.
+deployed into a new isolated checkout, then fast-forwarded only in that
+checkout to controller revision
+`5f57757a2162507c6166dbfe976246df6ae1af91`. The latter adds a non-blocking
+single-controller lock without changing the immutable training checkout. Its
+non-executing preflight completed as `prepared`, revalidating the completed
+CoFiTok trust boundary, frozen runtime, matched configs, and
+`68,809,579,484` bytes of storage headroom. A simultaneous second preflight
+exited 15 before it could overwrite status. No queue or GPU process was
+launched.
 
 The recovery runbook intentionally leaves `pair_summary.json` absent. The
 exact post-eval waiter must create it from the original locked config report,

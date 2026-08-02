@@ -119,6 +119,23 @@ without overwriting the active controller's status. This closes the remaining
 TOCTOU window between duplicate-process observation and monitor launch while
 leaving the immutable training checkout unchanged.
 
+The lock hardening commit is
+`5f57757a2162507c6166dbfe976246df6ae1af91`. A prerequisite-bound incremental
+bundle from `e5c9ed7` advertised only that target; it was `4,410` bytes with
+SHA256
+`8df4ad23d59fb39ce2663bbbc502d2d2c07345f3ec4b1debe8d6f757c2203963`.
+Bundle verification, fast-forward, tracked-clean status, remote `bash -n`, and
+five focused Linux tests passed. The official repository, immutable training
+checkout, post-eval checkout, and receipt-bound readiness checkout retained
+their exact prior revisions.
+
+A real two-controller, non-executing preflight then proved the lock boundary.
+The primary controller completed `prepared`; the simultaneous secondary
+controller exited 15 with `refusing concurrent dense recovery controller` and
+did not overwrite status. Fresh free/required/headroom were
+`187,194,892,288 / 118,385,312,804 / 68,809,579,484` bytes. No trainer,
+monitor, watchdog, or CoFiTok GPU process was started.
+
 Validation:
 
 ```text

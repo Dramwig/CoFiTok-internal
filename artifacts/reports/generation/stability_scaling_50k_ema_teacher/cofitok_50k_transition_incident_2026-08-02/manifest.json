@@ -26,7 +26,7 @@
     "effective_batch_size": 64
   },
   "recovery_control": {
-    "revision": "e5c9ed7bd4590f5dd6dd0d78308c2ff8e868b58a",
+    "revision": "5f57757a2162507c6166dbfe976246df6ae1af91",
     "branch": "scale/generation-stability-dense-recovery-control-00549fe",
     "checkout": "/tmp/cofitok-stability-dense-recovery-control-00549fe",
     "base_bundle": {
@@ -38,6 +38,20 @@
       "bytes": 7036,
       "sha256": "fa8e41d2531cd89bfbfef23610838a38f3ebb3f3ce11bc38bab11bb76889ef0b",
       "target_revision": "e5c9ed7bd4590f5dd6dd0d78308c2ff8e868b58a"
+    },
+    "controller_lock_increment": {
+      "bytes": 4410,
+      "sha256": "8df4ad23d59fb39ce2663bbbc502d2d2c07345f3ec4b1debe8d6f757c2203963",
+      "prerequisite_revision": "e5c9ed7bd4590f5dd6dd0d78308c2ff8e868b58a",
+      "target_revision": "5f57757a2162507c6166dbfe976246df6ae1af91"
+    },
+    "single_controller_lock": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_recovery.lock",
+      "file_descriptor": 6,
+      "mode": "nonblocking",
+      "concurrent_exit_code": 15,
+      "concurrent_status_overwrite": false,
+      "validated_at": "2026-08-02T04:42:24.749705+00:00"
     },
     "preflight_status": "prepared",
     "preflight_only": true,
@@ -55,6 +69,10 @@
     "full_training_launch_allowed": false
   },
   "files": {
+    "remote/dense_recovery_concurrent_controller_rejection.log": {
+      "bytes": 46,
+      "sha256": "8a141ff983523904c640cacf0820e87c7439eabcdf28c4076ee9369b8c1aec23"
+    },
     "remote/dense_recovery_config_validation.json": {
       "bytes": 14511,
       "sha256": "f0bc0e1d99074bdc5dc5244fde06fb2783a840308f0b573ce4078a91c32f2407"
@@ -63,9 +81,17 @@
       "bytes": 663,
       "sha256": "c1ccd851355390f1d8af7fa1477149cfd231d586204f46f691d882453475ae0c"
     },
+    "remote/dense_recovery_status_lock_preflight.json": {
+      "bytes": 663,
+      "sha256": "50add0730533010e4ace8464425a997bc6c54e06a5df1a75069b56aaa8bf964d"
+    },
     "remote/dense_recovery_storage_capacity.json": {
       "bytes": 982,
       "sha256": "e6d3100cce664333831896e8cf0598cc4c165f5c93a296bbf475c71afa159392"
+    },
+    "remote/dense_recovery_storage_capacity_lock_preflight.json": {
+      "bytes": 982,
+      "sha256": "f0fcbbfea86678d51f67e4041c41236e67d2da324e7a3127713a4f2d31ec9511"
     },
     "remote/cofitok_checkpoint_step_00050000.pt.integrity.json": {
       "bytes": 590,
