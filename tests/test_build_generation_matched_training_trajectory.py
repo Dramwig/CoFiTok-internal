@@ -34,14 +34,14 @@ def _config(*, dense: bool) -> dict:
             "epsilon_weight": 1.0,
             "rollout_consistency_weight": 0.1,
             "rollout_consistency_start_step": 0,
-            "rollout_consistency_warmup_steps": 100,
+            "rollout_consistency_warmup_steps": 200,
             "rollout_consistency_timestep_delta": 10,
             "rollout_consistency_unroll_steps": 2,
             "rollout_consistency_batch_fraction": 0.125,
             "rollout_consistency_clip_x0": True,
             "rollout_consistency_mode": "clipped_x0",
             "ema_teacher_consistency_weight": 0.25,
-            "ema_teacher_consistency_start_step": 300,
+            "ema_teacher_consistency_start_step": 100,
             "ema_teacher_consistency_warmup_steps": 100,
             "ema_teacher_consistency_batch_fraction": 0.0625,
             "prefix_weight": 0.0,
@@ -72,7 +72,11 @@ def _rows(*, dense: bool) -> list[dict]:
             "samples_seen": step * 8,
             "epsilon": 0.5 / step + (0.001 if dense else 0.0),
             "rollout_consistency": 0.1,
-            "rollout_consistency_scale": min(step / 100, 1.0),
+            "rollout_consistency_scale": min(step / 200, 1.0),
+            "ema_teacher_consistency": 0.05,
+            "ema_teacher_consistency_scale": (
+                0.0 if step < 100 else min((step - 100) / 100, 1.0)
+            ),
         }
         if step in (100, 200):
             event = step // 100 - 1
@@ -113,11 +117,21 @@ def test_report_binds_matched_validation_without_claiming_quality() -> None:
     assert paired["summary"]["event_count"] == 2
     assert paired["summary"]["cofitok_lower_event_count"] == 2
     assert paired["events"][0]["validation_noise_seed"] == 102030
+    regimes = paired["schedule_regimes"]
+    assert regimes["contracts"]["rollout_consistency"]["full_scale_step"] == 200
+    rollout = regimes["by_schedule"]["rollout_consistency"]
+    assert [entry["phase"] for entry in rollout] == ["warmup", "full_scale"]
+    assert rollout[0]["event_steps"] == [100]
+    assert rollout[1]["event_steps"] == [200]
+    ema_teacher = regimes["by_schedule"]["ema_teacher_consistency"]
+    assert [entry["phase"] for entry in ema_teacher] == ["warmup", "full_scale"]
+    assert regimes["individual_regime_significance_claim_allowed"] is False
     assert report["comparison_policy"]["total_loss_comparison_allowed"] is False
     assert report["comparison_policy"]["training_wall_clock_comparison_allowed"] is False
     assert report["claim_boundary"]["quality_claim_allowed"] is False
     assert report["claim_boundary"]["formal_50k_gate_substitute"] is False
     assert report["claim_boundary"]["full_training_launch_allowed"] is False
+    assert report["claim_boundary"]["schedule_regime_quality_claim_allowed"] is False
 
 
 def test_report_rejects_sample_accounting_drift() -> None:
@@ -150,6 +164,39 @@ def test_report_rejects_validation_provenance_drift() -> None:
             expected_revision=REVISION,
             expected_branch=BRANCH,
         )
+
+
+def test_report_rejects_observed_schedule_scale_drift() -> None:
+    dense = _metrics(dense=True)
+    dense["rows"][-1]["rollout_consistency_scale"] = 0.9
+
+    with pytest.raises(ValueError, match="full-scale phase"):
+        trajectory.build_report(
+            cofitok_metrics=_metrics(dense=False),
+            dense_metrics=dense,
+            cofitok_manifest=_manifest(dense=False),
+            dense_manifest=_manifest(dense=True),
+            cutoff_step=200,
+            expected_revision=REVISION,
+            expected_branch=BRANCH,
+        )
+
+
+@pytest.mark.parametrize(
+    ("step", "contract", "expected"),
+    [
+        (50, {"enabled": False, "start_step": 0, "warmup_steps": 100}, "disabled"),
+        (50, {"enabled": True, "start_step": 100, "warmup_steps": 100}, "inactive"),
+        (100, {"enabled": True, "start_step": 100, "warmup_steps": 100}, "warmup"),
+        (200, {"enabled": True, "start_step": 100, "warmup_steps": 100}, "full_scale"),
+    ],
+)
+def test_schedule_phase_boundaries(
+    step: int,
+    contract: dict,
+    expected: str,
+) -> None:
+    assert trajectory._schedule_phase(step, contract) == expected
 
 
 def test_report_rejects_runtime_or_pair_contract_drift() -> None:

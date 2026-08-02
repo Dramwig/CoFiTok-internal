@@ -12,6 +12,18 @@ from cofitok.generation_pair import generation_pair_contract
 from cofitok.reporting import file_sha256, write_json_report
 
 
+_SHARED_SCHEDULES = (
+    "rollout_consistency",
+    "ema_teacher_consistency",
+)
+_SCHEDULE_PHASES = (
+    "disabled",
+    "inactive",
+    "warmup",
+    "full_scale",
+)
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
@@ -198,7 +210,13 @@ def _validate_rows(
         for field, value in row.items():
             if isinstance(value, (int, float)) and not isinstance(value, bool):
                 _finite_number(value, label=f"{label} step {step} {field}")
-        for field in ("epsilon", "rollout_consistency", "rollout_consistency_scale"):
+        for field in (
+            "epsilon",
+            "rollout_consistency",
+            "rollout_consistency_scale",
+            "ema_teacher_consistency",
+            "ema_teacher_consistency_scale",
+        ):
             _finite_number(row.get(field), label=f"{label} step {step} {field}")
     validation_rows = [row for row in rows if "validation_epsilon_mse" in row]
     expected_validation_steps = list(
@@ -246,9 +264,138 @@ def _validate_rows(
     }
 
 
+def _schedule_contract(config: dict[str, Any], *, label: str) -> dict[str, Any]:
+    loss = config.get("loss")
+    if not isinstance(loss, dict):
+        raise ValueError(f"{label} config lacks its loss schedule")
+    result: dict[str, Any] = {}
+    for name in _SHARED_SCHEDULES:
+        weight = _finite_number(
+            loss.get(f"{name}_weight"),
+            label=f"{label} {name}_weight",
+        )
+        if weight < 0.0:
+            raise ValueError(f"{label} {name}_weight must be nonnegative")
+        try:
+            start_step = int(loss[f"{name}_start_step"])
+            warmup_steps = int(loss[f"{name}_warmup_steps"])
+        except (KeyError, TypeError, ValueError) as error:
+            raise ValueError(f"{label} {name} schedule is incomplete") from error
+        if start_step < 0 or warmup_steps < 0:
+            raise ValueError(f"{label} {name} schedule steps must be nonnegative")
+        enabled = weight > 0.0
+        result[name] = {
+            "enabled": enabled,
+            "weight": weight,
+            "start_step": start_step,
+            "warmup_steps": warmup_steps,
+            "full_scale_step": start_step + warmup_steps if enabled else None,
+        }
+    return result
+
+
+def _schedule_phase(step: int, contract: dict[str, Any]) -> str:
+    if contract["enabled"] is not True:
+        return "disabled"
+    start_step = int(contract["start_step"])
+    warmup_steps = int(contract["warmup_steps"])
+    if step < start_step:
+        return "inactive"
+    if warmup_steps > 0 and step < start_step + warmup_steps:
+        return "warmup"
+    return "full_scale"
+
+
+def _validate_observed_schedule_scale(
+    value: Any,
+    *,
+    label: str,
+    phase: str,
+) -> float:
+    scale = _finite_number(value, label=label)
+    if scale < 0.0 or scale > 1.0:
+        raise ValueError(f"{label} must be between zero and one")
+    if phase in {"disabled", "inactive"} and scale != 0.0:
+        raise ValueError(f"{label} must be zero during the {phase} phase")
+    if phase == "warmup" and scale >= 1.0:
+        raise ValueError(f"{label} must remain below one during warmup")
+    if phase == "full_scale" and not math.isclose(scale, 1.0, abs_tol=1e-8):
+        raise ValueError(f"{label} must equal one during the full-scale phase")
+    return scale
+
+
+def _event_summary(events: list[dict[str, Any]]) -> dict[str, Any]:
+    if not events:
+        raise ValueError("cannot summarize an empty validation regime")
+    cofitok_values = [event["cofitok_epsilon_mse"] for event in events]
+    dense_values = [event["dense_epsilon_mse"] for event in events]
+    deltas = [event["cofitok_minus_dense"] for event in events]
+    relative_deltas = [
+        event["relative_delta"]
+        for event in events
+        if event["relative_delta"] is not None
+    ]
+    cofitok_mean = mean(cofitok_values)
+    dense_mean = mean(dense_values)
+    return {
+        "event_count": len(events),
+        "cofitok_mean_epsilon_mse": cofitok_mean,
+        "dense_mean_epsilon_mse": dense_mean,
+        "mean_cofitok_minus_dense": mean(deltas),
+        "relative_delta_of_means": (
+            (cofitok_mean - dense_mean) / dense_mean if dense_mean != 0.0 else None
+        ),
+        "mean_absolute_delta": mean(abs(delta) for delta in deltas),
+        "median_absolute_delta": median(abs(delta) for delta in deltas),
+        "max_absolute_relative_delta": (
+            max(abs(value) for value in relative_deltas) if relative_deltas else None
+        ),
+        "cofitok_lower_event_count": sum(delta < 0.0 for delta in deltas),
+        "dense_lower_event_count": sum(delta > 0.0 for delta in deltas),
+        "tie_event_count": sum(delta == 0.0 for delta in deltas),
+        "endpoint_relative_delta": events[-1]["relative_delta"],
+    }
+
+
+def _schedule_regime_summaries(
+    events: list[dict[str, Any]],
+    *,
+    contracts: dict[str, Any],
+) -> dict[str, Any]:
+    by_schedule: dict[str, Any] = {}
+    for name, contract in contracts.items():
+        phase_summaries = []
+        for phase in _SCHEDULE_PHASES:
+            selected = [
+                event
+                for event in events
+                if event["schedule_phases"][name] == phase
+            ]
+            if not selected:
+                continue
+            phase_summaries.append(
+                {
+                    "phase": phase,
+                    "first_step": selected[0]["step"],
+                    "last_step": selected[-1]["step"],
+                    "event_steps": [event["step"] for event in selected],
+                    "summary": _event_summary(selected),
+                }
+            )
+        by_schedule[name] = phase_summaries
+    return {
+        "basis": "predeclared shared loss schedules from both resolved manifests",
+        "contracts": contracts,
+        "by_schedule": by_schedule,
+        "individual_regime_significance_claim_allowed": False,
+    }
+
+
 def _paired_validation(
     cofitok_rows: list[dict[str, Any]],
     dense_rows: list[dict[str, Any]],
+    *,
+    schedule_contracts: dict[str, Any],
 ) -> dict[str, Any]:
     if len(cofitok_rows) != len(dense_rows):
         raise ValueError("matched validation event counts differ")
@@ -268,6 +415,26 @@ def _paired_validation(
         dense_mse = float(dense["validation_epsilon_mse"])
         delta = cofitok_mse - dense_mse
         relative = delta / dense_mse if dense_mse != 0.0 else None
+        schedule_phases = {
+            name: _schedule_phase(step, contract)
+            for name, contract in schedule_contracts.items()
+        }
+        observed_schedule_scales: dict[str, float] = {}
+        for name, phase in schedule_phases.items():
+            field = f"{name}_scale"
+            cofitok_scale = _validate_observed_schedule_scale(
+                cofitok.get(field),
+                label=f"cofitok step {step} {field}",
+                phase=phase,
+            )
+            dense_scale = _validate_observed_schedule_scale(
+                dense.get(field),
+                label=f"dense_identity step {step} {field}",
+                phase=phase,
+            )
+            if not math.isclose(cofitok_scale, dense_scale, abs_tol=1e-12):
+                raise ValueError(f"matched {field} differs at step {step}")
+            observed_schedule_scales[name] = cofitok_scale
         events.append(
             {
                 "step": step,
@@ -279,45 +446,24 @@ def _paired_validation(
                 "dense_epsilon_mse": dense_mse,
                 "cofitok_minus_dense": delta,
                 "relative_delta": relative,
+                "schedule_phases": schedule_phases,
+                "observed_schedule_scales": observed_schedule_scales,
                 "lower_mse": (
                     "cofitok" if delta < 0.0 else "dense_identity" if delta > 0.0 else "tie"
                 ),
             }
         )
-    cofitok_values = [event["cofitok_epsilon_mse"] for event in events]
-    dense_values = [event["dense_epsilon_mse"] for event in events]
-    deltas = [event["cofitok_minus_dense"] for event in events]
-    relative_deltas = [
-        event["relative_delta"]
-        for event in events
-        if event["relative_delta"] is not None
-    ]
-    cofitok_mean = mean(cofitok_values)
-    dense_mean = mean(dense_values)
     return {
         "pairing_basis": (
             "same validation steps, event indices, batch indices, image counts, "
             "and fixed noise seed"
         ),
         "events": events,
-        "summary": {
-            "event_count": len(events),
-            "cofitok_mean_epsilon_mse": cofitok_mean,
-            "dense_mean_epsilon_mse": dense_mean,
-            "mean_cofitok_minus_dense": mean(deltas),
-            "relative_delta_of_means": (
-                (cofitok_mean - dense_mean) / dense_mean if dense_mean != 0.0 else None
-            ),
-            "mean_absolute_delta": mean(abs(delta) for delta in deltas),
-            "median_absolute_delta": median(abs(delta) for delta in deltas),
-            "max_absolute_relative_delta": (
-                max(abs(value) for value in relative_deltas) if relative_deltas else None
-            ),
-            "cofitok_lower_event_count": sum(delta < 0.0 for delta in deltas),
-            "dense_lower_event_count": sum(delta > 0.0 for delta in deltas),
-            "tie_event_count": sum(delta == 0.0 for delta in deltas),
-            "endpoint_relative_delta": events[-1]["relative_delta"],
-        },
+        "summary": _event_summary(events),
+        "schedule_regimes": _schedule_regime_summaries(
+            events,
+            contracts=schedule_contracts,
+        ),
     }
 
 
@@ -354,6 +500,14 @@ def build_report(
     if contract["valid"] is not True:
         raise ValueError("training pair contract failed: " + "; ".join(contract["issues"]))
     cofitok_config = validated_cofitok["config"]
+    dense_config = validated_dense["config"]
+    schedule_contracts = _schedule_contract(cofitok_config, label="cofitok")
+    dense_schedule_contracts = _schedule_contract(
+        dense_config,
+        label="dense_identity",
+    )
+    if schedule_contracts != dense_schedule_contracts:
+        raise ValueError("matched manifests differ in shared loss schedules")
     optimization = cofitok_config["optimization"]
     data = cofitok_config["data"]
     runtime = cofitok_config["runtime"]
@@ -383,6 +537,7 @@ def build_report(
     paired = _paired_validation(
         cofitok_trajectory.pop("validation_rows"),
         dense_trajectory.pop("validation_rows"),
+        schedule_contracts=schedule_contracts,
     )
     dense_parameters = validated_dense["parameter_count"]
     parameter_gap = (
@@ -391,7 +546,7 @@ def build_report(
     if abs(parameter_gap) > 0.02:
         raise ValueError("matched parameter gap exceeds 2%")
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "pass",
         "role": "matched_training_trajectory_diagnostic",
         "cutoff_step": cutoff_step,
@@ -430,7 +585,9 @@ def build_report(
             "supports": [
                 "matched resolved training contract through the cutoff",
                 "source-bound fixed-validation epsilon trajectory through the cutoff",
+                "predeclared fixed-validation summaries by shared schedule regime",
             ],
+            "schedule_regime_quality_claim_allowed": False,
             "quality_claim_allowed": False,
             "formal_50k_gate_substitute": False,
             "promotion_authorization_allowed": False,
