@@ -330,6 +330,19 @@ repository or mutate an active training checkout.
   `artifacts/reports/generation/stability_frozen_supplemental_checkout_2026-08-03/checkout_attestation_receipt.json`;
   see also
   `docs/records/2026-08-03_generation_frozen_supplemental_checkout_attestation.md`.
+- After that attestation, exactly one detached CPU coordination waiter was
+  restored as PID `861117`. It holds the status-output lock, is bound to the
+  clean `c212b9e` checkout, and remained healthy through a full poll at
+  `waiting_for_frozen_postevaluation` with no child. Its authoritative status
+  is
+  `stability_scaling_50k_ema_teacher/reports/frozen_posteval_supplemental/supplemental_waiter.json`.
+  The waiter can launch only after frozen post-evaluation completes, readiness
+  is terminal, and the GPU is idle; it remains
+  `supplemental_non_authorizing=true` and
+  `full_training_launch_allowed=false`. Exact launch/status evidence is in
+  `artifacts/reports/generation/stability_frozen_supplemental_waiter_launch_2026-08-03/`;
+  see
+  `docs/records/2026-08-03_generation_frozen_supplemental_waiter_launch.md`.
 - The supplemental is nevertheless a mandatory **quality prerequisite** for a
   later 300K launch. Schema-v3 `full_training_launch_receipt.json` replays the
   supplemental from its four direct reports, rehashes every nested source,

@@ -1,0 +1,51 @@
+{
+  "checkout": {
+    "branch": "scale/generation-large-capacity",
+    "revision": "c212b9e2b64d1b302b17a9d4e30a296d773d4215",
+    "tracked_dirty": false
+  },
+  "child_exit_code": null,
+  "child_pid": null,
+  "detail": "waiting_for_frozen_postevaluation",
+  "expected": {
+    "frozen_evaluation_branch": "scale/generation-stability-50k-posteval-v4",
+    "frozen_evaluation_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "full_training_launch_allowed": false,
+    "readiness_branch": "scale/generation-large-capacity",
+    "readiness_revision": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+    "supplemental_branch": "scale/generation-large-capacity",
+    "supplemental_non_authorizing": true,
+    "supplemental_revision": "c212b9e2b64d1b302b17a9d4e30a296d773d4215",
+    "training_branch": "scale/generation-stability-50k-preflight",
+    "training_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+  },
+  "full_training_launch_allowed": false,
+  "gpu_pids": [
+    541878
+  ],
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "pid": 861117,
+  "posteval": {
+    "age_seconds": 229.576757,
+    "complete": false,
+    "detail": "waiting_for_completed_training_pair",
+    "status": "waiting",
+    "updated_at": "2026-08-02T22:46:02.527416+00:00"
+  },
+  "readiness_coordination": {
+    "age_seconds": 192.28508,
+    "child_exit_code": null,
+    "child_pid": null,
+    "detail": "waiting_for_passing_stability_gate",
+    "full_training_launch_allowed": false,
+    "status": "waiting",
+    "terminal": false,
+    "updated_at": "2026-08-02T22:46:39.819311+00:00"
+  },
+  "role": "generation_stability_frozen_supplemental_waiter",
+  "schema_version": 1,
+  "status": "waiting",
+  "supplemental": null,
+  "supplemental_non_authorizing": true,
+  "updated_at": "2026-08-02T22:49:52.176773+00:00"
+}

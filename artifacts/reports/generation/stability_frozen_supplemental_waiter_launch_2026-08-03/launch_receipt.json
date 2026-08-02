@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "role": "generation_stability_frozen_supplemental_waiter_launch_receipt",
+  "status": "pass",
+  "observed_at": "2026-08-02T22:51:26+00:00",
+  "purpose": "Restore exactly one source-bound, non-authorizing CPU coordination waiter for the frozen post-evaluation quality supplemental without modifying the active GPU queue.",
+  "source_attestation": {
+    "commit": "e10a06ead21a6335ff49295f84caa19cd0b04049",
+    "receipt_path": "artifacts/reports/generation/stability_frozen_supplemental_checkout_2026-08-03/checkout_attestation_receipt.json",
+    "receipt_sha256": "85da0334157d33942e229da6cb6e082ca2b44d918bf7a096d111619801f1c2bc"
+  },
+  "checkout": {
+    "path": "/tmp/cofitok-stability-frozen-supplemental-c212b9e/CoFiTok-internal",
+    "revision": "c212b9e2b64d1b302b17a9d4e30a296d773d4215",
+    "branch": "scale/generation-large-capacity",
+    "tracked_dirty": false
+  },
+  "waiter": {
+    "pid": 861117,
+    "parent_pid": 1,
+    "launched_at": "2026-08-02T22:44:48+00:00",
+    "cwd": "/tmp/cofitok-stability-frozen-supplemental-c212b9e/CoFiTok-internal",
+    "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+    "entrypoint": "scripts/run_generation_stability_frozen_supplemental_waiter.py",
+    "runbook": "artifacts/runbooks/generation_stability_frozen_50k_supplemental_waiter.sh",
+    "timeout_seconds": 1209600,
+    "poll_seconds": 300,
+    "status_silence_seconds": 900,
+    "process_count": 1,
+    "child_process_count": 0,
+    "output_lock": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/frozen_posteval_supplemental/.supplemental_waiter.json.cofitok-output.lock",
+    "output_lock_held_on_fd": 3,
+    "nohup_log": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/frozen_posteval_supplemental/supplemental_waiter.nohup.log",
+    "nohup_log_bytes": 0
+  },
+  "expected_identities": {
+    "training_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "training_branch": "scale/generation-stability-50k-preflight",
+    "frozen_evaluation_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "frozen_evaluation_branch": "scale/generation-stability-50k-posteval-v4",
+    "readiness_revision": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+    "readiness_branch": "scale/generation-large-capacity",
+    "supplemental_revision": "c212b9e2b64d1b302b17a9d4e30a296d773d4215",
+    "supplemental_branch": "scale/generation-large-capacity"
+  },
+  "status_snapshot": {
+    "remote_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/frozen_posteval_supplemental/supplemental_waiter.json",
+    "local_path": "artifacts/reports/generation/stability_frozen_supplemental_waiter_launch_2026-08-03/supplemental_waiter_snapshot.json",
+    "bytes": 1804,
+    "sha256": "3b5be6e71df61ef49f6c81ec9be540b4cebe0b2f2927447af6e368fa669a87e3",
+    "updated_at": "2026-08-02T22:49:52.176773+00:00",
+    "status": "waiting",
+    "detail": "waiting_for_frozen_postevaluation",
+    "child_pid": null,
+    "child_exit_code": null,
+    "supplemental_non_authorizing": true,
+    "full_training_launch_allowed": false
+  },
+  "queue_observation": {
+    "dense_step": 21950,
+    "dense_samples_seen": 1404800,
+    "dense_metric_rows": 440,
+    "pair_status": "running",
+    "pair_stage": "dense_identity_training",
+    "pair_issues": [],
+    "posteval_status": "waiting",
+    "posteval_pid": 717145,
+    "readiness_status": "waiting",
+    "readiness_pid": 748183,
+    "full_training_launch_allowed": false
+  },
+  "runtime_observation": {
+    "gpu_compute_processes": [
+      {
+        "pid": 541878,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 77970,
+        "identity": "pre-existing CoFiTok dense trainer"
+      }
+    ],
+    "generation_filesystem_free_bytes": 182914887680
+  },
+  "ordering_contract": {
+    "requires_frozen_postevaluation_complete": true,
+    "requires_readiness_terminal": true,
+    "requires_idle_gpu": true,
+    "supplemental_child_started_before_prerequisites": false
+  },
+  "decision_boundary": {
+    "waiter_launch_succeeded": true,
+    "supplemental_evaluation_started": false,
+    "active_gpu_process_modified": false,
+    "another_project_process_modified": false,
+    "full_training_launch_receipt_created": false,
+    "full_training_launch_allowed": false,
+    "full_training_launch_authorized": false,
+    "full_training_launched": false
+  }
+}
