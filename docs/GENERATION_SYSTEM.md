@@ -308,6 +308,22 @@ repository or mutate an active training checkout.
   It remains diagnostic-only: it does not replace the original gate or
   readiness receipt, does not invoke a trainer, and fixes
   `full_training_launch_allowed=false`.
+- The supplemental is nevertheless a mandatory **quality prerequisite** for a
+  later 300K launch. Schema-v3 `full_training_launch_receipt.json` replays the
+  supplemental from its four direct reports, rehashes every nested source,
+  requires all three quality checks to pass, and binds its bytes as an
+  eleventh launch source. This is intentionally asymmetric: a failed or absent
+  supplemental blocks launch, while a passing supplemental still cannot
+  authorize launch by itself. Readiness, its revision bridge, fresh storage,
+  deployment identity, and separate human launch authority remain required.
+  The post-training supervisor and terminal completion audit independently
+  rehash the same supplemental binding.
+  Launch-time verification lives in a standalone control script, so a future
+  compatible control target can consume it without changing the immutable
+  trainer package. The current branch HEAD is not directly bridge-compatible
+  with the active `5dd3488...` readiness source; it must not be used as a
+  launch target without either a dedicated compatible target or fresh target
+  readiness.
 - Stability post-evaluation uses separate, explicit training and evaluation
   Git identities. This prevents the gate builder's legacy
   `scale/generative-system` default from rejecting the intentionally isolated

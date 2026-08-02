@@ -12,6 +12,7 @@ from scripts import build_generation_full_launch_receipt as launch
 REVISION = "a" * 40
 BRANCH = "scale/generation-large-capacity"
 READINESS_SHA = "b" * 64
+SUPPLEMENTAL_SHA = "d" * 64
 
 
 def _source_paths(tmp_path: Path) -> dict[str, Path]:
@@ -19,6 +20,7 @@ def _source_paths(tmp_path: Path) -> dict[str, Path]:
     for name in (
         "deployment_receipt",
         "promotion_gate",
+        "stability_supplemental",
         "full_readiness",
         "readiness_bridge",
         "cofitok_config",
@@ -91,6 +93,7 @@ def _kwargs(tmp_path: Path, source_paths: dict[str, Path]) -> dict:
         "expected_revision": REVISION,
         "expected_branch": BRANCH,
         "expected_readiness_sha256": READINESS_SHA,
+        "expected_stability_supplemental_sha256": SUPPLEMENTAL_SHA,
         "require_current_runtime_environment": True,
         "require_current_git": True,
         "require_training_state_absent": True,
@@ -111,6 +114,23 @@ def _patch_dependencies(
         ),
     )
     monkeypatch.setattr(launch, "verify_readiness_bridge", lambda *a, **k: _bridge())
+    monkeypatch.setattr(
+        launch,
+        "verify_frozen_supplemental_report",
+        lambda *a, **k: {
+            "report": launch.source_identities(
+                {
+                    "stability_supplemental": source_paths[
+                        "stability_supplemental"
+                    ]
+                }
+            )["stability_supplemental"],
+            "checks": {"all_supplemental_quality_checks_passed": True},
+            "supplemental_non_authorizing": True,
+            "required_for_full_training_launch": True,
+            "full_training_launch_allowed": False,
+        },
+    )
     monkeypatch.setattr(
         launch,
         "validate_full_storage_capacity",
@@ -138,7 +158,12 @@ def test_full_launch_receipt_binds_sources_runtime_and_paths(
     assert report["role"] == "stability_full_training_launch_receipt"
     assert report["readiness_sha256"] == READINESS_SHA
     assert report["runtime_selection"]["effective_batch_size"] == 64
-    assert report["schema_version"] == 2
+    assert report["schema_version"] == 3
+    supplemental = report["quality_prerequisites"][
+        "frozen_stability_supplemental"
+    ]
+    assert supplemental["required_for_full_training_launch"] is True
+    assert supplemental["full_training_launch_allowed"] is False
     assert report["readiness_bridge"]["training_semantics_identical"] is True
     assert report["readiness_bridge"]["controlled_preamble_upgrade"] is True
     assert report["readiness_bridge"]["source_preamble_sha256"] == report[
@@ -205,4 +230,22 @@ def test_full_launch_receipt_requires_exact_source_set(
     del sources["deployment_receipt"]
 
     with pytest.raises(ValueError, match="source set differs"):
+        launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))
+
+
+def test_full_launch_receipt_rejects_failed_stability_supplemental(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sources = _source_paths(tmp_path)
+    _patch_dependencies(monkeypatch, sources)
+    monkeypatch.setattr(
+        launch,
+        "verify_frozen_supplemental_report",
+        lambda *a, **k: (_ for _ in ()).throw(
+            ValueError("frozen supplemental quality prerequisite did not pass")
+        ),
+    )
+
+    with pytest.raises(ValueError, match="quality prerequisite did not pass"):
         launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))

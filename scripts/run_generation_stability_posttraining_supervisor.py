@@ -15,6 +15,15 @@ from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.generation_gate_sources import verify_generation_gate_source_reports
 from cofitok.reporting import file_sha256, write_json_report
 
+try:
+    from scripts.verify_generation_stability_frozen_supplemental import (
+        verify_frozen_supplemental_report,
+    )
+except ModuleNotFoundError:
+    from verify_generation_stability_frozen_supplemental import (
+        verify_frozen_supplemental_report,
+    )
+
 
 ROLE = "generation_stability_posttraining_supervisor"
 FULL_MONITOR_NAME = "generation_stability_ema_teacher_full_matched_300k"
@@ -25,6 +34,7 @@ STAGE_REPLAY_ERROR_EXIT_CODE = 86
 FULL_LAUNCH_SOURCE_NAMES = {
     "deployment_receipt",
     "promotion_gate",
+    "stability_supplemental",
     "full_readiness",
     "readiness_bridge",
     "cofitok_config",
@@ -33,6 +43,12 @@ FULL_LAUNCH_SOURCE_NAMES = {
     "storage_capacity",
     "runtime_selection",
     "launch_storage_capacity",
+}
+FROZEN_SUPPLEMENTAL_CHECK_NAMES = {
+    "base_gate_passed",
+    "distribution_support_passed",
+    "ema_rollout_stability_passed",
+    "all_supplemental_quality_checks_passed",
 }
 
 
@@ -109,7 +125,7 @@ def validate_full_launch_receipt(
         "tracked_dirty": False,
     }
     if (
-        report.get("schema_version") != 2
+        report.get("schema_version") != 3
         or report.get("status") != "pass"
         or report.get("role") != FULL_LAUNCH_ROLE
         or report.get("stage") != "stability_full"
@@ -134,6 +150,34 @@ def validate_full_launch_receipt(
         raise ValueError("stability full launch readiness binding differs")
     if source_reports.get("promotion_gate", {}).get("sha256") != expected_scaling_gate_sha256:
         raise ValueError("stability full launch promotion-gate binding differs")
+    quality = report.get("quality_prerequisites")
+    supplemental = (
+        quality.get("frozen_stability_supplemental")
+        if isinstance(quality, dict)
+        else None
+    )
+    if (
+        not isinstance(supplemental, dict)
+        or supplemental.get("report")
+        != source_reports.get("stability_supplemental")
+        or supplemental.get("supplemental_non_authorizing") is not True
+        or supplemental.get("required_for_full_training_launch") is not True
+        or supplemental.get("full_training_launch_allowed") is not False
+        or not isinstance(supplemental.get("checks"), dict)
+        or set(supplemental["checks"]) != FROZEN_SUPPLEMENTAL_CHECK_NAMES
+        or not all(value is True for value in supplemental["checks"].values())
+    ):
+        raise ValueError("stability full launch quality prerequisite differs")
+    verified_supplemental = verify_frozen_supplemental_report(
+        _read_object(Path(source_reports["stability_supplemental"]["path"])),
+        report_path=Path(source_reports["stability_supplemental"]["path"]),
+        expected_report_sha256=source_reports["stability_supplemental"][
+            "sha256"
+        ],
+        promotion_gate_path=Path(source_reports["promotion_gate"]["path"]),
+    )
+    if verified_supplemental != supplemental:
+        raise ValueError("stability full launch supplemental replay differs")
     full_root = checkpoint_root.resolve() / "stability_full_300k_ema_teacher"
     expected_runs = [
         (full_root / "cofitok_rgbtail3_rollout_x0_u2_ema_teacher").as_posix(),
@@ -146,6 +190,9 @@ def validate_full_launch_receipt(
         "sha256": expected_receipt_sha256,
         "git": expected_git,
         "source_count": len(source_reports),
+        "stability_supplemental_sha256": source_reports[
+            "stability_supplemental"
+        ]["sha256"],
         "training_run_dirs": expected_runs,
     }
 

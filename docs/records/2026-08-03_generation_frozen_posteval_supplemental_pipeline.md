@@ -71,6 +71,15 @@ full 300K. A pass means that the frozen 50K evidence has also cleared the newer
 distribution-support and EMA rollout diagnostics; it is not a scaling launch
 receipt.
 
+Downstream consumption is fail-closed without changing that claim boundary.
+The schema-v3 full-training launch receipt requires this exact report as an
+eleventh source and replays all direct and nested bindings. Missing, held,
+failed, drifted, or non-reproducible supplemental evidence blocks receipt
+creation. A pass is only a necessary quality prerequisite: it does not replace
+readiness, the readiness revision bridge, fresh storage, deployment identity,
+or separate human launch authority.
+
+
 ## Active-run boundary
 
 This implementation is local only. It does not deploy to, signal, pause,

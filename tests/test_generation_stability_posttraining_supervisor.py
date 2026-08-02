@@ -60,12 +60,16 @@ def test_full_monitor_requires_both_exact_300k_runs() -> None:
         )
 
 
-def test_full_launch_receipt_rehashes_every_bound_source(tmp_path: Path) -> None:
+def test_full_launch_receipt_rehashes_every_bound_source(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     full_root = tmp_path / "stability_full_300k_ema_teacher"
     sources = {}
     for name in (
         "deployment_receipt",
         "promotion_gate",
+        "stability_supplemental",
         "full_readiness",
         "readiness_bridge",
         "cofitok_config",
@@ -81,7 +85,7 @@ def test_full_launch_receipt_rehashes_every_bound_source(tmp_path: Path) -> None
     sources["promotion_gate"]["sha256"] = "c" * 64
     sources["full_readiness"]["sha256"] = "d" * 64
     report = {
-        "schema_version": 2,
+        "schema_version": 3,
         "status": "pass",
         "role": supervisor.FULL_LAUNCH_ROLE,
         "stage": "stability_full",
@@ -91,6 +95,20 @@ def test_full_launch_receipt_rehashes_every_bound_source(tmp_path: Path) -> None
             "tracked_dirty": False,
         },
         "readiness_sha256": "d" * 64,
+        "quality_prerequisites": {
+            "frozen_stability_supplemental": {
+                "report": sources["stability_supplemental"],
+                "checks": {
+                    "base_gate_passed": True,
+                    "distribution_support_passed": True,
+                    "ema_rollout_stability_passed": True,
+                    "all_supplemental_quality_checks_passed": True,
+                },
+                "supplemental_non_authorizing": True,
+                "required_for_full_training_launch": True,
+                "full_training_launch_allowed": False,
+            }
+        },
         "full_training_launch_authorized": True,
         "formal_generation_completion_claimed": False,
         "source_reports": sources,
@@ -107,6 +125,19 @@ def test_full_launch_receipt_rehashes_every_bound_source(tmp_path: Path) -> None
         sources[name]["sha256"] = supervisor.file_sha256(Path(sources[name]["path"]))
     report["readiness_sha256"] = sources["full_readiness"]["sha256"]
     receipt.write_text(json.dumps(report), encoding="utf-8")
+    supplemental_replays = []
+
+    def replay_supplemental(*args, **kwargs):
+        supplemental_replays.append(kwargs)
+        return report["quality_prerequisites"][
+            "frozen_stability_supplemental"
+        ]
+
+    monkeypatch.setattr(
+        supervisor,
+        "verify_frozen_supplemental_report",
+        replay_supplemental,
+    )
     evidence = supervisor.validate_full_launch_receipt(
         report,
         receipt_path=receipt,
@@ -117,7 +148,19 @@ def test_full_launch_receipt_rehashes_every_bound_source(tmp_path: Path) -> None
         expected_training_branch=TRAINING_BRANCH,
         checkpoint_root=tmp_path,
     )
-    assert evidence["source_count"] == 10
+    assert evidence["source_count"] == 11
+    assert evidence["stability_supplemental_sha256"] == sources[
+        "stability_supplemental"
+    ]["sha256"]
+    assert supplemental_replays == [
+        {
+            "report_path": Path(sources["stability_supplemental"]["path"]),
+            "expected_report_sha256": sources["stability_supplemental"][
+                "sha256"
+            ],
+            "promotion_gate_path": Path(sources["promotion_gate"]["path"]),
+        }
+    ]
 
     Path(sources["dense_config"]["path"]).write_text("replaced", encoding="ascii")
     with pytest.raises(ValueError, match="dense_config"):

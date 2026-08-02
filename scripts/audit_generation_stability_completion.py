@@ -561,6 +561,7 @@ def full_launch_receipt_evidence(
     return {
         "launch_receipt_sha256": expected_sha256,
         "readiness_sha256": verified["readiness_sha256"],
+        "quality_prerequisites": verified["quality_prerequisites"],
         "runtime_selection": verified["runtime_selection"],
         "launch_storage_capacity": verified["launch_storage_capacity"],
         "training_state_absent_at_launch": verified[
@@ -1011,6 +1012,12 @@ def main() -> None:
     scaling_monitor = _read_optional(paths["STABILITY_SCALING_MONITOR"])
     pair_summary = _read_optional(paths["STABILITY_SCALING_PAIR_SUMMARY"])
     scaling_gate = _read_optional(paths["STABILITY_SCALING_GATE"])
+    stability_supplemental_path = (
+        scaling_reports
+        / "frozen_posteval_supplemental"
+        / "supplemental_qualification.json"
+    )
+    stability_supplemental = _read_optional(stability_supplemental_path)
     scaling_training = {
         "cofitok": _read_optional(scaling_cofitok / "training_report.json"),
         "dense_identity": _read_optional(scaling_dense / "training_report.json"),
@@ -1373,6 +1380,7 @@ def main() -> None:
                 full_readiness_bridge,
                 deployment_receipt,
                 scaling_gate,
+                stability_supplemental,
                 full_config_validation,
                 full_storage_capacity,
                 full_runtime_selection,
@@ -1386,6 +1394,7 @@ def main() -> None:
                     "source_paths": {
                         "deployment_receipt": deployment_receipt_path,
                         "promotion_gate": paths["STABILITY_SCALING_GATE"],
+                        "stability_supplemental": stability_supplemental_path,
                         "full_readiness": full_reports
                         / "full_training_readiness.json",
                         "readiness_bridge": full_readiness_bridge_path,
@@ -1411,6 +1420,11 @@ def main() -> None:
                     "expected_readiness_sha256": expectations[
                         "full_readiness_sha256"
                     ],
+                    "expected_stability_supplemental_sha256": str(
+                        full_launch_receipt.get("source_reports", {})
+                        .get("stability_supplemental", {})
+                        .get("sha256", "")
+                    ),
                     "require_current_runtime_environment": False,
                     "require_current_formal_repository": False,
                     "require_current_git": False,

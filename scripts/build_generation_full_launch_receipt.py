@@ -18,6 +18,9 @@ try:
     from scripts.build_generation_full_readiness_bridge import (
         verify_readiness_bridge,
     )
+    from scripts.verify_generation_stability_frozen_supplemental import (
+        verify_frozen_supplemental_report,
+    )
 except ModuleNotFoundError:
     from build_generation_full_readiness import (
         _read_json,
@@ -27,9 +30,12 @@ except ModuleNotFoundError:
         validate_full_storage_capacity,
     )
     from build_generation_full_readiness_bridge import verify_readiness_bridge
+    from verify_generation_stability_frozen_supplemental import (
+        verify_frozen_supplemental_report,
+    )
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 ROLE = "stability_full_training_launch_receipt"
 
 
@@ -43,6 +49,7 @@ def build_full_launch_receipt(
     expected_revision: str,
     expected_branch: str,
     expected_readiness_sha256: str,
+    expected_stability_supplemental_sha256: str,
     require_current_runtime_environment: bool,
     require_current_formal_repository: bool = True,
     require_current_git: bool = True,
@@ -51,6 +58,7 @@ def build_full_launch_receipt(
     required_sources = {
         "deployment_receipt",
         "promotion_gate",
+        "stability_supplemental",
         "full_readiness",
         "readiness_bridge",
         "cofitok_config",
@@ -68,6 +76,13 @@ def build_full_launch_receipt(
         raise ValueError("stability full readiness SHA256 differs")
     if require_training_state_absent:
         require_absent_training_state(training_run_dirs)
+
+    stability_supplemental = verify_frozen_supplemental_report(
+        _read_json(source_paths["stability_supplemental"]),
+        report_path=source_paths["stability_supplemental"],
+        expected_report_sha256=expected_stability_supplemental_sha256,
+        promotion_gate_path=source_paths["promotion_gate"],
+    )
 
     bridge_report = _read_json(source_paths["readiness_bridge"])
     source_git = bridge_report.get("source_git", {})
@@ -102,6 +117,11 @@ def build_full_launch_receipt(
         minimum_sample_count=FULL_COMPLETION_SAMPLE_RESERVE,
     )
     sources = source_identities(source_paths)
+    if (
+        stability_supplemental.get("report")
+        != sources["stability_supplemental"]
+    ):
+        raise ValueError("stability supplemental launch binding differs")
     selected_runtime = bridge["runtime_selection"]
     expected_git = {
         "revision": expected_revision,
@@ -118,6 +138,9 @@ def build_full_launch_receipt(
         "git": expected_git,
         "source_reports": sources,
         "readiness_sha256": expected_readiness_sha256,
+        "quality_prerequisites": {
+            "frozen_stability_supplemental": stability_supplemental,
+        },
         "readiness_bridge": {
             "sha256": sources["readiness_bridge"]["sha256"],
             "source_git": bridge["source_git"],
@@ -175,6 +198,11 @@ def _common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--project-root", default=".")
     parser.add_argument("--deployment-receipt", type=Path, required=True)
     parser.add_argument("--promotion-gate", type=Path, required=True)
+    parser.add_argument("--stability-supplemental", type=Path, required=True)
+    parser.add_argument(
+        "--expected-stability-supplemental-sha256",
+        required=True,
+    )
     parser.add_argument("--full-readiness", type=Path, required=True)
     parser.add_argument("--readiness-bridge", type=Path, required=True)
     parser.add_argument("--expected-readiness-sha256", required=True)
@@ -196,6 +224,7 @@ def source_paths_from_args(args: argparse.Namespace) -> dict[str, Path]:
     return {
         "deployment_receipt": args.deployment_receipt,
         "promotion_gate": args.promotion_gate,
+        "stability_supplemental": args.stability_supplemental,
         "full_readiness": args.full_readiness,
         "readiness_bridge": args.readiness_bridge,
         "cofitok_config": args.cofitok_config,
@@ -223,6 +252,9 @@ def build_kwargs_from_args(
         "expected_revision": args.expected_revision,
         "expected_branch": args.expected_branch,
         "expected_readiness_sha256": args.expected_readiness_sha256,
+        "expected_stability_supplemental_sha256": (
+            args.expected_stability_supplemental_sha256
+        ),
         "require_current_runtime_environment": (
             args.require_current_runtime_environment
         ),

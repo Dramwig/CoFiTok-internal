@@ -30,6 +30,7 @@ def test_stability_full_runbook_is_gate_and_identity_bound() -> None:
         < training
     )
     assert "EXPECTED_SCALING_GATE_SHA256=${" in source
+    assert "EXPECTED_STABILITY_SUPPLEMENTAL_SHA256=${" in source
     assert "EXPECTED_DEPLOYMENT_RECEIPT_SHA256=${" in source
     assert "EXPECTED_READINESS_SHA256=${" in source
     assert "EXPECTED_READINESS_BRIDGE_SHA256=${" in source
@@ -39,6 +40,8 @@ def test_stability_full_runbook_is_gate_and_identity_bound() -> None:
     assert "--expected-recipe-stage stability_full" in source
     assert "scripts/select_generation_training_runtime.py" not in source
     assert "--deployment-receipt" in source
+    assert '--stability-supplemental "$STABILITY_SUPPLEMENTAL"' in source
+    assert "--expected-stability-supplemental-sha256" in source
     assert '--bridge "$READINESS_BRIDGE"' in source
     assert "--source-deployment-receipt" in source
     assert "--target-deployment-receipt" in source
@@ -153,6 +156,8 @@ def test_stability_full_runbook_uses_immutable_launch_receipt_for_resume() -> No
     receipt = source.index("scripts/build_generation_full_launch_receipt.py")
     monitor = source.index("start_monitor")
     assert receipt < monitor
+    supplemental_hash = source.index('sha256sum "$STABILITY_SUPPLEMENTAL"')
+    assert supplemental_hash < receipt
     assert "EXPECTED_FULL_LAUNCH_RECEIPT_SHA256=${" in source
     assert "scripts/validate_generation_full_launch_receipt.py" in source
     assert '[[ -f "$FULL_LAUNCH_RECEIPT" ]]' in source
