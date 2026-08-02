@@ -4,10 +4,10 @@ import errno
 import json
 import os
 import socket
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterator
+from typing import Iterable, Iterator
 
 
 OUTPUT_LOCK_SCHEMA_VERSION = 1
@@ -154,3 +154,37 @@ def exclusive_output_lock(
         if acquired:
             _release(handle)
         handle.close()
+
+
+@contextmanager
+def exclusive_output_locks(
+    targets: Iterable[str | Path],
+    *,
+    role: str,
+) -> Iterator[list[dict[str, object]]]:
+    """Hold non-blocking locks for multiple output targets in stable order.
+
+    Stable acquisition order prevents two matched-output writers from taking
+    opposite first locks.  ``ExitStack`` releases every previously acquired
+    lock if a later target is contended or invalid.
+    """
+
+    outputs: list[Path] = []
+    seen: set[str] = set()
+    for target in targets:
+        output = _absolute_without_symlinks(target, name="output lock target")
+        key = os.path.normcase(str(output))
+        if key in seen:
+            raise ValueError(f"duplicate output lock target: {output}")
+        seen.add(key)
+        outputs.append(output)
+    if not outputs:
+        raise ValueError("at least one output lock target is required")
+
+    ordered = sorted(outputs, key=lambda path: os.path.normcase(str(path)))
+    with ExitStack() as stack:
+        owners = [
+            stack.enter_context(exclusive_output_lock(output, role=role))
+            for output in ordered
+        ]
+        yield owners

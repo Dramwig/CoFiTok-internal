@@ -6,7 +6,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-from cofitok.output_lock import exclusive_output_lock, output_lock_path
+import pytest
+
+from cofitok.output_lock import (
+    exclusive_output_lock,
+    exclusive_output_locks,
+    output_lock_path,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -71,3 +77,25 @@ def test_output_lock_rejects_symlink_target(tmp_path: Path) -> None:
             raise AssertionError("symlink target unexpectedly acquired")
     except ValueError as error:
         assert "must not contain a symlink" in str(error)
+
+
+def test_output_locks_acquire_targets_in_stable_order(tmp_path: Path) -> None:
+    first = tmp_path / "a_samples"
+    second = tmp_path / "z_samples"
+
+    with exclusive_output_locks(
+        [second, first],
+        role="matched_writer",
+    ) as owners:
+        assert [owner["target"] for owner in owners] == [
+            first.resolve().as_posix(),
+            second.resolve().as_posix(),
+        ]
+
+
+def test_output_locks_reject_duplicate_targets(tmp_path: Path) -> None:
+    target = tmp_path / "samples"
+
+    with pytest.raises(ValueError, match="duplicate output lock target"):
+        with exclusive_output_locks([target, target], role="matched_writer"):
+            raise AssertionError("duplicate output targets unexpectedly acquired")

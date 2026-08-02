@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import copy
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 from cofitok.environment import runtime_environment_sha256
+from cofitok.output_lock import exclusive_output_lock
 from scripts.select_generation_sampling_batch import (
     _preflight_matches,
     _sampling_selection_lock,
@@ -18,6 +22,7 @@ from scripts.select_generation_sampling_batch import (
 
 
 REVISION = "a" * 40
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def _method(
@@ -322,6 +327,60 @@ def test_sampling_state_without_selection_fails_before_preflight(tmp_path: Path)
             output_dirs=output_dirs,
             expected_lock=lock,
         )
+
+
+def test_sampling_selector_contention_fails_before_checkpoint_or_gpu_work(
+    tmp_path: Path,
+) -> None:
+    first_output = tmp_path / "a_samples"
+    second_output = tmp_path / "z_samples"
+    benchmark_root = tmp_path / "benchmarks"
+    selection_path = tmp_path / "sampling_runtime_selection.json"
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = os.pathsep.join(
+        [str(ROOT / "src"), str(ROOT), environment.get("PYTHONPATH", "")]
+    )
+    command = [
+        sys.executable,
+        str(ROOT / "scripts" / "select_generation_sampling_batch.py"),
+        "--cofitok-checkpoint",
+        str(tmp_path / "missing_cofitok.pt"),
+        "--dense-checkpoint",
+        str(tmp_path / "missing_dense.pt"),
+        "--cofitok-prefix-budget",
+        "8",
+        "--dense-prefix-budget",
+        "1",
+        "--output-root",
+        str(benchmark_root),
+        "--output",
+        str(selection_path),
+        "--sampling-output-dir",
+        str(first_output),
+        "--sampling-output-dir",
+        str(second_output),
+        "--project-root",
+        str(ROOT),
+    ]
+
+    with exclusive_output_lock(second_output, role="formal_sampler"):
+        result = subprocess.run(
+            command,
+            cwd=ROOT,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        assert result.returncode != 0
+        assert "output target is already locked" in result.stderr
+        assert not benchmark_root.exists()
+        assert not selection_path.exists()
+        assert not first_output.exists()
+        assert not second_output.exists()
+        with exclusive_output_lock(first_output, role="release_probe"):
+            pass
 
 
 @pytest.mark.parametrize("drift", ["lock", "candidate", "checkpoint"])

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from cofitok.environment import runtime_environment_sha256
+from cofitok.output_lock import exclusive_output_locks
 from cofitok.reporting import git_provenance, write_json_report
 from cofitok.training.checkpointing import checkpoint_integrity_path
 
@@ -509,54 +510,16 @@ def _run_preflight(
     }
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Select one shared, memory-safe batch for matched generation sampling."
-    )
-    parser.add_argument("--cofitok-checkpoint", required=True)
-    parser.add_argument("--dense-checkpoint", required=True)
-    parser.add_argument("--cofitok-prefix-budget", type=int, required=True)
-    parser.add_argument("--dense-prefix-budget", type=int, required=True)
-    parser.add_argument("--output-root", required=True)
-    parser.add_argument("--output", required=True)
-    parser.add_argument(
-        "--sampling-output-dir",
-        action="append",
-        required=True,
-        help=(
-            "Formal sampling output directory to protect; repeat for both matched "
-            "methods. Any existing sampling state freezes the selection."
-        ),
-    )
-    parser.add_argument("--candidates", default="16,32,64,128")
-    parser.add_argument("--baseline-batch-size", type=int, default=32)
-    parser.add_argument("--guidance-scale", type=float, default=1.5)
-    parser.add_argument("--guidance-rescale", type=float, default=0.0)
-    parser.add_argument("--cfg-batch-mode", choices=["batched", "sequential"], default="batched")
-    parser.add_argument("--weights", choices=["ema", "model"], default="ema")
-    parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
-    parser.add_argument("--warmup-forwards", type=int, default=2)
-    parser.add_argument("--measured-forwards", type=int, default=5)
-    parser.add_argument("--max-memory-fraction", type=float, default=0.90)
-    parser.add_argument("--timeout-seconds", type=int, default=900)
-    parser.add_argument("--project-root", default=".")
-    parser.add_argument("--preflight-script", default="scripts/preflight_generation_sampling.py")
-    args = parser.parse_args()
-    if args.warmup_forwards < 0 or args.measured_forwards < 1 or args.timeout_seconds < 1:
-        raise ValueError("sampling selection measurement settings are invalid")
-
-    project_root = Path(args.project_root).resolve()
-    cofitok_checkpoint = Path(args.cofitok_checkpoint).resolve()
-    dense_checkpoint = Path(args.dense_checkpoint).resolve()
-    output_root = Path(args.output_root).resolve()
-    output_path = Path(args.output).resolve()
-    sampling_output_dirs = [
-        Path(value).resolve() for value in args.sampling_output_dir
-    ]
-    if len(sampling_output_dirs) != 2 or len(set(sampling_output_dirs)) != 2:
-        raise ValueError(
-            "exactly two distinct matched sampling output directories are required"
-        )
+def _run_sampling_batch_selection(
+    args: argparse.Namespace,
+    *,
+    project_root: Path,
+    cofitok_checkpoint: Path,
+    dense_checkpoint: Path,
+    output_root: Path,
+    output_path: Path,
+    sampling_output_dirs: list[Path],
+) -> None:
     preflight_script = (project_root / args.preflight_script).resolve()
     git = git_provenance(project_root)
     if git["tracked_dirty"]:
@@ -655,6 +618,69 @@ def main() -> None:
     selection["selection_lock"] = selection_lock
     write_json_report(output_path, selection)
     print(selection["selected"]["batch_size"])
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Select one shared, memory-safe batch for matched generation sampling."
+    )
+    parser.add_argument("--cofitok-checkpoint", required=True)
+    parser.add_argument("--dense-checkpoint", required=True)
+    parser.add_argument("--cofitok-prefix-budget", type=int, required=True)
+    parser.add_argument("--dense-prefix-budget", type=int, required=True)
+    parser.add_argument("--output-root", required=True)
+    parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--sampling-output-dir",
+        action="append",
+        required=True,
+        help=(
+            "Formal sampling output directory to protect; repeat for both matched "
+            "methods. Any existing sampling state freezes the selection."
+        ),
+    )
+    parser.add_argument("--candidates", default="16,32,64,128")
+    parser.add_argument("--baseline-batch-size", type=int, default=32)
+    parser.add_argument("--guidance-scale", type=float, default=1.5)
+    parser.add_argument("--guidance-rescale", type=float, default=0.0)
+    parser.add_argument("--cfg-batch-mode", choices=["batched", "sequential"], default="batched")
+    parser.add_argument("--weights", choices=["ema", "model"], default="ema")
+    parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
+    parser.add_argument("--warmup-forwards", type=int, default=2)
+    parser.add_argument("--measured-forwards", type=int, default=5)
+    parser.add_argument("--max-memory-fraction", type=float, default=0.90)
+    parser.add_argument("--timeout-seconds", type=int, default=900)
+    parser.add_argument("--project-root", default=".")
+    parser.add_argument("--preflight-script", default="scripts/preflight_generation_sampling.py")
+    args = parser.parse_args()
+    if args.warmup_forwards < 0 or args.measured_forwards < 1 or args.timeout_seconds < 1:
+        raise ValueError("sampling selection measurement settings are invalid")
+
+    project_root = Path(args.project_root).resolve()
+    cofitok_checkpoint = Path(args.cofitok_checkpoint).resolve()
+    dense_checkpoint = Path(args.dense_checkpoint).resolve()
+    output_root = Path(args.output_root).resolve()
+    output_path = Path(args.output).resolve()
+    sampling_output_dirs = [
+        Path(value).resolve() for value in args.sampling_output_dir
+    ]
+    if len(sampling_output_dirs) != 2 or len(set(sampling_output_dirs)) != 2:
+        raise ValueError(
+            "exactly two distinct matched sampling output directories are required"
+        )
+    with exclusive_output_locks(
+        sampling_output_dirs,
+        role="generation_sampling_batch_selector",
+    ):
+        _run_sampling_batch_selection(
+            args,
+            project_root=project_root,
+            cofitok_checkpoint=cofitok_checkpoint,
+            dense_checkpoint=dense_checkpoint,
+            output_root=output_root,
+            output_path=output_path,
+            sampling_output_dirs=sampling_output_dirs,
+        )
 
 
 if __name__ == "__main__":
