@@ -264,10 +264,12 @@ def _report(
     official: dict | None = None,
     gate: dict | None = None,
     contention: dict | None = None,
+    cofitok_training: dict | None = None,
+    dense_training: dict | None = None,
 ) -> dict:
     return build_report(
-        cofitok_training=_training(62_950_800, 8),
-        dense_training=_training(62_824_707, 1),
+        cofitok_training=cofitok_training or _training(62_950_800, 8),
+        dense_training=dense_training or _training(62_824_707, 1),
         cofitok_generation=_generation(12.0, "a" * 64, "c" * 64, 8),
         dense_generation=_generation(11.8, "b" * 64, "d" * 64, 1),
         final_gate=gate or _gate(),
@@ -283,7 +285,7 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     report = _report()
 
     assert report["status"] == "ready"
-    assert report["schema_version"] == 6
+    assert report["schema_version"] == 7
     assert report["source_reports"] == _source_reports()
     assert len(report["matched_training_rows"]) == 2
     assert len(report["official_context_rows"]) == 3
@@ -301,6 +303,25 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     assert report["matched_training_rows"][0][
         "training_wall_clock_directly_comparable"
     ] is True
+    assert report["training_budget_policy"] == {
+        "basis": "matched_steps_and_training_images",
+        "matched_axis_values": {
+            "dataset": "imagenet_256",
+            "resolution": 256,
+            "effective_batch_size": 64,
+            "optimizer_steps": 300_000,
+            "training_images_seen": 19_200_000,
+        },
+        "equal_wall_clock_budget": False,
+        "equal_gpu_hours_budget": False,
+        "equal_training_flops_budget": False,
+        "compute_matched_claim_allowed": False,
+        "direct_quality_comparison_allowed": True,
+        "training_cost_fields_role": "measured_outcomes",
+        "cost_efficiency_ranking_allowed": True,
+        "cost_efficiency_ranking_reason": "exclusive_gpu_observation_coverage",
+    }
+    assert report["matched_training_rows"][0]["compute_matched_claim_allowed"] is False
     assert report["matched_training_rows"][0]["peak_vram_bytes"] == 24 * 1024**3
     assert report["matched_training_rows"][0]["sampling_images_per_second"] == 5.0
     assert report["matched_training_rows"][0]["sample_batch_size"] == 64
@@ -312,7 +333,11 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     assert "sample img/s" in render_markdown(report)
     assert "sample batch" in render_markdown(report)
     assert "train h (raw)" in render_markdown(report)
+    assert "not an equal wall-clock, GPU-hours, or FLOPs budget" in render_markdown(
+        report
+    )
     assert "matched_training_direct" in render_csv(report)
+    assert "matched_steps_and_training_images" in render_csv(report)
     assert "official_pretrained_contextual" in render_csv(report)
 
 
@@ -330,9 +355,28 @@ def test_comparison_labels_contended_training_time_as_observational_only() -> No
         row["training_wall_clock_directly_comparable"] is False
         for row in report["matched_training_rows"]
     )
+    assert report["training_budget_policy"]["cost_efficiency_ranking_allowed"] is False
     markdown = render_markdown(report)
     assert "raw observations only" in markdown
     assert "external_gpu_contention_observed" in markdown
+
+
+def test_comparison_rejects_mismatched_training_step_budget() -> None:
+    dense_training = _training(62_824_707, 1)
+    dense_training["target_steps"] = 299_999
+    dense_training["final_metrics"]["samples_seen"] = 299_999 * 64
+
+    with pytest.raises(ValueError, match="optimizer_steps"):
+        _report(dense_training=dense_training)
+
+
+def test_comparison_rejects_mismatched_effective_batch_budget() -> None:
+    dense_training = _training(62_824_707, 1)
+    dense_training["config"]["data"]["batch_size"] = 8
+    dense_training["final_metrics"]["samples_seen"] = 300_000 * 32
+
+    with pytest.raises(ValueError, match="effective_batch_size"):
+        _report(dense_training=dense_training)
 
 
 def test_comparison_rejects_mismatched_real_set() -> None:

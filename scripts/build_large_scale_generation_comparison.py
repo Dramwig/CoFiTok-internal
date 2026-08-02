@@ -17,7 +17,13 @@ from cofitok.reporting import file_sha256, write_json_report, write_text_report
 
 EXTERNAL_ALIASES = {"d_ar", "mar", "retok"}
 EXTERNAL_METHODS = {"d_ar": "D-AR", "mar": "MAR", "retok": "ReTok"}
-COMPARISON_REPORT_SCHEMA_VERSION = 6
+COMPARISON_REPORT_SCHEMA_VERSION = 7
+MATCHED_TRAINING_BUDGET_BASIS = "matched_steps_and_training_images"
+MATCHED_TRAINING_PROTOCOL_NOTE = (
+    "Matched dataset, resolution, shared backbone contract, optimizer schedule, "
+    "effective batch, steps, images seen, and evaluator; wall-clock, GPU-hours, "
+    "and FLOPs are not equalized budgets."
+)
 SOURCE_REPORT_PROFILES = {
     "full": {
         "cofitok_training": (
@@ -198,6 +204,9 @@ def _matched_row(
         "training_elapsed_seconds": training_cost["elapsed_seconds"],
         "training_images_per_second": training_cost["images_per_second"],
         "training_time_measurement": training_contention["measurement"],
+        "training_budget_basis": MATCHED_TRAINING_BUDGET_BASIS,
+        "compute_matched_claim_allowed": False,
+        "training_cost_fields_role": "measured_outcomes",
         "training_wall_clock_directly_comparable": training_contention[
             "direct_comparison_allowed"
         ],
@@ -237,7 +246,44 @@ def _matched_row(
         "real_set_sha256": real_set_sha,
         "real_image_count": int(real_set.get("image_count", -1)),
         "evaluator_runtime_environment_sha256": evaluator_environment_sha,
-        "protocol_note": "Same data, backbone family, optimizer, steps, and evaluator.",
+        "protocol_note": MATCHED_TRAINING_PROTOCOL_NOTE,
+    }
+
+
+def training_budget_policy(
+    matched_rows: list[dict[str, Any]],
+    training_contention: dict[str, Any],
+) -> dict[str, Any]:
+    if len(matched_rows) != 2:
+        raise ValueError("training budget policy requires exactly two matched rows")
+    matched_fields = {
+        "dataset": "dataset",
+        "resolution": "resolution",
+        "effective_batch_size": "effective_batch_size",
+        "optimizer_steps": "training_steps",
+        "training_images_seen": "training_images_seen",
+    }
+    matched_values: dict[str, Any] = {}
+    for policy_field, row_field in matched_fields.items():
+        values = [row.get(row_field) for row in matched_rows]
+        if values[0] != values[1]:
+            raise ValueError(
+                f"matched training rows differ on budget axis: {policy_field}"
+            )
+        matched_values[policy_field] = values[0]
+    return {
+        "basis": MATCHED_TRAINING_BUDGET_BASIS,
+        "matched_axis_values": matched_values,
+        "equal_wall_clock_budget": False,
+        "equal_gpu_hours_budget": False,
+        "equal_training_flops_budget": False,
+        "compute_matched_claim_allowed": False,
+        "direct_quality_comparison_allowed": True,
+        "training_cost_fields_role": "measured_outcomes",
+        "cost_efficiency_ranking_allowed": training_contention[
+            "direct_comparison_allowed"
+        ],
+        "cost_efficiency_ranking_reason": training_contention["reason"],
     }
 
 
@@ -440,6 +486,7 @@ def build_report(
         ):
             raise ValueError(f"final gate {method} real-set hash does not match")
     external = _external_rows(official_related)
+    budget_policy = training_budget_policy(matched, contention)
     ready = (
         final_gate.get("status") == "pass"
         and final_gate.get("decision") == "large_scale_generation_ready"
@@ -465,6 +512,7 @@ def build_report(
                 "evaluator; CoFiTok and dense use matched training plus torch-fidelity."
             ),
         },
+        "training_budget_policy": budget_policy,
         "official_context_source": {
             "path": official_source_path,
             "sha256": official_source_sha256,
@@ -495,7 +543,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         f"Readiness: `{report['status']}`.",
         "",
-        "## Matched training (direct comparison)",
+        "## Matched steps/images training (direct quality comparison)",
         "",
         "| method | params | steps | eff. batch | train images | train h (raw) | train img/s (raw) | VRAM GiB | samples | sample batch | sample h | sample img/s | FID | IS | precision | recall |",
         "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
@@ -523,6 +571,13 @@ def render_markdown(report: dict[str, Any]) -> str:
         )
     lines.extend(
         [
+            "",
+            (
+                "Quality is compared under matched dataset, resolution, effective "
+                "batch, optimizer steps, and training images. This is not an equal "
+                "wall-clock, GPU-hours, or FLOPs budget; training time, throughput, "
+                "and peak VRAM are measured outcomes."
+            ),
             "",
             (
                 "Training wall-clock and throughput are directly comparable."
@@ -578,6 +633,9 @@ def render_csv(report: dict[str, Any]) -> str:
         "training_elapsed_seconds",
         "training_images_per_second",
         "training_time_measurement",
+        "training_budget_basis",
+        "compute_matched_claim_allowed",
+        "training_cost_fields_role",
         "training_wall_clock_directly_comparable",
         "training_throughput_directly_comparable",
         "training_wall_clock_comparison_reason",

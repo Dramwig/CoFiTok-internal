@@ -709,7 +709,7 @@ def _official_related() -> dict:
 def _comparison() -> dict:
     official = _official_related()
     return {
-        "schema_version": 6,
+        "schema_version": 7,
         "status": "ready",
         "final_gate": {
             "status": "pass",
@@ -723,6 +723,24 @@ def _comparison() -> dict:
             "training_wall_clock_comparison_reason": (
                 "exclusive_gpu_observation_coverage"
             ),
+        },
+        "training_budget_policy": {
+            "basis": "matched_steps_and_training_images",
+            "matched_axis_values": {
+                "dataset": "imagenet_256",
+                "resolution": 256,
+                "effective_batch_size": 64,
+                "optimizer_steps": 300_000,
+                "training_images_seen": 19_200_000,
+            },
+            "equal_wall_clock_budget": False,
+            "equal_gpu_hours_budget": False,
+            "equal_training_flops_budget": False,
+            "compute_matched_claim_allowed": False,
+            "direct_quality_comparison_allowed": True,
+            "training_cost_fields_role": "measured_outcomes",
+            "cost_efficiency_ranking_allowed": True,
+            "cost_efficiency_ranking_reason": "exclusive_gpu_observation_coverage",
         },
         "official_context_source": {
             "path": "/reports/official_related_methods_table.json",
@@ -753,6 +771,9 @@ def _comparison() -> dict:
                 "training_elapsed_seconds": 100_000.0,
                 "training_images_per_second": 192.0,
                 "training_time_measurement": "raw_process_wall_clock",
+                "training_budget_basis": "matched_steps_and_training_images",
+                "compute_matched_claim_allowed": False,
+                "training_cost_fields_role": "measured_outcomes",
                 "training_wall_clock_directly_comparable": True,
                 "training_throughput_directly_comparable": True,
                 "training_wall_clock_comparison_reason": (
@@ -799,7 +820,11 @@ def _comparison() -> dict:
                 "evaluator_runtime_environment_sha256": runtime_environment_sha256(
                     _runtime_environment()
                 ),
-                "protocol_note": "Same data, backbone family, optimizer, steps, and evaluator.",
+                "protocol_note": (
+                    "Matched dataset, resolution, shared backbone contract, optimizer "
+                    "schedule, effective batch, steps, images seen, and evaluator; "
+                    "wall-clock, GPU-hours, and FLOPs are not equalized budgets."
+                ),
             },
             {
                 "method": "Dense identity",
@@ -814,6 +839,9 @@ def _comparison() -> dict:
                 "training_elapsed_seconds": 100_000.0,
                 "training_images_per_second": 192.0,
                 "training_time_measurement": "raw_process_wall_clock",
+                "training_budget_basis": "matched_steps_and_training_images",
+                "compute_matched_claim_allowed": False,
+                "training_cost_fields_role": "measured_outcomes",
                 "training_wall_clock_directly_comparable": True,
                 "training_throughput_directly_comparable": True,
                 "training_wall_clock_comparison_reason": (
@@ -860,7 +888,11 @@ def _comparison() -> dict:
                 "evaluator_runtime_environment_sha256": runtime_environment_sha256(
                     _runtime_environment()
                 ),
-                "protocol_note": "Same data, backbone family, optimizer, steps, and evaluator.",
+                "protocol_note": (
+                    "Matched dataset, resolution, shared backbone contract, optimizer "
+                    "schedule, effective batch, steps, images seen, and evaluator; "
+                    "wall-clock, GPU-hours, and FLOPs are not equalized budgets."
+                ),
             },
         ],
         "official_context_rows": [
@@ -1976,6 +2008,21 @@ def test_completion_audit_rejects_misreported_matched_quality_metric() -> None:
 def test_completion_audit_rejects_cross_tier_ranking_policy() -> None:
     kwargs = _kwargs()
     kwargs["comparison"]["comparison_policy"]["cross_tier_numeric_ranking_allowed"] = True
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_comparison_report"]
+
+
+def test_completion_audit_rejects_equal_compute_overclaim() -> None:
+    kwargs = _kwargs()
+    kwargs["comparison"]["training_budget_policy"][
+        "compute_matched_claim_allowed"
+    ] = True
+    kwargs["comparison"]["matched_training_rows"][0][
+        "compute_matched_claim_allowed"
+    ] = True
 
     report = build_completion_audit(**kwargs)
 

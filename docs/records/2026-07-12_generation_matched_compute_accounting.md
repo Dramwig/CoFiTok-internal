@@ -47,6 +47,14 @@ positive elapsed time; CUDA runs also require positive peak VRAM. The final
 matched table exposes effective batch, training images, hours, throughput, and
 VRAM alongside parameters, steps, sample count, FID, IS, precision, and recall.
 
+Equal optimizer steps and images seen do not imply equal wall-clock, GPU-hours,
+or FLOPs. Comparison schema v7 therefore names the direct budget basis
+`matched_steps_and_training_images`, marks time/throughput/peak VRAM as measured
+outcomes, and sets `compute_matched_claim_allowed=false`. A cost-efficiency
+ranking is separately allowed only when the GPU-contention monitor proves
+continuous exclusive coverage; this does not convert the experiment into an
+equal-compute allocation.
+
 ## Verification
 
 Gate tests reject an off-by-one images-seen report. Final-comparison tests bind

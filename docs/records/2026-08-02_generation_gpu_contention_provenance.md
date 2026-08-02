@@ -47,6 +47,10 @@ wall-clock eligibility and reason; Markdown labels training time and throughput
 as raw values. The terminal completion audit independently validates the bound
 monitor evidence and rejects a promoted or inconsistent policy.
 
+Schema v7 retains this contention contract and adds an orthogonal budget claim:
+even exclusive wall-clock evidence is a measured efficiency outcome, not proof
+that wall-clock, GPU-hours, or FLOPs were equalized as training budgets.
+
 Both legacy-full and stability-full post-evaluation runbooks pass the exact
 terminal monitor into the comparison builder. This change is local code and is
 not deployed into the currently active immutable stability 50K training

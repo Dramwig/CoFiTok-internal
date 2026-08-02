@@ -84,11 +84,17 @@ except ModuleNotFoundError:
 try:
     from scripts.build_large_scale_generation_comparison import (
         COMPARISON_REPORT_SCHEMA_VERSION,
+        MATCHED_TRAINING_BUDGET_BASIS,
+        MATCHED_TRAINING_PROTOCOL_NOTE,
+        training_budget_policy,
         verify_comparison_source_reports,
     )
 except ModuleNotFoundError:
     from build_large_scale_generation_comparison import (
         COMPARISON_REPORT_SCHEMA_VERSION,
+        MATCHED_TRAINING_BUDGET_BASIS,
+        MATCHED_TRAINING_PROTOCOL_NOTE,
+        training_budget_policy,
         verify_comparison_source_reports,
     )
 
@@ -1802,6 +1808,9 @@ def _comparison_evidence(
         != training_contention["reason"]
     ):
         raise ValueError("comparison training wall-clock policy differs")
+    expected_budget_policy = training_budget_policy(rows, training_contention)
+    if report.get("training_budget_policy") != expected_budget_policy:
+        raise ValueError("comparison training budget policy differs")
     source = report.get("official_context_source", {})
     if (
         source.get("sha256") != official_related_sha256
@@ -1831,9 +1840,13 @@ def _comparison_evidence(
             or int(row.get("training_steps", -1)) != 300_000
             or int(row.get("sample_count", -1)) != 50_000
             or row.get("protocol_note")
-            != "Same data, backbone family, optimizer, steps, and evaluator."
+            != MATCHED_TRAINING_PROTOCOL_NOTE
             or row.get("training_time_measurement")
             != training_contention["measurement"]
+            or row.get("training_budget_basis")
+            != MATCHED_TRAINING_BUDGET_BASIS
+            or row.get("compute_matched_claim_allowed") is not False
+            or row.get("training_cost_fields_role") != "measured_outcomes"
             or row.get("training_wall_clock_directly_comparable")
             is not training_contention["direct_comparison_allowed"]
             or row.get("training_throughput_directly_comparable")
