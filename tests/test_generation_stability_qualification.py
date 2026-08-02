@@ -31,7 +31,7 @@ def _training(validation: float, *, cofitok: bool) -> dict:
     }
 
 
-def _checkpoint(*, cofitok: bool, endpoint: float) -> dict:
+def _checkpoint(*, cofitok: bool, endpoint: float, weights: str = "model") -> dict:
     metrics = {
         "orders": {"ordered": {"endpoint_clean_mse": endpoint}},
         "component_energy_ratio": [0.2, 0.25, 0.25, 0.3],
@@ -45,7 +45,7 @@ def _checkpoint(*, cofitok: bool, endpoint: float) -> dict:
         metrics["component_energy_ratio"] = [1.0]
     return {
         "status": "completed",
-        "weights": "model",
+        "weights": weights,
         "checkpoint_sha256": "cofitok" if cofitok else "dense",
         "checkpoint_step": 1000,
         "git": {"revision": "abc123"},
@@ -54,10 +54,16 @@ def _checkpoint(*, cofitok: bool, endpoint: float) -> dict:
     }
 
 
-def _rollout(*, cofitok: bool, high_frequency: float, final_mse: float) -> dict:
+def _rollout(
+    *,
+    cofitok: bool,
+    high_frequency: float,
+    final_mse: float,
+    weights: str = "model",
+) -> dict:
     return {
         "status": "completed",
-        "weights": "model",
+        "weights": weights,
         "checkpoint_sha256": "cofitok" if cofitok else "dense",
         "checkpoint_step": 1000,
         "git": {"revision": "abc123"},
@@ -129,6 +135,42 @@ def test_stability_qualification_fails_high_frequency_gate() -> None:
 
     assert report["status"] == "fail"
     assert report["gates"]["predicted_x0_high_frequency"]["passed"] is False
+
+
+def test_stability_qualification_supports_formal_ema_diagnostics() -> None:
+    inputs = _inputs()
+    for name in ("cofitok_checkpoint", "dense_checkpoint"):
+        inputs[name]["weights"] = "ema"
+    for name in ("cofitok_rollout", "dense_rollout"):
+        inputs[name]["weights"] = "ema"
+    for name in (
+        "cofitok_checkpoint",
+        "dense_checkpoint",
+        "cofitok_rollout",
+        "dense_rollout",
+    ):
+        inputs[name]["git"] = {
+            "revision": "def456",
+            "branch": "scale/evaluation",
+            "tracked_dirty": False,
+        }
+
+    report = build_stability_qualification(
+        **inputs,
+        expected_weights="ema",
+        expected_evaluation_revision="def456",
+        expected_evaluation_branch="scale/evaluation",
+    )
+
+    assert report["status"] == "pass"
+    assert report["protocol"]["weights"] == "ema"
+    assert report["identity"]["training_git_revision"] == "abc123"
+    assert report["identity"]["evaluation_git_revision"] == "def456"
+
+
+def test_stability_qualification_rejects_wrong_formal_weight_family() -> None:
+    with pytest.raises(ValueError, match="must evaluate ema weights"):
+        build_stability_qualification(**_inputs(), expected_weights="ema")
 
 
 def test_stability_qualification_rejects_mismatched_checkpoint() -> None:

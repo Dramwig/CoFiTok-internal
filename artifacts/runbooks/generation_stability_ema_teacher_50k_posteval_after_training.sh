@@ -29,6 +29,10 @@ PROMOTION_GATE="$REPORT_ROOT/promotion_gate.json"
 EVAL_CACHE="$CHECKPOINT_ROOT/eval_cache/torch_fidelity"
 SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/gate10k_sampling"
 SAMPLING_SELECTION="$REPORT_ROOT/sampling_runtime_selection.json"
+COFITOK_ROLLOUT_DIR="$COFITOK_RUN/rollout_stability_ema_n64_seed2029"
+DENSE_ROLLOUT_DIR="$DENSE_RUN/rollout_stability_ema_n64_seed2029"
+EMA_ROLLOUT_QUALIFICATION_ROOT="$REPORT_ROOT/ema_rollout_stability"
+EMA_ROLLOUT_QUALIFICATION="$EMA_ROLLOUT_QUALIFICATION_ROOT/qualification_report.json"
 POSTEVAL_LOCK="$OUTPUT_ROOT/posteval.lock"
 
 cd "$PROJECT"
@@ -147,6 +151,48 @@ fi
   --precision bf16 \
   --resume
 
+"$PYTHON" scripts/evaluate_generation_rollout_stability.py \
+  --checkpoint "$COFITOK_CHECKPOINT" \
+  --output-dir "$COFITOK_ROLLOUT_DIR" \
+  --num-images 64 \
+  --batch-size 8 \
+  --sample-steps 100 \
+  --seed 2029 \
+  --weights ema \
+  --precision bf16 \
+  --guidance-scale 1.5 \
+  --guidance-rescale 0.0 \
+  --teacher-guidance-scale 1.0 \
+  --cfg-batch-mode batched \
+  --clip-x0
+
+"$PYTHON" scripts/evaluate_generation_rollout_stability.py \
+  --checkpoint "$DENSE_CHECKPOINT" \
+  --output-dir "$DENSE_ROLLOUT_DIR" \
+  --num-images 64 \
+  --batch-size 8 \
+  --sample-steps 100 \
+  --seed 2029 \
+  --weights ema \
+  --precision bf16 \
+  --guidance-scale 1.5 \
+  --guidance-rescale 0.0 \
+  --teacher-guidance-scale 1.0 \
+  --cfg-batch-mode batched \
+  --clip-x0
+
+"$PYTHON" scripts/build_generation_stability_qualification.py \
+  --cofitok-training "$COFITOK_RUN/training_report.json" \
+  --dense-training "$DENSE_RUN/training_report.json" \
+  --cofitok-checkpoint "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --dense-checkpoint "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --cofitok-rollout "$COFITOK_ROLLOUT_DIR/rollout_stability_report.json" \
+  --dense-rollout "$DENSE_ROLLOUT_DIR/rollout_stability_report.json" \
+  --weights ema \
+  --expected-evaluation-revision "$EXPECTED_TARGET_REVISION" \
+  --expected-evaluation-branch "$EXPECTED_TARGET_BRANCH" \
+  --output-dir "$EMA_ROLLOUT_QUALIFICATION_ROOT"
+
 "$PYTHON" scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/samples_gate10k_ddim100_cfg15" \
@@ -220,6 +266,7 @@ fi
   --dense-generation "$DENSE_RUN/samples_gate10k_ddim100_cfg15/metrics/generation_metrics_report.json" \
   --cofitok-checkpoint-eval "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --rollout-stability-qualification "$EMA_ROLLOUT_QUALIFICATION" \
   --output "$PROMOTION_GATE" \
   --stage scaling \
   --source-profile stability_scaling \

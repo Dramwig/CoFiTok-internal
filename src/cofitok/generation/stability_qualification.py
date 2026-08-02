@@ -29,7 +29,12 @@ def _validate_sources(
     dense_checkpoint: dict[str, Any],
     cofitok_rollout: dict[str, Any],
     dense_rollout: dict[str, Any],
+    expected_weights: str,
+    expected_evaluation_revision: str | None,
+    expected_evaluation_branch: str | None,
 ) -> dict[str, Any]:
+    if expected_weights not in {"model", "ema"}:
+        raise ValueError("expected weights must be model or ema")
     for name, report in (
         ("cofitok checkpoint", cofitok_checkpoint),
         ("dense checkpoint", dense_checkpoint),
@@ -38,8 +43,10 @@ def _validate_sources(
     ):
         if report.get("status") != "completed":
             raise ValueError(f"{name} report is not completed")
-        if report.get("weights") != "model":
-            raise ValueError(f"{name} report must evaluate raw model weights")
+        if report.get("weights") != expected_weights:
+            raise ValueError(
+                f"{name} report must evaluate {expected_weights} weights"
+            )
 
     for name, report in (
         ("cofitok training", cofitok_training),
@@ -63,16 +70,31 @@ def _validate_sources(
     dense_revision = dense_training.get("git", {}).get("revision")
     if not cofitok_revision or cofitok_revision != dense_revision:
         raise ValueError("training reports do not share one non-empty Git revision")
+    evaluation_revision = expected_evaluation_revision or cofitok_revision
     for name, training, checkpoint, rollout in (
         ("cofitok", cofitok_training, cofitok_checkpoint, cofitok_rollout),
         ("dense", dense_training, dense_checkpoint, dense_rollout),
     ):
         if checkpoint.get("checkpoint_step") != training.get("completed_steps"):
             raise ValueError(f"{name} evaluation does not use the final training step")
-        if checkpoint.get("git", {}).get("revision") != cofitok_revision:
+        if checkpoint.get("git", {}).get("revision") != evaluation_revision:
             raise ValueError(f"{name} checkpoint report uses a different Git revision")
-        if rollout.get("git", {}).get("revision") != cofitok_revision:
+        if rollout.get("git", {}).get("revision") != evaluation_revision:
             raise ValueError(f"{name} rollout report uses a different Git revision")
+        if expected_evaluation_branch is not None:
+            for report_name, evaluation_report in (
+                ("checkpoint", checkpoint),
+                ("rollout", rollout),
+            ):
+                git = evaluation_report.get("git", {})
+                if (
+                    git.get("branch") != expected_evaluation_branch
+                    or git.get("tracked_dirty") is not False
+                ):
+                    raise ValueError(
+                        f"{name} {report_name} report uses a different or dirty "
+                        "evaluation checkout"
+                    )
         training_config = training.get("config")
         if not isinstance(training_config, dict):
             raise ValueError(f"{name} training report does not embed its config")
@@ -115,6 +137,9 @@ def build_stability_qualification(
     dense_checkpoint: dict[str, Any],
     cofitok_rollout: dict[str, Any],
     dense_rollout: dict[str, Any],
+    expected_weights: str = "model",
+    expected_evaluation_revision: str | None = None,
+    expected_evaluation_branch: str | None = None,
     high_frequency_timesteps: tuple[int, ...] = DEFAULT_HIGH_FREQUENCY_TIMESTEPS,
     max_tail_two_energy_ratio: float = 0.65,
     max_single_token_energy_ratio: float = 0.35,
@@ -130,6 +155,9 @@ def build_stability_qualification(
         dense_checkpoint=dense_checkpoint,
         cofitok_rollout=cofitok_rollout,
         dense_rollout=dense_rollout,
+        expected_weights=expected_weights,
+        expected_evaluation_revision=expected_evaluation_revision,
+        expected_evaluation_branch=expected_evaluation_branch,
     )
 
     cofitok_metrics = cofitok_checkpoint["metrics"]
@@ -243,7 +271,7 @@ def build_stability_qualification(
         "schema_version": 2,
         "status": "pass" if passed else "fail",
         "protocol": {
-            "weights": "model",
+            "weights": expected_weights,
             "checkpoint_step": int(cofitok_checkpoint["checkpoint_step"]),
             "checkpoint_evaluated_images": int(
                 cofitok_checkpoint["metrics"]["evaluated_images"]
@@ -254,6 +282,12 @@ def build_stability_qualification(
         },
         "identity": {
             "git_revision": cofitok_training["git"]["revision"],
+            "training_git_revision": cofitok_training["git"]["revision"],
+            "evaluation_git_revision": (
+                expected_evaluation_revision
+                or cofitok_checkpoint["git"]["revision"]
+            ),
+            "evaluation_git_branch": expected_evaluation_branch,
             "cofitok_checkpoint_sha256": cofitok_checkpoint["checkpoint_sha256"],
             "dense_checkpoint_sha256": dense_checkpoint["checkpoint_sha256"],
         },

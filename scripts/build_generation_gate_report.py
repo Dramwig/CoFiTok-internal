@@ -12,6 +12,7 @@ from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_gate import GENERATION_GATE_SCHEMA_VERSION
 from cofitok.generation_gate_sources import (
     GATE_SOURCE_SUFFIXES,
+    build_generation_gate_diagnostic_reports,
     build_generation_gate_source_reports,
 )
 from cofitok.generation_pair import generation_pair_contract
@@ -27,6 +28,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dense-generation", required=True)
     parser.add_argument("--cofitok-checkpoint-eval", required=True)
     parser.add_argument("--dense-checkpoint-eval", required=True)
+    parser.add_argument(
+        "--rollout-stability-qualification",
+        help=(
+            "Optional matched EMA rollout-stability qualification. When supplied, "
+            "it becomes a blocking, source-bound gate check."
+        ),
+    )
     parser.add_argument("--output", required=True)
     parser.add_argument("--stage", choices=["scaling", "full"], default="scaling")
     parser.add_argument(
@@ -202,6 +210,93 @@ def _training_checkpoint_integrity_matches(
     )
 
 
+def _rollout_stability_evidence(
+    report: dict[str, Any],
+    *,
+    stage: str,
+    expected_step: int,
+    expected_checkpoint_images: int,
+    expected_cofitok_sha256: str,
+    expected_dense_sha256: str,
+    expected_evaluation_revision: str | None,
+    expected_evaluation_branch: str,
+    sampling_protocol: dict[str, Any],
+) -> dict[str, Any]:
+    protocol = report.get("protocol")
+    protocol = protocol if isinstance(protocol, dict) else {}
+    rollout = protocol.get("rollout")
+    rollout = rollout if isinstance(rollout, dict) else {}
+    identity = report.get("identity")
+    identity = identity if isinstance(identity, dict) else {}
+    qualification_gates = report.get("gates")
+    qualification_gates = (
+        qualification_gates if isinstance(qualification_gates, dict) else {}
+    )
+    failed_gates = sorted(
+        name
+        for name, gate in qualification_gates.items()
+        if not isinstance(gate, dict) or gate.get("passed") is not True
+    )
+    pair_contract = report.get("pair_contract")
+    pair_contract_valid = (
+        isinstance(pair_contract, dict) and pair_contract.get("valid") is True
+    )
+    expected_sample_steps = 100 if stage == "scaling" else 250
+    protocol_matches = (
+        int(rollout.get("num_images", 0)) >= 64
+        and int(rollout.get("sample_steps", -1)) == expected_sample_steps
+        and int(rollout.get("sample_steps", -1))
+        == int(sampling_protocol.get("sample_steps", -2))
+        and rollout.get("guidance_scale") == sampling_protocol.get("guidance_scale")
+        and rollout.get("guidance_rescale")
+        == sampling_protocol.get("guidance_rescale")
+        and rollout.get("cfg_batch_mode") == sampling_protocol.get("cfg_batch_mode")
+        and rollout.get("clip_x0") is sampling_protocol.get("clip_x0") is True
+        and rollout.get("precision") == sampling_protocol.get("precision") == "bf16"
+    )
+    checks = {
+        "schema": int(report.get("schema_version", 0)) >= 2,
+        "status": report.get("status") == "pass",
+        "weights": protocol.get("weights") == "ema",
+        "checkpoint_step": int(protocol.get("checkpoint_step", -1))
+        == expected_step,
+        "checkpoint_images": int(protocol.get("checkpoint_evaluated_images", -1))
+        == expected_checkpoint_images,
+        "checkpoint_identity": (
+            identity.get("cofitok_checkpoint_sha256") == expected_cofitok_sha256
+            and identity.get("dense_checkpoint_sha256") == expected_dense_sha256
+        ),
+        "evaluation_identity": (
+            (
+                expected_evaluation_revision is None
+                or identity.get("evaluation_git_revision")
+                == expected_evaluation_revision
+            )
+            and identity.get("evaluation_git_branch")
+            == expected_evaluation_branch
+        ),
+        "qualification_gates": bool(qualification_gates) and not failed_gates,
+        "pair_contract": pair_contract_valid,
+        "rollout_protocol": protocol_matches,
+    }
+    return {
+        "valid": all(checks.values()),
+        "checks": checks,
+        "schema_version": report.get("schema_version"),
+        "status": report.get("status"),
+        "weights": protocol.get("weights"),
+        "checkpoint_step": protocol.get("checkpoint_step"),
+        "checkpoint_evaluated_images": protocol.get("checkpoint_evaluated_images"),
+        "cofitok_checkpoint_sha256": identity.get("cofitok_checkpoint_sha256"),
+        "dense_checkpoint_sha256": identity.get("dense_checkpoint_sha256"),
+        "evaluation_git_revision": identity.get("evaluation_git_revision"),
+        "evaluation_git_branch": identity.get("evaluation_git_branch"),
+        "failed_gates": failed_gates,
+        "pair_contract_valid": pair_contract_valid,
+        "rollout_protocol": rollout,
+    }
+
+
 def _runtime_environment_identity(payload: dict[str, Any]) -> dict[str, Any]:
     environment = payload.get("runtime_environment")
     declared = payload.get("runtime_environment_sha256")
@@ -249,6 +344,7 @@ def build_report(
     dense_generation: dict[str, Any],
     cofitok_checkpoint: dict[str, Any],
     dense_checkpoint: dict[str, Any],
+    rollout_stability_qualification: dict[str, Any] | None = None,
     min_samples: int,
     max_fid_regression: float,
     max_endpoint_regression: float,
@@ -782,6 +878,27 @@ def build_report(
             },
         ),
     ]
+    if rollout_stability_qualification is not None:
+        rollout_stability = _rollout_stability_evidence(
+            rollout_stability_qualification,
+            stage=stage,
+            expected_step=int(cofitok_training["target_steps"]),
+            expected_checkpoint_images=int(
+                cofitok_checkpoint.get("metrics", {}).get("evaluated_images", -1)
+            ),
+            expected_cofitok_sha256=cofitok_checkpoint_sha,
+            expected_dense_sha256=dense_checkpoint_sha,
+            expected_evaluation_revision=required_evaluation_revision,
+            expected_evaluation_branch=expected_evaluation_branch,
+            sampling_protocol=cofitok_sampling,
+        )
+        gates.append(
+            _gate(
+                "rollout_stability_diagnostic",
+                rollout_stability["valid"],
+                rollout_stability,
+            )
+        )
     passed = all(gate["passed"] for gate in gates)
     pass_decision = (
         "promote_to_full_imagenet256"
@@ -832,6 +949,14 @@ def build_report(
 
 def main() -> None:
     args = parse_args()
+    source_profile = args.source_profile or args.stage
+    if (
+        source_profile in {"stability_scaling", "stability_full"}
+        and not args.rollout_stability_qualification
+    ):
+        raise ValueError(
+            "schema-v3 stability gates require rollout-stability qualification"
+        )
     report = build_report(
         cofitok_training=_read(args.cofitok_training),
         dense_training=_read(args.dense_training),
@@ -839,6 +964,11 @@ def main() -> None:
         dense_generation=_read(args.dense_generation),
         cofitok_checkpoint=_read(args.cofitok_checkpoint_eval),
         dense_checkpoint=_read(args.dense_checkpoint_eval),
+        rollout_stability_qualification=(
+            _read(args.rollout_stability_qualification)
+            if args.rollout_stability_qualification
+            else None
+        ),
         min_samples=args.min_samples,
         max_fid_regression=args.max_fid_regression,
         max_endpoint_regression=args.max_endpoint_regression,
@@ -867,7 +997,20 @@ def main() -> None:
             "dense_checkpoint_eval": args.dense_checkpoint_eval,
         },
     )
-    report["source_profile"] = args.source_profile or args.stage
+    report["source_profile"] = source_profile
+    if args.rollout_stability_qualification:
+        if report["source_profile"] not in {"stability_scaling", "stability_full"}:
+            raise ValueError(
+                "rollout-stability diagnostics require a stability source profile"
+            )
+        report["diagnostic_reports"] = build_generation_gate_diagnostic_reports(
+            profile=report["source_profile"],
+            paths={
+                "rollout_stability_qualification": (
+                    args.rollout_stability_qualification
+                )
+            },
+        )
     write_json_report(Path(args.output), report)
     print(f"wrote {args.output}")
     if report["status"] != "pass" and not args.allow_fail:

@@ -94,6 +94,18 @@ def _gate(stage: str = "scaling") -> dict:
             return {"zero_token_max_abs": 0.0}
         if name == "shuffle_mismatch":
             return {"shuffled_to_ordered_endpoint_ratio": 1.2}
+        if name == "matched_sampling_provenance":
+            return {
+                "cofitok_checkpoint_step": 50_000,
+                "dense_checkpoint_step": 50_000,
+                "cofitok_checkpoint_sha256": "a" * 64,
+                "dense_checkpoint_sha256": "b" * 64,
+            }
+        if name == "matched_checkpoint_evaluator_code_provenance":
+            return {
+                "expected_revision": "d" * 40,
+                "expected_branch": "scale/generative-system",
+            }
         if name == "full_precision_recall_quality":
             return {
                 "enforced": True,
@@ -151,6 +163,26 @@ def test_scaling_gate_authorizes_only_the_locked_contract() -> None:
 
     assert evidence["decision"] == "promote_to_full_imagenet256"
     assert evidence["validated_thresholds"]["max_absolute_fid"] == 100.0
+
+
+def test_legacy_schema_v2_stability_gate_remains_replayable() -> None:
+    gate = _gate()
+    gate["schema_version"] = 2
+    gate["source_profile"] = "stability_scaling"
+
+    evidence = validate_generation_gate_authorization(
+        gate, expected_stage="scaling"
+    )
+
+    assert evidence["schema_version"] == 2
+
+
+def test_schema_v3_stability_gate_requires_rollout_diagnostic() -> None:
+    gate = _gate()
+    gate["source_profile"] = "stability_scaling"
+
+    with pytest.raises(ValueError, match="rollout_stability_diagnostic"):
+        validate_generation_gate_authorization(gate, expected_stage="scaling")
 
 
 @pytest.mark.parametrize(
@@ -215,6 +247,65 @@ def test_scaling_gate_accepts_roundoff_in_derived_coarse_energy_sum() -> None:
 
     row["evidence"]["coarse_token_energy_ratio"] = derived + 1e-9
     with pytest.raises(ValueError, match="differs from its summary"):
+        validate_generation_gate_authorization(gate, expected_stage="scaling")
+
+
+def test_scaling_gate_validates_optional_ema_rollout_stability() -> None:
+    gate = _gate()
+    gate["source_profile"] = "stability_scaling"
+    evidence = {
+        "valid": True,
+        "checks": {
+            "schema": True,
+            "status": True,
+            "weights": True,
+            "checkpoint_step": True,
+            "checkpoint_images": True,
+            "checkpoint_identity": True,
+            "qualification_gates": True,
+            "pair_contract": True,
+            "rollout_protocol": True,
+        },
+        "schema_version": 2,
+        "status": "pass",
+        "weights": "ema",
+        "checkpoint_step": 50_000,
+        "checkpoint_evaluated_images": 1024,
+        "cofitok_checkpoint_sha256": "a" * 64,
+        "dense_checkpoint_sha256": "b" * 64,
+        "evaluation_git_revision": "d" * 40,
+        "evaluation_git_branch": "scale/generative-system",
+        "failed_gates": [],
+        "pair_contract_valid": True,
+        "rollout_protocol": {
+            "num_images": 64,
+            "sample_steps": 100,
+            "guidance_scale": 1.5,
+            "guidance_rescale": 0.0,
+            "cfg_batch_mode": "batched",
+            "clip_x0": True,
+            "precision": "bf16",
+        },
+    }
+    gate["gates"].append(
+        {
+            "name": "rollout_stability_diagnostic",
+            "passed": True,
+            "evidence": evidence,
+        }
+    )
+    gate["diagnostic_reports"] = {
+        "rollout_stability_qualification": {
+            "path": "/reports/ema_rollout_stability/qualification_report.json",
+            "bytes": 123,
+            "sha256": "c" * 64,
+        }
+    }
+
+    validate_generation_gate_authorization(gate, expected_stage="scaling")
+
+    evidence["rollout_protocol"]["guidance_scale"] = 1.0
+    with pytest.raises(ValueError, match="rollout-stability protocol"):
         validate_generation_gate_authorization(gate, expected_stage="scaling")
 
 

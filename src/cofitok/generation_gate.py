@@ -6,7 +6,8 @@ import math
 from typing import Any
 
 
-GENERATION_GATE_SCHEMA_VERSION = 2
+GENERATION_GATE_SCHEMA_VERSION = 3
+SUPPORTED_GENERATION_GATE_SCHEMA_VERSIONS = frozenset({2, 3})
 
 _STAGE_DECISIONS = {
     "scaling": "promote_to_full_imagenet256",
@@ -324,6 +325,79 @@ def _validate_scientific_gate_evidence(
     if shuffle_ratio <= 1.0:
         raise ValueError("generation gate does not prove shuffled-token mismatch")
 
+    if "rollout_stability_diagnostic" in indexed:
+        rollout_stability = evidence("rollout_stability_diagnostic")
+        checks = rollout_stability.get("checks")
+        if (
+            rollout_stability.get("valid") is not True
+            or not isinstance(checks, dict)
+            or not checks
+            or any(value is not True for value in checks.values())
+            or int(rollout_stability.get("schema_version", 0)) < 2
+            or rollout_stability.get("status") != "pass"
+            or rollout_stability.get("weights") != "ema"
+            or rollout_stability.get("failed_gates") != []
+            or rollout_stability.get("pair_contract_valid") is not True
+        ):
+            raise ValueError(
+                "generation gate rollout-stability diagnostic is not passing"
+            )
+        sampling = evidence("matched_sampling_provenance")
+        if (
+            rollout_stability.get("cofitok_checkpoint_sha256")
+            != sampling.get("cofitok_checkpoint_sha256")
+            or rollout_stability.get("dense_checkpoint_sha256")
+            != sampling.get("dense_checkpoint_sha256")
+            or int(rollout_stability.get("checkpoint_step", -1))
+            != int(sampling.get("cofitok_checkpoint_step", -2))
+            or int(rollout_stability.get("checkpoint_step", -1))
+            != int(sampling.get("dense_checkpoint_step", -2))
+        ):
+            raise ValueError(
+                "generation gate rollout-stability checkpoint identity differs"
+            )
+        evaluator = evidence("matched_checkpoint_evaluator_code_provenance")
+        if (
+            rollout_stability.get("evaluation_git_revision")
+            != evaluator.get("expected_revision")
+            or rollout_stability.get("evaluation_git_branch")
+            != evaluator.get("expected_branch")
+        ):
+            raise ValueError(
+                "generation gate rollout-stability evaluator identity differs"
+            )
+        rollout_protocol = rollout_stability.get("rollout_protocol")
+        expected_sample_steps = 100 if stage == "scaling" else 250
+        if (
+            not isinstance(rollout_protocol, dict)
+            or int(rollout_protocol.get("num_images", 0)) < 64
+            or int(rollout_protocol.get("sample_steps", -1))
+            != expected_sample_steps
+            or rollout_protocol.get("guidance_scale") != 1.5
+            or rollout_protocol.get("guidance_rescale") != 0.0
+            or rollout_protocol.get("cfg_batch_mode") != "batched"
+            or rollout_protocol.get("clip_x0") is not True
+            or rollout_protocol.get("precision") != "bf16"
+        ):
+            raise ValueError(
+                "generation gate rollout-stability protocol is not formal"
+            )
+        diagnostics = gate.get("diagnostic_reports")
+        descriptor = (
+            diagnostics.get("rollout_stability_qualification")
+            if isinstance(diagnostics, dict)
+            else None
+        )
+        if (
+            not isinstance(descriptor, dict)
+            or not str(descriptor.get("path", ""))
+            or int(descriptor.get("bytes", 0)) < 1
+            or len(str(descriptor.get("sha256", ""))) != 64
+        ):
+            raise ValueError(
+                "generation gate rollout-stability source binding is missing"
+            )
+
     if stage == "full":
         quality = evidence("full_precision_recall_quality")
         if quality.get("enforced") is not True:
@@ -339,7 +413,8 @@ def validate_generation_gate_authorization(
 ) -> dict[str, Any]:
     if expected_stage not in _STAGE_DECISIONS:
         raise ValueError(f"unsupported generation gate stage: {expected_stage}")
-    if int(gate.get("schema_version", -1)) != GENERATION_GATE_SCHEMA_VERSION:
+    schema_version = int(gate.get("schema_version", -1))
+    if schema_version not in SUPPORTED_GENERATION_GATE_SCHEMA_VERSIONS:
         raise ValueError("generation gate schema version is unsupported")
     if gate.get("stage") != expected_stage:
         raise ValueError(f"expected {expected_stage} generation gate")
@@ -363,6 +438,12 @@ def validate_generation_gate_authorization(
             raise ValueError(f"generation gate contains a failed check: {name}")
         indexed[name] = row
     missing = sorted(REQUIRED_GENERATION_GATES[expected_stage] - indexed.keys())
+    if (
+        schema_version >= 3
+        and gate.get("source_profile") in {"stability_scaling", "stability_full"}
+        and "rollout_stability_diagnostic" not in indexed
+    ):
+        missing.append("rollout_stability_diagnostic")
     if missing:
         raise ValueError("generation gate lacks required checks: " + ", ".join(missing))
 
@@ -375,7 +456,7 @@ def validate_generation_gate_authorization(
         indexed=indexed,
     )
     return {
-        "schema_version": GENERATION_GATE_SCHEMA_VERSION,
+        "schema_version": schema_version,
         "stage": expected_stage,
         "decision": expected_decision,
         "gate_count": len(rows),

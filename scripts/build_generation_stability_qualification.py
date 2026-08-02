@@ -33,6 +33,14 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--max-high-frequency-ratio", type=float, default=1.5)
     parser.add_argument("--min-shuffle-mismatch-ratio", type=float, default=2.0)
     parser.add_argument("--max-zero-token-abs", type=float, default=1e-8)
+    parser.add_argument(
+        "--weights",
+        choices=["model", "ema"],
+        default="model",
+        help="Require all checkpoint and rollout reports to use these weights.",
+    )
+    parser.add_argument("--expected-evaluation-revision")
+    parser.add_argument("--expected-evaluation-branch")
     parser.add_argument("--require-pass", action="store_true")
     return parser.parse_args()
 
@@ -67,6 +75,9 @@ def main() -> int:
     )
     report = build_stability_qualification(
         **{name: _load(path) for name, path in paths.items()},
+        expected_weights=args.weights,
+        expected_evaluation_revision=args.expected_evaluation_revision,
+        expected_evaluation_branch=args.expected_evaluation_branch,
         high_frequency_timesteps=timesteps,
         max_tail_two_energy_ratio=args.max_tail_two_energy_ratio,
         max_single_token_energy_ratio=args.max_single_token_energy_ratio,

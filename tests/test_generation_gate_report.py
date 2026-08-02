@@ -178,6 +178,7 @@ def _checkpoint(endpoint: float, sha: str, rank: int = 1) -> dict:
         "checkpoint_step": 50_000,
         "config": {"model": {"token_count": token_count}},
         "metrics": {
+            "evaluated_images": 1024,
             "orders": {"ordered": {"endpoint_clean_mse": endpoint}},
             "ordered_rank_by_path_auc": rank,
             "order_count": 18,
@@ -189,6 +190,43 @@ def _checkpoint(endpoint: float, sha: str, rank: int = 1) -> dict:
                 else [1.0]
             ),
         }
+    }
+
+
+def _rollout_stability_qualification(*, passed: bool = True) -> dict:
+    failed = [] if passed else ["predicted_x0_high_frequency"]
+    return {
+        "schema_version": 2,
+        "status": "pass" if passed else "fail",
+        "protocol": {
+            "weights": "ema",
+            "checkpoint_step": 50_000,
+            "checkpoint_evaluated_images": 1024,
+            "rollout": {
+                "num_images": 64,
+                "batch_size": 8,
+                "sample_steps": 100,
+                "guidance_scale": 1.5,
+                "teacher_guidance_scale": 1.0,
+                "guidance_rescale": 0.0,
+                "cfg_batch_mode": "batched",
+                "clip_x0": True,
+                "precision": "bf16",
+                "seed": 2029,
+            },
+        },
+        "identity": {
+            "evaluation_git_revision": "a" * 40,
+            "evaluation_git_branch": "scale/generative-system",
+            "cofitok_checkpoint_sha256": "a" * 64,
+            "dense_checkpoint_sha256": "b" * 64,
+        },
+        "gates": {
+            "predicted_x0_high_frequency": {"passed": passed},
+            "reconstruction_regression": {"passed": True},
+        },
+        "pair_contract": {"valid": True},
+        "failed_gates_fixture": failed,
     }
 
 
@@ -310,6 +348,59 @@ def test_generation_gate_passes_matched_quality_and_mechanism() -> None:
     assert report["decision"] == "promote_to_full_imagenet256"
     assert report["summary"]["coarse_token_energy_ratio"] == pytest.approx(0.06)
     assert all(gate["passed"] for gate in report["gates"])
+
+
+def test_generation_gate_binds_passing_ema_rollout_stability() -> None:
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(20.5, 8, "a" * 64),
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.102, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        rollout_stability_qualification=_rollout_stability_qualification(),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(
+        row
+        for row in report["gates"]
+        if row["name"] == "rollout_stability_diagnostic"
+    )
+    assert report["status"] == "pass"
+    assert gate["passed"] is True
+    assert gate["evidence"]["weights"] == "ema"
+    assert gate["evidence"]["failed_gates"] == []
+
+
+def test_generation_gate_holds_on_failed_ema_rollout_stability() -> None:
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(20.5, 8, "a" * 64),
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.102, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        rollout_stability_qualification=_rollout_stability_qualification(
+            passed=False
+        ),
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(
+        row
+        for row in report["gates"]
+        if row["name"] == "rollout_stability_diagnostic"
+    )
+    assert report["status"] == "fail"
+    assert gate["passed"] is False
+    assert gate["evidence"]["failed_gates"] == [
+        "predicted_x0_high_frequency"
+    ]
 
 
 def test_generation_gate_holds_on_fid_regression() -> None:

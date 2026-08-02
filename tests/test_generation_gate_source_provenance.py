@@ -9,7 +9,9 @@ from pathlib import Path
 import pytest
 
 from cofitok.generation_gate_sources import (
+    GATE_DIAGNOSTIC_SUFFIXES,
     GATE_SOURCE_SUFFIXES,
+    build_generation_gate_diagnostic_reports,
     build_generation_gate_source_reports,
     verify_generation_gate_source_reports,
 )
@@ -85,6 +87,54 @@ def test_stability_scaling_source_profile_is_independent_from_gate_stage(
 
     assert verified["stage"] == "scaling"
     assert verified["source_profile"] == "stability_scaling"
+
+
+def test_stability_rollout_diagnostic_is_rehashed_with_gate_sources(
+    tmp_path: Path,
+) -> None:
+    profile_root = (
+        Path("\\\\?\\" + str(tmp_path.resolve()))
+        if os.name == "nt"
+        else tmp_path
+    )
+    paths = {}
+    for index, (name, suffix) in enumerate(
+        GATE_SOURCE_SUFFIXES["stability_scaling"].items()
+    ):
+        path = profile_root / suffix
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"name": name, "index": index}), encoding="utf-8")
+        paths[name] = path
+    diagnostic_paths = {}
+    for name, suffix in GATE_DIAGNOSTIC_SUFFIXES["stability_scaling"].items():
+        path = profile_root / suffix
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"status": "pass"}), encoding="utf-8")
+        diagnostic_paths[name] = path
+    gate = {
+        "stage": "scaling",
+        "source_profile": "stability_scaling",
+        "source_reports": build_generation_gate_source_reports(
+            stage="scaling",
+            profile="stability_scaling",
+            paths=paths,
+        ),
+        "diagnostic_reports": build_generation_gate_diagnostic_reports(
+            profile="stability_scaling",
+            paths=diagnostic_paths,
+        ),
+    }
+
+    verified = verify_generation_gate_source_reports(gate)
+
+    assert set(verified["diagnostic_reports"]) == {
+        "rollout_stability_qualification"
+    }
+    diagnostic_paths["rollout_stability_qualification"].write_text(
+        "changed\n", encoding="ascii"
+    )
+    with pytest.raises(ValueError, match="diagnostic report changed after binding"):
+        verify_generation_gate_source_reports(gate)
 
 
 def test_stability_full_source_profile_is_independent_from_legacy_full(

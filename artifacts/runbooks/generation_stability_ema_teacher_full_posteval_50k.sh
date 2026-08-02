@@ -24,6 +24,10 @@ DENSE_CHECKPOINT="$DENSE_RUN/checkpoint_step_00300000.pt"
 EVAL_CACHE="$CHECKPOINT_ROOT/eval_cache/torch_fidelity"
 SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/sampling_50k"
 SAMPLING_SELECTION="$REPORT_ROOT/sampling_runtime_selection.json"
+COFITOK_ROLLOUT_DIR="$COFITOK_RUN/rollout_stability_ema_n64_seed2029"
+DENSE_ROLLOUT_DIR="$DENSE_RUN/rollout_stability_ema_n64_seed2029"
+EMA_ROLLOUT_QUALIFICATION_ROOT="$REPORT_ROOT/ema_rollout_stability"
+EMA_ROLLOUT_QUALIFICATION="$EMA_ROLLOUT_QUALIFICATION_ROOT/qualification_report.json"
 TRAINING_CONTENTION="$OUTPUT_ROOT/pair_monitor.json"
 FINAL_GATE="$REPORT_ROOT/final_generation_gate.json"
 STAGE_STATE_ROOT="$REPORT_ROOT/stage_receipts"
@@ -162,6 +166,80 @@ fi
   --weights ema \
   --precision bf16
 
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/cofitok_rollout_stability.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$COFITOK_CHECKPOINT" \
+  --input-file "$COFITOK_CHECKPOINT.integrity.json" \
+  --input-file "$COFITOK_CONFIG" \
+  --input-file "$DATASET_MANIFEST" \
+  --output-tree "$COFITOK_ROLLOUT_DIR" \
+  -- \
+  "$PYTHON" scripts/evaluate_generation_rollout_stability.py \
+  --checkpoint "$COFITOK_CHECKPOINT" \
+  --output-dir "$COFITOK_ROLLOUT_DIR" \
+  --num-images 64 \
+  --batch-size 8 \
+  --sample-steps 250 \
+  --seed 2029 \
+  --weights ema \
+  --precision bf16 \
+  --guidance-scale 1.5 \
+  --guidance-rescale 0.0 \
+  --teacher-guidance-scale 1.0 \
+  --cfg-batch-mode batched \
+  --clip-x0
+
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/dense_rollout_stability.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$DENSE_CHECKPOINT" \
+  --input-file "$DENSE_CHECKPOINT.integrity.json" \
+  --input-file "$DENSE_CONFIG" \
+  --input-file "$DATASET_MANIFEST" \
+  --output-tree "$DENSE_ROLLOUT_DIR" \
+  -- \
+  "$PYTHON" scripts/evaluate_generation_rollout_stability.py \
+  --checkpoint "$DENSE_CHECKPOINT" \
+  --output-dir "$DENSE_ROLLOUT_DIR" \
+  --num-images 64 \
+  --batch-size 8 \
+  --sample-steps 250 \
+  --seed 2029 \
+  --weights ema \
+  --precision bf16 \
+  --guidance-scale 1.5 \
+  --guidance-rescale 0.0 \
+  --teacher-guidance-scale 1.0 \
+  --cfg-batch-mode batched \
+  --clip-x0
+
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/ema_rollout_stability_qualification.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$COFITOK_RUN/training_report.json" \
+  --input-file "$DENSE_RUN/training_report.json" \
+  --input-file "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --input-file "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --input-file "$COFITOK_ROLLOUT_DIR/rollout_stability_report.json" \
+  --input-file "$DENSE_ROLLOUT_DIR/rollout_stability_report.json" \
+  --output-tree "$EMA_ROLLOUT_QUALIFICATION_ROOT" \
+  -- \
+  "$PYTHON" scripts/build_generation_stability_qualification.py \
+  --cofitok-training "$COFITOK_RUN/training_report.json" \
+  --dense-training "$DENSE_RUN/training_report.json" \
+  --cofitok-checkpoint "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --dense-checkpoint "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --cofitok-rollout "$COFITOK_ROLLOUT_DIR/rollout_stability_report.json" \
+  --dense-rollout "$DENSE_ROLLOUT_DIR/rollout_stability_report.json" \
+  --weights ema \
+  --expected-evaluation-revision "$EXPECTED_TARGET_REVISION" \
+  --expected-evaluation-branch "$EXPECTED_TARGET_BRANCH" \
+  --output-dir "$EMA_ROLLOUT_QUALIFICATION_ROOT"
+
 "$PYTHON" scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/samples_50k_ddim250_cfg15" \
@@ -273,6 +351,7 @@ fi
   --input-file "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
   --input-file "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --input-file "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --input-file "$EMA_ROLLOUT_QUALIFICATION" \
   --output-file "$FINAL_GATE" \
   -- \
   "$PYTHON" scripts/build_generation_gate_report.py \
@@ -282,6 +361,7 @@ fi
   --dense-generation "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
   --cofitok-checkpoint-eval "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
+  --rollout-stability-qualification "$EMA_ROLLOUT_QUALIFICATION" \
   --output "$FINAL_GATE" \
   --stage full \
   --source-profile stability_full \

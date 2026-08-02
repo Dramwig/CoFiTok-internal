@@ -137,6 +137,20 @@ GATE_SOURCE_PROFILE_STAGES = {
     "full": "full",
     "stability_full": "full",
 }
+GATE_DIAGNOSTIC_SUFFIXES = {
+    "stability_scaling": {
+        "rollout_stability_qualification": (
+            f"checkpoints/generation/{STABILITY_SCALING_ROOT_ID}/reports/"
+            "ema_rollout_stability/qualification_report.json"
+        ),
+    },
+    "stability_full": {
+        "rollout_stability_qualification": (
+            f"checkpoints/generation/{STABILITY_FULL_ROOT_ID}/reports/"
+            "ema_rollout_stability/qualification_report.json"
+        ),
+    },
+}
 
 
 def gate_source_report_identity(path: str | Path) -> dict[str, Any]:
@@ -197,6 +211,44 @@ def build_generation_gate_source_reports(
     return reports
 
 
+def _validate_gate_diagnostic_report_identities(
+    diagnostic_reports: dict[str, dict[str, Any]],
+    *,
+    profile: str,
+) -> None:
+    expected = GATE_DIAGNOSTIC_SUFFIXES.get(profile)
+    if expected is None or set(diagnostic_reports) != set(expected):
+        raise ValueError("generation gate diagnostic-report set is incomplete")
+    for name, suffix in expected.items():
+        identity = diagnostic_reports[name]
+        normalized_path = str(identity.get("path", "")).replace("\\", "/")
+        sha256 = str(identity.get("sha256", ""))
+        if (
+            not normalized_path.endswith(suffix)
+            or int(identity.get("bytes", 0)) < 1
+            or len(sha256) != 64
+            or any(character not in "0123456789abcdef" for character in sha256)
+        ):
+            raise ValueError(
+                f"generation gate diagnostic-report identity is invalid: {name}"
+            )
+
+
+def build_generation_gate_diagnostic_reports(
+    *,
+    profile: str,
+    paths: dict[str, str | Path],
+) -> dict[str, dict[str, Any]]:
+    expected = GATE_DIAGNOSTIC_SUFFIXES.get(profile)
+    if expected is None or set(paths) != set(expected):
+        raise ValueError("generation gate diagnostic paths are incomplete")
+    reports = {
+        name: gate_source_report_identity(path) for name, path in paths.items()
+    }
+    _validate_gate_diagnostic_report_identities(reports, profile=profile)
+    return reports
+
+
 def verify_generation_gate_source_reports(
     gate: dict[str, Any],
 ) -> dict[str, Any]:
@@ -222,9 +274,27 @@ def verify_generation_gate_source_reports(
                 f"generation gate source report changed after binding: {name}"
             )
         verified[name] = actual
-    return {
+    result = {
         "status": "verified",
         "stage": stage,
         "source_profile": source_profile,
         "source_reports": verified,
     }
+    diagnostic_reports = gate.get("diagnostic_reports")
+    if diagnostic_reports is not None:
+        if not isinstance(diagnostic_reports, dict):
+            raise ValueError("generation gate diagnostic-report identities are malformed")
+        _validate_gate_diagnostic_report_identities(
+            diagnostic_reports,
+            profile=source_profile,
+        )
+        verified_diagnostics = {}
+        for name, expected in diagnostic_reports.items():
+            actual = gate_source_report_identity(expected["path"])
+            if actual != expected:
+                raise ValueError(
+                    f"generation gate diagnostic report changed after binding: {name}"
+                )
+            verified_diagnostics[name] = actual
+        result["diagnostic_reports"] = verified_diagnostics
+    return result

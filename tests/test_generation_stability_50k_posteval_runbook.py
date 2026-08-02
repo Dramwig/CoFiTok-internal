@@ -28,7 +28,7 @@ def test_stability_50k_posteval_uses_formal_ema_gate_protocol() -> None:
     source = RUNBOOK.read_text(encoding="utf-8")
 
     assert source.count("--num-samples 10000") == 2
-    assert source.count("--sample-steps 100") == 3
+    assert source.count("--sample-steps 100") == 5
     assert source.count("--weights ema") >= 5
     assert source.count("scripts/evaluate_generation_checkpoint.py") == 2
     assert source.count("scripts/evaluate_generation_metrics.py") == 2
@@ -53,6 +53,33 @@ def test_stability_50k_posteval_uses_formal_ema_gate_protocol() -> None:
     assert "--min-coarse-token-energy-ratio 0.05" in source
     assert "--sources-only" in source
     assert "scripts/validate_generation_gate_report.py" in source
+
+
+def test_stability_50k_posteval_binds_matched_ema_rollout_diagnostics() -> None:
+    source = RUNBOOK.read_text(encoding="utf-8")
+
+    assert source.count("scripts/evaluate_generation_rollout_stability.py") == 2
+    assert source.count("--num-images 64") >= 2
+    assert source.count("--seed 2029") == 2
+    assert "scripts/build_generation_stability_qualification.py" in source
+    qualification = source.index("scripts/build_generation_stability_qualification.py")
+    assert source.index("--weights ema", qualification) < source.index(
+        '--output-dir "$EMA_ROLLOUT_QUALIFICATION_ROOT"', qualification
+    )
+    assert (
+        '--expected-evaluation-revision "$EXPECTED_TARGET_REVISION"' in source
+    )
+    assert '--expected-evaluation-branch "$EXPECTED_TARGET_BRANCH"' in source
+    assert (
+        '--rollout-stability-qualification "$EMA_ROLLOUT_QUALIFICATION"'
+        in source
+    )
+    assert source.index("scripts/evaluate_generation_checkpoint.py") < source.index(
+        "scripts/evaluate_generation_rollout_stability.py"
+    )
+    assert source.index("scripts/build_generation_stability_qualification.py") < source.index(
+        "scripts/build_generation_gate_report.py"
+    )
 
 
 def test_stability_50k_posteval_cannot_launch_full_training() -> None:

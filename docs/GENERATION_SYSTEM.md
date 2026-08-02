@@ -260,6 +260,18 @@ repository or mutate an active training checkout.
   samples per method, 1,024-image timestep-500 mechanism evaluation, and an
   independent `stability_scaling` source-path profile. It can write and verify
   a scaling gate but cannot invoke full training.
+- Schema-v3 stability gates add a matched EMA rollout-stability contract to
+  the formal distribution-quality gate. Both the 50K scaling post-evaluation
+  and the dormant full post-evaluation run 64 fixed validation images with the
+  same DDIM step count, CFG `1.5`, clipped `x0`, bf16 precision, and final
+  checkpoint bytes as their FID sampling protocol. The resulting qualification
+  reuses the established tail-energy, single-token concentration, ordered-rank,
+  endpoint/validation regression, free-rollout high-frequency, reconstruction,
+  zero-token, and shuffle-mismatch checks. A supplied qualification is a
+  blocking gate row and is bound by absolute path, byte count, and SHA256;
+  schema-v3 `stability_scaling`/`stability_full` gates cannot omit it. Historical
+  schema-v2 gates remain replayable so locked evidence is not retroactively
+  invalidated.
 - Stability post-evaluation uses separate, explicit training and evaluation
   Git identities. This prevents the gate builder's legacy
   `scale/generative-system` default from rejecting the intentionally isolated
