@@ -280,6 +280,17 @@ repository or mutate an active training checkout.
   floors and do not constitute an ImageNet generation-quality claim. Historical
   schema-v2/v3 gates remain replayable, but every newly built stability-scaling
   gate must contain the named `scaling_precision_recall_quality` evidence row.
+- Frozen schema-v2/v3 stability gates can be audited without rewriting their
+  immutable bytes by
+  `scripts/build_generation_stability_distribution_support.py`. The CPU-only
+  supplemental builder first rehashes every source bound by the original gate,
+  then rereads the exact CoFiTok/dense 10K metrics bytes and independently
+  checks the formal EMA DDIM-100 protocol, matched real set/evaluator/code/runtime,
+  finite metric domains, `0.10` precision/recall floors, and `0.05` matched
+  retention. Its deterministic report binds the original gate, both metrics
+  files, and a clean builder Git identity. It is explicitly non-authorizing:
+  it cannot replace the original gate or rollout qualification and always sets
+  `full_training_launch_allowed=false`.
 - Stability post-evaluation uses separate, explicit training and evaluation
   Git identities. This prevents the gate builder's legacy
   `scale/generative-system` default from rejecting the intentionally isolated

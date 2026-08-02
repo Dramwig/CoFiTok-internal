@@ -72,11 +72,19 @@ REQUIRED_GENERATION_GATE_THRESHOLDS = {
     },
 }
 
+STABILITY_SCALING_MIN_PRECISION = 0.10
+STABILITY_SCALING_MIN_RECALL = 0.10
+STABILITY_SCALING_MAX_PRECISION_REGRESSION = 0.05
+STABILITY_SCALING_MAX_RECALL_REGRESSION = 0.05
+
 _STABILITY_SCALING_DISTRIBUTION_SUPPORT_THRESHOLDS = {
-    "min_precision": ("min", 0.10),
-    "min_recall": ("min", 0.10),
-    "max_precision_regression": ("max", 0.05),
-    "max_recall_regression": ("max", 0.05),
+    "min_precision": ("min", STABILITY_SCALING_MIN_PRECISION),
+    "min_recall": ("min", STABILITY_SCALING_MIN_RECALL),
+    "max_precision_regression": (
+        "max",
+        STABILITY_SCALING_MAX_PRECISION_REGRESSION,
+    ),
+    "max_recall_regression": ("max", STABILITY_SCALING_MAX_RECALL_REGRESSION),
 }
 
 
