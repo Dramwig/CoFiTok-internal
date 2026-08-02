@@ -33,6 +33,13 @@ On the first launch, before the monitor or trainer starts, the receipt binds:
 - the first-launch `storage_capacity_launch.json`;
 - both full 300K run paths and the training Git identity.
 
+The 2026-08-03 quality-prerequisite follow-up advances the receipt to schema v3
+and eleven exact sources. In addition to the original readiness/deployment
+contract and its later revision bridge, it now requires the source-bound frozen
+stability supplemental. The supplemental's direct and nested quality evidence
+is replayed before receipt creation; a missing or non-passing supplemental
+blocks launch, while a pass remains explicitly non-authorizing by itself.
+
 Receipt construction requires both run directories to contain no state. If the
 builder fails, the runbook removes the still-unbound launch-storage report. It
 does not remove any training state or any completed receipt.

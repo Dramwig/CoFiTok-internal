@@ -260,6 +260,16 @@ repository or mutate an active training checkout.
   samples per method, 1,024-image timestep-500 mechanism evaluation, and an
   independent `stability_scaling` source-path profile. It can write and verify
   a scaling gate but cannot invoke full training.
+- This dedicated control target consumes the separately produced frozen
+  stability supplemental as a mandatory **quality prerequisite** for a later
+  300K launch. Schema-v3 `full_training_launch_receipt.json` rehashes the
+  supplemental, its four direct reports, and every nested source, requires the
+  frozen distribution/EMA-rollout checks to pass, and binds it as an eleventh
+  launch source. A failed or absent supplemental blocks launch; a passing one
+  remains explicitly non-authorizing and cannot replace readiness, its
+  revision bridge, deployment identity, fresh storage, or human authority.
+  Verification is standalone and does not change the immutable trainer
+  package or the full-training execution suffix.
 - Stability post-evaluation uses separate, explicit training and evaluation
   Git identities. This prevents the gate builder's legacy
   `scale/generative-system` default from rejecting the intentionally isolated

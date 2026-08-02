@@ -53,9 +53,11 @@ resume must recompute this capacity; the estimate is not durable authorization.
 
 ## Downstream Binding
 
-The full launch receipt is schema v2 and contains ten rehashed sources,
-including the bridge. The post-training supervisor requires schema v2 and
-physically rehashes all ten sources. The terminal completion auditor adds an
+The original full launch receipt was schema v2 and contained ten rehashed
+sources, including the bridge. The 2026-08-03 quality-prerequisite follow-up
+advances this to schema v3 and eleven sources by also binding the passing frozen
+stability supplemental. The post-training supervisor now requires schema v3 and
+physically rehashes all eleven sources. The terminal completion auditor adds an
 independent `stability_full_readiness_revision_bridge` check and replays the
 bridge before accepting launch, training, post-evaluation, export, or final
 completion evidence.

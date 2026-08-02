@@ -101,7 +101,8 @@ def test_bridge_accepts_identical_training_blobs_and_runway_only_change(
     )
     assert runbook["authorization_upgrade"] == {
         "readiness_bridge_required": True,
-        "launch_receipt_schema_version": 2,
+        "frozen_stability_supplemental_required": True,
+        "launch_receipt_schema_version": 3,
         "sample_count": {"source": 16_384, "target": 116_640},
     }
     assert runbook["training_execution_identical"] is True

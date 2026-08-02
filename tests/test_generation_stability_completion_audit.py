@@ -350,6 +350,12 @@ def test_stability_completion_rejects_replaced_full_launch_receipt(
         "verify_full_launch_receipt",
         lambda report, **kwargs: {
             "readiness_sha256": "a" * 64,
+            "quality_prerequisites": {
+                "frozen_stability_supplemental": {
+                    "required_for_full_training_launch": True,
+                    "full_training_launch_allowed": False,
+                }
+            },
             "runtime_selection": {},
             "launch_storage_capacity": {},
             "training_state_absent_at_launch": True,
@@ -364,6 +370,9 @@ def test_stability_completion_rejects_replaced_full_launch_receipt(
         verification_kwargs={},
     )
     assert evidence["launch_receipt_sha256"] == expected_sha
+    assert evidence["quality_prerequisites"][
+        "frozen_stability_supplemental"
+    ]["required_for_full_training_launch"] is True
 
     path.write_text('{"status":"replaced"}\n', encoding="ascii")
     with pytest.raises(ValueError, match="launch receipt SHA256 differs"):

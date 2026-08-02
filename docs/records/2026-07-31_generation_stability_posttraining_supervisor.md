@@ -31,6 +31,12 @@ rehashes the receipt and all nine bound sources, verifies the readiness and
 scaling-gate bindings, checks exact full-training run paths, and waits for the
 source-bound 300K pair monitor to report both runs at exactly 300,000 steps.
 
+As of the 2026-08-03 schema-v3 launch receipt, the active source set contains
+eleven reports. The supervisor rehashes all eleven and independently replays
+the frozen supplemental verifier, including its raw post-evaluation source and
+nested distribution/EMA-rollout sources. The historical nine-source statement
+above describes the first supervisor revision only.
+
 After training is complete and the GPU is idle, it executes:
 
 1. formal matched 50K DDIM-250 post-evaluation;

@@ -53,17 +53,28 @@ TARGET_SAMPLE_RESERVE = b"--sample-count 116640 \\\n"
 TRAINING_EXECUTION_MARKER = b"monitor_report_passes() {\n"
 TARGET_AUTHORIZATION_REQUIREMENTS = (
     b"EXPECTED_READINESS_BRIDGE_SHA256=",
+    b"EXPECTED_STABILITY_SUPPLEMENTAL_SHA256=",
     b"validate_generation_full_readiness_bridge.py",
     b'--expected-bridge-sha256 "$EXPECTED_READINESS_BRIDGE_SHA256"',
     b'--readiness-bridge "$READINESS_BRIDGE"',
+    b'--stability-supplemental "$STABILITY_SUPPLEMENTAL"',
+    b'--expected-stability-supplemental-sha256 "$EXPECTED_STABILITY_SUPPLEMENTAL_SHA256"',
     TARGET_SAMPLE_RESERVE,
 )
 BRIDGE_ONLY_PREAMBLE_LINES = (
+    b"EXPECTED_STABILITY_SUPPLEMENTAL_SHA256=${EXPECTED_STABILITY_SUPPLEMENTAL_SHA256:?set the passing frozen stability supplemental SHA256}\n",
     b"EXPECTED_READINESS_BRIDGE_SHA256=${EXPECTED_READINESS_BRIDGE_SHA256:?set the immutable readiness revision bridge SHA256}\n",
+    b'STABILITY_SUPPLEMENTAL="$SCALING_ROOT/reports/frozen_posteval_supplemental/supplemental_qualification.json"\n',
     b'READINESS_BRIDGE="$REPORT_ROOT/full_training_readiness_bridge.json"\n',
+    b'[[ -f "$STABILITY_SUPPLEMENTAL" ]]\n',
     b'[[ -f "$READINESS_BRIDGE" ]]\n',
+    b"[[ \"$(sha256sum \"$STABILITY_SUPPLEMENTAL\" | awk '{print $1}')\" == \"$EXPECTED_STABILITY_SUPPLEMENTAL_SHA256\" ]]\n",
     b"[[ \"$(sha256sum \"$READINESS_BRIDGE\" | awk '{print $1}')\" == \"$EXPECTED_READINESS_BRIDGE_SHA256\" ]]\n",
+    b'  --stability-supplemental "$STABILITY_SUPPLEMENTAL"\n',
+    b'  --expected-stability-supplemental-sha256 "$EXPECTED_STABILITY_SUPPLEMENTAL_SHA256"\n',
     b'  --readiness-bridge "$READINESS_BRIDGE"\n',
+    b'    --stability-supplemental "$STABILITY_SUPPLEMENTAL" \\\n',
+    b'    --expected-stability-supplemental-sha256 "$EXPECTED_STABILITY_SUPPLEMENTAL_SHA256" \\\n',
     b'    --readiness-bridge "$READINESS_BRIDGE" \\\n',
 )
 SOURCE_RUNTIME_VALIDATOR_START = (
@@ -236,7 +247,8 @@ def _verify_runbook_change(
         ).stdout.strip(),
         "authorization_upgrade": {
             "readiness_bridge_required": True,
-            "launch_receipt_schema_version": 2,
+            "frozen_stability_supplemental_required": True,
+            "launch_receipt_schema_version": 3,
             "sample_count": {
                 "source": 16_384,
                 "target": 116_640,
