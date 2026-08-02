@@ -258,29 +258,31 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path, monk
     output_dir = tmp_path / "metrics"
     monkeypatch.setattr("scripts.evaluate_generation_metrics.calculate_metrics", fake_metrics)
     monkeypatch.setattr(
-        sys,
-        "argv",
-        [
-            "evaluate_generation_metrics.py",
-            "--real-dir",
-            str(real),
-            "--generated-dir",
-            str(generated),
-            "--sampling-report",
-            str(report_path),
-            "--output-dir",
-            str(output_dir),
-            "--min-samples",
-            "2",
-            "--cpu",
-            "--skip-prc",
-        ],
+        "scripts.evaluate_generation_metrics.torch_fidelity_version",
+        lambda: "0.4.0",
     )
+    metrics_argv = [
+        "evaluate_generation_metrics.py",
+        "--real-dir",
+        str(real),
+        "--generated-dir",
+        str(generated),
+        "--sampling-report",
+        str(report_path),
+        "--output-dir",
+        str(output_dir),
+        "--min-samples",
+        "2",
+        "--cpu",
+        "--skip-prc",
+    ]
+    monkeypatch.setattr(sys, "argv", [*metrics_argv, "--resume"])
     evaluate_main()
-    metrics_report = json.loads(
-        (output_dir / "generation_metrics_report.json").read_text(encoding="utf-8")
-    )
-    assert metrics_report["schema_version"] == 2
+    metrics_report_path = output_dir / "generation_metrics_report.json"
+    metrics_report_bytes = metrics_report_path.read_bytes()
+    metrics_report_mtime = metrics_report_path.stat().st_mtime_ns
+    metrics_report = json.loads(metrics_report_bytes)
+    assert metrics_report["schema_version"] == 3
     assert metrics_report["real_set"]["image_count"] == 2
     assert metric_calls[0]["real_cache_name"].endswith(
         metrics_report["real_set"]["sha256"][:16]
@@ -288,6 +290,39 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path, monk
     assert metrics_report["runtime_environment_sha256"] == runtime_environment_sha256(
         metrics_report["runtime_environment"]
     )
+    assert len(metrics_report["sample_provenance"]["report_identity"]["sha256"]) == 64
+    assert len(metrics_report["sample_provenance"]["manifest_identity"]["sha256"]) == 64
+
+    monkeypatch.setattr(sys, "argv", [*metrics_argv, "--resume"])
+    evaluate_main()
+    assert len(metric_calls) == 1
+    assert metrics_report_path.read_bytes() == metrics_report_bytes
+    assert metrics_report_path.stat().st_mtime_ns == metrics_report_mtime
+
+    monkeypatch.setattr(sys, "argv", metrics_argv)
+    with pytest.raises(FileExistsError, match="pass --resume"):
+        evaluate_main()
+
+    monkeypatch.setattr(sys, "argv", [*metrics_argv, "--resume", "--seed", "9"])
+    with pytest.raises(ValueError, match="parameters differs"):
+        evaluate_main()
+    assert len(metric_calls) == 1
+
+    real_image_path = real / "real_0.png"
+    original_real_image = real_image_path.read_bytes()
+    Image.new("RGB", (4, 4), color=(255, 0, 0)).save(real_image_path)
+    monkeypatch.setattr(sys, "argv", [*metrics_argv, "--resume"])
+    with pytest.raises(ValueError, match="real_set differs"):
+        evaluate_main()
+    real_image_path.write_bytes(original_real_image)
+    assert len(metric_calls) == 1
+
+    metrics_report["metrics"]["frechet_inception_distance"] = -1.0
+    metrics_report_path.write_text(json.dumps(metrics_report), encoding="utf-8")
+    monkeypatch.setattr(sys, "argv", [*metrics_argv, "--resume"])
+    with pytest.raises(ValueError, match="outside their domains"):
+        evaluate_main()
+    assert len(metric_calls) == 1
 
     sampling_report = json.loads(report_path.read_text(encoding="utf-8"))
     sampling_report["runtime_environment_sha256"] = "f" * 64

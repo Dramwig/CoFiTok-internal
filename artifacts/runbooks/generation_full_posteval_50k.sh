@@ -90,13 +90,13 @@ python scripts/evaluate_generation_metrics.py \
   --real-dir "$DATA" --generated-dir "$COFITOK_RUN/samples_50k_ddim250_cfg15/prefix_8" \
   --sampling-report "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
   --output-dir "$COFITOK_RUN/samples_50k_ddim250_cfg15/metrics" \
-  --cache-root "$EVAL_CACHE" --min-samples 50000
+  --cache-root "$EVAL_CACHE" --min-samples 50000 --resume
 
 python scripts/evaluate_generation_metrics.py \
   --real-dir "$DATA" --generated-dir "$DENSE_RUN/samples_50k_ddim250_cfg15/prefix_1" \
   --sampling-report "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
   --output-dir "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics" \
-  --cache-root "$EVAL_CACHE" --min-samples 50000
+  --cache-root "$EVAL_CACHE" --min-samples 50000 --resume
 
 python scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \

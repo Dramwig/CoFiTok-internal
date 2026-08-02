@@ -45,6 +45,6 @@ export PYTHONPATH=src
   --real-dir "$DATA" --generated-dir "$SAMPLES/prefix_$PREFIX_BUDGET" \
   --sampling-report "$SAMPLES/sampling_report.json" \
   --output-dir "$SAMPLES/metrics" --cache-root "$EVAL_CACHE" \
-  --min-samples 2048 --skip-prc
+  --min-samples 2048 --skip-prc --resume
 
 printf '%s\n' "$METHOD milestone step $STEP completed"

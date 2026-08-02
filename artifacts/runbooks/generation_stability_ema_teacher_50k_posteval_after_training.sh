@@ -169,7 +169,8 @@ fi
   --sampling-report "$COFITOK_RUN/samples_gate10k_ddim100_cfg15/sampling_report.json" \
   --output-dir "$COFITOK_RUN/samples_gate10k_ddim100_cfg15/metrics" \
   --cache-root "$EVAL_CACHE" \
-  --min-samples 10000
+  --min-samples 10000 \
+  --resume
 
 "$PYTHON" scripts/evaluate_generation_metrics.py \
   --real-dir "$DATA" \
@@ -177,7 +178,8 @@ fi
   --sampling-report "$DENSE_RUN/samples_gate10k_ddim100_cfg15/sampling_report.json" \
   --output-dir "$DENSE_RUN/samples_gate10k_ddim100_cfg15/metrics" \
   --cache-root "$EVAL_CACHE" \
-  --min-samples 10000
+  --min-samples 10000 \
+  --resume
 
 "$PYTHON" scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \

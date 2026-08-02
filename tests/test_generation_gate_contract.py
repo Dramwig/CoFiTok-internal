@@ -340,6 +340,8 @@ def test_full_posteval_revalidates_gate_sources_and_training_pair() -> None:
         "--num-images 1024 --timestep 500 --random-orders 0 "
         "--weights ema --precision bf16 --resume"
     ) in runbook
+    assert runbook.count("scripts/evaluate_generation_metrics.py") == 2
+    assert runbook.count("--cache-root \"$EVAL_CACHE\" --min-samples 50000 --resume") == 2
 
 
 def test_formal_full_trainer_refuses_to_start_without_authorization(tmp_path) -> None:
