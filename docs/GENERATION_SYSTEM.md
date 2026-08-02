@@ -866,3 +866,14 @@ byte count and SHA256 without modifying it; the post-training migration later
 binds those bytes to a sidecar. New full runs use `--integrity-policy required`,
 which rejects a missing or mismatched sidecar and `latest.json` integrity binding.
 Logged gradient norms are explicitly treated as pre-clipping total norms.
+
+During a matched run, shared fixed-validation behavior can be inspected without
+turning an intermediate metric into a quality gate using
+`scripts/build_generation_matched_training_trajectory.py`. The builder freezes
+byte-exact JSONL prefixes through an exact shared cutoff, checks Git, dataset,
+runtime, pair-contract, logging, finite-metric, sample-accounting, and validation
+provenance identities, then compares only the paired validation epsilon stream.
+It explicitly prohibits total-loss and wall-clock comparisons and keeps quality,
+promotion, formal-50K substitution, and full-training authorization false. The
+first stability report through 10K is recorded in
+`docs/records/2026-08-02_generation_stability_matched_10k_training_trajectory.md`.

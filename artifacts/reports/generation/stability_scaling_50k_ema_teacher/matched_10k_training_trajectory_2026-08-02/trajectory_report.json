@@ -1,0 +1,352 @@
+{
+  "builder": {
+    "bytes": 20764,
+    "path": "scripts/build_generation_matched_training_trajectory.py",
+    "sha256": "91c907d297c83a8b643ca615f071415d50ed25ed78355c4be84f46d9295e1057"
+  },
+  "claim_boundary": {
+    "formal_50k_gate_substitute": false,
+    "full_training_launch_allowed": false,
+    "promotion_authorization_allowed": false,
+    "quality_claim_allowed": false,
+    "required_next_evidence": "exact healthy matched 50K completion followed by formal EMA post-eval",
+    "sample_quality_metrics_present": false,
+    "supports": [
+      "matched resolved training contract through the cutoff",
+      "source-bound fixed-validation epsilon trajectory through the cutoff"
+    ]
+  },
+  "comparison_policy": {
+    "reason": "CoFiTok total loss includes factorization-only auxiliaries, and the dense run experienced externally observed GPU contention.",
+    "shared_primary_training_epsilon_reported_descriptively": true,
+    "shared_rollout_consistency_reported_descriptively": true,
+    "total_loss_comparison_allowed": false,
+    "training_wall_clock_comparison_allowed": false
+  },
+  "contract": {
+    "cofitok_parameter_count": 62834083,
+    "dataset": "imagenet_256_10pct",
+    "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+    "dense_parameter_count": 62824707,
+    "effective_batch_size": 64,
+    "evaluation_interval": 1000,
+    "generation_pair_contract": {
+      "dense_nonzero_auxiliary_losses": [],
+      "factorization_model_fields": [
+        "deep_synthesis_depth",
+        "deep_synthesis_hidden_channels",
+        "gamma_mode",
+        "predictor_use_feedback",
+        "synthesis_active_token_channels",
+        "synthesis_kernel_size",
+        "synthesis_mode",
+        "synthesis_token_strides",
+        "token_channel_schedule",
+        "token_channels",
+        "token_count",
+        "token_spatial_strides"
+      ],
+      "identities": {
+        "cofitok_feedback": true,
+        "cofitok_synthesis": "fixed_basis",
+        "cofitok_token_count": 8,
+        "dense_feedback": false,
+        "dense_synthesis": "dense_identity",
+        "dense_token_count": 1
+      },
+      "issues": [],
+      "matched_config_sections": [
+        "data",
+        "diffusion",
+        "runtime",
+        "optimization"
+      ],
+      "mismatched_config_sections": [],
+      "mismatched_shared_model_fields": [],
+      "mismatched_shared_training_loss_fields": [],
+      "primary_epsilon_weight": 1.0,
+      "shared_model_fields": [
+        "base_channels",
+        "class_dropout_prob",
+        "image_channels",
+        "image_size",
+        "num_classes",
+        "predictor_attention_resolutions",
+        "predictor_channel_multipliers",
+        "predictor_depth",
+        "predictor_dropout",
+        "predictor_gradient_checkpointing",
+        "predictor_multiscale_levels",
+        "predictor_num_heads",
+        "predictor_num_res_blocks",
+        "predictor_type"
+      ],
+      "shared_training_loss_fields": [
+        "ema_teacher_consistency_batch_fraction",
+        "ema_teacher_consistency_start_step",
+        "ema_teacher_consistency_warmup_steps",
+        "ema_teacher_consistency_weight",
+        "epsilon_weight",
+        "rollout_consistency_batch_fraction",
+        "rollout_consistency_clip_x0",
+        "rollout_consistency_mode",
+        "rollout_consistency_start_step",
+        "rollout_consistency_timestep_delta",
+        "rollout_consistency_unroll_steps",
+        "rollout_consistency_warmup_steps",
+        "rollout_consistency_weight"
+      ],
+      "valid": true
+    },
+    "git": {
+      "branch": "scale/generation-stability-50k-preflight",
+      "dirty": false,
+      "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+    },
+    "log_interval": 50,
+    "relative_parameter_gap": 0.00014924064826915946,
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e"
+  },
+  "cutoff_step": 10000,
+  "images_seen_per_method": 640000,
+  "paired_fixed_validation": {
+    "events": [
+      {
+        "cofitok_epsilon_mse": 0.04094996303319931,
+        "cofitok_minus_dense": 0.0002112947404384613,
+        "dense_epsilon_mse": 0.04073866829276085,
+        "lower_mse": "dense_identity",
+        "relative_delta": 0.005186589284657785,
+        "step": 1000,
+        "validation_batch_index": 0,
+        "validation_event_index": 0,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03270487114787102,
+        "cofitok_minus_dense": -0.00047921761870384216,
+        "dense_epsilon_mse": 0.03318408876657486,
+        "lower_mse": "cofitok",
+        "relative_delta": -0.014441186620334166,
+        "step": 2000,
+        "validation_batch_index": 1,
+        "validation_event_index": 1,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03815802186727524,
+        "cofitok_minus_dense": 9.521469473838806e-05,
+        "dense_epsilon_mse": 0.03806280717253685,
+        "lower_mse": "dense_identity",
+        "relative_delta": 0.00250151530618287,
+        "step": 3000,
+        "validation_batch_index": 2,
+        "validation_event_index": 2,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.02965588867664337,
+        "cofitok_minus_dense": 0.00023030675947666168,
+        "dense_epsilon_mse": 0.02942558191716671,
+        "lower_mse": "dense_identity",
+        "relative_delta": 0.007826752929643918,
+        "step": 4000,
+        "validation_batch_index": 3,
+        "validation_event_index": 3,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03134603798389435,
+        "cofitok_minus_dense": -0.00020758435130119324,
+        "dense_epsilon_mse": 0.03155362233519554,
+        "lower_mse": "cofitok",
+        "relative_delta": -0.00657878037253585,
+        "step": 5000,
+        "validation_batch_index": 4,
+        "validation_event_index": 4,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03630029037594795,
+        "cofitok_minus_dense": -0.00042115896940231323,
+        "dense_epsilon_mse": 0.036721449345350266,
+        "lower_mse": "cofitok",
+        "relative_delta": -0.011469018159971976,
+        "step": 6000,
+        "validation_batch_index": 5,
+        "validation_event_index": 5,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.03175073489546776,
+        "cofitok_minus_dense": 0.00035948678851127625,
+        "dense_epsilon_mse": 0.03139124810695648,
+        "lower_mse": "dense_identity",
+        "relative_delta": 0.011451815719031953,
+        "step": 7000,
+        "validation_batch_index": 6,
+        "validation_event_index": 6,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.024662211537361145,
+        "cofitok_minus_dense": 2.7593225240707397e-05,
+        "dense_epsilon_mse": 0.024634618312120438,
+        "lower_mse": "dense_identity",
+        "relative_delta": 0.001120099564405725,
+        "step": 8000,
+        "validation_batch_index": 7,
+        "validation_event_index": 7,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.02920091710984707,
+        "cofitok_minus_dense": -1.5722587704658508e-05,
+        "dense_epsilon_mse": 0.029216639697551727,
+        "lower_mse": "cofitok",
+        "relative_delta": -0.0005381381249663703,
+        "step": 9000,
+        "validation_batch_index": 8,
+        "validation_event_index": 8,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      },
+      {
+        "cofitok_epsilon_mse": 0.031669922173023224,
+        "cofitok_minus_dense": 1.1045485734939575e-05,
+        "dense_epsilon_mse": 0.031658876687288284,
+        "lower_mse": "dense_identity",
+        "relative_delta": 0.00034889063955243155,
+        "step": 10000,
+        "validation_batch_index": 9,
+        "validation_event_index": 9,
+        "validation_noise_seed": 102030,
+        "validation_num_images": 64
+      }
+    ],
+    "pairing_basis": "same validation steps, event indices, batch indices, image counts, and fixed noise seed",
+    "summary": {
+      "cofitok_lower_event_count": 4,
+      "cofitok_mean_epsilon_mse": 0.032639885880053045,
+      "dense_lower_event_count": 6,
+      "dense_mean_epsilon_mse": 0.0326587600633502,
+      "endpoint_relative_delta": 0.00034889063955243155,
+      "event_count": 10,
+      "max_absolute_relative_delta": 0.014441186620334166,
+      "mean_absolute_delta": 0.00020586252212524415,
+      "mean_cofitok_minus_dense": -1.8874183297157288e-05,
+      "median_absolute_delta": 0.00020943954586982727,
+      "relative_delta_of_means": -0.0005779210006915717,
+      "tie_event_count": 0
+    }
+  },
+  "role": "matched_training_trajectory_diagnostic",
+  "schema_version": 1,
+  "sources": {
+    "cofitok_manifest": {
+      "bytes": 8401,
+      "path": "artifacts/reports/generation/stability_scaling_50k_ema_teacher/matched_10k_training_trajectory_2026-08-02/source/cofitok_run_manifest.json",
+      "sha256": "3b554762a5ee75d77fbf66af616c6eaab31ae24dd7a6f40f1f9d4f747bc06519"
+    },
+    "cofitok_metrics": {
+      "bound_prefix": {
+        "bytes": 189765,
+        "last_step": 10000,
+        "row_count": 201,
+        "sha256": "2610dedcba63f70421fc4868fc0c845e6dd4ae8c2ce729330c9d7ce8dd19a893"
+      },
+      "observed_file": {
+        "bytes": 189765,
+        "path": "artifacts/reports/generation/stability_scaling_50k_ema_teacher/matched_10k_training_trajectory_2026-08-02/source/cofitok_train_metrics_through_step_00010000.jsonl",
+        "sha256": "2610dedcba63f70421fc4868fc0c845e6dd4ae8c2ce729330c9d7ce8dd19a893"
+      },
+      "origin": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/train_metrics.jsonl"
+    },
+    "dense_manifest": {
+      "bytes": 7671,
+      "path": "artifacts/reports/generation/stability_scaling_50k_ema_teacher/matched_10k_training_trajectory_2026-08-02/source/dense_run_manifest.json",
+      "sha256": "a049a97d8a4e9f4dc4761a9269e50ae55f53ec28b9971d14a7d968bfd7e9f9fe"
+    },
+    "dense_metrics": {
+      "bound_prefix": {
+        "bytes": 176675,
+        "last_step": 10000,
+        "row_count": 201,
+        "sha256": "40713026c7d4e39d814398f3fe9820db8d9671246500aa2100336e7b3d1464f6"
+      },
+      "observed_file": {
+        "bytes": 176675,
+        "path": "artifacts/reports/generation/stability_scaling_50k_ema_teacher/matched_10k_training_trajectory_2026-08-02/source/dense_train_metrics_through_step_00010000.jsonl",
+        "sha256": "40713026c7d4e39d814398f3fe9820db8d9671246500aa2100336e7b3d1464f6"
+      },
+      "origin": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_rollout_x0_u2_ema_teacher/train_metrics.jsonl"
+    }
+  },
+  "status": "pass",
+  "trajectories": {
+    "cofitok": {
+      "all_numeric_metrics_finite": true,
+      "endpoint": {
+        "epsilon": 0.026429813355207443,
+        "rollout_consistency": 0.010212328284978867,
+        "rollout_consistency_scale": 1.0
+      },
+      "first_step": 1,
+      "last_step": 10000,
+      "row_count": 201,
+      "samples_seen": 640000,
+      "samples_seen_exact": true,
+      "steps_exact": true,
+      "validation_event_count": 10,
+      "validation_provenance_complete": true,
+      "validation_steps": [
+        1000,
+        2000,
+        3000,
+        4000,
+        5000,
+        6000,
+        7000,
+        8000,
+        9000,
+        10000
+      ]
+    },
+    "dense_identity": {
+      "all_numeric_metrics_finite": true,
+      "endpoint": {
+        "epsilon": 0.026382025331258774,
+        "rollout_consistency": 0.010118653997778893,
+        "rollout_consistency_scale": 1.0
+      },
+      "first_step": 1,
+      "last_step": 10000,
+      "row_count": 201,
+      "samples_seen": 640000,
+      "samples_seen_exact": true,
+      "steps_exact": true,
+      "validation_event_count": 10,
+      "validation_provenance_complete": true,
+      "validation_steps": [
+        1000,
+        2000,
+        3000,
+        4000,
+        5000,
+        6000,
+        7000,
+        8000,
+        9000,
+        10000
+      ]
+    }
+  }
+}
