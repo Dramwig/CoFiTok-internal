@@ -5,9 +5,12 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
+import pytest
 import torch
 
+import scripts.evaluate_generation_checkpoint as checkpoint_evaluation_cli
 from cofitok.configs import (
     DataConfig,
     ExperimentConfig,
@@ -17,6 +20,7 @@ from cofitok.configs import (
     config_to_dict,
 )
 from cofitok.models import CoFiTokTiny
+from cofitok.output_lock import OutputLockError, exclusive_output_lock
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import ExponentialMovingAverage
 from cofitok.training.checkpointing import checkpoint_integrity_path
@@ -29,6 +33,28 @@ from scripts.evaluate_generation_checkpoint import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_checkpoint_evaluator_locks_output_before_loading_checkpoint(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    output_dir = tmp_path / "checkpoint_eval"
+    monkeypatch.setattr(
+        checkpoint_evaluation_cli,
+        "parse_args",
+        lambda: SimpleNamespace(output_dir=str(output_dir)),
+    )
+    monkeypatch.setattr(
+        checkpoint_evaluation_cli,
+        "load_generation_model",
+        lambda *args, **kwargs: pytest.fail("checkpoint loaded before output lock"),
+    )
+
+    with exclusive_output_lock(output_dir, role="test_holder"):
+        with pytest.raises(OutputLockError, match="already locked"):
+            checkpoint_evaluation_cli.main()
+    assert not output_dir.exists()
 
 
 def _write_cpu_checkpoint(path: Path) -> None:

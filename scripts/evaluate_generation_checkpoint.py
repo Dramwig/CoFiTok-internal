@@ -23,6 +23,7 @@ from cofitok.inference_replay import (
 )
 from cofitok.metrics import normalized_curve_auc
 from cofitok.models import CoFiTokTiny
+from cofitok.output_lock import exclusive_output_lock
 from cofitok.reporting import git_provenance, write_json_report
 from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
@@ -598,8 +599,7 @@ def evaluate(
     }
 
 
-def main() -> None:
-    args = parse_args()
+def _run_checkpoint_evaluation(args: argparse.Namespace) -> None:
     if args.num_images < 1:
         raise ValueError("num-images must be positive")
     if args.random_orders < 0:
@@ -708,6 +708,15 @@ def main() -> None:
     }
     write_json_report(report_path, report)
     print(f"wrote {report_path}")
+
+
+def main() -> None:
+    args = parse_args()
+    with exclusive_output_lock(
+        args.output_dir,
+        role="generation_checkpoint_evaluation",
+    ):
+        _run_checkpoint_evaluation(args)
 
 
 if __name__ == "__main__":

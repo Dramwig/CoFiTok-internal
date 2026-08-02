@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import pytest
 from PIL import Image
 
+import scripts.evaluate_generation_metrics as generation_metrics_cli
 from cofitok.environment import runtime_environment_sha256
 from cofitok.generation import (
     INFERENCE_API,
@@ -15,6 +16,7 @@ from cofitok.generation import (
     SAMPLING_REPORT_SCHEMA_VERSION,
 )
 from cofitok.image_integrity import image_tree_sha256, sample_set_sha256
+from cofitok.output_lock import OutputLockError, exclusive_output_lock
 from cofitok.reporting import file_sha256
 from scripts.evaluate_generation_metrics import (
     calculate_metrics,
@@ -23,6 +25,33 @@ from scripts.evaluate_generation_metrics import (
     find_images,
     validate_sampling_provenance,
 )
+
+
+def test_metrics_evaluator_locks_output_before_enumerating_or_calculating(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    output_dir = tmp_path / "metrics"
+    monkeypatch.setattr(
+        generation_metrics_cli,
+        "parse_args",
+        lambda: SimpleNamespace(output_dir=str(output_dir)),
+    )
+    monkeypatch.setattr(
+        generation_metrics_cli,
+        "find_images",
+        lambda *args, **kwargs: pytest.fail("images enumerated before output lock"),
+    )
+    monkeypatch.setattr(
+        generation_metrics_cli,
+        "calculate_metrics",
+        lambda *args, **kwargs: pytest.fail("metrics calculated before output lock"),
+    )
+
+    with exclusive_output_lock(output_dir, role="test_holder"):
+        with pytest.raises(OutputLockError, match="already locked"):
+            generation_metrics_cli.main()
+    assert not output_dir.exists()
 
 
 def _minimal_sampling(count: int) -> dict:

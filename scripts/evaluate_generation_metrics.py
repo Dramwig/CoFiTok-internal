@@ -27,6 +27,7 @@ from cofitok.image_integrity import (
     is_valid_png,
     sample_set_sha256,
 )
+from cofitok.output_lock import exclusive_output_lock
 from cofitok.reporting import file_sha256, git_provenance, write_json_report
 
 
@@ -390,8 +391,7 @@ def calculate_metrics(
     return {str(key): float(value) for key, value in metrics.items()}, str(module.__version__)
 
 
-def main() -> None:
-    args = parse_args()
+def _run_generation_metrics(args: argparse.Namespace) -> None:
     if args.batch_size < 1 or args.prc_batch_size < 1 or args.min_samples < 1:
         raise ValueError("batch-size, prc-batch-size, and min-samples must be positive")
     real_dir = reject_symlink_chain(
@@ -532,6 +532,15 @@ def main() -> None:
     }
     write_json_report(report_path, report)
     print(f"wrote {report_path}")
+
+
+def main() -> None:
+    args = parse_args()
+    with exclusive_output_lock(
+        args.output_dir,
+        role="generation_metrics_evaluation",
+    ):
+        _run_generation_metrics(args)
 
 
 if __name__ == "__main__":
