@@ -72,7 +72,9 @@ python scripts/infer_generation.py \
   --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/inference/deployed \
   --class-ids 207 --seeds 101,102 --prefix-budgets 8 \
   --sample-steps 250 --guidance-scale 1.5 --weights ema --precision bf16 \
-  --require-release-authorization
+  --require-release-authorization \
+  --completion-receipt /root/autodl-tmp/CoFiTok/checkpoints/generation/exports/stability_full_300k_ema_teacher/release_receipt.json \
+  --require-completion-authorization
 ```
 
 The artifact contains EMA-applied weights only. Keep `--weights ema`; requesting
@@ -89,6 +91,16 @@ The matched dense control is exported separately as
 is considered deployable merely because a file exists: production loading must
 keep `--require-release-authorization`, which verifies the embedded final-gate
 identity before model deserialization.
+
+The completion runbook publishes `release_receipt.json` only after the terminal
+generation-system audit passes. For routine production use, also pass
+`--completion-receipt` and `--require-completion-authorization`. Before
+deserialization, the loader rehashes the receipt and its bound completion audit,
+requires the unique passing inference-artifact check, and matches the selected
+artifact's physical SHA/bytes plus training and release provenance. This
+distinguishes a quality-gated export—which must exist before the terminal audit
+can run—from an artifact whose full training, evaluation, comparison,
+reproducibility, smoke, and deployment evidence has actually passed.
 
 The terminal completion audit additionally reopens and hashes each export smoke
 manifest and progress file. A final release therefore requires both physical

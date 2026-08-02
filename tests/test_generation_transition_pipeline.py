@@ -77,6 +77,13 @@ def test_completion_runbook_serializes_and_orders_all_stages() -> None:
     assert 'if [[ ! -f "$FINAL_GATE" || ! -f "$FINAL_COMPARISON"' in runbook
     assert "FINAL_VISUAL_AUDIT" in runbook
     assert "generation_export_inference_artifacts.sh" in runbook
+    assert "scripts/build_generation_release_receipt.py" in runbook
+    assert runbook.index("audit_large_scale_generation_completion.py") < (
+        runbook.index("build_generation_release_receipt.py")
+    )
+    assert runbook.index("build_generation_release_receipt.py") < (
+        runbook.index("STAGE=complete")
+    )
 
     scaling_posteval = _read(
         "artifacts/runbooks/generation_10pct_posteval_2026-07-12.sh"

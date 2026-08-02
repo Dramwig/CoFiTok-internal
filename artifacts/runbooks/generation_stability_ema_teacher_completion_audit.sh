@@ -22,6 +22,7 @@ EXPECTED_AUDIT_BRANCH=${EXPECTED_AUDIT_BRANCH:?set the clean completion-audit br
 
 REPORT_ROOT="$CHECKPOINT_ROOT/stability_full_300k_ema_teacher/reports"
 OUTPUT="$REPORT_ROOT/stability_generation_completion_audit.json"
+RELEASE_RECEIPT="$CHECKPOINT_ROOT/exports/stability_full_300k_ema_teacher/release_receipt.json"
 
 cd "$PROJECT"
 export PYTHONPATH=src
@@ -57,3 +58,7 @@ mkdir -p "$REPORT_ROOT"
   --expected-export-revision "$EXPECTED_AUDIT_REVISION" \
   --expected-export-branch "$EXPECTED_AUDIT_BRANCH" \
   --output "$OUTPUT"
+
+"$PYTHON" scripts/build_generation_release_receipt.py \
+  --completion-audit "$OUTPUT" \
+  --output "$RELEASE_RECEIPT"

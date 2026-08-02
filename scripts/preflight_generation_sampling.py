@@ -33,6 +33,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--weights", choices=["ema", "model"], default="ema")
     parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
     parser.add_argument("--require-release-authorization", action="store_true")
+    parser.add_argument("--completion-receipt", default="")
+    parser.add_argument("--require-completion-authorization", action="store_true")
     parser.add_argument("--warmup-forwards", type=int, default=0)
     parser.add_argument("--measured-forwards", type=int, default=1)
     return parser.parse_args()
@@ -60,6 +62,8 @@ def run_sampling_preflight(
     weights: str = "ema",
     precision: str = "bf16",
     require_release_authorization: bool = False,
+    completion_receipt: str | Path | None = None,
+    require_completion_authorization: bool = False,
     warmup_forwards: int = 0,
     measured_forwards: int = 1,
 ) -> dict[str, Any]:
@@ -78,6 +82,8 @@ def run_sampling_preflight(
         checkpoint,
         weights=weights,
         require_release_authorization=require_release_authorization,
+        completion_receipt=completion_receipt,
+        require_completion_authorization=require_completion_authorization,
     )
     model = loaded.model
     config = loaded.config
@@ -133,6 +139,10 @@ def run_sampling_preflight(
         "release_authorization": loaded.release_authorization,
         "release_authorization_required": (
             loaded.release_authorization_required
+        ),
+        "completion_authorization": loaded.completion_authorization,
+        "completion_authorization_required": (
+            loaded.completion_authorization_required
         ),
         "device": str(device),
         "torch_version": torch.__version__,
@@ -260,6 +270,10 @@ def main() -> None:
             weights=args.weights,
             precision=args.precision,
             require_release_authorization=args.require_release_authorization,
+            completion_receipt=args.completion_receipt or None,
+            require_completion_authorization=(
+                args.require_completion_authorization
+            ),
             warmup_forwards=args.warmup_forwards,
             measured_forwards=args.measured_forwards,
         )
@@ -279,6 +293,10 @@ def main() -> None:
                 "weights": args.weights,
                 "require_release_authorization": (
                     args.require_release_authorization
+                ),
+                "completion_receipt": args.completion_receipt or None,
+                "require_completion_authorization": (
+                    args.require_completion_authorization
                 ),
                 "warmup_forwards": args.warmup_forwards,
                 "measured_forwards": args.measured_forwards,

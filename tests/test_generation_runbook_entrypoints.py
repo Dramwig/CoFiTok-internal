@@ -45,6 +45,7 @@ ENTRYPOINTS = {
     "build_generation_full_readiness.py",
     "build_generation_full_readiness_bridge.py",
     "build_generation_milestone_report.py",
+    "build_generation_release_receipt.py",
     "build_generation_stability_50k_summary.py",
     "build_generation_stability_qualification.py",
     "build_generation_visual_audit.py",

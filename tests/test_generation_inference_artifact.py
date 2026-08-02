@@ -23,6 +23,8 @@ from cofitok.generation import (
     GenerationSession,
     export_ema_inference_artifact,
     verify_inference_artifact,
+    verify_generation_release_receipt,
+    write_generation_release_receipt,
 )
 from cofitok.generation_gate import (
     GENERATION_GATE_SCHEMA_VERSION,
@@ -198,6 +200,7 @@ def _training_checkpoint(
     *,
     include_provenance: bool = True,
     include_authorization: bool = False,
+    step: int = 31,
 ):
     config = ExperimentConfig(
         name="inference_export_cpu",
@@ -232,7 +235,7 @@ def _training_checkpoint(
         "config": config_to_dict(config),
         "model": model.state_dict(),
         "ema": ema.state_dict(),
-        "step": 31,
+        "step": step,
     }
     if include_provenance:
         payload["extra_state"] = {
@@ -250,7 +253,7 @@ def _training_checkpoint(
         "checkpoint_bytes": path.stat().st_size,
         "checkpoint_sha256": file_sha256(path),
         "checkpoint_format_version": 1,
-        "step": 31,
+        "step": step,
     }
     if include_provenance:
         integrity.update(
@@ -275,6 +278,88 @@ def _training_checkpoint(
         integrity,
     )
     return path
+
+
+def _completion_audit_path(
+    tmp_path: Path,
+    *,
+    cofitok_export: dict,
+    dense_export: dict,
+) -> Path:
+    def evidence(report: dict, *, smoke_count: int) -> dict:
+        return {
+            "artifact_path": report["artifact"],
+            "artifact_sha256": report["artifact_sha256"],
+            "artifact_bytes": report["artifact_bytes"],
+            "source_checkpoint_bytes": report["source_checkpoint_bytes"],
+            "source_runtime_environment_sha256": report[
+                "source_runtime_environment_sha256"
+            ],
+            "source_git": report["source_git"],
+            "execution_git": None,
+            "export_runtime_environment_sha256": None,
+            "execution_runtime_environment_sha256": None,
+            "training_authorization": report["source_training_authorization"],
+            "release_authorization": report["release_authorization"],
+            "smoke_output_count": smoke_count,
+            "smoke_output_sha256": ["9" * 64] * smoke_count,
+        }
+
+    audit = {
+        "schema_version": 1,
+        "status": "complete",
+        "complete": True,
+        "expected_revisions": {
+            "deployment_source": "1" * 40,
+            "ten_percent_training": "2" * 40,
+            "full_training": "3" * 40,
+        },
+        "checks": [
+            {
+                "name": "deployable_ema_inference_artifacts",
+                "status": "pass",
+                "evidence": {
+                    "cofitok": evidence(cofitok_export, smoke_count=4),
+                    "dense_identity": evidence(dense_export, smoke_count=2),
+                },
+            }
+        ],
+        "failed_checks": [],
+        "missing_checks": [],
+        "warnings": [],
+    }
+    path = tmp_path / "completion_audit.json"
+    write_json_report(path, audit)
+    return path
+
+
+def _release_receipt_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
+    source = _training_checkpoint(
+        tmp_path,
+        include_authorization=True,
+        step=300_000,
+    )
+    release_gate = _release_gate_path(tmp_path)
+    cofitok_artifact = tmp_path / "cofitok_ema_inference.pt"
+    dense_artifact = tmp_path / "dense_ema_inference.pt"
+    cofitok_export = export_ema_inference_artifact(
+        source,
+        cofitok_artifact,
+        release_gate=release_gate,
+    )
+    dense_export = export_ema_inference_artifact(
+        source,
+        dense_artifact,
+        release_gate=release_gate,
+    )
+    audit = _completion_audit_path(
+        tmp_path,
+        cofitok_export=cofitok_export,
+        dense_export=dense_export,
+    )
+    receipt = tmp_path / "release_receipt.json"
+    write_generation_release_receipt(audit, receipt)
+    return cofitok_artifact, audit, receipt
 
 
 def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
@@ -512,6 +597,130 @@ def test_formal_inference_export_requires_release_gate(tmp_path) -> None:
         export_ema_inference_artifact(
             source,
             tmp_path / "unauthorized_inference.pt",
+        )
+
+
+def test_completion_receipt_authorizes_consumer_load_and_preflight(tmp_path) -> None:
+    artifact, audit, receipt = _release_receipt_fixture(tmp_path)
+
+    authorization = verify_generation_release_receipt(receipt, artifact)
+    session = GenerationSession.from_checkpoint(
+        artifact,
+        weights="ema",
+        completion_receipt=receipt,
+        require_completion_authorization=True,
+    )
+    result = session.generate(
+        GenerationRequest(
+            seeds=(7,),
+            class_labels=(2,),
+            sample_steps=1,
+            guidance_scale=1.0,
+            precision="fp32",
+        )
+    )
+    preflight = run_sampling_preflight(
+        artifact,
+        batch_size=1,
+        prefix_budget=2,
+        guidance_scale=1.0,
+        precision="fp32",
+        completion_receipt=receipt,
+        require_completion_authorization=True,
+    )
+
+    assert authorization["method"] == "cofitok"
+    assert authorization["completion_audit"]["path"] == audit.resolve().as_posix()
+    assert result.metadata["completion_authorization"] == authorization
+    assert result.metadata["completion_authorization_required"] is True
+    assert result.metadata["release_authorization_required"] is True
+    assert preflight["status"] == "passed"
+    assert preflight["completion_authorization"] == authorization
+    assert preflight["completion_authorization_required"] is True
+
+
+def test_stability_completion_profile_publishes_release_receipt(tmp_path) -> None:
+    artifact, audit, receipt = _release_receipt_fixture(tmp_path)
+    receipt.unlink()
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    payload["profile"] = "stability_generation_system_v1"
+    payload["status"] = "pass"
+    payload["expectations"] = {
+        "full_training_revision": "4" * 40,
+        "full_evaluation_revision": "5" * 40,
+        "export_revision": "5" * 40,
+    }
+    payload.pop("expected_revisions")
+    payload["checks"][0]["name"] = "stability_release_authorized_inference"
+    write_json_report(audit, payload)
+
+    written = write_generation_release_receipt(audit, receipt)
+    authorization = verify_generation_release_receipt(receipt, artifact)
+
+    assert written["completion_profile"] == "stability_generation_system_v1"
+    assert written["completion_expectations"] == payload["expectations"]
+    assert authorization["completion_profile"] == (
+        "stability_generation_system_v1"
+    )
+
+
+def test_completion_authorization_requires_receipt_before_deserialization(
+    tmp_path, monkeypatch
+) -> None:
+    artifact, _, _ = _release_receipt_fixture(tmp_path)
+
+    def fail_if_deserialized(*args, **kwargs):
+        raise AssertionError("artifact was deserialized before receipt policy rejection")
+
+    monkeypatch.setattr(torch, "load", fail_if_deserialized)
+    with pytest.raises(ValueError, match="requires a release receipt"):
+        GenerationSession.from_checkpoint(
+            artifact,
+            weights="ema",
+            require_completion_authorization=True,
+        )
+
+
+def test_completion_receipt_rejects_changed_terminal_audit_before_deserialization(
+    tmp_path, monkeypatch
+) -> None:
+    artifact, audit, receipt = _release_receipt_fixture(tmp_path)
+    changed = json.loads(audit.read_text(encoding="utf-8"))
+    changed["warnings"] = ["post-release mutation"]
+    write_json_report(audit, changed)
+
+    def fail_if_deserialized(*args, **kwargs):
+        raise AssertionError("artifact was deserialized before audit drift rejection")
+
+    monkeypatch.setattr(torch, "load", fail_if_deserialized)
+    with pytest.raises(ValueError, match="changed after release"):
+        GenerationSession.from_checkpoint(
+            artifact,
+            weights="ema",
+            completion_receipt=receipt,
+            require_completion_authorization=True,
+        )
+
+
+def test_release_receipt_rejects_incomplete_completion_audit(tmp_path) -> None:
+    artifact, audit, _ = _release_receipt_fixture(tmp_path)
+    changed = json.loads(audit.read_text(encoding="utf-8"))
+    changed.update(status="in_progress", complete=False)
+    changed["missing_checks"] = ["formal_50k_generation"]
+    write_json_report(audit, changed)
+
+    with pytest.raises(ValueError, match="did not pass"):
+        write_generation_release_receipt(
+            audit,
+            tmp_path / "invalid_release_receipt.json",
+        )
+
+    other = tmp_path / "other"
+    other.mkdir()
+    with pytest.raises(ValueError, match="not authorized"):
+        verify_generation_release_receipt(
+            _release_receipt_fixture(other)[2],
+            artifact,
         )
 
 

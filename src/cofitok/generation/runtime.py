@@ -15,6 +15,7 @@ from cofitok.generation.artifact import (
     INFERENCE_ARTIFACT_TYPE,
     verify_inference_artifact,
 )
+from cofitok.generation.release import verify_generation_release_receipt
 from cofitok.generation_authorization import validate_generation_gate_binding
 from cofitok.models import CoFiTokTiny
 from cofitok.training import ExponentialMovingAverage
@@ -45,6 +46,8 @@ class LoadedGenerationModel:
     training_authorization: dict[str, Any] | None
     release_authorization: dict[str, Any] | None
     release_authorization_required: bool
+    completion_authorization: dict[str, Any] | None
+    completion_authorization_required: bool
 
 
 def load_generation_model(
@@ -52,6 +55,8 @@ def load_generation_model(
     *,
     weights: str = "ema",
     require_release_authorization: bool = False,
+    completion_receipt: str | Path | None = None,
+    require_completion_authorization: bool = False,
 ) -> LoadedGenerationModel:
     """Load the exact model path shared by formal sampling and its preflight."""
     if weights not in {"ema", "model"}:
@@ -69,13 +74,31 @@ def load_generation_model(
         if is_inference_artifact
         else verify_training_checkpoint(path)
     )
-    if require_release_authorization and (
+    effective_release_requirement = (
+        require_release_authorization or require_completion_authorization
+    )
+    if require_completion_authorization and not completion_receipt:
+        raise ValueError(
+            "Production inference completion authorization requires a release receipt"
+        )
+    if completion_receipt and not is_inference_artifact:
+        raise ValueError("A generation release receipt only authorizes inference artifacts")
+    if effective_release_requirement and (
         not is_inference_artifact
         or integrity.get("release_authorization") is None
     ):
         raise ValueError(
             "Production inference requires a release-authorized inference artifact"
         )
+    completion_authorization = (
+        verify_generation_release_receipt(
+            completion_receipt,
+            path,
+            artifact_integrity=integrity,
+        )
+        if completion_receipt
+        else None
+    )
     checkpoint_sha256 = str(
         integrity["artifact_sha256"]
         if is_inference_artifact
@@ -205,5 +228,7 @@ def load_generation_model(
         source_git_provenance=source_git_provenance,
         training_authorization=training_authorization,
         release_authorization=release_authorization,
-        release_authorization_required=require_release_authorization,
+        release_authorization_required=effective_release_requirement,
+        completion_authorization=completion_authorization,
+        completion_authorization_required=require_completion_authorization,
     )

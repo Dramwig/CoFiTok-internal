@@ -145,6 +145,11 @@ def test_stability_completion_runbook_is_a_read_only_exact_identity_gate() -> No
     source = RUNBOOK.read_text(encoding="utf-8")
 
     assert "scripts/audit_generation_stability_completion.py" in source
+    assert "scripts/build_generation_release_receipt.py" in source
+    assert source.index("audit_generation_stability_completion.py") < source.index(
+        "build_generation_release_receipt.py"
+    )
+    assert "release_receipt.json" in source
     assert "Path(sys.argv[1]).unlink(missing_ok=True)" in source
     assert "EXPECTED_DECISION_SHA256=${" in source
     assert "EXPECTED_SCALING_GATE_SHA256=${" in source

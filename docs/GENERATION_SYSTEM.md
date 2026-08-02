@@ -855,6 +855,16 @@ The final export runbook invokes both artifact preflights and both inference
 smoke tests with release authorization required. Their reports carry this
 policy bit, and the completion audit fails unless all four production loads
 prove that the release gate was enforced before deserialization.
+After that terminal audit passes, the completion runbook publishes a
+deterministic `release_receipt.json` that binds the audit bytes and its unique
+passing inference-artifact evidence to both physical EMA exports. Routine
+production inference can require this stronger consumer boundary with
+`--completion-receipt` and `--require-completion-authorization`; audit or
+artifact drift is rejected before `torch.load`, and the receipt identity is
+frozen into resumable inference metadata. This separates the quality-gated
+exports needed *by* the terminal audit from artifacts proven to have passed the
+entire completion chain. See
+`docs/records/2026-08-03_generation_terminal_release_receipt.md`.
 
 The stability completion runbook takes the 50K training and evaluation
 revisions/branches as explicit required inputs. It contains no historical

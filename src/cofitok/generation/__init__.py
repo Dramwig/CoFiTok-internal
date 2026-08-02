@@ -12,11 +12,17 @@ from cofitok.generation.protocol import (
 )
 from cofitok.generation.runtime import LoadedGenerationModel, load_generation_model
 from cofitok.generation.session import GenerationRequest, GenerationResult, GenerationSession
+from cofitok.generation.release import (
+    verify_generation_release_receipt,
+    write_generation_release_receipt,
+)
 
 __all__ = [
     "GenerationRequest",
     "GenerationResult",
     "GenerationSession",
+    "verify_generation_release_receipt",
+    "write_generation_release_receipt",
     "LoadedGenerationModel",
     "load_generation_model",
     "save_tensor_png",

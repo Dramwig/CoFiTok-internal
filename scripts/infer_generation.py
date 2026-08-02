@@ -100,6 +100,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--weights", choices=["ema", "model"], default="ema")
     parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
     parser.add_argument("--require-release-authorization", action="store_true")
+    parser.add_argument(
+        "--completion-receipt",
+        default="",
+        help="Terminal generation release receipt for consumer-verifiable inference.",
+    )
+    parser.add_argument(
+        "--require-completion-authorization",
+        action="store_true",
+        help="Reject inference unless the terminal completion receipt authorizes this artifact.",
+    )
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
@@ -129,6 +139,10 @@ def _checkpoint_metadata(session: GenerationSession) -> dict[str, Any]:
         "release_authorization": loaded.release_authorization,
         "release_authorization_required": (
             loaded.release_authorization_required
+        ),
+        "completion_authorization": loaded.completion_authorization,
+        "completion_authorization_required": (
+            loaded.completion_authorization_required
         ),
     }
 
@@ -188,6 +202,12 @@ def _run_inference_locked(args: argparse.Namespace) -> dict[str, Any]:
         require_release_authorization=getattr(
             args,
             "require_release_authorization",
+            False,
+        ),
+        completion_receipt=(getattr(args, "completion_receipt", "") or None),
+        require_completion_authorization=getattr(
+            args,
+            "require_completion_authorization",
             False,
         ),
     )

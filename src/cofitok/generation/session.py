@@ -84,12 +84,16 @@ class GenerationSession:
         *,
         weights: str = "ema",
         require_release_authorization: bool = False,
+        completion_receipt: str | Path | None = None,
+        require_completion_authorization: bool = False,
     ) -> GenerationSession:
         return cls(
             load_generation_model(
                 checkpoint,
                 weights=weights,
                 require_release_authorization=require_release_authorization,
+                completion_receipt=completion_receipt,
+                require_completion_authorization=require_completion_authorization,
             )
         )
 
@@ -205,6 +209,10 @@ class GenerationSession:
             "release_authorization": self.loaded.release_authorization,
             "release_authorization_required": (
                 self.loaded.release_authorization_required
+            ),
+            "completion_authorization": self.loaded.completion_authorization,
+            "completion_authorization_required": (
+                self.loaded.completion_authorization_required
             ),
             "device": str(self.device),
             "request": {

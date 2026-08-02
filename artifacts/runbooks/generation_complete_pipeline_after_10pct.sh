@@ -115,6 +115,10 @@ python scripts/audit_large_scale_generation_completion.py \
   --expected-full-revision "$FULL_REVISION" \
   --output "$FULL_REPORT_ROOT/completion_audit.json"
 
+python scripts/build_generation_release_receipt.py \
+  --completion-audit "$FULL_REPORT_ROOT/completion_audit.json" \
+  --output "$OUTPUT_ROOT/exports/imagenet256_full_300k/release_receipt.json"
+
 STAGE=complete
 write_status pass "large-scale generation training and formal evaluation passed"
 FINISHED=1
