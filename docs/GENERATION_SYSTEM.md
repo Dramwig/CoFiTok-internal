@@ -319,6 +319,17 @@ repository or mutate an active training checkout.
   bytes. The waiter's process lock and every status record remain explicitly
   non-authorizing. See
   `docs/records/2026-08-03_generation_frozen_supplemental_waiter.md`.
+- The waiter now has a separately attested, dormant Linux evaluation checkout
+  at `/tmp/cofitok-stability-frozen-supplemental-c212b9e/CoFiTok-internal`,
+  fixed to `c212b9e2b64d1b302b17a9d4e30a296d773d4215` on
+  `scale/generation-large-capacity`. From an empty `CUDA_VISIBLE_DEVICES` it
+  passed `70` focused tests and syntax checks for all `104/104` runbooks. The
+  source checkout and target remained tracked-clean, the temporary incremental
+  bundle was removed, and no waiter or GPU evaluation was started. The exact
+  bundle, entrypoint, JUnit, and syntax hashes are bound by
+  `artifacts/reports/generation/stability_frozen_supplemental_checkout_2026-08-03/checkout_attestation_receipt.json`;
+  see also
+  `docs/records/2026-08-03_generation_frozen_supplemental_checkout_attestation.md`.
 - The supplemental is nevertheless a mandatory **quality prerequisite** for a
   later 300K launch. Schema-v3 `full_training_launch_receipt.json` replays the
   supplemental from its four direct reports, rehashes every nested source,

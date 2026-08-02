@@ -81,3 +81,15 @@ readiness processes, create a bridge or launch receipt, or authorize full 300K.
 The waiter may be deployed only as a separately attested clean evaluation
 checkout and remains dormant until the current dense 50K training, frozen
 post-evaluation, and queued readiness GPU stage have finished.
+
+## Follow-up checkout attestation
+
+The required clean evaluation checkout was prepared later on 2026-08-03 at
+`/tmp/cofitok-stability-frozen-supplemental-c212b9e/CoFiTok-internal`, fixed to
+`c212b9e2b64d1b302b17a9d4e30a296d773d4215` on
+`scale/generation-large-capacity`. Linux CPU-only verification passed `70`
+focused tests and all `104/104` runbook syntax checks. The checkout remains
+dormant: the waiter and supplemental evaluation were not started, the active
+GPU trainer was untouched, and full-training authorization remains false. See
+`docs/records/2026-08-03_generation_frozen_supplemental_checkout_attestation.md`
+and its machine-readable receipt for exact hashes.

@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "role": "generation_stability_frozen_supplemental_checkout_attestation",
+  "status": "pass",
+  "observed_at": "2026-08-02T22:39:17+00:00",
+  "intent": "Prepare and attest a dormant, source-bound Linux evaluation checkout for the frozen stability supplemental without starting GPU evaluation or changing the active training queue.",
+  "source_checkout": {
+    "path": "/tmp/cofitok-stability-schedule-audit-c1efb12",
+    "revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "branch": "scale/generation-stability-50k-posteval-v4",
+    "tracked_dirty": false,
+    "bytes_after_attestation": 317764090
+  },
+  "target_checkout": {
+    "path": "/tmp/cofitok-stability-frozen-supplemental-c212b9e/CoFiTok-internal",
+    "construction": "git clone --no-hardlinks --no-checkout from the source checkout, followed by verified fetch of the single advertised bundle ref",
+    "revision": "c212b9e2b64d1b302b17a9d4e30a296d773d4215",
+    "branch": "scale/generation-large-capacity",
+    "tracked_dirty": false,
+    "bytes_after_attestation": 320776947,
+    "isolated_supplemental_checkout_prepared": true
+  },
+  "incremental_bundle": {
+    "bytes": 650894,
+    "sha256": "4ead1d6ebb4e320a975515fb71faba936cddc07af6ee7ab3d1cc173cc256a915",
+    "hash_algorithm": "sha1",
+    "incremental_commit_count": 64,
+    "incremental_object_count": 972,
+    "advertised_ref_count": 1,
+    "advertised_ref": "c212b9e2b64d1b302b17a9d4e30a296d773d4215 refs/heads/scale/generation-large-capacity",
+    "prerequisite_count": 1,
+    "prerequisite_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "local_git_bundle_verify": "pass",
+    "remote_git_bundle_verify": "pass",
+    "local_temporary_bundle_deleted": true,
+    "remote_temporary_bundle_deleted": true,
+    "remote_temporary_bundle_present_after_attestation": false
+  },
+  "entrypoints": {
+    "waiter": {
+      "path": "scripts/run_generation_stability_frozen_supplemental_waiter.py",
+      "bytes": 21297,
+      "sha256": "f937cafeac19b84bf768c72c8c073149a78526e0aaea117c87fd37e149c6a887"
+    },
+    "runbook": {
+      "path": "artifacts/runbooks/generation_stability_frozen_50k_supplemental_waiter.sh",
+      "bytes": 2836,
+      "sha256": "1d780d06a4391d5f80aa1a1e2dfcd46929dbdf3fb3f0a17d8a73f895ee33d8e6"
+    }
+  },
+  "linux_cpu_attestation": {
+    "python_compile": "pass",
+    "cuda_visible_devices": "",
+    "focused_pytest": {
+      "status": "pass",
+      "tests": 70,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 34.006,
+      "test_files": [
+        "tests/test_generation_frozen_supplemental_waiter.py",
+        "tests/test_generation_frozen_supplemental.py",
+        "tests/test_generation_distribution_support.py",
+        "tests/test_generation_stability_qualification.py",
+        "tests/test_generation_checkpoint_evaluation.py",
+        "tests/test_generation_runbook_entrypoints.py",
+        "tests/test_generation_stability_full_readiness_waiter.py",
+        "tests/test_generation_stability_50k_posteval_waiter.py"
+      ],
+      "junit_artifact": {
+        "path": "artifacts/reports/generation/stability_frozen_supplemental_checkout_2026-08-03/focused_pytest.xml",
+        "bytes": 11093,
+        "sha256": "f4ed1711a9e4adc6daeb27d825e9b66b7e0a99cc995c92d682b88c96e8c8c75c"
+      },
+      "log_artifact": {
+        "path": "artifacts/reports/generation/stability_frozen_supplemental_checkout_2026-08-03/focused_pytest.log",
+        "bytes": 80,
+        "sha256": "075ca72bd3c733566e8b37c84bfcdb26ebaad93cb7e0a15d42d96d3ed9f0e0b4"
+      }
+    },
+    "runbook_syntax": {
+      "status": "pass",
+      "discovered_count": 104,
+      "checked_count": 104,
+      "failed_count": 0,
+      "artifact": {
+        "path": "artifacts/reports/generation/stability_frozen_supplemental_checkout_2026-08-03/runbook_syntax.json",
+        "bytes": 8720,
+        "sha256": "2729f0a9dab51e55bcbd64d3cb7d6ab605af80e44a423698d30b74177f4af887"
+      }
+    },
+    "target_tracked_dirty_after_tests": false,
+    "source_tracked_dirty_after_tests": false
+  },
+  "runtime_observation": {
+    "supplemental_waiter_process_count": 0,
+    "supplemental_evaluation_process_count": 0,
+    "gpu_compute_processes": [
+      {
+        "pid": 541878,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 77970,
+        "identity": "pre-existing CoFiTok dense trainer"
+      }
+    ],
+    "generation_filesystem_free_bytes": 182914899968,
+    "tmp_filesystem_free_bytes": 3070427136
+  },
+  "decision_boundary": {
+    "supplemental_checkout_prepared": true,
+    "supplemental_waiter_started": false,
+    "supplemental_evaluation_started": false,
+    "active_gpu_process_modified": false,
+    "formal_large_capacity_deployment_performed": false,
+    "full_training_launch_receipt_created": false,
+    "full_training_launch_allowed": false,
+    "full_training_launch_authorized": false,
+    "full_training_launched": false
+  }
+}
