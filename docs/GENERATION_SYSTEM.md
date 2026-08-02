@@ -308,6 +308,17 @@ repository or mutate an active training checkout.
   It remains diagnostic-only: it does not replace the original gate or
   readiness receipt, does not invoke a trainer, and fixes
   `full_training_launch_allowed=false`.
+- `generation_stability_frozen_50k_supplemental_waiter.sh` makes that quality
+  follow-up operational without racing the already queued large-capacity CUDA
+  readiness stage. It validates the exact post-evaluation and readiness waiter
+  identities and freshness, waits for readiness to become terminal and for an
+  idle GPU, and then launches only the supplemental runbook. New GPU contention
+  or a held supplemental lock returns to the wait loop. A scientific
+  supplemental `hold` is preserved as a completed diagnostic rather than
+  promoted; a pass is independently replayed from all direct and nested source
+  bytes. The waiter's process lock and every status record remain explicitly
+  non-authorizing. See
+  `docs/records/2026-08-03_generation_frozen_supplemental_waiter.md`.
 - The supplemental is nevertheless a mandatory **quality prerequisite** for a
   later 300K launch. Schema-v3 `full_training_launch_receipt.json` replays the
   supplemental from its four direct reports, rehashes every nested source,
