@@ -280,6 +280,22 @@ repository or mutate an active training checkout.
   floors and do not constitute an ImageNet generation-quality claim. Historical
   schema-v2/v3 gates remain replayable, but every newly built stability-scaling
   gate must contain the named `scaling_precision_recall_quality` evidence row.
+- Schema-v5 `stability_scaling` and `stability_full` gates add a source-bound
+  class-conditional fidelity qualification over the exact formal EMA sample
+  sets already used for distribution metrics. The evaluator is fixed to
+  torchvision ResNet-50 ImageNet-1K V2 weights (`102,540,417` bytes, SHA256
+  `11ad3fa62ca79e40addfd354a8ec4b7c75143b3038b8d2a807fbc68deab379ca`),
+  its category ordering and preprocessing are pinned, and requested labels are
+  reconstructed from the zero-based PNG index under the balanced-modulo class
+  schedule. Scaling requires both matched methods to reach top-1 `0.01`, top-5
+  `0.05`, predicted-class coverage `0.25`, and normalized predicted-class
+  entropy `0.50`; full requires `0.10`, `0.25`, `0.50`, and `0.70`. CoFiTok
+  top-1 and top-5 may each trail dense by at most `0.05` absolute. The gate
+  binds both raw classifier reports and their paired qualification by path,
+  bytes, and SHA256, then recomputes every absolute and relative check. This
+  evidence detects ignored, collapsed, or permuted class conditioning; it
+  complements but cannot replace FID/IS/precision/recall, EMA rollout
+  stability, visual review, or any full-training/release authorization.
 - Frozen schema-v2/v3 stability gates can be audited without rewriting their
   immutable bytes by
   `scripts/build_generation_stability_distribution_support.py`. The CPU-only
@@ -436,7 +452,10 @@ separately labeled.
    shuffled-token mismatch. Newly built schema-v4 `stability_scaling` gates
    additionally require CoFiTok precision and recall each at least 0.10 and no
    more than 0.05 below matched dense, so a superficially acceptable FID cannot
-   hide precision or recall collapse.
+   hide precision or recall collapse. Schema-v5 additionally requires the
+   paired fixed-classifier qualification described above: both methods must
+   meet the scaling top-1/top-5/coverage/entropy floors and CoFiTok may trail
+   dense top-1 or top-5 by at most 0.05 absolute.
 4. Full gate: matched 300K-step runs on full `imagenet_256`, 50K EMA samples,
    official FID plus IS/precision/recall, prefix diagnostics, and checkpoint
    hashes. Declare the system ready only if CoFiTok keeps its prefix-control
@@ -445,7 +464,9 @@ separately labeled.
    CoFiTok FID is at most 20.0, precision and recall are each at least 0.30,
    and neither precision nor recall is more than 0.05 below matched dense. The
    full checkpoint must again keep at least 5% of normalized component energy
-   in tokens 1-6.
+   in tokens 1-6. Schema-v5 also requires both methods to meet the full
+   class-fidelity top-1/top-5/coverage/entropy floors, with the same maximum
+   0.05 absolute CoFiTok top-1/top-5 regression against dense.
 
 The 10% gate is an engineering and architecture decision point. It is not a
 replacement for the full-data result and must not overwrite locked paper tables.
@@ -457,7 +478,9 @@ Before either authorization is consumed, `validate_generation_gate_report.py`
 also requires the complete named gate set, rejects duplicate or failed checks,
 recomputes the core inequalities from the report summary, and cross-checks the
 FID, endpoint, ordering, zero-token, shuffle, scaling distribution-support, and
-full precision/recall evidence.
+full precision/recall evidence. For schema-v5 stability profiles it also
+reopens both raw class-fidelity reports, verifies the fixed classifier and
+formal sampling identities, and recomputes the paired qualification.
 The 300K runbook and completion audit call this same contract, so editing only a
 gate's status or decision cannot authorize an expensive downstream stage.
 Formal gate files also bind all six authoritative source reports: CoFiTok/dense
@@ -632,17 +655,22 @@ effective batch and exact images seen, then exposes training hours,
 images/second, and peak memory in the final JSON/Markdown/CSV comparison. Pair
 monitor schema now accumulates exact GPU compute identities across every poll,
 including PID/start ticks/argv/cwd, process memory, observation gaps, and any
-unrelated process. Comparison schema v7 binds that terminal monitor as a sixth
-source. Training wall time and img/s remain published as raw observations, but
+unrelated process. Comparison schema v8 binds that terminal monitor as a sixth
+source and, for `stability_full`, binds the class-fidelity qualification as a
+seventh source. Training wall time
+and img/s remain published as raw observations, but
 they are eligible for a direct efficiency ranking only when observation coverage
 starts before training, remains continuous through pair completion, and never
 sees unrelated GPU compute. Contended or incomplete runs retain direct
 quality/budget comparability while their wall-clock fields are explicitly
-observational-only. Schema v7 additionally encodes the actual budget basis as
-matched optimizer steps and training images (plus dataset, resolution, and
-effective batch), while permanently setting equal wall-clock, GPU-hours, FLOPs,
-and generic compute-matched claims to false. Time, throughput, and peak VRAM are
-measured outcomes rather than pre-equalized budgets. The
+observational-only. Schema v8 retains the schema-v7 budget boundary and adds
+the paired class-fidelity count, top-1/top-5, mean target probability, target
+NLL, predicted-class coverage, and normalized entropy to the matched direct
+rows. It encodes the actual budget basis as matched optimizer steps and training
+images (plus dataset, resolution, and effective batch), while permanently
+setting equal wall-clock, GPU-hours, FLOPs, and generic compute-matched claims
+to false. Time, throughput, and peak VRAM are measured outcomes rather than
+pre-equalized budgets. The
 full paired-config preflight confirms 62,836,011 vs 62,824,707 parameters
 (+0.017993%). See
 `docs/records/2026-07-12_generation_matched_compute_accounting.md` and
@@ -774,11 +802,13 @@ the pinned 10% pair and promotion gate, full matched 300K pair, training audits,
 all four milestones, formal paired 50K sampling, final gate, and final comparison.
 The formal pair is accepted only when its real-set tree digest, content-addressed
 cache key, and evaluator environment are identical and bound through the gate
-and comparison schema v7, including the exact formal sampling protocol fields
-and GPU-contention policy. The comparison binds both training reports, both 50K
-metrics reports, the final gate, and the terminal pair monitor by authoritative
-path, byte count, and SHA256; the completion audit rereads those files before
-accepting any displayed metric or cost field.
+and comparison schema v8, including the exact formal sampling protocol fields,
+GPU-contention policy, and—under `stability_full`—the source-bound class-fidelity
+qualification. The comparison binds both training reports, both 50K metrics
+reports, the final gate, the terminal pair monitor, and the stability-full
+class-fidelity qualification by authoritative path, byte count, and SHA256;
+the completion audit rereads those files before accepting any displayed metric,
+class-fidelity result, or cost field.
 Missing evidence is `in_progress`, contradictory evidence is `failed`, and only
 the full chain is `complete`. See
 `docs/records/2026-07-12_large_scale_generation_completion_audit.md`.

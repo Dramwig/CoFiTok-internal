@@ -9,6 +9,9 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from cofitok.generation import sampling_protocol_contract
+from cofitok.generation_class_fidelity import (
+    validate_class_fidelity_qualification,
+)
 from cofitok.generation_cost import training_cost_summary
 from cofitok.gpu_contention import validate_gpu_contention_evidence
 from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
@@ -17,7 +20,7 @@ from cofitok.reporting import file_sha256, write_json_report, write_text_report
 
 EXTERNAL_ALIASES = {"d_ar", "mar", "retok"}
 EXTERNAL_METHODS = {"d_ar": "D-AR", "mar": "MAR", "retok": "ReTok"}
-COMPARISON_REPORT_SCHEMA_VERSION = 7
+COMPARISON_REPORT_SCHEMA_VERSION = 8
 MATCHED_TRAINING_BUDGET_BASIS = "matched_steps_and_training_images"
 MATCHED_TRAINING_PROTOCOL_NOTE = (
     "Matched dataset, resolution, shared backbone contract, optimizer schedule, "
@@ -68,6 +71,10 @@ SOURCE_REPORT_PROFILES = {
         ),
         "training_contention": (
             "stability_full_300k_ema_teacher/pair_monitor.json"
+        ),
+        "class_fidelity_qualification": (
+            "stability_full_300k_ema_teacher/reports/class_fidelity/"
+            "qualification_report.json"
         ),
     },
 }
@@ -161,6 +168,7 @@ def _matched_row(
     training: dict[str, Any],
     generation: dict[str, Any],
     training_contention: dict[str, Any],
+    class_fidelity_metrics: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     provenance = generation["sample_provenance"]
     sampling = provenance["sampling"]
@@ -191,6 +199,7 @@ def _matched_row(
     if int(sampling_progress.get("completed_samples", -1)) != sample_count:
         raise ValueError(f"{method} sampling progress count does not match metrics")
     distribution_metrics = _distribution_metrics(generation)
+    class_metrics = class_fidelity_metrics or {}
     return {
         "method": method,
         "comparison_tier": "matched_training_direct",
@@ -246,6 +255,21 @@ def _matched_row(
         "real_set_sha256": real_set_sha,
         "real_image_count": int(real_set.get("image_count", -1)),
         "evaluator_runtime_environment_sha256": evaluator_environment_sha,
+        "class_fidelity_sample_count": class_metrics.get("sample_count"),
+        "class_top1_accuracy": class_metrics.get("top1_accuracy"),
+        "class_top5_accuracy": class_metrics.get("top5_accuracy"),
+        "class_mean_target_probability": class_metrics.get(
+            "mean_target_probability"
+        ),
+        "class_target_negative_log_likelihood": class_metrics.get(
+            "target_negative_log_likelihood"
+        ),
+        "class_predicted_class_fraction": class_metrics.get(
+            "predicted_class_fraction"
+        ),
+        "class_normalized_predicted_entropy": class_metrics.get(
+            "normalized_predicted_class_entropy"
+        ),
         "protocol_note": MATCHED_TRAINING_PROTOCOL_NOTE,
     }
 
@@ -372,6 +396,7 @@ def build_report(
     final_gate: dict[str, Any],
     official_related: dict[str, Any],
     training_contention: dict[str, Any],
+    class_fidelity_qualification: dict[str, Any] | None = None,
     official_source_path: str,
     official_source_sha256: str,
     source_reports: dict[str, dict[str, Any]],
@@ -386,6 +411,37 @@ def build_report(
         source_profile=source_profile,
     )
     contention = validate_gpu_contention_evidence(training_contention)
+    class_fidelity = None
+    if class_fidelity_qualification is not None:
+        provenance_contract = final_gate.get("provenance_contract")
+        provenance_contract = (
+            provenance_contract if isinstance(provenance_contract, dict) else {}
+        )
+        class_fidelity = validate_class_fidelity_qualification(
+            class_fidelity_qualification,
+            expected_stage="full",
+            expected_revision=provenance_contract.get("evaluation_revision"),
+            expected_branch=provenance_contract.get("evaluation_branch"),
+            require_pass=False,
+        )
+        matches = [
+            row
+            for row in final_gate.get("gates", [])
+            if row.get("name") == "class_conditional_fidelity"
+        ]
+        if (
+            len(matches) != 1
+            or matches[0].get("passed") is not class_fidelity["valid"]
+            or matches[0].get("evidence", {}).get("qualification")
+            != class_fidelity_qualification
+        ):
+            raise ValueError(
+                "final gate class-fidelity evidence does not match its source"
+            )
+    elif source_profile == "stability_full":
+        raise ValueError(
+            "stability-full comparison requires class-fidelity qualification"
+        )
     formal_contracts = {
         "cofitok": sampling_protocol_contract(
             cofitok_generation["sample_provenance"]["sampling"],
@@ -414,12 +470,22 @@ def build_report(
             cofitok_training,
             cofitok_generation,
             contention,
+            (
+                class_fidelity["metrics"]["cofitok"]
+                if class_fidelity is not None
+                else None
+            ),
         ),
         _matched_row(
             "Dense identity",
             dense_training,
             dense_generation,
             contention,
+            (
+                class_fidelity["metrics"]["dense_identity"]
+                if class_fidelity is not None
+                else None
+            ),
         ),
     ]
     if matched[0]["evaluator"] != matched[1]["evaluator"]:
@@ -476,6 +542,21 @@ def build_report(
             raise ValueError(f"final gate {prefix} checkpoint hash does not match")
         if sampling_evidence.get(f"{prefix}_sample_set_sha256") != row["sample_set_sha256"]:
             raise ValueError(f"final gate {prefix} sample-set hash does not match")
+    if class_fidelity is not None:
+        class_contract = class_fidelity["sampling_contract"]
+        if (
+            class_contract["cofitok_checkpoint_sha256"]
+            != matched[0]["checkpoint_sha256"]
+            or class_contract["dense_checkpoint_sha256"]
+            != matched[1]["checkpoint_sha256"]
+            or class_contract["cofitok_sample_set_sha256"]
+            != matched[0]["sample_set_sha256"]
+            or class_contract["dense_sample_set_sha256"]
+            != matched[1]["sample_set_sha256"]
+        ):
+            raise ValueError(
+                "class-fidelity qualification does not match comparison samples"
+            )
     real_set_evidence = _gate_evidence(final_gate, "matched_real_set_provenance")
     for method, row in (("cofitok", matched[0]), ("dense_identity", matched[1])):
         gate_real_set = real_set_evidence.get(method, {})
@@ -490,6 +571,13 @@ def build_report(
     ready = (
         final_gate.get("status") == "pass"
         and final_gate.get("decision") == "large_scale_generation_ready"
+        and (
+            source_profile != "stability_full"
+            or (
+                class_fidelity is not None
+                and class_fidelity["valid"] is True
+            )
+        )
     )
     return {
         "schema_version": COMPARISON_REPORT_SCHEMA_VERSION,
@@ -520,11 +608,35 @@ def build_report(
         },
         "source_reports": source_reports,
         "training_contention": contention,
+        "class_fidelity": (
+            {
+                "status": class_fidelity["status"],
+                "valid": class_fidelity["valid"],
+                "classifier": class_fidelity["classifier"],
+                "thresholds": class_fidelity["thresholds"],
+                "sampling_contract": class_fidelity["sampling_contract"],
+                "claim_boundary": class_fidelity["claim_boundary"],
+            }
+            if class_fidelity is not None
+            else None
+        ),
         "matched_training_rows": matched,
         "official_context_rows": external,
         "matched_summary": {
             "cofitok_minus_dense_fid": matched[0]["fid"] - matched[1]["fid"],
             "cofitok_relative_fid": matched[0]["fid"] / matched[1]["fid"] - 1.0,
+            "cofitok_minus_dense_class_top1": (
+                matched[0]["class_top1_accuracy"]
+                - matched[1]["class_top1_accuracy"]
+                if class_fidelity is not None
+                else None
+            ),
+            "cofitok_minus_dense_class_top5": (
+                matched[0]["class_top5_accuracy"]
+                - matched[1]["class_top5_accuracy"]
+                if class_fidelity is not None
+                else None
+            ),
         },
     }
 
@@ -545,12 +657,12 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "## Matched steps/images training (direct quality comparison)",
         "",
-        "| method | params | steps | eff. batch | train images | train h (raw) | train img/s (raw) | VRAM GiB | samples | sample batch | sample h | sample img/s | FID | IS | precision | recall |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| method | params | steps | eff. batch | train images | train h (raw) | train img/s (raw) | VRAM GiB | samples | sample batch | sample h | sample img/s | FID | IS | precision | recall | class top-1 | class top-5 | class coverage | class entropy |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for row in report["matched_training_rows"]:
         lines.append(
-            "| {method} | {params} | {steps} | {batch} | {train_images} | {hours} | {throughput} | {vram} | {samples} | {sample_batch} | {sample_hours} | {sample_throughput} | {fid} | {iscore} | {precision} | {recall} |".format(
+            "| {method} | {params} | {steps} | {batch} | {train_images} | {hours} | {throughput} | {vram} | {samples} | {sample_batch} | {sample_hours} | {sample_throughput} | {fid} | {iscore} | {precision} | {recall} | {class_top1} | {class_top5} | {class_coverage} | {class_entropy} |".format(
                 method=row["method"],
                 params=row["parameter_count"],
                 steps=row["training_steps"],
@@ -567,6 +679,10 @@ def render_markdown(report: dict[str, Any]) -> str:
                 iscore=_fmt(row["inception_score"]),
                 precision=_fmt(row["precision"]),
                 recall=_fmt(row["recall"]),
+                class_top1=_fmt(row["class_top1_accuracy"]),
+                class_top5=_fmt(row["class_top5_accuracy"]),
+                class_coverage=_fmt(row["class_predicted_class_fraction"]),
+                class_entropy=_fmt(row["class_normalized_predicted_entropy"]),
             )
         )
     lines.extend(
@@ -664,6 +780,13 @@ def render_csv(report: dict[str, Any]) -> str:
         "inception_score",
         "precision",
         "recall",
+        "class_fidelity_sample_count",
+        "class_top1_accuracy",
+        "class_top5_accuracy",
+        "class_mean_target_probability",
+        "class_target_negative_log_likelihood",
+        "class_predicted_class_fraction",
+        "class_normalized_predicted_entropy",
         "real_set_digest_schema",
         "real_set_sha256",
         "evaluator_runtime_environment_sha256",
@@ -684,6 +807,7 @@ def main() -> None:
     parser.add_argument("--cofitok-generation", required=True)
     parser.add_argument("--dense-generation", required=True)
     parser.add_argument("--final-gate", required=True)
+    parser.add_argument("--class-fidelity-qualification")
     parser.add_argument("--official-related", required=True)
     parser.add_argument("--training-contention", required=True)
     parser.add_argument(
@@ -702,6 +826,21 @@ def main() -> None:
         "final_gate": Path(args.final_gate),
         "training_contention": Path(args.training_contention),
     }
+    if args.class_fidelity_qualification:
+        if args.source_profile != "stability_full":
+            raise ValueError(
+                "--class-fidelity-qualification requires stability_full source profile"
+            )
+        source_paths["class_fidelity_qualification"] = Path(
+            args.class_fidelity_qualification
+        )
+    if (
+        args.source_profile == "stability_full"
+        and "class_fidelity_qualification" not in source_paths
+    ):
+        raise ValueError(
+            "stability-full comparison requires --class-fidelity-qualification"
+        )
     report = build_report(
         cofitok_training=_read(source_paths["cofitok_training"]),
         dense_training=_read(source_paths["dense_training"]),
@@ -710,6 +849,11 @@ def main() -> None:
         final_gate=_read(source_paths["final_gate"]),
         official_related=_read(args.official_related),
         training_contention=_read(args.training_contention),
+        class_fidelity_qualification=(
+            _read(args.class_fidelity_qualification)
+            if args.class_fidelity_qualification
+            else None
+        ),
         official_source_path=Path(args.official_related).resolve().as_posix(),
         official_source_sha256=file_sha256(args.official_related),
         source_reports={

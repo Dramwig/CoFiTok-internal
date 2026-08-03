@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -10,10 +11,21 @@ import sys
 import pytest
 import torch
 
+from cofitok.diffusion import select_sampling_timesteps
+from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
 from cofitok.generation_gate import (
     GENERATION_GATE_SCHEMA_VERSION,
     REQUIRED_GENERATION_GATES,
     validate_generation_gate_authorization,
+)
+from cofitok.generation_class_fidelity import (
+    CLASS_FIDELITY_CATEGORIES_SHA256,
+    CLASS_FIDELITY_CLASSIFIER_BYTES,
+    CLASS_FIDELITY_CLASSIFIER_NAME,
+    CLASS_FIDELITY_CLASSIFIER_SHA256,
+    CLASS_FIDELITY_PREPROCESSING,
+    CLASS_FIDELITY_QUALIFICATION_ROLE,
+    CLASS_FIDELITY_QUALIFICATION_SCHEMA_VERSION,
 )
 from cofitok.generation_gate_sources import (
     GATE_SOURCE_SUFFIXES,
@@ -100,6 +112,8 @@ def _gate(stage: str = "scaling", *, source_profile: str | None = None) -> dict:
                 "dense_checkpoint_step": 50_000,
                 "cofitok_checkpoint_sha256": "a" * 64,
                 "dense_checkpoint_sha256": "b" * 64,
+                "cofitok_sample_set_sha256": "c" * 64,
+                "dense_sample_set_sha256": "d" * 64,
             }
         if name == "matched_checkpoint_evaluator_code_provenance":
             return {
@@ -229,6 +243,199 @@ def _bind_rollout_stability(gate: dict) -> dict:
             "sha256": "c" * 64,
         }
     }
+    if int(gate.get("schema_version", 0)) >= 5:
+        _bind_class_fidelity(gate)
+    return evidence
+
+
+def _bind_class_fidelity(gate: dict) -> dict:
+    stage = gate["stage"]
+    sample_count = 50_000 if stage == "full" else 10_000
+    sample_steps = 250 if stage == "full" else 100
+    requested_per_class = sample_count // 1000
+    entropy = 6.2
+
+    def metrics(top1: float, top5: float) -> dict:
+        return {
+            "sample_count": sample_count,
+            "num_classes": 1000,
+            "top1_correct": int(top1 * sample_count),
+            "top5_correct": int(top5 * sample_count),
+            "top1_accuracy": top1,
+            "top5_accuracy": top5,
+            "mean_target_probability": 0.15,
+            "target_negative_log_likelihood": 3.0,
+            "requested_class_count": 1000,
+            "requested_count_min": requested_per_class,
+            "requested_count_max": requested_per_class,
+            "predicted_class_count": 800,
+            "predicted_class_fraction": 0.8,
+            "predicted_class_entropy": entropy,
+            "normalized_predicted_class_entropy": entropy / math.log(1000),
+        }
+
+    cofitok = metrics(0.21, 0.42)
+    dense = metrics(0.22, 0.43)
+    thresholds = {
+        "min_top1": 0.10 if stage == "full" else 0.01,
+        "min_top5": 0.25 if stage == "full" else 0.05,
+        "min_predicted_class_fraction": 0.50 if stage == "full" else 0.25,
+        "min_normalized_predicted_entropy": 0.70 if stage == "full" else 0.50,
+        "max_top1_regression": 0.05,
+        "max_top5_regression": 0.05,
+    }
+    checks = []
+    for method, values in (("cofitok", cofitok), ("dense_identity", dense)):
+        for metric_name, threshold_name in (
+            ("top1_accuracy", "min_top1"),
+            ("top5_accuracy", "min_top5"),
+            ("predicted_class_fraction", "min_predicted_class_fraction"),
+            (
+                "normalized_predicted_class_entropy",
+                "min_normalized_predicted_entropy",
+            ),
+        ):
+            checks.append(
+                {
+                    "name": f"{method}_{metric_name}",
+                    "status": "pass",
+                    "observed": values[metric_name],
+                    "threshold": thresholds[threshold_name],
+                    "comparison": ">=",
+                }
+            )
+    for metric_name, threshold_name in (
+        ("top1_accuracy", "max_top1_regression"),
+        ("top5_accuracy", "max_top5_regression"),
+    ):
+        checks.append(
+            {
+                "name": f"cofitok_{metric_name}_regression_vs_dense",
+                "status": "pass",
+                "observed": dense[metric_name] - cofitok[metric_name],
+                "threshold": thresholds[threshold_name],
+                "comparison": "<=",
+            }
+        )
+    cofitok_source = {
+        "path": "/samples/cofitok/class_fidelity_report.json",
+        "bytes": 123,
+        "sha256": "e" * 64,
+    }
+    dense_source = {
+        "path": "/samples/dense/class_fidelity_report.json",
+        "bytes": 124,
+        "sha256": "f" * 64,
+    }
+    sampling = {
+        "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
+        "inference_api": INFERENCE_API,
+        "sampler": "ddim",
+        "num_samples": sample_count,
+        "start_index": 0,
+        "batch_size": 32,
+        "sample_steps": sample_steps,
+        "num_train_timesteps": 1000,
+        "actual_timesteps": select_sampling_timesteps(1000, sample_steps),
+        "image_shape": [3, 256, 256],
+        "class_schedule": "balanced_modulo",
+        "guidance_scale": 1.5,
+        "guidance_rescale": 0.0,
+        "cfg_batch_mode": "batched",
+        "eta": 0.0,
+        "clip_x0": True,
+        "seed": 0,
+        "precision": "bf16",
+        "random_stream": {
+            "prefix_budgets_share_stream": True,
+            "batch_size_invariant": True,
+            "resume_index_invariant": True,
+        },
+    }
+    qualification = {
+        "schema_version": CLASS_FIDELITY_QUALIFICATION_SCHEMA_VERSION,
+        "role": CLASS_FIDELITY_QUALIFICATION_ROLE,
+        "status": "pass",
+        "stage": stage,
+        "git": {
+            "revision": "d" * 40,
+            "branch": "scale/generative-system",
+            "tracked_dirty": False,
+        },
+        "classifier": {
+            "name": CLASS_FIDELITY_CLASSIFIER_NAME,
+            "weights_enum": "ResNet50_Weights.IMAGENET1K_V2",
+            "weights_bytes": CLASS_FIDELITY_CLASSIFIER_BYTES,
+            "weights_sha256": CLASS_FIDELITY_CLASSIFIER_SHA256,
+            "num_classes": 1000,
+            "categories_sha256": CLASS_FIDELITY_CATEGORIES_SHA256,
+            "preprocessing": CLASS_FIDELITY_PREPROCESSING,
+        },
+        "sampling_contract": {
+            "sampling": sampling,
+            "cofitok_prefix_budget": 8,
+            "dense_prefix_budget": 1,
+            "weights": "ema",
+            "sample_count_per_method": sample_count,
+            "cofitok_checkpoint_sha256": "a" * 64,
+            "dense_checkpoint_sha256": "b" * 64,
+            "cofitok_sample_set_sha256": "c" * 64,
+            "dense_sample_set_sha256": "d" * 64,
+        },
+        "thresholds": thresholds,
+        "checks": checks,
+        "metrics": {
+            "cofitok": cofitok,
+            "dense_identity": dense,
+            "cofitok_minus_dense": {
+                key: float(cofitok[key]) - float(dense[key])
+                for key in (
+                    "top1_accuracy",
+                    "top5_accuracy",
+                    "mean_target_probability",
+                    "predicted_class_fraction",
+                    "normalized_predicted_class_entropy",
+                )
+            },
+        },
+        "sources": {
+            "cofitok": cofitok_source,
+            "dense_identity": dense_source,
+        },
+        "claim_boundary": {
+            "class_conditional_quality_evaluated": True,
+            "unconditional_distribution_quality_evaluated": False,
+            "standalone_generation_quality_claim_allowed": False,
+            "full_training_launch_allowed": False,
+            "release_authorization_allowed": False,
+        },
+    }
+    evidence = {
+        "valid": True,
+        "checks": {
+            "qualification_status": True,
+            "sampling_protocol": True,
+            "cofitok_checkpoint": True,
+            "dense_checkpoint": True,
+            "cofitok_sample_set": True,
+            "dense_sample_set": True,
+        },
+        "qualification": qualification,
+    }
+    gate["gates"].append(
+        {"name": "class_conditional_fidelity", "passed": True, "evidence": evidence}
+    )
+    gate["diagnostic_reports"].update(
+        {
+            "cofitok_class_fidelity": cofitok_source,
+            "dense_class_fidelity": dense_source,
+            "class_fidelity_qualification": {
+                "path": "/reports/class_fidelity/qualification_report.json",
+                "bytes": 125,
+                "sha256": "1" * 64,
+            },
+        }
+    )
     return evidence
 
 

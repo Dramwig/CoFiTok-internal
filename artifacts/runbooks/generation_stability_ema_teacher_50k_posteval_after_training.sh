@@ -27,6 +27,10 @@ CONFIG_VALIDATION="$REPORT_ROOT/config_validation.json"
 PAIR_SUMMARY="$REPORT_ROOT/pair_summary.json"
 PROMOTION_GATE="$REPORT_ROOT/promotion_gate.json"
 EVAL_CACHE="$CHECKPOINT_ROOT/eval_cache/torch_fidelity"
+CLASSIFIER_CHECKPOINT=${CLASSIFIER_CHECKPOINT:-"$CHECKPOINT_ROOT/evaluators/torchvision/resnet50-11ad3fa6.pth"}
+COFITOK_CLASS_FIDELITY="$COFITOK_RUN/samples_gate10k_ddim100_cfg15/class_fidelity"
+DENSE_CLASS_FIDELITY="$DENSE_RUN/samples_gate10k_ddim100_cfg15/class_fidelity"
+CLASS_FIDELITY_QUALIFICATION="$REPORT_ROOT/class_fidelity/qualification_report.json"
 SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/gate10k_sampling"
 SAMPLING_SELECTION="$REPORT_ROOT/sampling_runtime_selection.json"
 COFITOK_ROLLOUT_DIR="$COFITOK_RUN/rollout_stability_ema_n64_seed2029"
@@ -38,6 +42,7 @@ POSTEVAL_LOCK="$OUTPUT_ROOT/posteval.lock"
 cd "$PROJECT"
 export PYTHONPATH=src
 [[ -x "$PYTHON" ]]
+[[ -f "$CLASSIFIER_CHECKPOINT" ]]
 [[ "$(git rev-parse HEAD)" == "$EXPECTED_TARGET_REVISION" ]]
 [[ "$(git branch --show-current)" == "$EXPECTED_TARGET_BRANCH" ]]
 [[ -z "$(git status --porcelain --untracked-files=no)" ]]
@@ -235,6 +240,40 @@ fi
   --min-samples 10000 \
   --resume
 
+"$PYTHON" scripts/evaluate_generation_class_fidelity.py \
+  --generated-dir "$COFITOK_RUN/samples_gate10k_ddim100_cfg15/prefix_8" \
+  --sampling-report "$COFITOK_RUN/samples_gate10k_ddim100_cfg15/sampling_report.json" \
+  --output-dir "$COFITOK_CLASS_FIDELITY" \
+  --classifier-checkpoint "$CLASSIFIER_CHECKPOINT" \
+  --batch-size 64 \
+  --min-samples 10000 \
+  --resume
+
+"$PYTHON" scripts/evaluate_generation_class_fidelity.py \
+  --generated-dir "$DENSE_RUN/samples_gate10k_ddim100_cfg15/prefix_1" \
+  --sampling-report "$DENSE_RUN/samples_gate10k_ddim100_cfg15/sampling_report.json" \
+  --output-dir "$DENSE_CLASS_FIDELITY" \
+  --classifier-checkpoint "$CLASSIFIER_CHECKPOINT" \
+  --batch-size 64 \
+  --min-samples 10000 \
+  --resume
+
+mkdir -p "$(dirname "$CLASS_FIDELITY_QUALIFICATION")"
+"$PYTHON" scripts/build_generation_class_fidelity_qualification.py \
+  --cofitok-report "$COFITOK_CLASS_FIDELITY/class_fidelity_report.json" \
+  --dense-report "$DENSE_CLASS_FIDELITY/class_fidelity_report.json" \
+  --output "$CLASS_FIDELITY_QUALIFICATION" \
+  --stage scaling \
+  --expected-revision "$EXPECTED_TARGET_REVISION" \
+  --expected-branch "$EXPECTED_TARGET_BRANCH" \
+  --min-top1 0.01 \
+  --min-top5 0.05 \
+  --min-predicted-class-fraction 0.25 \
+  --min-normalized-predicted-entropy 0.50 \
+  --max-top1-regression 0.05 \
+  --max-top5-regression 0.05 \
+  --allow-hold
+
 "$PYTHON" scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/prefix_diagnostic_64_ddim100_cfg15" \
@@ -267,6 +306,7 @@ fi
   --cofitok-checkpoint-eval "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --rollout-stability-qualification "$EMA_ROLLOUT_QUALIFICATION" \
+  --class-fidelity-qualification "$CLASS_FIDELITY_QUALIFICATION" \
   --output "$PROMOTION_GATE" \
   --stage scaling \
   --source-profile stability_scaling \

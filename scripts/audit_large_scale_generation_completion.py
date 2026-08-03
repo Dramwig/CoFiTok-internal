@@ -28,6 +28,9 @@ from cofitok.generation_cost import training_cost_summary
 from cofitok.gpu_contention import validate_gpu_contention_evidence
 from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.generation_gate_sources import verify_generation_gate_source_reports
+from cofitok.generation_class_fidelity import (
+    validate_class_fidelity_qualification,
+)
 from cofitok.generation_paths import (
     generation_deployment_attestation_paths,
     generation_workspace_paths,
@@ -1821,6 +1824,150 @@ def _final_gate_evidence(
     return evidence
 
 
+_CLASS_FIDELITY_ROW_FIELDS = {
+    "class_fidelity_sample_count": "sample_count",
+    "class_top1_accuracy": "top1_accuracy",
+    "class_top5_accuracy": "top5_accuracy",
+    "class_mean_target_probability": "mean_target_probability",
+    "class_target_negative_log_likelihood": "target_negative_log_likelihood",
+    "class_predicted_class_fraction": "predicted_class_fraction",
+    "class_normalized_predicted_entropy": (
+        "normalized_predicted_class_entropy"
+    ),
+}
+
+
+def _class_fidelity_comparison_evidence(
+    report: dict[str, Any],
+    rows: list[dict[str, Any]],
+    qualification: dict[str, Any],
+    final_gate: dict[str, Any],
+) -> dict[str, Any]:
+    provenance = final_gate.get("provenance_contract")
+    provenance = provenance if isinstance(provenance, dict) else {}
+    validated = validate_class_fidelity_qualification(
+        qualification,
+        expected_stage="full",
+        expected_revision=provenance.get("evaluation_revision"),
+        expected_branch=provenance.get("evaluation_branch"),
+        require_pass=True,
+    )
+    expected_summary = {
+        "status": validated["status"],
+        "valid": validated["valid"],
+        "classifier": validated["classifier"],
+        "thresholds": validated["thresholds"],
+        "sampling_contract": validated["sampling_contract"],
+        "claim_boundary": validated["claim_boundary"],
+    }
+    if report.get("class_fidelity") != expected_summary:
+        raise ValueError("comparison class-fidelity summary differs from qualification")
+
+    gate_rows = [
+        row
+        for row in final_gate.get("gates", [])
+        if row.get("name") == "class_conditional_fidelity"
+    ]
+    if len(gate_rows) != 1 or gate_rows[0].get("passed") is not True:
+        raise ValueError("final gate lacks passing class-fidelity evidence")
+    gate_evidence = gate_rows[0].get("evidence")
+    if not isinstance(gate_evidence, dict):
+        raise ValueError("final gate class-fidelity evidence is malformed")
+    gate_checks = gate_evidence.get("checks")
+    if (
+        gate_evidence.get("qualification") != qualification
+        or gate_evidence.get("valid") is not True
+        or gate_evidence.get("status") != "pass"
+        or gate_evidence.get("classifier") != validated["classifier"]
+        or gate_evidence.get("sampling_contract") != validated["sampling_contract"]
+        or gate_evidence.get("metrics") != validated["metrics"]
+        or not isinstance(gate_checks, dict)
+        or not gate_checks
+        or any(value is not True for value in gate_checks.values())
+    ):
+        raise ValueError("final gate class-fidelity evidence differs from qualification")
+
+    indexed = {row.get("method"): row for row in rows}
+    method_metrics = {
+        "CoFiTok K=8": validated["metrics"]["cofitok"],
+        "Dense identity": validated["metrics"]["dense_identity"],
+    }
+    if set(indexed) != set(method_metrics):
+        raise ValueError("class-fidelity comparison method identities differ")
+    for method, metrics in method_metrics.items():
+        row = indexed[method]
+        for row_field, metric_field in _CLASS_FIDELITY_ROW_FIELDS.items():
+            observed = row.get(row_field)
+            expected = metrics[metric_field]
+            if row_field == "class_fidelity_sample_count":
+                if int(observed) != int(expected):
+                    raise ValueError(
+                        f"comparison {method} {row_field} differs from qualification"
+                    )
+            elif not math.isclose(
+                float(observed),
+                float(expected),
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ):
+                raise ValueError(
+                    f"comparison {method} {row_field} differs from qualification"
+                )
+    contract = validated["sampling_contract"]
+    identity_expectations = {
+        "CoFiTok K=8": (
+            contract["cofitok_checkpoint_sha256"],
+            contract["cofitok_sample_set_sha256"],
+        ),
+        "Dense identity": (
+            contract["dense_checkpoint_sha256"],
+            contract["dense_sample_set_sha256"],
+        ),
+    }
+    for method, (checkpoint_sha, sample_sha) in identity_expectations.items():
+        row = indexed[method]
+        if (
+            row.get("checkpoint_sha256") != checkpoint_sha
+            or row.get("sample_set_sha256") != sample_sha
+        ):
+            raise ValueError(
+                f"comparison {method} class-fidelity sample identity differs"
+            )
+    matched_summary = report.get("matched_summary")
+    matched_summary = matched_summary if isinstance(matched_summary, dict) else {}
+    for field, expected in {
+        "cofitok_minus_dense_class_top1": (
+            float(method_metrics["CoFiTok K=8"]["top1_accuracy"])
+            - float(method_metrics["Dense identity"]["top1_accuracy"])
+        ),
+        "cofitok_minus_dense_class_top5": (
+            float(method_metrics["CoFiTok K=8"]["top5_accuracy"])
+            - float(method_metrics["Dense identity"]["top5_accuracy"])
+        ),
+    }.items():
+        if not math.isclose(
+            float(matched_summary.get(field, math.nan)),
+            expected,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ):
+            raise ValueError(f"comparison matched summary differs: {field}")
+    return {
+        "status": "pass",
+        "classifier": validated["classifier"],
+        "sample_count_per_method": contract["sample_count_per_method"],
+        "cofitok_top1_accuracy": method_metrics["CoFiTok K=8"][
+            "top1_accuracy"
+        ],
+        "dense_top1_accuracy": method_metrics["Dense identity"][
+            "top1_accuracy"
+        ],
+        "release_authorization_allowed": validated["claim_boundary"][
+            "release_authorization_allowed"
+        ],
+    }
+
+
 def _comparison_evidence(
     report: dict[str, Any],
     generation_reports: dict[str, dict[str, Any]],
@@ -1829,6 +1976,9 @@ def _comparison_evidence(
     official_related: dict[str, Any],
     official_related_sha256: str,
     source_verification: dict[str, Any],
+    *,
+    final_gate: dict[str, Any] | None = None,
+    class_fidelity_qualification: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if report.get("schema_version") != COMPARISON_REPORT_SCHEMA_VERSION:
         raise ValueError("large-scale comparison schema is stale")
@@ -1882,6 +2032,34 @@ def _comparison_evidence(
     }
     if set(indexed) != set(expected):
         raise ValueError("large-scale comparison method identities differ")
+    source_profile = str(report.get("source_profile", "full"))
+    if source_profile == "stability_full":
+        if final_gate is None or class_fidelity_qualification is None:
+            raise ValueError(
+                "stability-full comparison audit requires class-fidelity evidence"
+            )
+        class_fidelity_evidence = _class_fidelity_comparison_evidence(
+            report,
+            rows,
+            class_fidelity_qualification,
+            final_gate,
+        )
+    else:
+        class_fidelity_evidence = None
+        if report.get("class_fidelity") is not None:
+            raise ValueError("legacy comparison unexpectedly contains class fidelity")
+        for row in rows:
+            if any(row.get(field) is not None for field in _CLASS_FIDELITY_ROW_FIELDS):
+                raise ValueError("legacy comparison class-fidelity row is not empty")
+        summary = report.get("matched_summary", {})
+        if any(
+            summary.get(field) is not None
+            for field in (
+                "cofitok_minus_dense_class_top1",
+                "cofitok_minus_dense_class_top5",
+            )
+        ):
+            raise ValueError("legacy comparison class-fidelity summary is not empty")
     method_keys = {"CoFiTok K=8": "cofitok", "Dense identity": "dense_identity"}
     for method, provenance in expected.items():
         row = indexed[method]
@@ -2093,6 +2271,7 @@ def _comparison_evidence(
             for name, identity in report["source_reports"].items()
         },
         "cross_tier_numeric_ranking_allowed": False,
+        "class_fidelity": class_fidelity_evidence,
     }
 
 
@@ -2404,6 +2583,7 @@ def build_completion_audit(
     comparison_source_verification: dict[str, Any] | None,
     official_related: dict[str, Any] | None,
     official_related_sha256: str | None,
+    class_fidelity_qualification: dict[str, Any] | None = None,
     expected_deployment_source_revision: str | None = None,
 ) -> dict[str, Any]:
     deployment_source_revision = (
@@ -2685,7 +2865,14 @@ def build_completion_audit(
                 cofitok_full_training,
                 dense_full_training,
                 full_training_monitor,
-            ],
+                final_gate,
+            ]
+            + (
+                [class_fidelity_qualification]
+                if isinstance(comparison, dict)
+                and comparison.get("source_profile") == "stability_full"
+                else []
+            ),
             lambda: _comparison_evidence(
                 comparison,
                 {"cofitok": cofitok_generation, "dense_identity": dense_generation},
@@ -2697,6 +2884,8 @@ def build_completion_audit(
                 official_related,
                 official_related_sha256,
                 comparison_source_verification,
+                final_gate=final_gate,
+                class_fidelity_qualification=class_fidelity_qualification,
             ),
         )
     )
@@ -3070,6 +3259,9 @@ def main() -> None:
         final_gate_source_verification=_verify_gate_sources_optional(final_gate),
         comparison=comparison,
         comparison_source_verification=_verify_comparison_sources_optional(comparison),
+        class_fidelity_qualification=_read_optional(
+            full_root / "class_fidelity/qualification_report.json"
+        ),
         official_related=_read_optional(official_related_path),
         official_related_sha256=(
             file_sha256(official_related_path) if official_related_path.is_file() else None

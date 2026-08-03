@@ -709,7 +709,7 @@ def _official_related() -> dict:
 def _comparison() -> dict:
     official = _official_related()
     return {
-        "schema_version": 7,
+        "schema_version": 8,
         "status": "ready",
         "final_gate": {
             "status": "pass",

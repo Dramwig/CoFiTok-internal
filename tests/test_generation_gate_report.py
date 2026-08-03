@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import copy
+import json
+import math
+from pathlib import Path
 
 import pytest
 
@@ -8,6 +11,16 @@ from cofitok.environment import runtime_environment_sha256
 from cofitok.diffusion import select_sampling_timesteps
 from cofitok.generation import INFERENCE_API, SAMPLING_PROTOCOL_SCHEMA
 from cofitok.generation_gate import GENERATION_GATE_SCHEMA_VERSION
+from cofitok.generation_class_fidelity import (
+    CLASS_FIDELITY_CATEGORIES_SHA256,
+    CLASS_FIDELITY_CLASSIFIER_BYTES,
+    CLASS_FIDELITY_CLASSIFIER_NAME,
+    CLASS_FIDELITY_CLASSIFIER_SHA256,
+    CLASS_FIDELITY_PREPROCESSING,
+    CLASS_FIDELITY_REPORT_ROLE,
+    CLASS_FIDELITY_REPORT_SCHEMA_VERSION,
+)
+from scripts import build_generation_class_fidelity_qualification as class_qualification
 from scripts.build_generation_gate_report import build_report
 
 
@@ -230,6 +243,109 @@ def _rollout_stability_qualification(*, passed: bool = True) -> dict:
     }
 
 
+def _class_fidelity_report(generation: dict, *, top1: float, top5: float) -> dict:
+    sample = copy.deepcopy(generation["sample_provenance"])
+    sample_count = int(sample["sampling"]["num_samples"])
+    entropy = 6.2
+    runtime_environment = copy.deepcopy(generation["runtime_environment"])
+    return {
+        "schema_version": CLASS_FIDELITY_REPORT_SCHEMA_VERSION,
+        "role": CLASS_FIDELITY_REPORT_ROLE,
+        "status": "completed",
+        "protocol": "torchvision_imagenet_class_fidelity",
+        "git": copy.deepcopy(generation["git"]),
+        "runtime_environment": runtime_environment,
+        "runtime_environment_sha256": runtime_environment_sha256(
+            runtime_environment
+        ),
+        "paths": {},
+        "classifier": {
+            "name": CLASS_FIDELITY_CLASSIFIER_NAME,
+            "weights_enum": "ResNet50_Weights.IMAGENET1K_V2",
+            "weights_path": "/checkpoints/resnet50-11ad3fa6.pth",
+            "weights_bytes": CLASS_FIDELITY_CLASSIFIER_BYTES,
+            "weights_sha256": CLASS_FIDELITY_CLASSIFIER_SHA256,
+            "num_classes": 1000,
+            "categories_sha256": CLASS_FIDELITY_CATEGORIES_SHA256,
+            "preprocessing": CLASS_FIDELITY_PREPROCESSING,
+        },
+        "sample_provenance": sample,
+        "parameters": {
+            "num_classes": 1000,
+            "sample_count": sample_count,
+            "target_from_filename": "int(zero_based_png_stem) mod 1000",
+        },
+        "metrics": {
+            "sample_count": sample_count,
+            "num_classes": 1000,
+            "top1_correct": int(top1 * sample_count),
+            "top5_correct": int(top5 * sample_count),
+            "top1_accuracy": top1,
+            "top5_accuracy": top5,
+            "mean_target_probability": 0.15,
+            "target_negative_log_likelihood": 3.0,
+            "requested_class_count": 1000,
+            "requested_count_min": sample_count // 1000,
+            "requested_count_max": sample_count // 1000,
+            "predicted_class_count": 800,
+            "predicted_class_fraction": 0.8,
+            "predicted_class_entropy": entropy,
+            "normalized_predicted_class_entropy": entropy / math.log(1000),
+        },
+    }
+
+
+def _class_fidelity_qualification(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    stage: str = "scaling",
+) -> dict:
+    cofitok_generation = (
+        _full_generation(10.0, 8, "a" * 64)
+        if stage == "full"
+        else _generation(20.5, 8, "a" * 64)
+    )
+    dense_generation = (
+        _full_generation(10.0, 1, "b" * 64)
+        if stage == "full"
+        else _generation(20.0, 1, "b" * 64)
+    )
+    cofitok = _class_fidelity_report(cofitok_generation, top1=0.21, top5=0.42)
+    dense = _class_fidelity_report(dense_generation, top1=0.22, top5=0.43)
+    cofitok_path = tmp_path / "cofitok_class_fidelity.json"
+    dense_path = tmp_path / "dense_class_fidelity.json"
+    cofitok_path.write_text(json.dumps(cofitok), encoding="utf-8")
+    dense_path.write_text(json.dumps(dense), encoding="utf-8")
+    monkeypatch.setattr(
+        class_qualification,
+        "git_provenance",
+        lambda root: {
+            "revision": "a" * 40,
+            "branch": "scale/generative-system",
+            "tracked_dirty": False,
+        },
+    )
+    thresholds = {
+        "min_top1": 0.10 if stage == "full" else 0.01,
+        "min_top5": 0.25 if stage == "full" else 0.05,
+        "min_predicted_class_fraction": 0.50 if stage == "full" else 0.25,
+        "min_normalized_predicted_entropy": 0.70 if stage == "full" else 0.50,
+        "max_top1_regression": 0.05,
+        "max_top5_regression": 0.05,
+    }
+    return class_qualification.build_qualification(
+        cofitok=cofitok,
+        dense=dense,
+        cofitok_path=cofitok_path,
+        dense_path=dense_path,
+        stage=stage,
+        expected_revision="a" * 40,
+        expected_branch="scale/generative-system",
+        thresholds=thresholds,
+    )
+
+
 def test_generation_gate_holds_on_collapsed_coarse_tokens() -> None:
     checkpoint = _checkpoint(0.1, "a" * 64)
     checkpoint["metrics"]["component_energy_ratio_per_sample_mean"] = [
@@ -373,6 +489,41 @@ def test_generation_gate_binds_passing_ema_rollout_stability() -> None:
     assert gate["passed"] is True
     assert gate["evidence"]["weights"] == "ema"
     assert gate["evidence"]["failed_gates"] == []
+
+
+def test_generation_gate_binds_passing_class_conditional_fidelity(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    qualification = _class_fidelity_qualification(tmp_path, monkeypatch)
+    report = build_report(
+        cofitok_training=_training(100_500, 8),
+        dense_training=_training(100_000, 1),
+        cofitok_generation=_generation(20.5, 8, "a" * 64),
+        dense_generation=_generation(20.0, 1, "b" * 64),
+        cofitok_checkpoint=_checkpoint(0.102, "a" * 64),
+        dense_checkpoint=_checkpoint(0.1, "b" * 64),
+        class_fidelity_qualification=qualification,
+        min_samples=10_000,
+        max_fid_regression=0.05,
+        max_endpoint_regression=0.05,
+    )
+
+    gate = next(
+        row
+        for row in report["gates"]
+        if row["name"] == "class_conditional_fidelity"
+    )
+    assert report["status"] == "pass"
+    assert gate["passed"] is True
+    assert gate["evidence"]["checks"] == {
+        "qualification_status": True,
+        "sampling_protocol": True,
+        "cofitok_checkpoint": True,
+        "dense_checkpoint": True,
+        "cofitok_sample_set": True,
+        "dense_sample_set": True,
+    }
 
 
 def test_generation_gate_holds_on_failed_ema_rollout_stability() -> None:

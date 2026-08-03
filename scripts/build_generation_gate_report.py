@@ -8,6 +8,9 @@ from typing import Any
 
 from cofitok.environment import runtime_environment_sha256
 from cofitok.generation import sampling_protocol_contract
+from cofitok.generation_class_fidelity import (
+    validate_class_fidelity_qualification,
+)
 from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_gate import GENERATION_GATE_SCHEMA_VERSION
 from cofitok.generation_gate_sources import (
@@ -32,6 +35,13 @@ def parse_args() -> argparse.Namespace:
         "--rollout-stability-qualification",
         help=(
             "Optional matched EMA rollout-stability qualification. When supplied, "
+            "it becomes a blocking, source-bound gate check."
+        ),
+    )
+    parser.add_argument(
+        "--class-fidelity-qualification",
+        help=(
+            "Optional matched ImageNet class-fidelity qualification. When supplied, "
             "it becomes a blocking, source-bound gate check."
         ),
     )
@@ -297,6 +307,46 @@ def _rollout_stability_evidence(
     }
 
 
+def _class_fidelity_evidence(
+    report: dict[str, Any],
+    *,
+    stage: str,
+    expected_evaluation_revision: str | None,
+    expected_evaluation_branch: str,
+    expected_sampling_protocol: dict[str, Any],
+    expected_cofitok_checkpoint_sha256: str,
+    expected_dense_checkpoint_sha256: str,
+    expected_cofitok_sample_set_sha256: str,
+    expected_dense_sample_set_sha256: str,
+) -> dict[str, Any]:
+    evidence = validate_class_fidelity_qualification(
+        report,
+        expected_stage=stage,
+        expected_revision=expected_evaluation_revision,
+        expected_branch=expected_evaluation_branch,
+        require_pass=False,
+    )
+    contract = evidence["sampling_contract"]
+    checks = {
+        "qualification_status": evidence["valid"] is True,
+        "sampling_protocol": contract["sampling"] == expected_sampling_protocol,
+        "cofitok_checkpoint": contract["cofitok_checkpoint_sha256"]
+        == expected_cofitok_checkpoint_sha256,
+        "dense_checkpoint": contract["dense_checkpoint_sha256"]
+        == expected_dense_checkpoint_sha256,
+        "cofitok_sample_set": contract["cofitok_sample_set_sha256"]
+        == expected_cofitok_sample_set_sha256,
+        "dense_sample_set": contract["dense_sample_set_sha256"]
+        == expected_dense_sample_set_sha256,
+    }
+    return {
+        **evidence,
+        "valid": all(checks.values()),
+        "checks": checks,
+        "qualification": report,
+    }
+
+
 def _runtime_environment_identity(payload: dict[str, Any]) -> dict[str, Any]:
     environment = payload.get("runtime_environment")
     declared = payload.get("runtime_environment_sha256")
@@ -345,6 +395,7 @@ def build_report(
     cofitok_checkpoint: dict[str, Any],
     dense_checkpoint: dict[str, Any],
     rollout_stability_qualification: dict[str, Any] | None = None,
+    class_fidelity_qualification: dict[str, Any] | None = None,
     min_samples: int,
     max_fid_regression: float,
     max_endpoint_regression: float,
@@ -928,6 +979,29 @@ def build_report(
                 rollout_stability,
             )
         )
+    if class_fidelity_qualification is not None:
+        class_fidelity = _class_fidelity_evidence(
+            class_fidelity_qualification,
+            stage=stage,
+            expected_evaluation_revision=required_evaluation_revision,
+            expected_evaluation_branch=expected_evaluation_branch,
+            expected_sampling_protocol=cofitok_sampling,
+            expected_cofitok_checkpoint_sha256=cofitok_checkpoint_sha,
+            expected_dense_checkpoint_sha256=dense_checkpoint_sha,
+            expected_cofitok_sample_set_sha256=str(
+                cofitok_provenance["sample_set_sha256"]
+            ),
+            expected_dense_sample_set_sha256=str(
+                dense_provenance["sample_set_sha256"]
+            ),
+        )
+        gates.append(
+            _gate(
+                "class_conditional_fidelity",
+                class_fidelity["valid"],
+                class_fidelity,
+            )
+        )
     passed = all(gate["passed"] for gate in gates)
     pass_decision = (
         "promote_to_full_imagenet256"
@@ -979,13 +1053,20 @@ def build_report(
 def main() -> None:
     args = parse_args()
     source_profile = args.source_profile or args.stage
-    if (
-        source_profile in {"stability_scaling", "stability_full"}
-        and not args.rollout_stability_qualification
-    ):
-        raise ValueError(
-            "schema-v4 stability gates require rollout-stability qualification"
-        )
+    class_fidelity_qualification = (
+        _read(args.class_fidelity_qualification)
+        if args.class_fidelity_qualification
+        else None
+    )
+    if source_profile in {"stability_scaling", "stability_full"}:
+        if not args.rollout_stability_qualification:
+            raise ValueError(
+                "schema-v5 stability gates require rollout-stability qualification"
+            )
+        if class_fidelity_qualification is None:
+            raise ValueError(
+                "schema-v5 stability gates require class-fidelity qualification"
+            )
     report = build_report(
         cofitok_training=_read(args.cofitok_training),
         dense_training=_read(args.dense_training),
@@ -998,6 +1079,7 @@ def main() -> None:
             if args.rollout_stability_qualification
             else None
         ),
+        class_fidelity_qualification=class_fidelity_qualification,
         min_samples=args.min_samples,
         max_fid_regression=args.max_fid_regression,
         max_endpoint_regression=args.max_endpoint_regression,
@@ -1035,13 +1117,29 @@ def main() -> None:
             raise ValueError(
                 "rollout-stability diagnostics require a stability source profile"
             )
+        diagnostic_paths = {
+            "rollout_stability_qualification": (
+                args.rollout_stability_qualification
+            )
+        }
+        if class_fidelity_qualification is not None:
+            diagnostic_paths.update(
+                {
+                    "cofitok_class_fidelity": class_fidelity_qualification[
+                        "sources"
+                    ]["cofitok"]["path"],
+                    "dense_class_fidelity": class_fidelity_qualification[
+                        "sources"
+                    ]["dense_identity"]["path"],
+                    "class_fidelity_qualification": (
+                        args.class_fidelity_qualification
+                    ),
+                }
+            )
         report["diagnostic_reports"] = build_generation_gate_diagnostic_reports(
             profile=report["source_profile"],
-            paths={
-                "rollout_stability_qualification": (
-                    args.rollout_stability_qualification
-                )
-            },
+            paths=diagnostic_paths,
+            schema_version=GENERATION_GATE_SCHEMA_VERSION,
         )
     write_json_report(Path(args.output), report)
     print(f"wrote {args.output}")

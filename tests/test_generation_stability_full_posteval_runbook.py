@@ -95,7 +95,13 @@ def test_stability_full_posteval_audits_each_run_against_its_config() -> None:
 def test_stability_full_posteval_receipts_high_cost_partial_stages() -> None:
     source = RUNBOOK.read_text(encoding="utf-8")
 
-    assert source.count("scripts/run_generation_stage_once.py") == 10
+    assert source.count("scripts/run_generation_stage_once.py") == 13
+    assert source.count("scripts/evaluate_generation_class_fidelity.py") == 2
+    assert "scripts/build_generation_class_fidelity_qualification.py" in source
+    assert (
+        '--class-fidelity-qualification "$CLASS_FIDELITY_QUALIFICATION"'
+        in source
+    )
     for receipt in (
         "cofitok_checkpoint_eval.json",
         "dense_checkpoint_eval.json",

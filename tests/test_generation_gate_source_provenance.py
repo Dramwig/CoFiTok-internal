@@ -128,7 +128,10 @@ def test_stability_rollout_diagnostic_is_rehashed_with_gate_sources(
     verified = verify_generation_gate_source_reports(gate)
 
     assert set(verified["diagnostic_reports"]) == {
-        "rollout_stability_qualification"
+        "rollout_stability_qualification",
+        "cofitok_class_fidelity",
+        "dense_class_fidelity",
+        "class_fidelity_qualification",
     }
     diagnostic_paths["rollout_stability_qualification"].write_text(
         "changed\n", encoding="ascii"

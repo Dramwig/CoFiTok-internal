@@ -22,6 +22,11 @@ DENSE_RUN="$OUTPUT_ROOT/dense_rollout_x0_u2_ema_teacher"
 COFITOK_CHECKPOINT="$COFITOK_RUN/checkpoint_step_00300000.pt"
 DENSE_CHECKPOINT="$DENSE_RUN/checkpoint_step_00300000.pt"
 EVAL_CACHE="$CHECKPOINT_ROOT/eval_cache/torch_fidelity"
+CLASSIFIER_CHECKPOINT=${CLASSIFIER_CHECKPOINT:-"$CHECKPOINT_ROOT/evaluators/torchvision/resnet50-11ad3fa6.pth"}
+COFITOK_CLASS_FIDELITY="$COFITOK_RUN/samples_50k_ddim250_cfg15/class_fidelity"
+DENSE_CLASS_FIDELITY="$DENSE_RUN/samples_50k_ddim250_cfg15/class_fidelity"
+CLASS_FIDELITY_ROOT="$REPORT_ROOT/class_fidelity"
+CLASS_FIDELITY_QUALIFICATION="$CLASS_FIDELITY_ROOT/qualification_report.json"
 SAMPLING_BENCHMARK_ROOT="$OUTPUT_ROOT/runtime_preflight/sampling_50k"
 SAMPLING_SELECTION="$REPORT_ROOT/sampling_runtime_selection.json"
 COFITOK_ROLLOUT_DIR="$COFITOK_RUN/rollout_stability_ema_n64_seed2029"
@@ -47,6 +52,7 @@ export PYTHONPATH=src
 [[ -f "$OFFICIAL_RELATED" ]]
 [[ -f "$DATASET_MANIFEST" ]]
 [[ -f "$TRAINING_CONTENTION" ]]
+[[ -f "$CLASSIFIER_CHECKPOINT" ]]
 command -v flock >/dev/null
 exec 8>"$POSTEVAL_LOCK"
 if ! flock -n 8; then
@@ -304,6 +310,67 @@ fi
   --cache-root "$EVAL_CACHE" \
   --min-samples 50000
 
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/cofitok_class_fidelity.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_manifest.json" \
+  --input-file "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_progress.json" \
+  --input-file "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
+  --input-file "$CLASSIFIER_CHECKPOINT" \
+  --input-tree "$COFITOK_RUN/samples_50k_ddim250_cfg15/prefix_8" \
+  --output-tree "$COFITOK_CLASS_FIDELITY" \
+  -- \
+  "$PYTHON" scripts/evaluate_generation_class_fidelity.py \
+  --generated-dir "$COFITOK_RUN/samples_50k_ddim250_cfg15/prefix_8" \
+  --sampling-report "$COFITOK_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
+  --output-dir "$COFITOK_CLASS_FIDELITY" \
+  --classifier-checkpoint "$CLASSIFIER_CHECKPOINT" \
+  --batch-size 64 \
+  --min-samples 50000
+
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/dense_class_fidelity.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_manifest.json" \
+  --input-file "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_progress.json" \
+  --input-file "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
+  --input-file "$CLASSIFIER_CHECKPOINT" \
+  --input-tree "$DENSE_RUN/samples_50k_ddim250_cfg15/prefix_1" \
+  --output-tree "$DENSE_CLASS_FIDELITY" \
+  -- \
+  "$PYTHON" scripts/evaluate_generation_class_fidelity.py \
+  --generated-dir "$DENSE_RUN/samples_50k_ddim250_cfg15/prefix_1" \
+  --sampling-report "$DENSE_RUN/samples_50k_ddim250_cfg15/sampling_report.json" \
+  --output-dir "$DENSE_CLASS_FIDELITY" \
+  --classifier-checkpoint "$CLASSIFIER_CHECKPOINT" \
+  --batch-size 64 \
+  --min-samples 50000
+
+"$PYTHON" scripts/run_generation_stage_once.py \
+  --state "$STAGE_STATE_ROOT/class_fidelity_qualification.json" \
+  --project "$PROJECT" \
+  --cwd "$PROJECT" \
+  --input-file "$COFITOK_CLASS_FIDELITY/class_fidelity_report.json" \
+  --input-file "$DENSE_CLASS_FIDELITY/class_fidelity_report.json" \
+  --output-tree "$CLASS_FIDELITY_ROOT" \
+  -- \
+  "$PYTHON" scripts/build_generation_class_fidelity_qualification.py \
+  --cofitok-report "$COFITOK_CLASS_FIDELITY/class_fidelity_report.json" \
+  --dense-report "$DENSE_CLASS_FIDELITY/class_fidelity_report.json" \
+  --output "$CLASS_FIDELITY_QUALIFICATION" \
+  --stage full \
+  --expected-revision "$EXPECTED_TARGET_REVISION" \
+  --expected-branch "$EXPECTED_TARGET_BRANCH" \
+  --min-top1 0.10 \
+  --min-top5 0.25 \
+  --min-predicted-class-fraction 0.50 \
+  --min-normalized-predicted-entropy 0.70 \
+  --max-top1-regression 0.05 \
+  --max-top5-regression 0.05 \
+  --allow-hold
+
 "$PYTHON" scripts/generate_samples.py \
   --checkpoint "$COFITOK_CHECKPOINT" \
   --output-dir "$COFITOK_RUN/prefix_diagnostic_64_ddim250_cfg15" \
@@ -352,6 +419,7 @@ fi
   --input-file "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --input-file "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --input-file "$EMA_ROLLOUT_QUALIFICATION" \
+  --input-file "$CLASS_FIDELITY_QUALIFICATION" \
   --output-file "$FINAL_GATE" \
   -- \
   "$PYTHON" scripts/build_generation_gate_report.py \
@@ -362,6 +430,7 @@ fi
   --cofitok-checkpoint-eval "$COFITOK_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --dense-checkpoint-eval "$DENSE_RUN/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json" \
   --rollout-stability-qualification "$EMA_ROLLOUT_QUALIFICATION" \
+  --class-fidelity-qualification "$CLASS_FIDELITY_QUALIFICATION" \
   --output "$FINAL_GATE" \
   --stage full \
   --source-profile stability_full \
@@ -406,6 +475,7 @@ fi
   --input-file "$COFITOK_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
   --input-file "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
   --input-file "$FINAL_GATE" \
+  --input-file "$CLASS_FIDELITY_QUALIFICATION" \
   --input-file "$OFFICIAL_RELATED" \
   --input-file "$TRAINING_CONTENTION" \
   --output-tree "$REPORT_ROOT/comparison" \
@@ -416,6 +486,7 @@ fi
   --cofitok-generation "$COFITOK_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
   --dense-generation "$DENSE_RUN/samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json" \
   --final-gate "$FINAL_GATE" \
+  --class-fidelity-qualification "$CLASS_FIDELITY_QUALIFICATION" \
   --official-related "$OFFICIAL_RELATED" \
   --training-contention "$TRAINING_CONTENTION" \
   --source-profile stability_full \

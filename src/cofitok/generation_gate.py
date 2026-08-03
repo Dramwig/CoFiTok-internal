@@ -5,9 +5,12 @@ import json
 import math
 from typing import Any
 
+from cofitok.generation_class_fidelity import (
+    validate_class_fidelity_qualification,
+)
 
-GENERATION_GATE_SCHEMA_VERSION = 4
-SUPPORTED_GENERATION_GATE_SCHEMA_VERSIONS = frozenset({2, 3, 4})
+GENERATION_GATE_SCHEMA_VERSION = 5
+SUPPORTED_GENERATION_GATE_SCHEMA_VERSIONS = frozenset({2, 3, 4, 5})
 
 _STAGE_DECISIONS = {
     "scaling": "promote_to_full_imagenet256",
@@ -439,6 +442,79 @@ def _validate_scientific_gate_evidence(
                 "generation gate rollout-stability source binding is missing"
             )
 
+    if "class_conditional_fidelity" in indexed:
+        class_fidelity = evidence("class_conditional_fidelity")
+        checks = class_fidelity.get("checks")
+        qualification = class_fidelity.get("qualification")
+        if (
+            class_fidelity.get("valid") is not True
+            or not isinstance(checks, dict)
+            or not checks
+            or any(value is not True for value in checks.values())
+            or not isinstance(qualification, dict)
+        ):
+            raise ValueError(
+                "generation gate class-conditional fidelity is not passing"
+            )
+        provenance_contract = gate.get("provenance_contract")
+        provenance_contract = (
+            provenance_contract if isinstance(provenance_contract, dict) else {}
+        )
+        evaluator = evidence("matched_checkpoint_evaluator_code_provenance")
+        expected_revision = provenance_contract.get(
+            "evaluation_revision", evaluator.get("expected_revision")
+        )
+        expected_branch = provenance_contract.get(
+            "evaluation_branch", evaluator.get("expected_branch")
+        )
+        validated = validate_class_fidelity_qualification(
+            qualification,
+            expected_stage=stage,
+            expected_revision=expected_revision,
+            expected_branch=expected_branch,
+        )
+        contract = validated["sampling_contract"]
+        sampling = evidence("matched_sampling_provenance")
+        if (
+            contract.get("cofitok_checkpoint_sha256")
+            != sampling.get("cofitok_checkpoint_sha256")
+            or contract.get("dense_checkpoint_sha256")
+            != sampling.get("dense_checkpoint_sha256")
+            or contract.get("cofitok_sample_set_sha256")
+            != sampling.get("cofitok_sample_set_sha256")
+            or contract.get("dense_sample_set_sha256")
+            != sampling.get("dense_sample_set_sha256")
+        ):
+            raise ValueError(
+                "generation gate class-fidelity sample identity differs"
+            )
+        diagnostics = gate.get("diagnostic_reports")
+        if not isinstance(diagnostics, dict):
+            raise ValueError(
+                "generation gate class-fidelity source bindings are missing"
+            )
+        sources = validated["sources"]
+        for diagnostic_name, source_name in (
+            ("cofitok_class_fidelity", "cofitok"),
+            ("dense_class_fidelity", "dense_identity"),
+        ):
+            if diagnostics.get(diagnostic_name) != sources.get(source_name):
+                raise ValueError(
+                    "generation gate class-fidelity raw source binding differs"
+                )
+        qualification_descriptor = diagnostics.get(
+            "class_fidelity_qualification"
+        )
+        if (
+            not isinstance(qualification_descriptor, dict)
+            or not str(qualification_descriptor.get("path", ""))
+            or int(qualification_descriptor.get("bytes", 0)) < 1
+            or len(str(qualification_descriptor.get("sha256", ""))) != 64
+        ):
+            raise ValueError(
+                "generation gate class-fidelity qualification binding is missing"
+            )
+
     if stage == "full":
         quality = evidence("full_precision_recall_quality")
         if quality.get("enforced") is not True:
@@ -508,6 +584,12 @@ def validate_generation_gate_authorization(
         and "rollout_stability_diagnostic" not in indexed
     ):
         missing.append("rollout_stability_diagnostic")
+    if (
+        schema_version >= 5
+        and gate.get("source_profile") in {"stability_scaling", "stability_full"}
+        and "class_conditional_fidelity" not in indexed
+    ):
+        missing.append("class_conditional_fidelity")
     if (
         _requires_scaling_distribution_support(
             gate, stage=expected_stage, schema_version=schema_version

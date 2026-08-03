@@ -32,7 +32,13 @@ def test_stability_50k_posteval_uses_formal_ema_gate_protocol() -> None:
     assert source.count("--weights ema") >= 5
     assert source.count("scripts/evaluate_generation_checkpoint.py") == 2
     assert source.count("scripts/evaluate_generation_metrics.py") == 2
-    assert source.count("--min-samples 10000 \\\n  --resume") == 2
+    assert source.count("--min-samples 10000 \\\n  --resume") == 4
+    assert source.count("scripts/evaluate_generation_class_fidelity.py") == 2
+    assert "scripts/build_generation_class_fidelity_qualification.py" in source
+    assert (
+        '--class-fidelity-qualification "$CLASS_FIDELITY_QUALIFICATION"'
+        in source
+    )
     assert (
         "--random-orders 16 \\\n"
         "  --weights ema \\\n"

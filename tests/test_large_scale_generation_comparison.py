@@ -16,6 +16,9 @@ from scripts.build_large_scale_generation_comparison import (
     source_report_identity,
     verify_comparison_source_reports,
 )
+from scripts.build_generation_gate_report import (
+    _class_fidelity_evidence as gate_class_fidelity_evidence,
+)
 
 
 def _training(parameters: int, token_count: int) -> dict:
@@ -285,7 +288,7 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     report = _report()
 
     assert report["status"] == "ready"
-    assert report["schema_version"] == 7
+    assert report["schema_version"] == 8
     assert report["source_reports"] == _source_reports()
     assert len(report["matched_training_rows"]) == 2
     assert len(report["official_context_rows"]) == 3
@@ -538,3 +541,98 @@ def test_comparison_accepts_stability_full_source_profile(tmp_path) -> None:
 
     assert verified["status"] == "verified"
     assert verified["source_profile"] == "stability_full"
+
+
+def test_stability_comparison_requires_and_reports_class_fidelity(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from tests.test_generation_class_fidelity import (
+        EXPECTED_GIT,
+        _passing_qualification,
+    )
+
+    class_fidelity = _passing_qualification(tmp_path, monkeypatch)
+    class_fidelity["sampling_contract"].update(
+        {
+            "cofitok_checkpoint_sha256": "a" * 64,
+            "dense_checkpoint_sha256": "b" * 64,
+            "cofitok_sample_set_sha256": "c" * 64,
+            "dense_sample_set_sha256": "d" * 64,
+        }
+    )
+    contract = class_fidelity["sampling_contract"]
+    gate = _gate()
+    gate["provenance_contract"] = {
+        "evaluation_revision": EXPECTED_GIT["revision"],
+        "evaluation_branch": EXPECTED_GIT["branch"],
+    }
+    gate["gates"].append(
+        {
+            "name": "class_conditional_fidelity",
+            "passed": True,
+            "evidence": gate_class_fidelity_evidence(
+                class_fidelity,
+                stage="full",
+                expected_evaluation_revision=EXPECTED_GIT["revision"],
+                expected_evaluation_branch=EXPECTED_GIT["branch"],
+                expected_sampling_protocol=contract["sampling"],
+                expected_cofitok_checkpoint_sha256="a" * 64,
+                expected_dense_checkpoint_sha256="b" * 64,
+                expected_cofitok_sample_set_sha256="c" * 64,
+                expected_dense_sample_set_sha256="d" * 64,
+            ),
+        }
+    )
+    source_reports = {
+        name: {
+            "path": (
+                "/root/autodl-tmp/CoFiTok/checkpoints/generation/" + suffix
+            ),
+            "bytes": 100,
+            "sha256": f"{index:x}" * 64,
+        }
+        for index, (name, suffix) in enumerate(
+            SOURCE_REPORT_PROFILES["stability_full"].items(),
+            start=1,
+        )
+    }
+    report = build_report(
+        cofitok_training=_training(62_950_800, 8),
+        dense_training=_training(62_824_707, 1),
+        cofitok_generation=_generation(12.0, "a" * 64, "c" * 64, 8),
+        dense_generation=_generation(11.8, "b" * 64, "d" * 64, 1),
+        final_gate=gate,
+        official_related=_official(),
+        training_contention=_contention(),
+        class_fidelity_qualification=class_fidelity,
+        official_source_path="/reports/official_related_methods_table.json",
+        official_source_sha256="e" * 64,
+        source_reports=source_reports,
+        source_profile="stability_full",
+    )
+
+    assert report["status"] == "ready"
+    assert report["class_fidelity"]["valid"] is True
+    assert report["matched_training_rows"][0]["class_top1_accuracy"] == 0.21
+    assert report["matched_training_rows"][1]["class_top5_accuracy"] == 0.43
+    assert report["matched_summary"]["cofitok_minus_dense_class_top1"] == pytest.approx(
+        -0.01
+    )
+    assert "class top-1" in render_markdown(report)
+    assert "class_top1_accuracy" in render_csv(report)
+
+    with pytest.raises(ValueError, match="requires class-fidelity qualification"):
+        build_report(
+            cofitok_training=_training(62_950_800, 8),
+            dense_training=_training(62_824_707, 1),
+            cofitok_generation=_generation(12.0, "a" * 64, "c" * 64, 8),
+            dense_generation=_generation(11.8, "b" * 64, "d" * 64, 1),
+            final_gate=gate,
+            official_related=_official(),
+            training_contention=_contention(),
+            official_source_path="/reports/official_related_methods_table.json",
+            official_source_sha256="e" * 64,
+            source_reports=source_reports,
+            source_profile="stability_full",
+        )

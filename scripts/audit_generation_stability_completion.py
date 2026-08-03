@@ -886,8 +886,11 @@ def strong_comparison_evidence(
     report: dict[str, Any],
     generation_reports: dict[str, dict[str, Any]],
     training_reports: dict[str, dict[str, Any]],
+    training_contention_report: dict[str, Any],
     official_related: dict[str, Any],
     official_related_sha256: str,
+    final_gate: dict[str, Any],
+    class_fidelity_qualification: dict[str, Any],
 ) -> dict[str, Any]:
     _raise_load_error(report)
     _raise_load_error(official_related)
@@ -897,9 +900,12 @@ def strong_comparison_evidence(
         report,
         generation_reports,
         training_reports,
+        training_contention_report,
         official_related,
         official_related_sha256,
         verify_comparison_source_reports(report),
+        final_gate=final_gate,
+        class_fidelity_qualification=class_fidelity_qualification,
     )
 
 
@@ -1132,6 +1138,9 @@ def main() -> None:
     )
     comparison = _read_optional(
         full_reports / "comparison/large_scale_generation_comparison.json"
+    )
+    class_fidelity_qualification = _read_optional(
+        full_reports / "class_fidelity/qualification_report.json"
     )
     official_path = Path(args.official_related)
     if not official_path.is_absolute():
@@ -1575,6 +1584,8 @@ def main() -> None:
                 comparison,
                 official_related,
                 final_gate,
+                class_fidelity_qualification,
+                full_monitor,
                 *generation_present,
                 *full_training_present,
             ],
@@ -1582,8 +1593,11 @@ def main() -> None:
                 comparison,
                 generation_reports,
                 full_training,
+                full_monitor,
                 official_related,
                 file_sha256(official_path),
+                final_gate,
+                class_fidelity_qualification,
             ),
         ),
         _check(

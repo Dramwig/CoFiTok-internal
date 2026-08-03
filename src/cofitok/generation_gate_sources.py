@@ -143,14 +143,56 @@ GATE_DIAGNOSTIC_SUFFIXES = {
             f"checkpoints/generation/{STABILITY_SCALING_ROOT_ID}/reports/"
             "ema_rollout_stability/qualification_report.json"
         ),
+        "cofitok_class_fidelity": (
+            f"checkpoints/generation/{STABILITY_SCALING_ROOT_ID}/"
+            f"{STABILITY_SCALING_COFITOK_RUN_ID}/samples_gate10k_ddim100_cfg15/"
+            "class_fidelity/class_fidelity_report.json"
+        ),
+        "dense_class_fidelity": (
+            f"checkpoints/generation/{STABILITY_SCALING_ROOT_ID}/"
+            f"{STABILITY_SCALING_DENSE_RUN_ID}/samples_gate10k_ddim100_cfg15/"
+            "class_fidelity/class_fidelity_report.json"
+        ),
+        "class_fidelity_qualification": (
+            f"checkpoints/generation/{STABILITY_SCALING_ROOT_ID}/reports/"
+            "class_fidelity/qualification_report.json"
+        ),
     },
     "stability_full": {
         "rollout_stability_qualification": (
             f"checkpoints/generation/{STABILITY_FULL_ROOT_ID}/reports/"
             "ema_rollout_stability/qualification_report.json"
         ),
+        "cofitok_class_fidelity": (
+            f"checkpoints/generation/{STABILITY_FULL_ROOT_ID}/"
+            f"{STABILITY_FULL_COFITOK_RUN_ID}/samples_50k_ddim250_cfg15/"
+            "class_fidelity/class_fidelity_report.json"
+        ),
+        "dense_class_fidelity": (
+            f"checkpoints/generation/{STABILITY_FULL_ROOT_ID}/"
+            f"{STABILITY_FULL_DENSE_RUN_ID}/samples_50k_ddim250_cfg15/"
+            "class_fidelity/class_fidelity_report.json"
+        ),
+        "class_fidelity_qualification": (
+            f"checkpoints/generation/{STABILITY_FULL_ROOT_ID}/reports/"
+            "class_fidelity/qualification_report.json"
+        ),
     },
 }
+LEGACY_GATE_DIAGNOSTIC_SUFFIXES = {
+    profile: {"rollout_stability_qualification": rows["rollout_stability_qualification"]}
+    for profile, rows in GATE_DIAGNOSTIC_SUFFIXES.items()
+}
+
+
+def _diagnostic_suffixes(
+    profile: str,
+    *,
+    schema_version: int | None,
+) -> dict[str, str] | None:
+    if schema_version is not None and schema_version < 5:
+        return LEGACY_GATE_DIAGNOSTIC_SUFFIXES.get(profile)
+    return GATE_DIAGNOSTIC_SUFFIXES.get(profile)
 
 
 def gate_source_report_identity(path: str | Path) -> dict[str, Any]:
@@ -215,8 +257,9 @@ def _validate_gate_diagnostic_report_identities(
     diagnostic_reports: dict[str, dict[str, Any]],
     *,
     profile: str,
+    schema_version: int | None,
 ) -> None:
-    expected = GATE_DIAGNOSTIC_SUFFIXES.get(profile)
+    expected = _diagnostic_suffixes(profile, schema_version=schema_version)
     if expected is None or set(diagnostic_reports) != set(expected):
         raise ValueError("generation gate diagnostic-report set is incomplete")
     for name, suffix in expected.items():
@@ -238,14 +281,26 @@ def build_generation_gate_diagnostic_reports(
     *,
     profile: str,
     paths: dict[str, str | Path],
+    schema_version: int | None = None,
 ) -> dict[str, dict[str, Any]]:
-    expected = GATE_DIAGNOSTIC_SUFFIXES.get(profile)
+    if schema_version is None:
+        latest = GATE_DIAGNOSTIC_SUFFIXES.get(profile)
+        legacy = LEGACY_GATE_DIAGNOSTIC_SUFFIXES.get(profile)
+        if latest is not None and set(paths) == set(latest):
+            schema_version = 5
+        elif legacy is not None and set(paths) == set(legacy):
+            schema_version = 4
+    expected = _diagnostic_suffixes(profile, schema_version=schema_version)
     if expected is None or set(paths) != set(expected):
         raise ValueError("generation gate diagnostic paths are incomplete")
     reports = {
         name: gate_source_report_identity(path) for name, path in paths.items()
     }
-    _validate_gate_diagnostic_report_identities(reports, profile=profile)
+    _validate_gate_diagnostic_report_identities(
+        reports,
+        profile=profile,
+        schema_version=schema_version,
+    )
     return reports
 
 
@@ -284,9 +339,14 @@ def verify_generation_gate_source_reports(
     if diagnostic_reports is not None:
         if not isinstance(diagnostic_reports, dict):
             raise ValueError("generation gate diagnostic-report identities are malformed")
+        raw_schema_version = gate.get("schema_version")
+        diagnostic_schema_version = (
+            int(raw_schema_version) if raw_schema_version is not None else None
+        )
         _validate_gate_diagnostic_report_identities(
             diagnostic_reports,
             profile=source_profile,
+            schema_version=diagnostic_schema_version,
         )
         verified_diagnostics = {}
         for name, expected in diagnostic_reports.items():
