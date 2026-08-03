@@ -93,10 +93,42 @@ qualification fixes:
 
 ## Local validation
 
-- complete pytest: `1041 passed, 6 skipped in 304.28s`
+- exact implementation commit:
+  `9e4d62271fa31facf998d8cdefb0f5d8cbb4ee32`
+- Linux test-isolation follow-up:
+  `2448ce5e6a96beca6762eba1c8eef1b05fc40cfd`
+- complete pytest after the follow-up: `1041 passed, 6 skipped in 262.46s`
 - `python -m compileall -q src scripts tests`: pass
 - both new direct CLI `--help` entrypoints: pass
 - `git diff --check`: pass
+
+## Isolated Linux validation
+
+The exact follow-up revision was reconstructed under
+`/tmp/cofitok-class-fidelity-9e4d622/CoFiTok-internal` without moving or
+modifying any active training checkout. The base implementation bundle was
+`173013` bytes with SHA256
+`8129f9a5cbfcdb3c24d76a5bacad50746b406cafb7ff9d338c5f28a018d270dc`.
+The follow-up incremental bundle was `2080` bytes with SHA256
+`7650abc719abbdf5558ad79b748afa4b0fa251550eb53d1736554dfa56fc6579`.
+Both bundle prerequisite and advertised-head checks passed.
+
+- exact clean Git identity:
+  `scale/generation-large-capacity@2448ce5e6a96beca6762eba1c8eef1b05fc40cfd`
+- CPU-only Linux pytest with `CUDA_VISIBLE_DEVICES=` and `PYTHONPATH=.:src`:
+  `1045 passed, 2 skipped in 157.77s`
+- all tracked runbooks: `104/104` passed `bash -n`
+- fixed classifier CPU load and one forward pass: output shape `(1, 1000)`,
+  all values finite, exact bytes/SHA256 accepted
+
+The first isolated pytest invocation deliberately cleared `PYTHONPATH` and
+exposed two independent portability issues: the runtime-selector subprocess
+could not resolve the src-layout package under that artificial environment,
+and one new comparison test imported another test as a `tests.*` package. The
+former was corrected by using the repository's declared `.:src` import path;
+the latter was removed in the follow-up commit by making the fixture local to
+its test module. The exact follow-up revision then passed the complete Linux
+suite above.
 
 The active pro6000 dense stability trainer, post-evaluation waiter, readiness
 waiter, and supplemental waiter were not modified, signalled, or restarted.
