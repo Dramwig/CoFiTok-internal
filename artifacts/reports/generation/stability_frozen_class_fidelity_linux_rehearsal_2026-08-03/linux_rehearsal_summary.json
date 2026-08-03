@@ -1,0 +1,105 @@
+{
+  "bundle": {
+    "advertised_head": "d1ce0330c1b0fc9573570103763c9614d130ee2b",
+    "bytes": 37579,
+    "path": "/tmp/cofitok-d1ce0330-from-b45c490-acff97f4.bundle",
+    "prerequisite": "b45c490429c4e7f7ebeb1cc7eeca9ac66eaf2402",
+    "sha256": "acff97f4170b9f803863ff2af15a10db2e29b28d8c870f5cd6ae8b20ab1207fe"
+  },
+  "classifier": {
+    "bytes": 102540417,
+    "deserialized": false,
+    "gpu_used": false,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/evaluators/torchvision/resnet50-11ad3fa6.pth",
+    "sha256": "11ad3fa62ca79e40addfd354a8ec4b7c75143b3038b8d2a807fbc68deab379ca"
+  },
+  "cli_help": [
+    {
+      "exit_code": 0,
+      "path": "scripts/verify_generation_stability_frozen_class_fidelity.py",
+      "stdout_bytes": 723
+    },
+    {
+      "exit_code": 0,
+      "path": "scripts/build_generation_full_launch_receipt.py",
+      "stdout_bytes": 4263
+    },
+    {
+      "exit_code": 0,
+      "path": "scripts/validate_generation_full_launch_receipt.py",
+      "stdout_bytes": 4904
+    },
+    {
+      "exit_code": 0,
+      "path": "scripts/build_generation_class_fidelity_qualification.py",
+      "stdout_bytes": 2347
+    }
+  ],
+  "compileall": {
+    "exit_code": 0,
+    "paths": [
+      "src",
+      "scripts",
+      "tests"
+    ]
+  },
+  "created_at_source": "post-validation filesystem state",
+  "full_training_launch_allowed": false,
+  "gpu_work_performed": false,
+  "host": {
+    "hostname": "autodl-container-azfd082n2h-d63aaa37",
+    "platform": "Linux-5.15.0-78-generic-x86_64-with-glibc2.35"
+  },
+  "outer_paper_layout": {
+    "paper/latex/main.tex": {
+      "bytes": 26647,
+      "sha256": "d73e829739db55dee86047357c98c439bf25941e385a033a7beb058cf2b1d27b"
+    },
+    "paper/venues/aaai27/main.tex": {
+      "bytes": 27183,
+      "sha256": "d63ae7b2509166ba222f6fa63b3c1667794ab80b3a2424eae67116bd0107646a"
+    }
+  },
+  "project": {
+    "git": {
+      "branch": "scale/generation-large-capacity",
+      "revision": "d1ce0330c1b0fc9573570103763c9614d130ee2b",
+      "tracked_dirty": false
+    },
+    "path": "/tmp/cofitok-stability-frozen-class-fidelity-d1ce033/CoFiTok-internal"
+  },
+  "pytest": {
+    "collected": 1061,
+    "command": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python -m pytest -q",
+    "exit_code": 0,
+    "failed": 0,
+    "log": {
+      "bytes": 1200,
+      "path": "/tmp/cofitok-stability-frozen-class-fidelity-d1ce033/pytest_d1ce033.log",
+      "sha256": "348ce468a3bee2de04532feea6a2ade14c23cecc8c6624efda04b2d9816fcb47"
+    },
+    "passed": 1059,
+    "skipped": 2
+  },
+  "role": "generation_frozen_class_fidelity_linux_rehearsal",
+  "runbook_syntax": {
+    "checked": 105,
+    "enumeration": "git_ls_files",
+    "failed": 0,
+    "report": {
+      "bytes": 8817,
+      "path": "/tmp/cofitok-stability-frozen-class-fidelity-d1ce033/runbook_syntax_d1ce033.json",
+      "sha256": "3e7b708722d60edc8e66dbc712672e755322f37ea971fc2bf64a55587c415864"
+    },
+    "status": "pass"
+  },
+  "runtime": {
+    "cuda_visible_devices": "",
+    "python": "3.10.20",
+    "torch": "2.7.1+cu128",
+    "torch_cuda_available": false
+  },
+  "schema_version": 1,
+  "status": "pass",
+  "training_process_modified": false
+}
