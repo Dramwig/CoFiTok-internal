@@ -1378,6 +1378,7 @@ def main() -> None:
                     ],
                     "expected_target_branch": args.expected_full_training_branch,
                     "require_current_target_git": False,
+                    "require_current_runtime_environment": False,
                 },
             ),
         ),

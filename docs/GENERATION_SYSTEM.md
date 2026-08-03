@@ -931,6 +931,17 @@ to `storage_capacity_current.json`. The terminal completion audit reopens the
 receipt and all bound sources from the deployment-receipt checkout, allowing
 later evaluation code while preventing a same-named config on that later
 revision from replacing the training-time source.
+Launch-receipt creation now also replays the target deployment receipt with its
+formal-repository freshness check enabled, requires that the receipt-bound
+checkout is the current launch checkout, and propagates the current-runtime
+requirement into the readiness bridge. The launch/resume CLI therefore rejects
+formal-repository, target-checkout, or runtime drift before creating or
+consuming the immutable launch receipt. Historical terminal replay deliberately
+disables only those *current-state* requirements while retaining exact hashes,
+Git/runtime identities, training-critical blob equality, and every immutable
+source binding; it does not pretend that a post-training machine must still be
+the launch machine. See
+`docs/records/2026-08-03_generation_full_launch_current_state_boundary.md`.
 
 The full 300K matched run also publishes a generic read-only operational monitor
 with optimizer-step freshness, finite-metric checks, checkpoint cadence, process,

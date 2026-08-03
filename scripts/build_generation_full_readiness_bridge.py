@@ -296,6 +296,7 @@ def build_readiness_bridge(
     expected_target_revision: str,
     expected_target_branch: str,
     require_current_target_git: bool = True,
+    require_current_runtime_environment: bool = True,
 ) -> dict[str, Any]:
     for revision in (expected_source_revision, expected_target_revision):
         if not FULL_REVISION.fullmatch(revision):
@@ -368,14 +369,17 @@ def build_readiness_bridge(
         require_current_git=False,
         require_training_state_absent=False,
     )
-    current_runtime_environment_sha256 = _current_runtime_environment_sha(
-        source_paths["cofitok_config"],
-        project_root=project_root,
-    )
+    recorded_runtime_environment_sha256 = verified_readiness[
+        "runtime_selection"
+    ]["runtime_environment_sha256"]
+    current_runtime_environment_sha256 = recorded_runtime_environment_sha256
+    if require_current_runtime_environment:
+        current_runtime_environment_sha256 = _current_runtime_environment_sha(
+            source_paths["cofitok_config"],
+            project_root=project_root,
+        )
     if (
-        verified_readiness["runtime_selection"][
-            "runtime_environment_sha256"
-        ]
+        recorded_runtime_environment_sha256
         != current_runtime_environment_sha256
     ):
         raise ValueError(

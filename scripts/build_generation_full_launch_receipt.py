@@ -18,6 +18,9 @@ try:
     from scripts.build_generation_full_readiness_bridge import (
         verify_readiness_bridge,
     )
+    from scripts.build_generation_large_capacity_deployment_receipt import (
+        verify_deployment_receipt,
+    )
     from scripts.verify_generation_stability_frozen_supplemental import (
         verify_frozen_supplemental_report,
     )
@@ -30,6 +33,9 @@ except ModuleNotFoundError:
         validate_full_storage_capacity,
     )
     from build_generation_full_readiness_bridge import verify_readiness_bridge
+    from build_generation_large_capacity_deployment_receipt import (
+        verify_deployment_receipt,
+    )
     from verify_generation_stability_frozen_supplemental import (
         verify_frozen_supplemental_report,
     )
@@ -76,6 +82,29 @@ def build_full_launch_receipt(
         raise ValueError("stability full readiness SHA256 differs")
     if require_training_state_absent:
         require_absent_training_state(training_run_dirs)
+    sources = source_identities(source_paths)
+
+    deployment = verify_deployment_receipt(
+        _read_json(source_paths["deployment_receipt"]),
+        receipt_path=source_paths["deployment_receipt"],
+        expected_receipt_sha256=sources["deployment_receipt"]["sha256"],
+        require_current_formal_repository=require_current_formal_repository,
+    )
+    expected_git = {
+        "revision": expected_revision,
+        "branch": expected_branch,
+        "tracked_dirty": False,
+    }
+    if deployment.get("checkout", {}).get("git") != expected_git:
+        raise ValueError("stability full deployment checkout identity differs")
+    if (
+        require_current_git
+        and Path(str(deployment.get("checkout", {}).get("path", ""))).resolve()
+        != project_root.resolve()
+    ):
+        raise ValueError(
+            "stability full launch is running outside the deployed checkout"
+        )
 
     stability_supplemental = verify_frozen_supplemental_report(
         _read_json(source_paths["stability_supplemental"]),
@@ -108,6 +137,9 @@ def build_full_launch_receipt(
         expected_target_revision=expected_revision,
         expected_target_branch=expected_branch,
         require_current_target_git=require_current_git,
+        require_current_runtime_environment=(
+            require_current_runtime_environment
+        ),
     )
     launch_storage = validate_full_storage_capacity(
         _read_json(source_paths["launch_storage_capacity"]),
@@ -116,18 +148,12 @@ def build_full_launch_receipt(
         expected_path=storage_path,
         minimum_sample_count=FULL_COMPLETION_SAMPLE_RESERVE,
     )
-    sources = source_identities(source_paths)
     if (
         stability_supplemental.get("report")
         != sources["stability_supplemental"]
     ):
         raise ValueError("stability supplemental launch binding differs")
     selected_runtime = bridge["runtime_selection"]
-    expected_git = {
-        "revision": expected_revision,
-        "branch": expected_branch,
-        "tracked_dirty": False,
-    }
     if target_git != expected_git:
         raise ValueError("stability full readiness bridge target identity differs")
     return {

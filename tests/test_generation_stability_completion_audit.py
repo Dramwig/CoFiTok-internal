@@ -402,6 +402,8 @@ def test_stability_completion_replays_training_sources_from_deployed_checkout() 
     assert '"dense_config": training_project' in source
     assert '"project_root": training_project' in source
     assert source.count('"require_current_formal_repository": False') == 2
+    assert source.count('"require_current_runtime_environment": False') == 3
+    assert source.count('"require_current_target_git": False') == 1
 
 def test_visual_panel_verifier_rehashes_and_decodes_every_png(tmp_path: Path) -> None:
     from PIL import Image

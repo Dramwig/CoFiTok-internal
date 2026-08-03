@@ -116,6 +116,27 @@ def _patch_dependencies(
     monkeypatch.setattr(launch, "verify_readiness_bridge", lambda *a, **k: _bridge())
     monkeypatch.setattr(
         launch,
+        "verify_deployment_receipt",
+        lambda *a, **k: {
+            "formal_repository": {
+                "git": {
+                    "revision": "f" * 40,
+                    "branch": BRANCH,
+                    "tracked_dirty": False,
+                }
+            },
+            "checkout": {
+                "path": source_paths["deployment_receipt"].parent.as_posix(),
+                "git": {
+                    "revision": REVISION,
+                    "branch": BRANCH,
+                    "tracked_dirty": False,
+                },
+            },
+        },
+    )
+    monkeypatch.setattr(
+        launch,
         "verify_frozen_supplemental_report",
         lambda *a, **k: {
             "report": launch.source_identities(
@@ -230,6 +251,97 @@ def test_full_launch_receipt_requires_exact_source_set(
     del sources["deployment_receipt"]
 
     with pytest.raises(ValueError, match="source set differs"):
+        launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))
+
+
+def test_full_launch_receipt_enforces_launch_time_repository_and_runtime(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sources = _source_paths(tmp_path)
+    _patch_dependencies(monkeypatch, sources)
+    deployment_requirements = []
+    bridge_requirements = []
+
+    def verify_deployment(*args, **kwargs):
+        deployment_requirements.append(
+            kwargs["require_current_formal_repository"]
+        )
+        return {
+            "formal_repository": {"git": {"revision": "f" * 40}},
+            "checkout": {
+                "path": tmp_path.as_posix(),
+                "git": {
+                    "revision": REVISION,
+                    "branch": BRANCH,
+                    "tracked_dirty": False,
+                },
+            },
+        }
+
+    def verify_bridge(*args, **kwargs):
+        bridge_requirements.append(
+            kwargs["require_current_runtime_environment"]
+        )
+        return _bridge()
+
+    monkeypatch.setattr(launch, "verify_deployment_receipt", verify_deployment)
+    monkeypatch.setattr(launch, "verify_readiness_bridge", verify_bridge)
+
+    launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))
+    replay_kwargs = {
+        **_kwargs(tmp_path, sources),
+        "require_current_runtime_environment": False,
+        "require_current_formal_repository": False,
+        "require_current_git": False,
+    }
+    launch.build_full_launch_receipt(**replay_kwargs)
+
+    assert deployment_requirements == [True, False]
+    assert bridge_requirements == [True, False]
+
+
+def test_full_launch_receipt_rejects_current_formal_repository_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sources = _source_paths(tmp_path)
+    _patch_dependencies(monkeypatch, sources)
+    monkeypatch.setattr(
+        launch,
+        "verify_deployment_receipt",
+        lambda *a, **k: (_ for _ in ()).throw(
+            ValueError("large-capacity formal repository Git identity differs")
+        ),
+    )
+
+    with pytest.raises(ValueError, match="formal repository Git identity differs"):
+        launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))
+
+
+def test_full_launch_receipt_rejects_wrong_deployment_checkout(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sources = _source_paths(tmp_path)
+    _patch_dependencies(monkeypatch, sources)
+    monkeypatch.setattr(
+        launch,
+        "verify_deployment_receipt",
+        lambda *a, **k: {
+            "formal_repository": {"git": {"revision": "f" * 40}},
+            "checkout": {
+                "path": (tmp_path / "other").as_posix(),
+                "git": {
+                    "revision": REVISION,
+                    "branch": BRANCH,
+                    "tracked_dirty": False,
+                },
+            },
+        },
+    )
+
+    with pytest.raises(ValueError, match="outside the deployed checkout"):
         launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))
 
 
