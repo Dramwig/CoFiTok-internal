@@ -1,0 +1,322 @@
+{
+  "authorization": {
+    "deployment_performed": false,
+    "full_training_launch_allowed": false,
+    "full_training_launched": false,
+    "launch_receipt_created": false,
+    "readiness_bridge_created": false
+  },
+  "frozen_gate_module_compatibility": [
+    {
+      "frozen_evaluator_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+      "frozen_git_blob": "35a4dca2a8bca170e88c5a1d9d5b904eeb56d756",
+      "identical": true,
+      "path": "src/cofitok/generation_gate.py",
+      "target_git_blob": "35a4dca2a8bca170e88c5a1d9d5b904eeb56d756"
+    },
+    {
+      "frozen_evaluator_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+      "frozen_git_blob": "f2bb505ffb6fb0abf4b535070b52dd56d1fb50a3",
+      "identical": true,
+      "path": "src/cofitok/generation_gate_sources.py",
+      "target_git_blob": "f2bb505ffb6fb0abf4b535070b52dd56d1fb50a3"
+    }
+  ],
+  "full_training_runbook": {
+    "authorization_upgrade": {
+      "frozen_scaling_class_fidelity_required": true,
+      "frozen_stability_supplemental_required": true,
+      "launch_receipt_schema_version": 4,
+      "readiness_bridge_required": true,
+      "sample_count": {
+        "source": 16384,
+        "target": 116640
+      }
+    },
+    "controlled_preamble_upgrade": true,
+    "normalized_target_preamble_sha256": "3c196801c05153da13501c265da8480714f2ef119b686db8dbc3e153558d2d07",
+    "path": "artifacts/runbooks/generation_stability_ema_teacher_full_matched_300k_after_gate.sh",
+    "source_git_blob": "8b34d8dfefb4c7dba16ff83fc2812ec88c4b8740",
+    "source_preamble_sha256": "3c196801c05153da13501c265da8480714f2ef119b686db8dbc3e153558d2d07",
+    "target_git_blob": "eaad42a85c53827d60a1578b65241d944d4f96c7",
+    "training_execution_identical": true,
+    "training_execution_marker": "monitor_report_passes() {",
+    "training_execution_sha256": "1a4e559c3c8828ceee9907f45e2de2d4513a77f37e4458eb50755ee53ab6382c"
+  },
+  "observed_at": "2026-08-03T13:33:46.474082+08:00",
+  "role": "readiness_compatible_schema_v4_control_compatibility_manifest",
+  "schema_version": 1,
+  "source_is_ancestor": true,
+  "source_revision": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+  "status": "pass",
+  "target_branch": "scale/generation-stability-full-control-quality-v4-27ed",
+  "target_revision": "cac762ee147f645185259f45fdf212e1872838cb",
+  "training_critical_blob_count": 66,
+  "training_critical_blobs_identical": true,
+  "training_critical_manifest": [
+    {
+      "git_blob": "9e0ed1303fe6c35c9e028ae68b368f81d1026989",
+      "path": "artifacts/runbooks/generation_full_milestone_eval.sh"
+    },
+    {
+      "git_blob": "52f23abf00f9da5213712efb687aa0ef1c967d12",
+      "path": "configs/generation/imagenet256_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json"
+    },
+    {
+      "git_blob": "b9ec634d498df93a9451d9acce9278fcf0428a89",
+      "path": "configs/generation/imagenet256_stability_rollout_x0_u2_ema_teacher_dense_300k.json"
+    },
+    {
+      "git_blob": "05345f1e0f2e26e0bb7cce275b8542a5f761942c",
+      "path": "pyproject.toml"
+    },
+    {
+      "git_blob": "ed2dae0a81cf800cbb24811dd49f5fbaec7d3824",
+      "path": "scripts/audit_generation_training_progress.py"
+    },
+    {
+      "git_blob": "8a6a01d7ca1d5d832269ac86f105183982358743",
+      "path": "scripts/build_generation_milestone_report.py"
+    },
+    {
+      "git_blob": "001937779f831c8331e9eb1a47e36413bc04d73c",
+      "path": "scripts/monitor_generation_pair.py"
+    },
+    {
+      "git_blob": "31a22a307c98c325ce76c135125753482b4409df",
+      "path": "scripts/run_generation_training_watchdog.py"
+    },
+    {
+      "git_blob": "58fe27d59c7485c82109a033b07371cf81fa4d1c",
+      "path": "scripts/select_generation_training_runtime.py"
+    },
+    {
+      "git_blob": "32a61046e328cae188798339deba9a4b8266772e",
+      "path": "scripts/train_generation.py"
+    },
+    {
+      "git_blob": "5bded0544de3d3cfd1e3bf468f787b95d9fc0fcb",
+      "path": "scripts/validate_generation_milestone_report.py"
+    },
+    {
+      "git_blob": "c5d0f0b0cea68e0374b5e0ce8a26b7333e319f5d",
+      "path": "scripts/validate_generation_training_completion.py"
+    },
+    {
+      "git_blob": "184e9b7d3580b187360a880f05d7234cb8b148cc",
+      "path": "scripts/validate_generation_training_pair.py"
+    },
+    {
+      "git_blob": "d84282963a9cda82b88da9c60712f32a1af4844f",
+      "path": "src/cofitok/__init__.py"
+    },
+    {
+      "git_blob": "6b76e9e28de7848d1038e23a293c97c5954ecc17",
+      "path": "src/cofitok/configs.py"
+    },
+    {
+      "git_blob": "869d607d56fe45e5e15abe5e68f79d0da7f07dfc",
+      "path": "src/cofitok/data/__init__.py"
+    },
+    {
+      "git_blob": "b2f3490bb885223688df5da59a528d7740783b84",
+      "path": "src/cofitok/data/provenance.py"
+    },
+    {
+      "git_blob": "9c7340b7d8fc818fba581ddce313c84adaf4fa33",
+      "path": "src/cofitok/data/registry.py"
+    },
+    {
+      "git_blob": "4da7bbd5a1c8ad67cfd3a17c9e435dc4af861623",
+      "path": "src/cofitok/data/sampler.py"
+    },
+    {
+      "git_blob": "41a694790dc8ec5f62b76bb411f3cd314b0697c4",
+      "path": "src/cofitok/diagnostics.py"
+    },
+    {
+      "git_blob": "d20bf23f6a27052078dc93f32d73ed618c32622c",
+      "path": "src/cofitok/diffusion/__init__.py"
+    },
+    {
+      "git_blob": "4e49ffebca79429b51e634522cd81978d4f543a0",
+      "path": "src/cofitok/diffusion/sampling.py"
+    },
+    {
+      "git_blob": "54c633f4c310abf0dbc0e9964d5d8ab8c3346623",
+      "path": "src/cofitok/diffusion/schedule.py"
+    },
+    {
+      "git_blob": "8be5dddfcc62ae138cac472c56e54077bd8ddf99",
+      "path": "src/cofitok/environment.py"
+    },
+    {
+      "git_blob": "c01b826625e73f453df069a11f26c87e4fa55f1e",
+      "path": "src/cofitok/generation/__init__.py"
+    },
+    {
+      "git_blob": "7d5454a8ed33b90607de97919e4a5589dc72f5d7",
+      "path": "src/cofitok/generation/artifact.py"
+    },
+    {
+      "git_blob": "682d441da687716fa67e0dc478d7a9d627c9f5cd",
+      "path": "src/cofitok/generation/io.py"
+    },
+    {
+      "git_blob": "09375bcbbd793158ab4ea858548ceff705f7f513",
+      "path": "src/cofitok/generation/protocol.py"
+    },
+    {
+      "git_blob": "ddf7660a88e91d42f57543e496b5e0247f2c78dd",
+      "path": "src/cofitok/generation/runtime.py"
+    },
+    {
+      "git_blob": "6dabd0b0435bf6ce2769f8e50dd0e68b0771725a",
+      "path": "src/cofitok/generation/session.py"
+    },
+    {
+      "git_blob": "d5dac15fbfe3858f63e6a938b993da5f4ba416cd",
+      "path": "src/cofitok/generation/stability.py"
+    },
+    {
+      "git_blob": "97f33ca99c86dbbbcd1c4436a3546134386b2e16",
+      "path": "src/cofitok/generation/stability_qualification.py"
+    },
+    {
+      "git_blob": "19e6d68d4473f5b276eb76bc6c69db142c190a5e",
+      "path": "src/cofitok/generation/stability_scaling.py"
+    },
+    {
+      "git_blob": "97e85a0b5d92cf82c612098ef0ff64a5226425eb",
+      "path": "src/cofitok/generation_authorization.py"
+    },
+    {
+      "git_blob": "2099eaa398176a3a35ec82665dca6e970f3e6609",
+      "path": "src/cofitok/generation_cost.py"
+    },
+    {
+      "git_blob": "35a4dca2a8bca170e88c5a1d9d5b904eeb56d756",
+      "path": "src/cofitok/generation_gate.py"
+    },
+    {
+      "git_blob": "f2bb505ffb6fb0abf4b535070b52dd56d1fb50a3",
+      "path": "src/cofitok/generation_gate_sources.py"
+    },
+    {
+      "git_blob": "452ef2014511b1a88ed6ff70a662edbd301b870e",
+      "path": "src/cofitok/generation_pair.py"
+    },
+    {
+      "git_blob": "5f1971e4024ec0025b3cf7853c2a76b3dd2067f3",
+      "path": "src/cofitok/generation_paths.py"
+    },
+    {
+      "git_blob": "2fb2babdf87a5702cffdbfd2adb295269d59f869",
+      "path": "src/cofitok/generation_recipe.py"
+    },
+    {
+      "git_blob": "5325ea6d242036e25f16ea3844c7b295eba762b4",
+      "path": "src/cofitok/image_integrity.py"
+    },
+    {
+      "git_blob": "77e0d6abba80a577778b11dc693c2ba9535f85a1",
+      "path": "src/cofitok/metrics.py"
+    },
+    {
+      "git_blob": "21c37466c1d094a6bff1fc51614df4a72ea1b2cf",
+      "path": "src/cofitok/models/__init__.py"
+    },
+    {
+      "git_blob": "a7bfd5e4eb83eb7523c8bee6a558774e3b322f4c",
+      "path": "src/cofitok/models/blocks.py"
+    },
+    {
+      "git_blob": "00676de96f1bb1fa112a98ae4c50b84eec0e04db",
+      "path": "src/cofitok/models/cofitok.py"
+    },
+    {
+      "git_blob": "9202e528ac44678105f7e24eda5b4eb54d54d2ed",
+      "path": "src/cofitok/models/predictors.py"
+    },
+    {
+      "git_blob": "532a4b6f6809452617f67a258ef24f0ee9d7452a",
+      "path": "src/cofitok/models/scalable_unet.py"
+    },
+    {
+      "git_blob": "94d3785620f985b5bc8e37cc7cafc940a81d6628",
+      "path": "src/cofitok/models/synthesis.py"
+    },
+    {
+      "git_blob": "ed69bd3e6d0802caf93e43e8aff5b0a374d9a598",
+      "path": "src/cofitok/monitoring.py"
+    },
+    {
+      "git_blob": "d9375e939c3520663f73463cd22d67fffaa529ef",
+      "path": "src/cofitok/reporting.py"
+    },
+    {
+      "git_blob": "6e54ab2e37ea2534eb18bf596ee28b1cf43903d2",
+      "path": "src/cofitok/sampling_progress.py"
+    },
+    {
+      "git_blob": "6f2a625c829b75fe7a8d8c1c2cefe0202d2c982b",
+      "path": "src/cofitok/token_layout.py"
+    },
+    {
+      "git_blob": "ed9551f02096319781933cf2e0020b3d5f477087",
+      "path": "src/cofitok/training/__init__.py"
+    },
+    {
+      "git_blob": "f30c5627b3c69409f03cfb705c154af4f5efcfc2",
+      "path": "src/cofitok/training/authorization.py"
+    },
+    {
+      "git_blob": "40312c44574d19c3391b984dffe2d48b62c71b5a",
+      "path": "src/cofitok/training/checkpointing.py"
+    },
+    {
+      "git_blob": "23fcf4765c084147d922dc6f83a984d8199be42e",
+      "path": "src/cofitok/training/completion.py"
+    },
+    {
+      "git_blob": "eafff8a6f8fe5a851e0bce28b76d131edea6d220",
+      "path": "src/cofitok/training/ema.py"
+    },
+    {
+      "git_blob": "bd1938c9d132f0ba5f0175e894f8bb8d82a56a45",
+      "path": "src/cofitok/training/losses.py"
+    },
+    {
+      "git_blob": "3a384196c179722216d68701257e034adb114f29",
+      "path": "src/cofitok/training/metrics.py"
+    },
+    {
+      "git_blob": "7dfd6ccd209117a5d739b4dd13da81531caf87ae",
+      "path": "src/cofitok/training/rollout.py"
+    },
+    {
+      "git_blob": "ca81dc6049c190b9bad66c3c6eb0d36567287d78",
+      "path": "src/cofitok/training/runtime.py"
+    },
+    {
+      "git_blob": "258891de95672624c158578c31001677dc1ab2ff",
+      "path": "src/cofitok/training/step.py"
+    },
+    {
+      "git_blob": "4e0cc8d5a37c8041e74b5412e841ade4633fa8b9",
+      "path": "src/cofitok/training/watchdog.py"
+    },
+    {
+      "git_blob": "e9b9a78d0941192cd672849648fa742d19a87193",
+      "path": "src/cofitok/utils/__init__.py"
+    },
+    {
+      "git_blob": "1b14821c47a2767219997dce8da575c9ffb7fc8a",
+      "path": "src/cofitok/utils/seed.py"
+    },
+    {
+      "git_blob": "01462de988c904c8ee31b74273484a7780cd1771",
+      "path": "uv.lock"
+    }
+  ]
+}

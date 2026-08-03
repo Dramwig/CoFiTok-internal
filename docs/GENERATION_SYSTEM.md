@@ -400,9 +400,20 @@ repository or mutate an active training checkout.
   merge, or checkout mutation. The receipt is
   `artifacts/reports/generation/readiness_compatible_quality_control_target_2026-08-03/incremental_bundle_rehearsal_receipt.json`.
   That target predates the schema-v4 class-fidelity prerequisite and is no
-  longer launch-eligible. It remains un-fetched and un-deployed; a new
-  prerequisite-aware compatible target or fresh readiness must be constructed
-  and revalidated after this change. Neither target creates a bridge,
+  longer launch-eligible. It remains un-fetched and un-deployed.
+  The replacement local-only target is
+  `scale/generation-stability-full-control-quality-v4-27ed` at
+  `cac762ee147f645185259f45fdf212e1872838cb`. It ports only the launch-time
+  current-state replay and the standalone frozen class-fidelity verifier onto
+  the compatible target. Relative to `5dd3488...`, all 66 training-critical
+  blobs and the full-training execution suffix remain byte-identical; the
+  suffix SHA256 remains `1a4e559c3c8828ceee9907f45e2de2d4513a77f37e4458eb50755ee53ab6382c`.
+  A prerequisite-aware `77,285`-byte bundle with SHA256
+  `1da88d84baeca066daa9a6d9a0886f5613b378145b43cbe9c61505aaba69ebfd`
+  passed local and remote verification plus a CPU-only Linux full-suite
+  rehearsal, then was deleted. Evidence is in
+  `artifacts/reports/generation/readiness_compatible_quality_control_target_v4_2026-08-03/`.
+  The target remains un-fetched and un-deployed. It creates no bridge,
   deployment receipt, launch receipt, or full-training authorization.
 - Stability post-evaluation uses separate, explicit training and evaluation
   Git identities. This prevents the gate builder's legacy

@@ -1,0 +1,127 @@
+{
+  "authorization": {
+    "deployment_performed": false,
+    "deployment_receipt_created": false,
+    "formal_completion": false,
+    "full_training_launch_allowed": false,
+    "full_training_launch_authorized": false,
+    "full_training_launch_receipt_created": false,
+    "full_training_launched": false,
+    "readiness_bridge_created": false
+  },
+  "bundle": {
+    "advertised_head_count": 1,
+    "advertised_heads": [
+      {
+        "ref": "refs/heads/scale/generation-stability-full-control-quality-v4-27ed",
+        "revision": "cac762ee147f645185259f45fdf212e1872838cb"
+      }
+    ],
+    "bytes": 77285,
+    "commit_count": 10,
+    "ephemeral": true,
+    "hash_algorithm": "sha1",
+    "local_bundle_verify": "pass",
+    "object_count": 147,
+    "remote_bundle_verify": "pass",
+    "remote_bytes_match": true,
+    "remote_sha256_match": true,
+    "required_prerequisites": [
+      "5dd3488ac9b30274f4960195e252cc9fdb161002"
+    ],
+    "retained_for_deployment": false,
+    "sha256": "1da88d84baeca066daa9a6d9a0886f5613b378145b43cbe9c61505aaba69ebfd"
+  },
+  "local_verification": {
+    "compileall": "pass",
+    "focused_pytest": {
+      "failed": 0,
+      "passed": 50
+    },
+    "full_pytest": {
+      "collected": 877,
+      "failed": 0,
+      "passed": 873,
+      "skipped": 4,
+      "wall_time_seconds": 154.2
+    },
+    "git_diff_check": "pass",
+    "paper_layout": "short sibling layout with a temporary read-only paper junction"
+  },
+  "observed_at": "2026-08-03T13:34:25.9997163+08:00",
+  "remote_rehearsal": {
+    "checkout_branch": "scale/generation-stability-full-control-quality-v4-27ed",
+    "checkout_revision": "cac762ee147f645185259f45fdf212e1872838cb",
+    "checkout_tracked_clean": true,
+    "cli_help": [
+      "scripts/verify_generation_stability_frozen_class_fidelity.py",
+      "scripts/build_generation_full_launch_receipt.py",
+      "scripts/build_generation_full_readiness_bridge.py",
+      "scripts/run_generation_stability_posttraining_supervisor.py"
+    ],
+    "compileall": "pass",
+    "cuda_visible_devices": "",
+    "fetch_into_source_checkout_performed": false,
+    "full_pytest": {
+      "errors": 0,
+      "failed": 0,
+      "junit_bytes": 124992,
+      "passed": 875,
+      "skipped": 2,
+      "tests": 877,
+      "time_seconds": 124.566
+    },
+    "gpu_compute_after": [
+      {
+        "pid": 541878,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 77970
+      }
+    ],
+    "gpu_compute_before": [
+      {
+        "pid": 541878,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 77970
+      }
+    ],
+    "host": "pro6000",
+    "isolated_fetch_performed": true,
+    "merge_into_source_checkout_performed": false,
+    "runbook_bash_n": {
+      "failed": 0,
+      "passed": 100
+    },
+    "source_branch_after": "scale/generation-large-capacity",
+    "source_branch_before": "scale/generation-large-capacity",
+    "source_checkout": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-5dd3488",
+    "source_checkout_modified": false,
+    "source_head_after": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+    "source_head_before": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+    "source_tracked_clean_after": true,
+    "source_tracked_clean_before": true,
+    "storage_free_bytes_after": 182812114944,
+    "temporary_bundle_cleaned": true,
+    "temporary_checkout_cleaned": true
+  },
+  "role": "readiness_compatible_schema_v4_control_incremental_bundle_linux_rehearsal",
+  "schema_version": 1,
+  "status": "pass",
+  "target": {
+    "branch": "scale/generation-stability-full-control-quality-v4-27ed",
+    "commit": "cac762ee147f645185259f45fdf212e1872838cb",
+    "compatibility_evidence": {
+      "controlled_preamble_upgrade": true,
+      "frozen_gate_module_blobs_identical": true,
+      "full_training_execution_suffix_identical": true,
+      "full_training_execution_suffix_sha256": "1a4e559c3c8828ceee9907f45e2de2d4513a77f37e4458eb50755ee53ab6382c",
+      "launch_receipt_schema_version": 4,
+      "normalized_target_preamble_sha256": "3c196801c05153da13501c265da8480714f2ef119b686db8dbc3e153558d2d07",
+      "source_preamble_sha256": "3c196801c05153da13501c265da8480714f2ef119b686db8dbc3e153558d2d07",
+      "training_critical_blob_count": 66,
+      "training_critical_blobs_identical": true
+    },
+    "parent": "9019dd3f0f504e799c03496ec41a653b61deaa02",
+    "source_is_ancestor": true
+  }
+}
