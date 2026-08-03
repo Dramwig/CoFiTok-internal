@@ -354,7 +354,12 @@ def test_stability_completion_rejects_replaced_full_launch_receipt(
                 "frozen_stability_supplemental": {
                     "required_for_full_training_launch": True,
                     "full_training_launch_allowed": False,
-                }
+                },
+                "frozen_scaling_class_fidelity": {
+                    "class_fidelity_passed": True,
+                    "required_for_full_training_launch": True,
+                    "full_training_launch_allowed": False,
+                },
             },
             "runtime_selection": {},
             "launch_storage_capacity": {},
@@ -373,6 +378,9 @@ def test_stability_completion_rejects_replaced_full_launch_receipt(
     assert evidence["quality_prerequisites"][
         "frozen_stability_supplemental"
     ]["required_for_full_training_launch"] is True
+    assert evidence["quality_prerequisites"][
+        "frozen_scaling_class_fidelity"
+    ]["class_fidelity_passed"] is True
 
     path.write_text('{"status":"replaced"}\n', encoding="ascii")
     with pytest.raises(ValueError, match="launch receipt SHA256 differs"):
@@ -397,6 +405,8 @@ def test_stability_completion_replays_training_sources_from_deployed_checkout() 
     assert '"dense_config": training_project' in source
     assert '"project_root": training_project' in source
     assert source.count('"require_current_formal_repository": False') == 2
+    assert source.count('"require_current_runtime_environment": False') == 3
+    assert source.count('"require_current_target_git": False') == 1
 
 def test_visual_panel_verifier_rehashes_and_decodes_every_png(tmp_path: Path) -> None:
     from PIL import Image

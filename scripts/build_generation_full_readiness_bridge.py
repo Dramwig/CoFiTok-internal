@@ -54,27 +54,48 @@ TRAINING_EXECUTION_MARKER = b"monitor_report_passes() {\n"
 TARGET_AUTHORIZATION_REQUIREMENTS = (
     b"EXPECTED_READINESS_BRIDGE_SHA256=",
     b"EXPECTED_STABILITY_SUPPLEMENTAL_SHA256=",
+    b"EXPECTED_SCALING_CLASS_FIDELITY_SHA256=",
+    b"EXPECTED_CLASS_FIDELITY_REVISION=",
+    b"EXPECTED_CLASS_FIDELITY_BRANCH=",
     b"validate_generation_full_readiness_bridge.py",
     b'--expected-bridge-sha256 "$EXPECTED_READINESS_BRIDGE_SHA256"',
     b'--readiness-bridge "$READINESS_BRIDGE"',
     b'--stability-supplemental "$STABILITY_SUPPLEMENTAL"',
     b'--expected-stability-supplemental-sha256 "$EXPECTED_STABILITY_SUPPLEMENTAL_SHA256"',
+    b'--scaling-class-fidelity "$SCALING_CLASS_FIDELITY"',
+    b'--expected-scaling-class-fidelity-sha256 "$EXPECTED_SCALING_CLASS_FIDELITY_SHA256"',
+    b'--expected-class-fidelity-revision "$EXPECTED_CLASS_FIDELITY_REVISION"',
+    b'--expected-class-fidelity-branch "$EXPECTED_CLASS_FIDELITY_BRANCH"',
     TARGET_SAMPLE_RESERVE,
 )
 BRIDGE_ONLY_PREAMBLE_LINES = (
     b"EXPECTED_STABILITY_SUPPLEMENTAL_SHA256=${EXPECTED_STABILITY_SUPPLEMENTAL_SHA256:?set the passing frozen stability supplemental SHA256}\n",
+    b"EXPECTED_SCALING_CLASS_FIDELITY_SHA256=${EXPECTED_SCALING_CLASS_FIDELITY_SHA256:?set the passing frozen scaling class-fidelity SHA256}\n",
+    b"EXPECTED_CLASS_FIDELITY_REVISION=${EXPECTED_CLASS_FIDELITY_REVISION:?set the clean frozen class-fidelity evaluator revision}\n",
+    b"EXPECTED_CLASS_FIDELITY_BRANCH=${EXPECTED_CLASS_FIDELITY_BRANCH:?set the clean frozen class-fidelity evaluator branch}\n",
     b"EXPECTED_READINESS_BRIDGE_SHA256=${EXPECTED_READINESS_BRIDGE_SHA256:?set the immutable readiness revision bridge SHA256}\n",
     b'STABILITY_SUPPLEMENTAL="$SCALING_ROOT/reports/frozen_posteval_supplemental/supplemental_qualification.json"\n',
+    b'SCALING_CLASS_FIDELITY="$SCALING_ROOT/reports/frozen_posteval_class_fidelity/qualification_report.json"\n',
     b'READINESS_BRIDGE="$REPORT_ROOT/full_training_readiness_bridge.json"\n',
     b'[[ -f "$STABILITY_SUPPLEMENTAL" ]]\n',
+    b'[[ -f "$SCALING_CLASS_FIDELITY" ]]\n',
     b'[[ -f "$READINESS_BRIDGE" ]]\n',
     b"[[ \"$(sha256sum \"$STABILITY_SUPPLEMENTAL\" | awk '{print $1}')\" == \"$EXPECTED_STABILITY_SUPPLEMENTAL_SHA256\" ]]\n",
+    b"[[ \"$(sha256sum \"$SCALING_CLASS_FIDELITY\" | awk '{print $1}')\" == \"$EXPECTED_SCALING_CLASS_FIDELITY_SHA256\" ]]\n",
     b"[[ \"$(sha256sum \"$READINESS_BRIDGE\" | awk '{print $1}')\" == \"$EXPECTED_READINESS_BRIDGE_SHA256\" ]]\n",
     b'  --stability-supplemental "$STABILITY_SUPPLEMENTAL"\n',
     b'  --expected-stability-supplemental-sha256 "$EXPECTED_STABILITY_SUPPLEMENTAL_SHA256"\n',
+    b'  --scaling-class-fidelity "$SCALING_CLASS_FIDELITY"\n',
+    b'  --expected-scaling-class-fidelity-sha256 "$EXPECTED_SCALING_CLASS_FIDELITY_SHA256"\n',
+    b'  --expected-class-fidelity-revision "$EXPECTED_CLASS_FIDELITY_REVISION"\n',
+    b'  --expected-class-fidelity-branch "$EXPECTED_CLASS_FIDELITY_BRANCH"\n',
     b'  --readiness-bridge "$READINESS_BRIDGE"\n',
     b'    --stability-supplemental "$STABILITY_SUPPLEMENTAL" \\\n',
     b'    --expected-stability-supplemental-sha256 "$EXPECTED_STABILITY_SUPPLEMENTAL_SHA256" \\\n',
+    b'    --scaling-class-fidelity "$SCALING_CLASS_FIDELITY" \\\n',
+    b'    --expected-scaling-class-fidelity-sha256 "$EXPECTED_SCALING_CLASS_FIDELITY_SHA256" \\\n',
+    b'    --expected-class-fidelity-revision "$EXPECTED_CLASS_FIDELITY_REVISION" \\\n',
+    b'    --expected-class-fidelity-branch "$EXPECTED_CLASS_FIDELITY_BRANCH" \\\n',
     b'    --readiness-bridge "$READINESS_BRIDGE" \\\n',
 )
 SOURCE_RUNTIME_VALIDATOR_START = (
@@ -248,7 +269,8 @@ def _verify_runbook_change(
         "authorization_upgrade": {
             "readiness_bridge_required": True,
             "frozen_stability_supplemental_required": True,
-            "launch_receipt_schema_version": 3,
+            "launch_receipt_schema_version": 4,
+            "frozen_scaling_class_fidelity_required": True,
             "sample_count": {
                 "source": 16_384,
                 "target": 116_640,
@@ -296,6 +318,7 @@ def build_readiness_bridge(
     expected_target_revision: str,
     expected_target_branch: str,
     require_current_target_git: bool = True,
+    require_current_runtime_environment: bool = True,
 ) -> dict[str, Any]:
     for revision in (expected_source_revision, expected_target_revision):
         if not FULL_REVISION.fullmatch(revision):
@@ -368,14 +391,17 @@ def build_readiness_bridge(
         require_current_git=False,
         require_training_state_absent=False,
     )
-    current_runtime_environment_sha256 = _current_runtime_environment_sha(
-        source_paths["cofitok_config"],
-        project_root=project_root,
-    )
+    recorded_runtime_environment_sha256 = verified_readiness[
+        "runtime_selection"
+    ]["runtime_environment_sha256"]
+    current_runtime_environment_sha256 = recorded_runtime_environment_sha256
+    if require_current_runtime_environment:
+        current_runtime_environment_sha256 = _current_runtime_environment_sha(
+            source_paths["cofitok_config"],
+            project_root=project_root,
+        )
     if (
-        verified_readiness["runtime_selection"][
-            "runtime_environment_sha256"
-        ]
+        recorded_runtime_environment_sha256
         != current_runtime_environment_sha256
     ):
         raise ValueError(

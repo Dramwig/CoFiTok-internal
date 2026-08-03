@@ -13,6 +13,9 @@ REVISION = "a" * 40
 BRANCH = "scale/generation-large-capacity"
 READINESS_SHA = "b" * 64
 SUPPLEMENTAL_SHA = "d" * 64
+CLASS_FIDELITY_SHA = "e" * 64
+CLASS_FIDELITY_REVISION = "1" * 40
+CLASS_FIDELITY_BRANCH = "scale/class-fidelity"
 
 
 def _source_paths(tmp_path: Path) -> dict[str, Path]:
@@ -21,6 +24,7 @@ def _source_paths(tmp_path: Path) -> dict[str, Path]:
         "deployment_receipt",
         "promotion_gate",
         "stability_supplemental",
+        "scaling_class_fidelity",
         "full_readiness",
         "readiness_bridge",
         "cofitok_config",
@@ -94,6 +98,9 @@ def _kwargs(tmp_path: Path, source_paths: dict[str, Path]) -> dict:
         "expected_branch": BRANCH,
         "expected_readiness_sha256": READINESS_SHA,
         "expected_stability_supplemental_sha256": SUPPLEMENTAL_SHA,
+        "expected_scaling_class_fidelity_sha256": CLASS_FIDELITY_SHA,
+        "expected_class_fidelity_revision": CLASS_FIDELITY_REVISION,
+        "expected_class_fidelity_branch": CLASS_FIDELITY_BRANCH,
         "require_current_runtime_environment": True,
         "require_current_git": True,
         "require_training_state_absent": True,
@@ -116,6 +123,27 @@ def _patch_dependencies(
     monkeypatch.setattr(launch, "verify_readiness_bridge", lambda *a, **k: _bridge())
     monkeypatch.setattr(
         launch,
+        "verify_deployment_receipt",
+        lambda *a, **k: {
+            "formal_repository": {
+                "git": {
+                    "revision": "f" * 40,
+                    "branch": BRANCH,
+                    "tracked_dirty": False,
+                }
+            },
+            "checkout": {
+                "path": source_paths["deployment_receipt"].parent.as_posix(),
+                "git": {
+                    "revision": REVISION,
+                    "branch": BRANCH,
+                    "tracked_dirty": False,
+                },
+            },
+        },
+    )
+    monkeypatch.setattr(
+        launch,
         "verify_frozen_supplemental_report",
         lambda *a, **k: {
             "report": launch.source_identities(
@@ -126,6 +154,26 @@ def _patch_dependencies(
                 }
             )["stability_supplemental"],
             "checks": {"all_supplemental_quality_checks_passed": True},
+            "supplemental_non_authorizing": True,
+            "required_for_full_training_launch": True,
+            "full_training_launch_allowed": False,
+        },
+    )
+    monkeypatch.setattr(
+        launch,
+        "verify_frozen_class_fidelity_qualification",
+        lambda *a, **k: {
+            "report": launch.source_identities(
+                {
+                    "scaling_class_fidelity": source_paths[
+                        "scaling_class_fidelity"
+                    ]
+                }
+            )["scaling_class_fidelity"],
+            "promotion_gate": launch.source_identities(
+                {"promotion_gate": source_paths["promotion_gate"]}
+            )["promotion_gate"],
+            "class_fidelity_passed": True,
             "supplemental_non_authorizing": True,
             "required_for_full_training_launch": True,
             "full_training_launch_allowed": False,
@@ -158,12 +206,18 @@ def test_full_launch_receipt_binds_sources_runtime_and_paths(
     assert report["role"] == "stability_full_training_launch_receipt"
     assert report["readiness_sha256"] == READINESS_SHA
     assert report["runtime_selection"]["effective_batch_size"] == 64
-    assert report["schema_version"] == 3
+    assert report["schema_version"] == 4
     supplemental = report["quality_prerequisites"][
         "frozen_stability_supplemental"
     ]
     assert supplemental["required_for_full_training_launch"] is True
     assert supplemental["full_training_launch_allowed"] is False
+    class_fidelity = report["quality_prerequisites"][
+        "frozen_scaling_class_fidelity"
+    ]
+    assert class_fidelity["class_fidelity_passed"] is True
+    assert class_fidelity["required_for_full_training_launch"] is True
+    assert class_fidelity["full_training_launch_allowed"] is False
     assert report["readiness_bridge"]["training_semantics_identical"] is True
     assert report["readiness_bridge"]["controlled_preamble_upgrade"] is True
     assert report["readiness_bridge"]["source_preamble_sha256"] == report[
@@ -233,6 +287,97 @@ def test_full_launch_receipt_requires_exact_source_set(
         launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))
 
 
+def test_full_launch_receipt_enforces_launch_time_repository_and_runtime(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sources = _source_paths(tmp_path)
+    _patch_dependencies(monkeypatch, sources)
+    deployment_requirements = []
+    bridge_requirements = []
+
+    def verify_deployment(*args, **kwargs):
+        deployment_requirements.append(
+            kwargs["require_current_formal_repository"]
+        )
+        return {
+            "formal_repository": {"git": {"revision": "f" * 40}},
+            "checkout": {
+                "path": tmp_path.as_posix(),
+                "git": {
+                    "revision": REVISION,
+                    "branch": BRANCH,
+                    "tracked_dirty": False,
+                },
+            },
+        }
+
+    def verify_bridge(*args, **kwargs):
+        bridge_requirements.append(
+            kwargs["require_current_runtime_environment"]
+        )
+        return _bridge()
+
+    monkeypatch.setattr(launch, "verify_deployment_receipt", verify_deployment)
+    monkeypatch.setattr(launch, "verify_readiness_bridge", verify_bridge)
+
+    launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))
+    replay_kwargs = {
+        **_kwargs(tmp_path, sources),
+        "require_current_runtime_environment": False,
+        "require_current_formal_repository": False,
+        "require_current_git": False,
+    }
+    launch.build_full_launch_receipt(**replay_kwargs)
+
+    assert deployment_requirements == [True, False]
+    assert bridge_requirements == [True, False]
+
+
+def test_full_launch_receipt_rejects_current_formal_repository_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sources = _source_paths(tmp_path)
+    _patch_dependencies(monkeypatch, sources)
+    monkeypatch.setattr(
+        launch,
+        "verify_deployment_receipt",
+        lambda *a, **k: (_ for _ in ()).throw(
+            ValueError("large-capacity formal repository Git identity differs")
+        ),
+    )
+
+    with pytest.raises(ValueError, match="formal repository Git identity differs"):
+        launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))
+
+
+def test_full_launch_receipt_rejects_wrong_deployment_checkout(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sources = _source_paths(tmp_path)
+    _patch_dependencies(monkeypatch, sources)
+    monkeypatch.setattr(
+        launch,
+        "verify_deployment_receipt",
+        lambda *a, **k: {
+            "formal_repository": {"git": {"revision": "f" * 40}},
+            "checkout": {
+                "path": (tmp_path / "other").as_posix(),
+                "git": {
+                    "revision": REVISION,
+                    "branch": BRANCH,
+                    "tracked_dirty": False,
+                },
+            },
+        },
+    )
+
+    with pytest.raises(ValueError, match="outside the deployed checkout"):
+        launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))
+
+
 def test_full_launch_receipt_rejects_failed_stability_supplemental(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -248,4 +393,22 @@ def test_full_launch_receipt_rejects_failed_stability_supplemental(
     )
 
     with pytest.raises(ValueError, match="quality prerequisite did not pass"):
+        launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))
+
+
+def test_full_launch_receipt_rejects_failed_scaling_class_fidelity(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sources = _source_paths(tmp_path)
+    _patch_dependencies(monkeypatch, sources)
+    monkeypatch.setattr(
+        launch,
+        "verify_frozen_class_fidelity_qualification",
+        lambda *a, **k: (_ for _ in ()).throw(
+            ValueError("frozen class-fidelity qualification did not pass exactly")
+        ),
+    )
+
+    with pytest.raises(ValueError, match="class-fidelity qualification did not pass"):
         launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))

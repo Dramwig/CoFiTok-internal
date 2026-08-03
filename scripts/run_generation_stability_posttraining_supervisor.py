@@ -19,9 +19,15 @@ try:
     from scripts.verify_generation_stability_frozen_supplemental import (
         verify_frozen_supplemental_report,
     )
+    from scripts.verify_generation_stability_frozen_class_fidelity import (
+        verify_frozen_class_fidelity_qualification,
+    )
 except ModuleNotFoundError:
     from verify_generation_stability_frozen_supplemental import (
         verify_frozen_supplemental_report,
+    )
+    from verify_generation_stability_frozen_class_fidelity import (
+        verify_frozen_class_fidelity_qualification,
     )
 
 
@@ -35,6 +41,7 @@ FULL_LAUNCH_SOURCE_NAMES = {
     "deployment_receipt",
     "promotion_gate",
     "stability_supplemental",
+    "scaling_class_fidelity",
     "full_readiness",
     "readiness_bridge",
     "cofitok_config",
@@ -125,7 +132,7 @@ def validate_full_launch_receipt(
         "tracked_dirty": False,
     }
     if (
-        report.get("schema_version") != 3
+        report.get("schema_version") != 4
         or report.get("status") != "pass"
         or report.get("role") != FULL_LAUNCH_ROLE
         or report.get("stage") != "stability_full"
@@ -178,6 +185,39 @@ def validate_full_launch_receipt(
     )
     if verified_supplemental != supplemental:
         raise ValueError("stability full launch supplemental replay differs")
+    class_fidelity = (
+        quality.get("frozen_scaling_class_fidelity")
+        if isinstance(quality, dict)
+        else None
+    )
+    evaluator_git = (
+        class_fidelity.get("evaluator_git")
+        if isinstance(class_fidelity, dict)
+        else None
+    )
+    if (
+        not isinstance(class_fidelity, dict)
+        or class_fidelity.get("report")
+        != source_reports.get("scaling_class_fidelity")
+        or class_fidelity.get("promotion_gate")
+        != source_reports.get("promotion_gate")
+        or class_fidelity.get("class_fidelity_passed") is not True
+        or class_fidelity.get("supplemental_non_authorizing") is not True
+        or class_fidelity.get("required_for_full_training_launch") is not True
+        or class_fidelity.get("full_training_launch_allowed") is not False
+        or not isinstance(evaluator_git, dict)
+    ):
+        raise ValueError("stability full launch class-fidelity prerequisite differs")
+    verified_class_fidelity = verify_frozen_class_fidelity_qualification(
+        _read_object(Path(source_reports["scaling_class_fidelity"]["path"])),
+        report_path=Path(source_reports["scaling_class_fidelity"]["path"]),
+        expected_report_sha256=source_reports["scaling_class_fidelity"]["sha256"],
+        promotion_gate_path=Path(source_reports["promotion_gate"]["path"]),
+        expected_evaluator_revision=str(evaluator_git.get("revision", "")),
+        expected_evaluator_branch=str(evaluator_git.get("branch", "")),
+    )
+    if verified_class_fidelity != class_fidelity:
+        raise ValueError("stability full launch class-fidelity replay differs")
     full_root = checkpoint_root.resolve() / "stability_full_300k_ema_teacher"
     expected_runs = [
         (full_root / "cofitok_rgbtail3_rollout_x0_u2_ema_teacher").as_posix(),
@@ -192,6 +232,9 @@ def validate_full_launch_receipt(
         "source_count": len(source_reports),
         "stability_supplemental_sha256": source_reports[
             "stability_supplemental"
+        ]["sha256"],
+        "scaling_class_fidelity_sha256": source_reports[
+            "scaling_class_fidelity"
         ]["sha256"],
         "training_run_dirs": expected_runs,
     }

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+from scripts import build_generation_full_readiness_bridge as bridge
 from scripts.build_generation_full_readiness_bridge import (
     FULL_RUNBOOK,
     BRIDGE_ONLY_PREAMBLE_LINES,
@@ -102,7 +104,8 @@ def test_bridge_accepts_identical_training_blobs_and_runway_only_change(
     assert runbook["authorization_upgrade"] == {
         "readiness_bridge_required": True,
         "frozen_stability_supplemental_required": True,
-        "launch_receipt_schema_version": 3,
+        "frozen_scaling_class_fidelity_required": True,
+        "launch_receipt_schema_version": 4,
         "sample_count": {"source": 16_384, "target": 116_640},
     }
     assert runbook["training_execution_identical"] is True
@@ -157,7 +160,7 @@ def test_bridge_rejects_incomplete_target_authorization_preamble(
     _git(root, "add", FULL_RUNBOOK)
     _git(root, "commit", "-m", "drop bridge binding")
 
-    with pytest.raises(ValueError, match="bridge authorization line differs"):
+    with pytest.raises(ValueError, match="authorization bridge is incomplete"):
         _verify_runbook_change(
             root,
             source_revision=source,
@@ -203,4 +206,224 @@ def test_bridge_rejects_extra_preamble_drift(tmp_path: Path) -> None:
             root,
             source_revision=source,
             target_revision=_git(root, "rev-parse", "HEAD"),
+        )
+
+
+def _patch_bridge_dependencies(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    project: Path,
+    readiness_path: Path,
+    source_deployment: Path,
+    target_deployment: Path,
+    cofitok_config: Path,
+) -> None:
+    source_revision = "f" * 40
+    target_revision = "a" * 40
+    source_branch = "scale/source"
+    target_branch = "scale/target"
+    deployment_identity = {"path": source_deployment.as_posix()}
+    readiness = {
+        "source_reports": {"deployment_receipt": deployment_identity},
+        "training_run_dirs": ["/runs/cofitok", "/runs/dense"],
+        "benchmark_root": "/benchmarks",
+    }
+    storage_capacity = cofitok_config.parent / "storage_capacity.json"
+    verified_readiness = {
+        "runtime_selection": {
+            "runtime_environment_sha256": "e" * 64,
+        },
+        "config_contract": {"status": "pass"},
+        "storage_capacity": {"status": "pass"},
+        "promotion_authorization": {"gate_sha256": "b" * 64},
+        "training_run_dirs": ["/runs/cofitok", "/runs/dense"],
+        "benchmark_root": "/benchmarks",
+    }
+    monkeypatch.setattr(
+        bridge,
+        "git_provenance",
+        lambda root: {
+            "revision": target_revision,
+            "branch": target_branch,
+            "tracked_dirty": False,
+        },
+    )
+    monkeypatch.setattr(bridge, "file_sha256", lambda path: "1" * 64)
+    monkeypatch.setattr(
+        bridge,
+        "verify_deployment_receipt",
+        lambda report, *, receipt_path, **kwargs: (
+            {
+                "checkout": {
+                    "path": project.as_posix(),
+                    "git": {
+                        "revision": target_revision,
+                        "branch": target_branch,
+                        "tracked_dirty": False,
+                    },
+                }
+            }
+            if receipt_path == target_deployment
+            else {
+                "checkout": {
+                    "path": "/source-checkout",
+                    "git": {
+                        "revision": source_revision,
+                        "branch": source_branch,
+                        "tracked_dirty": False,
+                    },
+                }
+            }
+        ),
+    )
+    monkeypatch.setattr(
+        bridge,
+        "_git",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0),
+    )
+    monkeypatch.setattr(
+        bridge,
+        "_read_json",
+        lambda path: (
+            readiness
+            if path == readiness_path
+            else (
+                {"filesystem": {"path": project.as_posix()}}
+                if path == storage_capacity
+                else {}
+            )
+        ),
+    )
+    monkeypatch.setattr(
+        bridge,
+        "_source_paths_from_readiness",
+        lambda report: {
+            "cofitok_config": cofitok_config,
+            "storage_capacity": storage_capacity,
+        },
+    )
+    monkeypatch.setattr(
+        bridge,
+        "source_identity",
+        lambda path: (
+            deployment_identity
+            if path == source_deployment
+            else {"path": Path(path).as_posix()}
+        ),
+    )
+    monkeypatch.setattr(
+        bridge,
+        "verify_readiness_report",
+        lambda *args, **kwargs: verified_readiness,
+    )
+    monkeypatch.setattr(
+        bridge,
+        "_critical_manifest",
+        lambda project, revision: [{"path": "train.py", "git_blob": "c" * 40}],
+    )
+    monkeypatch.setattr(
+        bridge,
+        "_verify_runbook_change",
+        lambda *args, **kwargs: {"training_execution_identical": True},
+    )
+
+
+def test_bridge_historical_replay_does_not_require_current_runtime(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = tmp_path / "project"
+    project.mkdir()
+    readiness_path = tmp_path / "readiness.json"
+    source_deployment = tmp_path / "source_deployment.json"
+    target_deployment = tmp_path / "target_deployment.json"
+    cofitok_config = tmp_path / "cofitok.json"
+    for path in (
+        readiness_path,
+        source_deployment,
+        target_deployment,
+        cofitok_config,
+    ):
+        path.write_text("{}", encoding="ascii")
+    _patch_bridge_dependencies(
+        monkeypatch,
+        project=project,
+        readiness_path=readiness_path,
+        source_deployment=source_deployment,
+        target_deployment=target_deployment,
+        cofitok_config=cofitok_config,
+    )
+    monkeypatch.setattr(
+        bridge,
+        "_current_runtime_environment_sha",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("historical replay read the current runtime")
+        ),
+    )
+
+    report = bridge.build_readiness_bridge(
+        project_root=project,
+        readiness_path=readiness_path,
+        expected_readiness_sha256="1" * 64,
+        source_deployment_receipt=source_deployment,
+        expected_source_deployment_receipt_sha256="2" * 64,
+        target_deployment_receipt=target_deployment,
+        expected_target_deployment_receipt_sha256="3" * 64,
+        expected_source_revision="f" * 40,
+        expected_source_branch="scale/source",
+        expected_target_revision="a" * 40,
+        expected_target_branch="scale/target",
+        require_current_target_git=False,
+        require_current_runtime_environment=False,
+    )
+
+    assert report["target_runtime_environment_sha256"] == "e" * 64
+
+
+def test_bridge_launch_rejects_current_runtime_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project = tmp_path / "project"
+    project.mkdir()
+    readiness_path = tmp_path / "readiness.json"
+    source_deployment = tmp_path / "source_deployment.json"
+    target_deployment = tmp_path / "target_deployment.json"
+    cofitok_config = tmp_path / "cofitok.json"
+    for path in (
+        readiness_path,
+        source_deployment,
+        target_deployment,
+        cofitok_config,
+    ):
+        path.write_text("{}", encoding="ascii")
+    _patch_bridge_dependencies(
+        monkeypatch,
+        project=project,
+        readiness_path=readiness_path,
+        source_deployment=source_deployment,
+        target_deployment=target_deployment,
+        cofitok_config=cofitok_config,
+    )
+    monkeypatch.setattr(
+        bridge,
+        "_current_runtime_environment_sha",
+        lambda *args, **kwargs: "d" * 64,
+    )
+
+    with pytest.raises(ValueError, match="target runtime environment differs"):
+        bridge.build_readiness_bridge(
+            project_root=project,
+            readiness_path=readiness_path,
+            expected_readiness_sha256="1" * 64,
+            source_deployment_receipt=source_deployment,
+            expected_source_deployment_receipt_sha256="2" * 64,
+            target_deployment_receipt=target_deployment,
+            expected_target_deployment_receipt_sha256="3" * 64,
+            expected_source_revision="f" * 40,
+            expected_source_branch="scale/source",
+            expected_target_revision="a" * 40,
+            expected_target_branch="scale/target",
+            require_current_target_git=False,
+            require_current_runtime_environment=True,
         )

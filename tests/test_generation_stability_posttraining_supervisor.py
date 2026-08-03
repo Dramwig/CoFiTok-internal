@@ -70,6 +70,7 @@ def test_full_launch_receipt_rehashes_every_bound_source(
         "deployment_receipt",
         "promotion_gate",
         "stability_supplemental",
+        "scaling_class_fidelity",
         "full_readiness",
         "readiness_bridge",
         "cofitok_config",
@@ -85,7 +86,7 @@ def test_full_launch_receipt_rehashes_every_bound_source(
     sources["promotion_gate"]["sha256"] = "c" * 64
     sources["full_readiness"]["sha256"] = "d" * 64
     report = {
-        "schema_version": 3,
+        "schema_version": 4,
         "status": "pass",
         "role": supervisor.FULL_LAUNCH_ROLE,
         "stage": "stability_full",
@@ -107,7 +108,20 @@ def test_full_launch_receipt_rehashes_every_bound_source(
                 "supplemental_non_authorizing": True,
                 "required_for_full_training_launch": True,
                 "full_training_launch_allowed": False,
-            }
+            },
+            "frozen_scaling_class_fidelity": {
+                "report": sources["scaling_class_fidelity"],
+                "promotion_gate": sources["promotion_gate"],
+                "evaluator_git": {
+                    "revision": EVALUATION_REVISION,
+                    "branch": EVALUATION_BRANCH,
+                    "tracked_dirty": False,
+                },
+                "class_fidelity_passed": True,
+                "supplemental_non_authorizing": True,
+                "required_for_full_training_launch": True,
+                "full_training_launch_allowed": False,
+            },
         },
         "full_training_launch_authorized": True,
         "formal_generation_completion_claimed": False,
@@ -138,6 +152,19 @@ def test_full_launch_receipt_rehashes_every_bound_source(
         "verify_frozen_supplemental_report",
         replay_supplemental,
     )
+    class_fidelity_replays = []
+
+    def replay_class_fidelity(*args, **kwargs):
+        class_fidelity_replays.append(kwargs)
+        return report["quality_prerequisites"][
+            "frozen_scaling_class_fidelity"
+        ]
+
+    monkeypatch.setattr(
+        supervisor,
+        "verify_frozen_class_fidelity_qualification",
+        replay_class_fidelity,
+    )
     evidence = supervisor.validate_full_launch_receipt(
         report,
         receipt_path=receipt,
@@ -148,7 +175,7 @@ def test_full_launch_receipt_rehashes_every_bound_source(
         expected_training_branch=TRAINING_BRANCH,
         checkpoint_root=tmp_path,
     )
-    assert evidence["source_count"] == 11
+    assert evidence["source_count"] == 12
     assert evidence["stability_supplemental_sha256"] == sources[
         "stability_supplemental"
     ]["sha256"]
@@ -159,6 +186,17 @@ def test_full_launch_receipt_rehashes_every_bound_source(
                 "sha256"
             ],
             "promotion_gate_path": Path(sources["promotion_gate"]["path"]),
+        }
+    ]
+    assert class_fidelity_replays == [
+        {
+            "report_path": Path(sources["scaling_class_fidelity"]["path"]),
+            "expected_report_sha256": sources["scaling_class_fidelity"][
+                "sha256"
+            ],
+            "promotion_gate_path": Path(sources["promotion_gate"]["path"]),
+            "expected_evaluator_revision": EVALUATION_REVISION,
+            "expected_evaluator_branch": EVALUATION_BRANCH,
         }
     ]
 
