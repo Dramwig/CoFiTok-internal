@@ -62,4 +62,45 @@ dense recovery and all waiters remain outside this change.
   `36 passed in 12.58s`
 - `python -m compileall -q scripts src tests`: pass
 - complete local pytest: `1046 passed, 6 skipped in 236.77s`
-- isolated CPU-only Linux pytest and runbook syntax: pending
+- incremental bundle from prerequisite
+  `2448ce5e6a96beca6762eba1c8eef1b05fc40cfd` to implementation revision
+  `b45c490429c4e7f7ebeb1cc7eeca9ac66eaf2402`: `10,139` bytes, SHA256
+  `8336c4214e30e2a4b4eea2a7836e53bf0a8a944a4088fd969e610795b790851b`;
+  local and remote `git bundle verify` passed and advertised only the target
+  branch/head
+- clean isolated Linux checkout:
+  `/tmp/cofitok-launch-current-state-b45c490/CoFiTok-internal`, exact branch
+  `scale/generation-large-capacity`, exact revision `b45c490429c4e7f7ebeb1cc7eeca9ac66eaf2402`
+- isolated CPU-only Linux pytest with `CUDA_VISIBLE_DEVICES=""` and
+  `PYTHONPATH=.:src`: `1050 passed, 2 skipped in 151.78s`
+- all tracked runbooks: `104/104` passed `bash -n`
+- the launch-receipt validator/builder and readiness-bridge validator/builder
+  all completed direct `--help` entrypoint imports: `4/4`
+- `git diff --check`: pass
+
+## Live-system boundary check
+
+The rehearsal did not move any active checkout and did not signal, pause,
+restart, or replace any process. The final read-only pro6000 snapshot found:
+
+- dense metrics at step `27,400`, `1,753,600` samples, `549` rows, all finite,
+  strict step monotonicity, and exact `samples_seen=step*64`; the latest 50-step
+  interval was about `127.02s`;
+- the pair monitor at its preceding poll remained `running` in
+  `dense_identity_training`, with dense step `27,350`, progress `0.547`, and no
+  issues; recovery and watchdog were also `running`;
+- the latest protected checkpoint remained the exact 25K artifact:
+  `1,006,120,214` bytes, SHA256
+  `e73c935c488e234e80136b9507d3c84fca6015a760516dfec1bdf557871fb8ea`,
+  with matching `latest.json` and integrity sidecar bound to immutable training
+  revision `2c2c1f5166b73d4f28df93b276901671ac1a7836`;
+- the recovery controller retained fd 6 on `dense_recovery.lock`; its child
+  chain inherited the same fd. The training and controller checkouts were clean
+  at their required branches/revisions;
+- GPU compute contained only trainer leader PID `541878` using `77,970 MiB`;
+  the filesystem had `182,812,217,344` free bytes;
+- post-eval, readiness, and frozen supplemental waiters remained `waiting`
+  with no child; every launch boundary retained
+  `full_training_launch_allowed=false`.
+
+This work does not rerun CoFiTok, authorize full training, or launch full 300K.
