@@ -59,6 +59,10 @@ def _paired_sampling_contract(
 ) -> dict[str, Any]:
     cofitok_sample = cofitok["sample_provenance"]
     dense_sample = dense["sample_provenance"]
+    if cofitok_sample.get("git") != dense_sample.get("git"):
+        raise ValueError("class-fidelity sampling Git identities are not matched")
+    if cofitok.get("git") != dense.get("git"):
+        raise ValueError("class-fidelity evaluator Git identities are not matched")
     cofitok_sampling = copy.deepcopy(cofitok_sample["sampling"])
     dense_sampling = copy.deepcopy(dense_sample["sampling"])
     cofitok_budgets = cofitok_sampling.pop("prefix_budgets", None)
@@ -85,6 +89,11 @@ def _paired_sampling_contract(
         "cofitok_prefix_budget": 8,
         "dense_prefix_budget": 1,
         "weights": "ema",
+        "sampling_git": copy.deepcopy(cofitok_sample["git"]),
+        "evaluator_git": copy.deepcopy(cofitok["git"]),
+        "evaluator_runtime_environment_sha256": cofitok[
+            "runtime_environment_sha256"
+        ],
         "sample_count_per_method": int(cofitok_sampling["num_samples"]),
         "cofitok_checkpoint_sha256": cofitok_sample["checkpoint_sha256"],
         "dense_checkpoint_sha256": dense_sample["checkpoint_sha256"],

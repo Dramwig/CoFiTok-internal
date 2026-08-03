@@ -10,9 +10,11 @@ from cofitok.diffusion import select_sampling_timesteps
 from cofitok.environment import runtime_environment_sha256
 
 
-CLASS_FIDELITY_REPORT_SCHEMA_VERSION = 1
+CLASS_FIDELITY_REPORT_SCHEMA_VERSION = 2
+SUPPORTED_CLASS_FIDELITY_REPORT_SCHEMA_VERSIONS = frozenset({1, 2})
 CLASS_FIDELITY_REPORT_ROLE = "generation_class_fidelity_report"
-CLASS_FIDELITY_QUALIFICATION_SCHEMA_VERSION = 1
+CLASS_FIDELITY_QUALIFICATION_SCHEMA_VERSION = 2
+SUPPORTED_CLASS_FIDELITY_QUALIFICATION_SCHEMA_VERSIONS = frozenset({1, 2})
 CLASS_FIDELITY_QUALIFICATION_ROLE = "generation_class_fidelity_qualification"
 CLASS_FIDELITY_CLASSIFIER_NAME = "torchvision_resnet50_imagenet1k_v2"
 CLASS_FIDELITY_CLASSIFIER_BYTES = 102540417
@@ -268,9 +270,26 @@ def _validate_classifier_identity(classifier: dict[str, Any]) -> None:
         raise ValueError("class-fidelity classifier contract differs")
 
 
+def _valid_hex_digest(value: Any, *, length: int) -> bool:
+    text = str(value)
+    return len(text) == length and all(
+        character in "0123456789abcdef" for character in text
+    )
+
+
+def _valid_git_identity(value: Any) -> bool:
+    return (
+        isinstance(value, dict)
+        and _valid_hex_digest(value.get("revision"), length=40)
+        and bool(str(value.get("branch", "")))
+        and value.get("tracked_dirty") is False
+    )
+
+
 def validate_class_fidelity_report(report: dict[str, Any]) -> None:
+    schema_version = int(report.get("schema_version", -1))
     if (
-        report.get("schema_version") != CLASS_FIDELITY_REPORT_SCHEMA_VERSION
+        schema_version not in SUPPORTED_CLASS_FIDELITY_REPORT_SCHEMA_VERSIONS
         or report.get("role") != CLASS_FIDELITY_REPORT_ROLE
         or report.get("status") != "completed"
         or report.get("protocol") != "torchvision_imagenet_class_fidelity"
@@ -286,8 +305,11 @@ def validate_class_fidelity_report(report: dict[str, Any]) -> None:
     sampling = sample.get("sampling")
     git = report.get("git")
     environment = report.get("runtime_environment")
-    if not isinstance(sampling, dict) or not isinstance(git, dict):
+    sampling_git = sample.get("git")
+    if not isinstance(sampling, dict) or not _valid_git_identity(git):
         raise ValueError("class-fidelity sampling or Git provenance is missing")
+    if not _valid_git_identity(sampling_git):
+        raise ValueError("class-fidelity sampling Git provenance is invalid")
     if not isinstance(environment, dict):
         raise ValueError("class-fidelity runtime environment is missing")
     selected_budget = sample.get("selected_prefix_budget")
@@ -296,10 +318,9 @@ def validate_class_fidelity_report(report: dict[str, Any]) -> None:
         or sampling.get("class_schedule") != "balanced_modulo"
         or sampling.get("prefix_budgets") != [selected_budget]
         or selected_budget not in {1, 8}
-        or len(str(sample.get("sample_set_sha256", ""))) != 64
-        or len(str(sample.get("checkpoint_sha256", ""))) != 64
-        or git.get("tracked_dirty") is not False
-        or sample.get("git") != git
+        or not _valid_hex_digest(sample.get("sample_set_sha256"), length=64)
+        or not _valid_hex_digest(sample.get("checkpoint_sha256"), length=64)
+        or (schema_version == 1 and sampling_git != git)
         or report.get("runtime_environment_sha256")
         != runtime_environment_sha256(environment)
         or int(parameters.get("num_classes", -1)) != 1000
@@ -349,17 +370,18 @@ def validate_class_fidelity_qualification(
     requirements = CLASS_FIDELITY_STAGE_REQUIREMENTS.get(expected_stage)
     if requirements is None:
         raise ValueError("unsupported class-fidelity qualification stage")
+    schema_version = int(report.get("schema_version", -1))
     status = report.get("status")
     if (
-        report.get("schema_version")
-        != CLASS_FIDELITY_QUALIFICATION_SCHEMA_VERSION
+        schema_version
+        not in SUPPORTED_CLASS_FIDELITY_QUALIFICATION_SCHEMA_VERSIONS
         or report.get("role") != CLASS_FIDELITY_QUALIFICATION_ROLE
         or status not in {"pass", "hold"}
         or report.get("stage") != expected_stage
     ):
         raise ValueError("class-fidelity qualification contract differs")
     git = report.get("git")
-    if not isinstance(git, dict) or git.get("tracked_dirty") is not False:
+    if not _valid_git_identity(git):
         raise ValueError("class-fidelity qualification Git provenance is invalid")
     if expected_revision is not None and git.get("revision") != expected_revision:
         raise ValueError("class-fidelity qualification revision differs")
@@ -408,6 +430,8 @@ def validate_class_fidelity_qualification(
         "cofitok_sample_set_sha256",
         "dense_sample_set_sha256",
     )
+    sampling_git = sampling_contract.get("sampling_git")
+    evaluator_git = sampling_contract.get("evaluator_git")
     if (
         formal_sampling is not True
         or sample_count < int(requirements["min_samples"])
@@ -432,8 +456,21 @@ def validate_class_fidelity_qualification(
         or random_stream.get("batch_size_invariant") is not True
         or random_stream.get("resume_index_invariant") is not True
         or any(
-            len(str(sampling_contract.get(name, ""))) != 64
+            not _valid_hex_digest(sampling_contract.get(name), length=64)
             for name in identity_fields
+        )
+        or (
+            schema_version >= 2
+            and (
+                not _valid_git_identity(sampling_git)
+                or evaluator_git != git
+                or not _valid_hex_digest(
+                    sampling_contract.get(
+                        "evaluator_runtime_environment_sha256"
+                    ),
+                    length=64,
+                )
+            )
         )
     ):
         raise ValueError("class-fidelity sampling protocol is not formal")

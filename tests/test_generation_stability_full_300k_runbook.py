@@ -31,6 +31,9 @@ def test_stability_full_runbook_is_gate_and_identity_bound() -> None:
     )
     assert "EXPECTED_SCALING_GATE_SHA256=${" in source
     assert "EXPECTED_STABILITY_SUPPLEMENTAL_SHA256=${" in source
+    assert "EXPECTED_SCALING_CLASS_FIDELITY_SHA256=${" in source
+    assert "EXPECTED_CLASS_FIDELITY_REVISION=${" in source
+    assert "EXPECTED_CLASS_FIDELITY_BRANCH=${" in source
     assert "EXPECTED_DEPLOYMENT_RECEIPT_SHA256=${" in source
     assert "EXPECTED_READINESS_SHA256=${" in source
     assert "EXPECTED_READINESS_BRIDGE_SHA256=${" in source
@@ -42,6 +45,10 @@ def test_stability_full_runbook_is_gate_and_identity_bound() -> None:
     assert "--deployment-receipt" in source
     assert '--stability-supplemental "$STABILITY_SUPPLEMENTAL"' in source
     assert "--expected-stability-supplemental-sha256" in source
+    assert '--scaling-class-fidelity "$SCALING_CLASS_FIDELITY"' in source
+    assert "--expected-scaling-class-fidelity-sha256" in source
+    assert "--expected-class-fidelity-revision" in source
+    assert "--expected-class-fidelity-branch" in source
     assert '--bridge "$READINESS_BRIDGE"' in source
     assert "--source-deployment-receipt" in source
     assert "--target-deployment-receipt" in source

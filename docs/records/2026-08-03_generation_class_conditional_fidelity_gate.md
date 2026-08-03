@@ -132,3 +132,20 @@ suite above.
 
 The active pro6000 dense stability trainer, post-evaluation waiter, readiness
 waiter, and supplemental waiter were not modified, signalled, or restarted.
+
+## Frozen scaling follow-up
+
+The immutable stability post-evaluation at `c1efb12...` predates this evaluator
+and cannot emit the newer class-fidelity report directly. A later control-plane
+follow-up therefore introduces schema-v2 raw and paired reports with distinct
+`sampling_git` and `evaluator_git` identities. The former remains bound to the
+original formal 10K EMA sample generation; the latter binds the fixed ResNet-50
+evaluation checkout and runtime. This is an explicit cross-revision provenance
+contract, not a relabeling of historical samples.
+
+The source-bound follow-up runs only after the frozen supplemental passes and
+becomes a mandatory, non-authorizing source in schema-v4 full-launch receipts.
+Its standalone verifier recomputes the raw runtime hash, metric arithmetic,
+paired deltas, all ten threshold decisions, and promotion-gate sample/checkpoint
+identities. See
+`docs/records/2026-08-03_generation_frozen_scaling_class_fidelity_prerequisite.md`.

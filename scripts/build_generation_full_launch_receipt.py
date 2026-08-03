@@ -24,6 +24,9 @@ try:
     from scripts.verify_generation_stability_frozen_supplemental import (
         verify_frozen_supplemental_report,
     )
+    from scripts.verify_generation_stability_frozen_class_fidelity import (
+        verify_frozen_class_fidelity_qualification,
+    )
 except ModuleNotFoundError:
     from build_generation_full_readiness import (
         _read_json,
@@ -39,9 +42,12 @@ except ModuleNotFoundError:
     from verify_generation_stability_frozen_supplemental import (
         verify_frozen_supplemental_report,
     )
+    from verify_generation_stability_frozen_class_fidelity import (
+        verify_frozen_class_fidelity_qualification,
+    )
 
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 ROLE = "stability_full_training_launch_receipt"
 
 
@@ -56,6 +62,9 @@ def build_full_launch_receipt(
     expected_branch: str,
     expected_readiness_sha256: str,
     expected_stability_supplemental_sha256: str,
+    expected_scaling_class_fidelity_sha256: str,
+    expected_class_fidelity_revision: str,
+    expected_class_fidelity_branch: str,
     require_current_runtime_environment: bool,
     require_current_formal_repository: bool = True,
     require_current_git: bool = True,
@@ -65,6 +74,7 @@ def build_full_launch_receipt(
         "deployment_receipt",
         "promotion_gate",
         "stability_supplemental",
+        "scaling_class_fidelity",
         "full_readiness",
         "readiness_bridge",
         "cofitok_config",
@@ -112,6 +122,14 @@ def build_full_launch_receipt(
         expected_report_sha256=expected_stability_supplemental_sha256,
         promotion_gate_path=source_paths["promotion_gate"],
     )
+    scaling_class_fidelity = verify_frozen_class_fidelity_qualification(
+        _read_json(source_paths["scaling_class_fidelity"]),
+        report_path=source_paths["scaling_class_fidelity"],
+        expected_report_sha256=expected_scaling_class_fidelity_sha256,
+        promotion_gate_path=source_paths["promotion_gate"],
+        expected_evaluator_revision=expected_class_fidelity_revision,
+        expected_evaluator_branch=expected_class_fidelity_branch,
+    )
 
     bridge_report = _read_json(source_paths["readiness_bridge"])
     source_git = bridge_report.get("source_git", {})
@@ -153,6 +171,13 @@ def build_full_launch_receipt(
         != sources["stability_supplemental"]
     ):
         raise ValueError("stability supplemental launch binding differs")
+    if (
+        scaling_class_fidelity.get("report")
+        != sources["scaling_class_fidelity"]
+        or scaling_class_fidelity.get("promotion_gate")
+        != sources["promotion_gate"]
+    ):
+        raise ValueError("scaling class-fidelity launch binding differs")
     selected_runtime = bridge["runtime_selection"]
     if target_git != expected_git:
         raise ValueError("stability full readiness bridge target identity differs")
@@ -166,6 +191,7 @@ def build_full_launch_receipt(
         "readiness_sha256": expected_readiness_sha256,
         "quality_prerequisites": {
             "frozen_stability_supplemental": stability_supplemental,
+            "frozen_scaling_class_fidelity": scaling_class_fidelity,
         },
         "readiness_bridge": {
             "sha256": sources["readiness_bridge"]["sha256"],
@@ -229,6 +255,13 @@ def _common_arguments(parser: argparse.ArgumentParser) -> None:
         "--expected-stability-supplemental-sha256",
         required=True,
     )
+    parser.add_argument("--scaling-class-fidelity", type=Path, required=True)
+    parser.add_argument(
+        "--expected-scaling-class-fidelity-sha256",
+        required=True,
+    )
+    parser.add_argument("--expected-class-fidelity-revision", required=True)
+    parser.add_argument("--expected-class-fidelity-branch", required=True)
     parser.add_argument("--full-readiness", type=Path, required=True)
     parser.add_argument("--readiness-bridge", type=Path, required=True)
     parser.add_argument("--expected-readiness-sha256", required=True)
@@ -251,6 +284,7 @@ def source_paths_from_args(args: argparse.Namespace) -> dict[str, Path]:
         "deployment_receipt": args.deployment_receipt,
         "promotion_gate": args.promotion_gate,
         "stability_supplemental": args.stability_supplemental,
+        "scaling_class_fidelity": args.scaling_class_fidelity,
         "full_readiness": args.full_readiness,
         "readiness_bridge": args.readiness_bridge,
         "cofitok_config": args.cofitok_config,
@@ -281,6 +315,11 @@ def build_kwargs_from_args(
         "expected_stability_supplemental_sha256": (
             args.expected_stability_supplemental_sha256
         ),
+        "expected_scaling_class_fidelity_sha256": (
+            args.expected_scaling_class_fidelity_sha256
+        ),
+        "expected_class_fidelity_revision": args.expected_class_fidelity_revision,
+        "expected_class_fidelity_branch": args.expected_class_fidelity_branch,
         "require_current_runtime_environment": (
             args.require_current_runtime_environment
         ),

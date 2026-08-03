@@ -23,6 +23,7 @@ from cofitok.generation_class_fidelity import (
 )
 from scripts import build_generation_class_fidelity_qualification as qualification
 from scripts import evaluate_generation_class_fidelity as evaluator
+from scripts import verify_generation_stability_frozen_class_fidelity as frozen_verify
 from scripts.audit_large_scale_generation_completion import (
     _class_fidelity_comparison_evidence,
 )
@@ -178,6 +179,89 @@ def _passing_qualification(
     )
 
 
+def _passing_frozen_qualification(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[dict, Path, Path]:
+    sampling_git = {
+        "revision": "b" * 40,
+        "branch": "scale/frozen-sampling",
+        "tracked_dirty": False,
+    }
+    cofitok = _report(
+        method="cofitok", top1=0.21, top5=0.42, stage="scaling"
+    )
+    dense = _report(method="dense", top1=0.22, top5=0.43, stage="scaling")
+    cofitok["sample_provenance"]["git"] = sampling_git
+    dense["sample_provenance"]["git"] = sampling_git
+    cofitok_path = tmp_path / "cofitok.json"
+    dense_path = tmp_path / "dense.json"
+    cofitok_path.write_text(json.dumps(cofitok), encoding="utf-8")
+    dense_path.write_text(json.dumps(dense), encoding="utf-8")
+    monkeypatch.setattr(qualification, "git_provenance", lambda root: EXPECTED_GIT)
+    report = qualification.build_qualification(
+        cofitok=cofitok,
+        dense=dense,
+        cofitok_path=cofitok_path,
+        dense_path=dense_path,
+        stage="scaling",
+        expected_revision=EXPECTED_GIT["revision"],
+        expected_branch=EXPECTED_GIT["branch"],
+        thresholds={
+            "min_top1": 0.01,
+            "min_top5": 0.05,
+            "min_predicted_class_fraction": 0.25,
+            "min_normalized_predicted_entropy": 0.50,
+            "max_top1_regression": 0.05,
+            "max_top5_regression": 0.05,
+        },
+    )
+    report_path = tmp_path / "qualification.json"
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    gate = {
+        "source_profile": "stability_scaling",
+        "provenance_contract": {
+            "training_revision": "c" * 40,
+            "training_branch": "scale/training",
+            "evaluation_revision": sampling_git["revision"],
+            "evaluation_branch": sampling_git["branch"],
+        },
+        "gates": [
+            {
+                "name": "matched_sampling_provenance",
+                "passed": True,
+                "evidence": {
+                    "cofitok_checkpoint_sha256": report["sampling_contract"][
+                        "cofitok_checkpoint_sha256"
+                    ],
+                    "dense_checkpoint_sha256": report["sampling_contract"][
+                        "dense_checkpoint_sha256"
+                    ],
+                    "cofitok_sample_set_sha256": report["sampling_contract"][
+                        "cofitok_sample_set_sha256"
+                    ],
+                    "dense_sample_set_sha256": report["sampling_contract"][
+                        "dense_sample_set_sha256"
+                    ],
+                },
+            }
+        ],
+    }
+    gate_path = tmp_path / "gate.json"
+    gate_path.write_text(json.dumps(gate), encoding="utf-8")
+    monkeypatch.setattr(
+        frozen_verify,
+        "verify_generation_gate_source_reports",
+        lambda value: {},
+    )
+    monkeypatch.setattr(
+        frozen_verify,
+        "validate_generation_gate_authorization",
+        lambda value, expected_stage: {"stage": expected_stage},
+    )
+    return report, report_path, gate_path
+
+
 def test_accumulator_computes_streaming_class_fidelity() -> None:
     accumulator = ClassFidelityAccumulator(num_classes=5)
     logits = torch.tensor(
@@ -215,6 +299,236 @@ def test_validate_class_fidelity_report_rejects_raw_weights() -> None:
     report["sample_provenance"]["weights"] = "model"
     with pytest.raises(ValueError, match="source contract"):
         validate_class_fidelity_report(report)
+
+
+def test_class_fidelity_v2_separates_sampler_and_evaluator_git(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sampling_git = {
+        "revision": "b" * 40,
+        "branch": "scale/frozen-sampling",
+        "tracked_dirty": False,
+    }
+    cofitok = _report(
+        method="cofitok", top1=0.21, top5=0.42, stage="scaling"
+    )
+    dense = _report(method="dense", top1=0.22, top5=0.43, stage="scaling")
+    cofitok["sample_provenance"]["git"] = sampling_git
+    dense["sample_provenance"]["git"] = sampling_git
+    validate_class_fidelity_report(cofitok)
+    validate_class_fidelity_report(dense)
+    cofitok_path = tmp_path / "cofitok.json"
+    dense_path = tmp_path / "dense.json"
+    cofitok_path.write_text(json.dumps(cofitok), encoding="utf-8")
+    dense_path.write_text(json.dumps(dense), encoding="utf-8")
+    monkeypatch.setattr(qualification, "git_provenance", lambda root: EXPECTED_GIT)
+
+    report = qualification.build_qualification(
+        cofitok=cofitok,
+        dense=dense,
+        cofitok_path=cofitok_path,
+        dense_path=dense_path,
+        stage="scaling",
+        expected_revision=EXPECTED_GIT["revision"],
+        expected_branch=EXPECTED_GIT["branch"],
+        thresholds={
+            "min_top1": 0.01,
+            "min_top5": 0.05,
+            "min_predicted_class_fraction": 0.25,
+            "min_normalized_predicted_entropy": 0.50,
+            "max_top1_regression": 0.05,
+            "max_top5_regression": 0.05,
+        },
+    )
+
+    assert report["sampling_contract"]["sampling_git"] == sampling_git
+    assert report["sampling_contract"]["evaluator_git"] == EXPECTED_GIT
+    assert validate_class_fidelity_qualification(
+        report,
+        expected_stage="scaling",
+        expected_revision=EXPECTED_GIT["revision"],
+        expected_branch=EXPECTED_GIT["branch"],
+    )["valid"] is True
+
+
+def test_class_fidelity_qualification_rejects_mismatched_sampling_git(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cofitok = _report(
+        method="cofitok", top1=0.21, top5=0.42, stage="scaling"
+    )
+    dense = _report(method="dense", top1=0.22, top5=0.43, stage="scaling")
+    dense["sample_provenance"]["git"] = {
+        "revision": "b" * 40,
+        "branch": "scale/other-sampling",
+        "tracked_dirty": False,
+    }
+    cofitok_path = tmp_path / "cofitok.json"
+    dense_path = tmp_path / "dense.json"
+    cofitok_path.write_text(json.dumps(cofitok), encoding="utf-8")
+    dense_path.write_text(json.dumps(dense), encoding="utf-8")
+    monkeypatch.setattr(qualification, "git_provenance", lambda root: EXPECTED_GIT)
+
+    with pytest.raises(ValueError, match="sampling Git identities"):
+        qualification.build_qualification(
+            cofitok=cofitok,
+            dense=dense,
+            cofitok_path=cofitok_path,
+            dense_path=dense_path,
+            stage="scaling",
+            expected_revision=EXPECTED_GIT["revision"],
+            expected_branch=EXPECTED_GIT["branch"],
+            thresholds={
+                "min_top1": 0.01,
+                "min_top5": 0.05,
+                "min_predicted_class_fraction": 0.25,
+                "min_normalized_predicted_entropy": 0.50,
+                "max_top1_regression": 0.05,
+                "max_top5_regression": 0.05,
+            },
+        )
+
+
+def test_frozen_class_fidelity_verifier_replays_cross_revision_sources(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report, report_path, gate_path = _passing_frozen_qualification(
+        tmp_path, monkeypatch
+    )
+    evidence = frozen_verify.verify_frozen_class_fidelity_qualification(
+        report,
+        report_path=report_path,
+        expected_report_sha256=frozen_verify.file_sha256(report_path),
+        promotion_gate_path=gate_path,
+        expected_evaluator_revision=EXPECTED_GIT["revision"],
+        expected_evaluator_branch=EXPECTED_GIT["branch"],
+    )
+
+    assert evidence["class_fidelity_passed"] is True
+    assert evidence["sampling_git"]["revision"] == "b" * 40
+    assert evidence["evaluator_git"] == EXPECTED_GIT
+    assert evidence["required_for_full_training_launch"] is True
+    assert evidence["full_training_launch_allowed"] is False
+
+
+def test_frozen_class_fidelity_verifier_rejects_raw_source_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report, report_path, gate_path = _passing_frozen_qualification(
+        tmp_path, monkeypatch
+    )
+    Path(report["sources"]["cofitok"]["path"]).write_text(
+        '{"replaced":true}', encoding="utf-8"
+    )
+
+    with pytest.raises(ValueError, match="source changed"):
+        frozen_verify.verify_frozen_class_fidelity_qualification(
+            report,
+            report_path=report_path,
+            expected_report_sha256=frozen_verify.file_sha256(report_path),
+            promotion_gate_path=gate_path,
+            expected_evaluator_revision=EXPECTED_GIT["revision"],
+            expected_evaluator_branch=EXPECTED_GIT["branch"],
+        )
+
+
+def test_frozen_class_fidelity_verifier_rejects_gate_sample_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report, report_path, gate_path = _passing_frozen_qualification(
+        tmp_path, monkeypatch
+    )
+    gate = json.loads(gate_path.read_text(encoding="utf-8"))
+    gate["gates"][0]["evidence"]["cofitok_sample_set_sha256"] = "9" * 64
+    gate_path.write_text(json.dumps(gate), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="sample identity differs from the gate"):
+        frozen_verify.verify_frozen_class_fidelity_qualification(
+            report,
+            report_path=report_path,
+            expected_report_sha256=frozen_verify.file_sha256(report_path),
+            promotion_gate_path=gate_path,
+            expected_evaluator_revision=EXPECTED_GIT["revision"],
+            expected_evaluator_branch=EXPECTED_GIT["branch"],
+        )
+
+
+def test_frozen_class_fidelity_verifier_rejects_forged_runtime_identity(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report, report_path, gate_path = _passing_frozen_qualification(
+        tmp_path, monkeypatch
+    )
+    raw_path = Path(report["sources"]["cofitok"]["path"])
+    raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    raw["runtime_environment"]["device"]["type"] = "forged"
+    raw_path.write_text(json.dumps(raw), encoding="utf-8")
+    report["sources"]["cofitok"] = frozen_verify._identity(raw_path)
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="raw report contract differs"):
+        frozen_verify.verify_frozen_class_fidelity_qualification(
+            report,
+            report_path=report_path,
+            expected_report_sha256=frozen_verify.file_sha256(report_path),
+            promotion_gate_path=gate_path,
+            expected_evaluator_revision=EXPECTED_GIT["revision"],
+            expected_evaluator_branch=EXPECTED_GIT["branch"],
+        )
+
+
+def test_frozen_class_fidelity_verifier_recomputes_threshold_checks(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report, report_path, gate_path = _passing_frozen_qualification(
+        tmp_path, monkeypatch
+    )
+    report["checks"][0]["threshold"] = 0.0
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="checks did not pass"):
+        frozen_verify.verify_frozen_class_fidelity_qualification(
+            report,
+            report_path=report_path,
+            expected_report_sha256=frozen_verify.file_sha256(report_path),
+            promotion_gate_path=gate_path,
+            expected_evaluator_revision=EXPECTED_GIT["revision"],
+            expected_evaluator_branch=EXPECTED_GIT["branch"],
+        )
+
+
+def test_frozen_class_fidelity_runbook_is_source_bound_and_nontraining() -> None:
+    source = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts/runbooks/"
+        "generation_stability_frozen_50k_class_fidelity_after_supplemental.sh"
+    ).read_text(encoding="utf-8")
+
+    assert "frozen_posteval_class_fidelity.lock" in source
+    assert "flock -n 6" in source
+    assert "posteval_waiter.json" in source
+    assert "supplemental_waiter.json" in source
+    assert "supplemental_qualification.json" in source
+    assert 'nested.get("status") != "pass"' in source
+    assert "validate_generation_gate_report.py" in source
+    assert "verify_generation_stability_frozen_supplemental.py" in source
+    assert source.count("scripts/evaluate_generation_class_fidelity.py") == 2
+    assert "scripts/build_generation_class_fidelity_qualification.py" in source
+    assert "scripts/verify_generation_stability_frozen_class_fidelity.py" in source
+    assert "--min-samples 10000" in source
+    assert "--stage scaling" in source
+    assert "--allow-hold" in source
+    assert '--output-file "$QUALIFICATION"' in source
+    assert '--output-tree "$CLASS_FIDELITY_ROOT"' not in source
+    assert "scripts/train_generation.py" not in source
+    assert "full_matched_300k" not in source
 
 
 def test_classifier_identity_binds_bytes_sha_and_preprocessing(

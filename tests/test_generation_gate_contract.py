@@ -376,6 +376,17 @@ def _bind_class_fidelity(gate: dict) -> dict:
             "cofitok_prefix_budget": 8,
             "dense_prefix_budget": 1,
             "weights": "ema",
+            "sampling_git": {
+                "revision": "d" * 40,
+                "branch": "scale/generative-system",
+                "tracked_dirty": False,
+            },
+            "evaluator_git": {
+                "revision": "d" * 40,
+                "branch": "scale/generative-system",
+                "tracked_dirty": False,
+            },
+            "evaluator_runtime_environment_sha256": "e" * 64,
             "sample_count_per_method": sample_count,
             "cofitok_checkpoint_sha256": "a" * 64,
             "dense_checkpoint_sha256": "b" * 64,

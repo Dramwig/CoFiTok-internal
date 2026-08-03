@@ -72,10 +72,12 @@ distribution-support and EMA rollout diagnostics; it is not a scaling launch
 receipt.
 
 Downstream consumption is fail-closed without changing that claim boundary.
-The schema-v3 full-training launch receipt requires this exact report as an
-eleventh source and replays all direct and nested bindings. Missing, held,
-failed, drifted, or non-reproducible supplemental evidence blocks receipt
-creation. A pass is only a necessary quality prerequisite: it does not replace
+The original schema-v3 full-training launch receipt required this exact report
+as an eleventh source. The current schema-v4 receipt still replays all direct
+and nested supplemental bindings and additionally requires frozen formal-sample
+class fidelity as a twelfth source. Missing, held, failed, drifted, or
+non-reproducible supplemental evidence blocks receipt creation. A pass is only
+a necessary quality prerequisite: it does not replace class fidelity,
 readiness, the readiness revision bridge, fresh storage, deployment identity,
 or separate human launch authority.
 

@@ -359,23 +359,39 @@ repository or mutate an active training checkout.
   `artifacts/reports/generation/stability_frozen_supplemental_waiter_launch_2026-08-03/`;
   see
   `docs/records/2026-08-03_generation_frozen_supplemental_waiter_launch.md`.
-- The supplemental is nevertheless a mandatory **quality prerequisite** for a
-  later 300K launch. Schema-v3 `full_training_launch_receipt.json` replays the
-  supplemental from its four direct reports, rehashes every nested source,
-  requires all three quality checks to pass, and binds its bytes as an
-  eleventh launch source. This is intentionally asymmetric: a failed or absent
-  supplemental blocks launch, while a passing supplemental still cannot
-  authorize launch by itself. Readiness, its revision bridge, fresh storage,
-  deployment identity, and separate human launch authority remain required.
-  The post-training supervisor and terminal completion audit independently
-  rehash the same supplemental binding.
+- The supplemental and frozen formal-sample class fidelity are mandatory
+  **quality prerequisites** for a later 300K launch. Schema-v4
+  `full_training_launch_receipt.json` replays the supplemental from its four
+  direct reports, rehashes every nested source, requires all three supplemental
+  checks to pass, and also independently replays a paired class-fidelity
+  qualification over the original matched 10K EMA DDIM-100 sample sets. The
+  receipt binds twelve launch sources, including both quality reports. Missing,
+  held, failed, drifted, or non-reproducible evidence blocks launch, while a
+  pass from either quality check remains non-authorizing. Readiness, its
+  revision bridge, fresh storage, deployment identity, and separate human
+  launch authority remain required. The post-training supervisor and terminal
+  completion audit independently rehash and replay both bindings.
+- The frozen post-evaluation predates class-fidelity schema v2. The follow-up
+  runbook
+  `generation_stability_frozen_50k_class_fidelity_after_supplemental.sh`
+  therefore preserves two clean Git identities instead of relabeling the old
+  samples: `sampling_git` remains the exact frozen post-evaluation revision,
+  while `evaluator_git` records the later fixed-classifier checkout. It can run
+  only after the source-bound supplemental passes, revalidates the original
+  promotion gate and supplemental bytes, refuses a busy GPU, evaluates CoFiTok
+  K8 and dense K1 with the pinned ResNet-50 weights, and writes a source-bound
+  scaling qualification. The standalone verifier recomputes the runtime hash,
+  formal sampling contract, metric arithmetic, every threshold check, raw
+  report identity, and the promotion-gate checkpoint/sample digests. It always
+  returns `full_training_launch_allowed=false`; only the later schema-v4 launch
+  receipt can consume it as one prerequisite.
   Launch-time verification lives in a standalone control script, so a future
   compatible control target can consume it without changing the immutable
   trainer package. The current branch HEAD is not directly bridge-compatible
   with the active `5dd3488...` readiness source; it must not be used as a
   launch target without either a dedicated compatible target or fresh target
   readiness.
-  The dedicated compatible target is now prepared on branch
+  The earlier dedicated compatible target was prepared on branch
   `scale/generation-stability-full-control-quality-27ed` at
   `9019dd3f0f504e799c03496ec41a653b61deaa02`: all 66 training-critical blobs
   and the full-training execution suffix remain identical to `5dd3488...`.
@@ -383,9 +399,11 @@ repository or mutate an active training checkout.
   against the clean remote `5dd3488...` checkout, then deleted without fetch,
   merge, or checkout mutation. The receipt is
   `artifacts/reports/generation/readiness_compatible_quality_control_target_2026-08-03/incremental_bundle_rehearsal_receipt.json`.
-  The target remains un-fetched and un-deployed; its existence and rehearsal do
-  not create a bridge, deployment receipt, launch receipt, or full-training
-  authorization.
+  That target predates the schema-v4 class-fidelity prerequisite and is no
+  longer launch-eligible. It remains un-fetched and un-deployed; a new
+  prerequisite-aware compatible target or fresh readiness must be constructed
+  and revalidated after this change. Neither target creates a bridge,
+  deployment receipt, launch receipt, or full-training authorization.
 - Stability post-evaluation uses separate, explicit training and evaluation
   Git identities. This prevents the gate builder's legacy
   `scale/generative-system` default from rejecting the intentionally isolated

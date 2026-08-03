@@ -13,6 +13,9 @@ REVISION = "a" * 40
 BRANCH = "scale/generation-large-capacity"
 READINESS_SHA = "b" * 64
 SUPPLEMENTAL_SHA = "d" * 64
+CLASS_FIDELITY_SHA = "e" * 64
+CLASS_FIDELITY_REVISION = "1" * 40
+CLASS_FIDELITY_BRANCH = "scale/class-fidelity"
 
 
 def _source_paths(tmp_path: Path) -> dict[str, Path]:
@@ -21,6 +24,7 @@ def _source_paths(tmp_path: Path) -> dict[str, Path]:
         "deployment_receipt",
         "promotion_gate",
         "stability_supplemental",
+        "scaling_class_fidelity",
         "full_readiness",
         "readiness_bridge",
         "cofitok_config",
@@ -94,6 +98,9 @@ def _kwargs(tmp_path: Path, source_paths: dict[str, Path]) -> dict:
         "expected_branch": BRANCH,
         "expected_readiness_sha256": READINESS_SHA,
         "expected_stability_supplemental_sha256": SUPPLEMENTAL_SHA,
+        "expected_scaling_class_fidelity_sha256": CLASS_FIDELITY_SHA,
+        "expected_class_fidelity_revision": CLASS_FIDELITY_REVISION,
+        "expected_class_fidelity_branch": CLASS_FIDELITY_BRANCH,
         "require_current_runtime_environment": True,
         "require_current_git": True,
         "require_training_state_absent": True,
@@ -154,6 +161,26 @@ def _patch_dependencies(
     )
     monkeypatch.setattr(
         launch,
+        "verify_frozen_class_fidelity_qualification",
+        lambda *a, **k: {
+            "report": launch.source_identities(
+                {
+                    "scaling_class_fidelity": source_paths[
+                        "scaling_class_fidelity"
+                    ]
+                }
+            )["scaling_class_fidelity"],
+            "promotion_gate": launch.source_identities(
+                {"promotion_gate": source_paths["promotion_gate"]}
+            )["promotion_gate"],
+            "class_fidelity_passed": True,
+            "supplemental_non_authorizing": True,
+            "required_for_full_training_launch": True,
+            "full_training_launch_allowed": False,
+        },
+    )
+    monkeypatch.setattr(
+        launch,
         "validate_full_storage_capacity",
         lambda *a, **k: (
             {
@@ -179,12 +206,18 @@ def test_full_launch_receipt_binds_sources_runtime_and_paths(
     assert report["role"] == "stability_full_training_launch_receipt"
     assert report["readiness_sha256"] == READINESS_SHA
     assert report["runtime_selection"]["effective_batch_size"] == 64
-    assert report["schema_version"] == 3
+    assert report["schema_version"] == 4
     supplemental = report["quality_prerequisites"][
         "frozen_stability_supplemental"
     ]
     assert supplemental["required_for_full_training_launch"] is True
     assert supplemental["full_training_launch_allowed"] is False
+    class_fidelity = report["quality_prerequisites"][
+        "frozen_scaling_class_fidelity"
+    ]
+    assert class_fidelity["class_fidelity_passed"] is True
+    assert class_fidelity["required_for_full_training_launch"] is True
+    assert class_fidelity["full_training_launch_allowed"] is False
     assert report["readiness_bridge"]["training_semantics_identical"] is True
     assert report["readiness_bridge"]["controlled_preamble_upgrade"] is True
     assert report["readiness_bridge"]["source_preamble_sha256"] == report[
@@ -360,4 +393,22 @@ def test_full_launch_receipt_rejects_failed_stability_supplemental(
     )
 
     with pytest.raises(ValueError, match="quality prerequisite did not pass"):
+        launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))
+
+
+def test_full_launch_receipt_rejects_failed_scaling_class_fidelity(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sources = _source_paths(tmp_path)
+    _patch_dependencies(monkeypatch, sources)
+    monkeypatch.setattr(
+        launch,
+        "verify_frozen_class_fidelity_qualification",
+        lambda *a, **k: (_ for _ in ()).throw(
+            ValueError("frozen class-fidelity qualification did not pass exactly")
+        ),
+    )
+
+    with pytest.raises(ValueError, match="class-fidelity qualification did not pass"):
         launch.build_full_launch_receipt(**_kwargs(tmp_path, sources))

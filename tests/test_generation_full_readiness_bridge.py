@@ -104,7 +104,8 @@ def test_bridge_accepts_identical_training_blobs_and_runway_only_change(
     assert runbook["authorization_upgrade"] == {
         "readiness_bridge_required": True,
         "frozen_stability_supplemental_required": True,
-        "launch_receipt_schema_version": 3,
+        "frozen_scaling_class_fidelity_required": True,
+        "launch_receipt_schema_version": 4,
         "sample_count": {"source": 16_384, "target": 116_640},
     }
     assert runbook["training_execution_identical"] is True
@@ -159,7 +160,7 @@ def test_bridge_rejects_incomplete_target_authorization_preamble(
     _git(root, "add", FULL_RUNBOOK)
     _git(root, "commit", "-m", "drop bridge binding")
 
-    with pytest.raises(ValueError, match="bridge authorization line differs"):
+    with pytest.raises(ValueError, match="authorization bridge is incomplete"):
         _verify_runbook_change(
             root,
             source_revision=source,

@@ -1024,6 +1024,12 @@ def main() -> None:
         / "supplemental_qualification.json"
     )
     stability_supplemental = _read_optional(stability_supplemental_path)
+    scaling_class_fidelity_path = (
+        scaling_reports
+        / "frozen_posteval_class_fidelity"
+        / "qualification_report.json"
+    )
+    scaling_class_fidelity = _read_optional(scaling_class_fidelity_path)
     scaling_training = {
         "cofitok": _read_optional(scaling_cofitok / "training_report.json"),
         "dense_identity": _read_optional(scaling_dense / "training_report.json"),
@@ -1391,6 +1397,7 @@ def main() -> None:
                 deployment_receipt,
                 scaling_gate,
                 stability_supplemental,
+                scaling_class_fidelity,
                 full_config_validation,
                 full_storage_capacity,
                 full_runtime_selection,
@@ -1405,6 +1412,7 @@ def main() -> None:
                         "deployment_receipt": deployment_receipt_path,
                         "promotion_gate": paths["STABILITY_SCALING_GATE"],
                         "stability_supplemental": stability_supplemental_path,
+                        "scaling_class_fidelity": scaling_class_fidelity_path,
                         "full_readiness": full_reports
                         / "full_training_readiness.json",
                         "readiness_bridge": full_readiness_bridge_path,
@@ -1434,6 +1442,23 @@ def main() -> None:
                         full_launch_receipt.get("source_reports", {})
                         .get("stability_supplemental", {})
                         .get("sha256", "")
+                    ),
+                    "expected_scaling_class_fidelity_sha256": str(
+                        full_launch_receipt.get("source_reports", {})
+                        .get("scaling_class_fidelity", {})
+                        .get("sha256", "")
+                    ),
+                    "expected_class_fidelity_revision": str(
+                        full_launch_receipt.get("quality_prerequisites", {})
+                        .get("frozen_scaling_class_fidelity", {})
+                        .get("evaluator_git", {})
+                        .get("revision", "")
+                    ),
+                    "expected_class_fidelity_branch": str(
+                        full_launch_receipt.get("quality_prerequisites", {})
+                        .get("frozen_scaling_class_fidelity", {})
+                        .get("evaluator_git", {})
+                        .get("branch", "")
                     ),
                     "require_current_runtime_environment": False,
                     "require_current_formal_repository": False,

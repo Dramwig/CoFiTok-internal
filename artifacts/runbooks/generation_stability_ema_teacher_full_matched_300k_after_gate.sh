@@ -6,6 +6,9 @@ PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
 CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation}
 EXPECTED_SCALING_GATE_SHA256=${EXPECTED_SCALING_GATE_SHA256:?set the passing stability scaling gate SHA256}
 EXPECTED_STABILITY_SUPPLEMENTAL_SHA256=${EXPECTED_STABILITY_SUPPLEMENTAL_SHA256:?set the passing frozen stability supplemental SHA256}
+EXPECTED_SCALING_CLASS_FIDELITY_SHA256=${EXPECTED_SCALING_CLASS_FIDELITY_SHA256:?set the passing frozen scaling class-fidelity SHA256}
+EXPECTED_CLASS_FIDELITY_REVISION=${EXPECTED_CLASS_FIDELITY_REVISION:?set the clean frozen class-fidelity evaluator revision}
+EXPECTED_CLASS_FIDELITY_BRANCH=${EXPECTED_CLASS_FIDELITY_BRANCH:?set the clean frozen class-fidelity evaluator branch}
 EXPECTED_READINESS_SHA256=${EXPECTED_READINESS_SHA256:?set the immutable stability-full readiness SHA256}
 EXPECTED_READINESS_BRIDGE_SHA256=${EXPECTED_READINESS_BRIDGE_SHA256:?set the immutable readiness revision bridge SHA256}
 EXPECTED_FULL_LAUNCH_RECEIPT_SHA256=${EXPECTED_FULL_LAUNCH_RECEIPT_SHA256:-}
@@ -16,6 +19,7 @@ EXPECTED_TARGET_BRANCH=${EXPECTED_TARGET_BRANCH:?set the clean stability-full tr
 SCALING_ROOT="$CHECKPOINT_ROOT/stability_scaling_50k_ema_teacher"
 GATE="$SCALING_ROOT/reports/promotion_gate.json"
 STABILITY_SUPPLEMENTAL="$SCALING_ROOT/reports/frozen_posteval_supplemental/supplemental_qualification.json"
+SCALING_CLASS_FIDELITY="$SCALING_ROOT/reports/frozen_posteval_class_fidelity/qualification_report.json"
 REFERENCE_COFITOK="$SCALING_ROOT/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00050000.pt"
 REFERENCE_DENSE="$SCALING_ROOT/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00050000.pt"
 COFITOK_CONFIG=configs/generation/imagenet256_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json
@@ -47,6 +51,7 @@ export PYTHONPATH=src
 [[ -z "$(git status --porcelain --untracked-files=no)" ]]
 [[ -f "$GATE" ]]
 [[ -f "$STABILITY_SUPPLEMENTAL" ]]
+[[ -f "$SCALING_CLASS_FIDELITY" ]]
 [[ -f "$REFERENCE_COFITOK" ]]
 [[ -f "$REFERENCE_DENSE" ]]
 [[ -f "$READINESS" ]]
@@ -54,6 +59,7 @@ export PYTHONPATH=src
 [[ -f "$DEPLOYMENT_RECEIPT" ]]
 [[ "$(sha256sum "$GATE" | awk '{print $1}')" == "$EXPECTED_SCALING_GATE_SHA256" ]]
 [[ "$(sha256sum "$STABILITY_SUPPLEMENTAL" | awk '{print $1}')" == "$EXPECTED_STABILITY_SUPPLEMENTAL_SHA256" ]]
+[[ "$(sha256sum "$SCALING_CLASS_FIDELITY" | awk '{print $1}')" == "$EXPECTED_SCALING_CLASS_FIDELITY_SHA256" ]]
 [[ "$(sha256sum "$READINESS" | awk '{print $1}')" == "$EXPECTED_READINESS_SHA256" ]]
 [[ "$(sha256sum "$READINESS_BRIDGE" | awk '{print $1}')" == "$EXPECTED_READINESS_BRIDGE_SHA256" ]]
 [[ "$(sha256sum "$DEPLOYMENT_RECEIPT" | awk '{print $1}')" == "$EXPECTED_DEPLOYMENT_RECEIPT_SHA256" ]]
@@ -114,6 +120,10 @@ launch_receipt_args=(
   --promotion-gate "$GATE"
   --stability-supplemental "$STABILITY_SUPPLEMENTAL"
   --expected-stability-supplemental-sha256 "$EXPECTED_STABILITY_SUPPLEMENTAL_SHA256"
+  --scaling-class-fidelity "$SCALING_CLASS_FIDELITY"
+  --expected-scaling-class-fidelity-sha256 "$EXPECTED_SCALING_CLASS_FIDELITY_SHA256"
+  --expected-class-fidelity-revision "$EXPECTED_CLASS_FIDELITY_REVISION"
+  --expected-class-fidelity-branch "$EXPECTED_CLASS_FIDELITY_BRANCH"
   --full-readiness "$READINESS"
   --readiness-bridge "$READINESS_BRIDGE"
   --expected-readiness-sha256 "$EXPECTED_READINESS_SHA256"
@@ -173,6 +183,10 @@ else
     --promotion-gate "$GATE" \
     --stability-supplemental "$STABILITY_SUPPLEMENTAL" \
     --expected-stability-supplemental-sha256 "$EXPECTED_STABILITY_SUPPLEMENTAL_SHA256" \
+    --scaling-class-fidelity "$SCALING_CLASS_FIDELITY" \
+    --expected-scaling-class-fidelity-sha256 "$EXPECTED_SCALING_CLASS_FIDELITY_SHA256" \
+    --expected-class-fidelity-revision "$EXPECTED_CLASS_FIDELITY_REVISION" \
+    --expected-class-fidelity-branch "$EXPECTED_CLASS_FIDELITY_BRANCH" \
     --full-readiness "$READINESS" \
     --readiness-bridge "$READINESS_BRIDGE" \
     --expected-readiness-sha256 "$EXPECTED_READINESS_SHA256" \

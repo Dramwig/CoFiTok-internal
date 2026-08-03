@@ -28,6 +28,7 @@ RUNBOOKS = (
     "generation_stability_ema_teacher_50k_posteval_after_training.sh",
     "generation_stability_frozen_50k_supplemental_waiter.sh",
     "generation_stability_frozen_50k_supplemental_after_posteval.sh",
+    "generation_stability_frozen_50k_class_fidelity_after_supplemental.sh",
     "generation_stability_ema_teacher_full_readiness_after_gate.sh",
     "generation_stability_ema_teacher_full_readiness_bridge.sh",
     "generation_stability_ema_teacher_full_readiness_waiter.sh",
@@ -87,6 +88,8 @@ ENTRYPOINTS = {
     "validate_generation_stability_frozen_posteval.py",
     "validate_generation_training_completion.py",
     "validate_generation_training_pair.py",
+    "verify_generation_stability_frozen_class_fidelity.py",
+    "verify_generation_stability_frozen_supplemental.py",
     "write_generation_pipeline_status.py",
     "write_generation_deployment_receipt.py",
 }

@@ -37,6 +37,14 @@ the frozen supplemental verifier, including its raw post-evaluation source and
 nested distribution/EMA-rollout sources. The historical nine-source statement
 above describes the first supervisor revision only.
 
+As of the later schema-v4 launch receipt, the source set contains twelve
+reports. The twelfth source is the frozen scaling class-fidelity qualification.
+The supervisor now rehashes its raw CoFiTok/dense classifier reports, separates
+the frozen sampler Git identity from the later evaluator Git identity,
+recomputes all class-fidelity thresholds, and verifies the original promotion
+gate's checkpoint/sample digests before accepting the launch receipt. The
+schema-v3 eleven-source statement remains historical only.
+
 After training is complete and the GPU is idle, it executes:
 
 1. formal matched 50K DDIM-250 post-evaluation;
