@@ -1,13 +1,27 @@
 from __future__ import annotations
 
+import json
+import math
+
 import pytest
 
 from cofitok.diffusion import select_sampling_timesteps
+from cofitok.environment import runtime_environment_sha256
 from cofitok.generation import (
     INFERENCE_API,
     SAMPLING_PROTOCOL_SCHEMA,
     sampling_protocol_contract,
 )
+from cofitok.generation_class_fidelity import (
+    CLASS_FIDELITY_CATEGORIES_SHA256,
+    CLASS_FIDELITY_CLASSIFIER_BYTES,
+    CLASS_FIDELITY_CLASSIFIER_NAME,
+    CLASS_FIDELITY_CLASSIFIER_SHA256,
+    CLASS_FIDELITY_PREPROCESSING,
+    CLASS_FIDELITY_REPORT_ROLE,
+    CLASS_FIDELITY_REPORT_SCHEMA_VERSION,
+)
+from scripts import build_generation_class_fidelity_qualification as class_qualification
 from scripts.build_large_scale_generation_comparison import (
     SOURCE_REPORT_PROFILES,
     build_report,
@@ -19,6 +33,13 @@ from scripts.build_large_scale_generation_comparison import (
 from scripts.build_generation_gate_report import (
     _class_fidelity_evidence as gate_class_fidelity_evidence,
 )
+
+
+EXPECTED_GIT = {
+    "revision": "a" * 40,
+    "branch": "scale/test",
+    "tracked_dirty": False,
+}
 
 
 def _training(parameters: int, token_count: int) -> dict:
@@ -64,6 +85,107 @@ def _sampling(token_count: int) -> dict:
             "resume_index_invariant": True,
         },
     }
+
+
+def _class_fidelity_metrics(*, top1: float, top5: float) -> dict:
+    sample_count = 50_000
+    entropy = 6.2
+    return {
+        "sample_count": sample_count,
+        "num_classes": 1000,
+        "top1_correct": int(top1 * sample_count),
+        "top5_correct": int(top5 * sample_count),
+        "top1_accuracy": top1,
+        "top5_accuracy": top5,
+        "mean_target_probability": 0.15,
+        "target_negative_log_likelihood": 3.0,
+        "requested_class_count": 1000,
+        "requested_count_min": 50,
+        "requested_count_max": 50,
+        "predicted_class_count": 800,
+        "predicted_class_fraction": 0.8,
+        "predicted_class_entropy": entropy,
+        "normalized_predicted_class_entropy": entropy / math.log(1000),
+    }
+
+
+def _class_fidelity_report(*, method: str, top1: float, top5: float) -> dict:
+    token_count = 8 if method == "cofitok" else 1
+    runtime_environment = {"schema_version": 1, "device": {"type": "cpu"}}
+    sampling = _sampling(token_count)
+    sampling["image_shape"] = [3, 256, 256]
+    return {
+        "schema_version": CLASS_FIDELITY_REPORT_SCHEMA_VERSION,
+        "role": CLASS_FIDELITY_REPORT_ROLE,
+        "status": "completed",
+        "protocol": "torchvision_imagenet_class_fidelity",
+        "git": EXPECTED_GIT,
+        "runtime_environment": runtime_environment,
+        "runtime_environment_sha256": runtime_environment_sha256(
+            runtime_environment
+        ),
+        "paths": {},
+        "classifier": {
+            "name": CLASS_FIDELITY_CLASSIFIER_NAME,
+            "weights_enum": "ResNet50_Weights.IMAGENET1K_V2",
+            "weights_url": "https://download.pytorch.org/models/resnet50-11ad3fa6.pth",
+            "weights_path": "/checkpoints/resnet50-11ad3fa6.pth",
+            "weights_bytes": CLASS_FIDELITY_CLASSIFIER_BYTES,
+            "weights_sha256": CLASS_FIDELITY_CLASSIFIER_SHA256,
+            "num_classes": 1000,
+            "categories_sha256": CLASS_FIDELITY_CATEGORIES_SHA256,
+            "preprocessing": CLASS_FIDELITY_PREPROCESSING,
+        },
+        "sample_provenance": {
+            "git": EXPECTED_GIT,
+            "weights": "ema",
+            "checkpoint_sha256": ("d" if method == "cofitok" else "e") * 64,
+            "sample_set_sha256": ("f" if method == "cofitok" else "0") * 64,
+            "selected_prefix_budget": token_count,
+            "sampling": sampling,
+        },
+        "parameters": {
+            "num_classes": 1000,
+            "sample_count": 50_000,
+            "target_from_filename": "int(zero_based_png_stem) mod 1000",
+        },
+        "metrics": _class_fidelity_metrics(top1=top1, top5=top5),
+        "runtime": {"elapsed_seconds": 1.0, "torch_version": "test"},
+    }
+
+
+def _passing_class_fidelity_qualification(
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> dict:
+    monkeypatch.setattr(
+        class_qualification,
+        "git_provenance",
+        lambda root: EXPECTED_GIT,
+    )
+    cofitok = _class_fidelity_report(method="cofitok", top1=0.21, top5=0.42)
+    dense = _class_fidelity_report(method="dense", top1=0.22, top5=0.43)
+    cofitok_path = tmp_path / "cofitok.json"
+    dense_path = tmp_path / "dense.json"
+    cofitok_path.write_text(json.dumps(cofitok), encoding="utf-8")
+    dense_path.write_text(json.dumps(dense), encoding="utf-8")
+    return class_qualification.build_qualification(
+        cofitok=cofitok,
+        dense=dense,
+        cofitok_path=cofitok_path,
+        dense_path=dense_path,
+        stage="full",
+        expected_revision=EXPECTED_GIT["revision"],
+        expected_branch=EXPECTED_GIT["branch"],
+        thresholds={
+            "min_top1": 0.10,
+            "min_top5": 0.25,
+            "min_predicted_class_fraction": 0.50,
+            "min_normalized_predicted_entropy": 0.70,
+            "max_top1_regression": 0.05,
+            "max_top5_regression": 0.05,
+        },
+    )
 
 
 def _generation(
@@ -547,12 +669,7 @@ def test_stability_comparison_requires_and_reports_class_fidelity(
     tmp_path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from tests.test_generation_class_fidelity import (
-        EXPECTED_GIT,
-        _passing_qualification,
-    )
-
-    class_fidelity = _passing_qualification(tmp_path, monkeypatch)
+    class_fidelity = _passing_class_fidelity_qualification(tmp_path, monkeypatch)
     class_fidelity["sampling_contract"].update(
         {
             "cofitok_checkpoint_sha256": "a" * 64,
