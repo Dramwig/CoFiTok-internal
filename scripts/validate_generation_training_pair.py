@@ -75,10 +75,20 @@ def _validate_report(
             )
     training_authorization = report.get("training_authorization")
     authorization_evidence = None
-    if expected_dataset == "imagenet_256" and not isinstance(
-        training_authorization, dict
-    ):
+    formal_full_training = (
+        expected_dataset == "imagenet_256" and expected_steps == 300_000
+    )
+    if formal_full_training and not isinstance(training_authorization, dict):
         raise ValueError(f"{label} full training lacks scaling-gate authorization")
+    if (
+        expected_dataset == "imagenet_256"
+        and expected_steps != 300_000
+        and training_authorization is not None
+    ):
+        raise ValueError(
+            f"{label} non-authorizing full-data bridge unexpectedly carries "
+            "a scaling-gate authorization"
+        )
     if training_authorization is not None:
         if not isinstance(training_authorization, dict):
             raise ValueError(f"{label} training authorization is malformed")
@@ -119,6 +129,7 @@ def _validate_report(
         "dataset_provenance": provenance_evidence,
         "dataset_provenance_warning": legacy_warning,
         "training_authorization": authorization_evidence,
+        "formal_full_training": formal_full_training,
     }
 
 
@@ -255,6 +266,7 @@ def main() -> None:
             "scaling",
             "full",
             "stability_scaling",
+            "stability_quality_bridge",
             "stability_full",
         ),
     )

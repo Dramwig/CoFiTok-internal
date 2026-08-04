@@ -151,6 +151,14 @@ def test_stability_workspace_paths_keep_every_stage_isolated(
         == paths["STABILITY_FULL_REPORT_ROOT"] / "final_generation_gate.json"
     )
     assert (
+        paths["STABILITY_QUALITY_BRIDGE_PREPARATION"]
+        == paths["STABILITY_QUALITY_BRIDGE_REPORT_ROOT"] / "preparation.json"
+    )
+    assert (
+        paths["STABILITY_QUALITY_BRIDGE_MONITOR"]
+        == paths["STABILITY_QUALITY_BRIDGE_ROOT"] / "pair_monitor.json"
+    )
+    assert (
         paths["STABILITY_COFITOK_INFERENCE_ARTIFACT"].parent
         == paths["STABILITY_EXPORT_ROOT"]
     )
@@ -161,6 +169,7 @@ def test_stability_workspace_paths_keep_every_stage_isolated(
     )
     assert (
         paths["STABILITY_SCALING_ROOT"]
+        != paths["STABILITY_QUALITY_BRIDGE_ROOT"]
         != paths["STABILITY_FULL_ROOT"]
         != paths["STABILITY_EXPORT_ROOT"]
     )

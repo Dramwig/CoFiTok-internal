@@ -17,27 +17,60 @@ SOURCE_REPORT_NAMES = {
     "cofitok_checkpoint_eval",
     "dense_checkpoint_eval",
 }
+SOURCE_PROFILES = {
+    "full": {
+        "cofitok": "imagenet256_full_cofitok_k8_300k",
+        "dense": "imagenet256_full_dense_300k",
+    },
+    "stability_full": {
+        "cofitok": (
+            "stability_full_300k_ema_teacher/"
+            "cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
+        ),
+        "dense": (
+            "stability_full_300k_ema_teacher/"
+            "dense_rollout_x0_u2_ema_teacher"
+        ),
+    },
+    "quality_bridge": {
+        "cofitok": (
+            "stability_full_data_100k_base128_quality_bridge_v1/"
+            "cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
+        ),
+        "dense": (
+            "stability_full_data_100k_base128_quality_bridge_v1/"
+            "dense_rollout_x0_u2_ema_teacher"
+        ),
+    },
+}
 
 
-def expected_source_report_suffixes(step: int) -> dict[str, str]:
+def expected_source_report_suffixes(
+    step: int,
+    *,
+    source_profile: str = "full",
+) -> dict[str, str]:
+    profile = SOURCE_PROFILES.get(source_profile)
+    if profile is None:
+        raise ValueError("unsupported milestone source profile")
     step_tag = f"step_{step:08d}"
     return {
         "cofitok_generation": (
-            "imagenet256_full_cofitok_k8_300k/milestones/"
+            f"{profile['cofitok']}/milestones/"
             f"{step_tag}/samples_2048_ddim50_cfg15/metrics/"
             "generation_metrics_report.json"
         ),
         "dense_generation": (
-            "imagenet256_full_dense_300k/milestones/"
+            f"{profile['dense']}/milestones/"
             f"{step_tag}/samples_2048_ddim50_cfg15/metrics/"
             "generation_metrics_report.json"
         ),
         "cofitok_checkpoint_eval": (
-            "imagenet256_full_cofitok_k8_300k/milestones/"
+            f"{profile['cofitok']}/milestones/"
             f"{step_tag}/checkpoint_eval/checkpoint_evaluation_report.json"
         ),
         "dense_checkpoint_eval": (
-            "imagenet256_full_dense_300k/milestones/"
+            f"{profile['dense']}/milestones/"
             f"{step_tag}/checkpoint_eval/checkpoint_evaluation_report.json"
         ),
     }
@@ -53,6 +86,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dense-checkpoint-eval", required=True)
     parser.add_argument("--milestone-step", type=int, required=True)
     parser.add_argument("--expected-samples", type=int, default=2048)
+    parser.add_argument(
+        "--source-profile",
+        choices=tuple(SOURCE_PROFILES),
+        default="full",
+    )
     parser.add_argument("--output", required=True)
     return parser.parse_args()
 
@@ -88,7 +126,11 @@ def _validate_source_report_identities(
             raise ValueError(f"milestone source-report identity is invalid: {name}")
 
 
-def verify_milestone_source_reports(report: dict[str, Any]) -> dict[str, Any]:
+def verify_milestone_source_reports(
+    report: dict[str, Any],
+    *,
+    source_profile: str | None = None,
+) -> dict[str, Any]:
     source_reports = report.get("source_reports")
     if not isinstance(source_reports, dict):
         raise ValueError("milestone report is missing source-report identities")
@@ -96,7 +138,14 @@ def verify_milestone_source_reports(report: dict[str, Any]) -> dict[str, Any]:
     expected_step = int(report.get("milestone_step", -1))
     if expected_step < 1:
         raise ValueError("milestone report step is invalid")
-    for name, expected_suffix in expected_source_report_suffixes(expected_step).items():
+    observed_profile = str(report.get("source_profile", "full"))
+    expected_profile = source_profile or observed_profile
+    if observed_profile != expected_profile:
+        raise ValueError("milestone source profile differs")
+    for name, expected_suffix in expected_source_report_suffixes(
+        expected_step,
+        source_profile=expected_profile,
+    ).items():
         if not str(source_reports[name]["path"]).replace("\\", "/").endswith(
             expected_suffix
         ):
@@ -107,7 +156,11 @@ def verify_milestone_source_reports(report: dict[str, Any]) -> dict[str, Any]:
         if actual != expected:
             raise ValueError(f"milestone source report changed after binding: {name}")
         verified[name] = actual
-    return {"status": "verified", "source_reports": verified}
+    return {
+        "status": "verified",
+        "source_profile": expected_profile,
+        "source_reports": verified,
+    }
 
 
 def _finite_metric(report: dict[str, Any], name: str) -> float:
@@ -203,10 +256,13 @@ def build_report(
     source_reports: dict[str, dict[str, Any]],
     milestone_step: int,
     expected_samples: int,
+    source_profile: str = "full",
 ) -> dict[str, Any]:
     if milestone_step < 1 or expected_samples < 1:
         raise ValueError("milestone-step and expected-samples must be positive")
     _validate_source_report_identities(source_reports)
+    if source_profile not in SOURCE_PROFILES:
+        raise ValueError("unsupported milestone source profile")
     cofitok = _method_row(
         cofitok_generation,
         cofitok_checkpoint_eval,
@@ -244,6 +300,7 @@ def build_report(
         "schema_version": MILESTONE_REPORT_SCHEMA_VERSION,
         "status": "completed",
         "role": "training_quality_trend_only",
+        "source_profile": source_profile,
         "claim_policy": {
             "formal_generation_claim_allowed": False,
             "reason": "2,048-sample DDIM-50 milestones are early-warning diagnostics, not final 50K evaluation.",
@@ -266,6 +323,7 @@ def validate_milestone_report(
     *,
     expected_step: int,
     source_verification: dict[str, Any] | None = None,
+    expected_source_profile: str | None = None,
 ) -> tuple[dict[str, Any], list[str]]:
     if report.get("schema_version") != MILESTONE_REPORT_SCHEMA_VERSION:
         raise ValueError("milestone report schema is unsupported")
@@ -280,11 +338,22 @@ def validate_milestone_report(
         raise ValueError("milestone report step mismatch")
     if int(report.get("expected_samples", -1)) != 2_048:
         raise ValueError("milestone report sample count mismatch")
+    source_profile = str(report.get("source_profile", "full"))
+    if source_profile not in SOURCE_PROFILES:
+        raise ValueError("milestone source profile is unsupported")
+    if (
+        expected_source_profile is not None
+        and source_profile != expected_source_profile
+    ):
+        raise ValueError("milestone source profile mismatch")
     source_reports = report.get("source_reports")
     if not isinstance(source_reports, dict):
         raise ValueError("milestone report is missing source-report identities")
     _validate_source_report_identities(source_reports)
-    for name, expected_suffix in expected_source_report_suffixes(expected_step).items():
+    for name, expected_suffix in expected_source_report_suffixes(
+        expected_step,
+        source_profile=source_profile,
+    ).items():
         if not str(source_reports[name]["path"]).replace("\\", "/").endswith(
             expected_suffix
         ):
@@ -292,6 +361,7 @@ def validate_milestone_report(
     if source_verification is not None:
         if (
             source_verification.get("status") != "verified"
+            or source_verification.get("source_profile", "full") != source_profile
             or source_verification.get("source_reports") != source_reports
         ):
             raise ValueError("milestone source-report verification differs")
@@ -378,6 +448,8 @@ def validate_milestone_report(
     if report.get("quality_alert") is not bool(expected_alerts):
         raise ValueError("milestone quality-alert flag differs")
     return {
+        "status": "verified",
+        "source_profile": source_profile,
         "quality_alerts": expected_alerts,
         "cofitok_fid": float(cofitok["fid"]),
         "dense_fid": float(dense["fid"]),
@@ -405,6 +477,7 @@ def main() -> None:
         },
         milestone_step=args.milestone_step,
         expected_samples=args.expected_samples,
+        source_profile=args.source_profile,
     )
     write_json_report(args.output, report)
     print(f"wrote {args.output}")

@@ -37,7 +37,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-parameter-gap", type=float, default=0.02)
     parser.add_argument(
         "--stage",
-        choices=("scaling", "full", "stability_scaling", "stability_full"),
+        choices=(
+            "scaling",
+            "full",
+            "stability_scaling",
+            "stability_quality_bridge",
+            "stability_full",
+        ),
     )
     return parser.parse_args()
 

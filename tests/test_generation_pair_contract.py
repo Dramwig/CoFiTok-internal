@@ -44,6 +44,10 @@ def test_checked_in_generation_pairs_isolate_factorization_differences() -> None
             "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k.json",
         ),
         (
+            "imagenet256_stability_quality_bridge_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k.json",
+            "imagenet256_stability_quality_bridge_rollout_x0_u2_ema_teacher_dense_100k.json",
+        ),
+        (
             "imagenet256_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json",
             "imagenet256_stability_rollout_x0_u2_ema_teacher_dense_300k.json",
         ),

@@ -1089,3 +1089,69 @@ of a closely matched, finite training trajectory, not free-rollout or generation
 quality evidence. EMA-teacher consistency has not reached its 30K start in that
 window, and exact matched 50K completion plus formal EMA post-evaluation remains
 required.
+
+## Full-data base-128 quality bridge
+
+The completed stability 50K pair consumed 3.2M images per method from the
+128,161-image `imagenet_256_10pct` train split, or about 24.97 equivalent
+epochs. Its formal EMA gate held only on absolute quality: CoFiTok FID was
+`138.2970` versus dense `151.4477`, while both recalls were about `0.009` and
+the matched endpoint, ordering, compressed-token utilization, zero-token, and
+shuffle checks passed. This shared distribution-support collapse motivates a
+full-data diagnostic before changing model capacity.
+
+The selected bridge is a fresh matched 100K pair on full `imagenet_256` using
+the already-qualified 128-channel/approximately 62.8M backbone. It protects and
+evaluates 50K and 100K, corresponding to about 2.50 and 5.00 full-data epochs.
+The 50K point is a non-claim trend milestone; exact 100K must receive matched
+10K-sample EMA DDIM-100 FID/IS/precision/recall evidence. A 150K endpoint was
+rejected because it reaches about 7.49 epochs and adds 50% training cost mainly
+after the main unique-data coverage window.
+
+The bridge has its own recipe stage, `stability_quality_bridge`, and the output
+root `stability_full_data_100k_base128_quality_bridge_v1`. It preserves the
+qualified model and loss recipe and changes neither capacity nor the core
+CoFiTok synthesis restrictions. Its deterministic preparation report and
+validator are built by `build_generation_quality_bridge_preparation.py` and
+`validate_generation_quality_bridge_preparation.py`. The preparation runbook
+`generation_stability_full_data_quality_bridge_100k_prepare.sh` performs only
+source, config, and storage validation; it contains no training entrypoint.
+
+The separate execution runbook
+`generation_stability_full_data_quality_bridge_100k_execute.sh` is dormant by
+default. It requires an exact clean Git revision, an immutable preparation SHA,
+an independently created execution-only approval sentinel and SHA, the explicit
+`QUALITY_BRIDGE_EXECUTION_ALLOWED=true` switch, an idle GPU, sufficient storage,
+and an exclusive controller lock. Before the first optimizer step it freezes a
+runtime selection and writes an immutable launch receipt. Any later controller
+resume must reproduce that receipt byte-for-byte and supply its expected SHA;
+unreceipted training state, an active matching trainer, or an unbound/duplicate
+pair monitor is rejected. The runbook alternates matched CoFiTok/dense segments
+at 50K and 100K under one pair monitor and per-segment watchdogs. It does not
+contain or invoke a 300K runbook.
+
+The terminal result is not inferred from report status alone. The result builder
+replays the matched training validator and progress auditor, independently
+verifies the 50K/100K milestone sources, and rehashes each physical 100K
+checkpoint plus integrity sidecar. It also revalidates the numbered PNG sample
+tree, immutable sampling report/manifest/progress chain, full validation real-set
+tree, generation metrics, checkpoint mechanism report, and class-fidelity
+qualification. Class fidelity must bind the exact same checkpoint and sample-set
+SHA256 values as the distribution metrics.
+
+A terminal `pass` requires every frozen quality condition, not only absolute
+FID: CoFiTok absolute FID, matched FID tolerance, absolute and matched
+precision/recall, matched endpoint error, ordered-prefix rank over the requested
+order set, coarse-token energy, exact zero-token behavior, shuffled-token
+mismatch, and class fidelity. Any failed row produces a non-authorizing `hold`.
+The result cannot consume an existing full-training authorization and fixes both
+`full_training_launch_allowed=false` and `full_300k_launch_allowed=false`.
+
+Every bridge artifact remains explicitly non-authorizing:
+`quality_bridge_launch_allowed=false`, `full_training_launch_allowed=false`,
+`full_300k_launch_allowed=false`, and `new_gate_required=true`. Preparing or
+later passing this bridge cannot create, replace, or weaken the scaling gate or
+launch the 300K queue. Details and frozen source values are in
+`docs/records/2026-08-05_generation_full_data_quality_bridge_100k_preparation.md`;
+the source-bound Linux rehearsal receipt is
+`artifacts/reports/generation/stability_full_data_quality_bridge_100k_linux_rehearsal_2026-08-05/rehearsal_summary.json`.

@@ -22,8 +22,11 @@ from scripts.build_generation_milestone_report import (
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def _source_reports() -> dict:
-    suffixes = expected_source_report_suffixes(50_000)
+def _source_reports(*, source_profile: str = "full") -> dict:
+    suffixes = expected_source_report_suffixes(
+        50_000,
+        source_profile=source_profile,
+    )
     return {
         name: {
             "path": f"/root/outputs/{suffixes[name]}",
@@ -125,6 +128,31 @@ def test_milestone_report_binds_matched_checkpoint_and_sampling_protocol() -> No
     assert report["claim_policy"]["formal_generation_claim_allowed"] is False
     assert report["matched_comparison"]["fid_relative_change"] == pytest.approx(0.2)
     assert report["quality_alert"] is False
+
+
+def test_milestone_report_binds_quality_bridge_source_profile() -> None:
+    report = build_report(
+        cofitok_generation=_generation(sha="a" * 64, budget=8, fid=24.0),
+        dense_generation=_generation(sha="b" * 64, budget=1, fid=20.0),
+        cofitok_checkpoint_eval=_checkpoint_eval(sha="a" * 64, rank=1),
+        dense_checkpoint_eval=_checkpoint_eval(sha="b" * 64, rank=1),
+        source_reports=_source_reports(source_profile="quality_bridge"),
+        milestone_step=50_000,
+        expected_samples=2048,
+        source_profile="quality_bridge",
+    )
+
+    evidence, warnings = validate_milestone_report(
+        report,
+        expected_step=50_000,
+        expected_source_profile="quality_bridge",
+    )
+    assert warnings == []
+    assert report["source_profile"] == "quality_bridge"
+    assert evidence["source_profile"] == "quality_bridge"
+    assert "stability_full_data_100k_base128_quality_bridge_v1" in report[
+        "source_reports"
+    ]["cofitok_generation"]["path"]
 
 
 def test_milestone_report_surfaces_quality_alerts_without_becoming_formal_gate() -> None:

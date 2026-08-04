@@ -12,6 +12,11 @@ STABILITY_DECISION_ID = "scaling_decision5k_rollout_x0_u2_ema_teacher_to_50k"
 STABILITY_SCALING_ROOT_ID = "stability_scaling_50k_ema_teacher"
 STABILITY_SCALING_COFITOK_RUN_ID = "cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
 STABILITY_SCALING_DENSE_RUN_ID = "dense_rollout_x0_u2_ema_teacher"
+STABILITY_QUALITY_BRIDGE_ROOT_ID = "stability_full_data_100k_base128_quality_bridge_v1"
+STABILITY_QUALITY_BRIDGE_COFITOK_RUN_ID = (
+    "cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
+)
+STABILITY_QUALITY_BRIDGE_DENSE_RUN_ID = "dense_rollout_x0_u2_ema_teacher"
 STABILITY_FULL_ROOT_ID = "stability_full_300k_ema_teacher"
 STABILITY_FULL_COFITOK_RUN_ID = "cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
 STABILITY_FULL_DENSE_RUN_ID = "dense_rollout_x0_u2_ema_teacher"
@@ -120,6 +125,14 @@ def generation_stability_workspace_paths(
     scaling_reports = scaling_root / "reports"
     scaling_cofitok = scaling_root / STABILITY_SCALING_COFITOK_RUN_ID
     scaling_dense = scaling_root / STABILITY_SCALING_DENSE_RUN_ID
+    quality_bridge_root = output / STABILITY_QUALITY_BRIDGE_ROOT_ID
+    quality_bridge_reports = quality_bridge_root / "reports"
+    quality_bridge_cofitok = (
+        quality_bridge_root / STABILITY_QUALITY_BRIDGE_COFITOK_RUN_ID
+    )
+    quality_bridge_dense = (
+        quality_bridge_root / STABILITY_QUALITY_BRIDGE_DENSE_RUN_ID
+    )
     full_root = output / STABILITY_FULL_ROOT_ID
     full_reports = full_root / "reports"
     full_cofitok = full_root / STABILITY_FULL_COFITOK_RUN_ID
@@ -137,6 +150,14 @@ def generation_stability_workspace_paths(
         "STABILITY_SCALING_REPORT_ROOT": scaling_reports,
         "STABILITY_SCALING_PAIR_SUMMARY": scaling_reports / "pair_summary.json",
         "STABILITY_SCALING_GATE": scaling_reports / "promotion_gate.json",
+        "STABILITY_QUALITY_BRIDGE_ROOT": quality_bridge_root,
+        "STABILITY_QUALITY_BRIDGE_COFITOK_RUN": quality_bridge_cofitok,
+        "STABILITY_QUALITY_BRIDGE_DENSE_RUN": quality_bridge_dense,
+        "STABILITY_QUALITY_BRIDGE_MONITOR": quality_bridge_root / "pair_monitor.json",
+        "STABILITY_QUALITY_BRIDGE_REPORT_ROOT": quality_bridge_reports,
+        "STABILITY_QUALITY_BRIDGE_PREPARATION": (
+            quality_bridge_reports / "preparation.json"
+        ),
         "STABILITY_FULL_ROOT": full_root,
         "STABILITY_FULL_COFITOK_RUN": full_cofitok,
         "STABILITY_FULL_DENSE_RUN": full_dense,

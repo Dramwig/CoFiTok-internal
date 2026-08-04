@@ -12,6 +12,7 @@ RECIPE_STAGES = {
     "scaling",
     "full",
     "stability_scaling",
+    "stability_quality_bridge",
     "stability_full",
 }
 ALLOWED_RUNTIME_BATCHES = {
@@ -71,14 +72,40 @@ def infer_generation_training_stage(
         return "stability_scaling" if stability_recipe else "scaling"
     if identities == {("imagenet_256", 300_000)}:
         return "stability_full" if stability_recipe else "full"
+    if identities == {("imagenet_256", 100_000)} and stability_recipe:
+        return "stability_quality_bridge"
     raise ValueError(f"cannot infer formal generation training stage: {sorted(identities)}")
 
 
 def _expected_shared(stage: str) -> dict[str, Any]:
     full = stage in {"full", "stability_full"}
-    stability = stage in {"stability_scaling", "stability_full"}
+    quality_bridge = stage == "stability_quality_bridge"
+    full_data = full or quality_bridge
+    stability = stage in {
+        "stability_scaling",
+        "stability_quality_bridge",
+        "stability_full",
+    }
+    if full:
+        runtime_steps = 300_000
+        evaluation_interval = 2_000
+        protected_checkpoint_steps = [50_000, 100_000, 200_000, 300_000]
+        min_learning_rate = 5e-6
+        warmup_steps = 5_000
+    elif quality_bridge:
+        runtime_steps = 100_000
+        evaluation_interval = 1_000
+        protected_checkpoint_steps = [50_000, 100_000]
+        min_learning_rate = 1e-5
+        warmup_steps = 1_000
+    else:
+        runtime_steps = 50_000
+        evaluation_interval = 1_000
+        protected_checkpoint_steps = []
+        min_learning_rate = 1e-5
+        warmup_steps = 1_000
     expected = {
-        "data.dataset": "imagenet_256" if full else "imagenet_256_10pct",
+        "data.dataset": "imagenet_256" if full_data else "imagenet_256_10pct",
         "data.image_size": 256,
         "data.channels": 3,
         "data.class_conditional": True,
@@ -100,18 +127,16 @@ def _expected_shared(stage: str) -> dict[str, Any]:
         "model.class_dropout_prob": 0.1,
         "runtime.seed": 2_027,
         "runtime.device": "cuda",
-        "runtime.steps": 300_000 if full else 50_000,
+        "runtime.steps": runtime_steps,
         "runtime.precision": "bf16",
         "runtime.allow_tf32": True,
         "runtime.checkpoint_interval": 5_000,
-        "runtime.evaluation_interval": 2_000 if full else 1_000,
+        "runtime.evaluation_interval": evaluation_interval,
         "runtime.keep_last_checkpoints": 3,
-        "runtime.protected_checkpoint_steps": (
-            [50_000, 100_000, 200_000, 300_000] if full else []
-        ),
+        "runtime.protected_checkpoint_steps": protected_checkpoint_steps,
         "optimization.learning_rate": 1e-4,
-        "optimization.min_learning_rate": 5e-6 if full else 1e-5,
-        "optimization.warmup_steps": 5_000 if full else 1_000,
+        "optimization.min_learning_rate": min_learning_rate,
+        "optimization.warmup_steps": warmup_steps,
         "optimization.weight_decay": 0.01,
         "optimization.betas": [0.9, 0.99],
         "optimization.grad_clip_norm": 1.0,
@@ -119,20 +144,31 @@ def _expected_shared(stage: str) -> dict[str, Any]:
         "optimization.ema_warmup_steps": 2_000,
     }
     if stability:
-        horizon = 300_000 if full else 50_000
+        if full:
+            rollout_warmup_steps = 60_000
+            ema_teacher_start_step = 180_000
+            ema_teacher_warmup_steps = 60_000
+        else:
+            # The quality bridge deliberately preserves the qualified 50K
+            # stability windows while extending only data coverage and the LR
+            # horizon. This keeps the known mechanism active from step 40K
+            # onward instead of introducing a second objective change.
+            rollout_warmup_steps = 10_000
+            ema_teacher_start_step = 30_000
+            ema_teacher_warmup_steps = 10_000
         expected.update(
             {
                 "loss.rollout_consistency_weight": 0.1,
                 "loss.rollout_consistency_start_step": 0,
-                "loss.rollout_consistency_warmup_steps": horizon // 5,
+                "loss.rollout_consistency_warmup_steps": rollout_warmup_steps,
                 "loss.rollout_consistency_timestep_delta": 10,
                 "loss.rollout_consistency_unroll_steps": 2,
                 "loss.rollout_consistency_batch_fraction": 0.125,
                 "loss.rollout_consistency_clip_x0": True,
                 "loss.rollout_consistency_mode": "clipped_x0",
                 "loss.ema_teacher_consistency_weight": 0.25,
-                "loss.ema_teacher_consistency_start_step": 3 * horizon // 5,
-                "loss.ema_teacher_consistency_warmup_steps": horizon // 5,
+                "loss.ema_teacher_consistency_start_step": ema_teacher_start_step,
+                "loss.ema_teacher_consistency_warmup_steps": ema_teacher_warmup_steps,
                 "loss.ema_teacher_consistency_batch_fraction": 0.0625,
             }
         )
@@ -141,7 +177,11 @@ def _expected_shared(stage: str) -> dict[str, Any]:
 
 def _expected_method(method: str, stage: str) -> dict[str, Any]:
     if method == "cofitok":
-        if stage in {"stability_scaling", "stability_full"}:
+        if stage in {
+            "stability_scaling",
+            "stability_quality_bridge",
+            "stability_full",
+        }:
             return {
                 "model.token_count": 8,
                 "model.token_channels": 8,
@@ -264,7 +304,11 @@ def generation_training_recipe_contract(
             if actual != expected:
                 issues.append(f"{method}.{path}: expected {expected!r}, got {actual!r}")
 
-    stability = stage in {"stability_scaling", "stability_full"}
+    stability = stage in {
+        "stability_scaling",
+        "stability_quality_bridge",
+        "stability_full",
+    }
     shared_stability_losses = (
         {"rollout_consistency_weight", "ema_teacher_consistency_weight"}
         if stability
