@@ -1,0 +1,327 @@
+{
+  "schema_version": 2,
+  "role": "generation_quality_bridge_linux_rehearsal_receipt",
+  "status": "pass",
+  "created_at": "2026-08-05T08:24:51+08:00",
+  "execution_target": {
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+    "parent_revision": "e02ba00ea4793c6cd74f3aa667fe5ea9332f9cfe",
+    "subject": "Prepare non-authorizing full-data 100K quality bridge",
+    "execution_target_fixed_to_code_commit": true,
+    "evidence_commit_is_execution_target": false
+  },
+  "formal_remote_checkout": {
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "revision_before": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "revision_after": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "branch_before": "scale/generative-system",
+    "branch_after": "scale/generative-system",
+    "tracked_worktree_clean_before": true,
+    "tracked_worktree_clean_after": true,
+    "fetched": false,
+    "checked_out": false,
+    "merged": false,
+    "deployed": false,
+    "modified": false
+  },
+  "bundle": {
+    "local_temporary_path": "CoFiTok-internal/.codex-bundles/generation-stability-quality-bridge-100k-cf0e5fa.bundle",
+    "remote_temporary_path": "/tmp/cofitok-quality-bridge-cf0e5fa-6b867f37.bundle",
+    "bytes": 40133208,
+    "sha256": "6b867f3789bef059442ee689ca468d81f9535570be17d56a364250b10c759e14",
+    "hash_algorithm": "sha1",
+    "advertised_heads": [
+      {
+        "ref": "refs/heads/scale/generation-stability-quality-bridge-100k",
+        "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a"
+      }
+    ],
+    "prerequisites": [
+      "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+      "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+    ],
+    "local_verify": "pass",
+    "remote_verify_against_formal_repository": "pass",
+    "local_temporary_file_removed": true,
+    "remote_temporary_file_removed": true
+  },
+  "linux_rehearsal": {
+    "host": "pro6000",
+    "workspace_policy": "isolated_tmp_clone_with_real_paper_sibling_copy",
+    "temporary_parent": "/tmp/cofitok-quality-bridge-cf0e5fa-rehearsal",
+    "temporary_checkout": "/tmp/cofitok-quality-bridge-cf0e5fa-rehearsal/CoFiTok-internal",
+    "temporary_branch": "rehearsal/quality-bridge-cf0e5fa",
+    "paper_sibling_source": "/root/autodl-tmp/CoFiTok/paper",
+    "paper_sibling_mode": "independent_cp_a_copy",
+    "target_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "target_tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+    "tracked_worktree_clean_after_validation": true,
+    "temporary_checkout_removed": true,
+    "environment": {
+      "cuda_visible_devices": "",
+      "gpu_available_to_rehearsal": false,
+      "omp_num_threads": 2,
+      "mkl_num_threads": 2,
+      "python": "/root/miniconda3/bin/python",
+      "python_version": "3.12.3",
+      "pytest_version": "9.0.3",
+      "pythonpath": ".:src",
+      "pytest_cache_provider_disabled": true,
+      "python_bytecode_cache_outside_checkout": true
+    },
+    "targeted_pytest": {
+      "status": "pass",
+      "passed": 37,
+      "skipped": 0,
+      "failed": 0,
+      "files": [
+        "tests/test_generation_quality_bridge.py",
+        "tests/test_generation_milestone_report.py",
+        "tests/test_generation_pair_contract.py",
+        "tests/test_generation_workspace_paths.py"
+      ]
+    },
+    "full_pytest": {
+      "status": "pass",
+      "collected": 1077,
+      "passed": 1075,
+      "skipped": 2,
+      "failed": 0,
+      "warnings": 5,
+      "collection_count_independently_recomputed": true
+    },
+    "python_compilation": {
+      "status": "pass",
+      "checked": 8,
+      "entrypoints": [
+        "src/cofitok/generation/quality_bridge.py",
+        "scripts/build_generation_quality_bridge_preparation.py",
+        "scripts/validate_generation_quality_bridge_preparation.py",
+        "scripts/validate_generation_quality_bridge_execution_approval.py",
+        "scripts/build_generation_quality_bridge_launch_receipt.py",
+        "scripts/validate_generation_quality_bridge_launch_receipt.py",
+        "scripts/build_generation_quality_bridge_result.py",
+        "scripts/verify_generation_quality_bridge_result.py"
+      ]
+    },
+    "tracked_runbook_bash_n": {
+      "status": "pass",
+      "checked": 107,
+      "failed": 0
+    },
+    "git_diff_tree_check": "pass",
+    "gpu_work_performed": false
+  },
+  "frozen_source_state": {
+    "scaling_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher",
+    "promotion_gate": {
+      "path": "reports/promotion_gate.json",
+      "bytes": 31870,
+      "sha256": "2f763913d5a07ba5563f5bc75548780678fcdf9da4e119e03262f10daf84dd90",
+      "schema_version": 2,
+      "status": "fail",
+      "decision": "hold",
+      "failed_gates": [
+        "absolute_fid_quality"
+      ],
+      "cofitok_fid": 138.29702495267782,
+      "dense_fid": 151.4476773464495,
+      "cofitok_precision": 0.7505000233650208,
+      "dense_precision": 0.78329998254776,
+      "cofitok_recall": 0.008679999969899654,
+      "dense_recall": 0.00977999996393919
+    },
+    "posteval_waiter": {
+      "status": "pass",
+      "detail": "formal_ema_postevaluation_completed"
+    },
+    "supplemental_waiter": {
+      "status": "failed",
+      "detail": "RuntimeError: stability 50K post-evaluation status is stale",
+      "supplemental_non_authorizing": true,
+      "full_training_launch_allowed": false
+    },
+    "readiness_waiter": {
+      "status": "failed",
+      "detail": "ValueError: scaling gate did not authorize promote_to_full_imagenet256",
+      "full_training_launch_allowed": false
+    },
+    "frozen_class_fidelity_qualification_present": false
+  },
+  "source_closure": {
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "file_count": 24,
+    "all_files_rehashed_from_exact_linux_checkout": true,
+    "files": [
+      {
+        "path": "artifacts/runbooks/generation_stability_full_data_quality_bridge_100k_execute.sh",
+        "bytes": 27943,
+        "sha256": "f0531763b4b888964a75923a8d59cb8cf8d1c79bd7782f845006c39e1a57fe73"
+      },
+      {
+        "path": "artifacts/runbooks/generation_stability_full_data_quality_bridge_100k_prepare.sh",
+        "bytes": 3572,
+        "sha256": "17a772355eab9c667c0fcdffc18ee387f8d27b5f535a5611dc4c3cead925c2cd"
+      },
+      {
+        "path": "configs/generation/imagenet256_stability_quality_bridge_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k.json",
+        "bytes": 3019,
+        "sha256": "40b5815c1aa92c1a22c585ddbe57d5232e57a031ece238bd27d1a0a1422fa14e"
+      },
+      {
+        "path": "configs/generation/imagenet256_stability_quality_bridge_rollout_x0_u2_ema_teacher_dense_100k.json",
+        "bytes": 2459,
+        "sha256": "f8f1c1967468bef4db1e9a00e8f80c3da5af22e417d8ab4864afcb4fb68f884c"
+      },
+      {
+        "path": "docs/GENERATION_SYSTEM.md",
+        "bytes": 77603,
+        "sha256": "7ea6afc9f4cadb14f8185e19ed4631710fa312d95cff2762101e7357ced48da9"
+      },
+      {
+        "path": "docs/records/2026-08-05_generation_full_data_quality_bridge_100k_preparation.md",
+        "bytes": 11002,
+        "sha256": "6006269d639270e60636e7b540ec976be5ceea044c28fce1d224e26b1d4ee273"
+      },
+      {
+        "path": "scripts/build_generation_milestone_report.py",
+        "bytes": 19891,
+        "sha256": "5b81a3d8c02d56dd1aa63bc22f051fe8c9ee77ed90cccde3a98e39f27f1d572e"
+      },
+      {
+        "path": "scripts/build_generation_quality_bridge_launch_receipt.py",
+        "bytes": 7912,
+        "sha256": "b071bdc662e88fee1f1b77b15f28790f48c759ea42b1b9d699431ec23586e085"
+      },
+      {
+        "path": "scripts/build_generation_quality_bridge_preparation.py",
+        "bytes": 3259,
+        "sha256": "d8bea6604b1fb3a5e849c9a147c160a8277b522eedcea020f0fa91fe9ebd66aa"
+      },
+      {
+        "path": "scripts/build_generation_quality_bridge_result.py",
+        "bytes": 13986,
+        "sha256": "fc8d77c90419573df142ed2e89fda06c9b156f38683e60a25b622b387329524c"
+      },
+      {
+        "path": "scripts/validate_generation_configs.py",
+        "bytes": 4539,
+        "sha256": "67e5b0a59da9828c73c0a9e92b74890c68366a3e490abaa6b00e65f01c53461e"
+      },
+      {
+        "path": "scripts/validate_generation_milestone_report.py",
+        "bytes": 1639,
+        "sha256": "80ed16de85df90fd945a4f51789f36ecc2bec19571a71005114a96e2c7374df2"
+      },
+      {
+        "path": "scripts/validate_generation_quality_bridge_execution_approval.py",
+        "bytes": 2202,
+        "sha256": "a6c30308947f8607e375b46228845912ec8673ca57b341f11011bd0c26a70a04"
+      },
+      {
+        "path": "scripts/validate_generation_quality_bridge_launch_receipt.py",
+        "bytes": 1445,
+        "sha256": "c679bd04ebefb1cc47032c5477ecfe59ccb65e9e222e53611ea5fc9c9e47a6f5"
+      },
+      {
+        "path": "scripts/validate_generation_quality_bridge_preparation.py",
+        "bytes": 1605,
+        "sha256": "11f92dc889a8cfcc8799da6eee9e3206cf844a99f9a359f888e76465a8539ee2"
+      },
+      {
+        "path": "scripts/validate_generation_training_pair.py",
+        "bytes": 12697,
+        "sha256": "0f86307ccdcf3e86568bee9e060f44f1f4c187d6d40568e4d3abec8a70002222"
+      },
+      {
+        "path": "scripts/verify_generation_quality_bridge_result.py",
+        "bytes": 1497,
+        "sha256": "7c700af7be6afd0150b28cb54458496d9dacc5d0b5adfae9a25bc4201f7e4415"
+      },
+      {
+        "path": "src/cofitok/generation/quality_bridge.py",
+        "bytes": 73241,
+        "sha256": "d0ebe6cd6210e11c3c4ae368bb1c5ea53268ecccebf67675e604809189547bb4"
+      },
+      {
+        "path": "src/cofitok/generation_paths.py",
+        "bytes": 7772,
+        "sha256": "a92ef53fce8cae880e469e6f785921625747b82b5c334baa867156d1cb06e1aa"
+      },
+      {
+        "path": "src/cofitok/generation_recipe.py",
+        "bytes": 15150,
+        "sha256": "da09689b21156463bcd9a9dd6b1ee6871ec1e47794337f7c447e8c634de3d79c"
+      },
+      {
+        "path": "tests/test_generation_milestone_report.py",
+        "bytes": 10286,
+        "sha256": "16bb0f34b55c02f8cd7131038b3fece85c35fa9dcf6beda1c9fa2e66cf18408c"
+      },
+      {
+        "path": "tests/test_generation_pair_contract.py",
+        "bytes": 8771,
+        "sha256": "0451567208673e5f08f59368e4f427cf372d7f34df75f287e0526596ab000f7e"
+      },
+      {
+        "path": "tests/test_generation_quality_bridge.py",
+        "bytes": 44157,
+        "sha256": "335215ba89dd18b38d771ba4474d984e30300635c3ddb7f0a270307c5b216911"
+      },
+      {
+        "path": "tests/test_generation_workspace_paths.py",
+        "bytes": 7858,
+        "sha256": "f70bf6f7dc65723bd3c7a289b9d776a5737a5d07302e84b2655bf6549f488a77"
+      }
+    ]
+  },
+  "observed_unrelated_gpu_process": {
+    "pid": 433140,
+    "ppid": 433139,
+    "cwd": "/root/autodl-tmp/FieldScope/FieldScope-internal",
+    "argv": "/root/autodl-tmp/FieldScope/.venv/bin/python -m fieldscope.cli extract-dataset --config configs/model/auraflow_v03.yaml --dataset imagenet100 --root /root/autodl-tmp/FieldScope/datasets/prepared/imagenet100 --split train --output /root/autodl-tmp/FieldScope/datasets/feature_cache/auraflow_v03/imagenet100_train --storage-policy readout_sparse --resume --classes-file /root/autodl-tmp/FieldScope/datasets/prepared/imagenet100/classes.txt",
+    "started_at": "2026-08-04T19:07:03+08:00",
+    "gpu_memory_mib": 15412,
+    "gpu_used_memory_mib": 15421,
+    "gpu_free_memory_mib": 81833,
+    "gpu_utilization_percent": 100,
+    "modified": false
+  },
+  "storage": {
+    "path": "/root/autodl-tmp",
+    "filesystem_bytes": 1073741824000,
+    "used_bytes": 769981059072,
+    "free_bytes": 303760764928,
+    "use_percent": 72
+  },
+  "cleanup": {
+    "remote_rehearsal_checkout_removed": true,
+    "remote_bundle_removed": true,
+    "local_bundle_removed": true,
+    "local_synthetic_rehearsal_worktree_removed": true,
+    "local_synthetic_rehearsal_branch_removed": true,
+    "local_paper_junction_removed": true,
+    "local_c_qb_root_removed": true,
+    "unrelated_worktrees_removed": false,
+    "unrelated_dirty_files_modified": false
+  },
+  "safety_boundary": {
+    "quality_bridge_preparation_executed": false,
+    "quality_bridge_deployed": false,
+    "quality_bridge_launched": false,
+    "quality_bridge_execution_approval_observed": false,
+    "full_300k_deployed": false,
+    "full_300k_launched": false,
+    "formal_checkout_deployed": false,
+    "gpu_evaluation_performed": false,
+    "unrelated_process_modified": false,
+    "quality_bridge_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "release_authorization_allowed": false,
+    "new_gate_required": true,
+    "explicit_user_execution_approval_required": true
+  }
+}

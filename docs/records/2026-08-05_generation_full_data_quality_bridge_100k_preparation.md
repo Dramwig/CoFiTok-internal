@@ -202,38 +202,63 @@ while that or any other unrelated GPU compute process remains.
 
 ## Validation completed
 
-Local validation on the project `.venv` completed with:
-
-- Python compilation of all eight quality-bridge library/CLI entrypoints;
-- the complete repository suite: `1,101 passed`, `6 skipped`, no failures;
-- all quality-bridge, milestone, matched-pair, training-audit, sampling,
-  generation-metrics, class-fidelity, and direct-runbook-entrypoint tests;
-- `git diff --check` and an explicit trailing-whitespace scan of the new
-  quality-bridge files;
-- Linux `bash -n` for all `109` generation runbooks, including both untracked
-  quality-bridge runbooks.
-
-A second CPU-only Linux rehearsal ran in an isolated
-`/tmp/cofitok-quality-bridge-rehearsal.*` checkout on `pro6000`. It reconstructed
-the target `e02ba00ea4793c6cd74f3aa667fe5ea9332f9cfe` from a prerequisite-bound
-incremental Git bundle, overlaid the current quality-bridge worktree files,
-normalized the transport-only CRLF endings to the LF form produced by a Git
-checkout, and ran with `CUDA_VISIBLE_DEVICES=""`, `OMP_NUM_THREADS=2`, and
-`MKL_NUM_THREADS=2`. Results:
+The bridge-owned implementation was isolated into the dedicated clean code
+commit:
 
 ```text
-109 targeted tests passed
-109/109 generation runbooks passed bash -n
-quality-bridge entrypoint py_compile passed
-git diff --check passed
+branch: scale/generation-stability-quality-bridge-100k
+revision: cf0e5faa94bf4ab38d947b921935b3b765b5537a
+tree: 6cef27723196fd363379bca2e7b85b1678ebd777
+subject: Prepare non-authorizing full-data 100K quality bridge
+```
+
+The commit changes exactly 24 bridge-owned files. Mixed sampling-recovery,
+trajectory, waiter, acceptance, and other user worktree changes were not added
+to the commit and were not cleaned or overwritten.
+
+A prerequisite-aware bundle was then built directly from this exact commit. It
+advertised one head, required both formal history anchors, and verified locally
+and against the formal remote repository:
+
+```text
+bundle bytes: 40133208
+bundle sha256: 6b867f3789bef059442ee689ca468d81f9535570be17d56a364250b10c759e14
+advertised revision: cf0e5faa94bf4ab38d947b921935b3b765b5537a
+prerequisite 1: 1ebcc15210e63a776a2ba448481cbd8bb94a4066
+prerequisite 2: 58d83bfce2770eab2565b8c89a5f9a06201a0c86
+```
+
+The final CPU-only Linux rehearsal used a named isolated branch at the exact
+target commit under `/tmp/cofitok-quality-bridge-cf0e5fa-rehearsal`, with an
+independent `cp -a` copy of the real sibling `paper/` directory. It did not use
+an overlay or detached synthetic source. Environment controls were
+`CUDA_VISIBLE_DEVICES=""`, `OMP_NUM_THREADS=2`, `MKL_NUM_THREADS=2`,
+`PYTHONPATH=.:src`, Python 3.12.3, and pytest 9.0.3. Results:
+
+```text
+37 targeted tests passed
+1077 tests collected
+1075 tests passed, 2 skipped, 0 failed
+8/8 quality-bridge Python entrypoints passed py_compile
+107/107 tracked shell runbooks passed bash -n
+git diff-tree --check passed
+isolated tracked worktree remained clean
 linux_rehearsal_status=pass
 ```
 
-The formal remote checkout remained at `1ebcc15210e63a776a2ba448481cbd8bb94a4066`;
-no fetch, checkout, deployment, training, or GPU evaluation was performed there.
-The rehearsal checkout, bundle, overlay, and all local/remote temporary archives
-were removed after verification. FieldScope PID `433140` remained the only GPU
-compute process and was not signaled or modified.
+All 24 changed files were independently rehashed from the exact Linux checkout.
+The formal remote checkout remained tracked-clean at
+`scale/generative-system@1ebcc15210e63a776a2ba448481cbd8bb94a4066` before and
+after the rehearsal; it was not fetched, checked out, merged, or deployed. No
+quality-bridge process existed afterward. FieldScope PID `433140` remained the
+only GPU compute process, with the same argv/cwd/start identity and approximately
+15,412 MiB allocation; it was not signaled or modified. Final filesystem free
+space was `303,760,764,928` bytes.
+
+The isolated remote checkout, remote bundle, local bundle, synthetic local
+rehearsal worktree/branch, paper junction, and empty `C:\qb` temporary root were
+removed after verification. Unrelated worktrees, bundles, and dirty evidence
+were left untouched.
 
 The source-bound machine-readable rehearsal receipt is:
 
@@ -241,14 +266,21 @@ The source-bound machine-readable rehearsal receipt is:
 artifacts/reports/generation/stability_full_data_quality_bridge_100k_linux_rehearsal_2026-08-05/rehearsal_summary.json
 ```
 
-Its 20 bound source files were independently rehashed after writing the receipt.
+The receipt is `12,728` bytes with SHA256
+`eb6f79a8daa45447af7c6aaa64d849c74911bbd62731bc57fdb7dab105ec2cb2`.
+The schema-v2 receipt supersedes the earlier dirty-overlay draft that targeted
+`e02ba00` and bound only 20 files. The current receipt fixes the execution target
+to `cf0e5fa`, binds the complete 24-file source closure, records both bundle
+prerequisites, and retains every non-authorizing safety flag as false.
 
 ## Remaining work before execution
 
-1. Finish repository-wide validation and review the complete dirty worktree
-   without overwriting unrelated user evidence.
-2. Commit the bridge as a dedicated clean target revision and rehearse it in an
-   isolated Linux checkout.
-3. Deploy only to a dedicated clean checkout after explicit user approval.
-4. Never interpret a bridge pass as a full-300K authorization; a new
+1. Obtain explicit user approval for this exact `cf0e5fa` execution target.
+2. Wait for all unrelated GPU compute to disappear, then independently recheck
+   GPU idleness, storage, the frozen gate SHA, and the formal repository state.
+3. Deploy only to a dedicated clean checkout and run the prepare/approval/launch
+   receipt chain without moving or mutating the formal checkout.
+4. Execute the matched 100K bridge only from the immutable launch receipt; do
+   not resume unreceipted state or duplicate a trainer/monitor.
+5. Never interpret a bridge pass as a full-300K authorization; a new
    source-compatible schema-v4+ gate and explicit user decision remain required.
