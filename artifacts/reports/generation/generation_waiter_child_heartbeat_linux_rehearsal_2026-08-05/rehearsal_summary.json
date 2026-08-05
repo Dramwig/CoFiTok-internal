@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "role": "generation_waiter_child_heartbeat_linux_rehearsal",
+  "status": "pass",
+  "created_at": "2026-08-05T10:39:24.3993955+08:00",
+  "purpose": "Keep source-bound waiter coordination status fresh while a healthy long-running child stage is active.",
+  "code": {
+    "branch": "fix/generation-waiter-child-heartbeat-20260805",
+    "revision": "5b2f5b65cdc61bdf1c03e1fe9a22757792bad6f2",
+    "tree": "4805f5e2040e7094e61907ed78fee415878848a1",
+    "parent": "240daca15d86a373a39d37dd7f7fc5ae8d5abed9",
+    "quality_bridge_execution_target_unchanged": "cf0e5faa94bf4ab38d947b921935b3b765b5537a"
+  },
+  "source_files": [
+    {
+      "path": "docs/records/2026-08-05_generation_waiter_child_heartbeat_hardening.md",
+      "bytes": 2837,
+      "sha256": "cb68171360f0e3ab97b5cfc77262173d9c5360eaeac094e463647aebe97990a0"
+    },
+    {
+      "path": "scripts/run_generation_stability_50k_posteval_waiter.py",
+      "bytes": 21036,
+      "sha256": "efb7465c6cb4d62043f665551565e114059c21b5fbd708a14b180c7385b88505"
+    },
+    {
+      "path": "scripts/run_generation_stability_frozen_supplemental_waiter.py",
+      "bytes": 22518,
+      "sha256": "d7c0324a9a41717aaa44e340872901f4aca337ac45a517b8ec2e2d77d16b15a1"
+    },
+    {
+      "path": "scripts/run_generation_stability_full_readiness_waiter.py",
+      "bytes": 21223,
+      "sha256": "67cd6bda996a54670e6cdeac4231ca779c12c5fb1a597aa81bd063d9db4c51af"
+    },
+    {
+      "path": "src/cofitok/process_monitoring.py",
+      "bytes": 596,
+      "sha256": "b3b24d9c11fefafd4de4aafecc409e88b86ab79ee4338f19e2892b4b4f7913"
+    },
+    {
+      "path": "tests/test_generation_frozen_supplemental_waiter.py",
+      "bytes": 13668,
+      "sha256": "fbfa00f8b52b79426c259d5ada8795f961da503eb5092e3f810ca57e9dfef8f1"
+    },
+    {
+      "path": "tests/test_generation_stability_full_readiness_waiter.py",
+      "bytes": 11123,
+      "sha256": "258e15e008ac739c7279d8fd7c17196b54a6f533fdc59473ab6c0144d5318073"
+    },
+    {
+      "path": "tests/test_process_monitoring.py",
+      "bytes": 1117,
+      "sha256": "4b82851f625577c3d23b70ebf07106de88b86ab79ee4338f19e2892b4b4f7913"
+    }
+  ],
+  "bundle": {
+    "bytes": 40156744,
+    "sha256": "05fcef9f54e4b7b27fa69da46e05ddbb7afdadbc5d46168a2160330a9d730c1b",
+    "prerequisites": [
+      "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+      "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+    ],
+    "verified_locally": true,
+    "verified_remotely": true,
+    "temporary_local_bundle_removed": true,
+    "temporary_remote_bundle_removed": true
+  },
+  "local_verification": {
+    "changed_entrypoints_compiled": true,
+    "focused_tests": {
+      "passed": 29,
+      "failed": 0
+    },
+    "repository_test_run": {
+      "collected": 1079,
+      "passed": 1069,
+      "skipped": 6,
+      "failed_due_only_to_short_worktree_paper_parent_layout": 4
+    },
+    "canonical_layout_rerun": {
+      "paper_layout_tests_passed": 4,
+      "failed": 0
+    },
+    "diff_check_passed": true
+  },
+  "linux_rehearsal": {
+    "host": "pro6000",
+    "checkout_location": "/tmp/cofitok-waiter-heartbeat-5b2f5b6-rehearsal",
+    "revision": "5b2f5b65cdc61bdf1c03e1fe9a22757792bad6f2",
+    "tree": "4805f5e2040e7094e61907ed78fee415878848a1",
+    "cuda_visible_devices": "",
+    "focused_tests": {
+      "passed": 29,
+      "failed": 0
+    },
+    "changed_entrypoints_compiled": true,
+    "checkout_clean_before_and_after": true,
+    "temporary_checkout_removed": true
+  },
+  "formal_remote_checkout": {
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "revision_before": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "revision_after": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tracked_state_clean_after": true,
+    "fetch_performed": false,
+    "checkout_performed": false,
+    "merge_performed": false
+  },
+  "safety": {
+    "training_launched": false,
+    "evaluation_launched": false,
+    "quality_bridge_deployed": false,
+    "quality_bridge_launched": false,
+    "full_300k_authorized": false,
+    "full_300k_launched": false,
+    "release_authorized": false,
+    "other_project_process_modified": false,
+    "observed_unrelated_gpu_pid": 433140,
+    "observed_unrelated_gpu_memory_mib": 15412
+  }
+}
