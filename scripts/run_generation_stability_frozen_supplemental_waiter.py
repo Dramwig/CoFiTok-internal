@@ -15,6 +15,7 @@ from cofitok.generation.frozen_supplemental import (
     FROZEN_SUPPLEMENTAL_ROLE,
 )
 from cofitok.output_lock import OutputLockError, exclusive_output_lock
+from cofitok.process_monitoring import wait_for_child_with_heartbeat
 from cofitok.reporting import file_sha256, write_json_report
 
 try:
@@ -459,7 +460,22 @@ def _run_locked(args: argparse.Namespace) -> int:
                     child_pid=child_pid,
                 ),
             )
-            child_exit_code = child.wait()
+            child_exit_code = wait_for_child_with_heartbeat(
+                child,
+                poll_seconds=args.poll_seconds,
+                heartbeat=lambda: write_json_report(
+                    args.status_output,
+                    _status(
+                        status="running",
+                        detail="frozen_supplemental_running",
+                        expected=expected,
+                        checkout=checkout,
+                        posteval=posteval,
+                        readiness=readiness,
+                        child_pid=child_pid,
+                    ),
+                ),
+            )
             if child_exit_code in TRANSIENT_RUNBOOK_EXIT_CODES:
                 detail = "supplemental_runbook_deferred_by_concurrent_gpu_or_lock"
             elif child_exit_code != 0:
