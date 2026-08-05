@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "role": "generation_frozen_existing_sample_support_audit_receipt",
+  "status": "completed",
+  "date": "2026-08-05",
+  "claim_boundary": {
+    "supplemental_non_authorizing": true,
+    "full_training_launch_allowed": false,
+    "sampling_recovery_execution_allowed": false,
+    "gpu_execution_authorized": false,
+    "new_sampling_performed": false,
+    "new_training_performed": false,
+    "causal_attribution_allowed": false
+  },
+  "implementation": {
+    "branch": "scale/generation-stability-frozen-sample-support-audit-v1",
+    "revision": "dcf003afa2c6c3c390684af8419ae4ad557aafaa",
+    "tree": "3ba846fc407f2b093115ad2ca454fdf0344f8cf0",
+    "parent_code_revision": "65fa30a1d19aa25dd51fe62c8e94057321f7ac9d",
+    "parent_code_tree": "c5d94b17413319eedfd302cfb7b030dfe9dae5c8"
+  },
+  "authoritative_report": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/frozen_existing_sample_support_audit/support_audit.json",
+    "bytes": 43144,
+    "sha256": "6b3acfa62780b951b0adb45f817335b8086bafbed9dc7dcb90ba0afa07d0d9eb",
+    "physical_replay": "exact"
+  },
+  "frozen_sources": {
+    "promotion_gate_sha256": "2f763913d5a07ba5563f5bc75548780678fcdf9da4e119e03262f10daf84dd90",
+    "dataset_manifest_bytes": 405484553,
+    "dataset_manifest_sha256": "9a2eec642f0d56162bffaafed84a41267f22abfc9feff4cf41fed9f6881173f0",
+    "real_set_image_count": 50000,
+    "real_set_sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f",
+    "cofitok_sample_set_sha256": "de17e26507c57f6ab473aa20fe5749e19dcd22941391dd7709b3d700297731da",
+    "dense_sample_set_sha256": "97c21492f4146ea1df889b639687e836dab54e46d5a4aff3c6ec4a59f2394e83"
+  },
+  "formal_distribution_support": {
+    "cofitok_precision": 0.7505000233650208,
+    "cofitok_recall": 0.008679999969899654,
+    "dense_precision": 0.78329998254776,
+    "dense_recall": 0.00977999996393919
+  },
+  "support_statistics": {
+    "real": {
+      "decoded_pixel_duplicate_count": 0,
+      "dhash_duplicate_count": 0,
+      "mean_absolute_neighbor_gradient": 0.040653337721596475,
+      "lowres_entropy_effective_rank": 13.984032837973738,
+      "lowres_components_for_90_percent_variance": 20,
+      "same_over_adjacent_class_rms_ratio": 0.9577256631994071,
+      "lowres_between_class_variance_fraction": 0.18903867868696686
+    },
+    "cofitok": {
+      "decoded_pixel_duplicate_count": 0,
+      "dhash_duplicate_count": 0,
+      "mean_absolute_neighbor_gradient": 0.09476294635785744,
+      "gradient_ratio_to_real": 2.331000396740267,
+      "lowres_entropy_effective_rank": 11.098827889529947,
+      "lowres_effective_rank_ratio_to_real": 0.7936786203326842,
+      "lowres_components_for_90_percent_variance": 13,
+      "same_over_adjacent_class_rms_ratio": 0.9945497305575786,
+      "lowres_between_class_variance_fraction": 0.10384027957524283,
+      "between_class_variance_fraction_ratio_to_real": 0.5493070534374298
+    },
+    "dense_identity": {
+      "decoded_pixel_duplicate_count": 0,
+      "dhash_duplicate_count": 0,
+      "mean_absolute_neighbor_gradient": 0.12138268500291742,
+      "gradient_ratio_to_real": 2.9857987512409023,
+      "lowres_entropy_effective_rank": 7.842280715731186,
+      "lowres_effective_rank_ratio_to_real": 0.5608025100195287,
+      "lowres_components_for_90_percent_variance": 8,
+      "same_over_adjacent_class_rms_ratio": 0.9911003305227319,
+      "lowres_between_class_variance_fraction": 0.11207411757411999,
+      "between_class_variance_fraction_ratio_to_real": 0.5928634200819076
+    },
+    "matched_pair": {
+      "paired_lowres_rms_mean": 0.06702284533200721,
+      "paired_dhash_hamming_mean": 3.6101,
+      "paired_lowres_rms_over_cofitok_same_class_rms": 0.30139977422838116,
+      "paired_lowres_rms_over_dense_same_class_rms": 0.2454210600565104
+    }
+  },
+  "validation": {
+    "local_parent_exact_suite": {
+      "revision": "65fa30a1d19aa25dd51fe62c8e94057321f7ac9d",
+      "passed": 1140,
+      "skipped": 6
+    },
+    "local_final_targeted": {
+      "revision": "dcf003afa2c6c3c390684af8419ae4ad557aafaa",
+      "passed": 10
+    },
+    "canonical_layout": {
+      "passed": 4
+    },
+    "linux_final_targeted": {
+      "revision": "dcf003afa2c6c3c390684af8419ae4ad557aafaa",
+      "passed": 10,
+      "bash_syntax": "pass",
+      "direct_entrypoint": "pass",
+      "cuda_visible": false
+    },
+    "full_physical_replay": "FULL_PHYSICAL_REPLAY_EXACT"
+  },
+  "initial_fail_closed_attempt": {
+    "revision": "65fa30a1d19aa25dd51fe62c8e94057321f7ac9d",
+    "error": "direct entrypoint could not import scripts with PYTHONPATH=src",
+    "fixed_by_revision": "dcf003afa2c6c3c390684af8419ae4ad557aafaa",
+    "report_written": false,
+    "images_read": false,
+    "gpu_used": false
+  },
+  "formal_checkout_preservation": {
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "branch": "scale/generative-system",
+    "tracked_clean": true,
+    "full_status_sha256_before_after": "774cfad9f88f6e4fa953556e466b02b16212184930ca9fcbf4e8c233ab1cb79c"
+  },
+  "decision": {
+    "duplicate_collapse_supported": false,
+    "shared_high_frequency_and_weak_class_support_supported": true,
+    "cofitok_specific_failure_supported": false,
+    "sampling_vs_undertraining_resolved": false,
+    "next_discriminating_action": "non-authorizing matched 512-sample sampling-recovery diagnostic",
+    "next_action_requires_exact_user_authorization": true,
+    "full_300k_remains_forbidden": true
+  }
+}
