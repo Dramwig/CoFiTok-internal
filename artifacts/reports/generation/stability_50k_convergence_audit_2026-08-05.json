@@ -1,0 +1,314 @@
+{
+  "schema_version": 1,
+  "role": "generation_stability_50k_convergence_audit_evidence_receipt",
+  "status": "pass",
+  "created_at": "2026-08-05T23:37:09+08:00",
+  "audit_execution_target": {
+    "revision": "f3606dcac217debe558dea64581f63f0cbbd991c",
+    "branch": "scale/generation-stability-50k-convergence-audit-v1",
+    "tree": "f5ec513846771104a2e019ddae0db3ebbdf87fc2",
+    "parent_revision": "90e3ed2fbd1d77566be0544a0b171dde03369a14",
+    "subject": "Audit stability 50K convergence and next evidence",
+    "execution_target_fixed_to_code_commit": true,
+    "evidence_commit_is_execution_target": false
+  },
+  "source_closure": {
+    "revision": "f3606dcac217debe558dea64581f63f0cbbd991c",
+    "files": [
+      {
+        "path": "scripts/build_generation_stability_50k_convergence_audit.py",
+        "bytes": 49392,
+        "sha256": "04493d90854108a6ce3e0339c5fa27b4a82a5cce3b3c2e3f7c10b79dec146ad0"
+      },
+      {
+        "path": "artifacts/runbooks/generation_stability_frozen_50k_convergence_audit.sh",
+        "bytes": 2370,
+        "sha256": "d645fb8faec00a2e142a7c3cfade42c44ff0b7ec55d74abe966450616f8595ab"
+      },
+      {
+        "path": "tests/test_generation_stability_50k_convergence_audit.py",
+        "bytes": 17435,
+        "sha256": "af7f70f8165bcf2cf036b2298dfbc0ac1284595d81bc350f9c438cdd92992fa5"
+      },
+      {
+        "path": "tests/test_generation_runbook_entrypoints.py",
+        "bytes": 8794,
+        "sha256": "36174ed8bc0927f2f59d700588b6a9f27de030b36773394b4ed4062b091cb0df"
+      }
+    ]
+  },
+  "bundle": {
+    "bytes": 40255023,
+    "sha256": "a67f0f885f1cd31e9719bbb7d123fcf35b04353893340a53ba2507a214fd0307",
+    "advertised_heads": [
+      {
+        "ref": "refs/heads/scale/generation-stability-50k-convergence-audit-v1",
+        "revision": "f3606dcac217debe558dea64581f63f0cbbd991c"
+      }
+    ],
+    "prerequisites": [
+      "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+      "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+    ],
+    "local_verify": "pass",
+    "remote_verify_against_formal_repository": "pass",
+    "local_temporary_file_removed": true,
+    "remote_temporary_file_removed": true
+  },
+  "validation": {
+    "local_targeted": {
+      "status": "pass",
+      "passed": 8,
+      "failed": 0
+    },
+    "local_relevant_expanded": {
+      "status": "pass",
+      "passed": 112,
+      "failed": 0,
+      "coverage": [
+        "50K convergence audit",
+        "matched trajectory",
+        "frozen sample-support audit",
+        "sampling recovery",
+        "generation-pair contract",
+        "100K quality bridge"
+      ]
+    },
+    "linux_targeted": {
+      "status": "pass",
+      "passed": 8,
+      "failed": 0,
+      "cuda_visible_devices": "",
+      "torch_cuda_available": false,
+      "torch_cuda_device_count": 0
+    },
+    "python_compilation": "pass",
+    "runbook_bash_n": "pass",
+    "direct_entrypoint_help": "pass",
+    "git_diff_check": "pass",
+    "authoritative_runbook": "pass",
+    "independent_replay_byte_exact": true,
+    "gpu_work_performed": false
+  },
+  "authoritative_report": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/frozen_training_convergence_audit/convergence_audit.json",
+    "bytes": 57848,
+    "sha256": "c3f362910fce56d6de8568a676ba378820fb07cf5bd0b4180fc22b20cab04eb6",
+    "schema_version": 1,
+    "role": "generation_stability_50k_convergence_and_next_action_audit",
+    "status": "pass",
+    "replay_byte_exact": true
+  },
+  "formal_remote_checkout": {
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "revision_before": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "revision_after": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "branch_before": "scale/generative-system",
+    "branch_after": "scale/generative-system",
+    "tracked_worktree_clean_before": true,
+    "tracked_worktree_clean_after": true,
+    "full_porcelain_nonempty": true,
+    "full_porcelain_sha256_before": "774cfad9f88f6e4fa953556e466b02b16212184930ca9fcbf4e8c233ab1cb79c",
+    "full_porcelain_sha256_after": "774cfad9f88f6e4fa953556e466b02b16212184930ca9fcbf4e8c233ab1cb79c",
+    "fetched": false,
+    "checked_out": false,
+    "merged": false,
+    "deployed": false,
+    "modified": false,
+    "post_cleanup_recheck": {
+      "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+      "branch": "scale/generative-system",
+      "tracked_worktree_clean": true,
+      "staged_path_count": 0,
+      "full_porcelain_path_count": 296,
+      "full_porcelain_sha256": "51b3f5402a691968e7b8b31aaefd24f59744fbd7c5b88a036ec97ffa813100a2",
+      "differs_from_execution_recheck": true,
+      "interpretation": "The formal HEAD and tracked state remain unchanged; the nonempty untracked inventory changed externally after the audit and was not modified by this work."
+    }
+  },
+  "training_identity": {
+    "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+    "branch": "scale/generation-stability-50k-preflight",
+    "dataset": "imagenet_256_10pct",
+    "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+    "steps_per_method": 50000,
+    "effective_batch": 64,
+    "images_seen_per_method": 3200000,
+    "cofitok_parameter_count": 62834083,
+    "dense_parameter_count": 62824707,
+    "relative_parameter_gap": 0.00014924064826915946,
+    "generation_pair_contract_valid": true
+  },
+  "checkpoint_evidence": {
+    "cofitok": {
+      "checkpoint_bytes": 1006325418,
+      "checkpoint_sha256": "ec7b9a0981f1d45420a9a86cdb80339d6d87b87fa77891c234db3d1b84376c2a",
+      "integrity_sidecar_bytes": 590,
+      "integrity_sidecar_sha256": "4f3f6f3f401f34131f902b016baf41897b35f95d242bb023981feff4a36226a8",
+      "row_count": 1002,
+      "resume_extra_steps": [36546],
+      "validation_event_count": 50,
+      "all_numeric_metrics_finite": true,
+      "steps_strict_and_exact": true,
+      "samples_seen_exact": true
+    },
+    "dense_identity": {
+      "checkpoint_bytes": 1006120214,
+      "checkpoint_sha256": "325da25f9fd228ab224abd977da7f9e1d000ba36e3e8136b55edae9c9f47c716",
+      "integrity_sidecar_bytes": 590,
+      "integrity_sidecar_sha256": "31b1cf05a0bafaf06e3fb434ebabe3fbed41800687e28e447140565b8f4cafff",
+      "row_count": 1001,
+      "resume_extra_steps": [],
+      "validation_event_count": 50,
+      "all_numeric_metrics_finite": true,
+      "steps_strict_and_exact": true,
+      "samples_seen_exact": true
+    },
+    "physical_checkpoint_rehashed_by_convergence_audit": false,
+    "verification_boundary": "The audit verified physical bytes, latest.json, required integrity-sidecar provenance, and existing locked checkpoint SHA bindings without rereading two 1 GB weight files."
+  },
+  "matched_primary_validation": {
+    "event_count": 50,
+    "pearson_correlation": 0.9975195919216022,
+    "ratio_of_means_delta_cofitok_over_dense": -0.00042248009645917683,
+    "cofitok_lower_event_count": 18,
+    "dense_lower_event_count": 32,
+    "matched_method_trajectory_claim_allowed": true,
+    "temporal_convergence_claim_allowed": false,
+    "reason": "Each scheduled event advances to a different validation batch, so events are matched between methods but are not a fixed-batch temporal learning curve."
+  },
+  "late_training_epsilon": {
+    "interpretation_policy": {
+      "post_hoc_band": 0.05,
+      "preregistered": false,
+      "thresholded_gate": false,
+      "quality_claim_allowed": false
+    },
+    "cofitok": {
+      "mean_40k_to_45k": 0.027361732963472604,
+      "mean_45k_to_50k": 0.027668817900121212,
+      "late_window_ratio": 1.0112231537767933,
+      "relative_linear_change_40k_to_50k": -0.0030237802739840956,
+      "mean_49k_to_50k": 0.026069648284465074,
+      "final_learning_rate": 0.00001,
+      "inside_post_hoc_flat_band": true
+    },
+    "dense_identity": {
+      "mean_40k_to_45k": 0.02731535367667675,
+      "mean_45k_to_50k": 0.027623345162719488,
+      "late_window_ratio": 1.0112753980669018,
+      "relative_linear_change_40k_to_50k": -0.0030077681296814492,
+      "mean_49k_to_50k": 0.026016916148364544,
+      "final_learning_rate": 0.00001,
+      "inside_post_hoc_flat_band": true
+    }
+  },
+  "frozen_quality": {
+    "promotion_gate_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/promotion_gate.json",
+    "promotion_gate_bytes": 31870,
+    "promotion_gate_sha256": "2f763913d5a07ba5563f5bc75548780678fcdf9da4e119e03262f10daf84dd90",
+    "status": "fail",
+    "decision": "hold",
+    "sole_failed_gate": "absolute_fid_quality",
+    "cofitok": {
+      "fid": 138.29702495267782,
+      "precision": 0.7505000233650208,
+      "recall": 0.008679999969899654
+    },
+    "dense_identity": {
+      "fid": 151.4476773464495,
+      "precision": 0.78329998254776,
+      "recall": 0.00977999996393919
+    },
+    "support_audit_sha256": "6b3acfa62780b951b0adb45f817335b8086bafbed9dc7dcb90ba0afa07d0d9eb",
+    "decoded_duplicate_collapse_rejected": true,
+    "shared_distribution_support_collapse": true,
+    "cofitok_specific_factorization_failure_established": false
+  },
+  "evidence_synthesis": {
+    "decision": "sampling_recovery_first_then_full_data_scale_if_not_recovered",
+    "supported": [
+      "The 50K pair is finite, source-matched, and checkpoint-auditable.",
+      "The shared primary denoising trajectory does not show a CoFiTok-only optimization failure.",
+      "The frozen failure is shared distribution-support collapse rather than decoded duplicate collapse.",
+      "The late epsilon stream is descriptively flat under an explicitly post-hoc 5% band at the cosine learning-rate floor."
+    ],
+    "not_supported": [
+      "The changing validation-batch stream proves temporal convergence.",
+      "The existing evidence causally separates sampling-policy failure from checkpoint undertraining.",
+      "The supplemental stale-status failure is model-quality evidence.",
+      "A CoFiTok-specific factorization collapse has been established."
+    ],
+    "ordered_next_evidence": [
+      {
+        "order": 1,
+        "stage": "matched_1000_sample_per_case_sampling_recovery",
+        "execution_revision": "11d8f954030915f1d8848594683ac70518ce39bc",
+        "execution_branch": "scale/generation-large-capacity",
+        "approval_text": "Approve the non-authorizing matched 1000-sample sampling-recovery diagnostic only.",
+        "execution_authorized": false,
+        "requires_exact_user_approval": true,
+        "requires_idle_gpu": true
+      },
+      {
+        "order": 2,
+        "stage": "independent_matched_10000_sampling_confirmation",
+        "condition": "Only if one shared non-baseline case strictly improves both methods in stage 1.",
+        "execution_authorized": false,
+        "requires_separate_exact_user_approval": true
+      },
+      {
+        "order": 3,
+        "stage": "fresh_full_data_matched_100k_quality_bridge",
+        "execution_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+        "execution_branch": "scale/generation-stability-quality-bridge-100k",
+        "condition": "Use when stage 1 finds no shared recovery, or stage 2 fails full FID and distribution-support confirmation.",
+        "execution_authorized": false,
+        "requires_exact_user_approval": true,
+        "requires_idle_gpu": true
+      }
+    ]
+  },
+  "live_safety_recheck": {
+    "host": "pro6000",
+    "storage_free_bytes": 296698707968,
+    "gpu_compute_processes": [
+      {
+        "pid": 433140,
+        "executable": "/root/autodl-tmp/FieldScope/.venv/bin/python",
+        "cwd": "/root/autodl-tmp/FieldScope/FieldScope-internal",
+        "started_at": "2026-08-04T19:07:03+08:00",
+        "argv": "/root/autodl-tmp/FieldScope/.venv/bin/python -m fieldscope.cli extract-dataset --config configs/model/auraflow_v03.yaml --dataset imagenet100 --root /root/autodl-tmp/FieldScope/datasets/prepared/imagenet100 --split train --output /root/autodl-tmp/FieldScope/datasets/feature_cache/auraflow_v03/imagenet100_train --storage-policy readout_sparse --resume --classes-file /root/autodl-tmp/FieldScope/datasets/prepared/imagenet100/classes.txt",
+        "gpu_memory_mib": 15412,
+        "modified": false
+      }
+    ],
+    "cofitok_gpu_stage_allowed_now": false,
+    "reason": "The unrelated FieldScope compute process remains active and no exact execution approval exists."
+  },
+  "cleanup": {
+    "remote_rehearsal_checkout": "/tmp/cofitok-convergence-f3606dc",
+    "remote_rehearsal_checkout_removed": true,
+    "remote_bundle": "/tmp/cofitok-convergence-f3606dc.bundle",
+    "remote_bundle_removed": true,
+    "local_bundle_removed": true,
+    "unrelated_worktrees_removed": false,
+    "unrelated_dirty_files_modified": false
+  },
+  "safety_boundary": {
+    "read_only_source_audit": true,
+    "new_sampling_performed": false,
+    "new_training_performed": false,
+    "sampling_approval_sentinel_created": false,
+    "sampling_recovery_launched": false,
+    "sampling_confirmation_launched": false,
+    "quality_bridge_launched": false,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "release_authorization_allowed": false,
+    "formal_checkout_modified": false,
+    "unrelated_process_modified": false,
+    "new_gate_required": true
+  }
+}
