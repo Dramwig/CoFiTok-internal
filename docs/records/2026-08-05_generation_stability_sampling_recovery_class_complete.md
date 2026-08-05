@@ -2,6 +2,15 @@
 
 Date: 2026-08-05
 
+## Superseded by the distribution-support candidate
+
+Revision `aed68853914dc0ecf4b3f15d5d090ddee740d1df` remains the historical
+class-coverage and metrics-window correction, but it must not be executed. Its
+10K confirmation could pass on FID alone despite collapsed precision or
+recall. The exact replacement is
+`11d8f954030915f1d8848594683ac70518ce39bc`, documented in
+`2026-08-05_generation_stability_sampling_confirmation_distribution_support.md`.
+
 ## Outcome
 
 The frozen sampling-recovery selector and its dormant 10K confirmation now

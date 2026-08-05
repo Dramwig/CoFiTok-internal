@@ -2,6 +2,16 @@
 
 Date: 2026-08-05
 
+## Current supersession
+
+The class-complete candidate
+`aed68853914dc0ecf4b3f15d5d090ddee740d1df` must no longer be executed. Its
+10K confirmation did not enforce distribution support and could accept a
+FID-only improvement with collapsed recall. Exact code candidate
+`11d8f954030915f1d8848594683ac70518ce39bc` adds the required fail-closed
+precision/recall contract; see
+`2026-08-05_generation_stability_sampling_confirmation_distribution_support.md`.
+
 ## Superseded by the class-complete candidate
 
 This file preserves the random-stream correction at revision `0a1b886`, but

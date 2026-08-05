@@ -2,6 +2,15 @@
 
 Date: 2026-08-05
 
+## Current supersession
+
+The former replacement candidate
+`aed68853914dc0ecf4b3f15d5d090ddee740d1df` must no longer be executed. Its
+10K confirmation could report quality recovery from FID-only checks while
+precision or recall remained collapsed. It is superseded by exact code
+candidate `11d8f954030915f1d8848594683ac70518ce39bc`; see
+`2026-08-05_generation_stability_sampling_confirmation_distribution_support.md`.
+
 ## Superseded again by the class-complete candidate
 
 This file remains historical evidence for revision `1940788`. Neither
