@@ -1,0 +1,271 @@
+{
+  "schema_version": 1,
+  "role": "cofitok_large_scale_generation_goal_gap_audit",
+  "status": "incomplete",
+  "goal_complete": false,
+  "audited_at": "2026-08-05T08:46:00+08:00",
+  "objective": [
+    "sample_quality",
+    "training_scale",
+    "strong_baseline_fairness",
+    "stable_inference",
+    "reproducible_auditable_checkpoints"
+  ],
+  "git": {
+    "evidence_revision": "300451a7b4b99d9dc6d7af13df8263ccff698e4a",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "quality_bridge_execution_target": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "quality_bridge_execution_tree": "6cef27723196fd363379bca2e7b85b1678ebd777"
+  },
+  "authoritative_sources": {
+    "frozen_scaling_gate": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/promotion_gate.json",
+      "bytes": 31870,
+      "sha256": "2f763913d5a07ba5563f5bc75548780678fcdf9da4e119e03262f10daf84dd90",
+      "status": "fail",
+      "decision": "hold",
+      "failed_gates": [
+        "absolute_fid_quality"
+      ]
+    },
+    "frozen_posteval_waiter": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/posteval_waiter.json",
+      "bytes": 2748,
+      "sha256": "ef1f6f752a539e396e4f560e3d9b0fe86fc446423d88f88d02d08b048b9d3f44",
+      "status": "pass",
+      "detail": "formal_ema_postevaluation_completed"
+    },
+    "full_readiness_waiter": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_300k_ema_teacher/reports/readiness_waiter.json",
+      "bytes": 1154,
+      "sha256": "30e83cbfa7a2e7762aa09df3348512912a211cb3417b58791da994b13ee74221",
+      "status": "failed",
+      "detail": "ValueError: scaling gate did not authorize promote_to_full_imagenet256",
+      "full_training_launch_allowed": false
+    },
+    "quality_bridge_linux_rehearsal": {
+      "path": "artifacts/reports/generation/stability_full_data_quality_bridge_100k_linux_rehearsal_2026-08-05/rehearsal_summary.json",
+      "bytes": 12728,
+      "sha256": "eb6f79a8daa45447af7c6aaa64d849c74911bbd62731bc57fdb7dab105ec2cb2",
+      "status": "pass",
+      "source_file_count": 24,
+      "execution_target": "cf0e5faa94bf4ab38d947b921935b3b765b5537a"
+    },
+    "official_contextual_baselines": {
+      "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/official_related_methods_2026-07-11_final/official_related_methods_table.json",
+      "bytes": 3346,
+      "sha256": "14cd71cb72e7ee121f571503cd75491858840de806a97fba9cda188d034c748a",
+      "cross_tier_numeric_ranking_allowed": false,
+      "rows": [
+        {
+          "method": "D-AR",
+          "fid": 2.6281051733921004,
+          "protocol": "official pretrained eval-only"
+        },
+        {
+          "method": "MAR",
+          "fid": 2.3384937046978393,
+          "protocol": "official LTH14 PTH model_ema eval-only"
+        },
+        {
+          "method": "ReTok",
+          "fid": 2.2188685477057106,
+          "protocol": "official pretrained eval-only"
+        }
+      ]
+    }
+  },
+  "implementation_evidence": {
+    "full_repository_linux_rehearsal": {
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "collected": 1077,
+      "passed": 1075,
+      "skipped": 2,
+      "failed": 0
+    },
+    "stable_inference": [
+      {
+        "path": "src/cofitok/generation/session.py",
+        "bytes": 9534,
+        "git_blob_sha1": "deed48f92cee3bd65b08633085b1a4ff443b2c31"
+      },
+      {
+        "path": "src/cofitok/generation/artifact.py",
+        "bytes": 28213,
+        "git_blob_sha1": "6e35d33f10ba81498cd9f1ed0254d3425cd69ca2"
+      },
+      {
+        "path": "src/cofitok/generation/release.py",
+        "bytes": 14095,
+        "git_blob_sha1": "2fb17bfa0a2876a786d41aa4f44d20b1d973fdab"
+      }
+    ],
+    "checkpoint_and_completion": [
+      {
+        "path": "src/cofitok/training/checkpointing.py",
+        "bytes": 27939,
+        "git_blob_sha1": "40312c44574d19c3391b984dffe2d48b62c71b5a"
+      },
+      {
+        "path": "src/cofitok/training/metrics.py",
+        "bytes": 4829,
+        "git_blob_sha1": "3a384196c179722216d68701257e034adb114f29"
+      },
+      {
+        "path": "scripts/audit_generation_training_progress.py",
+        "bytes": 22422,
+        "git_blob_sha1": "be5a0b577938218b768d03922fbc7d6e9e4e34b5"
+      },
+      {
+        "path": "scripts/audit_generation_stability_completion.py",
+        "bytes": 64383,
+        "git_blob_sha1": "3a513b5f69333eb9522ab9e1d47c7fc1eceaa470"
+      }
+    ],
+    "matched_comparison": {
+      "path": "scripts/build_large_scale_generation_comparison.py",
+      "bytes": 36920,
+      "git_blob_sha1": "aa97694cfb3bc1839320d896097a7936eaf1cc7f"
+    }
+  },
+  "pillars": {
+    "sample_quality": {
+      "status": "failed_current_gate",
+      "evidence_level": "decision_grade_10k_sample_scaling_gate",
+      "current_truth": {
+        "cofitok_fid": 138.29702495267782,
+        "dense_fid": 151.4476773464495,
+        "cofitok_precision": 0.7505000233650208,
+        "dense_precision": 0.78329998254776,
+        "cofitok_recall": 0.008679999969899654,
+        "dense_recall": 0.00977999996393919,
+        "matched_fid_tolerance_passed": true,
+        "absolute_fid_quality_passed": false
+      },
+      "assessment": "CoFiTok remains better than its matched dense baseline, but neither method is a usable generation system at the frozen scaling budget. The shared recall collapse and FID above 100 are direct contradictory evidence against completion.",
+      "proof_missing": [
+        "completed full-data 100K quality-bridge result",
+        "passing absolute FID, precision, recall, mechanism, and class-fidelity screen",
+        "eventual passing full 50K-sample DDIM-250 release gate"
+      ]
+    },
+    "training_scale": {
+      "status": "incomplete",
+      "evidence_level": "exact_matched_50k_on_10pct_only",
+      "current_truth": {
+        "completed_steps_per_method": 50000,
+        "completed_images_per_method": 3200000,
+        "completed_dataset": "imagenet_256_10pct",
+        "quality_bridge_output_root_present": false,
+        "full_300k_checkpoint_present": false,
+        "full_training_launch_allowed": false
+      },
+      "assessment": "The exact 50K pair validates the mechanism and training controls, but full-data 100K and 250M matched 300K evidence do not exist.",
+      "proof_missing": [
+        "exact full imagenet_256 matched 100K pair with 50K and 100K protected checkpoints",
+        "new source-compatible gate and explicit user decision",
+        "exact 250M matched 300K pair with protected 50K, 100K, 200K, and 300K checkpoints"
+      ]
+    },
+    "strong_baseline_fairness": {
+      "status": "partially_complete",
+      "evidence_level": "matched_dense_scaling_plus_contextual_official_rows",
+      "current_truth": {
+        "matched_training_direct_methods": [
+          "CoFiTok K8",
+          "dense identity"
+        ],
+        "matched_50k_comparison_complete": true,
+        "official_contextual_rows_complete": [
+          "D-AR",
+          "MAR",
+          "ReTok"
+        ],
+        "cross_tier_numeric_ranking_allowed": false,
+        "full_matched_comparison_report_present": false
+      },
+      "assessment": "The fairness boundary is correctly implemented: dense identity is the direct matched baseline and external methods remain contextual. The definitive full-scale matched comparison is still missing because no 100K or 300K result exists.",
+      "proof_missing": [
+        "terminal matched training and generation reports at the selected full scale",
+        "source-bound large-scale comparison report with actual cost, throughput, VRAM, checkpoint, sample-set, evaluator, and metric identities"
+      ]
+    },
+    "stable_inference": {
+      "status": "implementation_ready_but_unreleased",
+      "evidence_level": "tested_api_and_release_contract_without_terminal_artifact",
+      "current_truth": {
+        "generation_session_implemented": true,
+        "integrity_checked_artifact_loader_implemented": true,
+        "completion_bound_release_receipt_implemented": true,
+        "release_receipt_present": false,
+        "release_authorized_ema_artifact_present": false
+      },
+      "assessment": "The stable inference API and fail-closed artifact/release contracts are implemented and covered by the clean Linux suite. They cannot yet prove usable inference because no model has passed the full gate and terminal completion audit.",
+      "proof_missing": [
+        "passing full scientific gate",
+        "EMA-only artifact exports bound to exact source checkpoints and runtime",
+        "real forward preflight and stable inference smoke",
+        "terminal completion receipt"
+      ]
+    },
+    "reproducible_auditable_checkpoints": {
+      "status": "partially_complete",
+      "evidence_level": "verified_scaling_checkpoints_and_required_integrity_implementation",
+      "current_truth": {
+        "cofitok_50k_checkpoint_bytes": 1006325418,
+        "cofitok_50k_checkpoint_sha256": "ec7b9a0981f1d45420a9a86cdb80339d6d87b87fa77891c234db3d1b84376c2a",
+        "dense_50k_checkpoint_bytes": 1006120214,
+        "dense_50k_checkpoint_sha256": "325da25f9fd228ab224abd977da7f9e1d000ba36e3e8136b55edae9c9f47c716",
+        "required_integrity_sidecars_enforced_for_new_runs": true,
+        "exact_resume_reconciliation_implemented": true,
+        "full_300k_exact_resume_checkpoint_present": false
+      },
+      "assessment": "The 50K trust boundary is source-valid and the code supports fail-closed integrity and exact resume. Final-system reproducibility remains unproven until physical 300K checkpoints, sidecars, latest pointers, runtime/Git/dataset bindings, and terminal replay all exist.",
+      "proof_missing": [
+        "physical CoFiTok and dense step-300K exact-resume checkpoints",
+        "all four protected milestone checkpoints and integrity sidecars",
+        "independent terminal rehash and completion audit",
+        "release artifacts that remain distinct from training checkpoints"
+      ]
+    }
+  },
+  "next_executable_stage": {
+    "name": "stability_full_data_100k_base128_quality_bridge_v1",
+    "status": "blocked_before_deployment",
+    "execution_target": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "blockers": [
+      "explicit user execution approval is absent",
+      "GPU is not idle because unrelated FieldScope PID 433140 is active"
+    ],
+    "live_gpu": {
+      "unrelated_pid": 433140,
+      "cwd": "/root/autodl-tmp/FieldScope/FieldScope-internal",
+      "gpu_memory_mib": 15412,
+      "gpu_utilization_percent": 100,
+      "modified": false
+    },
+    "quality_bridge_process_present": false,
+    "quality_bridge_output_root_present": false,
+    "filesystem_free_bytes": 303686025216
+  },
+  "required_order": [
+    "obtain explicit approval for exact execution target cf0e5fa",
+    "wait for unrelated GPU compute to disappear",
+    "recheck gate SHA, formal checkout identity, GPU idleness, and storage",
+    "deploy only to a dedicated clean checkout and build immutable preparation, approval, runtime, storage, and launch receipts",
+    "execute and verify the matched full-data 100K bridge",
+    "make a new source-compatible scientific decision without auto-authorizing 300K",
+    "only after a new explicit user decision, execute the 250M matched 300K and final release chain"
+  ],
+  "safety_boundary": {
+    "quality_bridge_deployed": false,
+    "quality_bridge_launched": false,
+    "full_300k_deployed": false,
+    "full_300k_launched": false,
+    "quality_bridge_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "release_authorization_allowed": false,
+    "unrelated_process_modified": false
+  }
+}
