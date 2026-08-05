@@ -125,6 +125,10 @@ revision `1940788522c787bcb12f01dc9487b9490a34326a`: `32` targeted tests,
 `1,098 passed / 6 skipped` in the layout-independent full suite, and `4/4`
 candidate paper-layout replays. See
 `2026-08-05_generation_stability_sampling_execution_approval_hardening.md`.
+That revision is now historical and must not be executed because its 10K
+confirmation random stream overlapped the selection and frozen formal streams.
+The replacement candidate is documented in
+`2026-08-05_generation_stability_sampling_confirmation_stream_independence.md`.
 
 The live remote state was re-read before preparing the runbook. FieldScope PID
 `433140` was still running from
@@ -144,7 +148,9 @@ scope. The runbook validates that sentinel before creating its output root or
 acquiring the GPU-stage lock. A completed 512-sample sweep is
 only a protocol-selection diagnostic. Any selected change must be rerun as a
 fresh matched 10K evaluation in a separate output root before it can support a
-new gate; the existing frozen gate must remain unchanged.
+new gate. That confirmation must use the predeclared disjoint global-index and
+derived-seed interval `[10000, 20000)`, not the diagnostic/frozen interval
+beginning at zero; the existing frozen gate must remain unchanged.
 
 The recovery sentinel is an untracked, user-created JSON object with exactly
 these top-level fields (placeholders are descriptive and are not an approval):

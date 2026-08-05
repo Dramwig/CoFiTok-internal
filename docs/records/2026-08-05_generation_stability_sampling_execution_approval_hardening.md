@@ -2,6 +2,17 @@
 
 Date: 2026-08-05
 
+## Superseded execution candidate
+
+This file preserves the approval-hardening rehearsal history. Revision
+`1940788522c787bcb12f01dc9487b9490a34326a` must not be executed: its 10K
+confirmation reused seed/global-index interval `[0, 10000)`, which overlaps
+both the 512-sample protocol-selection sweep and the frozen formal 10K
+evaluation. It is superseded by the independently rehearsed execution
+candidate `0a1b88630e2b24e27b3f084dfc1490381e906655`, whose confirmation interval
+is `[10000, 20000)`. See
+`2026-08-05_generation_stability_sampling_confirmation_stream_independence.md`.
+
 ## Outcome
 
 The frozen matched sampling-recovery and 10K confirmation entrypoints now

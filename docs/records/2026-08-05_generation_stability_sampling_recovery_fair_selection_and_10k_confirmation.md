@@ -76,8 +76,13 @@ The confirmation preflight requires:
 - unchanged frozen promotion-gate, formal-metrics, real-set, checkpoint, and
   integrity-sidecar identities;
 - one shared CFG/rescale case for both methods;
-- exact DDIM-100, EMA, bf16, balanced-modulo classes, seed/start index, and
-  batch-invariant per-sample random stream.
+- exact DDIM-100, EMA, bf16, balanced-modulo classes, and batch-invariant
+  per-sample random streams;
+- a predeclared 10K confirmation with seed `0`, global indices
+  `[10000, 20000)`, and ten exact passes over all 1,000 classes;
+- both the global-index interval and the derived-seed interval to be disjoint
+  from the 512-sample selection sweep `[0, 512)` and frozen formal evaluation
+  `[0, 10000)`, without modulo-`2^63` wraparound.
 
 GPU execution additionally requires
 `SAMPLING_CONFIRMATION_EXECUTION_ALLOWED=true` and a separate user-created
@@ -117,6 +122,10 @@ For both CoFiTok and dense it generates 10,000 samples with the same selected
 protocol and evaluates full FID, Inception Score, precision, and recall. It
 does not use `--skip-prc`. Before each GPU stage it checks live compute
 processes and exits `75` without launching when the GPU is busy.
+
+The confirmation runbook reads sample count, seed, start index, sampling batch,
+metrics batch, PRC batch, and metrics seed from the validated preflight. It no
+longer hardcodes the frozen formal `start_index=0` stream.
 
 ## Confirmation decision boundary
 
@@ -167,3 +176,8 @@ At the last live read, unrelated FieldScope PID `433140` still used about
 `15412 MiB` with 100% GPU utilization. No recovery sweep, matched 10K
 confirmation, training process, waiter replacement, or other-project process
 was launched or modified.
+
+The later random-stream-independence hardening supersedes the former execution
+candidate `1940788`. Its exact code candidate, local/full validation, isolated
+Linux rehearsal, and source hashes are recorded in
+`2026-08-05_generation_stability_sampling_confirmation_stream_independence.md`.
