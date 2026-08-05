@@ -22,7 +22,7 @@ AUDIT_REPORT="$AUDIT_ROOT/support_audit.json"
 AUDIT_LOCK="$OUTPUT_ROOT/frozen_existing_sample_support_audit.lock"
 
 cd "$PROJECT"
-export PYTHONPATH=src
+export PYTHONPATH=.:src
 export CUDA_VISIBLE_DEVICES=""
 [[ -x "$PYTHON" ]]
 [[ "$(git rev-parse HEAD)" == "$EXPECTED_AUDIT_REVISION" ]]

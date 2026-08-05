@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -556,6 +559,7 @@ def test_frozen_support_runbook_is_cpu_only_and_fail_closed() -> None:
     ).read_text(encoding="utf-8")
 
     assert 'export CUDA_VISIBLE_DEVICES=""' in source
+    assert "export PYTHONPATH=.:src" in source
     assert "EXPECTED_AUDIT_REVISION=${EXPECTED_AUDIT_REVISION:?" in source
     assert "git status --porcelain" in source
     assert "git status --porcelain --untracked-files=no" not in source
@@ -564,3 +568,20 @@ def test_frozen_support_runbook_is_cpu_only_and_fail_closed() -> None:
     assert "full_training_launch_allowed" in source
     assert "gpu_execution_authorized" in source
     assert "nvidia-smi" not in source
+
+    root = Path(__file__).resolve().parents[1]
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = os.pathsep.join((str(root), str(root / "src")))
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(root / "scripts/build_generation_frozen_sample_support_audit.py"),
+            "--help",
+        ],
+        cwd=root,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stderr
