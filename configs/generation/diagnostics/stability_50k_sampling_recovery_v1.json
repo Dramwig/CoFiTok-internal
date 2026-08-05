@@ -116,7 +116,13 @@
     "balanced_modulo_exact_coverage_required": true,
     "disjoint_from_diagnostic_required": true,
     "disjoint_from_frozen_formal_required": true,
-    "precision_recall_enabled": true
+    "precision_recall_enabled": true,
+    "distribution_support_thresholds": {
+      "min_precision": 0.1,
+      "min_recall": 0.1,
+      "max_precision_regression": 0.05,
+      "max_recall_regression": 0.05
+    }
   },
   "selection_policy": {
     "shared_protocol_required": true,

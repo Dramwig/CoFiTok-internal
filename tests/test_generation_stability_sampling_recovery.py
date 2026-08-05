@@ -192,6 +192,9 @@ def _plan() -> dict:
             "disjoint_from_diagnostic_required": True,
             "disjoint_from_frozen_formal_required": True,
             "precision_recall_enabled": True,
+            "distribution_support_thresholds": deepcopy(
+                recovery.EXPECTED_DISTRIBUTION_SUPPORT_THRESHOLDS
+            ),
         },
         "selection_policy": deepcopy(recovery.EXPECTED_SELECTION_POLICY),
         "claim_boundary": deepcopy(recovery.EXPECTED_CLAIM_BOUNDARY),
@@ -802,6 +805,27 @@ def test_plan_rejects_confirmation_class_coverage_drift(
         _build_preflight(fixture)
 
 
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("min_precision", 0.09),
+        ("min_recall", 0.09),
+        ("max_precision_regression", 0.06),
+        ("max_recall_regression", 0.06),
+    ],
+)
+def test_plan_rejects_weakened_confirmation_distribution_support_thresholds(
+    tmp_path: Path,
+    field: str,
+    value: float,
+) -> None:
+    fixture = _fixture(tmp_path)
+    fixture["plan"]["confirmation"]["distribution_support_thresholds"][field] = value
+
+    with pytest.raises(ValueError, match="sampling-confirmation protocol is invalid"):
+        _build_preflight(fixture)
+
+
 def test_runbook_is_gpu_deferred_frozen_and_non_authorizing() -> None:
     root = Path(__file__).resolve().parents[1]
     source = (
@@ -901,6 +925,8 @@ def _confirmation_reports(
     *,
     method: str,
     fid: float,
+    precision: float = 0.75,
+    recall: float = 0.20,
 ) -> tuple[dict, dict]:
     method_plan = preflight["methods"][method]
     protocol = preflight["protocol"]
@@ -971,8 +997,8 @@ def _confirmation_reports(
             "frechet_inception_distance": fid,
             "inception_score_mean": 9.0,
             "inception_score_std": 0.2,
-            "precision": 0.75,
-            "recall": 0.02,
+            "precision": precision,
+            "recall": recall,
         },
     }
     return sampling_report, metrics_report
@@ -984,10 +1010,20 @@ def _write_confirmation_cases(
     *,
     cofitok_fid: float = 90.0,
     dense_fid: float = 110.0,
+    cofitok_precision: float = 0.75,
+    dense_precision: float = 0.76,
+    cofitok_recall: float = 0.20,
+    dense_recall: float = 0.21,
 ) -> None:
     for method, fid in (("cofitok", cofitok_fid), ("dense_identity", dense_fid)):
         sampling, metrics = _confirmation_reports(
-            fixture["confirmation_preflight"], method=method, fid=fid
+            fixture["confirmation_preflight"],
+            method=method,
+            fid=fid,
+            precision=(
+                cofitok_precision if method == "cofitok" else dense_precision
+            ),
+            recall=cofitok_recall if method == "cofitok" else dense_recall,
         )
         method_root = case_root / method
         _write_json(method_root / "sampling_report.json", sampling)
@@ -1000,6 +1036,7 @@ def test_confirmation_preflight_binds_shared_candidate_and_sources(
     fixture = _confirmation_fixture(tmp_path)
     preflight = fixture["confirmation_preflight"]
 
+    assert preflight["schema_version"] == confirmation.PREFLIGHT_SCHEMA_VERSION
     assert preflight["status"] == "pass"
     assert preflight["recovery"]["selected_case"] == "cfg150_r050"
     assert preflight["protocol"]["num_samples"] == 10_000
@@ -1026,6 +1063,10 @@ def test_confirmation_preflight_binds_shared_candidate_and_sources(
     assert preflight["protocol"][
         "balanced_modulo_exact_coverage_required"
     ] is True
+    assert {
+        name: preflight["thresholds"][name]
+        for name in recovery.EXPECTED_DISTRIBUTION_SUPPORT_THRESHOLDS
+    } == recovery.EXPECTED_DISTRIBUTION_SUPPORT_THRESHOLDS
     assert preflight["claim_boundary"] == confirmation.EXPECTED_CLAIM_BOUNDARY
     assert preflight["claim_boundary"]["full_training_launch_allowed"] is False
 
@@ -1133,9 +1174,12 @@ def test_confirmation_report_is_deterministic_pass_but_non_authorizing(
     )
 
     assert rebuilt == report
+    assert report["schema_version"] == confirmation.REPORT_SCHEMA_VERSION
     assert report["status"] == "pass"
     assert report["decision"] == "candidate_quality_confirmed_non_authorizing"
     assert report["quality_confirmed"] is True
+    assert report["fid_quality_confirmed"] is True
+    assert report["distribution_support_confirmed"] is True
     assert all(report["quality_checks"].values())
     assert report["next_boundary"]["candidate_protocol_formalized"] is False
     assert report["next_boundary"]["separate_new_gate_required"] is True
@@ -1160,6 +1204,78 @@ def test_confirmation_report_holds_when_absolute_quality_is_not_recovered(
     assert report["quality_confirmed"] is False
     assert report["quality_checks"]["cofitok_absolute_fid_quality"] is False
     assert report["next_boundary"]["full_300k_launch_allowed"] is False
+
+
+@pytest.mark.parametrize(
+    ("metric", "value", "check"),
+    [
+        ("precision", 0.09, "cofitok_minimum_precision"),
+        ("recall", 0.09, "cofitok_minimum_recall"),
+    ],
+)
+def test_confirmation_report_holds_on_absolute_distribution_support_collapse(
+    tmp_path: Path,
+    metric: str,
+    value: float,
+    check: str,
+) -> None:
+    fixture = _confirmation_fixture(tmp_path)
+    case_root = tmp_path / "confirmation-cases"
+    kwargs = {f"cofitok_{metric}": value}
+    _write_confirmation_cases(fixture, case_root, **kwargs)
+
+    report = confirmation.build_report(
+        preflight=fixture["confirmation_preflight"],
+        case_root=case_root,
+        confirmation_git=fixture["confirmation_git"],
+    )
+
+    assert report["status"] == "hold"
+    assert report["fid_quality_confirmed"] is True
+    assert report["distribution_support_confirmed"] is False
+    assert report["quality_confirmed"] is False
+    assert report["quality_checks"][check] is False
+
+
+def test_confirmation_report_holds_on_matched_distribution_support_regression(
+    tmp_path: Path,
+) -> None:
+    fixture = _confirmation_fixture(tmp_path)
+    case_root = tmp_path / "confirmation-cases"
+    _write_confirmation_cases(
+        fixture,
+        case_root,
+        cofitok_precision=0.70,
+        dense_precision=0.76,
+        cofitok_recall=0.20,
+        dense_recall=0.26,
+    )
+
+    report = confirmation.build_report(
+        preflight=fixture["confirmation_preflight"],
+        case_root=case_root,
+        confirmation_git=fixture["confirmation_git"],
+    )
+
+    assert report["status"] == "hold"
+    assert report["distribution_support_confirmed"] is False
+    assert report["quality_checks"]["cofitok_matched_precision_retention"] is False
+    assert report["quality_checks"]["cofitok_matched_recall_retention"] is False
+
+
+def test_confirmation_report_rejects_weakened_preflight_distribution_threshold(
+    tmp_path: Path,
+) -> None:
+    fixture = _confirmation_fixture(tmp_path)
+    preflight = deepcopy(fixture["confirmation_preflight"])
+    preflight["thresholds"]["min_recall"] = 0.01
+
+    with pytest.raises(ValueError, match="preflight contract mismatch"):
+        confirmation.build_report(
+            preflight=preflight,
+            case_root=tmp_path / "unused-cases",
+            confirmation_git=fixture["confirmation_git"],
+        )
 
 
 @pytest.mark.parametrize(

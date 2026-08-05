@@ -17,6 +17,8 @@ except ModuleNotFoundError:  # Imported as scripts.<module> by tests and library
 
 METHODS = recovery.METHODS
 EXPECTED_ROLE = "non_authorizing_matched_10000_sampling_confirmation"
+PREFLIGHT_SCHEMA_VERSION = 2
+REPORT_SCHEMA_VERSION = 2
 EXPECTED_CLAIM_BOUNDARY = {
     "confirmation_non_authorizing": True,
     "selected_from_predeclared_shared_sweep": True,
@@ -290,6 +292,9 @@ def build_preflight(
     ):
         raise ValueError("sampling-confirmation quality thresholds are invalid")
     confirmation_plan = plan["confirmation"]
+    distribution_support_thresholds = confirmation_plan[
+        "distribution_support_thresholds"
+    ]
     protocol = {
         "num_samples": int(confirmation_plan["sample_count"]),
         "sample_steps": int(plan["diagnostic"]["sample_steps"]),
@@ -325,7 +330,7 @@ def build_preflight(
         confirmation_protocol=protocol,
     )
     return {
-        "schema_version": 1,
+        "schema_version": PREFLIGHT_SCHEMA_VERSION,
         "status": "pass",
         "role": "sampling_confirmation_preflight",
         "confirmation_git": confirmation_git,
@@ -364,6 +369,10 @@ def build_preflight(
         "thresholds": {
             "max_absolute_fid": float(thresholds["max_absolute_fid"]),
             "max_fid_regression": float(thresholds["max_fid_regression"]),
+            **{
+                name: float(distribution_support_thresholds[name])
+                for name in recovery.EXPECTED_DISTRIBUTION_SUPPORT_THRESHOLDS
+            },
         },
         "claim_boundary": EXPECTED_CLAIM_BOUNDARY,
     }
@@ -531,13 +540,41 @@ def build_report(
     confirmation_git: dict[str, Any],
 ) -> dict[str, Any]:
     protocol = preflight.get("protocol")
+    thresholds = preflight.get("thresholds")
+    expected_threshold_names = {
+        "max_absolute_fid",
+        "max_fid_regression",
+        *recovery.EXPECTED_DISTRIBUTION_SUPPORT_THRESHOLDS,
+    }
     if (
-        preflight.get("schema_version") != 1
+        preflight.get("schema_version") != PREFLIGHT_SCHEMA_VERSION
         or preflight.get("status") != "pass"
         or preflight.get("role") != "sampling_confirmation_preflight"
         or preflight.get("confirmation_git") != confirmation_git
         or preflight.get("claim_boundary") != EXPECTED_CLAIM_BOUNDARY
         or not isinstance(protocol, dict)
+        or not isinstance(thresholds, dict)
+        or set(thresholds) != expected_threshold_names
+    ):
+        raise ValueError("sampling-confirmation preflight contract mismatch")
+    max_absolute = thresholds.get("max_absolute_fid")
+    max_regression = thresholds.get("max_fid_regression")
+    if (
+        isinstance(max_absolute, bool)
+        or not isinstance(max_absolute, (int, float))
+        or not math.isfinite(float(max_absolute))
+        or float(max_absolute) <= 0.0
+        or isinstance(max_regression, bool)
+        or not isinstance(max_regression, (int, float))
+        or not math.isfinite(float(max_regression))
+        or not 0.0 <= float(max_regression) <= 1.0
+        or any(
+            isinstance(thresholds.get(name), bool)
+            or not isinstance(thresholds.get(name), (int, float))
+            or not math.isfinite(float(thresholds[name]))
+            or float(thresholds[name]) != float(expected)
+            for name, expected in recovery.EXPECTED_DISTRIBUTION_SUPPORT_THRESHOLDS.items()
+        )
     ):
         raise ValueError("sampling-confirmation preflight contract mismatch")
     try:
@@ -558,15 +595,23 @@ def build_report(
     }
     cofitok_fid = rows["cofitok"]["metrics"]["frechet_inception_distance"]
     dense_fid = rows["dense_identity"]["metrics"]["frechet_inception_distance"]
+    cofitok_precision = rows["cofitok"]["metrics"]["precision"]
+    dense_precision = rows["dense_identity"]["metrics"]["precision"]
+    cofitok_recall = rows["cofitok"]["metrics"]["recall"]
+    dense_recall = rows["dense_identity"]["metrics"]["recall"]
     cofitok_formal_fid = float(
         preflight["methods"]["cofitok"]["formal_reference"]["fid"]
     )
     dense_formal_fid = float(
         preflight["methods"]["dense_identity"]["formal_reference"]["fid"]
     )
-    max_absolute = float(preflight["thresholds"]["max_absolute_fid"])
-    max_regression = float(preflight["thresholds"]["max_fid_regression"])
-    checks = {
+    max_absolute = float(thresholds["max_absolute_fid"])
+    max_regression = float(thresholds["max_fid_regression"])
+    min_precision = float(thresholds["min_precision"])
+    min_recall = float(thresholds["min_recall"])
+    max_precision_regression = float(thresholds["max_precision_regression"])
+    max_recall_regression = float(thresholds["max_recall_regression"])
+    fid_checks = {
         "cofitok_absolute_fid_quality": cofitok_fid <= max_absolute,
         "cofitok_within_candidate_dense_tolerance": (
             cofitok_fid / dense_fid - 1.0 <= max_regression
@@ -576,9 +621,22 @@ def build_report(
         ),
         "dense_strictly_improves_frozen_formal_fid": dense_fid < dense_formal_fid,
     }
+    distribution_support_checks = {
+        "cofitok_minimum_precision": cofitok_precision >= min_precision,
+        "cofitok_minimum_recall": cofitok_recall >= min_recall,
+        "cofitok_matched_precision_retention": (
+            cofitok_precision >= dense_precision - max_precision_regression
+        ),
+        "cofitok_matched_recall_retention": (
+            cofitok_recall >= dense_recall - max_recall_regression
+        ),
+    }
+    checks = {**fid_checks, **distribution_support_checks}
+    fid_quality_confirmed = all(fid_checks.values())
+    distribution_support_confirmed = all(distribution_support_checks.values())
     confirmed = all(checks.values())
     return {
-        "schema_version": 1,
+        "schema_version": REPORT_SCHEMA_VERSION,
         "status": "pass" if confirmed else "hold",
         "role": EXPECTED_ROLE,
         "decision": (
@@ -594,7 +652,13 @@ def build_report(
             "selected_protocol": preflight["recovery"]["selected_protocol"],
             "cofitok_fid": cofitok_fid,
             "dense_fid": dense_fid,
+            "cofitok_precision": cofitok_precision,
+            "dense_precision": dense_precision,
+            "cofitok_recall": cofitok_recall,
+            "dense_recall": dense_recall,
             "cofitok_relative_to_dense": cofitok_fid / dense_fid - 1.0,
+            "cofitok_precision_minus_dense": cofitok_precision - dense_precision,
+            "cofitok_recall_minus_dense": cofitok_recall - dense_recall,
             "cofitok_fid_relative_to_frozen_formal": (
                 cofitok_fid / cofitok_formal_fid - 1.0
             ),
@@ -603,6 +667,8 @@ def build_report(
             ),
         },
         "quality_checks": checks,
+        "fid_quality_confirmed": fid_quality_confirmed,
+        "distribution_support_confirmed": distribution_support_confirmed,
         "quality_confirmed": confirmed,
         "next_boundary": {
             "candidate_protocol_formalized": False,

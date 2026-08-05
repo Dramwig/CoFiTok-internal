@@ -7,6 +7,12 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from cofitok.generation_gate import (
+    STABILITY_SCALING_MAX_PRECISION_REGRESSION,
+    STABILITY_SCALING_MAX_RECALL_REGRESSION,
+    STABILITY_SCALING_MIN_PRECISION,
+    STABILITY_SCALING_MIN_RECALL,
+)
 from cofitok.reporting import file_sha256, write_json_report
 
 
@@ -61,6 +67,13 @@ EXPECTED_CONFIRMATION_KEYS = {
     "disjoint_from_diagnostic_required",
     "disjoint_from_frozen_formal_required",
     "precision_recall_enabled",
+    "distribution_support_thresholds",
+}
+EXPECTED_DISTRIBUTION_SUPPORT_THRESHOLDS = {
+    "min_precision": STABILITY_SCALING_MIN_PRECISION,
+    "min_recall": STABILITY_SCALING_MIN_RECALL,
+    "max_precision_regression": STABILITY_SCALING_MAX_PRECISION_REGRESSION,
+    "max_recall_regression": STABILITY_SCALING_MAX_RECALL_REGRESSION,
 }
 EXPECTED_SELECTION_POLICY = {
     "shared_protocol_required": True,
@@ -530,6 +543,8 @@ def validate_plan(plan: dict[str, Any]) -> dict[str, Any]:
         or confirmation.get("disjoint_from_diagnostic_required") is not True
         or confirmation.get("disjoint_from_frozen_formal_required") is not True
         or confirmation.get("precision_recall_enabled") is not True
+        or confirmation.get("distribution_support_thresholds")
+        != EXPECTED_DISTRIBUTION_SUPPORT_THRESHOLDS
     ):
         raise ValueError("sampling-confirmation protocol is invalid")
     build_random_stream_independence(plan)
