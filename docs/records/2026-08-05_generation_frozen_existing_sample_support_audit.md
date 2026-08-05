@@ -142,7 +142,16 @@ single-policy samples cannot causally separate sampler/CFG effects from 50K
 undertraining.
 
 The next discriminating action remains the prepared, non-authorizing matched
-512-sample sampling-recovery diagnostic at the exact approved code candidate.
+sampling-recovery diagnostic at exact execution revision
+`11d8f954030915f1d8848594683ac70518ce39bc`. The current contract is 1,000
+samples per case, not the obsolete 512-sample selector: five shared cases x two
+methods produce 10,000 diagnostic samples while giving every case exact
+1,000-class coverage. Its exact approval text is:
+
+```text
+Approve the non-authorizing matched 1000-sample sampling-recovery diagnostic only.
+```
+
 It changes only shared sampling settings and therefore tests the cheaper
 hypothesis before committing to a 100K training bridge. Only if a non-baseline
 case improves both methods should an independently authorized 10K confirmation

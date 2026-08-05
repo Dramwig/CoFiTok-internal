@@ -122,7 +122,12 @@
     "shared_high_frequency_and_weak_class_support_supported": true,
     "cofitok_specific_failure_supported": false,
     "sampling_vs_undertraining_resolved": false,
-    "next_discriminating_action": "non-authorizing matched 512-sample sampling-recovery diagnostic",
+    "next_discriminating_action": "non-authorizing matched 1000-sample-per-case sampling-recovery diagnostic",
+    "sampling_recovery_execution_revision": "11d8f954030915f1d8848594683ac70518ce39bc",
+    "sampling_recovery_sample_count_per_case": 1000,
+    "sampling_recovery_case_count": 5,
+    "sampling_recovery_method_count": 2,
+    "required_approval_text": "Approve the non-authorizing matched 1000-sample sampling-recovery diagnostic only.",
     "next_action_requires_exact_user_authorization": true,
     "full_300k_remains_forbidden": true
   }
