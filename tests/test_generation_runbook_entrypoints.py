@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import contextlib
 import io
+import os
 import re
 import runpy
+import subprocess
 import sys
 from pathlib import Path
 
@@ -29,6 +31,10 @@ RUNBOOKS = (
     "generation_stability_frozen_50k_supplemental_waiter.sh",
     "generation_stability_frozen_50k_supplemental_after_posteval.sh",
     "generation_stability_frozen_50k_class_fidelity_after_supplemental.sh",
+    "generation_stability_frozen_50k_sampling_recovery_diagnostic.sh",
+    "generation_stability_frozen_50k_sampling_confirmation_10k.sh",
+    "generation_stability_full_data_quality_bridge_100k_prepare.sh",
+    "generation_stability_full_data_quality_bridge_100k_execute.sh",
     "generation_stability_ema_teacher_full_readiness_after_gate.sh",
     "generation_stability_ema_teacher_full_readiness_bridge.sh",
     "generation_stability_ema_teacher_full_readiness_waiter.sh",
@@ -53,6 +59,11 @@ ENTRYPOINTS = {
     "build_generation_stability_50k_summary.py",
     "build_generation_stability_distribution_support.py",
     "build_generation_stability_frozen_supplemental.py",
+    "build_generation_stability_sampling_recovery.py",
+    "build_generation_stability_sampling_confirmation.py",
+    "build_generation_quality_bridge_preparation.py",
+    "build_generation_quality_bridge_launch_receipt.py",
+    "build_generation_quality_bridge_result.py",
     "build_generation_stability_qualification.py",
     "build_generation_visual_audit.py",
     "build_large_scale_generation_comparison.py",
@@ -85,14 +96,27 @@ ENTRYPOINTS = {
     "validate_generation_large_capacity_deployment.py",
     "validate_generation_milestone_report.py",
     "validate_generation_stability_scaling_decision.py",
+    "validate_generation_quality_bridge_preparation.py",
+    "validate_generation_quality_bridge_execution_approval.py",
+    "validate_generation_quality_bridge_launch_receipt.py",
     "validate_generation_stability_frozen_posteval.py",
     "validate_generation_training_completion.py",
     "validate_generation_training_pair.py",
     "verify_generation_stability_frozen_class_fidelity.py",
+    "verify_generation_quality_bridge_result.py",
     "verify_generation_stability_frozen_supplemental.py",
     "write_generation_pipeline_status.py",
     "write_generation_deployment_receipt.py",
 }
+QUALITY_BRIDGE_DIRECT_ENTRYPOINTS = (
+    "build_generation_quality_bridge_preparation.py",
+    "validate_generation_quality_bridge_preparation.py",
+    "validate_generation_quality_bridge_execution_approval.py",
+    "build_generation_quality_bridge_launch_receipt.py",
+    "validate_generation_quality_bridge_launch_receipt.py",
+    "build_generation_quality_bridge_result.py",
+    "verify_generation_quality_bridge_result.py",
+)
 
 
 def _run_help(script: str) -> str:
@@ -148,3 +172,20 @@ def test_formal_generation_runbook_entrypoints_have_live_cli_contracts() -> None
         help_text = _run_help(script)
         missing = sorted(option for option in required_options if option not in help_text)
         assert missing == [], f"{script} help is missing runbook options: {missing}"
+
+
+def test_quality_bridge_direct_entrypoints_import_under_runbook_pythonpath() -> None:
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = os.pathsep.join(
+        (str(ROOT), str(ROOT / "src"))
+    )
+    for script in QUALITY_BRIDGE_DIRECT_ENTRYPOINTS:
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / script), "--help"],
+            cwd=ROOT,
+            env=environment,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, f"{script}: {result.stderr}"
