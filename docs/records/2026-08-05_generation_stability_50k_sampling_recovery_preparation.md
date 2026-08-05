@@ -111,7 +111,7 @@ the independent root:
 
 ## Verification
 
-Local verification completed:
+The initial recovery preparation verification completed:
 
 ```text
 sampling-recovery and runbook targeted tests: 14 passed
@@ -119,6 +119,12 @@ remote streamed bash syntax check: pass
 full repository suite: 1074 passed, 6 skipped
 git diff --check: pass
 ```
+
+The later execution-approval hardening is verified separately at exact code
+revision `1940788522c787bcb12f01dc9487b9490a34326a`: `32` targeted tests,
+`1,098 passed / 6 skipped` in the layout-independent full suite, and `4/4`
+candidate paper-layout replays. See
+`2026-08-05_generation_stability_sampling_execution_approval_hardening.md`.
 
 The live remote state was re-read before preparing the runbook. FieldScope PID
 `433140` was still running from

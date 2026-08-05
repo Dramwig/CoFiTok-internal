@@ -156,6 +156,13 @@ full repository suite: 1086 passed, 6 skipped
 git diff --check: pass
 ```
 
+Those counts describe the initial fair-selection/confirmation commit. The
+subsequent execution-approval hardening at exact code revision
+`1940788522c787bcb12f01dc9487b9490a34326a` passed `32` targeted tests,
+`1,098 passed / 6 skipped` in the layout-independent full suite, `4/4`
+candidate paper-layout replays, and an isolated no-GPU Linux rehearsal. See
+`2026-08-05_generation_stability_sampling_execution_approval_hardening.md`.
+
 At the last live read, unrelated FieldScope PID `433140` still used about
 `15412 MiB` with 100% GPU utilization. No recovery sweep, matched 10K
 confirmation, training process, waiter replacement, or other-project process
