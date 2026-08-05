@@ -96,6 +96,7 @@ ENTRYPOINTS = {
     "validate_generation_large_capacity_deployment.py",
     "validate_generation_milestone_report.py",
     "validate_generation_stability_scaling_decision.py",
+    "validate_generation_stability_sampling_execution_approval.py",
     "validate_generation_quality_bridge_preparation.py",
     "validate_generation_quality_bridge_execution_approval.py",
     "validate_generation_quality_bridge_launch_receipt.py",

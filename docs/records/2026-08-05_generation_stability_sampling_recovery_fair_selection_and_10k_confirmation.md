@@ -79,6 +79,30 @@ The confirmation preflight requires:
 - exact DDIM-100, EMA, bf16, balanced-modulo classes, seed/start index, and
   batch-invariant per-sample random stream.
 
+GPU execution additionally requires
+`SAMPLING_CONFIRMATION_EXECUTION_ALLOWED=true` and a separate user-created
+confirmation approval sentinel. The sentinel binds the completed recovery
+summary, exact Git identity, confirmation output root, timezone-qualified
+approval record, and a scope that keeps recovery, training, full 300K, release,
+gate replacement, and automatic protocol changes disabled. Recovery approval
+does not authorize the 10K confirmation.
+
+The confirmation sentinel uses the same exact schema but must independently
+bind the physical recovery `summary.json`, the confirmation output root, and
+the scope
+`stability_50k_sampling_confirmation_10k_v1_execution_only`. Its exact approval
+text is:
+
+```text
+Approve the non-authorizing matched 10000-sample sampling confirmation only.
+```
+
+Its authorization boundary sets only
+`sampling_confirmation_execution_allowed=true`; recovery, training, full
+training, full 300K, release, frozen-gate replacement, and formal protocol
+change all remain false. Extra top-level authority is rejected. No confirmation
+sentinel was created, and a recovery sentinel cannot be reused for this stage.
+
 Clean checkout relocation is allowed only when all content identities remain
 exact. Absolute source paths inside content-addressed evidence do not by
 themselves invalidate an otherwise identical clean checkout.

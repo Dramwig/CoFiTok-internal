@@ -131,10 +131,57 @@ or other-project process was modified.
 ## Execution and decision boundary
 
 Execution still requires an idle GPU, an exact clean deployed diagnostic
-revision, and explicit execution authority. A completed 512-sample sweep is
+revision, `SAMPLING_RECOVERY_EXECUTION_ALLOWED=true`, and a user-created
+execution-approval sentinel whose bytes/SHA256 bind the exact plan, Git
+identity, output root, approval time/text, and permanently non-authorizing
+scope. The runbook validates that sentinel before creating its output root or
+acquiring the GPU-stage lock. A completed 512-sample sweep is
 only a protocol-selection diagnostic. Any selected change must be rerun as a
 fresh matched 10K evaluation in a separate output root before it can support a
 new gate; the existing frozen gate must remain unchanged.
+
+The recovery sentinel is an untracked, user-created JSON object with exactly
+these top-level fields (placeholders are descriptive and are not an approval):
+
+```json
+{
+  "schema_version": 1,
+  "role": "generation_stability_sampling_execution_approval",
+  "status": "approved",
+  "scope": "stability_50k_sampling_recovery_v1_execution_only",
+  "evidence": {
+    "path": "<absolute path to stability_50k_sampling_recovery_v1.json>",
+    "bytes": "<exact positive integer>",
+    "sha256": "<exact lowercase SHA256>"
+  },
+  "git": {
+    "revision": "<exact candidate revision>",
+    "branch": "scale/generation-large-capacity",
+    "tracked_dirty": false
+  },
+  "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_recovery_v1",
+  "approval_record": {
+    "approved_by": "user",
+    "approved_at": "<ISO-8601 timestamp with timezone>",
+    "approval_text": "Approve the non-authorizing matched 512-sample sampling-recovery diagnostic only."
+  },
+  "authorization_boundary": {
+    "sampling_recovery_execution_allowed": true,
+    "sampling_confirmation_execution_allowed": false,
+    "training_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "release_authorization_allowed": false,
+    "replaces_frozen_promotion_gate": false,
+    "formal_protocol_change_allowed": false
+  }
+}
+```
+
+Extra or contradictory top-level fields, a non-user approver, a timezone-free
+timestamp, a changed evidence/Git/output identity, or any weakened boundary
+are rejected. No real approval sentinel was created during preparation or
+verification.
 
 If the bounded inference sweep does not show a plausible route toward the
 absolute FID threshold, the next experiment must address training quality with

@@ -7,6 +7,9 @@ CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generati
 DATA_ROOT=${DATA_ROOT:-/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val}
 EXPECTED_SAMPLING_PIPELINE_REVISION=${EXPECTED_SAMPLING_PIPELINE_REVISION:?set the exact recovery/confirmation revision}
 EXPECTED_SAMPLING_PIPELINE_BRANCH=${EXPECTED_SAMPLING_PIPELINE_BRANCH:-scale/generation-large-capacity}
+SAMPLING_CONFIRMATION_EXECUTION_APPROVAL=${SAMPLING_CONFIRMATION_EXECUTION_APPROVAL:?set the explicit confirmation execution approval sentinel path}
+EXPECTED_SAMPLING_CONFIRMATION_EXECUTION_APPROVAL_SHA256=${EXPECTED_SAMPLING_CONFIRMATION_EXECUTION_APPROVAL_SHA256:?set the immutable confirmation execution approval SHA256}
+SAMPLING_CONFIRMATION_EXECUTION_ALLOWED=${SAMPLING_CONFIRMATION_EXECUTION_ALLOWED:-false}
 
 SCALING_ROOT="$CHECKPOINT_ROOT/stability_scaling_50k_ema_teacher"
 COFITOK_RUN="$SCALING_ROOT/cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
@@ -35,6 +38,7 @@ cd "$PROJECT"
 export PYTHONPATH=src
 export PYTHONDONTWRITEBYTECODE=1
 [[ -x "$PYTHON" ]]
+[[ "$SAMPLING_CONFIRMATION_EXECUTION_ALLOWED" == true ]]
 [[ "$(git rev-parse HEAD)" == "$EXPECTED_SAMPLING_PIPELINE_REVISION" ]]
 [[ "$(git branch --show-current)" == "$EXPECTED_SAMPLING_PIPELINE_BRANCH" ]]
 [[ -z "$(git status --porcelain)" ]]
@@ -55,6 +59,16 @@ for path in \
 done
 [[ -d "$RECOVERY_CASE_ROOT" ]]
 [[ -d "$DATA_ROOT" ]]
+[[ -f "$SAMPLING_CONFIRMATION_EXECUTION_APPROVAL" ]]
+
+"$PYTHON" scripts/validate_generation_stability_sampling_execution_approval.py \
+  --approval "$SAMPLING_CONFIRMATION_EXECUTION_APPROVAL" \
+  --expected-approval-sha256 "$EXPECTED_SAMPLING_CONFIRMATION_EXECUTION_APPROVAL_SHA256" \
+  --evidence "$RECOVERY_SUMMARY" \
+  --expected-scope stability_50k_sampling_confirmation_10k_v1_execution_only \
+  --expected-revision "$EXPECTED_SAMPLING_PIPELINE_REVISION" \
+  --expected-branch "$EXPECTED_SAMPLING_PIPELINE_BRANCH" \
+  --expected-output-root "$CONFIRMATION_ROOT" >/dev/null
 
 mkdir -p "$CONFIRMATION_ROOT" "$CASE_ROOT" "$EVAL_CACHE"
 command -v flock >/dev/null

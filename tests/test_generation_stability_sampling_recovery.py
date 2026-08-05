@@ -10,6 +10,7 @@ import pytest
 from cofitok.reporting import file_sha256
 from scripts import build_generation_stability_sampling_confirmation as confirmation
 from scripts import build_generation_stability_sampling_recovery as recovery
+from scripts import validate_generation_stability_sampling_execution_approval as approval
 
 
 TRAINING_REVISION = "1" * 40
@@ -33,6 +34,30 @@ def _git(
     branch: str = DIAGNOSTIC_BRANCH,
 ) -> dict:
     return {"revision": revision, "branch": branch, "tracked_dirty": False}
+
+
+def _approval_payload(
+    *,
+    scope: str,
+    evidence: dict,
+    output_root: str,
+) -> dict:
+    contract = approval.SCOPE_CONTRACTS[scope]
+    return {
+        "schema_version": approval.APPROVAL_SCHEMA_VERSION,
+        "role": approval.APPROVAL_ROLE,
+        "status": "approved",
+        "scope": scope,
+        "evidence": deepcopy(evidence),
+        "git": _git(),
+        "output_root": output_root,
+        "approval_record": {
+            "approved_by": approval.APPROVED_BY,
+            "approved_at": "2026-08-05T13:00:00+08:00",
+            "approval_text": contract["approval_text"],
+        },
+        "authorization_boundary": deepcopy(contract["authorization_boundary"]),
+    }
 
 
 def _sampling(
@@ -592,6 +617,14 @@ def test_runbook_is_gpu_deferred_frozen_and_non_authorizing() -> None:
 
     assert "EXPECTED_SAMPLING_RECOVERY_REVISION=${" in source
     assert "EXPECTED_SAMPLING_RECOVERY_BRANCH=${" in source
+    assert "SAMPLING_RECOVERY_EXECUTION_APPROVAL=${" in source
+    assert "EXPECTED_SAMPLING_RECOVERY_EXECUTION_APPROVAL_SHA256=${" in source
+    assert '[[ "$SAMPLING_RECOVERY_EXECUTION_ALLOWED" == true ]]' in source
+    assert "validate_generation_stability_sampling_execution_approval.py" in source
+    assert "stability_50k_sampling_recovery_v1_execution_only" in source
+    assert source.index(
+        "validate_generation_stability_sampling_execution_approval.py"
+    ) < source.index('mkdir -p "$DIAGNOSTIC_ROOT"')
     assert '[[ "$(git rev-parse HEAD)" == "$EXPECTED_SAMPLING_RECOVERY_REVISION" ]]' in source
     assert '[[ "$(git branch --show-current)" == "$EXPECTED_SAMPLING_RECOVERY_BRANCH" ]]' in source
     assert '[[ -z "$(git status --porcelain)" ]]' in source
@@ -952,6 +985,14 @@ def test_confirmation_runbook_is_shared_formal_size_and_non_authorizing() -> Non
 
     assert "EXPECTED_SAMPLING_PIPELINE_REVISION=${" in source
     assert "EXPECTED_SAMPLING_PIPELINE_BRANCH=${" in source
+    assert "SAMPLING_CONFIRMATION_EXECUTION_APPROVAL=${" in source
+    assert "EXPECTED_SAMPLING_CONFIRMATION_EXECUTION_APPROVAL_SHA256=${" in source
+    assert '[[ "$SAMPLING_CONFIRMATION_EXECUTION_ALLOWED" == true ]]' in source
+    assert "validate_generation_stability_sampling_execution_approval.py" in source
+    assert "stability_50k_sampling_confirmation_10k_v1_execution_only" in source
+    assert source.index(
+        "validate_generation_stability_sampling_execution_approval.py"
+    ) < source.index('mkdir -p "$CONFIRMATION_ROOT"')
     assert '[[ "$(git rev-parse HEAD)" == "$EXPECTED_SAMPLING_PIPELINE_REVISION" ]]' in source
     assert '[[ -z "$(git status --porcelain)" ]]' in source
     assert "flock -n 6" in source
@@ -976,3 +1017,133 @@ def test_confirmation_runbook_is_shared_formal_size_and_non_authorizing() -> Non
     assert "build_generation_gate_report.py" not in source
     assert "build_generation_full_launch_receipt.py" not in source
     assert "full_matched_300k" not in source
+
+
+@pytest.mark.parametrize(
+    ("scope", "output_root", "allowed_field"),
+    [
+        (
+            approval.RECOVERY_SCOPE,
+            "/checkpoints/stability_scaling_50k_sampling_recovery_v1",
+            "sampling_recovery_execution_allowed",
+        ),
+        (
+            approval.CONFIRMATION_SCOPE,
+            "/checkpoints/stability_scaling_50k_sampling_confirmation_10k_v1",
+            "sampling_confirmation_execution_allowed",
+        ),
+    ],
+)
+def test_sampling_execution_approval_is_exactly_scoped_and_non_authorizing(
+    scope: str,
+    output_root: str,
+    allowed_field: str,
+) -> None:
+    evidence = {
+        "path": "/evidence/source.json",
+        "bytes": 123,
+        "sha256": "a" * 64,
+    }
+    payload = _approval_payload(
+        scope=scope,
+        evidence=evidence,
+        output_root=output_root,
+    )
+
+    verified = approval.validate_sampling_execution_approval(
+        payload,
+        evidence_identity=evidence,
+        expected_scope=scope,
+        expected_revision=DIAGNOSTIC_REVISION,
+        expected_branch=DIAGNOSTIC_BRANCH,
+        expected_output_root=output_root,
+    )
+
+    assert verified["authorization_boundary"][allowed_field] is True
+    assert verified["authorization_boundary"]["training_launch_allowed"] is False
+    assert verified["authorization_boundary"]["full_300k_launch_allowed"] is False
+
+    drifted = deepcopy(payload)
+    drifted["authorization_boundary"]["full_300k_launch_allowed"] = True
+    with pytest.raises(ValueError, match="boundary differs"):
+        approval.validate_sampling_execution_approval(
+            drifted,
+            evidence_identity=evidence,
+            expected_scope=scope,
+            expected_revision=DIAGNOSTIC_REVISION,
+            expected_branch=DIAGNOSTIC_BRANCH,
+            expected_output_root=output_root,
+        )
+
+
+def test_sampling_execution_approval_rejects_ambiguous_record() -> None:
+    scope = approval.RECOVERY_SCOPE
+    evidence = {
+        "path": "/evidence/source.json",
+        "bytes": 123,
+        "sha256": "b" * 64,
+    }
+    payload = _approval_payload(
+        scope=scope,
+        evidence=evidence,
+        output_root="/checkpoints/recovery",
+    )
+    payload["approval_record"]["approved_at"] = "2026-08-05T13:00:00"
+
+    with pytest.raises(ValueError, match="must include a timezone"):
+        approval.validate_sampling_execution_approval(
+            payload,
+            evidence_identity=evidence,
+            expected_scope=scope,
+            expected_revision=DIAGNOSTIC_REVISION,
+            expected_branch=DIAGNOSTIC_BRANCH,
+            expected_output_root="/checkpoints/recovery",
+        )
+
+
+def test_sampling_execution_approval_rejects_contradictory_extra_authority() -> None:
+    evidence = {
+        "path": "/evidence/source.json",
+        "bytes": 123,
+        "sha256": "c" * 64,
+    }
+    payload = _approval_payload(
+        scope=approval.RECOVERY_SCOPE,
+        evidence=evidence,
+        output_root="/checkpoints/recovery",
+    )
+    payload["full_300k_launch_allowed"] = True
+
+    with pytest.raises(ValueError, match="top-level fields differ"):
+        approval.validate_sampling_execution_approval(
+            payload,
+            evidence_identity=evidence,
+            expected_scope=approval.RECOVERY_SCOPE,
+            expected_revision=DIAGNOSTIC_REVISION,
+            expected_branch=DIAGNOSTIC_BRANCH,
+            expected_output_root="/checkpoints/recovery",
+        )
+
+
+def test_sampling_execution_approval_rejects_non_user_approver() -> None:
+    evidence = {
+        "path": "/evidence/source.json",
+        "bytes": 123,
+        "sha256": "d" * 64,
+    }
+    payload = _approval_payload(
+        scope=approval.CONFIRMATION_SCOPE,
+        evidence=evidence,
+        output_root="/checkpoints/confirmation",
+    )
+    payload["approval_record"]["approved_by"] = "automation"
+
+    with pytest.raises(ValueError, match="approver differs"):
+        approval.validate_sampling_execution_approval(
+            payload,
+            evidence_identity=evidence,
+            expected_scope=approval.CONFIRMATION_SCOPE,
+            expected_revision=DIAGNOSTIC_REVISION,
+            expected_branch=DIAGNOSTIC_BRANCH,
+            expected_output_root="/checkpoints/confirmation",
+        )
