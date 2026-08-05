@@ -67,12 +67,14 @@ def _sampling(
     prefix_budget: int,
     guidance_scale: float,
     guidance_rescale: float,
+    seed: int = 0,
+    start_index: int = 0,
 ) -> dict:
     return {
         "num_samples": sample_count,
         "sample_steps": sample_steps,
-        "seed": 0,
-        "start_index": 0,
+        "seed": seed,
+        "start_index": start_index,
         "class_schedule": "balanced_modulo",
         "guidance_scale": guidance_scale,
         "guidance_rescale": guidance_rescale,
@@ -170,6 +172,16 @@ def _plan() -> dict:
             "weights": "ema",
             "skip_precision_recall": True,
             "cases": cases,
+        },
+        "confirmation": {
+            "sample_count": 10_000,
+            "seed": 0,
+            "start_index": 10_000,
+            "class_count": 1_000,
+            "balanced_modulo_exact_coverage_required": True,
+            "disjoint_from_diagnostic_required": True,
+            "disjoint_from_frozen_formal_required": True,
+            "precision_recall_enabled": True,
         },
         "selection_policy": deepcopy(recovery.EXPECTED_SELECTION_POLICY),
         "claim_boundary": deepcopy(recovery.EXPECTED_CLAIM_BOUNDARY),
@@ -383,6 +395,36 @@ def test_preflight_accepts_bound_real_set_with_report_metadata(tmp_path: Path) -
     assert report["formal_reference"]["cofitok"]["fid"] == 138.0
     assert report["selection_policy"] == recovery.EXPECTED_SELECTION_POLICY
     assert report["claim_boundary"] == recovery.EXPECTED_CLAIM_BOUNDARY
+
+
+def test_frozen_plan_declares_disjoint_confirmation_stream() -> None:
+    root = Path(__file__).resolve().parents[1]
+    plan = json.loads(
+        (
+            root
+            / "configs/generation/diagnostics/stability_50k_sampling_recovery_v1.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    recovery.validate_plan(plan)
+    evidence = recovery.build_random_stream_independence(plan)
+
+    assert evidence["windows"]["selection_diagnostic"][
+        "global_index_start_inclusive"
+    ] == 0
+    assert evidence["windows"]["selection_diagnostic"][
+        "global_index_stop_exclusive"
+    ] == 512
+    assert evidence["windows"]["frozen_formal"][
+        "global_index_stop_exclusive"
+    ] == 10_000
+    assert evidence["windows"]["confirmation"][
+        "global_index_start_inclusive"
+    ] == 10_000
+    assert evidence["windows"]["confirmation"][
+        "global_index_stop_exclusive"
+    ] == 20_000
+    assert all(evidence["checks"].values())
 
 
 def test_preflight_rejects_gate_sha_or_failed_gate_drift(tmp_path: Path) -> None:
@@ -608,6 +650,42 @@ def test_plan_rejects_per_method_selection_or_formal_baseline_drift(
         _build_preflight(fixture)
 
 
+@pytest.mark.parametrize("start_index", [0, 1_000])
+def test_plan_rejects_confirmation_overlap_with_selection_or_formal_streams(
+    tmp_path: Path,
+    start_index: int,
+) -> None:
+    fixture = _fixture(tmp_path)
+    fixture["plan"]["confirmation"]["start_index"] = start_index
+
+    with pytest.raises(ValueError, match="random streams are not independent"):
+        _build_preflight(fixture)
+
+
+def test_plan_rejects_confirmation_random_stream_wraparound(tmp_path: Path) -> None:
+    fixture = _fixture(tmp_path)
+    fixture["plan"]["confirmation"]["seed"] = 2**63 - 10_000
+
+    with pytest.raises(ValueError, match=r"must not wrap modulo 2\^63"):
+        _build_preflight(fixture)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [("sample_count", 9_999), ("start_index", 10_001), ("class_count", 999)],
+)
+def test_plan_rejects_confirmation_class_coverage_drift(
+    tmp_path: Path,
+    field: str,
+    value: int,
+) -> None:
+    fixture = _fixture(tmp_path)
+    fixture["plan"]["confirmation"][field] = value
+
+    with pytest.raises(ValueError, match="sampling-confirmation protocol is invalid"):
+        _build_preflight(fixture)
+
+
 def test_runbook_is_gpu_deferred_frozen_and_non_authorizing() -> None:
     root = Path(__file__).resolve().parents[1]
     source = (
@@ -704,11 +782,13 @@ def _confirmation_reports(
     protocol = preflight["protocol"]
     sample_sha256 = _sha(f"confirmation-{method}-samples")
     sampling = _sampling(
-        sample_count=10_000,
+        sample_count=int(protocol["num_samples"]),
         sample_steps=int(protocol["sample_steps"]),
         prefix_budget=int(method_plan["prefix_budget"]),
         guidance_scale=float(protocol["guidance_scale"]),
         guidance_rescale=float(protocol["guidance_rescale"]),
+        seed=int(protocol["seed"]),
+        start_index=int(protocol["start_index"]),
     )
     sampling_report = {
         "schema_version": 6,
@@ -722,7 +802,7 @@ def _confirmation_reports(
         "sampling": sampling,
         "sample_sets": {
             str(method_plan["prefix_budget"]): {
-                "count": 10_000,
+                "count": int(protocol["num_samples"]),
                 "sha256": sample_sha256,
             }
         },
@@ -737,15 +817,18 @@ def _confirmation_reports(
         "implementation": deepcopy(preflight["evaluator"]),
         "runtime_environment_sha256": METRICS_RUNTIME,
         "parameters": {
-            "precision_recall_enabled": True,
-            "batch_size": 64,
-            "prc_batch_size": 10_000,
-            "min_samples": 10_000,
-            "seed": 2027,
+            "precision_recall_enabled": protocol["precision_recall_enabled"],
+            "batch_size": int(protocol["metrics_batch_size"]),
+            "prc_batch_size": int(protocol["prc_batch_size"]),
+            "min_samples": int(protocol["num_samples"]),
+            "seed": int(protocol["metrics_seed"]),
             "samples_find_deep": True,
             "samples_shuffle": False,
         },
-        "counts": {"generated_image_count": 10_000, "real_image_count": 50_000},
+        "counts": {
+            "generated_image_count": int(protocol["num_samples"]),
+            "real_image_count": 50_000,
+        },
         "real_set": {**preflight["real_set"], "root": "/datasets/imagenet_256/val"},
         "sample_provenance": {
             "git": _git(CONFIRMATION_REVISION, DIAGNOSTIC_BRANCH),
@@ -796,11 +879,44 @@ def test_confirmation_preflight_binds_shared_candidate_and_sources(
     assert preflight["status"] == "pass"
     assert preflight["recovery"]["selected_case"] == "cfg150_r050"
     assert preflight["protocol"]["num_samples"] == 10_000
+    assert preflight["protocol"]["seed"] == 0
+    assert preflight["protocol"]["start_index"] == 10_000
     assert preflight["protocol"]["guidance_scale"] == 1.5
     assert preflight["protocol"]["guidance_rescale"] == 0.5
     assert preflight["protocol"]["precision_recall_enabled"] is True
+    independence = preflight["random_stream_independence"]
+    assert independence["windows"]["selection_diagnostic"][
+        "global_index_stop_exclusive"
+    ] == 512
+    assert independence["windows"]["frozen_formal"][
+        "global_index_stop_exclusive"
+    ] == 10_000
+    assert independence["windows"]["confirmation"][
+        "global_index_start_inclusive"
+    ] == 10_000
+    assert independence["windows"]["confirmation"][
+        "global_index_stop_exclusive"
+    ] == 20_000
+    assert all(independence["checks"].values())
     assert preflight["claim_boundary"] == confirmation.EXPECTED_CLAIM_BOUNDARY
     assert preflight["claim_boundary"]["full_training_launch_allowed"] is False
+
+
+def test_confirmation_report_rejects_tampered_random_stream_evidence(
+    tmp_path: Path,
+) -> None:
+    fixture = _confirmation_fixture(tmp_path)
+    preflight = deepcopy(fixture["confirmation_preflight"])
+    preflight["random_stream_independence"]["checks"][
+        "confirmation_global_indices_disjoint_from_frozen_formal"
+    ] = False
+
+    with pytest.raises(ValueError, match="preflight contract mismatch"):
+        confirmation.build_report(
+            preflight=preflight,
+            case_root=tmp_path / "unused-cases",
+            confirmation_git=fixture["confirmation_git"],
+        )
 
 
 def test_confirmation_preflight_allows_clean_checkout_relocation(
@@ -928,6 +1044,11 @@ def test_confirmation_report_holds_when_absolute_quality_is_not_recovered(
         ),
         (
             "sampling",
+            lambda payload: payload["sampling"].__setitem__("start_index", 0),
+            "sampling protocol mismatch",
+        ),
+        (
+            "sampling",
             lambda payload: payload.__setitem__(
                 "runtime_environment_sha256", "a" * 64
             ),
@@ -1003,9 +1124,12 @@ def test_confirmation_runbook_is_shared_formal_size_and_non_authorizing() -> Non
     assert source.count("scripts/build_generation_stability_sampling_confirmation.py") == 3
     assert source.count("scripts/generate_samples.py") == 1
     assert source.count("scripts/evaluate_generation_metrics.py") == 1
-    assert "--num-samples 10000" in source
-    assert "--min-samples 10000" in source
-    assert "--prc-batch-size 10000" in source
+    assert '--num-samples "$confirmation_num_samples"' in source
+    assert '--min-samples "$confirmation_num_samples"' in source
+    assert '--prc-batch-size "$confirmation_prc_batch_size"' in source
+    assert '--seed "$confirmation_seed"' in source
+    assert '--start-index "$confirmation_start_index"' in source
+    assert "--start-index 0" not in source
     assert "--skip-prc" not in source
     assert '[[ "$selected_case" != "cfg150_r000" ]]' in source
     assert 'CONFIRMATION_ROOT="$CHECKPOINT_ROOT/stability_scaling_50k_sampling_confirmation_10k_v1"' in source

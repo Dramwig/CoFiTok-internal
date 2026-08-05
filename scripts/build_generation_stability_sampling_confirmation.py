@@ -287,15 +287,16 @@ def build_preflight(
         or not 0.0 <= float(thresholds["max_fid_regression"]) <= 1.0
     ):
         raise ValueError("sampling-confirmation quality thresholds are invalid")
+    confirmation_plan = plan["confirmation"]
     protocol = {
-        "num_samples": 10_000,
+        "num_samples": int(confirmation_plan["sample_count"]),
         "sample_steps": int(plan["diagnostic"]["sample_steps"]),
         "sampling_batch_size": int(plan["diagnostic"]["batch_size"]),
         "metrics_batch_size": 64,
-        "prc_batch_size": 10_000,
+        "prc_batch_size": int(confirmation_plan["sample_count"]),
         "metrics_seed": 2027,
-        "seed": int(plan["diagnostic"]["seed"]),
-        "start_index": int(plan["diagnostic"]["start_index"]),
+        "seed": int(confirmation_plan["seed"]),
+        "start_index": int(confirmation_plan["start_index"]),
         "class_schedule": plan["diagnostic"]["class_schedule"],
         "guidance_scale": float(selected["selected_protocol"]["guidance_scale"]),
         "guidance_rescale": float(
@@ -308,8 +309,15 @@ def build_preflight(
         "weights": plan["diagnostic"]["weights"],
         "sampler": "ddim",
         "protocol_schema": "cofitok_ddim_sampling_v1",
-        "precision_recall_enabled": True,
+        "precision_recall_enabled": confirmation_plan[
+            "precision_recall_enabled"
+        ],
     }
+    random_stream_independence = recovery.build_random_stream_independence(plan)
+    recovery.validate_random_stream_independence(
+        random_stream_independence,
+        confirmation_protocol=protocol,
+    )
     return {
         "schema_version": 1,
         "status": "pass",
@@ -346,6 +354,7 @@ def build_preflight(
         ],
         "evaluator": plan["source"]["evaluator"],
         "protocol": protocol,
+        "random_stream_independence": random_stream_independence,
         "thresholds": {
             "max_absolute_fid": float(thresholds["max_absolute_fid"]),
             "max_fid_regression": float(thresholds["max_fid_regression"]),
@@ -513,14 +522,23 @@ def build_report(
     case_root: Path,
     confirmation_git: dict[str, Any],
 ) -> dict[str, Any]:
+    protocol = preflight.get("protocol")
     if (
         preflight.get("schema_version") != 1
         or preflight.get("status") != "pass"
         or preflight.get("role") != "sampling_confirmation_preflight"
         or preflight.get("confirmation_git") != confirmation_git
         or preflight.get("claim_boundary") != EXPECTED_CLAIM_BOUNDARY
+        or not isinstance(protocol, dict)
     ):
         raise ValueError("sampling-confirmation preflight contract mismatch")
+    try:
+        recovery.validate_random_stream_independence(
+            preflight.get("random_stream_independence"),
+            confirmation_protocol=protocol,
+        )
+    except ValueError as error:
+        raise ValueError("sampling-confirmation preflight contract mismatch") from error
     rows = {
         method: _validate_method(
             preflight=preflight,

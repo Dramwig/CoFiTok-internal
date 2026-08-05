@@ -104,6 +104,16 @@
       }
     ]
   },
+  "confirmation": {
+    "sample_count": 10000,
+    "seed": 0,
+    "start_index": 10000,
+    "class_count": 1000,
+    "balanced_modulo_exact_coverage_required": true,
+    "disjoint_from_diagnostic_required": true,
+    "disjoint_from_frozen_formal_required": true,
+    "precision_recall_enabled": true
+  },
   "selection_policy": {
     "shared_protocol_required": true,
     "baseline_case_id": "cfg150_r000",

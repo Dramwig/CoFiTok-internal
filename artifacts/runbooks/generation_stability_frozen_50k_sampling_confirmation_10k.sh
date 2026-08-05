@@ -223,7 +223,18 @@ PY
   exit 0
 fi
 
-read -r selected_case guidance_scale guidance_rescale < <(
+read -r \
+  selected_case \
+  guidance_scale \
+  guidance_rescale \
+  confirmation_num_samples \
+  confirmation_sample_steps \
+  confirmation_sampling_batch_size \
+  confirmation_metrics_batch_size \
+  confirmation_prc_batch_size \
+  confirmation_metrics_seed \
+  confirmation_seed \
+  confirmation_start_index < <(
   "$PYTHON" - "$PREFLIGHT" <<'PY'
 import json
 import sys
@@ -235,10 +246,19 @@ print(
     preflight["recovery"]["selected_case"],
     protocol["guidance_scale"],
     protocol["guidance_rescale"],
+    protocol["num_samples"],
+    protocol["sample_steps"],
+    protocol["sampling_batch_size"],
+    protocol["metrics_batch_size"],
+    protocol["prc_batch_size"],
+    protocol["metrics_seed"],
+    protocol["seed"],
+    protocol["start_index"],
 )
 PY
 )
 [[ "$selected_case" != "cfg150_r000" ]]
+[[ "$confirmation_num_samples" == 10000 ]]
 
 require_gpu_idle
 
@@ -260,16 +280,16 @@ for method in cofitok dense_identity; do
     "$PYTHON" scripts/generate_samples.py \
       --checkpoint "$checkpoint" \
       --output-dir "$method_root" \
-      --num-samples 10000 \
-      --batch-size 32 \
-      --sample-steps 100 \
+      --num-samples "$confirmation_num_samples" \
+      --batch-size "$confirmation_sampling_batch_size" \
+      --sample-steps "$confirmation_sample_steps" \
       --prefix-budgets "$prefix_budget" \
       --guidance-scale "$guidance_scale" \
       --guidance-rescale "$guidance_rescale" \
       --cfg-batch-mode batched \
       --eta 0.0 \
-      --seed 0 \
-      --start-index 0 \
+      --seed "$confirmation_seed" \
+      --start-index "$confirmation_start_index" \
       --weights ema \
       --precision bf16 \
       --resume
@@ -283,10 +303,10 @@ for method in cofitok dense_identity; do
     --generated-dir "$method_root/prefix_$prefix_budget" \
     --sampling-report "$sampling_report" \
     --output-dir "$method_root/metrics" \
-    --batch-size 64 \
-    --prc-batch-size 10000 \
-    --min-samples 10000 \
-    --seed 2027 \
+    --batch-size "$confirmation_metrics_batch_size" \
+    --prc-batch-size "$confirmation_prc_batch_size" \
+    --min-samples "$confirmation_num_samples" \
+    --seed "$confirmation_metrics_seed" \
     --cache-root "$EVAL_CACHE" \
     --real-cache-name imagenet256_val_50k_torch_fidelity_v04 \
     --resume

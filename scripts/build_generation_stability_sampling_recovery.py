@@ -32,6 +32,17 @@ EXPECTED_SAMPLE_SET_DIGEST = {
     "algorithm": "sha256",
     "framing": "filename_utf8_nul_file_bytes_nul",
 }
+RANDOM_SEED_MODULUS = 2**63
+EXPECTED_CONFIRMATION_KEYS = {
+    "sample_count",
+    "seed",
+    "start_index",
+    "class_count",
+    "balanced_modulo_exact_coverage_required",
+    "disjoint_from_diagnostic_required",
+    "disjoint_from_frozen_formal_required",
+    "precision_recall_enabled",
+}
 EXPECTED_SELECTION_POLICY = {
     "shared_protocol_required": True,
     "baseline_case_id": "cfg150_r000",
@@ -46,6 +57,188 @@ EXPECTED_SELECTION_POLICY = {
     "per_method_protocol_selection_allowed": False,
     "automatic_formal_protocol_change_allowed": False,
 }
+
+
+def _exact_nonnegative_int(value: Any, *, label: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ValueError(f"{label} must be a nonnegative integer")
+    return value
+
+
+def _random_stream_window(
+    *,
+    label: str,
+    seed: Any,
+    start_index: Any,
+    sample_count: Any,
+) -> dict[str, Any]:
+    exact_seed = _exact_nonnegative_int(seed, label=f"{label} seed")
+    exact_start = _exact_nonnegative_int(
+        start_index, label=f"{label} start_index"
+    )
+    exact_count = _exact_nonnegative_int(
+        sample_count, label=f"{label} sample_count"
+    )
+    if exact_count == 0:
+        raise ValueError(f"{label} sample_count must be positive")
+    index_stop = exact_start + exact_count
+    derived_seed_start = exact_seed + exact_start
+    derived_seed_stop = derived_seed_start + exact_count
+    if derived_seed_stop > RANDOM_SEED_MODULUS:
+        raise ValueError(f"{label} random stream must not wrap modulo 2^63")
+    return {
+        "seed": exact_seed,
+        "start_index": exact_start,
+        "sample_count": exact_count,
+        "global_index_start_inclusive": exact_start,
+        "global_index_stop_exclusive": index_stop,
+        "derived_seed_start_inclusive": derived_seed_start,
+        "derived_seed_stop_exclusive": derived_seed_stop,
+        "wraparound": False,
+    }
+
+
+def _half_open_intervals_are_disjoint(
+    left: dict[str, Any],
+    right: dict[str, Any],
+    *,
+    start_key: str,
+    stop_key: str,
+) -> bool:
+    return bool(
+        int(left[stop_key]) <= int(right[start_key])
+        or int(right[stop_key]) <= int(left[start_key])
+    )
+
+
+def _random_stream_disjointness(
+    windows: dict[str, dict[str, Any]],
+) -> dict[str, bool]:
+    confirmation = windows["confirmation"]
+    diagnostic = windows["selection_diagnostic"]
+    formal = windows["frozen_formal"]
+    return {
+        "confirmation_global_indices_disjoint_from_selection_diagnostic": (
+            _half_open_intervals_are_disjoint(
+                confirmation,
+                diagnostic,
+                start_key="global_index_start_inclusive",
+                stop_key="global_index_stop_exclusive",
+            )
+        ),
+        "confirmation_derived_seeds_disjoint_from_selection_diagnostic": (
+            _half_open_intervals_are_disjoint(
+                confirmation,
+                diagnostic,
+                start_key="derived_seed_start_inclusive",
+                stop_key="derived_seed_stop_exclusive",
+            )
+        ),
+        "confirmation_global_indices_disjoint_from_frozen_formal": (
+            _half_open_intervals_are_disjoint(
+                confirmation,
+                formal,
+                start_key="global_index_start_inclusive",
+                stop_key="global_index_stop_exclusive",
+            )
+        ),
+        "confirmation_derived_seeds_disjoint_from_frozen_formal": (
+            _half_open_intervals_are_disjoint(
+                confirmation,
+                formal,
+                start_key="derived_seed_start_inclusive",
+                stop_key="derived_seed_stop_exclusive",
+            )
+        ),
+    }
+
+
+def validate_random_stream_independence(
+    evidence: Any,
+    *,
+    confirmation_protocol: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    if (
+        not isinstance(evidence, dict)
+        or set(evidence)
+        != {"schema_version", "seed_formula", "seed_modulus", "windows", "checks"}
+        or evidence.get("schema_version") != 1
+        or evidence.get("seed_formula") != EXPECTED_RANDOM_STREAM["seed_formula"]
+        or evidence.get("seed_modulus") != RANDOM_SEED_MODULUS
+    ):
+        raise ValueError("sampling-confirmation random-stream evidence is malformed")
+    declared_windows = evidence.get("windows")
+    if not isinstance(declared_windows, dict) or set(declared_windows) != {
+        "selection_diagnostic",
+        "frozen_formal",
+        "confirmation",
+    }:
+        raise ValueError("sampling-confirmation random-stream windows are malformed")
+    windows: dict[str, dict[str, Any]] = {}
+    for name, declared in declared_windows.items():
+        if not isinstance(declared, dict):
+            raise ValueError("sampling-confirmation random-stream window is malformed")
+        rebuilt = _random_stream_window(
+            label=name,
+            seed=declared.get("seed"),
+            start_index=declared.get("start_index"),
+            sample_count=declared.get("sample_count"),
+        )
+        if declared != rebuilt:
+            raise ValueError("sampling-confirmation random-stream window drifted")
+        windows[name] = rebuilt
+    expected_checks = _random_stream_disjointness(windows)
+    if evidence.get("checks") != expected_checks or not all(expected_checks.values()):
+        raise ValueError("sampling-confirmation random streams are not independent")
+    if confirmation_protocol is not None:
+        confirmation = windows["confirmation"]
+        if any(
+            confirmation[name] != int(confirmation_protocol.get(protocol_name, -1))
+            for name, protocol_name in (
+                ("seed", "seed"),
+                ("start_index", "start_index"),
+                ("sample_count", "num_samples"),
+            )
+        ):
+            raise ValueError(
+                "sampling-confirmation protocol differs from its random-stream evidence"
+            )
+    return evidence
+
+
+def build_random_stream_independence(plan: dict[str, Any]) -> dict[str, Any]:
+    source = plan["source"]
+    formal = source["formal_protocol"]
+    diagnostic = plan["diagnostic"]
+    confirmation = plan["confirmation"]
+    windows = {
+        "selection_diagnostic": _random_stream_window(
+            label="selection diagnostic",
+            seed=diagnostic.get("seed"),
+            start_index=diagnostic.get("start_index"),
+            sample_count=diagnostic.get("sample_count_per_case"),
+        ),
+        "frozen_formal": _random_stream_window(
+            label="frozen formal",
+            seed=formal.get("seed"),
+            start_index=formal.get("start_index"),
+            sample_count=source.get("formal_sample_count"),
+        ),
+        "confirmation": _random_stream_window(
+            label="confirmation",
+            seed=confirmation.get("seed"),
+            start_index=confirmation.get("start_index"),
+            sample_count=confirmation.get("sample_count"),
+        ),
+    }
+    evidence = {
+        "schema_version": 1,
+        "seed_formula": EXPECTED_RANDOM_STREAM["seed_formula"],
+        "seed_modulus": RANDOM_SEED_MODULUS,
+        "windows": windows,
+        "checks": _random_stream_disjointness(windows),
+    }
+    return validate_random_stream_independence(evidence)
 
 
 def _read_object(path: Path) -> dict[str, Any]:
@@ -136,11 +329,13 @@ def validate_plan(plan: dict[str, Any]) -> dict[str, Any]:
     source = plan.get("source")
     methods = plan.get("methods")
     diagnostic = plan.get("diagnostic")
+    confirmation = plan.get("confirmation")
     if (
         not isinstance(source, dict)
         or not isinstance(methods, dict)
         or set(methods) != set(METHODS)
         or not isinstance(diagnostic, dict)
+        or not isinstance(confirmation, dict)
     ):
         raise ValueError("sampling-recovery plan sections are incomplete")
     for digest_name in (
@@ -234,6 +429,32 @@ def validate_plan(plan: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(
             "sampling-recovery shared baseline differs from the frozen formal protocol"
         )
+    if set(confirmation) != EXPECTED_CONFIRMATION_KEYS:
+        raise ValueError("sampling-confirmation protocol fields are invalid")
+    confirmation_count = _exact_nonnegative_int(
+        confirmation.get("sample_count"),
+        label="confirmation sample_count",
+    )
+    confirmation_class_count = _exact_nonnegative_int(
+        confirmation.get("class_count"),
+        label="confirmation class_count",
+    )
+    confirmation_start = _exact_nonnegative_int(
+        confirmation.get("start_index"),
+        label="confirmation start_index",
+    )
+    if (
+        confirmation_count != int(source["formal_sample_count"])
+        or confirmation_class_count != 1_000
+        or confirmation_count % confirmation_class_count != 0
+        or confirmation_start % confirmation_class_count != 0
+        or confirmation.get("balanced_modulo_exact_coverage_required") is not True
+        or confirmation.get("disjoint_from_diagnostic_required") is not True
+        or confirmation.get("disjoint_from_frozen_formal_required") is not True
+        or confirmation.get("precision_recall_enabled") is not True
+    ):
+        raise ValueError("sampling-confirmation protocol is invalid")
+    build_random_stream_independence(plan)
     for method in METHODS:
         row = methods[method]
         if (
