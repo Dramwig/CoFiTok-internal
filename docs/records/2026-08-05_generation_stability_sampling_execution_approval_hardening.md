@@ -2,6 +2,18 @@
 
 Date: 2026-08-05
 
+## Superseded again by the class-complete candidate
+
+This file remains historical evidence for revision `1940788`. Neither
+`1940788522c787bcb12f01dc9487b9490a34326a` nor its former replacement
+`0a1b88630e2b24e27b3f084dfc1490381e906655` may be executed. The 512-sample
+selection interval covered only ImageNet classes 0--511, and the former 10K
+confirmation used a nonzero global-index interval that the metrics evaluator
+could not actually consume. Both issues are corrected and independently
+rehearsed at code candidate
+`aed68853914dc0ecf4b3f15d5d090ddee740d1df`. See
+`2026-08-05_generation_stability_sampling_recovery_class_complete.md`.
+
 ## Superseded execution candidate
 
 This file preserves the approval-hardening rehearsal history. Revision

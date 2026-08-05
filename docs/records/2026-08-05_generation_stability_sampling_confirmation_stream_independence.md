@@ -2,6 +2,16 @@
 
 Date: 2026-08-05
 
+## Superseded by the class-complete candidate
+
+This file preserves the random-stream correction at revision `0a1b886`, but
+that revision must not be executed. Its 512-sample selector covered only
+ImageNet classes 0--511, and its declared `[10000, 20000)` confirmation could
+not pass the then-zero-based-only metrics evaluator. The replacement code
+candidate is `aed68853914dc0ecf4b3f15d5d090ddee740d1df`, documented and
+rehearsed in
+`2026-08-05_generation_stability_sampling_recovery_class_complete.md`.
+
 ## Outcome
 
 The dormant 10K sampling confirmation no longer reuses the samples that select
