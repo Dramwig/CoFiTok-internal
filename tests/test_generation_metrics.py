@@ -159,10 +159,15 @@ def test_calculate_metrics_uses_generated_as_precision_input(monkeypatch, tmp_pa
     assert calls[0]["input2_cache_name"] == "real-v1"
 
 
-def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path, monkeypatch) -> None:
+@pytest.mark.parametrize("start_index", [0, 10_000])
+def test_validate_sampling_provenance_requires_exact_declared_numbered_window(
+    tmp_path,
+    monkeypatch,
+    start_index: int,
+) -> None:
     generated = tmp_path / "samples" / "prefix_8"
     generated.mkdir(parents=True)
-    for index in range(2):
+    for index in range(start_index, start_index + 2):
         Image.new("RGB", (4, 4)).save(generated / f"{index:06d}.png")
     report_path = generated.parent / "sampling_report.json"
     sample_sha256 = sample_set_sha256(find_images(generated))
@@ -170,7 +175,7 @@ def test_validate_sampling_provenance_requires_exact_numbered_set(tmp_path, monk
         "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
         "inference_api": INFERENCE_API,
         "sampler": "ddim",
-        "start_index": 0,
+        "start_index": start_index,
         "num_samples": 2,
         "sample_steps": 1,
         "num_train_timesteps": 4,

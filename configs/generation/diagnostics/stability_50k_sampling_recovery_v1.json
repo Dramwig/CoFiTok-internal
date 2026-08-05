@@ -64,11 +64,15 @@
     }
   },
   "diagnostic": {
-    "sample_count_per_case": 512,
+    "sample_count_per_case": 1000,
     "sample_steps": 100,
     "batch_size": 32,
+    "metrics_batch_size": 64,
+    "metrics_seed": 2027,
     "seed": 0,
     "start_index": 0,
+    "class_count": 1000,
+    "balanced_modulo_exact_coverage_required": true,
     "class_schedule": "balanced_modulo",
     "cfg_batch_mode": "batched",
     "eta": 0.0,

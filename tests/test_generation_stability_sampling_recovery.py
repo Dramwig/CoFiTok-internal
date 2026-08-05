@@ -6,10 +6,12 @@ from copy import deepcopy
 from pathlib import Path
 
 import pytest
+import torch
 
 from cofitok.reporting import file_sha256
 from scripts import build_generation_stability_sampling_confirmation as confirmation
 from scripts import build_generation_stability_sampling_recovery as recovery
+from scripts import generate_samples
 from scripts import validate_generation_stability_sampling_execution_approval as approval
 
 
@@ -69,12 +71,16 @@ def _sampling(
     guidance_rescale: float,
     seed: int = 0,
     start_index: int = 0,
+    batch_size: int = 32,
+    num_classes: int = 1_000,
 ) -> dict:
     return {
         "num_samples": sample_count,
+        "batch_size": batch_size,
         "sample_steps": sample_steps,
         "seed": seed,
         "start_index": start_index,
+        "num_classes": num_classes,
         "class_schedule": "balanced_modulo",
         "guidance_scale": guidance_scale,
         "guidance_rescale": guidance_rescale,
@@ -159,11 +165,15 @@ def _plan() -> dict:
             },
         },
         "diagnostic": {
-            "sample_count_per_case": 512,
+            "sample_count_per_case": 1_000,
             "sample_steps": 100,
             "batch_size": 32,
+            "metrics_batch_size": 64,
+            "metrics_seed": 2027,
             "seed": 0,
             "start_index": 0,
+            "class_count": 1_000,
+            "balanced_modulo_exact_coverage_required": True,
             "class_schedule": "balanced_modulo",
             "cfg_batch_mode": "batched",
             "eta": 0.0,
@@ -309,13 +319,17 @@ def _case_reports(
     fid: float,
 ) -> tuple[dict, dict]:
     method_plan = plan["methods"][method]
+    diagnostic = plan["diagnostic"]
+    sample_count = int(diagnostic["sample_count_per_case"])
     sample_sha256 = _sha(f"{method}-{case['id']}-samples")
     sampling = _sampling(
-        sample_count=512,
-        sample_steps=100,
+        sample_count=sample_count,
+        sample_steps=int(diagnostic["sample_steps"]),
         prefix_budget=int(method_plan["prefix_budget"]),
         guidance_scale=float(case["guidance_scale"]),
         guidance_rescale=float(case["guidance_rescale"]),
+        seed=int(diagnostic["seed"]),
+        start_index=int(diagnostic["start_index"]),
     )
     sampling_report = {
         "schema_version": 6,
@@ -328,7 +342,10 @@ def _case_reports(
         "weights": "ema",
         "sampling": sampling,
         "sample_sets": {
-            str(method_plan["prefix_budget"]): {"count": 512, "sha256": sample_sha256}
+            str(method_plan["prefix_budget"]): {
+                "count": sample_count,
+                "sha256": sample_sha256,
+            }
         },
         "elapsed_seconds": 100.0,
     }
@@ -340,8 +357,18 @@ def _case_reports(
         "git": _git(),
         "implementation": deepcopy(plan["source"]["evaluator"]),
         "runtime_environment_sha256": METRICS_RUNTIME,
-        "parameters": {"precision_recall_enabled": False},
-        "counts": {"generated_image_count": 512, "real_image_count": 50_000},
+        "parameters": {
+            "precision_recall_enabled": False,
+            "batch_size": int(diagnostic["metrics_batch_size"]),
+            "min_samples": sample_count,
+            "seed": int(diagnostic["metrics_seed"]),
+            "samples_find_deep": True,
+            "samples_shuffle": False,
+        },
+        "counts": {
+            "generated_image_count": sample_count,
+            "real_image_count": 50_000,
+        },
         "real_set": {
             **plan["source"]["real_set"],
             "root": "/datasets/imagenet_256/val",
@@ -393,6 +420,12 @@ def test_preflight_accepts_bound_real_set_with_report_metadata(tmp_path: Path) -
     assert report["expected_case_count"] == 10
     assert report["gate_failure_is_exact_absolute_fid_only"] is True
     assert report["formal_reference"]["cofitok"]["fid"] == 138.0
+    assert report["diagnostic_protocol"]["num_samples"] == 1_000
+    assert report["diagnostic_protocol"]["class_count"] == 1_000
+    assert report["diagnostic_protocol"][
+        "balanced_modulo_exact_coverage_required"
+    ] is True
+    assert report["diagnostic_protocol"]["metrics_seed"] == 2027
     assert report["selection_policy"] == recovery.EXPECTED_SELECTION_POLICY
     assert report["claim_boundary"] == recovery.EXPECTED_CLAIM_BOUNDARY
 
@@ -409,12 +442,15 @@ def test_frozen_plan_declares_disjoint_confirmation_stream() -> None:
     recovery.validate_plan(plan)
     evidence = recovery.build_random_stream_independence(plan)
 
+    assert plan["diagnostic"]["sample_count_per_case"] == 1_000
+    assert plan["diagnostic"]["class_count"] == 1_000
+    assert plan["diagnostic"]["balanced_modulo_exact_coverage_required"] is True
     assert evidence["windows"]["selection_diagnostic"][
         "global_index_start_inclusive"
     ] == 0
     assert evidence["windows"]["selection_diagnostic"][
         "global_index_stop_exclusive"
-    ] == 512
+    ] == 1_000
     assert evidence["windows"]["frozen_formal"][
         "global_index_stop_exclusive"
     ] == 10_000
@@ -425,6 +461,22 @@ def test_frozen_plan_declares_disjoint_confirmation_stream() -> None:
         "global_index_stop_exclusive"
     ] == 20_000
     assert all(evidence["checks"].values())
+
+
+def test_diagnostic_window_is_one_exact_pass_over_all_imagenet_classes() -> None:
+    plan = _plan()
+    diagnostic = plan["diagnostic"]
+    labels = generate_samples._labels(
+        int(diagnostic["start_index"]),
+        int(diagnostic["sample_count_per_case"]),
+        int(diagnostic["class_count"]),
+        torch.device("cpu"),
+    )
+
+    assert labels is not None
+    counts = torch.bincount(labels, minlength=int(diagnostic["class_count"]))
+    assert counts.shape == (1_000,)
+    assert counts.tolist() == [1] * 1_000
 
 
 def test_preflight_rejects_gate_sha_or_failed_gate_drift(tmp_path: Path) -> None:
@@ -572,7 +624,7 @@ def test_shared_selection_keeps_formal_baseline_without_joint_improvement(
         (
             "metrics",
             lambda payload: payload["counts"].__setitem__(
-                "generated_image_count", 511
+                "generated_image_count", 999
             ),
             "metrics mismatch",
         ),
@@ -589,6 +641,31 @@ def test_shared_selection_keeps_formal_baseline_without_joint_improvement(
                 "precision_recall_enabled", True
             ),
             "metrics mismatch",
+        ),
+        (
+            "metrics",
+            lambda payload: payload["parameters"].__setitem__("batch_size", 32),
+            "metrics mismatch",
+        ),
+        (
+            "metrics",
+            lambda payload: payload["parameters"].__setitem__("min_samples", 999),
+            "metrics mismatch",
+        ),
+        (
+            "metrics",
+            lambda payload: payload["parameters"].__setitem__("seed", 2028),
+            "metrics mismatch",
+        ),
+        (
+            "sampling",
+            lambda payload: payload["sampling"].__setitem__("batch_size", 64),
+            "sampling protocol mismatch",
+        ),
+        (
+            "sampling",
+            lambda payload: payload["sampling"].__setitem__("num_classes", 999),
+            "sampling protocol mismatch",
         ),
     ],
 )
@@ -648,6 +725,45 @@ def test_plan_rejects_per_method_selection_or_formal_baseline_drift(
     baseline["guidance_rescale"] = 0.25
     with pytest.raises(ValueError, match="shared baseline differs"):
         _build_preflight(fixture)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("sample_count_per_case", 512),
+        ("sample_steps", 50),
+        ("batch_size", 64),
+        ("metrics_batch_size", 32),
+        ("metrics_seed", 2028),
+        ("start_index", 1),
+        ("class_count", 999),
+        ("balanced_modulo_exact_coverage_required", False),
+    ],
+)
+def test_plan_rejects_diagnostic_full_class_coverage_or_protocol_drift(
+    tmp_path: Path,
+    field: str,
+    value: object,
+) -> None:
+    fixture = _fixture(tmp_path)
+    fixture["plan"]["diagnostic"][field] = value
+
+    with pytest.raises(ValueError, match="sampling-recovery diagnostic protocol"):
+        _build_preflight(fixture)
+
+
+def test_build_report_rejects_tampered_diagnostic_preflight(tmp_path: Path) -> None:
+    fixture = _fixture(tmp_path)
+    preflight = _build_preflight(fixture)
+    preflight["diagnostic_protocol"]["num_samples"] = 512
+
+    with pytest.raises(ValueError, match="preflight contract mismatch"):
+        recovery.build_report(
+            preflight=preflight,
+            plan=fixture["plan"],
+            case_root=tmp_path / "unused-cases",
+            diagnostic_git=fixture["diagnostic_git"],
+        )
 
 
 @pytest.mark.parametrize("start_index", [0, 1_000])
@@ -714,8 +830,16 @@ def test_runbook_is_gpu_deferred_frozen_and_non_authorizing() -> None:
     assert source.count("scripts/generate_samples.py") == 1
     assert source.count("scripts/evaluate_generation_metrics.py") == 1
     assert source.count("scripts/build_generation_stability_sampling_recovery.py") == 3
-    assert "--num-samples 512" in source
-    assert "--sample-steps 100" in source
+    assert '--num-samples "$diagnostic_num_samples"' in source
+    assert '--batch-size "$diagnostic_sampling_batch_size"' in source
+    assert '--sample-steps "$diagnostic_sample_steps"' in source
+    assert '--min-samples "$diagnostic_num_samples"' in source
+    assert '--batch-size "$diagnostic_metrics_batch_size"' in source
+    assert '--seed "$diagnostic_metrics_seed"' in source
+    assert '--seed "$diagnostic_seed"' in source
+    assert '--start-index "$diagnostic_start_index"' in source
+    assert '[[ "$diagnostic_num_samples" == 1000 ]]' in source
+    assert "--num-samples 512" not in source
     assert "--weights ema" in source
     assert "--skip-prc" in source
     assert "--resume" in source
@@ -887,7 +1011,7 @@ def test_confirmation_preflight_binds_shared_candidate_and_sources(
     independence = preflight["random_stream_independence"]
     assert independence["windows"]["selection_diagnostic"][
         "global_index_stop_exclusive"
-    ] == 512
+    ] == 1_000
     assert independence["windows"]["frozen_formal"][
         "global_index_stop_exclusive"
     ] == 10_000
@@ -898,6 +1022,10 @@ def test_confirmation_preflight_binds_shared_candidate_and_sources(
         "global_index_stop_exclusive"
     ] == 20_000
     assert all(independence["checks"].values())
+    assert preflight["protocol"]["class_count"] == 1_000
+    assert preflight["protocol"][
+        "balanced_modulo_exact_coverage_required"
+    ] is True
     assert preflight["claim_boundary"] == confirmation.EXPECTED_CLAIM_BOUNDARY
     assert preflight["claim_boundary"]["full_training_launch_allowed"] is False
 
@@ -1129,6 +1257,8 @@ def test_confirmation_runbook_is_shared_formal_size_and_non_authorizing() -> Non
     assert '--prc-batch-size "$confirmation_prc_batch_size"' in source
     assert '--seed "$confirmation_seed"' in source
     assert '--start-index "$confirmation_start_index"' in source
+    assert '[[ "$confirmation_class_count" == 1000 ]]' in source
+    assert '[[ "$confirmation_exact_class_coverage" == true ]]' in source
     assert "--start-index 0" not in source
     assert "--skip-prc" not in source
     assert '[[ "$selected_case" != "cfg150_r000" ]]' in source
@@ -1186,6 +1316,9 @@ def test_sampling_execution_approval_is_exactly_scoped_and_non_authorizing(
     assert verified["authorization_boundary"][allowed_field] is True
     assert verified["authorization_boundary"]["training_launch_allowed"] is False
     assert verified["authorization_boundary"]["full_300k_launch_allowed"] is False
+    if scope == approval.RECOVERY_SCOPE:
+        assert "matched 1000-sample" in verified["approval_record"]["approval_text"]
+        assert "512-sample" not in verified["approval_record"]["approval_text"]
 
     drifted = deepcopy(payload)
     drifted["authorization_boundary"]["full_300k_launch_allowed"] = True
@@ -1197,6 +1330,34 @@ def test_sampling_execution_approval_is_exactly_scoped_and_non_authorizing(
             expected_revision=DIAGNOSTIC_REVISION,
             expected_branch=DIAGNOSTIC_BRANCH,
             expected_output_root=output_root,
+        )
+
+
+def test_sampling_execution_approval_rejects_superseded_512_sample_text() -> None:
+    scope = approval.RECOVERY_SCOPE
+    evidence = {
+        "path": "/evidence/source.json",
+        "bytes": 123,
+        "sha256": "a" * 64,
+    }
+    payload = _approval_payload(
+        scope=scope,
+        evidence=evidence,
+        output_root="/checkpoints/recovery",
+    )
+    payload["approval_record"]["approval_text"] = (
+        "Approve the non-authorizing matched 512-sample sampling-recovery "
+        "diagnostic only."
+    )
+
+    with pytest.raises(ValueError, match="approval text differs"):
+        approval.validate_sampling_execution_approval(
+            payload,
+            evidence_identity=evidence,
+            expected_scope=scope,
+            expected_revision=DIAGNOSTIC_REVISION,
+            expected_branch=DIAGNOSTIC_BRANCH,
+            expected_output_root="/checkpoints/recovery",
         )
 
 

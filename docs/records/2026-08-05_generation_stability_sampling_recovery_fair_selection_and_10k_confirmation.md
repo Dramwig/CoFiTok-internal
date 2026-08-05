@@ -36,7 +36,8 @@ per-method formal protocol selection: forbidden
 automatic formal protocol change: forbidden
 ```
 
-The comparison is entirely within the same 512-sample sweep. It does not
+The comparison is entirely within the same 1,000-sample sweep, with one sample
+for each ImageNet class. It does not
 compare small-sample FID numerically against the frozen 10K FID. If no
 non-baseline case strictly improves both methods, the formal CFG-1.5/rescale-0
 baseline remains selected and no new 10K confirmation is eligible.
@@ -81,8 +82,11 @@ The confirmation preflight requires:
 - a predeclared 10K confirmation with seed `0`, global indices
   `[10000, 20000)`, and ten exact passes over all 1,000 classes;
 - both the global-index interval and the derived-seed interval to be disjoint
-  from the 512-sample selection sweep `[0, 512)` and frozen formal evaluation
+  from the 1,000-sample selection sweep `[0, 1000)` and frozen formal evaluation
   `[0, 10000)`, without modulo-`2^63` wraparound.
+- the sampler to record `num_classes=1000`, and the metrics evaluator to verify
+  the complete declared filename window `010000.png` through `019999.png`
+  rather than silently renumbering the independent stream to zero.
 
 GPU execution additionally requires
 `SAMPLING_CONFIRMATION_EXECUTION_ALLOWED=true` and a separate user-created

@@ -129,6 +129,8 @@ def _validate_recovery_summary(
         or preflight.get("claim_boundary") != recovery.EXPECTED_CLAIM_BOUNDARY
         or preflight.get("expected_case_count") != current_preflight["expected_case_count"]
         or preflight.get("cases") != current_preflight["cases"]
+        or preflight.get("diagnostic_protocol")
+        != current_preflight["diagnostic_protocol"]
         or not _source_matches(preflight.get("plan"), plan_path)
         or not _source_matches(preflight.get("promotion_gate"), promotion_gate_path)
         or not isinstance(sweep, dict)
@@ -297,6 +299,10 @@ def build_preflight(
         "metrics_seed": 2027,
         "seed": int(confirmation_plan["seed"]),
         "start_index": int(confirmation_plan["start_index"]),
+        "class_count": int(confirmation_plan["class_count"]),
+        "balanced_modulo_exact_coverage_required": confirmation_plan[
+            "balanced_modulo_exact_coverage_required"
+        ],
         "class_schedule": plan["diagnostic"]["class_schedule"],
         "guidance_scale": float(selected["selected_protocol"]["guidance_scale"]),
         "guidance_rescale": float(
@@ -372,9 +378,11 @@ def _validate_sampling(
     protocol = preflight["protocol"]
     expected = {
         "num_samples": int(protocol["num_samples"]),
+        "batch_size": int(protocol["sampling_batch_size"]),
         "sample_steps": int(protocol["sample_steps"]),
         "seed": int(protocol["seed"]),
         "start_index": int(protocol["start_index"]),
+        "num_classes": int(protocol["class_count"]),
         "class_schedule": protocol["class_schedule"],
         "guidance_scale": float(protocol["guidance_scale"]),
         "guidance_rescale": float(protocol["guidance_rescale"]),

@@ -203,6 +203,38 @@ fi
 
 require_gpu_idle
 
+read -r \
+  diagnostic_num_samples \
+  diagnostic_sample_steps \
+  diagnostic_sampling_batch_size \
+  diagnostic_metrics_batch_size \
+  diagnostic_metrics_seed \
+  diagnostic_seed \
+  diagnostic_start_index \
+  diagnostic_class_count < <(
+  "$PYTHON" - "$PREFLIGHT" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+protocol = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))[
+    "diagnostic_protocol"
+]
+print(
+    protocol["num_samples"],
+    protocol["sample_steps"],
+    protocol["sampling_batch_size"],
+    protocol["metrics_batch_size"],
+    protocol["metrics_seed"],
+    protocol["seed"],
+    protocol["start_index"],
+    protocol["class_count"],
+)
+PY
+)
+[[ "$diagnostic_num_samples" == 1000 ]]
+[[ "$diagnostic_num_samples" == "$diagnostic_class_count" ]]
+
 mapfile -t CASES < <(
   "$PYTHON" - "$PLAN" <<'PY'
 import json
@@ -232,21 +264,21 @@ for method in cofitok dense_identity; do
 
     if [[ ! -f "$sampling_report" ]]; then
       CURRENT_STAGE="sampling_${method}_${case_id}"
-      write_status running "$CURRENT_STAGE" "generating 512 frozen-checkpoint diagnostic samples"
+      write_status running "$CURRENT_STAGE" "generating ${diagnostic_num_samples} frozen-checkpoint diagnostic samples"
       require_gpu_idle
       "$PYTHON" scripts/generate_samples.py \
         --checkpoint "$checkpoint" \
         --output-dir "$case_dir" \
-        --num-samples 512 \
-        --batch-size 32 \
-        --sample-steps 100 \
+        --num-samples "$diagnostic_num_samples" \
+        --batch-size "$diagnostic_sampling_batch_size" \
+        --sample-steps "$diagnostic_sample_steps" \
         --prefix-budgets "$prefix_budget" \
         --guidance-scale "$guidance_scale" \
         --guidance-rescale "$guidance_rescale" \
         --cfg-batch-mode batched \
         --eta 0.0 \
-        --seed 0 \
-        --start-index 0 \
+        --seed "$diagnostic_seed" \
+        --start-index "$diagnostic_start_index" \
         --weights ema \
         --precision bf16 \
         --resume
@@ -260,9 +292,9 @@ for method in cofitok dense_identity; do
       --generated-dir "$case_dir/prefix_$prefix_budget" \
       --sampling-report "$sampling_report" \
       --output-dir "$case_dir/metrics" \
-      --batch-size 64 \
-      --min-samples 512 \
-      --seed 2027 \
+      --batch-size "$diagnostic_metrics_batch_size" \
+      --min-samples "$diagnostic_num_samples" \
+      --seed "$diagnostic_metrics_seed" \
       --cache-root "$EVAL_CACHE" \
       --real-cache-name imagenet256_val_50k_torch_fidelity_v04 \
       --skip-prc \
@@ -286,6 +318,6 @@ write_status running "$CURRENT_STAGE" "building the bounded matched recovery rep
   --output "$SUMMARY"
 
 CURRENT_STAGE=complete
-write_status pass "$CURRENT_STAGE" "matched 512-sample recovery sweep completed; no training authorization was issued"
+write_status pass "$CURRENT_STAGE" "matched ${diagnostic_num_samples}-sample recovery sweep completed; no training authorization was issued"
 trap - EXIT
 printf 'sampling-recovery diagnostic complete: %s\n' "$SUMMARY"

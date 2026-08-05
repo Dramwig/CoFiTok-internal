@@ -248,6 +248,7 @@ def _run_sampling(args: argparse.Namespace) -> None:
             config.model.image_size,
             config.model.image_size,
         ],
+        "num_classes": config.model.num_classes,
         "class_schedule": "balanced_modulo" if config.model.num_classes > 0 else None,
         "random_stream": {
             "scope": "per_global_sample_index",

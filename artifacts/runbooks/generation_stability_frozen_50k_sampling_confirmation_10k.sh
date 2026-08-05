@@ -234,7 +234,9 @@ read -r \
   confirmation_prc_batch_size \
   confirmation_metrics_seed \
   confirmation_seed \
-  confirmation_start_index < <(
+  confirmation_start_index \
+  confirmation_class_count \
+  confirmation_exact_class_coverage < <(
   "$PYTHON" - "$PREFLIGHT" <<'PY'
 import json
 import sys
@@ -254,11 +256,15 @@ print(
     protocol["metrics_seed"],
     protocol["seed"],
     protocol["start_index"],
+    protocol["class_count"],
+    str(protocol["balanced_modulo_exact_coverage_required"]).lower(),
 )
 PY
 )
 [[ "$selected_case" != "cfg150_r000" ]]
 [[ "$confirmation_num_samples" == 10000 ]]
+[[ "$confirmation_class_count" == 1000 ]]
+[[ "$confirmation_exact_class_coverage" == true ]]
 
 require_gpu_idle
 

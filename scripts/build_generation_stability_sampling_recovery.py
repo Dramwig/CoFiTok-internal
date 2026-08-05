@@ -33,6 +33,25 @@ EXPECTED_SAMPLE_SET_DIGEST = {
     "framing": "filename_utf8_nul_file_bytes_nul",
 }
 RANDOM_SEED_MODULUS = 2**63
+EXPECTED_DIAGNOSTIC_KEYS = {
+    "sample_count_per_case",
+    "sample_steps",
+    "batch_size",
+    "metrics_batch_size",
+    "metrics_seed",
+    "seed",
+    "start_index",
+    "class_count",
+    "balanced_modulo_exact_coverage_required",
+    "class_schedule",
+    "cfg_batch_mode",
+    "eta",
+    "clip_x0",
+    "precision",
+    "weights",
+    "skip_precision_recall",
+    "cases",
+}
 EXPECTED_CONFIRMATION_KEYS = {
     "sample_count",
     "seed",
@@ -241,6 +260,30 @@ def build_random_stream_independence(plan: dict[str, Any]) -> dict[str, Any]:
     return validate_random_stream_independence(evidence)
 
 
+def _diagnostic_protocol(plan: dict[str, Any]) -> dict[str, Any]:
+    diagnostic = plan["diagnostic"]
+    return {
+        "num_samples": int(diagnostic["sample_count_per_case"]),
+        "sample_steps": int(diagnostic["sample_steps"]),
+        "sampling_batch_size": int(diagnostic["batch_size"]),
+        "metrics_batch_size": int(diagnostic["metrics_batch_size"]),
+        "metrics_seed": int(diagnostic["metrics_seed"]),
+        "seed": int(diagnostic["seed"]),
+        "start_index": int(diagnostic["start_index"]),
+        "class_count": int(diagnostic["class_count"]),
+        "balanced_modulo_exact_coverage_required": diagnostic[
+            "balanced_modulo_exact_coverage_required"
+        ],
+        "class_schedule": diagnostic["class_schedule"],
+        "cfg_batch_mode": diagnostic["cfg_batch_mode"],
+        "eta": float(diagnostic["eta"]),
+        "clip_x0": diagnostic["clip_x0"],
+        "precision": diagnostic["precision"],
+        "weights": diagnostic["weights"],
+        "precision_recall_enabled": not diagnostic["skip_precision_recall"],
+    }
+
+
 def _read_object(path: Path) -> dict[str, Any]:
     with path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
@@ -371,12 +414,47 @@ def validate_plan(plan: dict[str, Any]) -> dict[str, Any]:
         or evaluator != {"package": "torch_fidelity", "version": "0.4.0"}
     ):
         raise ValueError("sampling-recovery source provenance is invalid")
+    if set(diagnostic) != EXPECTED_DIAGNOSTIC_KEYS:
+        raise ValueError("sampling-recovery diagnostic protocol fields are invalid")
+    diagnostic_count = _exact_nonnegative_int(
+        diagnostic.get("sample_count_per_case"),
+        label="diagnostic sample_count_per_case",
+    )
+    diagnostic_steps = _exact_nonnegative_int(
+        diagnostic.get("sample_steps"), label="diagnostic sample_steps"
+    )
+    diagnostic_batch = _exact_nonnegative_int(
+        diagnostic.get("batch_size"), label="diagnostic batch_size"
+    )
+    diagnostic_metrics_batch = _exact_nonnegative_int(
+        diagnostic.get("metrics_batch_size"),
+        label="diagnostic metrics_batch_size",
+    )
+    diagnostic_metrics_seed = _exact_nonnegative_int(
+        diagnostic.get("metrics_seed"), label="diagnostic metrics_seed"
+    )
+    diagnostic_seed = _exact_nonnegative_int(
+        diagnostic.get("seed"), label="diagnostic seed"
+    )
+    diagnostic_start = _exact_nonnegative_int(
+        diagnostic.get("start_index"), label="diagnostic start_index"
+    )
+    diagnostic_class_count = _exact_nonnegative_int(
+        diagnostic.get("class_count"), label="diagnostic class_count"
+    )
     cases = diagnostic.get("cases")
     if (
-        int(diagnostic.get("sample_count_per_case", -1)) < 1
-        or int(diagnostic.get("sample_count_per_case", -1)) >= 10_000
-        or int(diagnostic.get("sample_steps", -1)) < 1
-        or int(diagnostic.get("batch_size", -1)) < 1
+        diagnostic_count != 1_000
+        or diagnostic_steps != 100
+        or diagnostic_batch != 32
+        or diagnostic_metrics_batch != 64
+        or diagnostic_metrics_seed != 2027
+        or diagnostic_seed != 0
+        or diagnostic_start != 0
+        or diagnostic_class_count != 1_000
+        or diagnostic_count != diagnostic_class_count
+        or diagnostic_start % diagnostic_class_count != 0
+        or diagnostic.get("balanced_modulo_exact_coverage_required") is not True
         or diagnostic.get("class_schedule") != "balanced_modulo"
         or diagnostic.get("cfg_batch_mode") != "batched"
         or diagnostic.get("eta") != 0.0
@@ -484,9 +562,11 @@ def _validate_sampling(
     diagnostic = plan["diagnostic"]
     expected = {
         "num_samples": sample_count,
+        "batch_size": int(diagnostic["batch_size"]),
         "sample_steps": int(diagnostic["sample_steps"]),
         "seed": int(diagnostic["seed"]),
         "start_index": int(diagnostic["start_index"]),
+        "num_classes": int(diagnostic["class_count"]),
         "class_schedule": diagnostic["class_schedule"],
         "guidance_scale": float(guidance_scale),
         "guidance_rescale": float(guidance_rescale),
@@ -658,6 +738,7 @@ def build_preflight(
         "formal_reference": formal,
         "expected_case_count": len(cases) * len(METHODS),
         "cases": cases,
+        "diagnostic_protocol": _diagnostic_protocol(plan),
         "selection_policy": plan["selection_policy"],
         "claim_boundary": plan["claim_boundary"],
     }
@@ -726,6 +807,13 @@ def _validate_case(
         )
         or not isinstance(parameters, dict)
         or parameters.get("precision_recall_enabled") is not False
+        or int(parameters.get("batch_size", -1))
+        != int(diagnostic["metrics_batch_size"])
+        or int(parameters.get("min_samples", -1))
+        != int(diagnostic["sample_count_per_case"])
+        or int(parameters.get("seed", -1)) != int(diagnostic["metrics_seed"])
+        or parameters.get("samples_find_deep") is not True
+        or parameters.get("samples_shuffle") is not False
         or not isinstance(counts, dict)
         or int(counts.get("generated_image_count", -1))
         != int(diagnostic["sample_count_per_case"])
@@ -790,6 +878,31 @@ def build_report(
     case_root: Path,
     diagnostic_git: dict[str, Any],
 ) -> dict[str, Any]:
+    validate_plan(plan)
+    expected_cases = [
+        {
+            "id": case["id"],
+            "guidance_scale": float(case["guidance_scale"]),
+            "guidance_rescale": float(case["guidance_rescale"]),
+            "formal_protocol_baseline": (
+                case["id"] == plan["selection_policy"]["baseline_case_id"]
+            ),
+        }
+        for case in plan["diagnostic"]["cases"]
+    ]
+    if (
+        preflight.get("schema_version") != 1
+        or preflight.get("status") != "pass"
+        or preflight.get("role") != "sampling_recovery_preflight"
+        or preflight.get("diagnostic_git") != diagnostic_git
+        or preflight.get("expected_case_count")
+        != len(expected_cases) * len(METHODS)
+        or preflight.get("cases") != expected_cases
+        or preflight.get("diagnostic_protocol") != _diagnostic_protocol(plan)
+        or preflight.get("selection_policy") != EXPECTED_SELECTION_POLICY
+        or preflight.get("claim_boundary") != EXPECTED_CLAIM_BOUNDARY
+    ):
+        raise ValueError("sampling-recovery preflight contract mismatch")
     rows = [
         _validate_case(
             plan=plan,
@@ -913,7 +1026,10 @@ def build_report(
             "matched_10000_confirmation_required_before_any_protocol_change": True,
         },
         "limitations": [
-            "The 512-sample FID and Inception scores are noisy configuration-selection diagnostics.",
+            (
+                f"The {plan['diagnostic']['sample_count_per_case']}-sample FID "
+                "and Inception scores are noisy configuration-selection diagnostics."
+            ),
             "Rows are comparable only within this exact matched sweep and sample count.",
             "Per-method rankings are exploratory and cannot select different formal protocols.",
             "No row replaces the frozen 10K gate or authorizes full 300K training.",

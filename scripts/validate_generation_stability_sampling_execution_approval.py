@@ -20,7 +20,7 @@ CONFIRMATION_SCOPE = (
 SCOPE_CONTRACTS = {
     RECOVERY_SCOPE: {
         "approval_text": (
-            "Approve the non-authorizing matched 512-sample sampling-recovery "
+            "Approve the non-authorizing matched 1000-sample sampling-recovery "
             "diagnostic only."
         ),
         "authorization_boundary": {

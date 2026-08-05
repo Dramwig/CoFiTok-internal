@@ -34,7 +34,8 @@ configs/generation/diagnostics/stability_50k_sampling_recovery_v1.json
 It fixes an equal CoFiTok/dense sweep with:
 
 - frozen step-50K EMA checkpoints;
-- 512 images per method and case;
+- 1,000 images per method and case, with exactly one image for every ImageNet
+  class;
 - DDIM-100;
 - seed `0`, start index `0`, and balanced-modulo class labels;
 - per-global-sample-index, batch-size-invariant random streams;
@@ -145,7 +146,7 @@ revision, `SAMPLING_RECOVERY_EXECUTION_ALLOWED=true`, and a user-created
 execution-approval sentinel whose bytes/SHA256 bind the exact plan, Git
 identity, output root, approval time/text, and permanently non-authorizing
 scope. The runbook validates that sentinel before creating its output root or
-acquiring the GPU-stage lock. A completed 512-sample sweep is
+acquiring the GPU-stage lock. A completed 1,000-sample sweep is
 only a protocol-selection diagnostic. Any selected change must be rerun as a
 fresh matched 10K evaluation in a separate output root before it can support a
 new gate. That confirmation must use the predeclared disjoint global-index and
@@ -175,7 +176,7 @@ these top-level fields (placeholders are descriptive and are not an approval):
   "approval_record": {
     "approved_by": "user",
     "approved_at": "<ISO-8601 timestamp with timezone>",
-    "approval_text": "Approve the non-authorizing matched 512-sample sampling-recovery diagnostic only."
+    "approval_text": "Approve the non-authorizing matched 1000-sample sampling-recovery diagnostic only."
   },
   "authorization_boundary": {
     "sampling_recovery_execution_allowed": true,

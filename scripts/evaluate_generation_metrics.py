@@ -220,18 +220,28 @@ def validate_sampling_provenance(
         raise ValueError(
             "Sampling protocol is invalid: " + ", ".join(protocol_contract["issues"])
         )
-    if int(sampling["start_index"]) != 0:
-        raise ValueError("Formal generation metrics require a sample set starting at index zero")
+    start_index = sampling.get("start_index")
+    if (
+        isinstance(start_index, bool)
+        or not isinstance(start_index, int)
+        or start_index < 0
+    ):
+        raise ValueError("Sampling start_index must be a nonnegative integer")
     expected_count = int(sampling["num_samples"])
     if len(generated_images) != expected_count:
         raise ValueError(
             f"generated image count {len(generated_images)} does not match sampling report "
             f"count {expected_count}"
         )
-    expected_names = {f"{index:06d}.png" for index in range(expected_count)}
+    expected_names = {
+        f"{index:06d}.png"
+        for index in range(start_index, start_index + expected_count)
+    }
     actual_names = {path.name for path in generated_images}
     if actual_names != expected_names:
-        raise ValueError("Generated sample filenames are not the complete zero-based numbered set")
+        raise ValueError(
+            "Generated sample filenames are not the complete declared global-index window"
+        )
     image_shape = sampling.get("image_shape")
     if not isinstance(image_shape, list) or len(image_shape) != 3:
         raise ValueError("Sampling report is missing a [C, H, W] image_shape")
