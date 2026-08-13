@@ -38,6 +38,7 @@ RUNBOOKS = (
     "generation_stability_full_data_quality_bridge_100k_prepare.sh",
     "generation_stability_full_data_quality_bridge_100k_execute.sh",
     "generation_quality_bridge_followup_decision_after_result.sh",
+    "generation_quality_bridge_preserve_10k_capacity_references.sh",
     "generation_stability_ema_teacher_full_readiness_after_gate.sh",
     "generation_stability_ema_teacher_full_readiness_bridge.sh",
     "generation_stability_ema_teacher_full_readiness_waiter.sh",
@@ -113,6 +114,7 @@ ENTRYPOINTS = {
     "verify_generation_quality_bridge_result.py",
     "verify_generation_quality_bridge_followup_decision.py",
     "verify_generation_stability_frozen_supplemental.py",
+    "wait_for_generation_checkpoint_references.py",
     "write_generation_pipeline_status.py",
     "write_generation_deployment_receipt.py",
 }
