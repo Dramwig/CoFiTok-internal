@@ -29,6 +29,7 @@ RUNBOOKS = (
     "generation_stability_frozen_50k_supplemental_waiter.sh",
     "generation_stability_frozen_50k_supplemental_after_posteval.sh",
     "generation_stability_frozen_50k_class_fidelity_after_supplemental.sh",
+    "generation_quality_bridge_followup_decision_after_result.sh",
     "generation_stability_ema_teacher_full_readiness_after_gate.sh",
     "generation_stability_ema_teacher_full_readiness_bridge.sh",
     "generation_stability_ema_teacher_full_readiness_waiter.sh",
@@ -53,6 +54,7 @@ ENTRYPOINTS = {
     "build_generation_stability_50k_summary.py",
     "build_generation_stability_distribution_support.py",
     "build_generation_stability_frozen_supplemental.py",
+    "build_generation_quality_bridge_followup_decision.py",
     "build_generation_stability_qualification.py",
     "build_generation_visual_audit.py",
     "build_large_scale_generation_comparison.py",
@@ -89,12 +91,11 @@ ENTRYPOINTS = {
     "validate_generation_training_completion.py",
     "validate_generation_training_pair.py",
     "verify_generation_stability_frozen_class_fidelity.py",
+    "verify_generation_quality_bridge_followup_decision.py",
     "verify_generation_stability_frozen_supplemental.py",
     "write_generation_pipeline_status.py",
     "write_generation_deployment_receipt.py",
 }
-
-
 def _run_help(script: str) -> str:
     original_argv = sys.argv
     stdout = io.StringIO()
