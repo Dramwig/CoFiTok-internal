@@ -37,6 +37,7 @@ RUNBOOKS = (
     "generation_stability_frozen_50k_convergence_audit.sh",
     "generation_stability_full_data_quality_bridge_100k_prepare.sh",
     "generation_stability_full_data_quality_bridge_100k_execute.sh",
+    "generation_quality_bridge_followup_decision_after_result.sh",
     "generation_stability_ema_teacher_full_readiness_after_gate.sh",
     "generation_stability_ema_teacher_full_readiness_bridge.sh",
     "generation_stability_ema_teacher_full_readiness_waiter.sh",
@@ -68,6 +69,7 @@ ENTRYPOINTS = {
     "build_generation_quality_bridge_preparation.py",
     "build_generation_quality_bridge_launch_receipt.py",
     "build_generation_quality_bridge_result.py",
+    "build_generation_quality_bridge_followup_decision.py",
     "build_generation_stability_qualification.py",
     "build_generation_visual_audit.py",
     "build_large_scale_generation_comparison.py",
@@ -109,6 +111,7 @@ ENTRYPOINTS = {
     "validate_generation_training_pair.py",
     "verify_generation_stability_frozen_class_fidelity.py",
     "verify_generation_quality_bridge_result.py",
+    "verify_generation_quality_bridge_followup_decision.py",
     "verify_generation_stability_frozen_supplemental.py",
     "write_generation_pipeline_status.py",
     "write_generation_deployment_receipt.py",
@@ -121,6 +124,8 @@ QUALITY_BRIDGE_DIRECT_ENTRYPOINTS = (
     "validate_generation_quality_bridge_launch_receipt.py",
     "build_generation_quality_bridge_result.py",
     "verify_generation_quality_bridge_result.py",
+    "build_generation_quality_bridge_followup_decision.py",
+    "verify_generation_quality_bridge_followup_decision.py",
 )
 
 
