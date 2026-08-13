@@ -13,6 +13,7 @@ RECIPE_STAGES = {
     "full",
     "stability_scaling",
     "stability_quality_bridge",
+    "stability_capacity_probe",
     "stability_full",
 }
 ALLOWED_RUNTIME_BATCHES = {
@@ -73,17 +74,32 @@ def infer_generation_training_stage(
     if identities == {("imagenet_256", 300_000)}:
         return "stability_full" if stability_recipe else "full"
     if identities == {("imagenet_256", 100_000)} and stability_recipe:
-        return "stability_quality_bridge"
+        base_channels = {
+            int(config.get("model", {}).get("base_channels", -1))
+            for config in (cofitok_config, dense_config)
+        }
+        if base_channels == {128}:
+            return "stability_quality_bridge"
+        if base_channels == {256}:
+            return "stability_capacity_probe"
+        raise ValueError(
+            "cannot infer full-data 100K stability stage from base channels: "
+            f"{sorted(base_channels)}"
+        )
     raise ValueError(f"cannot infer formal generation training stage: {sorted(identities)}")
 
 
 def _expected_shared(stage: str) -> dict[str, Any]:
     full = stage in {"full", "stability_full"}
-    quality_bridge = stage == "stability_quality_bridge"
+    quality_bridge = stage in {
+        "stability_quality_bridge",
+        "stability_capacity_probe",
+    }
     full_data = full or quality_bridge
     stability = stage in {
         "stability_scaling",
         "stability_quality_bridge",
+        "stability_capacity_probe",
         "stability_full",
     }
     if full:
@@ -95,7 +111,11 @@ def _expected_shared(stage: str) -> dict[str, Any]:
     elif quality_bridge:
         runtime_steps = 100_000
         evaluation_interval = 1_000
-        protected_checkpoint_steps = [50_000, 100_000]
+        protected_checkpoint_steps = (
+            [10_000]
+            if stage == "stability_capacity_probe"
+            else [50_000, 100_000]
+        )
         min_learning_rate = 1e-5
         warmup_steps = 1_000
     else:
@@ -115,7 +135,11 @@ def _expected_shared(stage: str) -> dict[str, Any]:
         "diffusion.prediction_target": "epsilon",
         "model.image_channels": 3,
         "model.image_size": 256,
-        "model.base_channels": 256 if stage == "stability_full" else 128,
+        "model.base_channels": (
+            256
+            if stage in {"stability_full", "stability_capacity_probe"}
+            else 128
+        ),
         "model.predictor_type": "scalable_unet",
         "model.predictor_channel_multipliers": [1, 2, 3, 4],
         "model.predictor_num_res_blocks": 2,
@@ -180,6 +204,7 @@ def _expected_method(method: str, stage: str) -> dict[str, Any]:
         if stage in {
             "stability_scaling",
             "stability_quality_bridge",
+            "stability_capacity_probe",
             "stability_full",
         }:
             return {
@@ -307,6 +332,7 @@ def generation_training_recipe_contract(
     stability = stage in {
         "stability_scaling",
         "stability_quality_bridge",
+        "stability_capacity_probe",
         "stability_full",
     }
     shared_stability_losses = (
