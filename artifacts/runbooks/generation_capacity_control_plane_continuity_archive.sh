@@ -6,9 +6,9 @@ EXPECTED_REVISION=${EXPECTED_REVISION:?set EXPECTED_REVISION}
 EXPECTED_TREE=${EXPECTED_TREE:?set EXPECTED_TREE}
 EXPECTED_BRANCH=${EXPECTED_BRANCH:?set EXPECTED_BRANCH}
 PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
-OUTPUT_ROOT=${OUTPUT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_v2}
-PLAN="$PROJECT/configs/generation/diagnostics/capacity_generation_control_plane_continuity_v2.json"
-PLAN_SHA256=c523e27db322daaf6db392f6645915ad076226f65858707743614623884f54be
+OUTPUT_ROOT=${OUTPUT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_v3}
+PLAN="$PROJECT/configs/generation/diagnostics/capacity_generation_control_plane_continuity_v3.json"
+PLAN_SHA256=2f0ae8faa79265c8be85128637186482b2db7e2043f860af2fc314b869164985
 LOCK="$OUTPUT_ROOT.lock"
 
 [[ "$(sha256sum "$PLAN" | awk '{print $1}')" == "$PLAN_SHA256" ]]

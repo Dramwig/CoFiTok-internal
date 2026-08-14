@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PRODUCTION_PLAN = (
     ROOT
     / "configs/generation/diagnostics/"
-    "capacity_generation_control_plane_continuity_v2.json"
+    "capacity_generation_control_plane_continuity_v3.json"
 )
 
 
@@ -152,7 +152,7 @@ def _build(tmp_path: Path) -> tuple[dict, dict]:
     return fixture, result
 
 
-def test_production_continuity_plan_binds_the_three_vulnerable_checkouts() -> None:
+def test_production_continuity_plan_binds_every_tmp_checkout() -> None:
     plan = load_continuity_plan(PRODUCTION_PLAN)
     assert [row["name"] for row in plan["bundles"]] == [
         "quality_bridge_followup_decision",
@@ -168,6 +168,20 @@ def test_production_continuity_plan_binds_the_three_vulnerable_checkouts() -> No
         "quality_bridge_recovery_supervisor",
         "quality_bridge_idle_waiter",
         "quality_bridge_followup_waiter",
+    }
+    assert {row["name"] for row in plan["checkouts"]} == {
+        "quality_bridge_execution",
+        "quality_bridge_followup_decision",
+        "capacity_probe_reference",
+        "capacity_probe_preparation",
+    }
+    assert {
+        row["restore_relative_path"] for row in plan["checkouts"]
+    } == {
+        "cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+        "cofitok-quality-bridge-followup-decision-9b02fa8",
+        "cofitok-capacity-reference-c7424ed",
+        "cofitok-capacity-probe-22a5994",
     }
     assert plan["authorization_boundary"] == AUTHORIZATION_BOUNDARY
 

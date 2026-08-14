@@ -9,7 +9,7 @@ from cofitok.generation_control_continuity import build_continuity_archive
 
 DEFAULT_PLAN = Path(
     "configs/generation/diagnostics/"
-    "capacity_generation_control_plane_continuity_v2.json"
+    "capacity_generation_control_plane_continuity_v3.json"
 )
 
 
