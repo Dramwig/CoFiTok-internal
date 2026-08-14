@@ -1155,3 +1155,26 @@ launch the 300K queue. Details and frozen source values are in
 `docs/records/2026-08-05_generation_full_data_quality_bridge_100k_preparation.md`;
 the source-bound Linux rehearsal receipt is
 `artifacts/reports/generation/stability_full_data_quality_bridge_100k_linux_rehearsal_2026-08-05/rehearsal_summary.json`.
+
+The active bridge-to-capacity chain also has a static control-plane continuity
+archive. It persists four exact Git bundles for the three live checkouts under
+`/tmp`—including the capacity-reference prerequisite bundle—plus the bounded
+approval, standing-authorization, recovery supervisor, idle-waiter, and
+follow-up-waiter bytes that are not recoverable from a Git checkout alone.
+Every source has a predeclared byte count and SHA256;
+Git bundles must advertise exactly one declared ref. The sole complete-history
+bundle is restored first, followed by the declared prerequisite-bearing
+incremental bundles, and every resulting revision/tree/branch is rechecked.
+Verification constructs a temporary bare repository and fetches every bundle in
+declared order, so an omitted prerequisite fails before a restore is accepted.
+
+Archive creation reads and copies only static files. Verification rehashes the
+manifest, exact payload membership, file modes, bundle heads, and every payload
+byte. The restore command writes only to the three declared absent path groups
+under an explicitly supplied destination root, uses a new private bare object
+store, and refuses any pre-existing bounded target. It never launches training,
+sampling, evaluation, or a waiter; it never queries or allocates a GPU, signals
+a process, modifies the active source directories, or changes the formal
+checkout. A successful restore is therefore reconstruction evidence, not
+execution authorization. See
+`docs/records/2026-08-15_generation_capacity_control_plane_continuity.md`.
