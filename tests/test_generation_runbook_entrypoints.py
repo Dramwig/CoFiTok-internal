@@ -51,6 +51,8 @@ RUNBOOKS = (
     "generation_capacity_full_300k_readiness_decision_waiter.sh",
     "generation_capacity_full_300k_readiness_after_decision.sh",
     "generation_capacity_full_300k_readiness_supervisor.sh",
+    "generation_capacity_full_300k_execute.sh",
+    "generation_capacity_full_300k_training_supervisor.sh",
     "generation_stability_ema_teacher_full_readiness_after_gate.sh",
     "generation_stability_ema_teacher_full_readiness_bridge.sh",
     "generation_stability_ema_teacher_full_readiness_waiter.sh",
@@ -116,6 +118,8 @@ ENTRYPOINTS = {
     "build_generation_capacity_full_300k_readiness.py",
     "verify_generation_capacity_full_300k_readiness.py",
     "run_generation_capacity_full_300k_readiness_supervisor.py",
+    "verify_generation_capacity_full_300k_training_launch_receipt.py",
+    "run_generation_capacity_full_300k_training_supervisor.py",
     "build_generation_capacity_scaling_launch_receipt.py",
     "archive_generation_capacity_completion_sources.py",
     "restore_generation_capacity_completion_sources.py",
@@ -209,6 +213,9 @@ QUALITY_BRIDGE_DIRECT_ENTRYPOINTS = (
     "build_generation_capacity_full_300k_readiness.py",
     "verify_generation_capacity_full_300k_readiness.py",
     "run_generation_capacity_full_300k_readiness_supervisor.py",
+    "build_generation_capacity_full_300k_training_launch_receipt.py",
+    "verify_generation_capacity_full_300k_training_launch_receipt.py",
+    "run_generation_capacity_full_300k_training_supervisor.py",
 )
 
 

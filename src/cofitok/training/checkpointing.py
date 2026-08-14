@@ -18,6 +18,7 @@ from cofitok.environment import (
 )
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training.authorization import (
+    SUPPORTED_GENERATION_TRAINING_AUTHORIZATION_IDENTITIES,
     validate_checkpoint_training_authorization,
     validate_generation_training_authorization,
 )
@@ -123,8 +124,11 @@ def verify_training_checkpoint(path: str | Path) -> dict[str, Any]:
     if present_authorization_keys and present_authorization_keys != authorization_keys:
         raise ValueError("Checkpoint training-authorization metadata is incomplete")
     if present_authorization_keys and (
-        integrity["authorization_stage"] != "scaling"
-        or integrity["authorization_decision"] != "promote_to_full_imagenet256"
+        (
+            integrity["authorization_stage"],
+            integrity["authorization_decision"],
+        )
+        not in SUPPORTED_GENERATION_TRAINING_AUTHORIZATION_IDENTITIES
         or int(integrity["authorization_gate_bytes"]) < 1
         or len(str(integrity["authorization_gate_sha256"])) != 64
         or len(str(integrity["authorization_gate_identity_sha256"])) != 64
