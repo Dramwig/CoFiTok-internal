@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "role": "non_authorizing_matched_10000_class_fidelity_diagnostic_summary",
+  "status": "completed",
+  "question": "Does the matched 10K confirmation exhibit requested-class alignment despite its very low distribution recall?",
+  "claim_boundary": {
+    "diagnostic_non_authorizing": true,
+    "sampling_was_reused_not_repeated": true,
+    "replaces_sampling_confirmation": false,
+    "replaces_frozen_promotion_gate": false,
+    "formal_class_fidelity_qualification": false,
+    "standalone_generation_quality_claim_allowed": false,
+    "training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "promotion_or_release_allowed": false
+  },
+  "evaluator": {
+    "git": {
+      "revision": "7b0149632afd16e1e9122241451654ec0d9b60a7",
+      "tree": "edac801b0f47924b18c6b5d5d7016f6ce2110481",
+      "branch": "scale/generation-sample-diversity-diagnostic-v1",
+      "tracked_dirty": false
+    },
+    "classifier": {
+      "name": "torchvision_resnet50_imagenet1k_v2",
+      "weights_bytes": 102540417,
+      "weights_sha256": "11ad3fa62ca79e40addfd354a8ec4b7c75143b3038b8d2a807fbc68deab379ca",
+      "categories_sha256": "62fff941ecff3f19de9128c6ca9c2097807c6b7bafc5552d7589a219431221ed"
+    },
+    "runtime": {
+      "device": "cpu",
+      "batch_size": 64,
+      "num_workers_per_method": 4,
+      "omp_threads_per_method": 4,
+      "nice": 19,
+      "torch_version": "2.7.1+cu128",
+      "torchvision_version": "0.22.1+cu128"
+    }
+  },
+  "sampling": {
+    "num_samples_per_method": 10000,
+    "start_index": 10000,
+    "global_index_stop_exclusive": 20000,
+    "class_count": 1000,
+    "class_schedule": "balanced_modulo",
+    "samples_per_requested_class": 10,
+    "sampler": "ddim",
+    "sample_steps": 100,
+    "guidance_scale": 1.5,
+    "guidance_rescale": 1.0,
+    "precision": "bf16",
+    "formal_scaling_protocol": false
+  },
+  "sources": {
+    "confirmation": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/confirmation_report.json",
+      "bytes": 13003,
+      "sha256": "bf25ae5efa0c4e478568d9ee27f9cdc09aec02a7cac9313993dd2420f75e4032"
+    },
+    "sample_diversity": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/diagnostics/sample_diversity_v1/report.json",
+      "bytes": 1116048,
+      "sha256": "e1ad08e6abb56d9c844836746230c7a95224408b2719166a4b36f6989dcb9245"
+    },
+    "cofitok_class_fidelity": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/diagnostics/class_fidelity_v2/cofitok/class_fidelity_report.json",
+      "bytes": 13692,
+      "sha256": "0e66acffa007e570e4b83c7f3c59b81e4954d82d6351276c521d9e6ba6d7a68a"
+    },
+    "dense_identity_class_fidelity": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/diagnostics/class_fidelity_v2/dense_identity/class_fidelity_report.json",
+      "bytes": 13730,
+      "sha256": "ff9e1ad079f8378defe686a5f92ca712379ea866df818b1020ced88cfc0a6d14"
+    }
+  },
+  "replay_validation": {
+    "status": "pass",
+    "method": "original evaluator invoked with identical parameters and --resume for both methods",
+    "revalidated": [
+      "complete global-index PNG window",
+      "PNG dimensions and integrity",
+      "sample-set SHA256",
+      "sampling manifest and progress",
+      "checkpoint and sampling Git provenance",
+      "classifier identity",
+      "evaluator Git and runtime identity",
+      "completed report contract"
+    ]
+  },
+  "reference": {
+    "independent_1000_class_top1": 0.001,
+    "independent_1000_class_top5": 0.005,
+    "eventual_scaling_floor_top1": 0.01,
+    "eventual_scaling_floor_top5": 0.05,
+    "scaling_floors_are_diagnostic_references_only": true
+  },
+  "metrics": {
+    "cofitok": {
+      "sample_count": 10000,
+      "top1_accuracy": 0.0018,
+      "top5_accuracy": 0.0091,
+      "mean_target_probability": 0.0012625291462987662,
+      "target_negative_log_likelihood": 7.430651802062989,
+      "predicted_class_count": 628,
+      "predicted_class_fraction": 0.628,
+      "normalized_predicted_class_entropy": 0.7331888414383371,
+      "top1_to_independent_chance_ratio": 1.8,
+      "top5_to_independent_chance_ratio": 1.82,
+      "fid": 138.99172622210307,
+      "precision": 0.7439000010490417,
+      "recall": 0.0075599998235702515,
+      "pixel_unique_count": 10000
+    },
+    "dense_identity": {
+      "sample_count": 10000,
+      "top1_accuracy": 0.0011,
+      "top5_accuracy": 0.0068,
+      "mean_target_probability": 0.0012356691921129822,
+      "target_negative_log_likelihood": 7.483716368103027,
+      "predicted_class_count": 635,
+      "predicted_class_fraction": 0.635,
+      "normalized_predicted_class_entropy": 0.7091502672047202,
+      "top1_to_independent_chance_ratio": 1.1,
+      "top5_to_independent_chance_ratio": 1.36,
+      "fid": 150.56599682692638,
+      "precision": 0.7789999842643738,
+      "recall": 0.007519999984651804,
+      "pixel_unique_count": 10000
+    },
+    "cofitok_minus_dense_identity": {
+      "top1_accuracy": 0.0007,
+      "top5_accuracy": 0.0023,
+      "mean_target_probability": 0.000026859954185783942,
+      "target_negative_log_likelihood": -0.05306456604003884,
+      "predicted_class_count": -7,
+      "predicted_class_fraction": -0.007,
+      "normalized_predicted_class_entropy": 0.024038574233616883,
+      "fid": -11.574270604823312,
+      "precision": -0.03509998321533203,
+      "recall": 0.000039999838918447495
+    }
+  },
+  "interpretation": {
+    "literal_duplicate_collapse_observed": false,
+    "broad_predicted_class_support_observed": true,
+    "requested_class_alignment_established": false,
+    "single_causal_mechanism_established": false,
+    "decision": "requested_class_alignment_near_chance",
+    "next_experiment": "matched full-data base128 100K quality bridge with formal start-index-zero terminal class-fidelity evaluation",
+    "notes": [
+      "Broad predicted-class coverage and entropy rule out collapse to only a handful of classifier labels.",
+      "Near-chance requested-label accuracy shows that the current generated content does not reliably express its requested ImageNet class.",
+      "The fixed classifier can also fail on low-quality or off-manifold images, so these numbers alone cannot distinguish ignored conditioning from insufficient image fidelity.",
+      "No additional CFG-only sweep is justified by this diagnostic."
+    ]
+  }
+}
+
