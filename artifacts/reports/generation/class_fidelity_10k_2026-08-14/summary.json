@@ -9,6 +9,7 @@
     "replaces_sampling_confirmation": false,
     "replaces_frozen_promotion_gate": false,
     "formal_class_fidelity_qualification": false,
+    "real_validation_classifier_calibration_non_authorizing": true,
     "standalone_generation_quality_claim_allowed": false,
     "training_launch_allowed": false,
     "full_300k_launch_allowed": false,
@@ -71,6 +72,11 @@
       "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/diagnostics/class_fidelity_v2/dense_identity/class_fidelity_report.json",
       "bytes": 13730,
       "sha256": "ff9e1ad079f8378defe686a5f92ca712379ea866df818b1020ced88cfc0a6d14"
+    },
+    "real_validation_classifier_calibration": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/diagnostics/class_fidelity_v2/real_validation_calibration_1perclass.json",
+      "bytes": 5861,
+      "sha256": "a4c68b9b1c4dffda89f622887455f46d554fdb0c306d467fecb51d8f5abe6132"
     }
   },
   "replay_validation": {
@@ -86,6 +92,19 @@
       "evaluator Git and runtime identity",
       "completed report contract"
     ]
+  },
+  "classifier_calibration_replay_validation": {
+    "status": "pass",
+    "method": "source-bound real-validation calibration invoked with identical parameters and --resume",
+    "git": {
+      "revision": "b9a34542b905e5b2d6a4cb241dae2f46cac785c7",
+      "tree": "66595fa27f3ab977b9a3c4ffe2d3be5ebf754022",
+      "branch": "scale/generation-classifier-calibration-v1",
+      "tracked_dirty": false
+    },
+    "selection_scheme": "lexicographic_first_n_per_wnid_v1",
+    "selected_sample_set_sha256": "459245ae24230f7d8b409355988d90101a5ed7d8e50d7be707235114c6f7b441",
+    "runtime_environment_sha256": "f3b0a88c4565fbccf7324553939997c4fdf83d9ccc187a9194472cda73fe1dd1"
   },
   "reference": {
     "independent_1000_class_top1": 0.001,
@@ -127,6 +146,18 @@
       "recall": 0.007519999984651804,
       "pixel_unique_count": 10000
     },
+    "real_validation_classifier_calibration": {
+      "sample_count": 1000,
+      "samples_per_class": 1,
+      "top1_accuracy": 0.777,
+      "top5_accuracy": 0.941,
+      "mean_target_probability": 0.33423844242095946,
+      "target_negative_log_likelihood": 1.550846450805664,
+      "predicted_class_count": 828,
+      "predicted_class_fraction": 0.828,
+      "normalized_predicted_class_entropy": 0.963467180340743,
+      "calibration_status": "pass"
+    },
     "cofitok_minus_dense_identity": {
       "top1_accuracy": 0.0007,
       "top5_accuracy": 0.0023,
@@ -143,16 +174,18 @@
   "interpretation": {
     "literal_duplicate_collapse_observed": false,
     "broad_predicted_class_support_observed": true,
+    "classifier_or_class_order_failure_observed": false,
+    "real_validation_classifier_calibration_passed": true,
     "requested_class_alignment_established": false,
     "single_causal_mechanism_established": false,
     "decision": "requested_class_alignment_near_chance",
     "next_experiment": "matched full-data base128 100K quality bridge with formal start-index-zero terminal class-fidelity evaluation",
     "notes": [
       "Broad predicted-class coverage and entropy rule out collapse to only a handful of classifier labels.",
+      "The same pinned classifier, preprocessing, and exact three-way class order reach 77.7% top-1 and 94.1% top-5 on a deterministic balanced real-validation subset, ruling out evaluator or label-order failure as the explanation for near-chance generated alignment.",
       "Near-chance requested-label accuracy shows that the current generated content does not reliably express its requested ImageNet class.",
       "The fixed classifier can also fail on low-quality or off-manifold images, so these numbers alone cannot distinguish ignored conditioning from insufficient image fidelity.",
       "No additional CFG-only sweep is justified by this diagnostic."
     ]
   }
 }
-

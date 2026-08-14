@@ -15,6 +15,16 @@ distributed across predicted labels but are almost unrelated to the requested
 label. Poor/off-manifold image quality can itself cause this behavior, so the
 evidence does not identify one causal mechanism.
 
+A source-bound real-validation calibration then tested the same pinned
+classifier, preprocessing, and exact dataset/timm/torchvision class order on a
+deterministic balanced subset of 1,000 ImageNet validation images (one per
+class). It passed with top-1/top-5 `77.7%/94.1%`. This rules out a broken
+classifier, preprocessing path, or class-index mapping as the explanation for
+the generated samples' near-chance requested-label alignment. The remaining
+interpretation is model-side: the 50K models are undertrained, insufficiently
+capable, or produce images too far off the ImageNet manifold for their
+requested class to be recognized.
+
 ## Scope and authority
 
 This was a CPU-only diagnostic over already generated PNGs. It did not sample,
@@ -23,6 +33,11 @@ protocol, replace the frozen promotion gate, or authorize any larger launch.
 The source confirmation uses the independent global-index window
 `10000..19999` and guidance rescale `1.0`; therefore it is intentionally not a
 formal scaling class-fidelity qualification.
+
+The real-validation calibration was also CPU-only and non-authorizing. It did
+not evaluate generated images and cannot replace a generation-quality metric,
+the frozen promotion gate, or the terminal evaluation of a larger training
+run.
 
 The first attempt used the older `cf0e5fa` training execution checkout and was
 rejected before inference because that revision restricted its formal metrics
@@ -56,6 +71,16 @@ including all PNGs, sample-set digests, immutable manifests, progress files,
 checkpoint identities, classifier identity, evaluator runtime identity, and
 completed report contract.
 
+The calibration used exact revision
+`b9a34542b905e5b2d6a4cb241dae2f46cac785c7` (tree
+`66595fa27f3ab977b9a3c4ffe2d3be5ebf754022`) on branch
+`scale/generation-classifier-calibration-v1`. It selected the lexicographically
+first image in each locked WNID directory, producing sample-set SHA256
+`459245ae24230f7d8b409355988d90101a5ed7d8e50d7be707235114c6f7b441`.
+The report was replayed with identical parameters and `--resume`; the source
+identities, selection bytes, Git/runtime identity, metrics population, checks,
+and completed report contract all revalidated.
+
 ## Metrics
 
 | Cohort | Top-1 | Top-5 | Mean target probability | Target NLL | Predicted classes | Normalized entropy |
@@ -63,6 +88,7 @@ completed report contract.
 | independent 1000-class reference | 0.10% | 0.50% | 0.10% | - | - | - |
 | CoFiTok | 0.18% | 0.91% | 0.1263% | 7.4307 | 628/1000 | 0.7332 |
 | dense identity | 0.11% | 0.68% | 0.1236% | 7.4837 | 635/1000 | 0.7092 |
+| real-validation classifier calibration | 77.70% | 94.10% | 33.4238% | 1.5508 | 828/1000 | 0.9635 |
 
 CoFiTok is slightly better than dense on requested-label alignment and FID,
 but both are far below the eventual scaling class-fidelity floors of top-1
@@ -79,6 +105,8 @@ this nonzero-start, rescale-1.0 sample set is not eligible to satisfy them.
   `0e66acffa007e570e4b83c7f3c59b81e4954d82d6351276c521d9e6ba6d7a68a`.
 - Dense class-fidelity report: `13,730` bytes, SHA256
   `ff9e1ad079f8378defe686a5f92ca712379ea866df818b1020ced88cfc0a6d14`.
+- Real-validation classifier calibration: `5,861` bytes, SHA256
+  `a4c68b9b1c4dffda89f622887455f46d554fdb0c306d467fecb51d8f5abe6132`.
 
 ## Consequence for the generation program
 
@@ -93,4 +121,3 @@ probe rather than protocol tuning.
 At the end of this diagnostic, the bridge supervisor remained healthy and was
 waiting only for the unrelated FieldScope CUDA process to exit; no CoFiTok GPU
 controller or trainer was active.
-

@@ -1,0 +1,187 @@
+{
+  "calibration_status": "pass",
+  "checks": [
+    {
+      "comparison": ">=",
+      "name": "real_top1_accuracy",
+      "observed": 0.777,
+      "status": "pass",
+      "threshold": 0.5
+    },
+    {
+      "comparison": ">=",
+      "name": "real_top5_accuracy",
+      "observed": 0.941,
+      "status": "pass",
+      "threshold": 0.75
+    }
+  ],
+  "claim_boundary": {
+    "classifier_calibration_only": true,
+    "full_300k_launch_allowed": false,
+    "generated_samples_evaluated": false,
+    "generation_quality_evaluated": false,
+    "promotion_or_release_allowed": false,
+    "replaces_class_fidelity_qualification": false,
+    "replaces_frozen_promotion_gate": false,
+    "training_launch_allowed": false
+  },
+  "classifier": {
+    "categories_sha256": "62fff941ecff3f19de9128c6ca9c2097807c6b7bafc5552d7589a219431221ed",
+    "name": "torchvision_resnet50_imagenet1k_v2",
+    "num_classes": 1000,
+    "preprocessing": {
+      "antialias": true,
+      "crop_size": [
+        224
+      ],
+      "interpolation": "bilinear",
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "resize_size": [
+        232
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ]
+    },
+    "weights_bytes": 102540417,
+    "weights_enum": "ResNet50_Weights.IMAGENET1K_V2",
+    "weights_path": "/root/autodl-tmp/CoFiTok/checkpoints/evaluators/torchvision/resnet50-11ad3fa6.pth",
+    "weights_sha256": "11ad3fa62ca79e40addfd354a8ec4b7c75143b3038b8d2a807fbc68deab379ca",
+    "weights_url": "https://download.pytorch.org/models/resnet50-11ad3fa6.pth"
+  },
+  "git": {
+    "branch": "scale/generation-classifier-calibration-v1",
+    "revision": "b9a34542b905e5b2d6a4cb241dae2f46cac785c7",
+    "tracked_dirty": false
+  },
+  "metrics": {
+    "mean_target_probability": 0.33423844242095946,
+    "normalized_predicted_class_entropy": 0.963467180340743,
+    "num_classes": 1000,
+    "predicted_class_count": 828,
+    "predicted_class_entropy": 6.655395501124802,
+    "predicted_class_fraction": 0.828,
+    "requested_class_count": 1000,
+    "requested_count_max": 1,
+    "requested_count_min": 1,
+    "sample_count": 1000,
+    "target_negative_log_likelihood": 1.550846450805664,
+    "top1_accuracy": 0.777,
+    "top1_correct": 777,
+    "top5_accuracy": 0.941,
+    "top5_correct": 941
+  },
+  "parameters": {
+    "batch_size": 64,
+    "cpu_requested": true,
+    "device": "cpu",
+    "num_classes": 1000,
+    "num_workers": 4,
+    "sample_count": 1000,
+    "samples_per_class": 1
+  },
+  "paths": {
+    "output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/diagnostics/class_fidelity_v2/real_validation_calibration_1perclass.json",
+    "real_dir": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val"
+  },
+  "role": "generation_class_fidelity_classifier_real_calibration",
+  "runtime": {
+    "elapsed_seconds": 211.89418148994446,
+    "torch_version": "2.7.1+cu128",
+    "torchvision_version": "0.22.1+cu128"
+  },
+  "runtime_environment": {
+    "device": {
+      "type": "cpu"
+    },
+    "environment_variables": {
+      "CUBLAS_WORKSPACE_CONFIG": null,
+      "CUDA_VISIBLE_DEVICES": null,
+      "PYTHONHASHSEED": null,
+      "PYTORCH_ALLOC_CONF": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "pillow": "12.2.0",
+      "torch": "2.7.1+cu128",
+      "torchvision": "0.22.1+cu128",
+      "tqdm": "4.67.3"
+    },
+    "platform": {
+      "machine": "x86_64",
+      "release": "5.15.0-78-generic",
+      "system": "Linux"
+    },
+    "project_files": {
+      "pyproject.toml": {
+        "bytes": 791,
+        "path": "pyproject.toml",
+        "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+      },
+      "uv.lock": {
+        "bytes": 363675,
+        "path": "uv.lock",
+        "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+      }
+    },
+    "python": {
+      "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+      "implementation": "CPython",
+      "version": "3.10.20"
+    },
+    "schema_version": 1,
+    "torch": {
+      "cuda_matmul_allow_tf32": false,
+      "cuda_version": "12.8",
+      "cudnn_allow_tf32": true,
+      "cudnn_benchmark": false,
+      "cudnn_version": 90701,
+      "deterministic_algorithms": false,
+      "float32_matmul_precision": "highest",
+      "num_interop_threads": 104,
+      "num_threads": 4,
+      "nvidia_driver_version": "590.44.01",
+      "version": "2.7.1+cu128"
+    }
+  },
+  "runtime_environment_sha256": "f3b0a88c4565fbccf7324553939997c4fdf83d9ccc187a9194472cda73fe1dd1",
+  "schema_version": 1,
+  "selection": {
+    "class_order_sha256": "5e738e464c43c92037bbb4252eeb6ba2c306091861443ae7e182e28c9662324e",
+    "first_class": "n01440764",
+    "last_class": "n15075141",
+    "sample_count": 1000,
+    "samples_per_class": 1,
+    "scheme": "lexicographic_first_n_per_wnid_v1",
+    "selected_sample_set_sha256": "459245ae24230f7d8b409355988d90101a5ed7d8e50d7be707235114c6f7b441"
+  },
+  "sources": {
+    "label_to_wnid": {
+      "bytes": 23918,
+      "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/metadata/label_to_wnid.json",
+      "sha256": "3e8c34f680433258998fdd30cf4c15442e2ce3cbd35c27507becc0f690b19b91"
+    },
+    "timm_synsets": {
+      "bytes": 10000,
+      "path": "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/timm/data/_info/imagenet_synsets.txt",
+      "sha256": "70002b0ff5de60a3a17a82dbfcff291931f96225ddf941ad2e182fc39e183d15"
+    },
+    "torchvision_categories": {
+      "bytes": 20488,
+      "path": "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/prototype/datasets/_builtin/imagenet.categories",
+      "sha256": "5eed2c03c74fab0fe073e06993a2fb5f539900cd74b65d41b33d6c955cf44f9e"
+    }
+  },
+  "status": "completed",
+  "thresholds": {
+    "min_top1": 0.5,
+    "min_top5": 0.75
+  }
+}
