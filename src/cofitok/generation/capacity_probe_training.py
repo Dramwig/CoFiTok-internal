@@ -9,6 +9,7 @@ from typing import Any
 from cofitok.configs import config_to_dict, load_config
 from cofitok.data.provenance import validate_dataset_provenance
 from cofitok.environment import runtime_environment_sha256
+from cofitok.reporting import file_sha256
 from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
     verify_training_checkpoint,
@@ -257,7 +258,11 @@ def validate_capacity_probe_partial_training(
             "path": checkpoint.as_posix(),
             "bytes": checkpoint.stat().st_size,
             "sha256": integrity["checkpoint_sha256"],
-            "integrity_manifest": checkpoint_integrity_path(checkpoint).as_posix(),
+            "integrity_manifest": {
+                "path": checkpoint_integrity_path(checkpoint).as_posix(),
+                "bytes": checkpoint_integrity_path(checkpoint).stat().st_size,
+                "sha256": file_sha256(checkpoint_integrity_path(checkpoint)),
+            },
         },
         "authorization_boundary": {
             "capacity_probe_training_complete": True,

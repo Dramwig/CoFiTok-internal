@@ -71,6 +71,80 @@ CAPACITY_PROBE_PREPARATION_BOUNDARY = {
 }
 
 
+def validate_capacity_probe_preparation_contract(
+    report: Mapping[str, Any],
+    *,
+    expected_output_root: str,
+) -> dict[str, Any]:
+    selection = report.get("selection")
+    matched = report.get("matched_training_contract")
+    evaluation = report.get("evaluation_contract")
+    decision = report.get("decision_contract")
+    references = report.get("checkpoint_references")
+    if (
+        int(report.get("schema_version", -1))
+        != CAPACITY_PROBE_PREPARATION_SCHEMA_VERSION
+        or report.get("status") != "prepared"
+        or report.get("role") != CAPACITY_PROBE_PREPARATION_ROLE
+        or report.get("authorization_boundary")
+        != CAPACITY_PROBE_PREPARATION_BOUNDARY
+        or not all(
+            isinstance(value, Mapping)
+            for value in (selection, matched, evaluation, decision, references)
+        )
+    ):
+        raise ValueError("capacity probe preparation contract differs")
+    if (
+        selection.get("dataset") != CAPACITY_PROBE_DATASET
+        or int(selection.get("configured_training_horizon", -1))
+        != CAPACITY_PROBE_CONFIGURED_STEPS
+        or int(selection.get("stop_after_step", -1)) != CAPACITY_PROBE_STOP_STEP
+        or int(selection.get("effective_batch_size", -1))
+        != CAPACITY_PROBE_EFFECTIVE_BATCH
+        or selection.get("base_channels")
+        != [CAPACITY_PROBE_BASE_CHANNELS, CAPACITY_PROBE_LARGE_CHANNELS]
+        or selection.get("output_root") != expected_output_root
+        or selection.get("fresh_training_arms")
+        != ["base256_cofitok", "base256_dense_identity"]
+        or selection.get("preserved_reference_arms")
+        != ["base128_cofitok", "base128_dense_identity"]
+        or selection.get("training_intervention")
+        != sorted(CAPACITY_PROBE_TRAINING_INTERVENTION)
+    ):
+        raise ValueError("capacity probe preparation selection differs")
+    if (
+        matched.get("configured_100k_schedule_preserved_at_step_10k") is not True
+        or matched.get("fresh_initialization_required") is not True
+        or matched.get("resume_from_base128_forbidden") is not True
+        or set(matched.get("capacity_configs", {}))
+        != {"cofitok", "dense_identity"}
+        or set(references) != {"cofitok", "dense_identity"}
+    ):
+        raise ValueError("capacity probe preparation matched contract differs")
+    if (
+        evaluation.get("arms")
+        != [
+            "base128_cofitok",
+            "base128_dense_identity",
+            "base256_cofitok",
+            "base256_dense_identity",
+        ]
+        or int(evaluation.get("checkpoint_step", -1)) != CAPACITY_PROBE_STOP_STEP
+        or evaluation.get("weights") != "ema"
+        or evaluation.get("sampler") != "ddim"
+        or int(evaluation.get("sample_steps", -1)) != 50
+        or float(evaluation.get("guidance_scale", -1.0)) != 1.5
+        or int(evaluation.get("samples_per_arm", -1))
+        != CAPACITY_PROBE_SAMPLES_PER_ARM
+        or evaluation.get("fixed_random_stream_across_arms") is not True
+        or evaluation.get("role") != "non_claim_capacity_causal_diagnostic"
+        or decision.get("result_can_authorize_full_300k") is not False
+        or decision.get("new_source_compatible_decision_required") is not True
+    ):
+        raise ValueError("capacity probe preparation evaluation contract differs")
+    return copy.deepcopy(dict(selection))
+
+
 def _hex(value: Any, *, length: int) -> bool:
     if not isinstance(value, str) or len(value) != length or value != value.lower():
         return False

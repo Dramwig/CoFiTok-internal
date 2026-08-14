@@ -444,6 +444,35 @@ def _validate_existing_resume_revision_transition(
     return dict(transition)
 
 
+def _completed_validation_events_for_resume(
+    *,
+    checkpoint_extra_state: Mapping[str, Any],
+    start_step: int,
+    evaluation_interval: int,
+    configured_steps: int,
+) -> int:
+    if (
+        start_step < 0
+        or evaluation_interval < 1
+        or configured_steps < 1
+        or start_step > configured_steps
+    ):
+        raise ValueError("resume validation-event accounting is invalid")
+    expected = start_step // evaluation_interval
+    if start_step == configured_steps and start_step % evaluation_interval != 0:
+        expected += 1
+    stored = checkpoint_extra_state.get("completed_validation_events")
+    if stored is None:
+        # Legacy checkpoints on this branch were written after scheduled
+        # validation and did not persist the counter explicitly.
+        return expected
+    if type(stored) is not int or stored != expected:
+        raise ValueError(
+            "checkpoint completed validation-event count differs from its step"
+        )
+    return stored
+
+
 @torch.no_grad()
 def _evaluate_batch(
     model: torch.nn.Module,
@@ -589,6 +618,7 @@ def main() -> None:
     cumulative_peak_vram_before_segment = 0
     metrics_resume_reconciliation = None
     resume_revision_transition = None
+    completed_validation_events = 0
     if resume_path is not None:
         checkpoint = load_training_checkpoint(
             resume_path,
@@ -636,6 +666,12 @@ def main() -> None:
                 existing_resume_transition,
                 git_provenance,
             )
+        completed_validation_events = _completed_validation_events_for_resume(
+            checkpoint_extra_state=checkpoint_extra_state,
+            start_step=start_step,
+            evaluation_interval=config.runtime.evaluation_interval,
+            configured_steps=config.runtime.steps,
+        )
         metrics_resume_reconciliation = reconcile_metrics_for_resume(
             metrics_path,
             resume_step=start_step,
@@ -646,9 +682,8 @@ def main() -> None:
     eval_iterator = _advance_eval_iterator(
         eval_loader,
         eval_iterator,
-        start_step // config.runtime.evaluation_interval,
+        completed_validation_events,
     )
-    completed_validation_events = start_step // config.runtime.evaluation_interval
 
     model: torch.nn.Module = base_model
     if config.runtime.compile_model:
@@ -809,7 +844,7 @@ def main() -> None:
                 cumulative_elapsed_before_segment + step_elapsed_seconds
             ),
         }
-        if not stop.requested and (
+        if (
             step % config.runtime.evaluation_interval == 0
             or step == config.runtime.steps
         ):
@@ -877,6 +912,7 @@ def main() -> None:
                     "dataset_provenance": dataset_provenance,
                     "training_authorization": training_authorization,
                     "resume_revision_transition": resume_revision_transition,
+                    "completed_validation_events": completed_validation_events,
                     "cumulative_elapsed_seconds": (
                         cumulative_elapsed_before_segment + segment_elapsed_seconds
                     ),
