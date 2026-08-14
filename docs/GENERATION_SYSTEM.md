@@ -87,6 +87,12 @@ correction is developed independently on `scale/generation-stability`.
 - Full 300K runs checkpoint every 5K optimizer steps and retain the latest
   three states, matching the 10% gate cadence while bounding recovery loss on
   the multi-day full-data queue.
+- The combined exact-resume, integrity, reconciliation, retention, runtime, and
+  completion boundary was revalidated as 76 collected tests on Windows and
+  CUDA-hidden Linux (`74 passed`, two explicit CUDA-only skips). The clean Git
+  identity, authoritative and interrupted JUnit hashes, and the untested CUDA
+  remap boundary are recorded in
+  `docs/records/2026-08-15_generation_checkpoint_reproducibility_revalidation.md`.
 - Zero-weight objectives are not materialized in the production graph. The
   structural `S_k(0)=0` invariant is enforced by architecture and tested
   separately instead of paying for a gradient-free zero-token term every step.
