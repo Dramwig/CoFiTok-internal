@@ -24,6 +24,10 @@ _COMPLETION_PROFILES = {
         "status": "pass",
         "check": "stability_release_authorized_inference",
     },
+    "capacity_full_generation_system_v1": {
+        "status": "pass",
+        "check": "capacity_full_release_authorized_inference",
+    },
 }
 _METHODS = ("cofitok", "dense_identity")
 
@@ -153,9 +157,9 @@ def _receipt_payload(
 ) -> dict[str, Any]:
     profile, evidence = _completion_inference_evidence(audit)
     expectations = (
-        audit.get("expectations")
-        if profile == "stability_generation_system_v1"
-        else audit.get("expected_revisions")
+        audit.get("expected_revisions")
+        if profile == "large_scale_generation_v1"
+        else audit.get("expectations")
     )
     if not isinstance(expectations, Mapping):
         raise ValueError("generation completion expectations are missing")

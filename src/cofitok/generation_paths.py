@@ -21,6 +21,10 @@ STABILITY_FULL_ROOT_ID = "stability_full_300k_ema_teacher"
 STABILITY_FULL_COFITOK_RUN_ID = "cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
 STABILITY_FULL_DENSE_RUN_ID = "dense_rollout_x0_u2_ema_teacher"
 STABILITY_EXPORT_ROOT_ID = "exports/stability_full_300k_ema_teacher"
+CAPACITY_FULL_ROOT_ID = "stability_capacity_full_300k_v1"
+CAPACITY_FULL_COFITOK_RUN_ID = "cofitok"
+CAPACITY_FULL_DENSE_RUN_ID = "dense_identity"
+CAPACITY_FULL_EXPORT_ROOT_ID = "exports/stability_capacity_full_300k_v1"
 STABILITY_LARGE_CAPACITY_DEPLOYMENT_ROOT_ID = "deployment/large_capacity"
 FULL_COFITOK_RUN_ID = "imagenet256_full_cofitok_k8_300k"
 FULL_DENSE_RUN_ID = "imagenet256_full_dense_300k"
@@ -173,6 +177,34 @@ def generation_stability_workspace_paths(
             export_root / "cofitok_k8_ema_inference.pt"
         ),
         "STABILITY_DENSE_INFERENCE_ARTIFACT": (
+            export_root / "dense_identity_ema_inference.pt"
+        ),
+    }
+
+
+def generation_capacity_full_workspace_paths(
+    *,
+    output_root: str | Path,
+) -> dict[str, Path]:
+    output = Path(output_root).resolve()
+    full_root = output / CAPACITY_FULL_ROOT_ID
+    report_root = full_root / "reports"
+    export_root = output / CAPACITY_FULL_EXPORT_ROOT_ID
+    return {
+        "CAPACITY_FULL_ROOT": full_root,
+        "CAPACITY_FULL_COFITOK_RUN": full_root / CAPACITY_FULL_COFITOK_RUN_ID,
+        "CAPACITY_FULL_DENSE_RUN": full_root / CAPACITY_FULL_DENSE_RUN_ID,
+        "CAPACITY_FULL_MONITOR": full_root / "pair_monitor.json",
+        "CAPACITY_FULL_REPORT_ROOT": report_root,
+        "CAPACITY_FULL_TRAINING_AUTHORIZATION": (
+            report_root / "capacity_full_300k_training_launch_receipt.json"
+        ),
+        "CAPACITY_FULL_GATE": report_root / "final_generation_gate.json",
+        "CAPACITY_FULL_EXPORT_ROOT": export_root,
+        "CAPACITY_FULL_COFITOK_INFERENCE_ARTIFACT": (
+            export_root / "cofitok_k8_ema_inference.pt"
+        ),
+        "CAPACITY_FULL_DENSE_INFERENCE_ARTIFACT": (
             export_root / "dense_identity_ema_inference.pt"
         ),
     }

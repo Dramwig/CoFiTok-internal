@@ -4,6 +4,9 @@ from pathlib import Path
 from typing import Any
 
 from cofitok.generation_paths import (
+    CAPACITY_FULL_COFITOK_RUN_ID,
+    CAPACITY_FULL_DENSE_RUN_ID,
+    CAPACITY_FULL_ROOT_ID,
     FULL_COFITOK_RUN_ID,
     FULL_DENSE_RUN_ID,
     SCALING_COFITOK_RUN_ID,
@@ -130,12 +133,43 @@ GATE_SOURCE_SUFFIXES = {
             "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
         ),
     },
+    "capacity_full": {
+        "cofitok_training": (
+            f"checkpoints/generation/{CAPACITY_FULL_ROOT_ID}/"
+            f"{CAPACITY_FULL_COFITOK_RUN_ID}/training_report.json"
+        ),
+        "dense_training": (
+            f"checkpoints/generation/{CAPACITY_FULL_ROOT_ID}/"
+            f"{CAPACITY_FULL_DENSE_RUN_ID}/training_report.json"
+        ),
+        "cofitok_generation": (
+            f"checkpoints/generation/{CAPACITY_FULL_ROOT_ID}/"
+            f"{CAPACITY_FULL_COFITOK_RUN_ID}/"
+            "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
+        ),
+        "dense_generation": (
+            f"checkpoints/generation/{CAPACITY_FULL_ROOT_ID}/"
+            f"{CAPACITY_FULL_DENSE_RUN_ID}/"
+            "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
+        ),
+        "cofitok_checkpoint_eval": (
+            f"checkpoints/generation/{CAPACITY_FULL_ROOT_ID}/"
+            f"{CAPACITY_FULL_COFITOK_RUN_ID}/"
+            "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
+        ),
+        "dense_checkpoint_eval": (
+            f"checkpoints/generation/{CAPACITY_FULL_ROOT_ID}/"
+            f"{CAPACITY_FULL_DENSE_RUN_ID}/"
+            "checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json"
+        ),
+    },
 }
 GATE_SOURCE_PROFILE_STAGES = {
     "scaling": "scaling",
     "stability_scaling": "scaling",
     "full": "full",
     "stability_full": "full",
+    "capacity_full": "full",
 }
 GATE_DIAGNOSTIC_SUFFIXES = {
     "stability_scaling": {
@@ -175,6 +209,26 @@ GATE_DIAGNOSTIC_SUFFIXES = {
         ),
         "class_fidelity_qualification": (
             f"checkpoints/generation/{STABILITY_FULL_ROOT_ID}/reports/"
+            "class_fidelity/qualification_report.json"
+        ),
+    },
+    "capacity_full": {
+        "rollout_stability_qualification": (
+            f"checkpoints/generation/{CAPACITY_FULL_ROOT_ID}/reports/"
+            "ema_rollout_stability/qualification_report.json"
+        ),
+        "cofitok_class_fidelity": (
+            f"checkpoints/generation/{CAPACITY_FULL_ROOT_ID}/"
+            f"{CAPACITY_FULL_COFITOK_RUN_ID}/samples_50k_ddim250_cfg15/"
+            "class_fidelity/class_fidelity_report.json"
+        ),
+        "dense_class_fidelity": (
+            f"checkpoints/generation/{CAPACITY_FULL_ROOT_ID}/"
+            f"{CAPACITY_FULL_DENSE_RUN_ID}/samples_50k_ddim250_cfg15/"
+            "class_fidelity/class_fidelity_report.json"
+        ),
+        "class_fidelity_qualification": (
+            f"checkpoints/generation/{CAPACITY_FULL_ROOT_ID}/reports/"
             "class_fidelity/qualification_report.json"
         ),
     },

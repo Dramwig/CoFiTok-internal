@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+AUDIT_PROJECT=${AUDIT_PROJECT:?set AUDIT_PROJECT}
+TRAINING_PROJECT=${TRAINING_PROJECT:?set TRAINING_PROJECT}
+FORMAL_PROJECT=${FORMAL_PROJECT:-/root/autodl-tmp/CoFiTok/CoFiTok-internal}
+PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
+CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation}
+SOURCE_OUTPUT_ROOT=${SOURCE_OUTPUT_ROOT:-$CHECKPOINT_ROOT/stability_full_data_100k_capacity_probe_250m_10k_v1}
+FULL_OUTPUT_ROOT=${FULL_OUTPUT_ROOT:-$CHECKPOINT_ROOT/stability_capacity_full_300k_v1}
+
+EXPECTED_TRAINING_SUPERVISOR_DEPLOYMENT_SHA256=${EXPECTED_TRAINING_SUPERVISOR_DEPLOYMENT_SHA256:?set EXPECTED_TRAINING_SUPERVISOR_DEPLOYMENT_SHA256}
+EXPECTED_POSTEVAL_SUPERVISOR_DEPLOYMENT_SHA256=${EXPECTED_POSTEVAL_SUPERVISOR_DEPLOYMENT_SHA256:?set EXPECTED_POSTEVAL_SUPERVISOR_DEPLOYMENT_SHA256}
+EXPECTED_TRAINING_LAUNCH_RECEIPT_SHA256=${EXPECTED_TRAINING_LAUNCH_RECEIPT_SHA256:?set EXPECTED_TRAINING_LAUNCH_RECEIPT_SHA256}
+EXPECTED_FINAL_GATE_SHA256=${EXPECTED_FINAL_GATE_SHA256:?set EXPECTED_FINAL_GATE_SHA256}
+EXPECTED_TRAINING_REVISION=${EXPECTED_TRAINING_REVISION:?set EXPECTED_TRAINING_REVISION}
+EXPECTED_TRAINING_TREE=${EXPECTED_TRAINING_TREE:?set EXPECTED_TRAINING_TREE}
+EXPECTED_TRAINING_BRANCH=${EXPECTED_TRAINING_BRANCH:?set EXPECTED_TRAINING_BRANCH}
+EXPECTED_EVALUATION_REVISION=${EXPECTED_EVALUATION_REVISION:?set EXPECTED_EVALUATION_REVISION}
+EXPECTED_EVALUATION_TREE=${EXPECTED_EVALUATION_TREE:?set EXPECTED_EVALUATION_TREE}
+EXPECTED_EVALUATION_BRANCH=${EXPECTED_EVALUATION_BRANCH:?set EXPECTED_EVALUATION_BRANCH}
+EXPECTED_EXPORT_REVISION=${EXPECTED_EXPORT_REVISION:-$EXPECTED_EVALUATION_REVISION}
+EXPECTED_EXPORT_BRANCH=${EXPECTED_EXPORT_BRANCH:-$EXPECTED_EVALUATION_BRANCH}
+
+SOURCE_REPORT_ROOT="$SOURCE_OUTPUT_ROOT/reports"
+REPORT_ROOT="$FULL_OUTPUT_ROOT/reports"
+EXPORT_ROOT="$CHECKPOINT_ROOT/exports/stability_capacity_full_300k_v1"
+TRAINING_SUPERVISOR_STATUS="$SOURCE_REPORT_ROOT/capacity_full_300k_training_supervisor_status.json"
+TRAINING_SUPERVISOR_DEPLOYMENT="$SOURCE_REPORT_ROOT/capacity_full_300k_training_supervisor_deployment_receipt.json"
+POSTEVAL_SUPERVISOR_STATUS="$SOURCE_REPORT_ROOT/capacity_full_300k_posteval_supervisor_status.json"
+POSTEVAL_SUPERVISOR_DEPLOYMENT="$SOURCE_REPORT_ROOT/capacity_full_300k_posteval_supervisor_deployment_receipt.json"
+OUTPUT="$REPORT_ROOT/capacity_full_generation_completion_audit.json"
+RELEASE_RECEIPT="$EXPORT_ROOT/release_receipt.json"
+
+[[ -x "$PYTHON" ]]
+[[ "$FULL_OUTPUT_ROOT" == "$CHECKPOINT_ROOT/stability_capacity_full_300k_v1" ]]
+[[ "$(git -C "$AUDIT_PROJECT" rev-parse HEAD)" == "$EXPECTED_EVALUATION_REVISION" ]]
+[[ "$(git -C "$AUDIT_PROJECT" rev-parse 'HEAD^{tree}')" == "$EXPECTED_EVALUATION_TREE" ]]
+[[ "$(git -C "$AUDIT_PROJECT" branch --show-current)" == "$EXPECTED_EVALUATION_BRANCH" ]]
+[[ -z "$(git -C "$AUDIT_PROJECT" status --porcelain --untracked-files=no)" ]]
+
+mkdir -p "$REPORT_ROOT" "$EXPORT_ROOT"
+"$PYTHON" - "$OUTPUT" <<'PY'
+import sys
+from pathlib import Path
+
+Path(sys.argv[1]).unlink(missing_ok=True)
+PY
+
+cd "$AUDIT_PROJECT"
+export PYTHONPATH="$AUDIT_PROJECT/src:$TRAINING_PROJECT/src"
+"$PYTHON" scripts/audit_generation_capacity_full_completion.py \
+  --project-root "$AUDIT_PROJECT" \
+  --output-root "$CHECKPOINT_ROOT" \
+  --training-project "$TRAINING_PROJECT" \
+  --formal-project "$FORMAL_PROJECT" \
+  --training-supervisor-status "$TRAINING_SUPERVISOR_STATUS" \
+  --training-supervisor-deployment "$TRAINING_SUPERVISOR_DEPLOYMENT" \
+  --posteval-supervisor-status "$POSTEVAL_SUPERVISOR_STATUS" \
+  --posteval-supervisor-deployment "$POSTEVAL_SUPERVISOR_DEPLOYMENT" \
+  --expected-training-supervisor-deployment-sha256 "$EXPECTED_TRAINING_SUPERVISOR_DEPLOYMENT_SHA256" \
+  --expected-posteval-supervisor-deployment-sha256 "$EXPECTED_POSTEVAL_SUPERVISOR_DEPLOYMENT_SHA256" \
+  --expected-training-launch-receipt-sha256 "$EXPECTED_TRAINING_LAUNCH_RECEIPT_SHA256" \
+  --expected-final-gate-sha256 "$EXPECTED_FINAL_GATE_SHA256" \
+  --expected-training-revision "$EXPECTED_TRAINING_REVISION" \
+  --expected-training-tree "$EXPECTED_TRAINING_TREE" \
+  --expected-training-branch "$EXPECTED_TRAINING_BRANCH" \
+  --expected-evaluation-revision "$EXPECTED_EVALUATION_REVISION" \
+  --expected-evaluation-tree "$EXPECTED_EVALUATION_TREE" \
+  --expected-evaluation-branch "$EXPECTED_EVALUATION_BRANCH" \
+  --expected-export-revision "$EXPECTED_EXPORT_REVISION" \
+  --expected-export-branch "$EXPECTED_EXPORT_BRANCH" \
+  --output "$OUTPUT"
+
+"$PYTHON" scripts/build_generation_release_receipt.py \
+  --completion-audit "$OUTPUT" \
+  --output "$RELEASE_RECEIPT"

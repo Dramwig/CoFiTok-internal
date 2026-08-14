@@ -5,10 +5,12 @@ import sys
 from pathlib import Path
 
 from cofitok.generation_paths import (
+    CAPACITY_FULL_ROOT_ID,
     SCALING_COFITOK_RUN_ID,
     SCALING_DENSE_RUN_ID,
     SCALING_REPORT_ID,
     generation_deployment_attestation_paths,
+    generation_capacity_full_workspace_paths,
     generation_large_capacity_deployment_paths,
     generation_stability_workspace_paths,
     generation_workspace_paths,
@@ -173,6 +175,27 @@ def test_stability_workspace_paths_keep_every_stage_isolated(
         != paths["STABILITY_FULL_ROOT"]
         != paths["STABILITY_EXPORT_ROOT"]
     )
+
+
+def test_capacity_full_workspace_paths_are_isolated_from_legacy_full(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "generation"
+    paths = generation_capacity_full_workspace_paths(output_root=output)
+
+    assert paths["CAPACITY_FULL_ROOT"] == output / CAPACITY_FULL_ROOT_ID
+    assert paths["CAPACITY_FULL_COFITOK_RUN"].name == "cofitok"
+    assert paths["CAPACITY_FULL_DENSE_RUN"].name == "dense_identity"
+    assert (
+        paths["CAPACITY_FULL_TRAINING_AUTHORIZATION"]
+        == paths["CAPACITY_FULL_REPORT_ROOT"]
+        / "capacity_full_300k_training_launch_receipt.json"
+    )
+    assert (
+        paths["CAPACITY_FULL_GATE"]
+        == paths["CAPACITY_FULL_REPORT_ROOT"] / "final_generation_gate.json"
+    )
+    assert paths["CAPACITY_FULL_EXPORT_ROOT"] != paths["CAPACITY_FULL_ROOT"]
 
 
 def test_deployment_attestation_rejects_abbreviated_revision(tmp_path: Path) -> None:

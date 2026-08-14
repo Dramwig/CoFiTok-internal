@@ -2033,7 +2033,7 @@ def _comparison_evidence(
     if set(indexed) != set(expected):
         raise ValueError("large-scale comparison method identities differ")
     source_profile = str(report.get("source_profile", "full"))
-    if source_profile == "stability_full":
+    if source_profile in {"stability_full", "capacity_full"}:
         if final_gate is None or class_fidelity_qualification is None:
             raise ValueError(
                 "stability-full comparison audit requires class-fidelity evidence"

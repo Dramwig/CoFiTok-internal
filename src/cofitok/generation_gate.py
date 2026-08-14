@@ -580,13 +580,15 @@ def validate_generation_gate_authorization(
     missing = sorted(REQUIRED_GENERATION_GATES[expected_stage] - indexed.keys())
     if (
         schema_version >= 3
-        and gate.get("source_profile") in {"stability_scaling", "stability_full"}
+        and gate.get("source_profile")
+        in {"stability_scaling", "stability_full", "capacity_full"}
         and "rollout_stability_diagnostic" not in indexed
     ):
         missing.append("rollout_stability_diagnostic")
     if (
         schema_version >= 5
-        and gate.get("source_profile") in {"stability_scaling", "stability_full"}
+        and gate.get("source_profile")
+        in {"stability_scaling", "stability_full", "capacity_full"}
         and "class_conditional_fidelity" not in indexed
     ):
         missing.append("class_conditional_fidelity")

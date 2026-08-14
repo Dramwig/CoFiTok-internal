@@ -8,11 +8,13 @@ EXPECTED_FINAL_GATE_SHA256=${EXPECTED_FINAL_GATE_SHA256:?set the passing stabili
 EXPECTED_TARGET_REVISION=${EXPECTED_TARGET_REVISION:?set the clean inference-export revision}
 EXPECTED_TARGET_BRANCH=${EXPECTED_TARGET_BRANCH:?set the clean inference-export branch}
 
-FULL_ROOT="$CHECKPOINT_ROOT/stability_full_300k_ema_teacher"
-COFITOK_CHECKPOINT="$FULL_ROOT/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00300000.pt"
-DENSE_CHECKPOINT="$FULL_ROOT/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00300000.pt"
+FULL_ROOT=${FULL_ROOT:-$CHECKPOINT_ROOT/stability_full_300k_ema_teacher}
+COFITOK_RUN_ID=${COFITOK_RUN_ID:-cofitok_rgbtail3_rollout_x0_u2_ema_teacher}
+DENSE_RUN_ID=${DENSE_RUN_ID:-dense_rollout_x0_u2_ema_teacher}
+COFITOK_CHECKPOINT="$FULL_ROOT/$COFITOK_RUN_ID/checkpoint_step_00300000.pt"
+DENSE_CHECKPOINT="$FULL_ROOT/$DENSE_RUN_ID/checkpoint_step_00300000.pt"
 FINAL_GATE="$FULL_ROOT/reports/final_generation_gate.json"
-EXPORT_ROOT="$CHECKPOINT_ROOT/exports/stability_full_300k_ema_teacher"
+EXPORT_ROOT=${EXPORT_ROOT:-$CHECKPOINT_ROOT/exports/stability_full_300k_ema_teacher}
 REPORT_ROOT="$FULL_ROOT/reports/exports"
 COFITOK_ARTIFACT="$EXPORT_ROOT/cofitok_k8_ema_inference.pt"
 DENSE_ARTIFACT="$EXPORT_ROOT/dense_identity_ema_inference.pt"

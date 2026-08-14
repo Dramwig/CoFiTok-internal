@@ -1058,7 +1058,8 @@ def main() -> None:
         if args.class_fidelity_qualification
         else None
     )
-    if source_profile in {"stability_scaling", "stability_full"}:
+    stability_profiles = {"stability_scaling", "stability_full", "capacity_full"}
+    if source_profile in stability_profiles:
         if not args.rollout_stability_qualification:
             raise ValueError(
                 "schema-v5 stability gates require rollout-stability qualification"
@@ -1113,7 +1114,7 @@ def main() -> None:
     )
     report["source_profile"] = source_profile
     if args.rollout_stability_qualification:
-        if report["source_profile"] not in {"stability_scaling", "stability_full"}:
+        if report["source_profile"] not in stability_profiles:
             raise ValueError(
                 "rollout-stability diagnostics require a stability source profile"
             )

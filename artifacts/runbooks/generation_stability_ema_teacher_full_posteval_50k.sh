@@ -6,19 +6,26 @@ PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
 CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation}
 DATA=${DATA:-/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val}
 OFFICIAL_RELATED=${OFFICIAL_RELATED:-"$PROJECT/artifacts/reports/baselines/official_related_methods_2026-07-11_final/official_related_methods_table.json"}
-EXPECTED_SCALING_GATE_SHA256=${EXPECTED_SCALING_GATE_SHA256:?set the passing stability scaling gate SHA256}
+EXPECTED_SCALING_GATE_SHA256=${EXPECTED_SCALING_GATE_SHA256:-}
+EXPECTED_TRAINING_AUTHORIZATION_SHA256=${EXPECTED_TRAINING_AUTHORIZATION_SHA256:-$EXPECTED_SCALING_GATE_SHA256}
+EXPECTED_TRAINING_AUTHORIZATION_STAGE=${EXPECTED_TRAINING_AUTHORIZATION_STAGE:-scaling}
+EXPECTED_TRAINING_AUTHORIZATION_DECISION=${EXPECTED_TRAINING_AUTHORIZATION_DECISION:-promote_to_full_imagenet256}
 EXPECTED_TRAINING_REVISION=${EXPECTED_TRAINING_REVISION:?set the stability-full training revision}
 EXPECTED_TRAINING_BRANCH=${EXPECTED_TRAINING_BRANCH:?set the stability-full training branch}
 EXPECTED_TARGET_REVISION=${EXPECTED_TARGET_REVISION:?set the clean full post-evaluation revision}
 EXPECTED_TARGET_BRANCH=${EXPECTED_TARGET_BRANCH:?set the clean full post-evaluation branch}
 
 SCALING_GATE="$CHECKPOINT_ROOT/stability_scaling_50k_ema_teacher/reports/promotion_gate.json"
+TRAINING_AUTHORIZATION=${TRAINING_AUTHORIZATION:-$SCALING_GATE}
 COFITOK_CONFIG=configs/generation/imagenet256_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json
 DENSE_CONFIG=configs/generation/imagenet256_stability_rollout_x0_u2_ema_teacher_dense_300k.json
-OUTPUT_ROOT="$CHECKPOINT_ROOT/stability_full_300k_ema_teacher"
+OUTPUT_ROOT=${OUTPUT_ROOT:-$CHECKPOINT_ROOT/stability_full_300k_ema_teacher}
+COFITOK_RUN_ID=${COFITOK_RUN_ID:-cofitok_rgbtail3_rollout_x0_u2_ema_teacher}
+DENSE_RUN_ID=${DENSE_RUN_ID:-dense_rollout_x0_u2_ema_teacher}
+SOURCE_PROFILE=${SOURCE_PROFILE:-stability_full}
 REPORT_ROOT="$OUTPUT_ROOT/reports"
-COFITOK_RUN="$OUTPUT_ROOT/cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
-DENSE_RUN="$OUTPUT_ROOT/dense_rollout_x0_u2_ema_teacher"
+COFITOK_RUN="$OUTPUT_ROOT/$COFITOK_RUN_ID"
+DENSE_RUN="$OUTPUT_ROOT/$DENSE_RUN_ID"
 COFITOK_CHECKPOINT="$COFITOK_RUN/checkpoint_step_00300000.pt"
 DENSE_CHECKPOINT="$DENSE_RUN/checkpoint_step_00300000.pt"
 EVAL_CACHE="$CHECKPOINT_ROOT/eval_cache/torch_fidelity"
@@ -39,14 +46,29 @@ STAGE_STATE_ROOT="$REPORT_ROOT/stage_receipts"
 DATASET_MANIFEST="$CHECKPOINT_ROOT/../../datasets/imagenet_256/metadata/image_manifest.jsonl"
 POSTEVAL_LOCK="$OUTPUT_ROOT/posteval.lock"
 
+: "${EXPECTED_TRAINING_AUTHORIZATION_SHA256:?set the immutable training authorization SHA256}"
+case "$SOURCE_PROFILE" in
+  stability_full)
+    SOURCE_PROFILE_ARGS=(--source-profile stability_full)
+    ;;
+  capacity_full)
+    SOURCE_PROFILE_ARGS=(--source-profile capacity_full)
+    ;;
+  *)
+    printf 'unsupported stability full post-evaluation source profile: %s\n' \
+      "$SOURCE_PROFILE" >&2
+    exit 2
+    ;;
+esac
+
 cd "$PROJECT"
 export PYTHONPATH=src
 [[ -x "$PYTHON" ]]
 [[ "$(git rev-parse HEAD)" == "$EXPECTED_TARGET_REVISION" ]]
 [[ "$(git branch --show-current)" == "$EXPECTED_TARGET_BRANCH" ]]
 [[ -z "$(git status --porcelain --untracked-files=no)" ]]
-[[ -f "$SCALING_GATE" ]]
-[[ "$(sha256sum "$SCALING_GATE" | awk '{print $1}')" == "$EXPECTED_SCALING_GATE_SHA256" ]]
+[[ -f "$TRAINING_AUTHORIZATION" ]]
+[[ "$(sha256sum "$TRAINING_AUTHORIZATION" | awk '{print $1}')" == "$EXPECTED_TRAINING_AUTHORIZATION_SHA256" ]]
 [[ -f "$COFITOK_CHECKPOINT" ]]
 [[ -f "$DENSE_CHECKPOINT" ]]
 [[ -f "$OFFICIAL_RELATED" ]]
@@ -61,9 +83,18 @@ if ! flock -n 8; then
 fi
 mkdir -p "$REPORT_ROOT" "$STAGE_STATE_ROOT"
 
-"$PYTHON" scripts/validate_generation_gate_report.py \
-  --gate "$SCALING_GATE" \
-  --stage scaling >/dev/null
+"$PYTHON" scripts/verify_generation_training_authorization.py \
+  --authorization "$TRAINING_AUTHORIZATION" \
+  --expected-sha256 "$EXPECTED_TRAINING_AUTHORIZATION_SHA256" \
+  --expected-stage "$EXPECTED_TRAINING_AUTHORIZATION_STAGE" \
+  --expected-decision "$EXPECTED_TRAINING_AUTHORIZATION_DECISION" \
+  >"$REPORT_ROOT/posteval_training_authorization_validation.json"
+
+if [[ "$EXPECTED_TRAINING_AUTHORIZATION_STAGE" == "scaling" ]]; then
+  "$PYTHON" scripts/validate_generation_gate_report.py \
+    --gate "$TRAINING_AUTHORIZATION" \
+    --stage scaling >/dev/null
+fi
 
 "$PYTHON" scripts/validate_generation_training_pair.py \
   --cofitok-training "$COFITOK_RUN/training_report.json" \
@@ -73,7 +104,7 @@ mkdir -p "$REPORT_ROOT" "$STAGE_STATE_ROOT"
   --expected-branch "$EXPECTED_TRAINING_BRANCH" \
   --expected-dataset imagenet_256 \
   --expected-recipe-stage stability_full \
-  --authorization-gate "$SCALING_GATE" \
+  --authorization-gate "$TRAINING_AUTHORIZATION" \
   >"$REPORT_ROOT/posteval_training_pair_validation.json"
 
 "$PYTHON" scripts/audit_generation_training_progress.py \
@@ -433,7 +464,7 @@ fi
   --class-fidelity-qualification "$CLASS_FIDELITY_QUALIFICATION" \
   --output "$FINAL_GATE" \
   --stage full \
-  --source-profile stability_full \
+  "${SOURCE_PROFILE_ARGS[@]}" \
   --expected-training-revision "$EXPECTED_TRAINING_REVISION" \
   --expected-training-branch "$EXPECTED_TRAINING_BRANCH" \
   --expected-evaluation-revision "$EXPECTED_TARGET_REVISION" \
@@ -489,5 +520,5 @@ fi
   --class-fidelity-qualification "$CLASS_FIDELITY_QUALIFICATION" \
   --official-related "$OFFICIAL_RELATED" \
   --training-contention "$TRAINING_CONTENTION" \
-  --source-profile stability_full \
+  "${SOURCE_PROFILE_ARGS[@]}" \
   --output-dir "$REPORT_ROOT/comparison"

@@ -77,7 +77,35 @@ SOURCE_REPORT_PROFILES = {
             "qualification_report.json"
         ),
     },
+    "capacity_full": {
+        "cofitok_training": (
+            "stability_capacity_full_300k_v1/cofitok/training_report.json"
+        ),
+        "dense_training": (
+            "stability_capacity_full_300k_v1/dense_identity/training_report.json"
+        ),
+        "cofitok_generation": (
+            "stability_capacity_full_300k_v1/cofitok/"
+            "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
+        ),
+        "dense_generation": (
+            "stability_capacity_full_300k_v1/dense_identity/"
+            "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
+        ),
+        "final_gate": (
+            "stability_capacity_full_300k_v1/reports/final_generation_gate.json"
+        ),
+        "training_contention": (
+            "stability_capacity_full_300k_v1/pair_monitor.json"
+        ),
+        "class_fidelity_qualification": (
+            "stability_capacity_full_300k_v1/reports/class_fidelity/"
+            "qualification_report.json"
+        ),
+    },
 }
+
+CLASS_FIDELITY_SOURCE_PROFILES = frozenset({"stability_full", "capacity_full"})
 
 
 def _read(path: str | Path) -> dict[str, Any]:
@@ -438,7 +466,7 @@ def build_report(
             raise ValueError(
                 "final gate class-fidelity evidence does not match its source"
             )
-    elif source_profile == "stability_full":
+    elif source_profile in CLASS_FIDELITY_SOURCE_PROFILES:
         raise ValueError(
             "stability-full comparison requires class-fidelity qualification"
         )
@@ -572,7 +600,7 @@ def build_report(
         final_gate.get("status") == "pass"
         and final_gate.get("decision") == "large_scale_generation_ready"
         and (
-            source_profile != "stability_full"
+            source_profile not in CLASS_FIDELITY_SOURCE_PROFILES
             or (
                 class_fidelity is not None
                 and class_fidelity["valid"] is True
@@ -827,7 +855,7 @@ def main() -> None:
         "training_contention": Path(args.training_contention),
     }
     if args.class_fidelity_qualification:
-        if args.source_profile != "stability_full":
+        if args.source_profile not in CLASS_FIDELITY_SOURCE_PROFILES:
             raise ValueError(
                 "--class-fidelity-qualification requires stability_full source profile"
             )
@@ -835,7 +863,7 @@ def main() -> None:
             args.class_fidelity_qualification
         )
     if (
-        args.source_profile == "stability_full"
+        args.source_profile in CLASS_FIDELITY_SOURCE_PROFILES
         and "class_fidelity_qualification" not in source_paths
     ):
         raise ValueError(
