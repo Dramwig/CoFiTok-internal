@@ -61,3 +61,23 @@ from all physical sources.
   the runbook did not export the checkout-local `PYTHONPATH`. The failure log was
   retained, the runbook now exports both the project and `src/` roots, and the
   repaired entrypoint is verified through the real Linux launch environment.
+
+## Isolated deployment
+
+The repaired waiter is deployed from an isolated clean checkout; the formal
+remote repository was not fetched, checked out, or modified.
+
+- execution revision: `c18a606953e34725f0bae6f6f568db3ebf7c42c6`
+- execution tree: `a7b1c4a9da1492c4114c1eccfc6a0c260c89c36a`
+- execution branch: `scale/generation-capacity-scaling-decision-waiter-v1`
+- checkout: `/root/autodl-tmp/CoFiTok/checkouts/capacity-scaling-decision-c18a606/CoFiTok-internal`
+- incremental repair bundle: 1,221 bytes, SHA256
+  `6528fe56727745fde020fec1a485ba7c916118498a4a6b99ed478d6a5a44f961`
+- active waiter PID at deployment: `191931`, nice level 19
+- status: `waiting_for_exact_capacity_probe_result`
+
+The initial `e7d09a1` deployment failure is preserved in
+`capacity_scaling_decision_waiter.log`; it exited at import and performed no
+result read, GPU work, or training. The repaired checkout passed 11/11 targeted
+Linux tests and a real runbook smoke that reached the expected waiting state
+with GPU and training permissions both false.
