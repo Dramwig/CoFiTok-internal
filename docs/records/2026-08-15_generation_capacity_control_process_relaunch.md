@@ -95,13 +95,36 @@ entrypoint and checkout identities before the live scan.
 - process snapshot, static continuity, pipeline lineage, and runbook syntax
   compatibility: `30 passed` locally;
 - complete runbook CLI/entrypoint contract: `2 passed` locally;
-- the same focused Linux compatibility set: `30 passed` with CUDA hidden;
+- real POSIX detached-launch suite: `8 passed` with CUDA hidden, including two
+  actual subprocess/process-group integration cases;
+- combined Linux relaunch, snapshot, continuity, lineage, and runbook-syntax
+  suite: `32 passed` with CUDA hidden;
 - Python compilation, `bash -n`, `git diff --check`, exact revision/tree, and
   clean tracked isolated checkout: passed.
 
 The negative tests cover live-process refusal, missing/active selection,
 successful-stage skipping, terminal hold refusal, approval-bound execution,
 partial-launch rollback, and the explicit production switch.
+
+The POSIX rehearsal revision and immutable evidence are:
+
+- revision: `47e59a0ce926c3ac1fdaa4860de84d2f27e39f76`;
+- tree: `3a99993b66db675f262ed2e04298e1d4d64411cf`;
+- isolated checkout:
+  `/root/autodl-tmp/CoFiTok/checkouts/capacity-control-process-rehearsal-47e59a0/CoFiTok-internal`;
+- incremental bundle: `5,247` bytes, SHA256
+  `e110d11aaab4ad77bb26d64c44905aa95eedd68113166becfc8739d7fd95d73e`;
+- bundle path:
+  `/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_process_relaunch_v1/deployment/cofitok-control-process-relaunch-rehearsal-47e59a0.bundle`;
+- prerequisite: `7836359feb823fd93840255f6aeae5478008bb1c`.
+
+The success case started two real detached CPU-only dummy control processes,
+proved status/PID publication and append-only log preservation, and then proved
+that the live signature scan refused a repeat relaunch. The failure case made
+the second dummy exit with code `17` before status publication and proved that
+rollback terminated the first owned process group. A post-test `/proc` scan
+found no dummy process residue. No production status, process, or experiment
+output was used as a launch target in either rehearsal.
 
 ## Preserved live state
 
