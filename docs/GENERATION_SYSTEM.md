@@ -1180,6 +1180,18 @@ quality. Exact module counts, persistent JUnit identity, and the corrected
 Linux invocation are recorded in
 `docs/records/2026-08-15_generation_training_scale_authorization_revalidation.md`.
 
+After the focused capability suites, the complete generation-named test set was
+also executed as one subsystem regression. Windows ran 1,089 tests from 116
+cross-platform modules; Linux ran all 1,092 tests from 117 modules, including
+the POSIX process-group, `/proc`, symlink, and `fcntl` boundaries unavailable on
+Windows. The authoritative Linux result was 1,090 passed with only two explicit
+real-CUDA skips and no failures or errors. A first Linux run that omitted the
+production `PYTHONPATH` is preserved as a non-passing diagnostic; the exact
+failed runtime-selector test and the full suite passed after reproducing the
+runbooks' `$PROJECT:$PROJECT/src` import environment. Exact JUnit identities,
+coverage boundaries, skips, and limitations are recorded in
+`docs/records/2026-08-15_generation_full_subsystem_regression.md`.
+
 Every bridge artifact remains explicitly non-authorizing:
 `quality_bridge_launch_allowed=false`, `full_training_launch_allowed=false`,
 `full_300k_launch_allowed=false`, and `new_gate_required=true`. Preparing or
