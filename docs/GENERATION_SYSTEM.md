@@ -911,7 +911,11 @@ terminal audit independently rehashes the manifest and completed progress chain;
 legacy smoke reports are not release evidence.
 See `docs/INFERENCE.md` and
 `docs/records/2026-07-12_stable_generation_session.md` plus
-`docs/records/2026-08-02_generation_inference_exact_resume.md`.
+`docs/records/2026-08-02_generation_inference_exact_resume.md`. The complete
+artifact/session/sampler/preflight boundary was revalidated as a 61-test suite
+on Windows and CUDA-hidden Linux, including a persistent JUnit report and
+source-bound Git identity; see
+`docs/records/2026-08-15_generation_stable_inference_revalidation.md`.
 The formal sampler also has an end-to-end CPU checkpoint-to-PNG subprocess
 test and derives actual DDIM timesteps from `GenerationSession.schedule`, so
 the exact 10K/50K CLI entry point is covered beyond lower-level sampler tests.
