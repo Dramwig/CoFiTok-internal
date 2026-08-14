@@ -146,13 +146,15 @@ all exited near 08:29 CST even though their last JSON statuses still said
 status temporary under `/tmp`. No quality-bridge controller had launched, no
 training checkpoint existed, and no GPU work had started.
 
-Four old, clean, process-unreferenced verification checkouts were moved from
+Seven old, clean, process-unreferenced verification checkouts were moved from
 `/tmp` to the recoverable data-disk archive
 `/root/autodl-tmp/CoFiTok/checkouts/tmp-archive-20260814`. Nothing was deleted.
-The move freed `1,891,942,400` bytes and is bound by `move_receipt.json`
-(SHA256
-`abde8de0849773bc83465dd5db33eafb1c9623ca7ebf9d48b5058c0c8a0a35dd`),
-leaving approximately 2.1 GiB free on the system overlay.
+The two moves freed `3,303,632,896` bytes and are bound by
+`move_receipt.json` (SHA256
+`abde8de0849773bc83465dd5db33eafb1c9623ca7ebf9d48b5058c0c8a0a35dd`)
+and `move_receipt_part2.json` (SHA256
+`9b04672d1f4159ce5d2c4e8acb24637ed280684233f94c2ecd61af85f670c717`),
+leaving approximately 3.4 GiB free on the system overlay.
 
 After revalidating exact code, Git, authorization, output, process, storage,
 and GPU identities, the wait chain was restored without launching training:
