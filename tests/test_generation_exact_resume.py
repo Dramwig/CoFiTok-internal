@@ -17,6 +17,7 @@ from cofitok.configs import config_from_dict, load_config
 from cofitok.environment import runtime_environment_sha256
 from scripts.train_generation import (
     _augment_training_images,
+    _completed_validation_events_for_resume,
     _resolve_resume_git_provenance,
     _validate_config,
     _validate_existing_resume_revision_transition,
@@ -133,6 +134,58 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
     assert [row["validation_batch_index"] for row in rows] == [0, 1]
     assert {row["validation_noise_seed"] for row in rows} == {100_020}
     assert {row["validation_num_images"] for row in rows} == {2}
+    assert (
+        resumed_checkpoint["extra_state"]["completed_validation_events"]
+        == 2
+    )
+
+
+def test_resume_validation_event_count_is_exact_and_legacy_compatible() -> None:
+    assert _completed_validation_events_for_resume(
+        checkpoint_extra_state={"completed_validation_events": 10},
+        start_step=10_000,
+        evaluation_interval=1_000,
+        configured_steps=100_000,
+    ) == 10
+    assert _completed_validation_events_for_resume(
+        checkpoint_extra_state={},
+        start_step=10_000,
+        evaluation_interval=1_000,
+        configured_steps=100_000,
+    ) == 10
+    assert _completed_validation_events_for_resume(
+        checkpoint_extra_state={"completed_validation_events": 4},
+        start_step=10,
+        evaluation_interval=3,
+        configured_steps=10,
+    ) == 4
+    assert _completed_validation_events_for_resume(
+        checkpoint_extra_state={},
+        start_step=10,
+        evaluation_interval=3,
+        configured_steps=10,
+    ) == 4
+    with pytest.raises(ValueError, match="count differs"):
+        _completed_validation_events_for_resume(
+            checkpoint_extra_state={"completed_validation_events": 9},
+            start_step=10_000,
+            evaluation_interval=1_000,
+            configured_steps=100_000,
+        )
+
+
+def test_stop_after_steps_still_records_scheduled_validation(tmp_path) -> None:
+    output = tmp_path / "scheduled_validation_stop"
+    _run(output, "--stop-after-steps", "1")
+    checkpoint = torch.load(
+        output / "checkpoint_step_00000001.pt",
+        map_location="cpu",
+        weights_only=False,
+    )
+    row = json.loads((output / "train_metrics.jsonl").read_text(encoding="utf-8"))
+    assert row["step"] == 1
+    assert row["validation_event_index"] == 0
+    assert checkpoint["extra_state"]["completed_validation_events"] == 1
 
 
 def test_controlled_resume_accepts_only_a_clean_ancestor_revision() -> None:
