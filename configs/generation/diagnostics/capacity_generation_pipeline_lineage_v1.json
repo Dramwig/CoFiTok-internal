@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "role": "capacity_generation_pipeline_lineage_plan",
+  "stages": [
+    {
+      "name": "quality_bridge_100k_recovery",
+      "role": "cofitok_quality_bridge_100k_bounded_recovery_supervisor",
+      "status_path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor_status.json",
+      "blocking": true
+    },
+    {
+      "name": "quality_bridge_followup_decision",
+      "role": "cofitok_quality_bridge_followup_decision_waiter",
+      "status_path": "/tmp/cofitok-quality-bridge-followup-decision-9b02fa8/wait_for_quality_bridge_result_status.json",
+      "blocking": true
+    },
+    {
+      "name": "capacity_probe_preparation",
+      "role": "generation_capacity_probe_preparation_waiter",
+      "status_path": "{source_output_root}/reports/preparation_waiter_status.json",
+      "blocking": true
+    },
+    {
+      "name": "capacity_probe_10k_execution",
+      "role": "generation_capacity_probe_execution_supervisor",
+      "status_path": "{source_output_root}/reports/execution_supervisor_status.json",
+      "blocking": true
+    },
+    {
+      "name": "capacity_scaling_decision",
+      "role": "generation_capacity_scaling_decision_waiter",
+      "status_path": "{source_output_root}/reports/capacity_scaling_decision_waiter_status.json",
+      "blocking": true
+    },
+    {
+      "name": "capacity_scaling_50k_execution",
+      "role": "generation_capacity_scaling_50k_supervisor",
+      "status_path": "{source_output_root}/reports/capacity_scaling_50k_supervisor_status.json",
+      "blocking": true
+    },
+    {
+      "name": "capacity_completion_100k_decision",
+      "role": "capacity_completion_100k_source_replay_waiter",
+      "status_path": "{source_output_root}/reports/capacity_completion_100k_decision_waiter_status.json",
+      "blocking": true
+    },
+    {
+      "name": "capacity_completion_100k_execution",
+      "role": "generation_capacity_completion_100k_supervisor",
+      "status_path": "{source_output_root}/reports/capacity_completion_100k_supervisor_status.json",
+      "blocking": true
+    },
+    {
+      "name": "capacity_completion_100k_result",
+      "role": "capacity_completion_100k_result_source_replay_waiter",
+      "status_path": "{source_output_root}/reports/capacity_completion_100k_result_waiter_status.json",
+      "blocking": true
+    },
+    {
+      "name": "capacity_full_300k_readiness_decision",
+      "role": "capacity_full_300k_readiness_decision_waiter",
+      "status_path": "{source_output_root}/reports/capacity_full_300k_readiness_decision_waiter_status.json",
+      "blocking": true
+    },
+    {
+      "name": "capacity_full_300k_readiness",
+      "role": "capacity_full_300k_readiness_supervisor",
+      "status_path": "{source_output_root}/reports/capacity_full_300k_readiness_supervisor_status.json",
+      "blocking": true
+    },
+    {
+      "name": "capacity_full_300k_training",
+      "role": "capacity_full_300k_training_supervisor",
+      "status_path": "{source_output_root}/reports/capacity_full_300k_training_supervisor_status.json",
+      "blocking": true
+    },
+    {
+      "name": "capacity_full_300k_posteval",
+      "role": "capacity_full_300k_posteval_supervisor",
+      "status_path": "{source_output_root}/reports/capacity_full_300k_posteval_supervisor_status.json",
+      "blocking": true
+    },
+    {
+      "name": "capacity_full_300k_finalization",
+      "role": "capacity_full_300k_finalization_supervisor",
+      "status_path": "{source_output_root}/reports/capacity_full_300k_finalization_supervisor_status.json",
+      "blocking": true
+    },
+    {
+      "name": "quality_bridge_step10k_reference_preservation",
+      "role": "generation_checkpoint_reference_waiter",
+      "status_path": "{quality_bridge_root}/reports/capacity_probe_references/waiter_status.json",
+      "blocking": false
+    },
+    {
+      "name": "quality_bridge_requested_class_visual_audit",
+      "role": "quality_bridge_terminal_requested_class_visual_audit_waiter",
+      "status_path": "{quality_bridge_root}/reports/requested_class_visual_audit_waiter_status.json",
+      "blocking": false
+    }
+  ]
+}

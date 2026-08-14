@@ -59,6 +59,7 @@ RUNBOOKS = (
     "generation_capacity_full_300k_completion_audit.sh",
     "generation_capacity_full_300k_finalize_after_gate.sh",
     "generation_capacity_full_300k_finalization_supervisor.sh",
+    "generation_capacity_pipeline_lineage_observer.sh",
     "generation_stability_ema_teacher_full_readiness_after_gate.sh",
     "generation_stability_ema_teacher_full_readiness_bridge.sh",
     "generation_stability_ema_teacher_full_readiness_waiter.sh",
@@ -129,6 +130,7 @@ ENTRYPOINTS = {
     "verify_generation_training_authorization.py",
     "run_generation_capacity_full_300k_posteval_supervisor.py",
     "run_generation_capacity_full_300k_finalization_supervisor.py",
+    "observe_generation_capacity_pipeline_lineage.py",
     "audit_generation_capacity_full_completion.py",
     "build_generation_capacity_scaling_launch_receipt.py",
     "archive_generation_capacity_completion_sources.py",
@@ -229,6 +231,7 @@ QUALITY_BRIDGE_DIRECT_ENTRYPOINTS = (
     "verify_generation_training_authorization.py",
     "run_generation_capacity_full_300k_posteval_supervisor.py",
     "run_generation_capacity_full_300k_finalization_supervisor.py",
+    "observe_generation_capacity_pipeline_lineage.py",
     "audit_generation_capacity_full_completion.py",
 )
 
