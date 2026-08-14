@@ -1,0 +1,53 @@
+[
+  {
+    "cohort_id": "cofitok",
+    "cohort_kind": "generated_confirmation",
+    "encoded_duplicate_image_fraction": 0.0,
+    "fid": 138.99172622210307,
+    "global_nearest_dhash_le_0_fraction": 0.0,
+    "global_nearest_dhash_le_4_fraction": 0.0,
+    "global_nearest_dhash_le_8_fraction": 0.0006,
+    "global_nearest_dhash_median": 16.0,
+    "pixel_duplicate_image_fraction": 0.0,
+    "precision": 0.7439000010490417,
+    "recall": 0.0075599998235702515,
+    "sample_count": 10000,
+    "within_class_nearest_dhash_median": 26.0,
+    "within_class_pair_dhash_le_4_fraction": 0.0,
+    "within_class_pair_dhash_le_8_fraction": 0.0
+  },
+  {
+    "cohort_id": "dense_identity",
+    "cohort_kind": "generated_confirmation",
+    "encoded_duplicate_image_fraction": 0.0,
+    "fid": 150.56599682692638,
+    "global_nearest_dhash_le_0_fraction": 0.0,
+    "global_nearest_dhash_le_4_fraction": 0.0,
+    "global_nearest_dhash_le_8_fraction": 0.0003,
+    "global_nearest_dhash_median": 16.0,
+    "pixel_duplicate_image_fraction": 0.0,
+    "precision": 0.7789999842643738,
+    "recall": 0.007519999984651804,
+    "sample_count": 10000,
+    "within_class_nearest_dhash_median": 26.0,
+    "within_class_pair_dhash_le_4_fraction": 0.0,
+    "within_class_pair_dhash_le_8_fraction": 0.0
+  },
+  {
+    "cohort_id": "real_reference",
+    "cohort_kind": "balanced_real_reference",
+    "encoded_duplicate_image_fraction": 0.0001,
+    "fid": null,
+    "global_nearest_dhash_le_0_fraction": 0.0002,
+    "global_nearest_dhash_le_4_fraction": 0.0006,
+    "global_nearest_dhash_le_8_fraction": 0.0083,
+    "global_nearest_dhash_median": 15.0,
+    "pixel_duplicate_image_fraction": 0.0001,
+    "precision": null,
+    "recall": null,
+    "sample_count": 10000,
+    "within_class_nearest_dhash_median": 25.0,
+    "within_class_pair_dhash_le_4_fraction": 0.0,
+    "within_class_pair_dhash_le_8_fraction": 2.2222222222222223e-05
+  }
+]
