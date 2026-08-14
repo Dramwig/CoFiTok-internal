@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import copy
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
 
 from cofitok.generation.capacity_probe import (
@@ -45,6 +45,10 @@ CAPACITY_COMPLETION_DECISION_BOUNDARY = {
     "formal_generation_claim_allowed": False,
     "release_authorization_allowed": False,
 }
+
+
+def _absolute_path(value: str) -> bool:
+    return PurePosixPath(value).is_absolute() or Path(value).is_absolute()
 
 
 def _hex(value: Any, *, length: int) -> bool:
@@ -401,7 +405,7 @@ def validate_capacity_completion_decision(
         or int(selection.get("effective_batch_size", -1))
         != CAPACITY_PROBE_EFFECTIVE_BATCH
         or not isinstance(output_root, str)
-        or not PurePosixPath(output_root).is_absolute()
+        or not _absolute_path(output_root)
         or int(selection.get("resume_from_step", -1))
         != CAPACITY_SCALING_TARGET_STEP
         or int(selection.get("stop_after_step", -1))
