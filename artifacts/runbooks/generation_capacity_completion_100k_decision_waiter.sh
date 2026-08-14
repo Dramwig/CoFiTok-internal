@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT=${PROJECT:?set PROJECT to the exact capacity-completion decision checkout}
+TRAINING_PROJECT=${TRAINING_PROJECT:?set TRAINING_PROJECT to the exact capacity-probe training checkout}
+OUTPUT_ROOT=${OUTPUT_ROOT:?set OUTPUT_ROOT to the exact capacity-probe output root}
+STANDING_AUTHORIZATION=${STANDING_AUTHORIZATION:?set STANDING_AUTHORIZATION}
+EXPECTED_STANDING_AUTHORIZATION_SHA256=${EXPECTED_STANDING_AUTHORIZATION_SHA256:?set EXPECTED_STANDING_AUTHORIZATION_SHA256}
+EXPECTED_SELF_REVISION=${EXPECTED_SELF_REVISION:?set EXPECTED_SELF_REVISION}
+EXPECTED_SELF_TREE=${EXPECTED_SELF_TREE:?set EXPECTED_SELF_TREE}
+EXPECTED_SELF_BRANCH=${EXPECTED_SELF_BRANCH:?set EXPECTED_SELF_BRANCH}
+EXPECTED_TRAINING_REVISION=${EXPECTED_TRAINING_REVISION:?set EXPECTED_TRAINING_REVISION}
+EXPECTED_TRAINING_TREE=${EXPECTED_TRAINING_TREE:?set EXPECTED_TRAINING_TREE}
+EXPECTED_TRAINING_BRANCH=${EXPECTED_TRAINING_BRANCH:?set EXPECTED_TRAINING_BRANCH}
+EXPECTED_SCALING_DECISION_REVISION=${EXPECTED_SCALING_DECISION_REVISION:?set EXPECTED_SCALING_DECISION_REVISION}
+EXPECTED_SCALING_DECISION_BRANCH=${EXPECTED_SCALING_DECISION_BRANCH:?set EXPECTED_SCALING_DECISION_BRANCH}
+EXPECTED_EXECUTION_REVISION=${EXPECTED_EXECUTION_REVISION:?set EXPECTED_EXECUTION_REVISION}
+EXPECTED_EXECUTION_TREE=${EXPECTED_EXECUTION_TREE:?set EXPECTED_EXECUTION_TREE}
+EXPECTED_EXECUTION_BRANCH=${EXPECTED_EXECUTION_BRANCH:?set EXPECTED_EXECUTION_BRANCH}
+PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
+POLL_SECONDS=${POLL_SECONDS:-60}
+STATUS=${STATUS:-$OUTPUT_ROOT/reports/capacity_completion_100k_decision_waiter_status.json}
+LOCK=${LOCK:-$OUTPUT_ROOT/capacity_completion_100k_decision_waiter.lock}
+
+[[ -x "$PYTHON" ]]
+[[ -d "$PROJECT/.git" || -f "$PROJECT/.git" ]]
+[[ -d "$TRAINING_PROJECT/.git" || -f "$TRAINING_PROJECT/.git" ]]
+[[ -f "$STANDING_AUTHORIZATION" ]]
+[[ "$(git -C "$PROJECT" rev-parse HEAD)" == "$EXPECTED_SELF_REVISION" ]]
+[[ "$(git -C "$PROJECT" rev-parse 'HEAD^{tree}')" == "$EXPECTED_SELF_TREE" ]]
+[[ "$(git -C "$PROJECT" branch --show-current)" == "$EXPECTED_SELF_BRANCH" ]]
+[[ -z "$(git -C "$PROJECT" status --porcelain)" ]]
+[[ "$(git -C "$TRAINING_PROJECT" rev-parse HEAD)" == "$EXPECTED_TRAINING_REVISION" ]]
+[[ "$(git -C "$TRAINING_PROJECT" rev-parse 'HEAD^{tree}')" == "$EXPECTED_TRAINING_TREE" ]]
+[[ "$(git -C "$TRAINING_PROJECT" branch --show-current)" == "$EXPECTED_TRAINING_BRANCH" ]]
+[[ -z "$(git -C "$TRAINING_PROJECT" status --porcelain)" ]]
+[[ "$(sha256sum "$STANDING_AUTHORIZATION" | awk '{print $1}')" == "$EXPECTED_STANDING_AUTHORIZATION_SHA256" ]]
+
+mkdir -p "$(dirname "$STATUS")" "$(dirname "$LOCK")"
+exec 7>"$LOCK"
+flock -n 7 || {
+  printf 'refusing duplicate capacity-completion decision waiter\n' >&2
+  exit 75
+}
+
+cd "$PROJECT"
+export CUDA_VISIBLE_DEVICES=""
+export OMP_NUM_THREADS=2
+export MKL_NUM_THREADS=2
+export PYTHONPATH="$PROJECT:$PROJECT/src${PYTHONPATH:+:$PYTHONPATH}"
+
+exec nice -n 19 "$PYTHON" scripts/wait_for_generation_capacity_completion_decision.py \
+  --project "$PROJECT" \
+  --training-project "$TRAINING_PROJECT" \
+  --output-root "$OUTPUT_ROOT" \
+  --standing-authorization "$STANDING_AUTHORIZATION" \
+  --expected-standing-authorization-sha256 "$EXPECTED_STANDING_AUTHORIZATION_SHA256" \
+  --expected-self-revision "$EXPECTED_SELF_REVISION" \
+  --expected-self-tree "$EXPECTED_SELF_TREE" \
+  --expected-self-branch "$EXPECTED_SELF_BRANCH" \
+  --expected-training-revision "$EXPECTED_TRAINING_REVISION" \
+  --expected-training-tree "$EXPECTED_TRAINING_TREE" \
+  --expected-training-branch "$EXPECTED_TRAINING_BRANCH" \
+  --expected-scaling-decision-revision "$EXPECTED_SCALING_DECISION_REVISION" \
+  --expected-scaling-decision-branch "$EXPECTED_SCALING_DECISION_BRANCH" \
+  --expected-execution-revision "$EXPECTED_EXECUTION_REVISION" \
+  --expected-execution-tree "$EXPECTED_EXECUTION_TREE" \
+  --expected-execution-branch "$EXPECTED_EXECUTION_BRANCH" \
+  --status "$STATUS" \
+  --poll-seconds "$POLL_SECONDS"
