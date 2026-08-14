@@ -135,3 +135,40 @@ The supervisor can execute only the exact 250M/10K diagnostic after the
 source-bound preparation exists and five consecutive GPU-idle observations.
 It cannot complete either configured run to 100K, launch 300K, promote, or
 release an artifact.
+
+## Post-deployment wait-chain recovery
+
+A process-level audit after deployment found that the quality-bridge idle
+waiter, its bounded recovery supervisor, and the follow-up decision waiter had
+all exited near 08:29 CST even though their last JSON statuses still said
+`waiting` or `observing`. Their preserved logs show the same root cause:
+`OSError: [Errno 28] No space left on device` while creating an adjacent atomic
+status temporary under `/tmp`. No quality-bridge controller had launched, no
+training checkpoint existed, and no GPU work had started.
+
+Four old, clean, process-unreferenced verification checkouts were moved from
+`/tmp` to the recoverable data-disk archive
+`/root/autodl-tmp/CoFiTok/checkouts/tmp-archive-20260814`. Nothing was deleted.
+The move freed `1,891,942,400` bytes and is bound by `move_receipt.json`
+(SHA256
+`abde8de0849773bc83465dd5db33eafb1c9623ca7ebf9d48b5058c0c8a0a35dd`),
+leaving approximately 2.1 GiB free on the system overlay.
+
+After revalidating exact code, Git, authorization, output, process, storage,
+and GPU identities, the wait chain was restored without launching training:
+
+- quality-bridge bounded recovery supervisor PID `155032`, waiting for GPU
+  idle behind FieldScope;
+- quality-bridge follow-up decision waiter PID `155125`, waiting for the
+  quality-bridge result;
+- capacity-preparation waiter PID `132393`, still waiting for that decision;
+- capacity execution supervisor PID `153330`, still waiting for source-bound
+  preparation.
+
+All four statuses refreshed successfully across a complete poll after the
+recovery. The immutable recovery receipt is
+`stability_full_data_100k_base128_quality_bridge_v1/reports/enospc_wait_chain_recovery_receipt.json`
+(`6,803` bytes, SHA256
+`a9533eb7375fce2d4323c42eef1f68b10ba6b818384945c236266fcd4513ac37`).
+The sole GPU process remained the unrelated FieldScope PID `910099`; no signal
+was sent to it.
