@@ -1168,6 +1168,18 @@ JUnit report, exact Git identity, metric/mechanism/class/visual scope, and
 explicit non-quality limitation are recorded in
 `docs/records/2026-08-15_generation_sample_quality_gate_revalidation.md`.
 
+The subsequent training-scale control chain was independently revalidated from
+the 250M/10K probe through resume-to-50K, resume-to-100K, full-300K readiness,
+and fresh full-training launch. The same 177 tests passed on Windows and
+CUDA-hidden Linux with no failures, errors, or skips. These tests enforce exact
+source replay, checkpoint and Git identity, per-stage decision boundaries,
+fresh-versus-resume semantics, duplicate refusal, and the separation between
+standing experiment authorization and scientific promotion/release authority.
+They validate the machinery, not completion of any pending training or sample
+quality. Exact module counts, persistent JUnit identity, and the corrected
+Linux invocation are recorded in
+`docs/records/2026-08-15_generation_training_scale_authorization_revalidation.md`.
+
 Every bridge artifact remains explicitly non-authorizing:
 `quality_bridge_launch_allowed=false`, `full_training_launch_allowed=false`,
 `full_300k_launch_allowed=false`, and `new_gate_required=true`. Preparing or
