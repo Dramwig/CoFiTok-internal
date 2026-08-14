@@ -42,6 +42,7 @@ RUNBOOKS = (
     "generation_capacity_probe_prepare_after_decision.sh",
     "generation_stability_capacity_probe_250m_10k_execute.sh",
     "generation_stability_capacity_probe_250m_10k_supervisor.sh",
+    "generation_capacity_scaling_decision_after_probe.sh",
     "generation_stability_ema_teacher_full_readiness_after_gate.sh",
     "generation_stability_ema_teacher_full_readiness_bridge.sh",
     "generation_stability_ema_teacher_full_readiness_waiter.sh",
@@ -99,6 +100,7 @@ ENTRYPOINTS = {
     "run_generation_stability_full_readiness_waiter.py",
     "run_generation_stability_posttraining_supervisor.py",
     "run_generation_capacity_probe_execution_supervisor.py",
+    "wait_for_generation_capacity_scaling_decision.py",
     "run_generation_stage_once.py",
     "run_generation_training_watchdog.py",
     "select_generation_sampling_batch.py",
@@ -150,9 +152,12 @@ QUALITY_BRIDGE_DIRECT_ENTRYPOINTS = (
     "build_generation_capacity_probe_launch_receipt.py",
     "verify_generation_capacity_probe_launch_receipt.py",
     "build_generation_capacity_probe_result.py",
+    "build_generation_capacity_scaling_decision.py",
+    "verify_generation_capacity_scaling_decision.py",
     "verify_generation_capacity_probe_result.py",
     "monitor_generation_capacity_probe.py",
     "run_generation_capacity_probe_execution_supervisor.py",
+    "wait_for_generation_capacity_scaling_decision.py",
     "validate_generation_capacity_probe_training.py",
 )
 
