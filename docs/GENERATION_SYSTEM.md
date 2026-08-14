@@ -1192,3 +1192,21 @@ to avoid truncation. The snapshot is inert JSON and explicitly cannot authorize
 or launch a process; actual recovery still requires absence checks, fresh
 source verification, and a separate execution receipt. See
 `docs/records/2026-08-15_generation_capacity_control_process_snapshot.md`.
+
+The corresponding recovery executor is deliberately fail-closed. A readiness
+pass replays the static snapshot sources, standing authorization, exact formal
+checkout porcelain fingerprint, and the executor's clean Git identity before
+scanning all `/proc` entries by absolute CWD plus resolved entrypoint. Any live
+match prevents approval. Successful stages are skipped; missing/active stages
+are eligible only when every selected signature is absent; hold/failure or
+unknown status is terminal. Execution repeats the complete readiness check
+after approval, reopens logs only in append mode, and launches CPU control
+processes in detached sessions. A partial failure signals only process groups
+created by that execution. The production runbook additionally requires the
+explicit `CONTROL_PROCESS_RELAUNCH_ALLOWED=true` switch, while every recovered
+supervisor retains its own scientific-stage and GPU-idle authorization gate.
+The first production assessment found all 17 processes alive and therefore
+wrote `not_ready` with zero launch/signal/GPU effects. Real POSIX success,
+duplicate-refusal, and owned-rollback rehearsals passed with no dummy residue.
+See
+`docs/records/2026-08-15_generation_capacity_control_process_relaunch.md`.

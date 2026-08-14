@@ -147,3 +147,26 @@ The formal checkout remained exactly:
 The existing recovery supervisor will continue waiting and will launch the
 already-authorized quality bridge only after five consecutive GPU-idle polls.
 No additional user authorization is required for that experiment chain.
+
+## Waiting-period storage recheck
+
+Because free space changed while the unrelated GPU job remained active, the
+quality-bridge execution revision reran the exact launch storage formula without
+allocating a GPU. The fresh report is:
+
+- path:
+  `/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/storage_capacity_waiting_audit_2026-08-15.json`;
+- bytes: `1,113`;
+- SHA256:
+  `af88526b7270ecbbb938cde5b514a51939d623c96d070a9d0cb198677cf30dc5`;
+- execution revision: `cf0e5faa94bf4ab38d947b921935b3b765b5537a`;
+- status: `pass`;
+- current free bytes: `208,920,915,968`;
+- required free bytes: `103,826,920,100`;
+- conservative headroom: `105,093,995,868` bytes.
+
+The formula is identical to launch: ten reference-sized checkpoint slots,
+30,000 estimated 256-KiB images, 16 GiB of additional evaluator/runtime space,
+and a 64-GiB safety margin. The actual runbook will compute a new immutable
+launch report after GPU runtime selection, so this waiting-period report is
+early operational evidence rather than a substitute for the launch receipt.
