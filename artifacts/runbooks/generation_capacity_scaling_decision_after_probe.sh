@@ -21,6 +21,7 @@ LOCK="$OUTPUT_ROOT/capacity_scaling_decision_waiter.lock"
 
 mkdir -p "$REPORT_ROOT"
 cd "$PROJECT"
+export PYTHONPATH="$PROJECT:$PROJECT/src${PYTHONPATH:+:$PYTHONPATH}"
 exec 9>"$LOCK"
 flock -n 9 || {
   printf 'refusing concurrent capacity-scaling decision waiter\n' >&2

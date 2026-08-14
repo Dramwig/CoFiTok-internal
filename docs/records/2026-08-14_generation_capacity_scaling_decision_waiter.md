@@ -57,3 +57,7 @@ from all physical sources.
 - `git diff --check` passed.
 - The waiter runbook is statically asserted to contain no training entrypoint,
   GPU query, full-300K launch, promotion, or release path.
+- The first isolated deployment attempt exited before reading any result because
+  the runbook did not export the checkout-local `PYTHONPATH`. The failure log was
+  retained, the runbook now exports both the project and `src/` roots, and the
+  repaired entrypoint is verified through the real Linux launch environment.

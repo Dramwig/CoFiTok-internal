@@ -137,6 +137,7 @@ def test_capacity_scaling_waiter_runbook_is_cpu_only() -> None:
         / "artifacts/runbooks/generation_capacity_scaling_decision_after_probe.sh"
     ).read_text(encoding="utf-8")
     assert "wait_for_generation_capacity_scaling_decision.py" in source
+    assert 'export PYTHONPATH="$PROJECT:$PROJECT/src' in source
     assert "train_generation.py" not in source
     assert "nvidia-smi" not in source
     assert "full_matched_300k" not in source
