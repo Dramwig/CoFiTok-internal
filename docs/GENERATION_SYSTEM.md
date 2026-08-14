@@ -1162,6 +1162,12 @@ mismatch, and class fidelity. Any failed row produces a non-authorizing `hold`.
 The result cannot consume an existing full-training authorization and fixes both
 `full_training_launch_allowed=false` and `full_300k_launch_allowed=false`.
 
+These sample-quality and non-authorizing failure boundaries were revalidated as
+103 cross-platform tests plus three Linux-only waiter tests. The persistent
+JUnit report, exact Git identity, metric/mechanism/class/visual scope, and
+explicit non-quality limitation are recorded in
+`docs/records/2026-08-15_generation_sample_quality_gate_revalidation.md`.
+
 Every bridge artifact remains explicitly non-authorizing:
 `quality_bridge_launch_allowed=false`, `full_training_launch_allowed=false`,
 `full_300k_launch_allowed=false`, and `new_gate_required=true`. Preparing or
