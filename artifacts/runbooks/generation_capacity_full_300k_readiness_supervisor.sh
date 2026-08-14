@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT=${PROJECT:?set PROJECT to the exact capacity-full readiness checkout}
+SOURCE_OUTPUT_ROOT=${SOURCE_OUTPUT_ROOT:?set SOURCE_OUTPUT_ROOT}
+CHECKPOINT_ROOT=${CHECKPOINT_ROOT:?set CHECKPOINT_ROOT}
+STANDING_AUTHORIZATION=${STANDING_AUTHORIZATION:?set STANDING_AUTHORIZATION}
+EXPECTED_STANDING_AUTHORIZATION_SHA256=${EXPECTED_STANDING_AUTHORIZATION_SHA256:?set EXPECTED_STANDING_AUTHORIZATION_SHA256}
+DECISION_WAITER_DEPLOYMENT_RECEIPT=${DECISION_WAITER_DEPLOYMENT_RECEIPT:?set DECISION_WAITER_DEPLOYMENT_RECEIPT}
+EXPECTED_DECISION_WAITER_DEPLOYMENT_RECEIPT_SHA256=${EXPECTED_DECISION_WAITER_DEPLOYMENT_RECEIPT_SHA256:?set EXPECTED_DECISION_WAITER_DEPLOYMENT_RECEIPT_SHA256}
+EXPECTED_SELF_REVISION=${EXPECTED_SELF_REVISION:?set EXPECTED_SELF_REVISION}
+EXPECTED_SELF_TREE=${EXPECTED_SELF_TREE:?set EXPECTED_SELF_TREE}
+EXPECTED_SELF_BRANCH=${EXPECTED_SELF_BRANCH:?set EXPECTED_SELF_BRANCH}
+EXPECTED_DECISION_REVISION=${EXPECTED_DECISION_REVISION:?set EXPECTED_DECISION_REVISION}
+EXPECTED_DECISION_TREE=${EXPECTED_DECISION_TREE:?set EXPECTED_DECISION_TREE}
+EXPECTED_DECISION_BRANCH=${EXPECTED_DECISION_BRANCH:?set EXPECTED_DECISION_BRANCH}
+EXPECTED_RESULT_REVISION=${EXPECTED_RESULT_REVISION:?set EXPECTED_RESULT_REVISION}
+EXPECTED_RESULT_TREE=${EXPECTED_RESULT_TREE:?set EXPECTED_RESULT_TREE}
+EXPECTED_RESULT_BRANCH=${EXPECTED_RESULT_BRANCH:?set EXPECTED_RESULT_BRANCH}
+PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
+POLL_SECONDS=${POLL_SECONDS:-60}
+REQUIRED_IDLE_POLLS=${REQUIRED_IDLE_POLLS:-5}
+MAX_ATTEMPTS=${MAX_ATTEMPTS:-4}
+TIMEOUT_SECONDS=${TIMEOUT_SECONDS:-7776000}
+
+FULL_OUTPUT_ROOT=${FULL_OUTPUT_ROOT:-$CHECKPOINT_ROOT/stability_capacity_full_300k_v1}
+DECISION=${DECISION:-$SOURCE_OUTPUT_ROOT/reports/capacity_full_300k_readiness_decision.json}
+DECISION_WAITER_STATUS=${DECISION_WAITER_STATUS:-$SOURCE_OUTPUT_ROOT/reports/capacity_full_300k_readiness_decision_waiter_status.json}
+SUPERVISOR_STATUS=${SUPERVISOR_STATUS:-$SOURCE_OUTPUT_ROOT/reports/capacity_full_300k_readiness_supervisor_status.json}
+READINESS_RUNBOOK=${READINESS_RUNBOOK:-$PROJECT/artifacts/runbooks/generation_capacity_full_300k_readiness_after_decision.sh}
+LOCK=${LOCK:-$SOURCE_OUTPUT_ROOT/capacity_full_300k_readiness_supervisor.lock}
+
+[[ -x "$PYTHON" ]]
+[[ -d "$PROJECT/.git" || -f "$PROJECT/.git" ]]
+[[ -d "$SOURCE_OUTPUT_ROOT" ]]
+[[ -d "$CHECKPOINT_ROOT" ]]
+[[ -f "$STANDING_AUTHORIZATION" ]]
+[[ -f "$DECISION_WAITER_DEPLOYMENT_RECEIPT" ]]
+[[ -f "$READINESS_RUNBOOK" ]]
+[[ "$(git -C "$PROJECT" rev-parse HEAD)" == "$EXPECTED_SELF_REVISION" ]]
+[[ "$(git -C "$PROJECT" rev-parse 'HEAD^{tree}')" == "$EXPECTED_SELF_TREE" ]]
+[[ "$(git -C "$PROJECT" branch --show-current)" == "$EXPECTED_SELF_BRANCH" ]]
+[[ -z "$(git -C "$PROJECT" status --porcelain)" ]]
+[[ "$(sha256sum "$STANDING_AUTHORIZATION" | awk '{print $1}')" == "$EXPECTED_STANDING_AUTHORIZATION_SHA256" ]]
+[[ "$(sha256sum "$DECISION_WAITER_DEPLOYMENT_RECEIPT" | awk '{print $1}')" == "$EXPECTED_DECISION_WAITER_DEPLOYMENT_RECEIPT_SHA256" ]]
+
+mkdir -p "$(dirname "$SUPERVISOR_STATUS")" "$(dirname "$LOCK")"
+exec 7>"$LOCK"
+flock -n 7 || {
+  printf 'refusing duplicate capacity-full readiness supervisor\n' >&2
+  exit 75
+}
+
+cd "$PROJECT"
+export OMP_NUM_THREADS=2
+export MKL_NUM_THREADS=2
+export PYTHONPATH="$PROJECT:$PROJECT/src${PYTHONPATH:+:$PYTHONPATH}"
+
+exec nice -n 19 "$PYTHON" scripts/run_generation_capacity_full_300k_readiness_supervisor.py \
+  --project "$PROJECT" \
+  --checkpoint-root "$CHECKPOINT_ROOT" \
+  --source-output-root "$SOURCE_OUTPUT_ROOT" \
+  --full-output-root "$FULL_OUTPUT_ROOT" \
+  --decision "$DECISION" \
+  --decision-waiter-status "$DECISION_WAITER_STATUS" \
+  --decision-waiter-deployment-receipt "$DECISION_WAITER_DEPLOYMENT_RECEIPT" \
+  --expected-decision-waiter-deployment-receipt-sha256 "$EXPECTED_DECISION_WAITER_DEPLOYMENT_RECEIPT_SHA256" \
+  --standing-authorization "$STANDING_AUTHORIZATION" \
+  --expected-standing-authorization-sha256 "$EXPECTED_STANDING_AUTHORIZATION_SHA256" \
+  --runbook "$READINESS_RUNBOOK" \
+  --status-output "$SUPERVISOR_STATUS" \
+  --expected-readiness-revision "$EXPECTED_SELF_REVISION" \
+  --expected-readiness-tree "$EXPECTED_SELF_TREE" \
+  --expected-readiness-branch "$EXPECTED_SELF_BRANCH" \
+  --expected-decision-revision "$EXPECTED_DECISION_REVISION" \
+  --expected-decision-tree "$EXPECTED_DECISION_TREE" \
+  --expected-decision-branch "$EXPECTED_DECISION_BRANCH" \
+  --expected-result-revision "$EXPECTED_RESULT_REVISION" \
+  --expected-result-tree "$EXPECTED_RESULT_TREE" \
+  --expected-result-branch "$EXPECTED_RESULT_BRANCH" \
+  --poll-seconds "$POLL_SECONDS" \
+  --required-idle-polls "$REQUIRED_IDLE_POLLS" \
+  --max-attempts "$MAX_ATTEMPTS" \
+  --timeout-seconds "$TIMEOUT_SECONDS"
