@@ -6,13 +6,93 @@ Date: 2026-08-15
 
 The active quality-bridge-to-capacity generation chain now has a persistent,
 source-bound cold-recovery archive for the static assets that previously existed
-only under `/tmp`. The final v2 archive is self-contained relative to its four
+only under `/tmp`. The final v3 archive is self-contained relative to its four
 declared Git bundles, and a full materialization rehearsal reconstructed all
-three vulnerable checkouts and five non-Git runtime files without launching or
+four live `/tmp` checkouts and five non-Git runtime files without launching or
 signaling a process.
 
 This is continuity evidence only. It does not authorize training, sampling,
 evaluation, promotion, export, or release.
+
+## V3 auxiliary-checkout closure
+
+A later live-process/CWD audit found that v2 preserved the exact
+`capacity_probe_reference` prerequisite bundle but did not materialize its live
+checkout at `/tmp/cofitok-capacity-reference-c7424ed`. The non-blocking
+`generation_checkpoint_reference_waiter` still executes from that checkout, so
+v2 could restore its Git objects but not its exact working path after a host
+restart. V2 remains immutable historical evidence.
+
+V3 adds the missing checkout without changing the four bundle or five runtime
+payload bytes:
+
+- revision: `c7424ed74da1bd7907d094d10725b337b1d822ac`;
+- tree: `03f14b6fe32147dd128e427d24a7dc350283e5ad`;
+- branch: `scale/generation-capacity-probe-reference-v1`;
+- restore path: `cofitok-capacity-reference-c7424ed`.
+
+The exact v3 implementation is:
+
+- branch: `scale/generation-capacity-control-continuity-v3`;
+- revision: `2108255d00b0c822dd93636339fd912a8150484a`;
+- tree: `df2fb10fcf62fce3b7b30997cdf314d89f262e9f`;
+- isolated checkout:
+  `/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-v3-2108255/CoFiTok-internal`;
+- plan: `6,595` bytes, SHA256
+  `2f0ae8faa79265c8be85128637186482b2db7e2043f860af2fc314b869164985`.
+
+The incremental deployment bundle has one advertised target and the exact v2
+implementation prerequisite:
+
+- path:
+  `/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_v3/deployment/cofitok-capacity-control-continuity-v3-2108255-from-a89c1fa.bundle`;
+- bytes: `7,381`;
+- SHA256:
+  `c96875aeb45b01e3fe478a09aa70068b64bcb62265568ba4083b6e5f1d055918`;
+- prerequisite: `a89c1fa29fda494f3492d32dfa5e9a60bfa705a9`;
+- advertised head: `2108255d00b0c822dd93636339fd912a8150484a`.
+
+The final archive root is:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_v3
+```
+
+Its manifest is `9,726` bytes with SHA256
+`925d7caf63823f0431d2c3dc31967b26a586642d614568aa937f88a42a315d74`.
+The independent final verification report is `3,115` bytes with SHA256
+`59a35c4af9b15de8365cd78f544e39a24f3cc1ff267c9d59410d84e364640e51`.
+It verifies the same four-bundle closure, nine exact payload files, and all four
+checkout revision/tree pairs.
+
+The successful v3 cold-restore rehearsal is:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_v3_restore_rehearsal
+```
+
+The restore report is `10,384` bytes with SHA256
+`781809b5982fdcaed175da1b2d3cae673017e443f30f1613dff380541b9d01d7`.
+It reconstructs the newly covered reference checkout in addition to the three
+v2 checkouts, with all four tracked states clean. It also proves that the restore
+itself launched no process, signaled no process, queried or allocated no GPU,
+modified no formal checkout, and created no experiment authorization.
+
+Validation results for v3 were:
+
+- local continuity suite: `7 passed`;
+- local lineage, entrypoint-registry, and all-runbook syntax suite: `13 passed`;
+- exact Linux continuity suite with CUDA hidden: `7 passed`;
+- Linux source-validation log: `80` bytes, SHA256
+  `83a1593c5b5783693fe3006d1f6597bcb4f3a5968f23b59481ee09a0477f910a`;
+- Python compilation, `bash -n`, `git diff --check`, and clean tracked Linux
+  checkout: passed.
+
+An initial broad Linux entrypoint enumeration outlived its 300-second SSH
+wrapper. After verifying both exact PIDs, CWDs, and process group, only that
+validation group was lowered to nice 19 and terminated with SIGTERM; no
+experiment, active chain, or unrelated process was signaled. The bounded Linux
+suite above was then rerun cleanly and left no validation PID.
 
 ## Recovery gap found by rehearsal
 
@@ -40,7 +120,7 @@ the whole declared bundle sequence in a temporary bare repository before the
 archive directory is atomically published. An incomplete closure now removes
 its bounded staging directory and cannot become an accepted archive.
 
-## Exact implementation identity
+## V2 implementation identity
 
 - branch: `scale/generation-capacity-control-continuity-v1`;
 - final revision: `a89c1fa29fda494f3492d32dfa5e9a60bfa705a9`;
@@ -61,7 +141,7 @@ lineage-observer revision to the final continuity revision:
 - prerequisite: `0bbd1cc43b9bb713ab2da8d4da6404f304f88ffe`;
 - advertised head: `a89c1fa29fda494f3492d32dfa5e9a60bfa705a9`.
 
-## Final archived payload
+## V2 archived payload
 
 The v2 archive root is:
 
@@ -95,7 +175,7 @@ The verified Git fetch order is:
 The final independent verification report is `2,931` bytes with SHA256
 `4481c1c184ca636dfa9ff35379c7bc180518d5874b714361a55f1fba6a5587bd`.
 
-## Cold-restore proof
+## V2 cold-restore proof
 
 The successful rehearsal target is:
 
