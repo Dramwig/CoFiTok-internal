@@ -36,7 +36,7 @@ def main() -> int:
         )
     except Exception as error:
         report = {
-            "schema_version": 1,
+            "schema_version": 2,
             "role": "generation_control_plane_continuity_restore",
             "status": "failed",
             "complete": False,

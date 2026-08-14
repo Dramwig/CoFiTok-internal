@@ -15,7 +15,10 @@ from typing import Any, Mapping, Sequence
 
 
 PLAN_SCHEMA_VERSION = 1
-MANIFEST_SCHEMA_VERSION = 1
+MANIFEST_SCHEMA_VERSION = 2
+LEGACY_MANIFEST_SCHEMA_VERSION = 1
+VERIFICATION_SCHEMA_VERSION = 2
+RESTORE_SCHEMA_VERSION = 2
 PLAN_ROLE = "generation_control_plane_continuity_plan"
 MANIFEST_ROLE = "generation_control_plane_continuity_archive"
 VERIFY_ROLE = "generation_control_plane_continuity_verification"
@@ -597,17 +600,26 @@ def verify_continuity_archive(
     if manifest_identity["sha256"] != expected_manifest_sha256:
         raise ValueError("continuity archive manifest SHA256 differs")
     manifest = _read_json_object(manifest_path, label="continuity archive manifest")
+    manifest_schema = manifest.get("schema_version")
+    effects = manifest.get("effects", {})
+    legacy_effects_valid = (
+        manifest_schema == LEGACY_MANIFEST_SCHEMA_VERSION
+        and effects.get("processes_launched") is False
+    )
+    current_effects_valid = (
+        manifest_schema == MANIFEST_SCHEMA_VERSION
+        and effects.get("experiment_processes_launched") is False
+        and effects.get("background_processes_launched") is False
+    )
     if (
-        manifest.get("schema_version") != MANIFEST_SCHEMA_VERSION
+        manifest_schema
+        not in {LEGACY_MANIFEST_SCHEMA_VERSION, MANIFEST_SCHEMA_VERSION}
         or manifest.get("role") != MANIFEST_ROLE
         or manifest.get("status") != "pass"
         or manifest.get("complete") is not True
         or manifest.get("authorization_boundary") != AUTHORIZATION_BOUNDARY
-        or manifest.get("effects", {}).get("experiment_processes_launched")
-        is not False
-        or manifest.get("effects", {}).get("background_processes_launched")
-        is not False
-        or manifest.get("effects", {}).get("source_processes_modified") is not False
+        or not (legacy_effects_valid or current_effects_valid)
+        or effects.get("source_processes_modified") is not False
     ):
         raise ValueError("continuity archive manifest contract differs")
 
@@ -667,7 +679,7 @@ def verify_continuity_archive(
     if observed_payload_paths != expected_payload_paths:
         raise ValueError("continuity archive payload membership differs")
     return {
-        "schema_version": 1,
+        "schema_version": VERIFICATION_SCHEMA_VERSION,
         "role": VERIFY_ROLE,
         "status": "pass",
         "complete": True,
@@ -839,7 +851,7 @@ def restore_continuity_archive(
         )
 
     return {
-        "schema_version": 1,
+        "schema_version": RESTORE_SCHEMA_VERSION,
         "role": RESTORE_ROLE,
         "status": "pass",
         "complete": True,

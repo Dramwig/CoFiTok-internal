@@ -175,6 +175,10 @@ def test_production_continuity_plan_binds_the_three_vulnerable_checkouts() -> No
 def test_build_verify_and_restore_continuity_archive(tmp_path: Path) -> None:
     fixture, result = _build(tmp_path)
     manifest = result["manifest"]
+    manifest_payload = json.loads(
+        Path(manifest["path"]).read_text(encoding="utf-8")
+    )
+    assert manifest_payload["schema_version"] == 2
     assert result["verification"]["status"] == "pass"
     assert result["verification"]["verified_file_count"] == 5
     assert result["verification"]["bundle_closure"][
@@ -208,6 +212,24 @@ def test_build_verify_and_restore_continuity_archive(tmp_path: Path) -> None:
     assert (tmp_path / "restored/quality/approval.txt").read_bytes() == b"approved\n"
     assert (tmp_path / "restored/quality/waiter.txt").read_bytes() == b"wait\n"
     assert git_state(fixture["repo"]) == fixture["state"]
+
+
+def test_continuity_verifier_replays_legacy_manifest_effects(tmp_path: Path) -> None:
+    _, result = _build(tmp_path)
+    manifest_path = Path(result["manifest"]["path"])
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["schema_version"] = 1
+    manifest["effects"].pop("experiment_processes_launched")
+    manifest["effects"].pop("background_processes_launched")
+    manifest["effects"]["processes_launched"] = False
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    digest = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    report = verify_continuity_archive(
+        archive_root=tmp_path / "archive",
+        expected_manifest_sha256=digest,
+    )
+    assert report["status"] == "pass"
+    assert report["schema_version"] == 2
 
 
 def test_continuity_archive_rejects_payload_tampering(tmp_path: Path) -> None:
