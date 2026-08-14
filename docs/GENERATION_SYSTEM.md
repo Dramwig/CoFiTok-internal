@@ -699,7 +699,12 @@ rows. It encodes the actual budget basis as matched optimizer steps and training
 images (plus dataset, resolution, and effective batch), while permanently
 setting equal wall-clock, GPU-hours, FLOPs, and generic compute-matched claims
 to false. Time, throughput, and peak VRAM are measured outcomes rather than
-pre-equalized budgets. The
+pre-equalized budgets. The schema-v8 comparison and terminal completion
+boundaries were revalidated as a 119-test suite on Windows and CUDA-hidden
+Linux. The persistent JUnit report, exact Git identity, covered tamper cases,
+and explicit non-quality scope are in
+`docs/records/2026-08-15_generation_strong_baseline_completion_revalidation.md`.
+The
 full paired-config preflight confirms 62,836,011 vs 62,824,707 parameters
 (+0.017993%). See
 `docs/records/2026-07-12_generation_matched_compute_accounting.md` and
