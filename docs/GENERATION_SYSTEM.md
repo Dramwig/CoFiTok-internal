@@ -1179,3 +1179,16 @@ a process, modifies the active source directories, or changes the formal
 checkout. A successful restore is therefore reconstruction evidence, not
 execution authorization. See
 `docs/records/2026-08-15_generation_capacity_control_plane_continuity.md`.
+
+A companion process snapshot covers all 16 live stages plus the lineage
+observer. It binds each complete argv, CWD, safe environment subset,
+PID/start-ticks identity, detached-session metadata, log targets and descriptor
+flags, entrypoint bytes, status role, and clean checkout revision/tree/branch.
+The manifest also binds the v3 static-continuity archive. Two live verifiers
+require all 17 `/proc` identities to match; a separate source-only verifier is
+valid after the old PIDs disappear. Current descriptor flags remain historical
+evidence, while any future relaunch recipe must reopen both logs in append mode
+to avoid truncation. The snapshot is inert JSON and explicitly cannot authorize
+or launch a process; actual recovery still requires absence checks, fresh
+source verification, and a separate execution receipt. See
+`docs/records/2026-08-15_generation_capacity_control_process_snapshot.md`.
