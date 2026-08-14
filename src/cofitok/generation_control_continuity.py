@@ -84,13 +84,20 @@ def _run_git(
     *,
     cwd: Path | None = None,
 ) -> str:
-    result = subprocess.run(
-        ["git", *arguments],
-        cwd=cwd,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    command = ["git", *arguments]
+    try:
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError as error:
+        detail = (error.stderr or error.stdout or "").strip()
+        raise RuntimeError(
+            f"git command failed ({' '.join(command)}): {detail}"
+        ) from error
     return result.stdout.strip()
 
 
@@ -461,13 +468,18 @@ def build_continuity_archive(
             "effects": {
                 "source_files_modified": False,
                 "source_processes_modified": False,
-                "processes_launched": False,
+                "experiment_processes_launched": False,
+                "background_processes_launched": False,
                 "processes_signaled": False,
                 "gpu_queried_or_allocated": False,
                 "formal_checkout_modified": False,
             },
         }
         _atomic_json(staging / "manifest.json", manifest)
+        verify_continuity_archive(
+            archive_root=staging,
+            expected_manifest_sha256=_sha256(staging / "manifest.json"),
+        )
         os.replace(staging, output_root)
     except Exception:
         shutil.rmtree(staging, ignore_errors=True)
@@ -481,6 +493,92 @@ def build_continuity_archive(
         "manifest": _identity(manifest_path),
         "archive_root": output_root.as_posix(),
         "verification": verification,
+    }
+
+
+def _verify_bundle_closure(
+    *,
+    archive_root: Path,
+    bundles: Sequence[Mapping[str, Any]],
+    checkouts: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    with tempfile.TemporaryDirectory(
+        dir=archive_root.parent,
+        prefix=f".{archive_root.name}.bundle-closure.",
+    ) as temporary:
+        bare = Path(temporary) / "repository.git"
+        _run_git(["init", "--bare", str(bare)])
+        fetched = []
+        for row in bundles:
+            archived = _under(
+                archive_root,
+                row["archive_relative_path"],
+                label="bundle closure archive path",
+            )
+            continuity_ref = f"refs/heads/continuity/{row['name']}"
+            try:
+                _run_git(
+                    [
+                        f"--git-dir={bare}",
+                        "fetch",
+                        "--no-tags",
+                        str(archived),
+                        f"{row['expected_ref']}:{continuity_ref}",
+                    ]
+                )
+            except RuntimeError as error:
+                raise ValueError(
+                    "continuity bundle closure is incomplete at "
+                    f"{row['name']}: {error}"
+                ) from error
+            revision = _run_git(
+                [f"--git-dir={bare}", "rev-parse", continuity_ref]
+            )
+            if revision != row["expected_revision"]:
+                raise ValueError(
+                    f"continuity bundle closure revision differs: {row['name']}"
+                )
+            fetched.append(
+                {
+                    "name": row["name"],
+                    "revision": revision,
+                    "ref": continuity_ref,
+                }
+            )
+
+        verified_checkouts = []
+        for row in checkouts:
+            try:
+                revision = _run_git(
+                    [f"--git-dir={bare}", "rev-parse", row["revision"]]
+                )
+                tree = _run_git(
+                    [
+                        f"--git-dir={bare}",
+                        "rev-parse",
+                        f"{row['revision']}^{{tree}}",
+                    ]
+                )
+            except RuntimeError as error:
+                raise ValueError(
+                    f"continuity checkout object is absent: {row['name']}"
+                ) from error
+            if revision != row["revision"] or tree != row["tree"]:
+                raise ValueError(
+                    f"continuity checkout object differs: {row['name']}"
+                )
+            verified_checkouts.append(
+                {
+                    "name": row["name"],
+                    "revision": revision,
+                    "tree": tree,
+                }
+            )
+    return {
+        "status": "pass",
+        "self_contained_in_declared_order": True,
+        "fetched_bundles": fetched,
+        "verified_checkouts": verified_checkouts,
     }
 
 
@@ -505,7 +603,10 @@ def verify_continuity_archive(
         or manifest.get("status") != "pass"
         or manifest.get("complete") is not True
         or manifest.get("authorization_boundary") != AUTHORIZATION_BOUNDARY
-        or manifest.get("effects", {}).get("processes_launched") is not False
+        or manifest.get("effects", {}).get("experiment_processes_launched")
+        is not False
+        or manifest.get("effects", {}).get("background_processes_launched")
+        is not False
         or manifest.get("effects", {}).get("source_processes_modified") is not False
     ):
         raise ValueError("continuity archive manifest contract differs")
@@ -552,6 +653,11 @@ def verify_continuity_archive(
                 raise ValueError(f"continuity archived bundle heads differ: {relative}")
             verified_bundles.append(row["name"])
 
+    bundle_closure = _verify_bundle_closure(
+        archive_root=archive_root,
+        bundles=bundles,
+        checkouts=checkouts,
+    )
     payload_root = archive_root / "payload"
     observed_payload_paths = {
         path.relative_to(archive_root).as_posix()
@@ -570,9 +676,11 @@ def verify_continuity_archive(
         "manifest": manifest_identity,
         "verified_bundle_names": verified_bundles,
         "verified_file_count": len(expected_payload_paths),
+        "bundle_closure": bundle_closure,
         "authorization_boundary": dict(AUTHORIZATION_BOUNDARY),
         "effects": {
-            "processes_launched": False,
+            "experiment_processes_launched": False,
+            "background_processes_launched": False,
             "processes_signaled": False,
             "gpu_queried_or_allocated": False,
             "source_files_modified": False,
@@ -748,7 +856,8 @@ def restore_continuity_archive(
         "runtime_files": restored_runtime,
         "authorization_boundary": dict(AUTHORIZATION_BOUNDARY),
         "effects": {
-            "processes_launched": False,
+            "experiment_processes_launched": False,
+            "background_processes_launched": False,
             "processes_signaled": False,
             "gpu_queried_or_allocated": False,
             "formal_checkout_modified": False,

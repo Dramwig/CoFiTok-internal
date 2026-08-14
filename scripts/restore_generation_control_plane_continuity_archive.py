@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
-from cofitok.generation_control_continuity import restore_continuity_archive
+from cofitok.generation_control_continuity import (
+    AUTHORIZATION_BOUNDARY,
+    restore_continuity_archive,
+)
 from cofitok.reporting import write_json_report
 
 
@@ -24,11 +28,36 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    report = restore_continuity_archive(
-        archive_root=args.archive_root,
-        expected_manifest_sha256=args.expected_manifest_sha256,
-        destination_root=args.destination_root,
-    )
+    try:
+        report = restore_continuity_archive(
+            archive_root=args.archive_root,
+            expected_manifest_sha256=args.expected_manifest_sha256,
+            destination_root=args.destination_root,
+        )
+    except Exception as error:
+        report = {
+            "schema_version": 1,
+            "role": "generation_control_plane_continuity_restore",
+            "status": "failed",
+            "complete": False,
+            "restored_at": datetime.now(timezone.utc).isoformat(),
+            "archive_root": args.archive_root.resolve().as_posix(),
+            "destination_root": args.destination_root.resolve().as_posix(),
+            "error_type": type(error).__name__,
+            "detail": str(error),
+            "authorization_boundary": dict(AUTHORIZATION_BOUNDARY),
+            "effects": {
+                "experiment_processes_launched": False,
+                "background_processes_launched": False,
+                "processes_signaled": False,
+                "gpu_queried_or_allocated": False,
+                "formal_checkout_modified": False,
+                "experiment_execution_authorized": False,
+            },
+        }
+        write_json_report(args.output, report)
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return 1
     write_json_report(args.output, report)
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0

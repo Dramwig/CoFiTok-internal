@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
-from cofitok.generation_control_continuity import verify_continuity_archive
+from cofitok.generation_control_continuity import (
+    AUTHORIZATION_BOUNDARY,
+    verify_continuity_archive,
+)
 from cofitok.reporting import write_json_report
 
 
@@ -23,10 +27,34 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    report = verify_continuity_archive(
-        archive_root=args.archive_root,
-        expected_manifest_sha256=args.expected_manifest_sha256,
-    )
+    try:
+        report = verify_continuity_archive(
+            archive_root=args.archive_root,
+            expected_manifest_sha256=args.expected_manifest_sha256,
+        )
+    except Exception as error:
+        report = {
+            "schema_version": 1,
+            "role": "generation_control_plane_continuity_verification",
+            "status": "failed",
+            "complete": False,
+            "verified_at": datetime.now(timezone.utc).isoformat(),
+            "archive_root": args.archive_root.resolve().as_posix(),
+            "error_type": type(error).__name__,
+            "detail": str(error),
+            "authorization_boundary": dict(AUTHORIZATION_BOUNDARY),
+            "effects": {
+                "experiment_processes_launched": False,
+                "background_processes_launched": False,
+                "processes_signaled": False,
+                "gpu_queried_or_allocated": False,
+                "source_files_modified": False,
+            },
+        }
+        if args.output is not None:
+            write_json_report(args.output, report)
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return 1
     if args.output is not None:
         write_json_report(args.output, report)
     print(json.dumps(report, indent=2, sort_keys=True))

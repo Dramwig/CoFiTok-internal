@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PRODUCTION_PLAN = (
     ROOT
     / "configs/generation/diagnostics/"
-    "capacity_generation_control_plane_continuity_v1.json"
+    "capacity_generation_control_plane_continuity_v2.json"
 )
 
 
@@ -157,6 +157,7 @@ def test_production_continuity_plan_binds_the_three_vulnerable_checkouts() -> No
     assert [row["name"] for row in plan["bundles"]] == [
         "quality_bridge_followup_decision",
         "quality_bridge_execution",
+        "capacity_probe_reference",
         "capacity_probe_preparation",
     ]
     assert plan["bundles"][0]["repository_seed"] is True
@@ -176,6 +177,9 @@ def test_build_verify_and_restore_continuity_archive(tmp_path: Path) -> None:
     manifest = result["manifest"]
     assert result["verification"]["status"] == "pass"
     assert result["verification"]["verified_file_count"] == 5
+    assert result["verification"]["bundle_closure"][
+        "self_contained_in_declared_order"
+    ] is True
 
     verification = verify_continuity_archive(
         archive_root=tmp_path / "archive",
@@ -189,7 +193,8 @@ def test_build_verify_and_restore_continuity_archive(tmp_path: Path) -> None:
     )
     assert restore["status"] == "pass"
     assert restore["effects"] == {
-        "processes_launched": False,
+        "experiment_processes_launched": False,
+        "background_processes_launched": False,
         "processes_signaled": False,
         "gpu_queried_or_allocated": False,
         "formal_checkout_modified": False,
@@ -214,6 +219,67 @@ def test_continuity_archive_rejects_payload_tampering(tmp_path: Path) -> None:
             archive_root=tmp_path / "archive",
             expected_manifest_sha256=result["manifest"]["sha256"],
         )
+
+
+def test_continuity_archive_rejects_an_incomplete_bundle_closure(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    missing_repo = tmp_path / "missing-repo"
+    missing_repo.mkdir()
+    _git(missing_repo, "init")
+    _git(missing_repo, "config", "user.email", "test@example.com")
+    _git(missing_repo, "config", "user.name", "Test")
+    (missing_repo / "base.txt").write_text("unrelated base\n", encoding="utf-8")
+    _git(missing_repo, "add", "base.txt")
+    _git(missing_repo, "commit", "-m", "missing base")
+    _git(missing_repo, "branch", "scale/missing-base")
+    _git(missing_repo, "switch", "-c", "scale/missing")
+    (missing_repo / "child.txt").write_text("child\n", encoding="utf-8")
+    _git(missing_repo, "add", "child.txt")
+    _git(missing_repo, "commit", "-m", "missing child")
+    missing_bundle = tmp_path / "missing.bundle"
+    _git(
+        missing_repo,
+        "bundle",
+        "create",
+        str(missing_bundle),
+        "refs/heads/scale/missing",
+        "^refs/heads/scale/missing-base",
+    )
+    revision = _git(missing_repo, "rev-parse", "HEAD")
+    tree = _git(missing_repo, "rev-parse", "HEAD^{tree}")
+    size, digest = _identity(missing_bundle)
+
+    plan = json.loads(fixture["plan"].read_text(encoding="utf-8"))
+    plan["bundles"][-1].update(
+        {
+            "source_path": missing_bundle.resolve().as_posix(),
+            "expected_bytes": size,
+            "expected_sha256": digest,
+            "expected_revision": revision,
+            "expected_ref": "refs/heads/scale/missing",
+        }
+    )
+    plan["checkouts"][-1].update(
+        {
+            "revision": revision,
+            "tree": tree,
+            "branch": "scale/missing",
+        }
+    )
+    fixture["plan"].write_text(json.dumps(plan), encoding="utf-8")
+    state = fixture["state"]
+    with pytest.raises(ValueError, match="bundle closure is incomplete"):
+        build_continuity_archive(
+            project=fixture["repo"],
+            plan_path=fixture["plan"],
+            output_root=tmp_path / "incomplete-archive",
+            expected_revision=state["revision"],
+            expected_tree=state["tree"],
+            expected_branch=state["branch"],
+        )
+    assert not (tmp_path / "incomplete-archive").exists()
 
 
 def test_continuity_restore_refuses_existing_bounded_target(tmp_path: Path) -> None:
