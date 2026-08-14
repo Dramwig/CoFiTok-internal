@@ -25,6 +25,15 @@ interpretation is model-side: the 50K models are undertrained, insufficiently
 capable, or produce images too far off the ImageNet manifold for their
 requested class to be recognized.
 
+A deterministic visual audit of the first 16 global indices subsequently
+confirmed the off-manifold appearance directly. Both generated rows contain
+pronounced high-frequency colored speckle, unstable texture, and strong color
+distortion; no fixed column is a clear requested fish or bird match. CoFiTok
+and dense also share the same qualitative failure family under their matched
+random stream, so the panels do not isolate factorization as the cause. The
+source-bound record is
+`docs/records/2026-08-14_generation_requested_class_visual_audit.md`.
+
 ## Scope and authority
 
 This was a CPU-only diagnostic over already generated PNGs. It did not sample,

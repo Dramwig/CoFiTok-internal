@@ -77,6 +77,11 @@
       "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/diagnostics/class_fidelity_v2/real_validation_calibration_1perclass.json",
       "bytes": 5861,
       "sha256": "a4c68b9b1c4dffda89f622887455f46d554fdb0c306d467fecb51d8f5abe6132"
+    },
+    "requested_class_visual_audit": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/diagnostics/requested_class_visual_audit_v1/requested_class_visual_audit_report.json",
+      "bytes": 24853,
+      "sha256": "cccd7a35e5797178ca901217bf7f84cb1064866bb558b9ba67ac5031e6906e95"
     }
   },
   "replay_validation": {
@@ -176,6 +181,8 @@
     "broad_predicted_class_support_observed": true,
     "classifier_or_class_order_failure_observed": false,
     "real_validation_classifier_calibration_passed": true,
+    "pronounced_visual_texture_and_chromatic_artifacts_observed": true,
+    "factorization_specific_visual_failure_established": false,
     "requested_class_alignment_established": false,
     "single_causal_mechanism_established": false,
     "decision": "requested_class_alignment_near_chance",
@@ -183,6 +190,7 @@
     "notes": [
       "Broad predicted-class coverage and entropy rule out collapse to only a handful of classifier labels.",
       "The same pinned classifier, preprocessing, and exact three-way class order reach 77.7% top-1 and 94.1% top-5 on a deterministic balanced real-validation subset, ruling out evaluator or label-order failure as the explanation for near-chance generated alignment.",
+      "A deterministic first-16 real/CoFiTok/dense panel shows severe high-frequency chromatic and texture artifacts in both generated rows; their shared failure family does not isolate CoFiTok factorization as the cause.",
       "Near-chance requested-label accuracy shows that the current generated content does not reliably express its requested ImageNet class.",
       "The fixed classifier can also fail on low-quality or off-manifold images, so these numbers alone cannot distinguish ignored conditioning from insufficient image fidelity.",
       "No additional CFG-only sweep is justified by this diagnostic."
