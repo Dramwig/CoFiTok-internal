@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
+import signal
 import subprocess
+import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -324,3 +328,164 @@ def test_production_runbook_is_inert_without_explicit_relaunch_switch() -> None:
     assert "--require-ready" in source
     assert "--issue-approval" in source
     assert "nvidia-smi" not in source
+
+
+_DUMMY_CONTROL_SOURCE = """\
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+status_path = Path(sys.argv[1])
+role = sys.argv[2]
+mode = sys.argv[3]
+if mode == "exit_before_status":
+    raise SystemExit(17)
+payload = {
+    "schema_version": 1,
+    "role": role,
+    "status": "waiting",
+    "detail": "posix_dummy_control_process",
+    "pid": os.getpid(),
+}
+temporary = status_path.with_name(f".{status_path.name}.{os.getpid()}.tmp")
+temporary.parent.mkdir(parents=True, exist_ok=True)
+temporary.write_text(json.dumps(payload, sort_keys=True) + "\\n", encoding="utf-8")
+os.replace(temporary, status_path)
+print(f"dummy-started:{os.getpid()}", flush=True)
+while True:
+    time.sleep(1.0)
+"""
+
+
+def _configure_posix_dummy_rows(fixture: dict, modes: tuple[str, ...]) -> None:
+    current_nice = os.getpriority(os.PRIO_PROCESS, 0)
+    for row, mode in zip(fixture["rows"], modes, strict=True):
+        script = Path(row["runtime"]["cwd"]) / row["entrypoint"]["argument"]
+        script.write_text(_DUMMY_CONTROL_SOURCE, encoding="utf-8")
+        row["runtime"]["argv"] = [
+            sys.executable,
+            row["entrypoint"]["argument"],
+            row["status_path"],
+            row["role"],
+            mode,
+        ]
+        row["runtime"]["nice"] = current_nice
+        log_path = Path(row["relaunch_io"]["stdout_target"])
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        log_path.write_text(f"sentinel:{row['name']}\n", encoding="utf-8")
+    _write_json(fixture["manifest_path"], {"processes": fixture["rows"]})
+
+
+def _terminate_and_reap(pids: list[int]) -> None:
+    remaining = set(pids)
+    for pid in list(remaining):
+        try:
+            os.killpg(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+    deadline = time.monotonic() + 5.0
+    while remaining and time.monotonic() < deadline:
+        for pid in list(remaining):
+            try:
+                observed, _ = os.waitpid(pid, os.WNOHANG)
+            except ChildProcessError:
+                remaining.remove(pid)
+                continue
+            if observed == pid:
+                remaining.remove(pid)
+        if remaining:
+            time.sleep(0.05)
+    for pid in list(remaining):
+        try:
+            os.killpg(pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        try:
+            os.waitpid(pid, 0)
+        except ChildProcessError:
+            pass
+
+
+@pytest.mark.skipif(os.name != "posix", reason="requires Linux process groups")
+def test_posix_detached_launch_appends_logs_and_blocks_repeat_relaunch(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path, statuses=("waiting", "waiting"))
+    _configure_posix_dummy_rows(fixture, ("wait", "wait"))
+    approval_path, approval_sha = _approval(tmp_path, fixture)
+    pids: list[int] = []
+    try:
+        report = execute_process_relaunch(
+            approval_path=approval_path,
+            expected_approval_sha256=approval_sha,
+            publish=lambda _: None,
+            status_timeout_seconds=5.0,
+            rollback_grace_seconds=1.0,
+            source_verifier=_source_verifier,
+        )
+        assert report["status"] == "pass"
+        pids = [row["pid"] for row in report["launched"]]
+        assert len(pids) == 2
+        for row in fixture["rows"]:
+            log = Path(row["relaunch_io"]["stdout_target"]).read_text(
+                encoding="utf-8"
+            )
+            assert log.startswith(f"sentinel:{row['name']}\n")
+            assert "dummy-started:" in log
+
+        repeat = assess_process_relaunch_readiness(
+            manifest_path=fixture["manifest_path"],
+            expected_manifest_sha256=file_identity(fixture["manifest_path"])[
+                "sha256"
+            ],
+            standing_authorization_path=fixture["standing_path"],
+            expected_standing_authorization_sha256=file_identity(
+                fixture["standing_path"]
+            )["sha256"],
+            formal_git=fixture["formal_git"],
+            implementation_git=fixture["implementation_git"],
+            expected_process_count=2,
+            source_verifier=_source_verifier,
+        )
+        assert repeat["status"] == "not_ready"
+        assert repeat["approval_allowed"] is False
+        assert {row["pid"] for row in repeat["live_matches"]} == set(pids)
+        assert {row["name"] for row in repeat["live_matches"]} == {
+            "stage_0",
+            "stage_1",
+        }
+    finally:
+        _terminate_and_reap(pids)
+
+
+@pytest.mark.skipif(os.name != "posix", reason="requires Linux process groups")
+def test_posix_partial_failure_rolls_back_actual_owned_process_groups(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path, statuses=("waiting", "waiting"))
+    _configure_posix_dummy_rows(fixture, ("wait", "exit_before_status"))
+    approval_path, approval_sha = _approval(tmp_path, fixture)
+    cleanup_pids: list[int] = []
+    try:
+        report = execute_process_relaunch(
+            approval_path=approval_path,
+            expected_approval_sha256=approval_sha,
+            publish=lambda _: None,
+            status_timeout_seconds=5.0,
+            rollback_grace_seconds=2.0,
+            source_verifier=_source_verifier,
+        )
+        assert report["status"] == "failed"
+        assert report["error_type"] == "RuntimeError"
+        assert "stage_1:17" in report["detail"]
+        assert [row["name"] for row in report["rollback"]] == [
+            "stage_1",
+            "stage_0",
+        ]
+        assert report["rollback"][0]["signaled"] is False
+        assert report["rollback"][1]["signaled"] is True
+        cleanup_pids = [row["pid"] for row in report["rollback"]]
+    finally:
+        _terminate_and_reap(cleanup_pids)
