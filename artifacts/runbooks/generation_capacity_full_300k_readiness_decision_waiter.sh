@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT=${PROJECT:?set PROJECT to the exact capacity-full decision checkout}
+SOURCE_OUTPUT_ROOT=${SOURCE_OUTPUT_ROOT:?set SOURCE_OUTPUT_ROOT}
+CHECKPOINT_ROOT=${CHECKPOINT_ROOT:?set CHECKPOINT_ROOT}
+STANDING_AUTHORIZATION=${STANDING_AUTHORIZATION:?set STANDING_AUTHORIZATION}
+EXPECTED_STANDING_AUTHORIZATION_SHA256=${EXPECTED_STANDING_AUTHORIZATION_SHA256:?set EXPECTED_STANDING_AUTHORIZATION_SHA256}
+RESULT_WAITER_DEPLOYMENT_RECEIPT=${RESULT_WAITER_DEPLOYMENT_RECEIPT:?set RESULT_WAITER_DEPLOYMENT_RECEIPT}
+EXPECTED_RESULT_WAITER_DEPLOYMENT_RECEIPT_SHA256=${EXPECTED_RESULT_WAITER_DEPLOYMENT_RECEIPT_SHA256:?set EXPECTED_RESULT_WAITER_DEPLOYMENT_RECEIPT_SHA256}
+EXPECTED_SELF_REVISION=${EXPECTED_SELF_REVISION:?set EXPECTED_SELF_REVISION}
+EXPECTED_SELF_TREE=${EXPECTED_SELF_TREE:?set EXPECTED_SELF_TREE}
+EXPECTED_SELF_BRANCH=${EXPECTED_SELF_BRANCH:?set EXPECTED_SELF_BRANCH}
+EXPECTED_RESULT_EXECUTION_REVISION=${EXPECTED_RESULT_EXECUTION_REVISION:?set EXPECTED_RESULT_EXECUTION_REVISION}
+EXPECTED_RESULT_EXECUTION_TREE=${EXPECTED_RESULT_EXECUTION_TREE:?set EXPECTED_RESULT_EXECUTION_TREE}
+EXPECTED_RESULT_EXECUTION_BRANCH=${EXPECTED_RESULT_EXECUTION_BRANCH:?set EXPECTED_RESULT_EXECUTION_BRANCH}
+EXPECTED_TRAINING_REVISION=${EXPECTED_TRAINING_REVISION:?set EXPECTED_TRAINING_REVISION}
+EXPECTED_TRAINING_TREE=${EXPECTED_TRAINING_TREE:?set EXPECTED_TRAINING_TREE}
+EXPECTED_TRAINING_BRANCH=${EXPECTED_TRAINING_BRANCH:?set EXPECTED_TRAINING_BRANCH}
+EXPECTED_RESULT_REVISION=${EXPECTED_RESULT_REVISION:?set EXPECTED_RESULT_REVISION}
+EXPECTED_RESULT_TREE=${EXPECTED_RESULT_TREE:?set EXPECTED_RESULT_TREE}
+EXPECTED_RESULT_BRANCH=${EXPECTED_RESULT_BRANCH:?set EXPECTED_RESULT_BRANCH}
+PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
+POLL_SECONDS=${POLL_SECONDS:-60}
+CAPACITY_COMPLETION_RESULT=${CAPACITY_COMPLETION_RESULT:-$SOURCE_OUTPUT_ROOT/reports/capacity_completion_100k_result.json}
+RESULT_WAITER_STATUS=${RESULT_WAITER_STATUS:-$SOURCE_OUTPUT_ROOT/reports/capacity_completion_100k_result_waiter_status.json}
+TARGET_COFITOK_CONFIG=${TARGET_COFITOK_CONFIG:-$PROJECT/configs/generation/imagenet256_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json}
+TARGET_DENSE_CONFIG=${TARGET_DENSE_CONFIG:-$PROJECT/configs/generation/imagenet256_stability_rollout_x0_u2_ema_teacher_dense_300k.json}
+FULL_OUTPUT_ROOT=${FULL_OUTPUT_ROOT:-$CHECKPOINT_ROOT/stability_capacity_full_300k_v1}
+COFITOK_RUN_DIR=${COFITOK_RUN_DIR:-$FULL_OUTPUT_ROOT/cofitok}
+DENSE_RUN_DIR=${DENSE_RUN_DIR:-$FULL_OUTPUT_ROOT/dense_identity}
+BENCHMARK_ROOT=${BENCHMARK_ROOT:-$FULL_OUTPUT_ROOT/reports/runtime_benchmark}
+DECISION=${DECISION:-$SOURCE_OUTPUT_ROOT/reports/capacity_full_300k_readiness_decision.json}
+STATUS=${STATUS:-$SOURCE_OUTPUT_ROOT/reports/capacity_full_300k_readiness_decision_waiter_status.json}
+LOCK=${LOCK:-$SOURCE_OUTPUT_ROOT/capacity_full_300k_readiness_decision_waiter.lock}
+
+[[ -x "$PYTHON" ]]
+[[ -d "$PROJECT/.git" || -f "$PROJECT/.git" ]]
+[[ -f "$STANDING_AUTHORIZATION" ]]
+[[ -f "$RESULT_WAITER_DEPLOYMENT_RECEIPT" ]]
+[[ -f "$TARGET_COFITOK_CONFIG" ]]
+[[ -f "$TARGET_DENSE_CONFIG" ]]
+[[ "$(git -C "$PROJECT" rev-parse HEAD)" == "$EXPECTED_SELF_REVISION" ]]
+[[ "$(git -C "$PROJECT" rev-parse 'HEAD^{tree}')" == "$EXPECTED_SELF_TREE" ]]
+[[ "$(git -C "$PROJECT" branch --show-current)" == "$EXPECTED_SELF_BRANCH" ]]
+[[ -z "$(git -C "$PROJECT" status --porcelain)" ]]
+[[ "$(sha256sum "$STANDING_AUTHORIZATION" | awk '{print $1}')" == "$EXPECTED_STANDING_AUTHORIZATION_SHA256" ]]
+[[ "$(sha256sum "$RESULT_WAITER_DEPLOYMENT_RECEIPT" | awk '{print $1}')" == "$EXPECTED_RESULT_WAITER_DEPLOYMENT_RECEIPT_SHA256" ]]
+
+mkdir -p "$(dirname "$DECISION")" "$(dirname "$STATUS")" "$(dirname "$LOCK")"
+exec 7>"$LOCK"
+flock -n 7 || {
+  printf 'refusing duplicate capacity-full readiness decision waiter\n' >&2
+  exit 75
+}
+
+cd "$PROJECT"
+export CUDA_VISIBLE_DEVICES=""
+export OMP_NUM_THREADS=2
+export MKL_NUM_THREADS=2
+export PYTHONPATH="$PROJECT:$PROJECT/src${PYTHONPATH:+:$PYTHONPATH}"
+
+exec nice -n 19 "$PYTHON" scripts/wait_for_generation_capacity_full_300k_readiness_decision.py \
+  --project "$PROJECT" \
+  --source-output-root "$SOURCE_OUTPUT_ROOT" \
+  --capacity-completion-result "$CAPACITY_COMPLETION_RESULT" \
+  --result-waiter-status "$RESULT_WAITER_STATUS" \
+  --result-waiter-deployment-receipt "$RESULT_WAITER_DEPLOYMENT_RECEIPT" \
+  --expected-result-waiter-deployment-receipt-sha256 "$EXPECTED_RESULT_WAITER_DEPLOYMENT_RECEIPT_SHA256" \
+  --standing-authorization "$STANDING_AUTHORIZATION" \
+  --expected-standing-authorization-sha256 "$EXPECTED_STANDING_AUTHORIZATION_SHA256" \
+  --target-cofitok-config "$TARGET_COFITOK_CONFIG" \
+  --target-dense-config "$TARGET_DENSE_CONFIG" \
+  --full-output-root "$FULL_OUTPUT_ROOT" \
+  --cofitok-run-dir "$COFITOK_RUN_DIR" \
+  --dense-run-dir "$DENSE_RUN_DIR" \
+  --benchmark-root "$BENCHMARK_ROOT" \
+  --storage-path "$CHECKPOINT_ROOT" \
+  --decision "$DECISION" \
+  --status "$STATUS" \
+  --expected-self-revision "$EXPECTED_SELF_REVISION" \
+  --expected-self-tree "$EXPECTED_SELF_TREE" \
+  --expected-self-branch "$EXPECTED_SELF_BRANCH" \
+  --expected-result-execution-revision "$EXPECTED_RESULT_EXECUTION_REVISION" \
+  --expected-result-execution-tree "$EXPECTED_RESULT_EXECUTION_TREE" \
+  --expected-result-execution-branch "$EXPECTED_RESULT_EXECUTION_BRANCH" \
+  --expected-training-revision "$EXPECTED_TRAINING_REVISION" \
+  --expected-training-tree "$EXPECTED_TRAINING_TREE" \
+  --expected-training-branch "$EXPECTED_TRAINING_BRANCH" \
+  --expected-result-revision "$EXPECTED_RESULT_REVISION" \
+  --expected-result-tree "$EXPECTED_RESULT_TREE" \
+  --expected-result-branch "$EXPECTED_RESULT_BRANCH" \
+  --poll-seconds "$POLL_SECONDS"
