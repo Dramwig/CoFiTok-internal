@@ -191,6 +191,11 @@ def test_exact_10k_partial_training_is_valid_and_non_authorizing(
     assert report["checkpoint"]["sha256"] == file_sha256(
         Path(report["checkpoint"]["path"])
     )
+    assert report["checkpoint"]["integrity_manifest"]["path"].endswith(
+        ".pt.integrity.json"
+    )
+    assert report["checkpoint"]["integrity_manifest"]["bytes"] > 0
+    assert len(report["checkpoint"]["integrity_manifest"]["sha256"]) == 64
     assert report["authorization_boundary"]["full_300k_launch_allowed"] is False
 
 
