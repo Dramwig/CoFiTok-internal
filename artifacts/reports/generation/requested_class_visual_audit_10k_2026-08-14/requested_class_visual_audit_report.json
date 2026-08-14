@@ -1,0 +1,680 @@
+{
+  "claim_boundary": {
+    "full_300k_launch_allowed": false,
+    "promotion_or_release_allowed": false,
+    "quantitative_generation_metric": false,
+    "replaces_class_fidelity_evaluation": false,
+    "replaces_fid_or_distribution_metrics": false,
+    "replaces_frozen_promotion_gate": false,
+    "training_launch_allowed": false,
+    "visual_diagnostic_only": true
+  },
+  "classifier_calibration": {
+    "class_order_sha256": "5e738e464c43c92037bbb4252eeb6ba2c306091861443ae7e182e28c9662324e",
+    "classifier": {
+      "categories_sha256": "62fff941ecff3f19de9128c6ca9c2097807c6b7bafc5552d7589a219431221ed",
+      "name": "torchvision_resnet50_imagenet1k_v2",
+      "num_classes": 1000,
+      "preprocessing": {
+        "antialias": true,
+        "crop_size": [
+          224
+        ],
+        "interpolation": "bilinear",
+        "mean": [
+          0.485,
+          0.456,
+          0.406
+        ],
+        "resize_size": [
+          232
+        ],
+        "std": [
+          0.229,
+          0.224,
+          0.225
+        ]
+      },
+      "weights_bytes": 102540417,
+      "weights_enum": "ResNet50_Weights.IMAGENET1K_V2",
+      "weights_path": "/root/autodl-tmp/CoFiTok/checkpoints/evaluators/torchvision/resnet50-11ad3fa6.pth",
+      "weights_sha256": "11ad3fa62ca79e40addfd354a8ec4b7c75143b3038b8d2a807fbc68deab379ca",
+      "weights_url": "https://download.pytorch.org/models/resnet50-11ad3fa6.pth"
+    },
+    "git": {
+      "branch": "scale/generation-classifier-calibration-v1",
+      "revision": "b9a34542b905e5b2d6a4cb241dae2f46cac785c7",
+      "tracked_dirty": false
+    },
+    "real_dir": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+    "report": {
+      "bytes": 5861,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/diagnostics/class_fidelity_v2/real_validation_calibration_1perclass.json",
+      "sha256": "a4c68b9b1c4dffda89f622887455f46d554fdb0c306d467fecb51d8f5abe6132"
+    },
+    "runtime_environment_sha256": "f3b0a88c4565fbccf7324553939997c4fdf83d9ccc187a9194472cda73fe1dd1",
+    "selected_sample_set_sha256": "459245ae24230f7d8b409355988d90101a5ed7d8e50d7be707235114c6f7b441",
+    "top1_accuracy": 0.777,
+    "top5_accuracy": 0.941
+  },
+  "git": {
+    "branch": "scale/generation-requested-class-visual-audit-v1",
+    "revision": "2e86ed24925fa958c86dc9bcfa8bc5f029b3a1d8",
+    "tracked_dirty": false
+  },
+  "indices": [
+    10000,
+    10001,
+    10002,
+    10003,
+    10004,
+    10005,
+    10006,
+    10007,
+    10008,
+    10009,
+    10010,
+    10011,
+    10012,
+    10013,
+    10014,
+    10015
+  ],
+  "panel_columns": 8,
+  "panels": [
+    {
+      "bytes": 3670755,
+      "columns": 8,
+      "grid_shape": [
+        3,
+        776,
+        2066
+      ],
+      "indices": [
+        10000,
+        10001,
+        10002,
+        10003,
+        10004,
+        10005,
+        10006,
+        10007
+      ],
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/diagnostics/requested_class_visual_audit_v1/requested_class_panel_00.png",
+      "row_order": [
+        "real_validation",
+        "cofitok",
+        "dense_identity"
+      ],
+      "sha256": "084aa7bb734fa83070a881a13456c803602ad29425d1b0547522769abead8066"
+    },
+    {
+      "bytes": 3823687,
+      "columns": 8,
+      "grid_shape": [
+        3,
+        776,
+        2066
+      ],
+      "indices": [
+        10008,
+        10009,
+        10010,
+        10011,
+        10012,
+        10013,
+        10014,
+        10015
+      ],
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/diagnostics/requested_class_visual_audit_v1/requested_class_panel_01.png",
+      "row_order": [
+        "real_validation",
+        "cofitok",
+        "dense_identity"
+      ],
+      "sha256": "5a0a73aa3dbde5a867af4174fd81cfd3709565b2553cb1b0a7b96eb83bee89be"
+    }
+  ],
+  "role": "generation_requested_class_visual_audit",
+  "sampling_protocol": {
+    "actual_timesteps": [
+      999,
+      989,
+      979,
+      969,
+      959,
+      949,
+      938,
+      928,
+      918,
+      908,
+      898,
+      888,
+      878,
+      868,
+      858,
+      848,
+      838,
+      827,
+      817,
+      807,
+      797,
+      787,
+      777,
+      767,
+      757,
+      747,
+      737,
+      727,
+      716,
+      706,
+      696,
+      686,
+      676,
+      666,
+      656,
+      646,
+      636,
+      626,
+      616,
+      605,
+      595,
+      585,
+      575,
+      565,
+      555,
+      545,
+      535,
+      525,
+      515,
+      505,
+      494,
+      484,
+      474,
+      464,
+      454,
+      444,
+      434,
+      424,
+      414,
+      404,
+      394,
+      383,
+      373,
+      363,
+      353,
+      343,
+      333,
+      323,
+      313,
+      303,
+      293,
+      283,
+      272,
+      262,
+      252,
+      242,
+      232,
+      222,
+      212,
+      202,
+      192,
+      182,
+      172,
+      161,
+      151,
+      141,
+      131,
+      121,
+      111,
+      101,
+      91,
+      81,
+      71,
+      61,
+      50,
+      40,
+      30,
+      20,
+      10,
+      0
+    ],
+    "batch_size": 32,
+    "cfg_batch_mode": "batched",
+    "class_schedule": "balanced_modulo",
+    "clip_x0": true,
+    "eta": 0.0,
+    "guidance_rescale": 1.0,
+    "guidance_scale": 1.5,
+    "image_shape": [
+      3,
+      256,
+      256
+    ],
+    "inference_api": {
+      "name": "cofitok.generation.GenerationSession",
+      "version": 1
+    },
+    "num_classes": 1000,
+    "num_samples": 10000,
+    "num_train_timesteps": 1000,
+    "precision": "bf16",
+    "protocol_schema": "cofitok_ddim_sampling_v1",
+    "random_stream": {
+      "batch_size_invariant": true,
+      "prefix_budgets_share_stream": true,
+      "resume_index_invariant": true,
+      "scope": "per_global_sample_index",
+      "seed_formula": "(seed + global_index) mod 2^63"
+    },
+    "sample_set_digest": {
+      "algorithm": "sha256",
+      "framing": "filename_utf8_nul_file_bytes_nul"
+    },
+    "sample_steps": 100,
+    "sampler": "ddim",
+    "seed": 0,
+    "start_index": 10000
+  },
+  "schema_version": 1,
+  "selected_files": [
+    {
+      "cofitok": {
+        "bytes": 133405,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010000.png",
+        "sha256": "b000f063c3ae2b7fa675f60fcab06338feac3c5d893e61b0715c592ba9dcb1a0"
+      },
+      "dense_identity": {
+        "bytes": 148939,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010000.png",
+        "sha256": "bc7ff9e47d6c6f8194977524af8329fc4a5da28d09b9e18c465a9c8f1a42ac7c"
+      },
+      "global_index": 10000,
+      "real_validation": {
+        "bytes": 17806,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01440764/ILSVRC2012_val_00000293_n01440764.jpg",
+        "sha256": "ef41d8ec2700ed0813eea201bb42b1c426195936cdb5bb85b633748cb223bca8"
+      },
+      "requested_class_index": 0,
+      "requested_wnid": "n01440764"
+    },
+    {
+      "cofitok": {
+        "bytes": 188042,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010001.png",
+        "sha256": "9d349d4bb5396f08cb1f18ac15ef6049d5046af53cdf5b8473237e149ab68341"
+      },
+      "dense_identity": {
+        "bytes": 193525,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010001.png",
+        "sha256": "9f94815b405395bb37ec4e78fe4f1595288859dcd3fb88c0360885e55dc2a869"
+      },
+      "global_index": 10001,
+      "real_validation": {
+        "bytes": 9070,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01443537/ILSVRC2012_val_00000236_n01443537.jpg",
+        "sha256": "7a32078d2d9b9955f2509627aae4bbe954f3775b8ead680180569d11c082881e"
+      },
+      "requested_class_index": 1,
+      "requested_wnid": "n01443537"
+    },
+    {
+      "cofitok": {
+        "bytes": 157192,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010002.png",
+        "sha256": "27d22c1e29ec38db8a3a40dbcaa01a80208ba8fcd933f1ab21a1b70565ed2c9d"
+      },
+      "dense_identity": {
+        "bytes": 168715,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010002.png",
+        "sha256": "8d10eec54051f03fc04ab834869ec80208f63af8f92e54a54c4b6ef91dd50776"
+      },
+      "global_index": 10002,
+      "real_validation": {
+        "bytes": 8700,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01484850/ILSVRC2012_val_00002338_n01484850.jpg",
+        "sha256": "01290801b5a2bfdb60c5fb67c1ae438be7e398aaad9b003d3ac04cf6f6e47c11"
+      },
+      "requested_class_index": 2,
+      "requested_wnid": "n01484850"
+    },
+    {
+      "cofitok": {
+        "bytes": 173835,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010003.png",
+        "sha256": "d1db80ba3b7f620273e6d03819e0d2d8faf20dd6ec731c9c5640d33cbc16e736"
+      },
+      "dense_identity": {
+        "bytes": 181473,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010003.png",
+        "sha256": "56c63bec0f3fddfea3e01e953af5a7d2a53729215db0ad58bbaf3caf1d00083c"
+      },
+      "global_index": 10003,
+      "real_validation": {
+        "bytes": 8206,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01491361/ILSVRC2012_val_00002922_n01491361.jpg",
+        "sha256": "370fe16fd2912e21f068cd806aab3012714565df3d3e84559d30b95dab2ad1a5"
+      },
+      "requested_class_index": 3,
+      "requested_wnid": "n01491361"
+    },
+    {
+      "cofitok": {
+        "bytes": 117715,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010004.png",
+        "sha256": "d45571a076996766a087adee6d53e4caf8725cf2715f5407c6a433526651f75d"
+      },
+      "dense_identity": {
+        "bytes": 169008,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010004.png",
+        "sha256": "09237e83929f2711628ed45189d18bb337e5d55db21fd02e9f379c8e1b4d677f"
+      },
+      "global_index": 10004,
+      "real_validation": {
+        "bytes": 9010,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01494475/ILSVRC2012_val_00001676_n01494475.jpg",
+        "sha256": "cb364acb7148c8be1a5efb781c388978f8b626c9b770b483942e8fdadb7a7dec"
+      },
+      "requested_class_index": 4,
+      "requested_wnid": "n01494475"
+    },
+    {
+      "cofitok": {
+        "bytes": 190411,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010005.png",
+        "sha256": "b4b6e19cac1604e336867c663c58efee64971ee01301b429b664e08092be36b8"
+      },
+      "dense_identity": {
+        "bytes": 196038,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010005.png",
+        "sha256": "c52b0da371a459177ea3c20f78588cfd37c7235cb0df57b1c617891ebead7666"
+      },
+      "global_index": 10005,
+      "real_validation": {
+        "bytes": 15573,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01496331/ILSVRC2012_val_00000921_n01496331.jpg",
+        "sha256": "4d519520a660c3d58d0723f988756c9caa06172a49adf7056591d331d4b6c122"
+      },
+      "requested_class_index": 5,
+      "requested_wnid": "n01496331"
+    },
+    {
+      "cofitok": {
+        "bytes": 165865,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010006.png",
+        "sha256": "d4f0c8e222225178fa79da462584e47a9f50382d3d32146695018d807696a19e"
+      },
+      "dense_identity": {
+        "bytes": 191645,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010006.png",
+        "sha256": "b62658e41759cc11a9d05e0760634ff60b26854c5935dafd826b8e4ebf8876a5"
+      },
+      "global_index": 10006,
+      "real_validation": {
+        "bytes": 17167,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01498041/ILSVRC2012_val_00001935_n01498041.jpg",
+        "sha256": "ef1f40352c869899a9c9118e033dd74e0eb35a6d0ca1b4439912d985e2a9f3f7"
+      },
+      "requested_class_index": 6,
+      "requested_wnid": "n01498041"
+    },
+    {
+      "cofitok": {
+        "bytes": 148380,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010007.png",
+        "sha256": "a2f0ec8590dd56c473705b0d7ab83bc2049baff0122e9f33fb4d094b956a1efe"
+      },
+      "dense_identity": {
+        "bytes": 164629,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010007.png",
+        "sha256": "38ae8ebf2a0651f555cd84b6d819ff3d52e008f7d90fca64e42d1666e4f19127"
+      },
+      "global_index": 10007,
+      "real_validation": {
+        "bytes": 15538,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01514668/ILSVRC2012_val_00000329_n01514668.jpg",
+        "sha256": "50dc6e79e309adc4c891c50c89f79de664463d6b552ba8de9d4da890738b0d52"
+      },
+      "requested_class_index": 7,
+      "requested_wnid": "n01514668"
+    },
+    {
+      "cofitok": {
+        "bytes": 184849,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010008.png",
+        "sha256": "62c9aa86ddb00cc095a08755acc4251fb8f95b69dd3e3c549a82efe75e7bab4b"
+      },
+      "dense_identity": {
+        "bytes": 187401,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010008.png",
+        "sha256": "02de08f6951c9ce31aa37fdf7978c98a6cc056dc78b8d20596e39c3b6a9f3449"
+      },
+      "global_index": 10008,
+      "real_validation": {
+        "bytes": 18179,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01514859/ILSVRC2012_val_00001114_n01514859.jpg",
+        "sha256": "9329a8742d2f28afdec7de0a1d5a27317604a3af8b0a41c4eb6e9fc83fd2c96d"
+      },
+      "requested_class_index": 8,
+      "requested_wnid": "n01514859"
+    },
+    {
+      "cofitok": {
+        "bytes": 189374,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010009.png",
+        "sha256": "e040f8f99eb9b9319395a88e793ada01153433342d3a4cf3d3280016f9f3936d"
+      },
+      "dense_identity": {
+        "bytes": 194891,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010009.png",
+        "sha256": "d2e8379adfe4a01074247b9607ef9ac373d305ce737faba866b9773c99eec383"
+      },
+      "global_index": 10009,
+      "real_validation": {
+        "bytes": 14470,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01518878/ILSVRC2012_val_00001031_n01518878.jpg",
+        "sha256": "279473bb9e52e7c69695f6c7c91d98c43356c5ec40c9471ed2707d7fd6f7c1c0"
+      },
+      "requested_class_index": 9,
+      "requested_wnid": "n01518878"
+    },
+    {
+      "cofitok": {
+        "bytes": 175097,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010010.png",
+        "sha256": "797efbabdf04d5dfdf2eb2a85efb56405e2de9978bed2604bb6ad29a221f8bd5"
+      },
+      "dense_identity": {
+        "bytes": 186290,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010010.png",
+        "sha256": "c3ed4d6f5859ce0715a8bbd7bdfc08a61178b6fb1fd5e18e85aed88c4136577b"
+      },
+      "global_index": 10010,
+      "real_validation": {
+        "bytes": 5156,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01530575/ILSVRC2012_val_00000651_n01530575.jpg",
+        "sha256": "c0cdb54494d90b350a129d938446fb2a862a41d66232e1971a59954d610e703d"
+      },
+      "requested_class_index": 10,
+      "requested_wnid": "n01530575"
+    },
+    {
+      "cofitok": {
+        "bytes": 190141,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010011.png",
+        "sha256": "e23be3d34d28fe8d5010218938d9957b3336b3d76cf8481d4c3686479f68ed3e"
+      },
+      "dense_identity": {
+        "bytes": 194873,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010011.png",
+        "sha256": "2195bc6442e1c724484d97f5e5ce069c21615927d6c128f3c0a82c934bfaa5a4"
+      },
+      "global_index": 10011,
+      "real_validation": {
+        "bytes": 22084,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01531178/ILSVRC2012_val_00000570_n01531178.jpg",
+        "sha256": "8bfee347862ed7ff7ef43017e40af80f0ec053acbc61db9953107a8c04bb3e7e"
+      },
+      "requested_class_index": 11,
+      "requested_wnid": "n01531178"
+    },
+    {
+      "cofitok": {
+        "bytes": 151751,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010012.png",
+        "sha256": "0c1ec439855deff8d0296fdda5b358ebe9cee9d87276de64c2b6811f56955299"
+      },
+      "dense_identity": {
+        "bytes": 158092,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010012.png",
+        "sha256": "49c137636a9f62293ee214ce8ec83feeb53c94487bd67942e2ebb76f117603ed"
+      },
+      "global_index": 10012,
+      "real_validation": {
+        "bytes": 13228,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01532829/ILSVRC2012_val_00000873_n01532829.jpg",
+        "sha256": "5c2ed248a77b7ce2d6dd3bff6af21fcff1a54cb73f71e5f1228293ad5706dc41"
+      },
+      "requested_class_index": 12,
+      "requested_wnid": "n01532829"
+    },
+    {
+      "cofitok": {
+        "bytes": 173307,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010013.png",
+        "sha256": "36e453e7f463881d287374b8f1a34cde10cd8e04240559abc3773007772a2b79"
+      },
+      "dense_identity": {
+        "bytes": 183904,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010013.png",
+        "sha256": "d49ae2b21a7bacc88d8e10718b55c2cf109460df1386f52a26238c00a51eb8aa"
+      },
+      "global_index": 10013,
+      "real_validation": {
+        "bytes": 9032,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01534433/ILSVRC2012_val_00000247_n01534433.jpg",
+        "sha256": "91e4a04826c4125c3b137c504daa349b90f98812900636e83a26d78a3030b52c"
+      },
+      "requested_class_index": 13,
+      "requested_wnid": "n01534433"
+    },
+    {
+      "cofitok": {
+        "bytes": 183211,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010014.png",
+        "sha256": "2eebb80fc90edc300813935339a4478d4caa1b513b8d23eeeb1c8800b69bf4e7"
+      },
+      "dense_identity": {
+        "bytes": 186674,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010014.png",
+        "sha256": "f4d28086ada13c237a40eecefd3b74d9e42a6511bd1aaf76e4cd45f9394a288d"
+      },
+      "global_index": 10014,
+      "real_validation": {
+        "bytes": 7244,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01537544/ILSVRC2012_val_00000414_n01537544.jpg",
+        "sha256": "5870877a3ce19fc1fe2059f68299f890a029ea269c61c9d32485762529ca7fb7"
+      },
+      "requested_class_index": 14,
+      "requested_wnid": "n01537544"
+    },
+    {
+      "cofitok": {
+        "bytes": 182206,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8/010015.png",
+        "sha256": "6667959c57b8ea903b08b7afe923fea151577df28e939357fc107461c9bdecbe"
+      },
+      "dense_identity": {
+        "bytes": 169314,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1/010015.png",
+        "sha256": "4e0d5694faa2abd2fc53574e7edae013a3c819e61381695062222a759aef0fdf"
+      },
+      "global_index": 10015,
+      "real_validation": {
+        "bytes": 21874,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01558993/ILSVRC2012_val_00001598_n01558993.jpg",
+        "sha256": "c6edb46f5e087b84166e3ade136d9aca62ebe295f5deb471ad25e2ee68e3b000"
+      },
+      "requested_class_index": 15,
+      "requested_wnid": "n01558993"
+    }
+  ],
+  "sources": {
+    "cofitok": {
+      "budget": 8,
+      "checkpoint": {
+        "sha256": "ec7b9a0981f1d45420a9a86cdb80339d6d87b87fa77891c234db3d1b84376c2a",
+        "step": 50000
+      },
+      "directory": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8",
+      "git": {
+        "branch": "scale/generation-large-capacity",
+        "revision": "11d8f954030915f1d8848594683ac70518ce39bc",
+        "tracked_dirty": false
+      },
+      "report": {
+        "bytes": 5346,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/sampling_report.json",
+        "sha256": "1f9dff7ac8714eb6f61e0ab03e3155935d67d7536ee307f8831293cd965ced4c"
+      },
+      "runtime_environment_sha256": "8b424f8f4095a919daee99d1345c7657e94ca133f19369958410f793a35b1bb1",
+      "sample_set": {
+        "count": 10000,
+        "sha256": "4fbeb7eb443c1d3996ecf805933aad0ff927cf97b2dbf8ba6025c41fa1225f76",
+        "start_index": 10000,
+        "stop_index_exclusive": 20000
+      },
+      "sampling_manifest_sha256": "dbc6d1812efcbb2e8cf6690011c7efaaab44479e06cfaf1987b8e376b08efa1f"
+    },
+    "dense_identity": {
+      "budget": 1,
+      "checkpoint": {
+        "sha256": "325da25f9fd228ab224abd977da7f9e1d000ba36e3e8136b55edae9c9f47c716",
+        "step": 50000
+      },
+      "directory": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1",
+      "git": {
+        "branch": "scale/generation-large-capacity",
+        "revision": "11d8f954030915f1d8848594683ac70518ce39bc",
+        "tracked_dirty": false
+      },
+      "report": {
+        "bytes": 5336,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/sampling_report.json",
+        "sha256": "5c22b21786032875ec15ab31c0c98f8d2133cb55b1edf196177bced3c0351029"
+      },
+      "runtime_environment_sha256": "8b424f8f4095a919daee99d1345c7657e94ca133f19369958410f793a35b1bb1",
+      "sample_set": {
+        "count": 10000,
+        "sha256": "29ff181d6c695b8cafca54ec8aeddc43d435ed76ca832f7048e0d47a319014c7",
+        "start_index": 10000,
+        "stop_index_exclusive": 20000
+      },
+      "sampling_manifest_sha256": "b1cf40ce4ea89d159419991f0d59a580338b8a2fcdaf78bde9ab81ed8ee505f2"
+    }
+  },
+  "statistics": {
+    "cofitok": {
+      "image_count": 16,
+      "pixel_max": 1.0,
+      "pixel_mean": 0.45914220809936523,
+      "pixel_min": 0.0,
+      "pixel_std": 0.21641597151756287
+    },
+    "dense_identity": {
+      "image_count": 16,
+      "pixel_max": 1.0,
+      "pixel_mean": 0.42668667435646057,
+      "pixel_min": 0.0,
+      "pixel_std": 0.26798614859580994
+    },
+    "real_validation": {
+      "image_count": 16,
+      "pixel_max": 1.0,
+      "pixel_mean": 0.4499737024307251,
+      "pixel_min": 0.0,
+      "pixel_std": 0.2852405905723572
+    }
+  },
+  "status": "completed"
+}
