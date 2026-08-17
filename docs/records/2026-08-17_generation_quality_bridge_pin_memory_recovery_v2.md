@@ -54,6 +54,11 @@ branch: fix/quality-bridge-ipc-recovery-v2
 parent training revision: cf0e5faa94bf4ab38d947b921935b3b765b5537a
 ```
 
+The record commit is `564b751b31e0a75fb5a8756d12325cdcc515c531`.
+The incremental deployment bundle requires `cf0e5fa`, advertises only
+`564b751`, is 13,359 bytes, and has SHA256
+`b886d92ad9d0d2943aeb7555e73a36e3b8c4b7be5103aad81bf0cfbcc5ffeffa`.
+
 Deployed standalone supervisor identity:
 
 ```text
@@ -87,10 +92,14 @@ its informational full-porcelain snapshot was 89 paths with SHA256
 ## Verification
 
 - Windows targeted pytest: `5 passed`.
+- Linux targeted pytest from the exact tracked checkout: `5 passed`.
 - Linux `py_compile`: pass.
 - Linux built-in supervisor self-test: pass.
+- Remote `git bundle verify`: pass; the isolated clean checkout is
+  `/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-ipc-recovery-564b751`.
 - Source SHA matched byte-for-byte locally, in `/tmp`, and in the immutable
-  incident evidence directory.
+  incident evidence directory; it also matched the tracked file in the remote
+  `564b751` checkout.
 - Replaying the preserved real incident classified it as
   `bounded_pin_memory_resource_sharer_failure`.
 - Replaying the same log with a checkpoint-integrity issue was rejected as
