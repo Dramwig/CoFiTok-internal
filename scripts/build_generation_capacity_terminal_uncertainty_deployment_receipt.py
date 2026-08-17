@@ -126,7 +126,9 @@ def build_receipt(
     source_anchor_present: bool,
     control_checkout: Mapping[str, Any],
     evaluator_checkout: Mapping[str, Any],
-    bundle: Mapping[str, Any],
+    receipt_builder_checkout: Mapping[str, Any],
+    waiter_bundle: Mapping[str, Any],
+    receipt_builder_bundle: Mapping[str, Any],
     waiter_status: Mapping[str, Any],
     waiter_status_identity: Mapping[str, Any],
     pid_payload: Mapping[str, Any],
@@ -141,6 +143,10 @@ def build_receipt(
         raise ValueError("capacity uncertainty source kind is invalid")
     _require_git(control_checkout, label="capacity uncertainty control checkout")
     _require_git(evaluator_checkout, label="capacity uncertainty evaluator checkout")
+    _require_git(
+        receipt_builder_checkout,
+        label="capacity uncertainty receipt-builder checkout",
+    )
     for label, identity in (
         ("waiter status", waiter_status_identity),
         ("waiter PID", pid_identity),
@@ -199,25 +205,48 @@ def build_receipt(
     if any(int(row.get("pid", -1)) == pid for row in gpu_compute_rows):
         raise ValueError("capacity uncertainty waiter unexpectedly allocated GPU compute")
 
-    bundle_identity = bundle.get("identity")
-    bundle_heads = bundle.get("heads")
-    prerequisites = bundle.get("prerequisites")
-    if not isinstance(bundle_identity, Mapping):
+    waiter_bundle_identity = waiter_bundle.get("identity")
+    waiter_bundle_heads = waiter_bundle.get("heads")
+    waiter_prerequisites = waiter_bundle.get("prerequisites")
+    if not isinstance(waiter_bundle_identity, Mapping):
         raise ValueError("capacity uncertainty bundle identity is missing")
-    _require_identity(bundle_identity, label="capacity uncertainty bundle")
+    _require_identity(
+        waiter_bundle_identity,
+        label="capacity uncertainty waiter bundle",
+    )
     if (
-        bundle_heads
+        waiter_bundle_heads
         != [
             {
                 "revision": control_checkout["revision"],
                 "ref": f"refs/heads/{control_checkout['branch']}",
             }
         ]
-        or not isinstance(prerequisites, list)
-        or len(prerequisites) != 1
-        or not _is_hex(prerequisites[0], 40)
+        or not isinstance(waiter_prerequisites, list)
+        or len(waiter_prerequisites) != 1
+        or not _is_hex(waiter_prerequisites[0], 40)
     ):
         raise ValueError("capacity uncertainty bundle contract differs")
+
+    builder_bundle_identity = receipt_builder_bundle.get("identity")
+    builder_bundle_heads = receipt_builder_bundle.get("heads")
+    builder_prerequisites = receipt_builder_bundle.get("prerequisites")
+    if not isinstance(builder_bundle_identity, Mapping):
+        raise ValueError("capacity uncertainty receipt-builder bundle is missing")
+    _require_identity(
+        builder_bundle_identity,
+        label="capacity uncertainty receipt-builder bundle",
+    )
+    if (
+        not isinstance(builder_bundle_heads, list)
+        or len(builder_bundle_heads) != 1
+        or builder_bundle_heads[0].get("revision")
+        != receipt_builder_checkout.get("revision")
+        or not isinstance(builder_bundle_heads[0].get("ref"), str)
+        or not builder_bundle_heads[0]["ref"].startswith("refs/heads/")
+        or builder_prerequisites != [control_checkout.get("revision")]
+    ):
+        raise ValueError("capacity uncertainty receipt-builder bundle differs")
 
     source_git = expected.get("source_git")
     real_cache = expected.get("real_feature_cache_source")
@@ -246,9 +275,13 @@ def build_receipt(
         "status": "active",
         "source_kind": source_kind,
         "authorization_boundary": dict(claim_boundary),
-        "bundle": dict(bundle),
+        "bundles": {
+            "waiter_control": dict(waiter_bundle),
+            "receipt_builder": dict(receipt_builder_bundle),
+        },
         "control_checkout": dict(control_checkout),
         "evaluator_checkout": dict(evaluator_checkout),
+        "receipt_builder_checkout": dict(receipt_builder_checkout),
         "source_contract": {
             "anchor_path": expected["source_anchor_path"],
             "anchor_present_at_deployment": source_anchor_present,
@@ -294,8 +327,13 @@ def main() -> None:
         )
     )
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--bundle", type=Path, required=True)
-    parser.add_argument("--expected-bundle-prerequisite", required=True)
+    parser.add_argument("--waiter-bundle", type=Path, required=True)
+    parser.add_argument("--expected-waiter-bundle-prerequisite", required=True)
+    parser.add_argument("--receipt-builder-bundle", type=Path, required=True)
+    parser.add_argument(
+        "--expected-receipt-builder-bundle-prerequisite",
+        required=True,
+    )
     parser.add_argument("--control-project", type=Path, required=True)
     parser.add_argument("--evaluator-project", type=Path, required=True)
     parser.add_argument("--waiter-status", type=Path, required=True)
@@ -307,7 +345,14 @@ def main() -> None:
     output = reject_symlink_chain(args.output, name="capacity deployment receipt")
     if output.exists():
         raise FileExistsError(f"capacity deployment receipt already exists: {output}")
-    bundle_path = reject_symlink_chain(args.bundle, name="capacity uncertainty bundle")
+    waiter_bundle_path = reject_symlink_chain(
+        args.waiter_bundle,
+        name="capacity uncertainty waiter bundle",
+    )
+    builder_bundle_path = reject_symlink_chain(
+        args.receipt_builder_bundle,
+        name="capacity uncertainty receipt-builder bundle",
+    )
     status_path = reject_symlink_chain(
         args.waiter_status,
         name="capacity uncertainty waiter status",
@@ -361,6 +406,15 @@ def main() -> None:
             label="capacity uncertainty evaluator",
         ),
     }
+    receipt_builder_project = Path(__file__).resolve().parents[1]
+    receipt_builder_checkout = {
+        "path": receipt_builder_project.as_posix(),
+        **base_waiter._git_identity(receipt_builder_project),
+    }
+    _require_git(
+        receipt_builder_checkout,
+        label="capacity uncertainty receipt-builder checkout",
+    )
 
     processes = [
         row
@@ -369,19 +423,30 @@ def main() -> None:
     ]
     if len(processes) != 1:
         raise ValueError("capacity uncertainty waiter process is not uniquely alive")
-    prerequisites = _bundle_prerequisites(bundle_path)
-    if prerequisites != [args.expected_bundle_prerequisite.lower()]:
+    waiter_prerequisites = _bundle_prerequisites(waiter_bundle_path)
+    if waiter_prerequisites != [args.expected_waiter_bundle_prerequisite.lower()]:
         raise ValueError("capacity uncertainty bundle prerequisite differs")
+    builder_prerequisites = _bundle_prerequisites(builder_bundle_path)
+    if builder_prerequisites != [
+        args.expected_receipt_builder_bundle_prerequisite.lower()
+    ]:
+        raise ValueError("capacity uncertainty receipt-builder prerequisite differs")
     receipt = build_receipt(
         source_kind=source_kind,
         output_root=output_root,
         source_anchor_present=source_anchor.is_file(),
         control_checkout=control_checkout,
         evaluator_checkout=evaluator_checkout,
-        bundle={
-            "identity": file_identity(bundle_path),
-            "heads": _bundle_heads(bundle_path),
-            "prerequisites": prerequisites,
+        receipt_builder_checkout=receipt_builder_checkout,
+        waiter_bundle={
+            "identity": file_identity(waiter_bundle_path),
+            "heads": _bundle_heads(waiter_bundle_path),
+            "prerequisites": waiter_prerequisites,
+        },
+        receipt_builder_bundle={
+            "identity": file_identity(builder_bundle_path),
+            "heads": _bundle_heads(builder_bundle_path),
+            "prerequisites": builder_prerequisites,
         },
         waiter_status=status,
         waiter_status_identity=status_identity,

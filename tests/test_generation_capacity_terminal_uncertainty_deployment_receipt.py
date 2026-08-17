@@ -116,7 +116,14 @@ def _build(**overrides: Any) -> dict[str, Any]:
         "source_anchor_present": False,
         "control_checkout": CONTROL,
         "evaluator_checkout": EVALUATOR,
-        "bundle": {
+        "receipt_builder_checkout": {
+            "path": "/checkouts/receipt-builder",
+            "revision": "e" * 40,
+            "tree": "f" * 40,
+            "branch": "",
+            "tracked_dirty": False,
+        },
+        "waiter_bundle": {
             "identity": _identity("/tmp/control.bundle", size=100),
             "heads": [
                 {
@@ -125,6 +132,16 @@ def _build(**overrides: Any) -> dict[str, Any]:
                 }
             ],
             "prerequisites": ["d" * 40],
+        },
+        "receipt_builder_bundle": {
+            "identity": _identity("/tmp/receipt-builder.bundle", size=50),
+            "heads": [
+                {
+                    "revision": "e" * 40,
+                    "ref": "refs/heads/analysis/receipt-builder",
+                }
+            ],
+            "prerequisites": [CONTROL["revision"]],
         },
         "waiter_status": status,
         "waiter_status_identity": _identity(f"{OUTPUT}/reports/waiter_status.json"),
