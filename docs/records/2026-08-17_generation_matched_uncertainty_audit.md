@@ -316,3 +316,58 @@ No remote output root, cache, report, checkout, or GPU process was created by
 the implementation and local validation work. Remote deployment remains a
 separate exact-revision step, and the active full-data 100K trainer retains the
 GPU until its own terminal evidence is complete.
+
+## Safe-slot waiter deployment
+
+The waiter was subsequently deployed from an independent persistent control
+checkout without modifying the formal repository, the detached evaluator, or
+the active quality-bridge checkout:
+
+```text
+control checkout:
+/root/autodl-tmp/CoFiTok/checkouts/matched-uncertainty-waiter-f161fe3/CoFiTok-internal
+revision: f161fe31453231b7c126d10cfbe78344f10ff463
+tree: 187ead45f9418f8a93f28da6dc229ea78c24a425
+branch: analysis/generation-matched-uncertainty-v1
+tracked status: clean
+git fsck: pass
+```
+
+Before launch, the server passed all 36 targeted uncertainty/waiter tests with
+CUDA hidden and one OMP/MKL thread, Python compilation, both CLI help paths,
+`git diff --check`, exact checkout validation, both source-manifest preflights,
+and a full bytes/SHA256 verification of the existing 50K real feature cache.
+The active quality execution status replayed as `running`.
+
+The waiter launched at `2026-08-18T01:05:36+08:00` as PID `809569`. Its initial
+authoritative status was:
+
+```text
+status: waiting
+phase: quality_bridge
+detail: waiting_for_quality_bridge_terminal_result
+```
+
+Only the CPU waiter was added. The quality-bridge trainer remained PID `619775`
+at `85,284 MiB`, and its metrics advanced from step `29,600` before launch to
+step `29,650` after launch. No uncertainty feature extractor, audit, or summary
+child existed. The waiter permanently records all training, full-300K, release,
+promotion-gate replacement, and broad-generation claims as disallowed.
+
+After more than two poll intervals, PID `809569` remained alive in the same
+waiting state, its lifetime-average CPU use had fallen to `4.4%`, and the output
+root still contained only the zero-byte log, PID record, and atomic status JSON.
+The GPU process set was unchanged.
+
+After the persistent control checkout and live PID were reverified, the exact
+22,614-byte local and remote temporary bundle copies were hash-checked and
+removed. The control checkout, waiter process, status, and experiment outputs
+were retained.
+
+Deployment evidence is recorded at:
+
+```text
+artifacts/reports/generation/matched_uncertainty_waiter_deployment_2026-08-18.json
+bytes: 5,340
+SHA256: 644d5535a504bdc9f6195174f6536c773757a6085bea0763c1a92a7441ff02d0
+```
