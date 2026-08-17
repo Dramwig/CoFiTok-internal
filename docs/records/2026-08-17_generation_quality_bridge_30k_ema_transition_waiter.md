@@ -72,9 +72,58 @@ loss, zero active loss, missing target row, samples-seen drift, canonical tail
 readiness, resolved run-manifest binding, checked-in config binding, and the
 non-authorizing waiting status.
 
+Locked implementation identity:
+
+```text
+revision: 2a80f6e55f71c9c25c405564bc4393bf06cb3154
+tree: 60221d9e3ac5faf5f27fae555d2320048612f2a8
+incremental bundle bytes: 8,947
+incremental bundle SHA256: b20a12e88ef9bd462fbf4aedd9ad9a6eb81203ec44f06e08d5ee21210ebb4ee8
+bundle prerequisite: cf0e5faa94bf4ab38d947b921935b3b765b5537a
+waiter source SHA256: 10c1676d0de5e7aaa94f428a65448ab78da7fdbdc7184a76de7278aaad6d9998
+```
+
+The bundle was verified against the active training repository, fetched only
+into an isolated detached Linux checkout, and rehearsed with CUDA hidden plus
+one OMP/MKL thread. The same 68-test group and Python compilation passed;
+tracked status remained empty and the active training checkout stayed at
+`cf0e5faa94bf4ab38d947b921935b3b765b5537a`.
+
 ## Execution boundary
 
 The script must be committed, bundled, Linux-rehearsed with CUDA hidden, and
 launched from a separate clean checkout before the 30,250 row is reached. Its
 output belongs under the active quality-bridge `reports/` tree. It must not
 modify the active training checkout or compete for GPU resources.
+
+## Deployment
+
+The exact waiter was deployed from:
+
+```text
+/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-ema-transition-2a80f6e
+```
+
+Runtime identity:
+
+```text
+PID: 798909
+CUDA_VISIBLE_DEVICES: empty
+OMP_NUM_THREADS: 1
+MKL_NUM_THREADS: 1
+nice: 10
+ionice: idle class
+poll interval: 30 seconds
+timeout: 43,200 seconds
+```
+
+Authoritative outputs:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/cofitok_ema_teacher_transition_00030000_00030250_waiter_status.json
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/cofitok_ema_teacher_transition_00030000_00030250.json
+```
+
+Initial status was `waiting / transition_target_not_reached`. The process was
+alive, the active training checkout remained tracked-clean, and no GPU work was
+started by this deployment.
