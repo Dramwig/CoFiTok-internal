@@ -50,3 +50,31 @@ without asserting an experimental result.
 - Python compile: pass;
 - `git diff --check`: pass;
 - no server process, waiter, checkpoint, sample, or formal checkout was changed.
+
+## Isolated Linux rehearsal
+
+The exact incremental bundle from prerequisite
+`c42ac96c6628ff71f7c67c8957c86ea0523aea0b` to target
+`0f12a3c20a6795a219f498c98ba8f5143daa26b8` was rehearsed on `pro6000`
+at 2026-08-18 07:18 CST without moving or modifying the formal checkout.
+
+- bundle bytes: `15,563`;
+- bundle SHA256:
+  `5c40e145c6c1761da6f7d13eafea690fea940f98ea34407caa82a16c18aa930c`;
+- target tree: `635dde1757f7ec5fe22e13434a8e245c80b3aab9`;
+- rehearsal checkout:
+  `/tmp/cofitok-claim-language-guard-rehearsal-3k0kbu/CoFiTok-internal`;
+- focused language-guard suite: `9 passed`;
+- integrated quality/capacity claim, terminal-uncertainty, and language-guard
+  suite: `95 passed`;
+- Python compile and `git diff --check`: pass;
+- rehearsal checkout tracked state after verification: clean;
+- formal checkout remained at
+  `1ebcc15210e63a776a2ba448481cbd8bb94a4066` on
+  `scale/generative-system` with zero tracked changes;
+- the only GPU compute process remained the expected CoFiTok trainer PID
+  `619775`; training advanced normally to step `37,550` while the CPU-only
+  rehearsal ran.
+
+The bundle and rehearsal checkout exist only under remote `/tmp`. No deployed
+waiter was restarted or replaced, and no training process was signalled.
