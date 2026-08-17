@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "role": "capacity_generation_pipeline_lineage_observer_v2_local_evidence",
+  "status": "pass",
+  "recorded_at": "2026-08-17T14:05:04.360690+00:00",
+  "code": {
+    "branch": "scale/generation-capacity-pipeline-observer-v1",
+    "revision": "1ff6bb3db932ef9e43ddfafc067db779dab797d9",
+    "tree": "bf0d2e8208ea3bce0ab04c7f1991ea17882a3ea2",
+    "isolated_checkout": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-586fe30/CoFiTok-internal"
+  },
+  "incremental_bundle": {
+    "path": "/tmp/cofitok-capacity-lineage-observer-1ff6bb3-afa62c30.bundle",
+    "bytes": 20764,
+    "sha256": "afa62c3010eba2fd6cb45f3939ca5d4f98c646ab2712597906ece401197771b5",
+    "prerequisite_revision": "0bbd1cc43b9bb713ab2da8d4da6404f304f88ffe",
+    "advertised_revision": "1ff6bb3db932ef9e43ddfafc067db779dab797d9",
+    "advertised_ref": "refs/heads/scale/generation-capacity-pipeline-observer-v1"
+  },
+  "validation": {
+    "local_targeted_observer_recovery_tests": 20,
+    "local_broad_capacity_quality_bridge": {
+      "files": 41,
+      "tests": 254,
+      "status": "passed"
+    },
+    "linux_targeted_and_entrypoint_tests": 22,
+    "linux_python_compile": "passed",
+    "linux_bash_n": "passed",
+    "git_diff_check": "passed"
+  },
+  "one_shot": {
+    "path": "/tmp/capacity-generation-pipeline-lineage-once-1ff6bb3-28318ff8.json",
+    "bytes": 24603,
+    "sha256": "890aec9a4819bd5f2a3e94090b385ae1109b5e9142a8561a52b50ceab042bfc9",
+    "status": "running",
+    "issues": [],
+    "recovery_supersession_status": "pass",
+    "resume_step": 20000,
+    "trusted_checkpoint_step": 25000,
+    "live_cofitok_step": 25550,
+    "watchdog_target_step": 50000
+  },
+  "deployment": {
+    "pid": 765120,
+    "poll_seconds": 60,
+    "stale_seconds": 600,
+    "output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_generation_pipeline_lineage_observer_v2.json",
+    "lock": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/capacity_generation_pipeline_lineage_observer_v2.lock",
+    "log": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_generation_pipeline_lineage_observer_v2.log",
+    "verified_poll_count": 5,
+    "report_identity_at_receipt": {
+      "bytes": 24700,
+      "sha256": "831c47efb9d19d25537395f722734b3d194d324bf69abbbce1186d54a52dbeb2"
+    },
+    "log_identity_at_receipt": {
+      "bytes": 1040,
+      "sha256": "c8ee1dea6a084592790b04ffe7080c7a26582873fd834fba93eabc609ec5e111"
+    }
+  },
+  "remote_deployment_receipt": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_generation_pipeline_lineage_observer_v2_deployment_receipt.json",
+    "bytes": 12867,
+    "sha256": "925e62a420bb9b6f5d84e161cc31f62ae7def0f69ec8582794ccdd4066f9de9a",
+    "independent_validation": "passed"
+  },
+  "training_snapshot": {
+    "quality_bridge_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "cofitok_step_at_receipt": 25650,
+    "dense_step_at_receipt": 0,
+    "resume_step": 20000,
+    "trusted_checkpoint_step": 25000,
+    "watchdog_target_step": 50000,
+    "training_pid": 619775,
+    "watchdog_pid": 619618,
+    "recovery_supervisor_v2_pid": 630988,
+    "free_bytes": 178787819520
+  },
+  "formal_checkout_snapshot": {
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tree": "659fa94726c4aec0afef49904f82b828bb62872b",
+    "branch": "scale/generative-system",
+    "tracked_dirty": false,
+    "porcelain_count": 89,
+    "porcelain_sha256": "18e5981f22a2ac255c7f60343429daa6ceea86412b1d7bd09bc474f2faf74004",
+    "porcelain_uall_count": 301
+  },
+  "preservation": {
+    "old_observer_pid": 12692,
+    "old_observer_signaled_or_modified": false,
+    "formal_checkout_modified": false,
+    "training_process_modified": false,
+    "new_gpu_stage_launched": false
+  },
+  "claim_boundary": {
+    "observer_is_read_only": true,
+    "observer_is_non_authorizing": true,
+    "training_launch_allowed": false,
+    "sampling_or_evaluation_launch_allowed": false,
+    "promotion_or_release_allowed": false,
+    "generation_quality_claim_allowed": false
+  }
+}
