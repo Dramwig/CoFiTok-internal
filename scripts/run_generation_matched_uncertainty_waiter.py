@@ -692,13 +692,36 @@ def validate_execution_manifest(
     matched = expected.get("matched_sampling")
     real_set = expected.get("real_set")
     sample_sets = expected.get("sample_sets")
+    matched_sample_count = (
+        int(matched.get("sample_count", -1))
+        if isinstance(matched, Mapping)
+        else -1
+    )
+    min_samples = arguments.get("min_samples", matched_sample_count)
+    block_size = arguments.get("block_size", 500)
+    real_fold_count = arguments.get("real_fold_count", 1)
+    real_image_count = (
+        real_set.get("image_count") if isinstance(real_set, Mapping) else None
+    )
     if (
         not isinstance(matched, Mapping)
-        or int(matched.get("sample_count", -1)) != 10_000
+        or type(min_samples) is not int
+        or min_samples < 1
+        or type(block_size) is not int
+        or block_size < 2
+        or type(real_fold_count) is not int
+        or real_fold_count < 1
+        or int(matched.get("sample_count", -1)) != min_samples
         or int(matched.get("end_index_exclusive", -1))
         - int(matched.get("start_index", -1))
-        != 10_000
+        != min_samples
+        or min_samples % block_size != 0
+        or min_samples // block_size < 8
         or not isinstance(real_set, Mapping)
+        or (
+            real_image_count is not None
+            and int(real_image_count) < min_samples * real_fold_count
+        )
         or not isinstance(sample_sets, Mapping)
         or not isinstance(sample_sets.get("cofitok"), Mapping)
         or not isinstance(sample_sets.get("dense_identity"), Mapping)
