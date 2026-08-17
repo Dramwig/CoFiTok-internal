@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "role": "capacity_pipeline_authority_and_launch_boundary_evidence",
+  "status": "pass",
+  "observed_at": "2026-08-17T18:33:45.100863+00:00",
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "scope": {
+    "read_only_status_audit": true,
+    "training_launch_performed_by_audit": false,
+    "sampling_or_evaluation_launched_by_audit": false,
+    "gpu_allocated_by_audit": false,
+    "process_signaled_by_audit": false,
+    "formal_checkout_modified_by_audit": false,
+    "promotion_or_release_authorized": false
+  },
+  "quality_bridge_context": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "training_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "training_tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+    "training_branch": "scale/generation-stability-quality-bridge-100k",
+    "live_cofitok_step": 31450,
+    "dense_started": false,
+    "pair_status": "running",
+    "pair_stage": "cofitok_training",
+    "pair_issues": [],
+    "active_gpu_trainer_pid": 619775
+  },
+  "lineage_observer_authority": {
+    "authoritative_observer": {
+      "version": "v2",
+      "pid": 765120,
+      "process_alive": true,
+      "status": "running",
+      "complete": false,
+      "detail": "waiting_at:quality_bridge_100k_recovery:superseded_by_source_bound_exact_resume:existing_quality_bridge_execution_is_active",
+      "issues": [],
+      "current_stage": "quality_bridge_100k_recovery",
+      "current_stage_status": "running",
+      "observer_git": {
+        "revision": "1ff6bb3db932ef9e43ddfafc067db779dab797d9",
+        "tree": "bf0d2e8208ea3bce0ab04c7f1991ea17882a3ea2",
+        "branch": "scale/generation-capacity-pipeline-observer-v1",
+        "tracked_dirty": false
+      },
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_generation_pipeline_lineage_observer_v2.json",
+      "deployment_receipt": {
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_generation_pipeline_lineage_observer_v2_deployment_receipt.json",
+        "bytes": 12867,
+        "sha256": "925e62a420bb9b6f5d84e161cc31f62ae7def0f69ec8582794ccdd4066f9de9a",
+        "status": "active"
+      }
+    },
+    "recovery_supersession": {
+      "status": "pass",
+      "contract": {
+        "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-586fe30/CoFiTok-internal/configs/generation/diagnostics/quality_bridge_recovery_supersession_20260817.json",
+        "bytes": 3568,
+        "sha256": "28318ff89c009be65899117bbb9d45f533bc116f63b6bd335e21463818d5f609"
+      },
+      "resume_step": 20000,
+      "trusted_checkpoint_step": 25000,
+      "successor_recovery_pid": 630988,
+      "successor_recovery_alive": true,
+      "successor_status": "running",
+      "old_failure_is_preserved_evidence": true
+    },
+    "preserved_superseded_observer": {
+      "version": "v1",
+      "pid": 12692,
+      "process_alive": true,
+      "report_complete": false,
+      "report_detail": "lineage_health_failure:quality_bridge_100k_recovery",
+      "current_stage_status": "failed",
+      "failure_detail": "nonretryable_recovery_controller_exit_1:exit_1_is_not_retryable",
+      "issues": [
+        "formal_checkout_snapshot_changed"
+      ],
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_generation_pipeline_lineage_observer.json",
+      "signaled_or_modified_by_v2_deployment": false,
+      "authoritative_for_current_lineage": false,
+      "interpretation": "The v1 failure is preserved historical observer evidence. It is superseded by the source-bound v2 observer and is not the current pipeline verdict."
+    }
+  },
+  "capacity_probe_250m_10k": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1",
+    "source_bound_preparation_present": false,
+    "source_bound_preparation_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/preparation.json",
+    "preparation_waiter": {
+      "status": "waiting",
+      "detail": "waiting_for_quality_bridge_followup_decision",
+      "preparation": null
+    },
+    "execution_supervisor": {
+      "pid": 11853,
+      "process_alive": true,
+      "status": "waiting",
+      "detail": "waiting_for_source_bound_capacity_preparation",
+      "attempt": 0,
+      "child_pid": null,
+      "idle_polls": 0,
+      "required_idle_polls": 5
+    },
+    "supervisor_launch_receipt": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/execution_supervisor_launch_receipt.json",
+      "bytes": 4401,
+      "sha256": "9c04632adf19fa74120be5430220e8dd46635610924d68393106f4e6e0a6ae6d",
+      "role": "generation_capacity_probe_execution_supervisor_launch_receipt",
+      "status": "active_waiting_for_source_bound_preparation",
+      "scope_limited_to_exact_250m_10k_probe": true,
+      "is_experiment_training_launch_receipt": false
+    },
+    "experiment_training_launch_performed": false,
+    "experiment_training_child_pid": null,
+    "checkpoint_payload_count": 0,
+    "capacity_run_directories_present": false,
+    "interpretation": "A waiting supervisor has been deployed, but the exact 250M probe has not been prepared or launched. The supervisor receipt must not be cited as a training launch receipt."
+  },
+  "full_300k_launch_boundary": {
+    "full_output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1",
+    "full_output_root_present": false,
+    "training_launch_receipt_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/reports/capacity_full_300k_training_launch_receipt.json",
+    "training_launch_receipt_present": false,
+    "readiness_supervisor": {
+      "pid": 12247,
+      "process_alive": true,
+      "status": "waiting",
+      "detail": "waiting_for_source_bound_capacity_full_readiness_decision",
+      "decision": null,
+      "readiness": null,
+      "full_300k_launch_performed": false,
+      "training_launch_performed": false,
+      "idle_polls": 0,
+      "required_idle_polls": 5,
+      "training_launch_allowed_by_supervisor": false,
+      "separate_training_launch_receipt_required_after_readiness": true
+    },
+    "training_supervisor": {
+      "pid": 12259,
+      "process_alive": true,
+      "status": "waiting",
+      "detail": "waiting_for_passed_capacity_full_readiness",
+      "attempt": 0,
+      "child_pid": null,
+      "idle_polls": 0,
+      "required_idle_polls": 5,
+      "training_launch_performed": false,
+      "training_launch_receipt": null,
+      "execution_git": {
+        "revision": "d75dfea37ddcb504cfe8ecba25774ee36f522480",
+        "tree": "e96059ab0e77942e716c23a69364fc6c8ad9048d",
+        "branch": "scale/generation-capacity-full-300k-execution-v1",
+        "tracked_dirty": false
+      },
+      "deployment_receipt": {
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_training_supervisor_deployment_receipt.json",
+        "bytes": 12158,
+        "sha256": "2ffb1518c14034f4879c5500f933768e7406c44b52bf0d66ac75b3c3b31696ce",
+        "status": "active"
+      }
+    },
+    "standing_authorization": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/standing_authorization.json",
+      "bytes": 865,
+      "sha256": "5fe64a0941acb55a21cb6479a726987c6259e93a772c47290f2d6883752de4df",
+      "status": "active",
+      "exact_text": "之后不要我授权你直接运行需要的实验",
+      "does_not_bypass_source_bound_readiness": true,
+      "does_not_replace_exact_launch_receipt": true,
+      "does_not_bypass_idle_gpu_confirmation": true
+    },
+    "required_prelaunch_chain": [
+      "complete and evaluate the active matched full-data quality bridge",
+      "produce a source-bound follow-up decision",
+      "prepare and complete the exact matched 250M 10K capacity probe",
+      "pass the source-replayed capacity scaling decision",
+      "complete the configured 50K and 100K capacity stages and bind their results",
+      "build and pass source-bound full-300K readiness",
+      "create a separate exact-revision, exact-stage, exact-output training launch receipt",
+      "observe five consecutive idle-GPU polls before spawning the training child"
+    ],
+    "fresh_matched_300k_training_launch_allowed_now": false,
+    "interpretation": "Standing authorization permits automatic progression only after the full source-bound chain passes. No 300K output root, readiness artifact, training receipt, child process, or idle-poll sequence exists yet."
+  },
+  "claim_boundary": {
+    "v2_is_current_authoritative_lineage_observer": true,
+    "v1_failure_is_current_pipeline_failure": false,
+    "capacity_probe_prepared": false,
+    "capacity_probe_training_started": false,
+    "full_300k_ready": false,
+    "full_300k_training_started": false,
+    "full_300k_launch_authorized_by_current_artifacts": false,
+    "model_quality_or_scaling_advantage_established_by_this_audit": false,
+    "safe_automatic_progression_chain_present": true
+  }
+}
