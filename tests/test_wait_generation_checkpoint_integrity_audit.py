@@ -13,6 +13,14 @@ SCRIPT = (
     / "scripts"
     / "wait_generation_checkpoint_integrity_audit.py"
 )
+DEPLOYMENT_RECEIPT = (
+    Path(__file__).resolve().parents[1]
+    / "artifacts"
+    / "reports"
+    / "generation"
+    / "stability_full_data_quality_bridge_checkpoint_25k_waiter"
+    / "deployment_receipt.json"
+)
 
 
 def load_waiter() -> ModuleType:
@@ -163,3 +171,29 @@ def test_audit_rejects_samples_seen_drift(tmp_path: Path, monkeypatch: object) -
         assert "samples_seen binding" in str(error)
     else:
         raise AssertionError("samples_seen drift must fail closed")
+
+
+def test_deployment_receipt_binds_source_and_non_authorizing_scope() -> None:
+    receipt = json.loads(DEPLOYMENT_RECEIPT.read_text(encoding="utf-8"))
+    source = receipt["deployment"]["source"]
+
+    assert receipt["schema_version"] == 1
+    assert receipt["status"] == "pass"
+    assert receipt["role"] == (
+        "cofitok_quality_bridge_checkpoint_25k_waiter_deployment_receipt"
+    )
+    assert source["bytes"] == SCRIPT.stat().st_size
+    assert source["sha256"] == hashlib.sha256(SCRIPT.read_bytes()).hexdigest()
+    assert receipt["bundle"]["advertised_head"] == receipt["git"][
+        "implementation_commit"
+    ]
+    assert receipt["scope"] == {
+        "full_300k_launch_allowed": False,
+        "full_training_launch_allowed": False,
+        "gpu_required": False,
+        "promotion_authorization_allowed": False,
+        "read_only_checkpoint_verification": True,
+        "release_authorization_allowed": False,
+        "training_process_signals_allowed": False,
+        "unrelated_process_signals_allowed": False,
+    }

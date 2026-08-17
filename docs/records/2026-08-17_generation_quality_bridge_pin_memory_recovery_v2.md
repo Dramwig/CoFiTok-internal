@@ -74,6 +74,41 @@ The byte-identical immutable server copy is:
 /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/recovery_incident_2026-08-17_pin_memory/recovery_supervisor_v2_deployment_receipt.json
 ```
 
+## Step-25K physical integrity waiter
+
+The resumed run had not yet reached step 25,000, so a separate read-only,
+source-bound waiter was deployed from commit
+`172388fc4d873bb1001313f979442516ea7b5069`. It runs at nice level 10 and
+idle I/O priority with `CUDA_VISIBLE_DEVICES=""`; it cannot signal the trainer,
+authorize promotion, or use the GPU. The waiter performs a full physical
+checkpoint SHA256 replay and verifies the sidecar, exact `latest.json` binding,
+training revision/tree/branch, dataset/runtime identities, strictly increasing
+metrics, and `samples_seen == step * 64`.
+
+```text
+source bytes: 14,973
+source sha256: eafc4e1f7b33f8b890883ac4878944a1d57f41aca02dc0483b9e82d1259fca8b
+bundle bytes: 10,770
+bundle sha256: 1e7ad070b85d93faacaf789579b19b5ff45a52cafd53563170f6fd5e05bbea2b
+clean checkout: /root/autodl-tmp/CoFiTok/checkouts/quality-bridge-checkpoint-waiter-172388f
+waiter PID: 650982
+initial status: waiting / checkpoint_missing
+```
+
+The deployment receipt is:
+
+```text
+artifacts/reports/generation/stability_full_data_quality_bridge_checkpoint_25k_waiter/deployment_receipt.json
+bytes: 3,781
+sha256: 8d9f54cf1d5ceef8a506c3d1d10700beb10c25caa1c3c0968610715a6b7d2577
+```
+
+Its byte-identical server copy, source, and bundle are preserved in the same
+incident evidence directory. Windows targeted validation passed 11 tests; the
+exact Linux checkout passed 10 tests, and the final waiter/receipt validation
+passed 4 Linux tests. The only GPU compute PID after launch remained the
+training process `619775`.
+
 Deployed standalone supervisor identity:
 
 ```text
