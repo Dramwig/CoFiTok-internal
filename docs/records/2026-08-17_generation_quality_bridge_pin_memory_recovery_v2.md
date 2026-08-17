@@ -59,6 +59,21 @@ The incremental deployment bundle requires `cf0e5fa`, advertises only
 `564b751`, is 13,359 bytes, and has SHA256
 `b886d92ad9d0d2943aeb7555e73a36e3b8c4b7be5103aad81bf0cfbcc5ffeffa`.
 
+The source-bound deployment receipt is tracked by commit
+`e663470f534f0b1fd2bab477009a5baaaed6f172` at:
+
+```text
+artifacts/reports/generation/stability_full_data_quality_bridge_ipc_recovery_v2/deployment_receipt.json
+bytes: 3,714
+sha256: c20cf6193db929adbecd2dbe2822deb907f6aedfb29095175317524b1a6cc075
+```
+
+The byte-identical immutable server copy is:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/recovery_incident_2026-08-17_pin_memory/recovery_supervisor_v2_deployment_receipt.json
+```
+
 Deployed standalone supervisor identity:
 
 ```text
@@ -93,6 +108,9 @@ its informational full-porcelain snapshot was 89 paths with SHA256
 
 - Windows targeted pytest: `5 passed`.
 - Linux targeted pytest from the exact tracked checkout: `5 passed`.
+- Deployment-receipt validation: Windows `2 passed` (`7 passed` together with
+  the supervisor tests), Linux `2 passed`; both observed receipt SHA256
+  `c20cf6193db929adbecd2dbe2822deb907f6aedfb29095175317524b1a6cc075`.
 - Linux `py_compile`: pass.
 - Linux built-in supervisor self-test: pass.
 - Remote `git bundle verify`: pass; the isolated clean checkout is
