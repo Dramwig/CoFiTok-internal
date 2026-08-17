@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "role": "quality_bridge_30k_checkpoint_and_ema_transition_evidence",
+  "status": "pass",
+  "observed_at": "2026-08-17T17:38:49.605937+00:00",
+  "quality_bridge": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+    "git": {
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+      "branch": "scale/generation-stability-quality-bridge-100k",
+      "tracked_dirty": false
+    },
+    "effective_batch": 64,
+    "target_steps": 100000
+  },
+  "checkpoint_step_30000": {
+    "status": "pass",
+    "physical_sha256_verified": true,
+    "checkpoint": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00030000.pt",
+      "bytes": 1010937514,
+      "sha256": "1b6492d5095c3da8cc0853bd7efcdac5ed36cd91aced8a19000ee95aebb5ac5e"
+    },
+    "waiter_status": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/checkpoint_audits/cofitok_checkpoint_step_00030000_waiter_status.json",
+      "bytes": 1524,
+      "sha256": "11afe8db0238872038fd785b239695a97a9de39b4d83175a94da988f07d7fd42"
+    },
+    "physical_audit": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/checkpoint_audits/cofitok_checkpoint_step_00030000_physical_integrity_audit.json",
+      "bytes": 5221,
+      "sha256": "3bdc9bed421b1fe4080034a3862bcab851559d26192577517e1eb757d504d7a9"
+    },
+    "boundary_row": {
+      "step": 30000,
+      "samples_seen": 1920000,
+      "ema_teacher_consistency_scale": 0.0,
+      "ema_teacher_consistency": 0.0,
+      "epsilon": 0.026824012398719788,
+      "total": 0.04770804941654205,
+      "grad_norm": 0.6201666593551636
+    }
+  },
+  "ema_teacher_transition_30000_30250": {
+    "status": "pass",
+    "start_step": 30000,
+    "first_active_step": 30050,
+    "target_step": 30250,
+    "warmup_steps": 10000,
+    "weight": 0.25,
+    "expected_target_scale": 0.025,
+    "active_row_count": 5,
+    "active_loss_min": 0.0005355001194402575,
+    "active_loss_max": 0.0029341625049710274,
+    "samples_seen_binding": "samples_seen == step * 64",
+    "samples_seen_binding_verified": true,
+    "strictly_increasing_metrics": true,
+    "strictly_increasing_active_scales": true,
+    "active_rows": [
+      {
+        "step": 30050,
+        "samples_seen": 1923200,
+        "ema_teacher_consistency_scale": 0.004999999888241291,
+        "ema_teacher_consistency": 0.0005355001194402575,
+        "epsilon": 0.028026152402162552,
+        "total": 0.05119746923446655,
+        "grad_norm": 0.2803221642971039
+      },
+      {
+        "step": 30100,
+        "samples_seen": 1926400,
+        "ema_teacher_consistency_scale": 0.009999999776482582,
+        "ema_teacher_consistency": 0.0014735832810401917,
+        "epsilon": 0.03110983967781067,
+        "total": 0.050826139748096466,
+        "grad_norm": 0.129815012216568
+      },
+      {
+        "step": 30150,
+        "samples_seen": 1929600,
+        "ema_teacher_consistency_scale": 0.014999999664723873,
+        "ema_teacher_consistency": 0.0029341625049710274,
+        "epsilon": 0.03266453370451927,
+        "total": 0.05420811474323273,
+        "grad_norm": 0.10648318380117416
+      },
+      {
+        "step": 30200,
+        "samples_seen": 1932800,
+        "ema_teacher_consistency_scale": 0.019999999552965164,
+        "ema_teacher_consistency": 0.0005869395099580288,
+        "epsilon": 0.03336414322257042,
+        "total": 0.05422787368297577,
+        "grad_norm": 0.22248370945453644
+      },
+      {
+        "step": 30250,
+        "samples_seen": 1936000,
+        "ema_teacher_consistency_scale": 0.02500000037252903,
+        "ema_teacher_consistency": 0.0013662397395819426,
+        "epsilon": 0.0265356432646513,
+        "total": 0.04560079425573349,
+        "grad_norm": 0.07730540633201599
+      }
+    ],
+    "waiter_status": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/cofitok_ema_teacher_transition_00030000_00030250_waiter_status.json",
+      "bytes": 1319,
+      "sha256": "0c7fbab91830df33c18018e81b9d9c2c4d99f587b16a1a1f2ce47274bf48848b"
+    },
+    "audit_report": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/cofitok_ema_teacher_transition_00030000_00030250.json",
+      "bytes": 13304,
+      "sha256": "8ac14c70faef01930d99273f658e5dd6e659e10d5f85d560fc13cebb2e9faa35"
+    }
+  },
+  "post_transition_continuity": {
+    "status": "running_normally",
+    "last_observed_row": {
+      "step": 30350,
+      "samples_seen": 1942400,
+      "ema_teacher_consistency_scale": 0.03500000014901161,
+      "ema_teacher_consistency": 0.0003420293505769223,
+      "epsilon": 0.02655838429927826,
+      "total": 0.05305024981498718,
+      "grad_norm": 1.3266913890838623
+    },
+    "pair_monitor": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/pair_monitor.json",
+      "bytes": 18687,
+      "sha256": "c142015cf94cbfc4cd9575eabda1cdf36f4de068f45e7da2ac8abe728107f138",
+      "status": "running",
+      "stage": "cofitok_training",
+      "issues": [],
+      "cofitok_health_issues": [],
+      "cofitok_step_at_snapshot": 30300,
+      "dense_step_at_snapshot": 0,
+      "unrelated_gpu_processes": []
+    },
+    "watchdog": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_watchdog_step_00050000.json",
+      "bytes": 2331,
+      "sha256": "08c8d347f05cde159e80f37213edd91bb2385c09aaf7f77eccf5265165ac5393",
+      "status": "running",
+      "reason": "child_and_monitor_active",
+      "child_pid": 619775,
+      "child_exit_code": null,
+      "monitor_process_alive": true,
+      "issues": []
+    },
+    "processes": {
+      "runbook_pid": 618821,
+      "pair_monitor_pid": 619509,
+      "watchdog_pid": 619618,
+      "trainer_pid": 619775
+    },
+    "gpu_compute_processes": [
+      {
+        "pid": 619775,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 85284,
+        "role": "quality_bridge_cofitok_trainer"
+      }
+    ],
+    "matched_uncertainty_waiter": {
+      "pid": 809569,
+      "status": "waiting",
+      "phase": "quality_bridge",
+      "detail": "waiting_for_quality_bridge_terminal_result",
+      "gpu_compute_rows": []
+    }
+  },
+  "claim_boundary": {
+    "checkpoint_reproducibility_evidence": true,
+    "schedule_transition_correctness_evidence": true,
+    "post_transition_training_continuity_evidence": true,
+    "sample_quality_evidence": false,
+    "ema_teacher_causal_benefit_established": false,
+    "broad_generation_superiority_claim_allowed": false,
+    "promotion_authorization_allowed": false,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "release_allowed": false
+  }
+}

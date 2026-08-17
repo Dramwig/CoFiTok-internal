@@ -127,3 +127,67 @@ Authoritative outputs:
 Initial status was `waiting / transition_target_not_reached`. The process was
 alive, the active training checkout remained tracked-clean, and no GPU work was
 started by this deployment.
+
+## Verified result
+
+The 30K checkpoint and the disabled-to-active EMA-teacher boundary both passed
+their source-bound audits on `2026-08-18` CST.
+
+The physical checkpoint audit verified:
+
+```text
+checkpoint: checkpoint_step_00030000.pt
+bytes: 1,010,937,514
+SHA256: 1b6492d5095c3da8cc0853bd7efcdac5ed36cd91aced8a19000ee95aebb5ac5e
+audit bytes: 5,221
+audit SHA256: 3bdc9bed421b1fe4080034a3862bcab851559d26192577517e1eb757d504d7a9
+status: pass
+physical payload SHA256 verified: true
+```
+
+At exact step `30,000`, both EMA-teacher scale and loss were zero. The five
+required active rows were:
+
+| step | scale | teacher loss | samples seen |
+|---:|---:|---:|---:|
+| 30,050 | 0.005 | 0.0005355001 | 1,923,200 |
+| 30,100 | 0.010 | 0.0014735833 | 1,926,400 |
+| 30,150 | 0.015 | 0.0029341625 | 1,929,600 |
+| 30,200 | 0.020 | 0.0005869395 | 1,932,800 |
+| 30,250 | 0.025 | 0.0013662397 | 1,936,000 |
+
+The scales are strictly increasing, every active teacher loss is positive and
+finite, all audited total/epsilon/gradient values are finite, and every row
+satisfies `samples_seen == step * 64`. The authoritative transition report is:
+
+```text
+bytes: 13,304
+SHA256: 8ac14c70faef01930d99273f658e5dd6e659e10d5f85d560fc13cebb2e9faa35
+status: pass
+```
+
+The checked-in config retains its default `16x4` runtime while the resolved run
+manifest records the launch-selected `64x1` runtime. Both have effective batch
+`64`; the schedule, target steps, Git revision, branch, and clean-state binding
+match exactly.
+
+Training continued beyond the audited boundary. At the continuity snapshot it
+had reached step `30,350`, scale `0.035`, and `1,942,400` samples. The runbook,
+pair monitor, watchdog, and trainer remained alive; the pair monitor and
+watchdog both reported `running` with empty issues. GPU compute contained only
+trainer PID `619775` using `85,284 MiB`, and the active training checkout stayed
+tracked-clean at `cf0e5faa94bf4ab38d947b921935b3b765b5537a`.
+
+The compact local evidence receipt is:
+
+```text
+artifacts/reports/generation/quality_bridge_30k_ema_transition_evidence_2026-08-18.json
+canonical LF bytes: 7,411
+canonical LF SHA256: e120c4b4ffedd04a33fed682b6b5abbb141716c7070ebc988f295a69a9f0db36
+Git blob OID: 3d0fa3bcf767625bf9a37fa3f23d0e2e2cc649c1
+```
+
+This proves checkpoint integrity, schedule execution, sample accounting, and
+post-transition continuity. It does not prove EMA-teacher causal benefit,
+sample quality, broad generation superiority, promotion readiness, or release
+readiness. The full-data matched quality bridge must continue unchanged.
