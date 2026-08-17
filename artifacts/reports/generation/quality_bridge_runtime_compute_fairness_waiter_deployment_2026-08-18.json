@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "role": "quality_bridge_runtime_compute_fairness_waiter_deployment_evidence",
+  "status": "pass",
+  "recorded_at": "2026-08-18T03:19:04+08:00",
+  "purpose": "Bind the tested CPU-only terminal waiter that will publish the final observed matched runtime and physical-compute comparison after both exact 100K training reports exist.",
+  "quality_bridge": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "dataset": "imagenet_256",
+    "target_steps_per_method": 100000,
+    "training_git": {
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+      "branch": "scale/generation-stability-quality-bridge-100k"
+    }
+  },
+  "implementation": {
+    "git": {
+      "revision": "85bf1d6ae5b44f401153d0d1e390fc3973ff4bed",
+      "tree": "7900c5617c28c18e328c93aba4c547a3889f1aa7",
+      "development_branch": "fix/quality-bridge-ipc-recovery-v2",
+      "deployment_branch": "analysis/generation-quality-bridge-runtime-compute-fairness-v1",
+      "parent": "13bfcfadf00904563f098f1f8de64dbed574b543"
+    },
+    "source": {
+      "path": "scripts/wait_generation_quality_bridge_runtime_compute_fairness.py",
+      "bytes": 34408,
+      "sha256": "0caba8d7af93c83c8862e18cc1e77e0a7d497d4d8289173942fa5f2118efdf57"
+    },
+    "tests": {
+      "windows_targeted_pytest": "30 passed",
+      "linux_targeted_pytest": "30 passed",
+      "linux_cuda_visible_devices": "",
+      "compileall": "pass",
+      "git_diff_check": "pass"
+    }
+  },
+  "bundle": {
+    "path": "/tmp/cofitok_runtime_compute_fairness_85bf1d6.bundle",
+    "bytes": 13939,
+    "sha256": "53c8dbd21f18c6988ec87ee6f2ff83ee2b26f7026ea3202644ccd5cf21d808c4",
+    "advertised_head": "85bf1d6ae5b44f401153d0d1e390fc3973ff4bed",
+    "advertised_ref": "refs/heads/fix/quality-bridge-ipc-recovery-v2",
+    "verify_status": "pass"
+  },
+  "remote_deployment": {
+    "checkout": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-runtime-compute-fairness-85bf1d6/CoFiTok-internal",
+      "revision": "85bf1d6ae5b44f401153d0d1e390fc3973ff4bed",
+      "tree": "7900c5617c28c18e328c93aba4c547a3889f1aa7",
+      "branch": "analysis/generation-quality-bridge-runtime-compute-fairness-v1",
+      "tracked_dirty": false
+    },
+    "deployment_receipt": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/runtime_compute_fairness/deployment_receipt.json",
+      "bytes": 4403,
+      "sha256": "f1e60458fac0e5c6145f8a872d5bcc9f382b4afc844b7fc11739942a074fc418",
+      "status": "pass"
+    }
+  },
+  "initial_import_preflight": {
+    "status": "failed_before_argument_parsing",
+    "mode": "once",
+    "pythonpath": "<project>/src",
+    "error": "ModuleNotFoundError: No module named 'scripts'",
+    "root_cause": "The waiter imports tracked helper modules from the project-root scripts package before parsing arguments, so the project root as well as src must be on PYTHONPATH.",
+    "side_effects": {
+      "waiter_process_started": false,
+      "gpu_work_started": false,
+      "output_files_created": false,
+      "training_process_signaled": false,
+      "unrelated_process_signaled": false
+    },
+    "corrected_pythonpath": "<project>:<project>/src",
+    "corrected_preflight_status": "pass"
+  },
+  "active_waiter_observation": {
+    "pid": 832803,
+    "process_status": "running_cpu_only",
+    "waiter_status": "waiting",
+    "detail": "waiting_for_both_exact_100k_training_reports",
+    "error": null,
+    "started_at": "2026-08-17T19:13:04.020993+00:00",
+    "status_sample": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/runtime_compute_fairness/waiter_status.json",
+      "updated_at": "2026-08-17T19:19:04.303809+00:00",
+      "bytes": 1659,
+      "sha256_at_observation": "4ae4d7b56b60f8e0d32c8400f3304105b8e1b863f662cd66ed8c984f693c7eeb"
+    },
+    "gpu_process_observation": {
+      "waiter_present_on_gpu": false,
+      "only_gpu_compute_pid": 619775,
+      "only_gpu_compute_role": "active CoFiTok trainer",
+      "used_memory_mib": 85284,
+      "unrelated_gpu_processes": []
+    }
+  },
+  "training_observations": {
+    "at_waiter_deployment": {
+      "cofitok_step": 32300,
+      "cofitok_samples_seen": 2067200,
+      "dense_step": 0,
+      "pair_status": "running",
+      "pair_stage": "cofitok_training",
+      "issues": []
+    },
+    "post_deployment_refresh": {
+      "observed_at": "2026-08-18T03:18:25+08:00",
+      "cofitok_step": 32450,
+      "cofitok_samples_seen": 2076800,
+      "dense_step": 0,
+      "pair_status": "running",
+      "pair_stage": "cofitok_training",
+      "issues": []
+    }
+  },
+  "terminal_fairness_contract": {
+    "expected_micro_batch_size": 64,
+    "expected_gradient_accumulation_steps": 1,
+    "expected_effective_batch_size": 64,
+    "expected_images_per_method": 6400000,
+    "cofitok_recovery_adjustment": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/recovery_incident_2026-08-17_pin_memory/resume_compute_adjustment.json",
+      "sha256": "7e4c2362ee38b4b973034dbe492a8ac64044c17f805e6f3cd66b7421c48af740",
+      "orphaned_compute_seconds_lower_bound": 560.6116147041321,
+      "orphaned_optimizer_steps_lower_bound": 200,
+      "orphaned_images_lower_bound": 12800
+    },
+    "dense_adjustment_policy": "Build and physically verify a dense-specific adjustment if orphaned metrics exist; otherwise prove that no adjustment is required.",
+    "terminal_output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/runtime_compute_fairness/final_report.json"
+  },
+  "claim_boundary": {
+    "waiter_deployment_established": true,
+    "terminal_runtime_compute_comparison_available": false,
+    "training_speed_advantage_established": false,
+    "memory_advantage_established": false,
+    "sample_quality_established": false,
+    "promotion_authorization_allowed": false,
+    "release_authorization_allowed": false,
+    "full_300k_launch_allowed": false,
+    "active_training_mutated": false
+  }
+}
