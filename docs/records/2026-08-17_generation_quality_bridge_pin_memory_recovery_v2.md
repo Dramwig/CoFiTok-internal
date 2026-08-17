@@ -109,6 +109,31 @@ exact Linux checkout passed 10 tests, and the final waiter/receipt validation
 passed 4 Linux tests. The only GPU compute PID after launch remained the
 training process `619775`.
 
+## Recovery-to-50K transition audit
+
+The resumed trainer command uses `--stop-after-steps 30000`, but this argument
+is a relative additional-step budget. With the exact step-20,000 recovery
+checkpoint, the pinned runbook therefore targets step 50,000 directly; step
+30,000 is only the absolute EMA-teacher activation boundary and does not restart
+the trainer.
+
+The exact deployed supervisor source was exercised against the live process
+state. Exit code zero is non-retryable, the pair monitor alone is not a blocker,
+and controller PID `618821` is a blocker. Consequently, when the trainer exits
+normally at step 50,000, the still-running controller remains under
+`observing/existing_quality_bridge_execution_is_active` while it verifies the
+checkpoint and performs the CoFiTok milestone evaluation. No recovery launch is
+eligible during that transition. The boundary audit passed with:
+
+```text
+resume checkpoint: 20,000
+runbook target: 50,000
+relative stop-after delta: 30,000
+live controller PID: 618821
+supervisor status: observing
+blocking category: controller
+```
+
 Deployed standalone supervisor identity:
 
 ```text
