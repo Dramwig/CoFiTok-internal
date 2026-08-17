@@ -142,7 +142,7 @@ def _parse_args() -> argparse.Namespace:
         "--expected-recovery-supersession-contract-sha256", required=True
     )
     parser.add_argument("--poll-seconds", type=float, default=60.0)
-    parser.add_argument("--stale-seconds", type=float, default=240.0)
+    parser.add_argument("--stale-seconds", type=float, default=600.0)
     parser.add_argument("--timeout-seconds", type=float, default=31_536_000.0)
     parser.add_argument("--once", action="store_true")
     args = parser.parse_args()
