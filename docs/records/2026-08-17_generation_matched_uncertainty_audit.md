@@ -135,12 +135,49 @@ incremental bundle SHA256: 02acfdfc99a551168a28702df36b18796e75d77d31a4e7fa4bec1
 bundle prerequisite: 1ff6bb3db932ef9e43ddfafc067db779dab797d9
 ```
 
+Source-bound execution hardening identity:
+
+```text
+revision: d6e822ead81c93f9feb96c5f226efacaa10e10a0
+tree: de332ac56fdac7cfe87fafaa4e7b33baef0f984f
+incremental bundle bytes: 48,263,720
+incremental bundle SHA256: f6131697300240351d786aa6fcf549cbef8a82825e038733d3fea482db669ee4
+bundle prerequisites:
+  1ebcc15210e63a776a2ba448481cbd8bb94a4066
+  58d83bfce2770eab2565b8c89a5f9a06201a0c86
+```
+
 The bundle was verified on `pro6000` and fetched only into a disposable isolated
 checkout under `/tmp`. With CUDA hidden and `OMP_NUM_THREADS=1` /
 `MKL_NUM_THREADS=1`, the same 105-test group passed on Linux. Python compilation
 and `git diff --check` passed, and the isolated checkout remained tracked-clean.
 The rehearsal did not modify the formal checkout, observer checkout, active
 training checkout, checkpoints, samples, or GPU process.
+
+The source-bound hardening bundle was separately verified against the formal
+repository and checked out detached under:
+
+```text
+/tmp/cofitok-uncertainty-manifest-rehearsal-mRqd3i/CoFiTok-internal
+```
+
+With CUDA hidden and one CPU thread per BLAS runtime, the expanded related suite
+passed `110/110`, Python compilation passed, and the detached checkout remained
+tracked-clean. Both checked-in manifests then passed their small-source
+bytes/SHA256 preflight against the live server:
+
+```text
+formal manifest SHA256:
+2561b76113eb81c4288694302cc7fd683b806fad6fb420c2a0f1336b0ea3faac
+
+confirmation manifest SHA256:
+e13518e421970fc7c2fe9ce12d22cb6636f77b421ba5af1b355e5623692a510a
+```
+
+The dedicated uncertainty output root was still absent after rehearsal. The
+formal checkout remained at `1ebcc15210e63a776a2ba448481cbd8bb94a4066`, and
+the active quality-bridge checkout remained at
+`cf0e5faa94bf4ab38d947b921935b3b765b5537a`.
 
 ## Execution boundary
 
