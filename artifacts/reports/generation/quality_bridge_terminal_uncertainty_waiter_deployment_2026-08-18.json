@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "role": "quality_bridge_terminal_uncertainty_waiter_deployment_evidence",
+  "status": "deployed_waiting",
+  "observed_at": "2026-08-18T04:03:40+08:00",
+  "purpose": "Add a source-bound confidence audit for the full-data 100K CoFiTok versus dense terminal samples instead of relying on FID point estimates alone.",
+  "code": {
+    "revision": "e9a424b36bc5b951a9a27d7e1dc7f7afc650f706",
+    "tree": "4f4cf5015ceb4be426e314bbd224778860e98d00",
+    "branch": "analysis/generation-quality-bridge-terminal-uncertainty-v1",
+    "subject": "Add terminal quality bridge uncertainty waiter"
+  },
+  "bundle": {
+    "path": "/tmp/cofitok-quality-bridge-terminal-uncertainty-e9a424b.bundle",
+    "bytes": 48306828,
+    "sha256": "acf4c8ff3d99560371ce93d4de26e2ea39b32801694318fe96ee94c12c7e2fb8",
+    "advertised_head": "e9a424b36bc5b951a9a27d7e1dc7f7afc650f706",
+    "verified_against_remote_repository": true
+  },
+  "checkouts": {
+    "control": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-uncertainty-e9a424b/CoFiTok-internal",
+      "revision": "e9a424b36bc5b951a9a27d7e1dc7f7afc650f706",
+      "tree": "4f4cf5015ceb4be426e314bbd224778860e98d00",
+      "branch": "analysis/generation-quality-bridge-terminal-uncertainty-v1",
+      "tracked_dirty": false
+    },
+    "evaluator": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/matched-uncertainty-1c8ef20/CoFiTok-internal",
+      "revision": "1c8ef207cb6d79850d73a45abc345fc421e6aa7f",
+      "tree": "a09f14a0eca44af6db8e6781863a463163ddf646",
+      "branch": "",
+      "tracked_dirty": false
+    },
+    "quality_bridge": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+      "branch": "scale/generation-stability-quality-bridge-100k",
+      "tracked_dirty": false
+    }
+  },
+  "verification": {
+    "windows_targeted_pytest": "pass",
+    "windows_compileall": "pass",
+    "windows_git_diff_check": "pass",
+    "linux_targeted_pytest_with_real_python3_10": "pass",
+    "linux_compileall": "pass",
+    "linux_cuda_hidden": true,
+    "linux_control_tracked_dirty": false,
+    "interpreter_note": "The conda bin/python entry is a symlink and is intentionally rejected by the trust-boundary path check; rehearsal and deployment use the real bin/python3.10 executable."
+  },
+  "deployment": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_terminal_matched_uncertainty_v1",
+    "waiter_pid": 844217,
+    "waiter_status": "waiting",
+    "waiter_phase": "quality_bridge",
+    "waiter_detail": "waiting_for_quality_bridge_terminal_result",
+    "preceding_uncertainty_waiter_pid": 809569,
+    "required_idle_gpu_polls": 5,
+    "terminal_stream_id": "full_data_quality_bridge_terminal_100k_00000000_00010000",
+    "audit_samples_per_method": 10000,
+    "block_size": 500,
+    "real_fold_count": 5,
+    "bootstrap_repetitions": 10000,
+    "bootstrap_seed": 3031
+  },
+  "remote_receipts": {
+    "deployment_receipt": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_terminal_matched_uncertainty_v1/reports/deployment_receipt.json",
+      "bytes": 3260,
+      "sha256": "cfe513e805b17f67067687100f846878cabcfb0b86b145e8aa7dcf9939ee256b"
+    },
+    "waiter_pid": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_terminal_matched_uncertainty_v1/reports/waiter.pid",
+      "bytes": 327,
+      "sha256": "1d6d4a748203744068ffe120d73a78d19f622c06380ea19e70f92a46abed0c1f"
+    },
+    "initial_waiter_status": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_terminal_matched_uncertainty_v1/reports/waiter_status.json",
+      "bytes": 2987,
+      "sha256": "1dbb8f1f5438c3cb6567d03fd7e45be7553262d20918cff24d5a913c13aee096"
+    }
+  },
+  "initial_launch_incident": {
+    "failed_pid": 844091,
+    "gpu_work_started": false,
+    "output_lock_acquired": false,
+    "cause": "PYTHONPATH was absent, so importing cofitok failed before waiter initialization.",
+    "recovery": "Preserved the original log, added the exact control checkout and src roots to PYTHONPATH, and relaunched into the same otherwise-empty output root.",
+    "preserved_log": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_terminal_matched_uncertainty_v1/reports/waiter.initial_pythonpath_failure.log",
+      "bytes": 321,
+      "sha256": "a4cb6b819ccf4d933a1595943c92e62d020dce7d54035563cb2f4cac66574afc"
+    }
+  },
+  "live_isolation": {
+    "only_gpu_compute_pid": 619775,
+    "only_gpu_compute_role": "active full-data 100K CoFiTok trainer",
+    "only_gpu_compute_memory_mib": 85284,
+    "terminal_uncertainty_waiter_gpu_memory_mib": 0,
+    "training_step_observed_near_deployment": 33400
+  },
+  "claim_boundary": {
+    "diagnostic_non_authorizing": true,
+    "replaces_fid_point_estimates": false,
+    "replaces_promotion_gate": false,
+    "broad_generation_superiority_claim_allowed": false,
+    "training_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "release_allowed": false,
+    "training_process_signals_allowed": false,
+    "unrelated_process_signals_allowed": false
+  }
+}
