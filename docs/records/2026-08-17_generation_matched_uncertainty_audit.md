@@ -149,6 +149,16 @@ bundle prerequisites:
   58d83bfce2770eab2565b8c89a5f9a06201a0c86
 ```
 
+Repeated-summary manifest enforcement identity:
+
+```text
+revision: 1c8ef207cb6d79850d73a45abc345fc421e6aa7f
+tree: a09f14a0eca44af6db8e6781863a463163ddf646
+incremental bundle bytes: 3,004
+incremental bundle SHA256: 25ae45be5f597540a7b623c6ac21e204cec3444263b26554782fcd5d50106ef1
+bundle prerequisite: d6e822ead81c93f9feb96c5f226efacaa10e10a0
+```
+
 The bundle was verified on `pro6000` and fetched only into a disposable isolated
 checkout under `/tmp`. With CUDA hidden and `OMP_NUM_THREADS=1` /
 `MKL_NUM_THREADS=1`, the same 105-test group passed on Linux. Python compilation
@@ -180,6 +190,12 @@ The dedicated uncertainty output root was still absent after rehearsal. The
 formal checkout remained at `1ebcc15210e63a776a2ba448481cbd8bb94a4066`, and
 the active quality-bridge checkout remained at
 `cf0e5faa94bf4ab38d947b921935b3b765b5537a`.
+
+The same detached rehearsal checkout was then advanced only through the
+3,004-byte incremental summary-hardening bundle. At revision `1c8ef20`, the
+expanded Linux suite passed `111/111`, both source-report manifest preflights
+passed again, Python compilation passed, and tracked status remained empty.
+The formal and active training checkout revisions remained unchanged.
 
 ## Execution boundary
 
