@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "role": "matched_uncertainty_feature_cache_inventory",
+  "collected_at": "2026-08-17T23:55:00+08:00",
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "scan_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
+  "feature_pattern": "*features-2048.pt",
+  "real_set": {
+    "digest_schema": "cofitok_image_tree_sha256_v1",
+    "image_count": 50000,
+    "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f"
+  },
+  "real_feature_cache": {
+    "torch_fidelity_feature_extractor": "inception-v3-compat",
+    "feature_layer": "2048",
+    "bytes": 409601577,
+    "sha256": "20103588dca9ce47bfceef6b68b473fdf4be720f149d1b8bdd96341d27c10dcd",
+    "copies": [
+      {
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/eval_cache/torch_fidelity/imagenet256_val_50k_torch_fidelity_v04__cofitok_19ace4e37bee2fca-inception-v3-compat-features-2048.pt",
+        "device": 2304,
+        "inode": 31025069,
+        "hardlink_count": 1
+      },
+      {
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_recovery_v1/eval_cache/torch_fidelity/imagenet256_val_50k_torch_fidelity_v04__cofitok_19ace4e37bee2fca-inception-v3-compat-features-2048.pt",
+        "device": 2304,
+        "inode": 15038845672,
+        "hardlink_count": 1
+      },
+      {
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/eval_cache/torch_fidelity/imagenet256_val_50k_torch_fidelity_v04__cofitok_19ace4e37bee2fca-inception-v3-compat-features-2048.pt",
+        "device": 2304,
+        "inode": 13993273744,
+        "hardlink_count": 1
+      }
+    ],
+    "all_copies_byte_identical": true,
+    "cryptographic_reuse_possible": true
+  },
+  "generated_feature_cache": {
+    "matching_files_found": 0,
+    "cofitok_available": false,
+    "dense_identity_available": false,
+    "feature_extraction_still_required": true
+  },
+  "dedicated_uncertainty_output_root": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_matched_uncertainty_v1",
+    "exists": false
+  },
+  "execution_boundary": {
+    "gpu_work_performed": false,
+    "remote_files_modified": false,
+    "active_training_checkout_modified": false,
+    "formal_checkout_modified": false,
+    "safe_slot_required_for_generated_feature_extraction": true
+  },
+  "conclusion": "The exact real-set Inception-2048 feature matrix can be reused after source identity verification, but no generated CoFiTok or dense feature matrix exists. Both generated sample streams still require feature extraction before matched uncertainty can be computed."
+}

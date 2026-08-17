@@ -204,3 +204,34 @@ No feature extraction or new GPU evaluation was launched while the full-data
 isolated Linux checkout after a safe evaluator slot is available. It must write
 new reports and caches under a dedicated generation report root and must not
 alter either frozen sample set or the active training checkout.
+
+## Existing feature-cache inventory
+
+A read-only server inventory was completed while the quality bridge retained
+exclusive use of the GPU. Machine-readable evidence is stored at:
+
+```text
+artifacts/reports/generation/matched_uncertainty_cache_inventory_2026-08-17.json
+SHA256: 7e310cdc8a9dd3cb9dae1819ab3ce909767259a8fe227c0ede321cb889dce941
+```
+
+The scan found exactly three `inception-v3-compat/2048` feature files under the
+generation root. All three are copies of the same ImageNet-256 50K validation
+feature matrix:
+
+```text
+bytes: 409,601,577
+SHA256: 20103588dca9ce47bfceef6b68b473fdf4be720f149d1b8bdd96341d27c10dcd
+real-set tree SHA256: 19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f
+```
+
+The three files have distinct inodes and are not hardlinks, but their SHA256
+values are identical. No CoFiTok or dense generated `features-2048.pt` cache was
+present anywhere below `/root/autodl-tmp/CoFiTok/checkpoints/generation`, and
+the dedicated uncertainty output root remained absent.
+
+Consequently the eventual audit may cryptographically reuse one exact real-set
+feature file, but it must still extract both generated feature matrices for
+each stream. This inventory is not an uncertainty result and cannot support a
+relative-generation claim by itself. No remote file, sample tree, checkout, or
+GPU process was modified during the inspection.
