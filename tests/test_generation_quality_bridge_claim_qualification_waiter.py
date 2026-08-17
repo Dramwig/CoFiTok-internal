@@ -25,6 +25,7 @@ TERMINAL_CONTROL_GIT = {
 }
 QUALITY_GIT = {
     "revision": "e" * 40,
+    "tree": "1" * 40,
     "branch": "scale/quality-bridge",
     "tracked_dirty": False,
 }
@@ -198,6 +199,7 @@ def test_waiter_builds_one_non_authorizing_qualification(
         expected_terminal_control_tree=TERMINAL_CONTROL_GIT["tree"],
         expected_terminal_control_branch=TERMINAL_CONTROL_GIT["branch"],
         expected_quality_revision=QUALITY_GIT["revision"],
+        expected_quality_tree=QUALITY_GIT["tree"],
         expected_quality_branch=QUALITY_GIT["branch"],
         expected_evaluator_revision=EVALUATOR_GIT["revision"],
         expected_evaluator_tree=EVALUATOR_GIT["tree"],
@@ -269,6 +271,7 @@ def test_waiter_rejects_terminal_source_identity_drift(
         expected_terminal_control_tree=TERMINAL_CONTROL_GIT["tree"],
         expected_terminal_control_branch=TERMINAL_CONTROL_GIT["branch"],
         expected_quality_revision=QUALITY_GIT["revision"],
+        expected_quality_tree=QUALITY_GIT["tree"],
         expected_quality_branch=QUALITY_GIT["branch"],
         expected_evaluator_revision=EVALUATOR_GIT["revision"],
         expected_evaluator_tree=EVALUATOR_GIT["tree"],

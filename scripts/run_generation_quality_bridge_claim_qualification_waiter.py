@@ -222,6 +222,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-terminal-control-tree", required=True)
     parser.add_argument("--expected-terminal-control-branch", required=True)
     parser.add_argument("--expected-quality-revision", required=True)
+    parser.add_argument("--expected-quality-tree", required=True)
     parser.add_argument("--expected-quality-branch", required=True)
     parser.add_argument("--expected-evaluator-revision", required=True)
     parser.add_argument("--expected-evaluator-tree", required=True)
@@ -305,6 +306,7 @@ def _run_locked(args: argparse.Namespace) -> int:
     }
     quality_git = {
         "revision": args.expected_quality_revision,
+        "tree": args.expected_quality_tree,
         "branch": args.expected_quality_branch,
         "tracked_dirty": False,
     }
