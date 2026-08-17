@@ -36,6 +36,10 @@ except (
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 REPORT_SCHEMA_VERSION = 1
 REPORT_ROLE = "non_authorizing_matched_generation_uncertainty_audit"
+EXECUTION_MANIFEST_SCHEMA_VERSION = 1
+EXECUTION_MANIFEST_ROLE = (
+    "non_authorizing_matched_generation_uncertainty_execution_manifest"
+)
 FEATURE_EXTRACTOR = "inception-v3-compat"
 FEATURE_LAYER = "2048"
 KID_KERNEL = {
@@ -53,6 +57,16 @@ CLAIM_BOUNDARY = {
     "full_training_launch_allowed": False,
     "full_300k_launch_allowed": False,
 }
+DEFAULT_EXECUTION_ARGUMENTS = {
+    "real_cache_name": "imagenet256_val_50k_torch_fidelity_v04",
+    "batch_size": 64,
+    "min_samples": 10_000,
+    "block_size": 500,
+    "real_fold_count": 5,
+    "bootstrap_repetitions": 10_000,
+    "seed": 2027,
+    "cpu": False,
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -62,34 +76,44 @@ def parse_args() -> argparse.Namespace:
             "dense sample indices. The audit is permanently non-authorizing."
         )
     )
-    parser.add_argument("--real-dir", type=Path, required=True)
-    parser.add_argument("--cofitok-generated-dir", type=Path, required=True)
-    parser.add_argument("--dense-generated-dir", type=Path, required=True)
-    parser.add_argument("--cofitok-sampling-report", type=Path, required=True)
-    parser.add_argument("--dense-sampling-report", type=Path, required=True)
-    parser.add_argument("--cofitok-metrics-report", type=Path, required=True)
-    parser.add_argument("--dense-metrics-report", type=Path, required=True)
-    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--real-dir", type=Path)
+    parser.add_argument("--cofitok-generated-dir", type=Path)
+    parser.add_argument("--dense-generated-dir", type=Path)
+    parser.add_argument("--cofitok-sampling-report", type=Path)
+    parser.add_argument("--dense-sampling-report", type=Path)
+    parser.add_argument("--cofitok-metrics-report", type=Path)
+    parser.add_argument("--dense-metrics-report", type=Path)
+    parser.add_argument(
+        "--execution-manifest",
+        type=Path,
+        help=(
+            "Optional immutable source-bound execution manifest. When provided, "
+            "all scientific inputs, outputs, parameters, report bytes/SHA256 "
+            "values, sample identities, and the matched global-index window must "
+            "match before feature extraction starts."
+        ),
+    )
+    parser.add_argument("--output", type=Path)
     parser.add_argument("--cache-root", type=Path)
     parser.add_argument(
         "--real-cache-name",
-        default="imagenet256_val_50k_torch_fidelity_v04",
+        default=None,
     )
-    parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--min-samples", type=int, default=10_000)
-    parser.add_argument("--block-size", type=int, default=500)
+    parser.add_argument("--batch-size", type=int)
+    parser.add_argument("--min-samples", type=int)
+    parser.add_argument("--block-size", type=int)
     parser.add_argument(
         "--real-fold-count",
         type=int,
-        default=5,
+        default=None,
         help=(
             "Number of disjoint real blocks paired with each generated block; "
             "the ImageNet-256 10K audit uses all 50K validation images with 5."
         ),
     )
-    parser.add_argument("--bootstrap-repetitions", type=int, default=10_000)
-    parser.add_argument("--seed", type=int, default=2027)
-    parser.add_argument("--cpu", action="store_true")
+    parser.add_argument("--bootstrap-repetitions", type=int)
+    parser.add_argument("--seed", type=int)
+    parser.add_argument("--cpu", action="store_true", default=None)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--require-advantage", action="store_true")
     return parser.parse_args()
@@ -101,6 +125,50 @@ def _read_object(path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise TypeError(f"JSON report is not an object: {path}")
     return payload
+
+
+def hydrate_execution_arguments(args: argparse.Namespace) -> argparse.Namespace:
+    manifest_argument = getattr(args, "execution_manifest", None)
+    if manifest_argument is not None:
+        manifest_path = reject_symlink_chain(
+            manifest_argument,
+            name="matched uncertainty execution manifest",
+        )
+        manifest = _read_object(manifest_path)
+        manifest_arguments = manifest.get("arguments")
+        if not isinstance(manifest_arguments, dict):
+            raise ValueError("Matched uncertainty execution manifest lacks arguments")
+        for key, value in manifest_arguments.items():
+            if not hasattr(args, key):
+                continue
+            if getattr(args, key) is None:
+                setattr(
+                    args,
+                    key,
+                    Path(value)
+                    if key.endswith(("_dir", "_report"))
+                    or key in {"output", "cache_root"}
+                    else value,
+                )
+    for key, value in DEFAULT_EXECUTION_ARGUMENTS.items():
+        if getattr(args, key, None) is None:
+            setattr(args, key, value)
+    required_paths = (
+        "real_dir",
+        "cofitok_generated_dir",
+        "dense_generated_dir",
+        "cofitok_sampling_report",
+        "dense_sampling_report",
+        "cofitok_metrics_report",
+        "dense_metrics_report",
+        "output",
+    )
+    missing = [key for key in required_paths if getattr(args, key, None) is None]
+    if missing:
+        raise ValueError(
+            "Matched uncertainty inputs are missing: " + ", ".join(sorted(missing))
+        )
+    return args
 
 
 def _source(path: Path) -> dict[str, Any]:
@@ -118,6 +186,223 @@ def _is_sha256(value: Any) -> bool:
         and len(value) == 64
         and all(character in "0123456789abcdef" for character in value)
     )
+
+
+def _canonical_sha256(value: Any) -> str:
+    payload = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _resolved_path_text(value: Any, *, label: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{label} is not a non-empty path")
+    path = Path(value)
+    if not path.is_absolute():
+        raise ValueError(f"{label} is not absolute")
+    return path.resolve().as_posix()
+
+
+def _verify_bound_source(record: Any, *, label: str) -> dict[str, Any]:
+    if not isinstance(record, dict):
+        raise TypeError(f"{label} source record is not an object")
+    path_text = _resolved_path_text(record.get("path"), label=f"{label} path")
+    expected_bytes = record.get("bytes")
+    expected_sha256 = record.get("sha256")
+    if (
+        not isinstance(expected_bytes, int)
+        or expected_bytes < 1
+        or not _is_sha256(expected_sha256)
+    ):
+        raise ValueError(f"{label} source identity is invalid")
+    actual = _source(Path(path_text))
+    if actual != {
+        "path": path_text,
+        "bytes": expected_bytes,
+        "sha256": expected_sha256,
+    }:
+        raise ValueError(f"{label} source identity mismatch")
+    return actual
+
+
+def validate_execution_manifest(args: argparse.Namespace) -> dict[str, Any] | None:
+    manifest_argument = getattr(args, "execution_manifest", None)
+    if manifest_argument is None:
+        return None
+    manifest_path = reject_symlink_chain(
+        manifest_argument,
+        name="matched uncertainty execution manifest",
+    )
+    manifest = _read_object(manifest_path)
+    arguments = manifest.get("arguments")
+    source_files = manifest.get("source_files")
+    expected = manifest.get("expected")
+    if (
+        manifest.get("schema_version") != EXECUTION_MANIFEST_SCHEMA_VERSION
+        or manifest.get("role") != EXECUTION_MANIFEST_ROLE
+        or not isinstance(manifest.get("stream_id"), str)
+        or not manifest["stream_id"]
+        or manifest.get("claim_boundary") != CLAIM_BOUNDARY
+        or not isinstance(arguments, dict)
+        or not isinstance(source_files, dict)
+        or not isinstance(expected, dict)
+    ):
+        raise ValueError("Matched uncertainty execution manifest contract mismatch")
+
+    path_arguments = (
+        "real_dir",
+        "cofitok_generated_dir",
+        "dense_generated_dir",
+        "cofitok_sampling_report",
+        "dense_sampling_report",
+        "cofitok_metrics_report",
+        "dense_metrics_report",
+        "output",
+        "cache_root",
+    )
+    scalar_arguments = (
+        "real_cache_name",
+        "batch_size",
+        "min_samples",
+        "block_size",
+        "real_fold_count",
+        "bootstrap_repetitions",
+        "seed",
+        "cpu",
+    )
+    expected_argument_keys = set(path_arguments + scalar_arguments)
+    if set(arguments) != expected_argument_keys:
+        raise ValueError("Matched uncertainty manifest argument set mismatch")
+    for key in path_arguments:
+        manifest_value = _resolved_path_text(
+            arguments.get(key),
+            label=f"manifest arguments.{key}",
+        )
+        argument_value = getattr(args, key, None)
+        if (
+            argument_value is None
+            or Path(argument_value).resolve().as_posix() != manifest_value
+        ):
+            raise ValueError(f"Matched uncertainty manifest argument mismatch: {key}")
+    for key in scalar_arguments:
+        if getattr(args, key, None) != arguments.get(key):
+            raise ValueError(f"Matched uncertainty manifest argument mismatch: {key}")
+
+    source_argument_keys = (
+        "cofitok_sampling_report",
+        "dense_sampling_report",
+        "cofitok_metrics_report",
+        "dense_metrics_report",
+    )
+    if set(source_files) != set(source_argument_keys):
+        raise ValueError("Matched uncertainty manifest source-file set mismatch")
+    verified_sources = {
+        key: _verify_bound_source(source_files[key], label=f"manifest {key}")
+        for key in source_argument_keys
+    }
+    for key in source_argument_keys:
+        if verified_sources[key]["path"] != _resolved_path_text(
+            arguments[key],
+            label=f"manifest arguments.{key}",
+        ):
+            raise ValueError(
+                f"Matched uncertainty manifest source path mismatch: {key}"
+            )
+
+    matched = expected.get("matched_sampling")
+    real_set = expected.get("real_set")
+    sample_sets = expected.get("sample_sets")
+    fid = expected.get("fid_point_estimates")
+    if (
+        not isinstance(matched, dict)
+        or not isinstance(real_set, dict)
+        or not isinstance(sample_sets, dict)
+        or not isinstance(fid, dict)
+        or not _is_sha256(matched.get("signature_sha256"))
+        or int(matched.get("start_index", -1)) < 0
+        or int(matched.get("end_index_exclusive", -1))
+        <= int(matched.get("start_index", -1))
+        or int(matched.get("sample_count", -1))
+        != int(matched["end_index_exclusive"]) - int(matched["start_index"])
+        or real_set.get("digest_schema") != IMAGE_TREE_DIGEST_SCHEMA
+        or not _is_sha256(real_set.get("sha256"))
+        or int(real_set.get("image_count", -1)) < 1
+        or set(sample_sets) != {"cofitok", "dense_identity"}
+        or set(fid) != {"cofitok", "dense_identity"}
+        or not _is_sha256(expected.get("metrics_runtime_environment_sha256"))
+    ):
+        raise ValueError("Matched uncertainty manifest expected identity is invalid")
+    for method in ("cofitok", "dense_identity"):
+        row = sample_sets[method]
+        if (
+            not isinstance(row, dict)
+            or not _is_sha256(row.get("sha256"))
+            or not _is_sha256(row.get("checkpoint_sha256"))
+            or int(row.get("checkpoint_step", -1)) < 1
+        ):
+            raise ValueError(
+                f"Matched uncertainty manifest {method} sample identity is invalid"
+            )
+        _finite_float(fid[method], label=f"manifest {method} FID")
+    return {
+        "source": _source(manifest_path),
+        "source_files": source_files,
+        "stream_id": manifest["stream_id"],
+        "expected": expected,
+    }
+
+
+def validate_execution_manifest_observations(
+    binding: dict[str, Any] | None,
+    *,
+    matched_sampling: dict[str, Any],
+    real_set: dict[str, Any],
+    sample_provenance: dict[str, dict[str, Any]],
+    metrics: dict[str, dict[str, Any]],
+) -> dict[str, Any] | None:
+    if binding is None:
+        return None
+    _verify_bound_source(binding["source"], label="execution manifest replay")
+    for key, record in binding["source_files"].items():
+        _verify_bound_source(record, label=f"execution manifest replay {key}")
+    expected = binding["expected"]
+    observed = {
+        "matched_sampling": {
+            "start_index": int(matched_sampling["start_index"]),
+            "end_index_exclusive": int(matched_sampling["end_index_exclusive"]),
+            "sample_count": int(matched_sampling["sample_count"]),
+            "cofitok_prefix_budgets": matched_sampling["cofitok_prefix_budgets"],
+            "dense_prefix_budgets": matched_sampling["dense_prefix_budgets"],
+            "signature_sha256": _canonical_sha256(matched_sampling["signature"]),
+        },
+        "real_set": real_set,
+        "sample_sets": {
+            method: {
+                "sha256": sample_provenance[method]["sample_set_sha256"],
+                "checkpoint_sha256": sample_provenance[method]["checkpoint_sha256"],
+                "checkpoint_step": int(sample_provenance[method]["checkpoint_step"]),
+            }
+            for method in ("cofitok", "dense_identity")
+        },
+        "fid_point_estimates": {
+            method: float(metrics[method]["fid"])
+            for method in ("cofitok", "dense_identity")
+        },
+        "metrics_runtime_environment_sha256": metrics["cofitok"][
+            "runtime_environment_sha256"
+        ],
+    }
+    if observed != expected:
+        raise ValueError("Matched uncertainty execution manifest observation mismatch")
+    return {
+        "source": binding["source"],
+        "stream_id": binding["stream_id"],
+        "status": "verified",
+    }
 
 
 def _finite_float(value: Any, *, label: str) -> float:
@@ -617,6 +902,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         or args.bootstrap_repetitions < 100
     ):
         raise ValueError("Invalid matched uncertainty audit numeric parameters")
+    execution_binding = validate_execution_manifest(args)
     real_dir = reject_symlink_chain(args.real_dir, name="uncertainty real directory")
     cofitok_dir = reject_symlink_chain(
         args.cofitok_generated_dir,
@@ -705,6 +991,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError(
             "Matched FID source reports do not share one evaluator and real set"
         )
+    execution_verification = validate_execution_manifest_observations(
+        execution_binding,
+        matched_sampling=matched_sampling,
+        real_set=real_set,
+        sample_provenance=sample_provenance,
+        metrics=metrics,
+    )
 
     cache_root = (
         reject_symlink_chain(args.cache_root, name="uncertainty feature cache root")
@@ -740,6 +1033,26 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             cuda=cuda,
         )
     )
+    sources = {
+        "real_set": real_set,
+        "sampling_reports": {
+            method: _source(path) for method, path in sampling_paths.items()
+        },
+        "metrics_reports": {
+            method: metrics[method]["source"]
+            for method in ("cofitok", "dense_identity")
+        },
+        "sample_sets": {
+            method: {
+                "sha256": sample_provenance[method]["sample_set_sha256"],
+                "checkpoint_sha256": sample_provenance[method]["checkpoint_sha256"],
+                "checkpoint_step": sample_provenance[method]["checkpoint_step"],
+            }
+            for method in ("cofitok", "dense_identity")
+        },
+    }
+    if execution_verification is not None:
+        sources["execution_manifest"] = execution_verification
     return build_report(
         cofitok_features=cofitok_features,
         dense_features=dense_features,
@@ -747,24 +1060,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         cofitok_metrics=metrics["cofitok"],
         dense_metrics=metrics["dense_identity"],
         matched_sampling=matched_sampling,
-        sources={
-            "real_set": real_set,
-            "sampling_reports": {
-                method: _source(path) for method, path in sampling_paths.items()
-            },
-            "metrics_reports": {
-                method: metrics[method]["source"]
-                for method in ("cofitok", "dense_identity")
-            },
-            "sample_sets": {
-                method: {
-                    "sha256": sample_provenance[method]["sample_set_sha256"],
-                    "checkpoint_sha256": sample_provenance[method]["checkpoint_sha256"],
-                    "checkpoint_step": sample_provenance[method]["checkpoint_step"],
-                }
-                for method in ("cofitok", "dense_identity")
-            },
-        },
+        sources=sources,
         parameters={
             "batch_size": args.batch_size,
             "min_samples": args.min_samples,
@@ -791,7 +1087,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main() -> int:
-    args = parse_args()
+    args = hydrate_execution_arguments(parse_args())
     with exclusive_output_lock(args.output, role=REPORT_ROLE):
         report = run(args)
         if args.output.exists():

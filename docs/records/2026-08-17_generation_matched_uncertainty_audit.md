@@ -60,6 +60,47 @@ The intended claim is limited to uncertainty around the relative matched
 CoFiTok-versus-dense direction for the exact bound checkpoints, sample windows,
 and protocols.
 
+## Source-bound execution manifests
+
+The two existing 10K streams are now frozen by separate schema-v1 execution
+manifests:
+
+```text
+configs/generation/diagnostics/matched_uncertainty_formal_10k_execution_v1.json
+configs/generation/diagnostics/matched_uncertainty_confirmation_10k_execution_v1.json
+```
+
+Each manifest binds all seven input paths, the four small source-report
+bytes/SHA256 identities, the real-set tree identity, both sample-set and
+checkpoint SHA256 values, checkpoint step, matched global-index window, complete
+sampling-signature SHA256, FID point estimates, evaluator runtime identity,
+output path, cache root, and all uncertainty parameters. The formal stream is
+bound to `[0, 10000)` with `guidance_rescale=0`; the confirmation stream is bound
+to `[10000, 20000)` with `guidance_rescale=1`. Their windows are therefore
+physically disjoint, while their protocol difference remains explicit.
+
+`audit_generation_matched_uncertainty.py` accepts a manifest-only invocation and
+hydrates its scientific arguments from that immutable source. Before feature
+extraction, it fails closed if a CLI override, report path, report byte count,
+report SHA256, physical real/sample tree, checkpoint identity, global-index
+window, sampling signature, FID source value, or evaluator runtime identity has
+drifted. The verified manifest identity is embedded in the resulting audit
+report.
+
+The eventual safe-slot commands are intentionally minimal:
+
+```bash
+python scripts/audit_generation_matched_uncertainty.py \
+  --execution-manifest configs/generation/diagnostics/matched_uncertainty_formal_10k_execution_v1.json
+
+python scripts/audit_generation_matched_uncertainty.py \
+  --execution-manifest configs/generation/diagnostics/matched_uncertainty_confirmation_10k_execution_v1.json
+```
+
+They must still run from the exact clean evaluator checkout after confirming a
+safe evaluator slot. A manifest pass is an input-integrity precondition, not GPU
+authorization and not a scientific advantage result.
+
 ## Validation
 
 The implementation lives in the isolated worktree:
@@ -73,8 +114,8 @@ base: 24cce1ee3b464b0b46776fb7e2c9f56cec514f4b
 Current local validation:
 
 ```text
-15 targeted uncertainty tests passed
-105 uncertainty + generation-metrics + sampling-confirmation + distribution-support tests passed
+20 targeted uncertainty tests passed
+110 uncertainty + generation-metrics + sampling-confirmation + distribution-support tests passed
 Python compile passed
 git diff --check passed
 ```

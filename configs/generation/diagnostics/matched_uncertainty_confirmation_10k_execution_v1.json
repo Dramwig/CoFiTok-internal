@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "role": "non_authorizing_matched_generation_uncertainty_execution_manifest",
+  "stream_id": "confirmation_00010000_00020000",
+  "claim_boundary": {
+    "diagnostic_non_authorizing": true,
+    "replaces_fid_point_estimates": false,
+    "replaces_promotion_gate": false,
+    "broad_generation_superiority_claim_allowed": false,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false
+  },
+  "arguments": {
+    "real_dir": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+    "cofitok_generated_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/prefix_8",
+    "dense_generated_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/prefix_1",
+    "cofitok_sampling_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/sampling_report.json",
+    "dense_sampling_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/sampling_report.json",
+    "cofitok_metrics_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/metrics/generation_metrics_report.json",
+    "dense_metrics_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/metrics/generation_metrics_report.json",
+    "output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_matched_uncertainty_v1/confirmation_00010000_00020000/matched_uncertainty.json",
+    "cache_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_matched_uncertainty_v1/feature_cache",
+    "real_cache_name": "imagenet256_val_50k_torch_fidelity_v04",
+    "batch_size": 64,
+    "min_samples": 10000,
+    "block_size": 500,
+    "real_fold_count": 5,
+    "bootstrap_repetitions": 10000,
+    "seed": 2027,
+    "cpu": false
+  },
+  "source_files": {
+    "cofitok_sampling_report": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/sampling_report.json",
+      "bytes": 5346,
+      "sha256": "1f9dff7ac8714eb6f61e0ab03e3155935d67d7536ee307f8831293cd965ced4c"
+    },
+    "dense_sampling_report": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/sampling_report.json",
+      "bytes": 5336,
+      "sha256": "5c22b21786032875ec15ab31c0c98f8d2133cb55b1edf196177bced3c0351029"
+    },
+    "cofitok_metrics_report": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/cofitok/metrics/generation_metrics_report.json",
+      "bytes": 13564,
+      "sha256": "38690a32a9d1b9858f756cca977d6f9776a13a123ec881d66ab289774b0cb6cd"
+    },
+    "dense_metrics_report": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/cases/dense_identity/metrics/generation_metrics_report.json",
+      "bytes": 13603,
+      "sha256": "8f1127f650c2ea06dd21d7ade94a6b2dce8e3897775c50f0957f0b88ebd916a7"
+    }
+  },
+  "expected": {
+    "matched_sampling": {
+      "start_index": 10000,
+      "end_index_exclusive": 20000,
+      "sample_count": 10000,
+      "cofitok_prefix_budgets": [8],
+      "dense_prefix_budgets": [1],
+      "signature_sha256": "dfc4ff35150e6f07678d8375eec3996932e451b714925b2e314da24f3a6883e9"
+    },
+    "real_set": {
+      "digest_schema": "cofitok_image_tree_sha256_v1",
+      "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+      "image_count": 50000,
+      "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f"
+    },
+    "sample_sets": {
+      "cofitok": {
+        "sha256": "4fbeb7eb443c1d3996ecf805933aad0ff927cf97b2dbf8ba6025c41fa1225f76",
+        "checkpoint_sha256": "ec7b9a0981f1d45420a9a86cdb80339d6d87b87fa77891c234db3d1b84376c2a",
+        "checkpoint_step": 50000
+      },
+      "dense_identity": {
+        "sha256": "29ff181d6c695b8cafca54ec8aeddc43d435ed76ca832f7048e0d47a319014c7",
+        "checkpoint_sha256": "325da25f9fd228ab224abd977da7f9e1d000ba36e3e8136b55edae9c9f47c716",
+        "checkpoint_step": 50000
+      }
+    },
+    "fid_point_estimates": {
+      "cofitok": 138.99172622210307,
+      "dense_identity": 150.56599682692638
+    },
+    "metrics_runtime_environment_sha256": "0cfe4f0bf03a70cff136a084f36cce8daaaf0316d4a7fdb818d912257cc302f2"
+  }
+}

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from copy import deepcopy
+from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -122,6 +123,199 @@ def _build_inputs() -> dict:
         },
         "runtime_environment": runtime,
     }
+
+
+def _execution_manifest_fixture(tmp_path: Path) -> tuple[SimpleNamespace, dict]:
+    directories = {
+        "real_dir": tmp_path / "real",
+        "cofitok_generated_dir": tmp_path / "cofitok",
+        "dense_generated_dir": tmp_path / "dense",
+        "cache_root": tmp_path / "cache",
+    }
+    for path in directories.values():
+        path.mkdir()
+    report_keys = (
+        "cofitok_sampling_report",
+        "dense_sampling_report",
+        "cofitok_metrics_report",
+        "dense_metrics_report",
+    )
+    report_paths = {}
+    for key in report_keys:
+        path = tmp_path / f"{key}.json"
+        path.write_text(json.dumps({"source": key}), encoding="utf-8")
+        report_paths[key] = path
+    signature = {"protocol": "matched", "start_index": 10_000}
+    real_set = {
+        "digest_schema": IMAGE_TREE_DIGEST_SCHEMA,
+        "root": directories["real_dir"].resolve().as_posix(),
+        "image_count": 160,
+        "sha256": "c" * 64,
+    }
+    sample_sets = {
+        "cofitok": {
+            "sha256": "1" * 64,
+            "checkpoint_sha256": "2" * 64,
+            "checkpoint_step": 50_000,
+        },
+        "dense_identity": {
+            "sha256": "3" * 64,
+            "checkpoint_sha256": "4" * 64,
+            "checkpoint_step": 50_000,
+        },
+    }
+    arguments = {
+        **{key: path.resolve().as_posix() for key, path in directories.items()},
+        **{key: path.resolve().as_posix() for key, path in report_paths.items()},
+        "output": (tmp_path / "report.json").resolve().as_posix(),
+        "real_cache_name": "real-cache",
+        "batch_size": 16,
+        "min_samples": 80,
+        "block_size": 10,
+        "real_fold_count": 2,
+        "bootstrap_repetitions": 1000,
+        "seed": 7,
+        "cpu": True,
+    }
+    manifest = {
+        "schema_version": audit.EXECUTION_MANIFEST_SCHEMA_VERSION,
+        "role": audit.EXECUTION_MANIFEST_ROLE,
+        "stream_id": "test_00010000_00010080",
+        "claim_boundary": audit.CLAIM_BOUNDARY,
+        "arguments": arguments,
+        "source_files": {
+            key: audit._source(path) for key, path in report_paths.items()
+        },
+        "expected": {
+            "matched_sampling": {
+                "start_index": 10_000,
+                "end_index_exclusive": 10_080,
+                "sample_count": 80,
+                "cofitok_prefix_budgets": [8],
+                "dense_prefix_budgets": [1],
+                "signature_sha256": audit._canonical_sha256(signature),
+            },
+            "real_set": real_set,
+            "sample_sets": sample_sets,
+            "fid_point_estimates": {
+                "cofitok": 10.0,
+                "dense_identity": 12.0,
+            },
+            "metrics_runtime_environment_sha256": "e" * 64,
+        },
+    }
+    manifest_path = tmp_path / "execution_manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    args = SimpleNamespace(
+        **{key: Path(value) for key, value in arguments.items() if key in directories},
+        **{key: path for key, path in report_paths.items()},
+        output=Path(arguments["output"]),
+        real_cache_name=arguments["real_cache_name"],
+        batch_size=arguments["batch_size"],
+        min_samples=arguments["min_samples"],
+        block_size=arguments["block_size"],
+        real_fold_count=arguments["real_fold_count"],
+        bootstrap_repetitions=arguments["bootstrap_repetitions"],
+        seed=arguments["seed"],
+        cpu=arguments["cpu"],
+        execution_manifest=manifest_path,
+    )
+    observations = {
+        "matched_sampling": {
+            "signature": signature,
+            "start_index": 10_000,
+            "end_index_exclusive": 10_080,
+            "sample_count": 80,
+            "cofitok_prefix_budgets": [8],
+            "dense_prefix_budgets": [1],
+        },
+        "real_set": real_set,
+        "sample_provenance": {
+            method: {
+                "sample_set_sha256": row["sha256"],
+                "checkpoint_sha256": row["checkpoint_sha256"],
+                "checkpoint_step": row["checkpoint_step"],
+            }
+            for method, row in sample_sets.items()
+        },
+        "metrics": {
+            "cofitok": {
+                "fid": 10.0,
+                "runtime_environment_sha256": "e" * 64,
+            },
+            "dense_identity": {
+                "fid": 12.0,
+                "runtime_environment_sha256": "e" * 64,
+            },
+        },
+    }
+    return args, observations
+
+
+def test_execution_manifest_binds_sources_arguments_and_observations(tmp_path) -> None:
+    args, observations = _execution_manifest_fixture(tmp_path)
+
+    binding = audit.validate_execution_manifest(args)
+    verification = audit.validate_execution_manifest_observations(
+        binding,
+        **observations,
+    )
+
+    assert binding is not None
+    assert verification is not None
+    assert verification["stream_id"] == "test_00010000_00010080"
+    assert verification["status"] == "verified"
+
+
+def test_execution_manifest_can_hydrate_manifest_only_cli_arguments(tmp_path) -> None:
+    args, _ = _execution_manifest_fixture(tmp_path)
+    payload = json.loads(args.execution_manifest.read_text(encoding="utf-8"))
+    manifest_only = SimpleNamespace(
+        **{key: None for key in payload["arguments"]},
+        execution_manifest=args.execution_manifest,
+        resume=False,
+        require_advantage=False,
+    )
+
+    hydrated = audit.hydrate_execution_arguments(manifest_only)
+
+    assert hydrated.real_dir == args.real_dir
+    assert hydrated.output == args.output
+    assert hydrated.batch_size == 16
+    assert hydrated.cpu is True
+    assert audit.validate_execution_manifest(hydrated) is not None
+
+
+def test_execution_manifest_rejects_argument_or_source_drift(tmp_path) -> None:
+    args, _ = _execution_manifest_fixture(tmp_path)
+    args.batch_size = 32
+    with pytest.raises(ValueError, match="argument mismatch: batch_size"):
+        audit.validate_execution_manifest(args)
+
+    args.batch_size = 16
+    args.cofitok_sampling_report.write_text("changed", encoding="utf-8")
+    with pytest.raises(ValueError, match="source identity mismatch"):
+        audit.validate_execution_manifest(args)
+
+
+def test_execution_manifest_rejects_observed_identity_drift(tmp_path) -> None:
+    args, observations = _execution_manifest_fixture(tmp_path)
+    binding = audit.validate_execution_manifest(args)
+    observations["metrics"]["cofitok"]["fid"] = 10.5
+
+    with pytest.raises(ValueError, match="observation mismatch"):
+        audit.validate_execution_manifest_observations(binding, **observations)
+
+
+def test_execution_manifest_rechecks_sources_before_feature_extraction(
+    tmp_path,
+) -> None:
+    args, observations = _execution_manifest_fixture(tmp_path)
+    binding = audit.validate_execution_manifest(args)
+    args.dense_metrics_report.write_text("changed after preflight", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="source identity mismatch"):
+        audit.validate_execution_manifest_observations(binding, **observations)
 
 
 def test_validate_matched_sampling_allows_only_prefix_budget_difference() -> None:
