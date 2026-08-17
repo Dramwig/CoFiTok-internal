@@ -17,6 +17,10 @@ from cofitok.generation_pipeline_lineage import (
     inspect_lineage_stage,
     load_lineage_plan,
 )
+from cofitok.generation_recovery_supersession import (
+    inspect_recovery_supersession,
+    load_recovery_supersession_contract,
+)
 from cofitok.reporting import file_sha256, write_json_report
 
 
@@ -133,6 +137,10 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-formal-branch", required=True)
     parser.add_argument("--expected-formal-porcelain-count", type=int, required=True)
     parser.add_argument("--expected-formal-porcelain-sha256", required=True)
+    parser.add_argument("--recovery-supersession-contract", type=Path, required=True)
+    parser.add_argument(
+        "--expected-recovery-supersession-contract-sha256", required=True
+    )
     parser.add_argument("--poll-seconds", type=float, default=60.0)
     parser.add_argument("--stale-seconds", type=float, default=240.0)
     parser.add_argument("--timeout-seconds", type=float, default=31_536_000.0)
@@ -145,6 +153,7 @@ def _parse_args() -> argparse.Namespace:
         or args.expected_formal_porcelain_count < 0
         or len(args.expected_plan_sha256) != 64
         or len(args.expected_formal_porcelain_sha256) != 64
+        or len(args.expected_recovery_supersession_contract_sha256) != 64
     ):
         parser.error("capacity lineage observer thresholds or hashes are invalid")
     return args
@@ -163,6 +172,7 @@ def main() -> int:
     quality_root = args.quality_bridge_root.resolve()
     formal_project = args.formal_project.resolve()
     output = args.output.resolve()
+    supersession_contract_path = args.recovery_supersession_contract.resolve()
     expected_git = {
         "path": project.as_posix(),
         "revision": args.expected_revision,
@@ -174,6 +184,11 @@ def main() -> int:
         raise ValueError("capacity lineage observer checkout differs")
     if file_sha256(plan_path) != args.expected_plan_sha256:
         raise ValueError("capacity lineage plan SHA256 differs")
+    if (
+        file_sha256(supersession_contract_path)
+        != args.expected_recovery_supersession_contract_sha256
+    ):
+        raise ValueError("recovery supersession contract SHA256 differs")
     variables = {
         "checkpoint_root": checkpoint_root.as_posix(),
         "source_output_root": source_root.as_posix(),
@@ -189,6 +204,11 @@ def main() -> int:
             external_issues.append("observer_checkout_changed")
         if file_sha256(plan_path) != args.expected_plan_sha256:
             external_issues.append("lineage_plan_changed")
+        if (
+            file_sha256(supersession_contract_path)
+            != args.expected_recovery_supersession_contract_sha256
+        ):
+            external_issues.append("recovery_supersession_contract_changed")
         expected_formal = {
             "revision": args.expected_formal_revision,
             "branch": args.expected_formal_branch,
@@ -207,6 +227,33 @@ def main() -> int:
             )
             for spec in plan["stages"]
         ]
+        recovery_index = next(
+            (
+                index
+                for index, stage in enumerate(stages)
+                if stage.get("name") == "quality_bridge_100k_recovery"
+            ),
+            None,
+        )
+        if recovery_index is None:
+            external_issues.append("quality_bridge_recovery_stage_missing")
+        elif stages[recovery_index].get("classification") == "failure":
+            try:
+                supersession_contract = load_recovery_supersession_contract(
+                    supersession_contract_path
+                )
+                stages[recovery_index] = inspect_recovery_supersession(
+                    stages[recovery_index],
+                    contract=supersession_contract,
+                    now=observed_at,
+                    stale_seconds=args.stale_seconds,
+                    process_exists=_process_exists,
+                )
+            except (OSError, ValueError) as error:
+                stages[recovery_index]["issues"] = [
+                    *stages[recovery_index].get("issues", []),
+                    f"recovery_supersession_invalid:{error}",
+                ]
         gpu, gpu_complete = _gpu_compute_processes()
         usage = shutil.disk_usage(checkpoint_root)
         report = build_lineage_report(
@@ -232,6 +279,7 @@ def main() -> int:
             "poll_seconds": args.poll_seconds,
             "timeout_seconds": args.timeout_seconds,
             "output": output.as_posix(),
+            "recovery_supersession_contract": supersession_contract_path.as_posix(),
         }
         write_json_report(output, report)
         print(
