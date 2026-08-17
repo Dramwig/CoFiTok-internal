@@ -1,8 +1,16 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
+from cofitok.generation_cost import (
+    RESUME_COMPUTE_ADJUSTMENT_METHODS,
+    resume_compute_adjustment_source_identity,
+    training_cost_summary,
+    validate_resume_compute_adjustment_source_identities,
+    verify_resume_compute_adjustment_source,
+)
 from cofitok.generation_paths import (
     FULL_COFITOK_RUN_ID,
     FULL_DENSE_RUN_ID,
@@ -208,6 +216,27 @@ def gate_source_report_identity(path: str | Path) -> dict[str, Any]:
     }
 
 
+def build_generation_gate_resume_compute_adjustments(
+    paths: dict[str, str | Path],
+) -> dict[str, dict[str, Any]]:
+    if not set(paths).issubset(RESUME_COMPUTE_ADJUSTMENT_METHODS):
+        raise ValueError("generation gate resume-compute methods are invalid")
+    identities = {
+        method: resume_compute_adjustment_source_identity(path)
+        for method, path in paths.items()
+    }
+    validate_resume_compute_adjustment_source_identities(identities)
+    return identities
+
+
+def _read_json_object(path: str | Path, *, label: str) -> dict[str, Any]:
+    with Path(path).open("r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    if not isinstance(payload, dict):
+        raise ValueError(f"{label} is not a JSON object")
+    return payload
+
+
 def _validate_gate_source_report_identities(
     source_reports: dict[str, dict[str, Any]],
     *,
@@ -307,6 +336,7 @@ def build_generation_gate_diagnostic_reports(
 def verify_generation_gate_source_reports(
     gate: dict[str, Any],
 ) -> dict[str, Any]:
+    schema_version = int(gate.get("schema_version", 0) or 0)
     stage = str(gate.get("stage", ""))
     source_profile = str(gate.get("source_profile", stage))
     if GATE_SOURCE_PROFILE_STAGES.get(source_profile) != stage:
@@ -357,4 +387,74 @@ def verify_generation_gate_source_reports(
                 )
             verified_diagnostics[name] = actual
         result["diagnostic_reports"] = verified_diagnostics
+    if schema_version >= 6:
+        adjustments = gate.get("resume_compute_adjustments")
+        if not isinstance(adjustments, dict):
+            raise ValueError(
+                "generation gate resume-compute adjustment bindings are missing"
+            )
+        validate_resume_compute_adjustment_source_identities(adjustments)
+        training_reports = {
+            "cofitok": _read_json_object(
+                verified["cofitok_training"]["path"],
+                label="CoFiTok training report",
+            ),
+            "dense_identity": _read_json_object(
+                verified["dense_training"]["path"],
+                label="dense training report",
+            ),
+        }
+        verified_adjustments: dict[str, dict[str, Any]] = {}
+        training_costs: dict[str, dict[str, Any]] = {}
+        for method, training_report in training_reports.items():
+            identity = adjustments.get(method)
+            if identity is None:
+                cost = training_cost_summary(training_report)
+                if cost["valid"] is not True:
+                    raise ValueError(
+                        f"generation gate {method} training cost requires a "
+                        "resume-compute adjustment"
+                    )
+            else:
+                verification = verify_resume_compute_adjustment_source(
+                    identity,
+                    method=method,
+                    training_report=training_report,
+                )
+                verified_adjustments[method] = verification
+                cost = verification["training_cost"]
+            training_costs[method] = cost
+
+        summary = gate.get("summary")
+        summary = summary if isinstance(summary, dict) else {}
+        if (
+            summary.get("cofitok_training_cost") != training_costs["cofitok"]
+            or summary.get("dense_training_cost")
+            != training_costs["dense_identity"]
+        ):
+            raise ValueError(
+                "generation gate training-cost summary differs from physical sources"
+            )
+        raw_gates = gate.get("gates")
+        if not isinstance(raw_gates, list):
+            raise ValueError("generation gate checks are malformed")
+        cost_rows = [
+            row
+            for row in raw_gates
+            if isinstance(row, dict)
+            and row.get("name") == "training_cost_accounting"
+        ]
+        if (
+            len(cost_rows) != 1
+            or cost_rows[0].get("evidence")
+            != {
+                "cofitok": training_costs["cofitok"],
+                "dense": training_costs["dense_identity"],
+            }
+        ):
+            raise ValueError(
+                "generation gate training-cost evidence differs from physical sources"
+            )
+        result["resume_compute_adjustments"] = verified_adjustments
+        result["training_costs"] = training_costs
     return result

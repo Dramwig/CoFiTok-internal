@@ -199,6 +199,39 @@ def _training(
     }
 
 
+def _no_recovery_training_cost(*, steps: int) -> dict:
+    samples_seen = steps * 64
+    return {
+        "valid": True,
+        "target_steps": steps,
+        "micro_batch_size": 16,
+        "gradient_accumulation_steps": 4,
+        "effective_batch_size": 64,
+        "expected_samples_seen": samples_seen,
+        "samples_seen": samples_seen,
+        "reported_elapsed_seconds": 100_000.0,
+        "resume_compute_adjustment": {
+            "valid": True,
+            "required": False,
+            "provided": False,
+            "applied": False,
+            "seconds": 0.0,
+            "hours": 0.0,
+            "event_count": 0,
+            "orphaned_optimizer_steps_lower_bound": 0,
+            "orphaned_images_lower_bound": 0,
+            "discovered_orphan_archive_count": 0,
+            "covered_orphan_archive_count": 0,
+            "required_reasons": [],
+            "issues": [],
+        },
+        "elapsed_seconds": 100_000.0,
+        "elapsed_seconds_role": "reported_training_elapsed_seconds",
+        "images_per_second": samples_seen / 100_000.0,
+        "peak_vram_bytes": 24 * 1024**3,
+    }
+
+
 def _gate(stage: str) -> dict:
     decision = (
         "promote_to_full_imagenet256"
@@ -206,6 +239,9 @@ def _gate(stage: str) -> dict:
         else "large_scale_generation_ready"
     )
     environment_sha = runtime_environment_sha256(_runtime_environment())
+    training_steps = 50_000 if stage == "scaling" else 300_000
+    cofitok_training_cost = _no_recovery_training_cost(steps=training_steps)
+    dense_training_cost = _no_recovery_training_cost(steps=training_steps)
     gates = [{"name": "all_evidence", "passed": True, "evidence": {}}]
     for name in sorted(REQUIRED_GENERATION_GATES[stage]):
         evidence = {}
@@ -235,6 +271,11 @@ def _gate(stage: str) -> dict:
                 "dense_checkpoint_sha256": "b" * 64,
                 "cofitok_sample_set_sha256": "A" * 64,
                 "dense_sample_set_sha256": "B" * 64,
+            }
+        elif name == "training_cost_accounting":
+            evidence = {
+                "cofitok": copy.deepcopy(cofitok_training_cost),
+                "dense": copy.deepcopy(dense_training_cost),
             }
         elif name == "fid_within_tolerance":
             evidence = {
@@ -287,6 +328,7 @@ def _gate(stage: str) -> dict:
         "stage": stage,
         "status": "pass",
         "decision": decision,
+        "resume_compute_adjustments": {},
         "gates": gates,
         "thresholds": {
             "min_samples": 10_000 if stage == "scaling" else 50_000,
@@ -311,6 +353,8 @@ def _gate(stage: str) -> dict:
             "ordered_rank": 1,
             "order_count": 24,
             "coarse_token_energy_ratio": 0.06,
+            "cofitok_training_cost": cofitok_training_cost,
+            "dense_training_cost": dense_training_cost,
         },
         "source_reports": {
             name: {
@@ -330,6 +374,13 @@ def _gate_source_verification(gate: dict) -> dict:
         "status": "verified",
         "stage": gate["stage"],
         "source_reports": copy.deepcopy(gate["source_reports"]),
+        "resume_compute_adjustments": {},
+        "training_costs": {
+            "cofitok": copy.deepcopy(gate["summary"]["cofitok_training_cost"]),
+            "dense_identity": copy.deepcopy(
+                gate["summary"]["dense_training_cost"]
+            ),
+        },
     }
 
 
@@ -709,8 +760,9 @@ def _official_related() -> dict:
 def _comparison() -> dict:
     official = _official_related()
     return {
-        "schema_version": 8,
+        "schema_version": 9,
         "status": "ready",
+        "resume_compute_adjustments": {},
         "final_gate": {
             "status": "pass",
             "decision": "large_scale_generation_ready",
@@ -768,7 +820,16 @@ def _comparison() -> dict:
                 "parameter_count": 100_500,
                 "effective_batch_size": 64,
                 "training_images_seen": 19_200_000,
+                "training_reported_elapsed_seconds": 100_000.0,
+                "training_resume_compute_adjustment_seconds": 0.0,
+                "training_resume_compute_adjustment_hours": 0.0,
+                "training_resume_compute_adjustment_event_count": 0,
+                "training_orphaned_optimizer_steps_lower_bound": 0,
+                "training_orphaned_images_lower_bound": 0,
                 "training_elapsed_seconds": 100_000.0,
+                "training_elapsed_seconds_role": (
+                    "reported_training_elapsed_seconds"
+                ),
                 "training_images_per_second": 192.0,
                 "training_time_measurement": "raw_process_wall_clock",
                 "training_budget_basis": "matched_steps_and_training_images",
@@ -836,7 +897,16 @@ def _comparison() -> dict:
                 "parameter_count": 100_000,
                 "effective_batch_size": 64,
                 "training_images_seen": 19_200_000,
+                "training_reported_elapsed_seconds": 100_000.0,
+                "training_resume_compute_adjustment_seconds": 0.0,
+                "training_resume_compute_adjustment_hours": 0.0,
+                "training_resume_compute_adjustment_event_count": 0,
+                "training_orphaned_optimizer_steps_lower_bound": 0,
+                "training_orphaned_images_lower_bound": 0,
                 "training_elapsed_seconds": 100_000.0,
+                "training_elapsed_seconds_role": (
+                    "reported_training_elapsed_seconds"
+                ),
                 "training_images_per_second": 192.0,
                 "training_time_measurement": "raw_process_wall_clock",
                 "training_budget_basis": "matched_steps_and_training_images",
@@ -968,6 +1038,11 @@ def _comparison_source_verification() -> dict:
     return {
         "status": "verified",
         "source_reports": _comparison_source_reports(),
+        "resume_compute_adjustments": {},
+        "training_costs": {
+            "cofitok": _no_recovery_training_cost(steps=300_000),
+            "dense_identity": _no_recovery_training_cost(steps=300_000),
+        },
     }
 
 
@@ -1901,6 +1976,36 @@ def test_completion_audit_rejects_final_gate_source_verification_drift() -> None
     assert report["failed_checks"] == ["final_generation_gate"]
 
 
+def test_completion_audit_rejects_missing_gate_resume_compute_bindings() -> None:
+    kwargs = _kwargs()
+    kwargs["final_gate"].pop("resume_compute_adjustments")
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == [
+        "deployable_ema_inference_artifacts",
+        "final_generation_gate",
+    ]
+
+
+def test_completion_audit_rejects_changed_gate_resume_compute_bindings() -> None:
+    kwargs = _kwargs()
+    kwargs["final_gate"]["resume_compute_adjustments"]["cofitok"] = {
+        "path": "/tmp/resume_compute_adjustment.json",
+        "bytes": 1,
+        "sha256": "0" * 64,
+    }
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == [
+        "deployable_ema_inference_artifacts",
+        "final_generation_gate",
+    ]
+
+
 def test_completion_audit_rejects_incomplete_scaling_gate_contract() -> None:
     kwargs = _kwargs()
     kwargs["scaling_gate"]["gates"] = [
@@ -2046,6 +2151,30 @@ def test_completion_audit_rejects_changed_matched_comparison_source() -> None:
     kwargs["comparison_source_verification"] = {
         "status": "invalid",
         "error": "comparison source report changed after binding: cofitok_generation",
+    }
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_comparison_report"]
+
+
+def test_completion_audit_rejects_missing_comparison_resume_compute_bindings() -> None:
+    kwargs = _kwargs()
+    kwargs["comparison"].pop("resume_compute_adjustments")
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["final_comparison_report"]
+
+
+def test_completion_audit_rejects_changed_comparison_resume_compute_bindings() -> None:
+    kwargs = _kwargs()
+    kwargs["comparison"]["resume_compute_adjustments"]["cofitok"] = {
+        "path": "/tmp/resume_compute_adjustment.json",
+        "bytes": 1,
+        "sha256": "0" * 64,
     }
 
     report = build_completion_audit(**kwargs)
