@@ -60,6 +60,45 @@ Local project-specific Python 3.10 validation:
 - Python compile: pass;
 - `git diff --check`: pass.
 
-Remote Linux rehearsal and deployment remain pending at this record revision.
-They must use an isolated checkout, hide CUDA, preserve the active trainer and
-all existing waiters, and leave the formal checkout unchanged.
+At code commit `62e96a5`, remote Linux rehearsal and deployment were pending.
+Both stages must use an isolated checkout, hide CUDA, preserve the active
+trainer and all existing waiters, and leave the formal checkout unchanged.
+
+## Isolated Linux rehearsal
+
+The complete incremental bundle from the deployed source-waiter prerequisite
+`c42ac96c6628ff71f7c67c8957c86ea0523aea0b` to control revision
+`c0fde4284c8a611b80fe02b97499e20393486264` was verified on `pro6000`.
+The control revision includes the code commit above and this initial audit
+record.
+
+```text
+bundle: /tmp/claim-language-guard-waiter-c42ac96-c0fde42.bundle
+bytes:  24,886
+sha256: b782c385683f3aa31c9aaa3357ce37afd76337a9f4aaa44d563c5db595b6e3b1
+target tree: ccd971e8462c42fd63f2c9664525c7fb4a767243
+```
+
+The bundle advertised exactly one branch head, required exactly the deployed
+`c42ac96` prerequisite, and passed `git bundle verify`. It was checked out
+only in:
+
+```text
+/tmp/cofitok-claim-language-guard-waiter-rehearsal-Gg0l3X/CoFiTok-internal
+```
+
+Linux CPU-only validation used `CUDA_VISIBLE_DEVICES=-1`,
+`OMP_NUM_THREADS=1`, and `MKL_NUM_THREADS=1`:
+
+- focused new waiter suite: `8 passed`;
+- integrated claim, uncertainty, and metric-semantics suite: `103 passed`;
+- Python compile and `git diff --check`: pass;
+- rehearsal checkout tracked state: clean.
+
+At 2026-08-18 07:32 CST, the only GPU compute process remained the expected
+trainer PID `619775`; CoFiTok advanced normally to step `37,850`. The formal
+checkout remained tracked-clean at
+`1ebcc15210e63a776a2ba448481cbd8bb94a4066`.
+
+No deployed waiter was changed or restarted. Persistent deployment remains
+pending an integrity-bound deployment receipt and initial-state validation.
