@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "role": "generation_capacity_claim_evidence_addendum_development_summary",
+  "status": "pass",
+  "recorded_at": "2026-08-18T05:51:26+08:00",
+  "implementation": {
+    "branch": "analysis/generation-capacity-terminal-uncertainty-v1",
+    "revision": "9dfa3c3e80d1f7d71056541eb8029d5627323162",
+    "tree": "70243a3a50f1d51669cb29e377773e0045bbf49d",
+    "subject": "Bind capacity comparison statistical claims",
+    "script": "scripts/build_generation_capacity_claim_evidence_addendum.py",
+    "test": "tests/test_generation_capacity_claim_evidence_addendum.py"
+  },
+  "purpose": "Bind the immutable capacity-full large-scale comparison to its terminal statistical qualification without changing the comparison schema, completion chain, training authority, or release authority.",
+  "contract": {
+    "source_profile": "capacity_full",
+    "metric_scope": "frechet_inception_distance",
+    "required_training_steps_per_method": 300000,
+    "required_samples_per_method": 50000,
+    "required_weights": "ema",
+    "allowed_claim": "Exact-protocol matched relative FID advantage only when the final quality gate and paired uncertainty qualification both pass.",
+    "broad_generation_superiority_claim_allowed": false,
+    "sota_claim_allowed": false,
+    "cross_tier_numeric_ranking_allowed": false,
+    "training_launch_allowed": false,
+    "sampling_launch_allowed": false,
+    "release_authorization_allowed": false,
+    "process_signals_allowed": false
+  },
+  "rejection_coverage": [
+    "comparison, qualification, final-gate, execution-manifest, uncertainty-report, or official-context identity drift",
+    "non-capacity-full comparison schema or source profile",
+    "unsafe cross-tier ranking policy",
+    "different final-gate anchor",
+    "FID point-estimate drift",
+    "quality-gate or uncertainty-decision inconsistency",
+    "authorizing qualification boundary",
+    "dirty or malformed evaluator identity",
+    "qualified claim without lower CoFiTok FID"
+  ],
+  "validation": {
+    "windows_targeted": "44 passed",
+    "windows_capacity_comparison": "244 passed; one known CRLF-sensitive frozen-SHA failure in test_generation_capacity_recovery_supersession.py",
+    "linux_targeted": "44 passed",
+    "linux_capacity_comparison": "245 passed",
+    "linux_python_compile": "pass",
+    "linux_git_diff_check": "pass",
+    "linux_cuda_visible_devices": "-1"
+  },
+  "incremental_bundle": {
+    "local_path": "C:/Users/17194/AppData/Local/Temp/cofitok-capacity-claim-addendum-9dfa3c3.bundle",
+    "remote_path": "/tmp/cofitok-capacity-claim-addendum-9dfa3c3.bundle",
+    "bytes": 12587,
+    "sha256": "c97fff4ff70123f6eb6c11d39f7bb5b4cdb7ba921c546ed87d4123c95b3983f3",
+    "prerequisite_revision": "f7e3f9fdcdf7238eefaa3efac9a8215df6122e03",
+    "advertised_revision": "9dfa3c3e80d1f7d71056541eb8029d5627323162",
+    "remote_bundle_verify": "pass"
+  },
+  "linux_rehearsal": {
+    "checkout": "/tmp/cofitok-capacity-claim-addendum-9dfa3c3-rehearsal",
+    "revision": "9dfa3c3e80d1f7d71056541eb8029d5627323162",
+    "tracked_dirty": false,
+    "gpu_work_started": false
+  },
+  "preservation": {
+    "formal_remote_checkout_modified": false,
+    "active_training_process_modified": false,
+    "existing_waiter_modified": false,
+    "new_gpu_stage_launched": false
+  },
+  "live_training_snapshot": {
+    "observed_at": "2026-08-18T05:51:26+08:00",
+    "quality_bridge_status": "running",
+    "quality_bridge_stage": "cofitok_training",
+    "quality_bridge_issues": [],
+    "pair_monitor_step": 35600,
+    "latest_metrics_step": 35700,
+    "latest_metrics_samples_seen": 2284800,
+    "cofitok_expected_steps": 100000,
+    "dense_started": false,
+    "only_gpu_compute_pid": 619775,
+    "only_gpu_compute_memory_mib": 85286,
+    "unrelated_gpu_compute_observed": false,
+    "free_bytes_under_autodl_tmp": 324348026880,
+    "formal_checkout_revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "formal_checkout_branch": "scale/generative-system",
+    "formal_checkout_tracked_dirty": false
+  }
+}
