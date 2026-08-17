@@ -63,6 +63,33 @@ def _protocol_without_window(report: dict[str, Any]) -> dict[str, Any]:
     return signature
 
 
+def _validate_execution_manifest_source(
+    value: Any,
+    *,
+    path: Path,
+) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise TypeError(f"Matched uncertainty execution manifest is missing: {path}")
+    source = value.get("source")
+    stream_id = value.get("stream_id")
+    if (
+        value.get("status") != "verified"
+        or not isinstance(stream_id, str)
+        or not stream_id
+        or not isinstance(source, dict)
+        or not isinstance(source.get("path"), str)
+        or not Path(source["path"]).is_absolute()
+        or not isinstance(source.get("bytes"), int)
+        or int(source["bytes"]) < 1
+        or not audit._is_sha256(source.get("sha256"))
+    ):
+        raise ValueError(f"Matched uncertainty execution manifest is invalid: {path}")
+    return {
+        "stream_id": stream_id,
+        "source": source,
+    }
+
+
 def _validate_audit(report: dict[str, Any], path: Path) -> dict[str, Any]:
     matched = report.get("matched_sampling")
     kid = report.get("paired_block_kid")
@@ -94,6 +121,10 @@ def _validate_audit(report: dict[str, Any], path: Path) -> dict[str, Any]:
         or implementation.get("kid_kernel") != audit.KID_KERNEL
     ):
         raise ValueError(f"Matched uncertainty report contract mismatch: {path}")
+    execution_manifest = _validate_execution_manifest_source(
+        sources.get("execution_manifest"),
+        path=path,
+    )
     sample_sets = sources["sample_sets"]
     for method in ("cofitok", "dense_identity"):
         row = sample_sets.get(method)
@@ -122,6 +153,7 @@ def _validate_audit(report: dict[str, Any], path: Path) -> dict[str, Any]:
         )
     return {
         "source": _source(path),
+        "execution_manifest": execution_manifest,
         "start_index": int(matched["start_index"]),
         "end_index_exclusive": int(matched["end_index_exclusive"]),
         "sample_count": int(matched["sample_count"]),
@@ -163,6 +195,14 @@ def build_summary(
     rows = [_validate_audit(report, path) for report, path in reports]
     if len({row["source"]["sha256"] for row in rows}) != len(rows):
         raise ValueError("Repeated matched uncertainty reports must be unique")
+    if len({row["execution_manifest"]["stream_id"] for row in rows}) != len(
+        rows
+    ) or len({row["execution_manifest"]["source"]["sha256"] for row in rows}) != len(
+        rows
+    ):
+        raise ValueError(
+            "Repeated matched uncertainty execution manifests must be unique"
+        )
     disjoint = _windows_are_disjoint(rows)
     same_checkpoints = (
         len({row["cofitok_checkpoint_sha256"] for row in rows}) == 1
@@ -216,6 +256,7 @@ def build_summary(
         "claim_boundary": CLAIM_BOUNDARY,
         "git": builder_git or git_provenance(PROJECT_ROOT),
         "checks": {
+            "source_bound_execution_manifests": True,
             "disjoint_global_index_windows": disjoint,
             "same_checkpoints": same_checkpoints,
             "same_real_set": same_real_set,

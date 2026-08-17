@@ -483,6 +483,16 @@ def _write_audit(
         f"{start_index + 1:064x}"[-64:]
     )
     report = audit.build_report(**inputs)
+    manifest_path = tmp_path / f"{name}_execution_manifest.json"
+    manifest_path.write_text(
+        json.dumps({"name": name, "start_index": start_index}),
+        encoding="utf-8",
+    )
+    report["sources"]["execution_manifest"] = {
+        "source": audit._source(manifest_path),
+        "stream_id": f"{name}_{start_index:08d}",
+        "status": "verified",
+    }
     path = tmp_path / f"{name}.json"
     path.write_text(json.dumps(report), encoding="utf-8")
     return report, path
@@ -503,6 +513,7 @@ def test_repeated_summary_accepts_disjoint_exact_protocol_streams(tmp_path) -> N
 
     assert report["status"] == "pass"
     assert report["decision"] == "repeated_exact_protocol_relative_advantage_supported"
+    assert report["checks"]["source_bound_execution_manifests"] is True
     assert report["checks"]["disjoint_global_index_windows"] is True
     assert report["checks"]["exact_protocol_replication"] is True
     assert report["claim_boundary"]["full_training_launch_allowed"] is False
@@ -538,6 +549,20 @@ def test_repeated_summary_holds_for_overlapping_windows(tmp_path) -> None:
     assert report["status"] == "hold"
     assert report["checks"]["disjoint_global_index_windows"] is False
     assert report["repeated_advantage_supported"] is False
+
+
+def test_repeated_summary_rejects_unbound_stream_report(tmp_path) -> None:
+    first_report, first_path = _write_audit(
+        tmp_path,
+        name="first",
+        start_index=0,
+    )
+    second = _write_audit(tmp_path, name="second", start_index=80)
+    del first_report["sources"]["execution_manifest"]
+    first_path.write_text(json.dumps(first_report), encoding="utf-8")
+
+    with pytest.raises(TypeError, match="execution manifest is missing"):
+        summary.build_summary([(first_report, first_path), second], builder_git={})
 
 
 def test_build_report_holds_when_fid_direction_disagrees() -> None:

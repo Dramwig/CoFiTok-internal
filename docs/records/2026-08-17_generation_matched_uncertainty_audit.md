@@ -85,7 +85,9 @@ extraction, it fails closed if a CLI override, report path, report byte count,
 report SHA256, physical real/sample tree, checkpoint identity, global-index
 window, sampling signature, FID source value, or evaluator runtime identity has
 drifted. The verified manifest identity is embedded in the resulting audit
-report.
+report. The repeated-stream summary also requires a distinct verified execution
+manifest on every input audit; missing, malformed, or duplicate manifest
+identities are rejected before any repeated-direction conclusion is built.
 
 The eventual safe-slot commands are intentionally minimal:
 
@@ -114,8 +116,8 @@ base: 24cce1ee3b464b0b46776fb7e2c9f56cec514f4b
 Current local validation:
 
 ```text
-20 targeted uncertainty tests passed
-110 uncertainty + generation-metrics + sampling-confirmation + distribution-support tests passed
+21 targeted uncertainty tests passed
+111 uncertainty + generation-metrics + sampling-confirmation + distribution-support tests passed
 Python compile passed
 git diff --check passed
 ```
