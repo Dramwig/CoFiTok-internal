@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "role": "quality_bridge_40k_ema_full_warmup_waiter_deployment_receipt",
+  "status": "waiting_for_step_40000",
+  "observed_at": "2026-08-17T17:47:45.662847+00:00",
+  "quality_bridge": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+    "training_checkout": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "tracked_dirty": false
+  },
+  "audit_implementation": {
+    "checkout": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-ema-transition-2a80f6e",
+    "revision": "2a80f6e55f71c9c25c405564bc4393bf06cb3154",
+    "tree": "60221d9e3ac5faf5f27fae555d2320048612f2a8",
+    "detached_head": true,
+    "tracked_dirty": false,
+    "source": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-ema-transition-2a80f6e/scripts/wait_generation_consistency_schedule_transition.py",
+      "bytes": 20796,
+      "sha256": "10c1676d0de5e7aaa94f428a65448ab78da7fdbdc7184a76de7278aaad6d9998"
+    }
+  },
+  "audit_contract": {
+    "ema_teacher_start_step": 30000,
+    "ema_teacher_warmup_steps": 10000,
+    "ema_teacher_weight": 0.25,
+    "first_selected_full_warmup_row": 39500,
+    "target_step": 40000,
+    "minimum_selected_rows": 11,
+    "expected_scale_at_step_39500": 0.95,
+    "expected_scale_at_step_40000": 1.0,
+    "log_interval": 50,
+    "effective_batch": 64,
+    "target_training_steps": 100000,
+    "samples_seen_binding": "samples_seen == step * 64"
+  },
+  "initial_import_attempt": {
+    "pid": 816166,
+    "status": "exited_before_status_creation",
+    "error_type": "ModuleNotFoundError",
+    "error_message": "No module named 'cofitok'",
+    "cause": "PYTHONPATH was omitted from the isolated audit checkout launch",
+    "training_process_signaled": false,
+    "gpu_process_created": false,
+    "status_created": false,
+    "lock_created": false,
+    "preserved_log_snapshot": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/cofitok_ema_teacher_full_warmup_00030000_00040000_waiter.log",
+      "bytes": 289,
+      "sha256": "74eedd6d5c682b03f9b2c2a32ba9d8689863928189f7d5e8ac2d8602c216c86e"
+    }
+  },
+  "active_waiter": {
+    "pid": 816282,
+    "started_at": "2026-08-17T17:46:26.181709+00:00",
+    "status": "waiting",
+    "detail": "transition_target_not_reached",
+    "poll_seconds": 60,
+    "timeout_seconds": 43200,
+    "nice": 10,
+    "ionice": "idle",
+    "children": [],
+    "environment": {
+      "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-ema-transition-2a80f6e:/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-ema-transition-2a80f6e/src",
+      "PYTHONUNBUFFERED": "1",
+      "CUDA_VISIBLE_DEVICES": "",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    },
+    "report_output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/cofitok_ema_teacher_full_warmup_00030000_00040000.json",
+    "status_output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/cofitok_ema_teacher_full_warmup_00030000_00040000_waiter_status.json",
+    "post_launch_status_snapshot": {
+      "updated_at": "2026-08-17T17:47:26.286533+00:00",
+      "bytes": 992,
+      "sha256": "b86a618a5e4e6b5eebb52cd4342da483796b823b5d446556649a7b2032d894e4"
+    }
+  },
+  "training_continuity": {
+    "trainer_pid": 619775,
+    "last_metric": {
+      "step": 30500,
+      "samples_seen": 1952000,
+      "ema_teacher_consistency_scale": 0.05000000074505806,
+      "ema_teacher_consistency": 0.0017594805685803294,
+      "epsilon": 0.03454585373401642,
+      "total": 0.054975997656583786,
+      "grad_norm": 0.20701177418231964
+    },
+    "pair_monitor": {
+      "status": "running",
+      "stage": "cofitok_training",
+      "issues": [],
+      "cofitok_health_issues": [],
+      "cofitok_step": 30500,
+      "unrelated_gpu_processes": []
+    },
+    "watchdog": {
+      "status": "running",
+      "reason": "child_and_monitor_active",
+      "child_pid": 619775,
+      "issues": []
+    },
+    "gpu_compute_processes": [
+      {
+        "pid": 619775,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 85284,
+        "role": "quality_bridge_cofitok_trainer"
+      }
+    ]
+  },
+  "claim_boundary": {
+    "read_only_metrics_verification": true,
+    "gpu_required": false,
+    "training_process_signals_allowed": false,
+    "unrelated_process_signals_allowed": false,
+    "promotion_authorization_allowed": false,
+    "sample_quality_evidence": false,
+    "ema_teacher_causal_benefit_established": false,
+    "broad_generation_superiority_claim_allowed": false,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "release_allowed": false
+  }
+}
