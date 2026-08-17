@@ -46,7 +46,8 @@ def _fixture(tmp_path: Path, *, failure_detail: str | None = None) -> dict:
     receipt_path = tmp_path / "recovery_supervisor_v2_deployment_receipt.json"
     execution_path = output_root / "reports/execution_status.json"
     pair_path = output_root / "pair_monitor.json"
-    watchdog_path = run_dir / "training_watchdog_step_00050000.json"
+    watchdog_50_path = run_dir / "training_watchdog_step_00050000.json"
+    watchdog_100_path = run_dir / "training_watchdog_step_00100000.json"
     manifest_path = run_dir / "run_manifest.json"
     reconciliation_path = run_dir / "metrics_resume_reconciliation.json"
     checkpoint_path = output_root / "reports/checkpoint_audit.json"
@@ -171,7 +172,7 @@ def _fixture(tmp_path: Path, *, failure_detail: str | None = None) -> dict:
         },
     )
     _write(
-        watchdog_path,
+        watchdog_50_path,
         {
             "schema_version": 1,
             "role": "generation_training_watchdog",
@@ -283,7 +284,16 @@ def _fixture(tmp_path: Path, *, failure_detail: str | None = None) -> dict:
             "active_chain": {
                 "execution_status_path": execution_path.resolve().as_posix(),
                 "pair_monitor_path": pair_path.resolve().as_posix(),
-                "watchdog_status_path": watchdog_path.resolve().as_posix(),
+                "watchdog_statuses": [
+                    {
+                        "path": watchdog_50_path.resolve().as_posix(),
+                        "target_step": 50_000,
+                    },
+                    {
+                        "path": watchdog_100_path.resolve().as_posix(),
+                        "target_step": 100_000,
+                    },
+                ],
             },
             "exact_resume": {
                 "run_manifest": _reference(manifest_path),
@@ -331,7 +341,8 @@ def _fixture(tmp_path: Path, *, failure_detail: str | None = None) -> dict:
         "failed_stage": failed_stage,
         "receipt_path": receipt_path,
         "pair_path": pair_path,
-        "watchdog_path": watchdog_path,
+        "watchdog_50_path": watchdog_50_path,
+        "watchdog_100_path": watchdog_100_path,
         "checkpoint_path": checkpoint_path,
     }
 
@@ -398,6 +409,107 @@ def test_recovery_supersession_requires_the_active_trainer_and_watchdog(
     fixture = _fixture(tmp_path)
     with pytest.raises(ValueError, match="trainer/watchdog binding differs"):
         _inspect(fixture, alive={101, 102, 103, 105})
+
+
+def _complete_watchdog(path: Path) -> None:
+    watchdog = json.loads(path.read_text(encoding="utf-8"))
+    watchdog.update(
+        {
+            "status": "completed",
+            "reason": "child_completed",
+            "child_exit_code": 0,
+            "watchdog_exit_code": 0,
+        }
+    )
+    _write(path, watchdog)
+
+
+def test_recovery_supersession_accepts_the_50k_milestone_handoff(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    pair = json.loads(fixture["pair_path"].read_text(encoding="utf-8"))
+    pair["runs"]["cofitok"]["last_step"] = 50_000
+    _write(fixture["pair_path"], pair)
+    _complete_watchdog(fixture["watchdog_50_path"])
+
+    stage = _inspect(fixture, alive={101, 102})
+    assert stage["supersession"]["live_cofitok_step"] == 50_000
+    assert stage["supersession"]["watchdog_target_step"] == 50_000
+
+
+def test_recovery_supersession_switches_to_the_100k_watchdog(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    pair = json.loads(fixture["pair_path"].read_text(encoding="utf-8"))
+    pair["runs"]["cofitok"]["last_step"] = 50_100
+    _write(fixture["pair_path"], pair)
+    _complete_watchdog(fixture["watchdog_50_path"])
+    watchdog = json.loads(
+        fixture["watchdog_50_path"].read_text(encoding="utf-8")
+    )
+    watchdog.update(
+        {
+            "status": "running",
+            "reason": "child_and_monitor_active",
+            "pid": 106,
+            "child_pid": 107,
+            "monitor_pid": 105,
+            "child_exit_code": None,
+            "watchdog_exit_code": None,
+        }
+    )
+    _write(fixture["watchdog_100_path"], watchdog)
+
+    stage = _inspect(fixture, alive={101, 102, 105, 106, 107})
+    assert stage["supersession"]["live_cofitok_step"] == 50_100
+    assert stage["supersession"]["watchdog_target_step"] == 100_000
+
+
+def test_recovery_supersession_rejects_a_missing_next_watchdog(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    pair = json.loads(fixture["pair_path"].read_text(encoding="utf-8"))
+    pair["runs"]["cofitok"]["last_step"] = 50_100
+    _write(fixture["pair_path"], pair)
+    _complete_watchdog(fixture["watchdog_50_path"])
+
+    with pytest.raises(ValueError, match="next watchdog status is missing"):
+        _inspect(fixture, alive={101, 102})
+
+
+def test_recovery_supersession_contract_requires_increasing_watchdogs(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    contract = json.loads(
+        fixture["contract_path"].read_text(encoding="utf-8")
+    )
+    contract["active_chain"]["watchdog_statuses"][1]["target_step"] = 50_000
+    _write(fixture["contract_path"], contract)
+
+    with pytest.raises(ValueError, match="target steps are not increasing"):
+        load_recovery_supersession_contract(fixture["contract_path"])
+
+
+def test_recovery_supersession_requires_the_terminal_100k_watchdog(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    pair = json.loads(fixture["pair_path"].read_text(encoding="utf-8"))
+    pair["runs"]["cofitok"].update({"complete": True, "last_step": 100_000})
+    _write(fixture["pair_path"], pair)
+    _complete_watchdog(fixture["watchdog_50_path"])
+    watchdog = json.loads(
+        fixture["watchdog_50_path"].read_text(encoding="utf-8")
+    )
+    _write(fixture["watchdog_100_path"], watchdog)
+
+    stage = _inspect(fixture, alive={101, 102})
+    assert stage["supersession"]["live_cofitok_step"] == 100_000
+    assert stage["supersession"]["watchdog_target_step"] == 100_000
 
 
 def test_recovery_supersession_rejects_a_tampered_checkpoint_audit(

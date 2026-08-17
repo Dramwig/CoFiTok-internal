@@ -144,11 +144,32 @@ def load_recovery_supersession_contract(path: str | Path) -> dict[str, Any]:
     if not isinstance(active, dict) or set(active) != {
         "execution_status_path",
         "pair_monitor_path",
-        "watchdog_status_path",
+        "watchdog_statuses",
     }:
         raise ValueError("recovery active-chain contract differs")
-    for key in sorted(active):
+    for key in ("execution_status_path", "pair_monitor_path"):
         active[key] = _absolute_path(active[key], label=key)
+    watchdog_statuses = active["watchdog_statuses"]
+    if not isinstance(watchdog_statuses, list) or not watchdog_statuses:
+        raise ValueError("recovery watchdog status contract is missing")
+    normalized_watchdogs = []
+    previous_target = 0
+    for index, status in enumerate(watchdog_statuses):
+        if not isinstance(status, dict) or set(status) != {"path", "target_step"}:
+            raise ValueError("recovery watchdog status contract differs")
+        target_step = status["target_step"]
+        if type(target_step) is not int or target_step <= previous_target:
+            raise ValueError("recovery watchdog target steps are not increasing")
+        normalized_watchdogs.append(
+            {
+                "path": _absolute_path(
+                    status["path"], label=f"watchdog_statuses[{index}]"
+                ),
+                "target_step": target_step,
+            }
+        )
+        previous_target = target_step
+    active["watchdog_statuses"] = normalized_watchdogs
 
     exact = payload["exact_resume"]
     if not isinstance(exact, dict) or set(exact) != {
@@ -500,12 +521,45 @@ def inspect_recovery_supersession(
     ):
         raise ValueError("quality-bridge live run-manifest binding differs")
 
-    watchdog, watchdog_identity = _read_json_source(active["watchdog_status_path"])
+    existing_watchdogs: list[tuple[dict[str, Any], dict[str, Any], dict[str, Any]]] = []
+    missing_watchdog_seen = False
+    for watchdog_contract in active["watchdog_statuses"]:
+        watchdog_path = Path(watchdog_contract["path"])
+        if not watchdog_path.is_file():
+            missing_watchdog_seen = True
+            continue
+        if missing_watchdog_seen:
+            raise ValueError("quality-bridge watchdog status sequence has a gap")
+        watchdog_payload, watchdog_source = _read_json_source(watchdog_path)
+        existing_watchdogs.append(
+            (watchdog_contract, watchdog_payload, watchdog_source)
+        )
+    if not existing_watchdogs:
+        raise ValueError("quality-bridge watchdog status is missing")
+    watchdog_contract, watchdog, watchdog_identity = existing_watchdogs[-1]
+    watchdog_target_step = watchdog_contract["target_step"]
+    if last_step > watchdog_target_step:
+        raise ValueError("quality-bridge next watchdog status is missing")
     if watchdog.get("schema_version") != 1 or watchdog.get("role") != WATCHDOG_ROLE:
         raise ValueError("quality-bridge watchdog identity differs")
     cofitok_complete = cofitok.get("complete") is True
     watchdog_status = str(watchdog.get("status", "")).lower()
-    if not cofitok_complete:
+    active_watchdog = watchdog_status == "running"
+    complete_watchdog = watchdog_status in {
+        "complete",
+        "completed",
+        "pass",
+        "passed",
+        "success",
+        "succeeded",
+    }
+    if last_step < watchdog_target_step:
+        if not active_watchdog:
+            raise ValueError("quality-bridge watchdog is not running")
+    elif not active_watchdog and not complete_watchdog:
+        raise ValueError("quality-bridge milestone watchdog differs")
+
+    if active_watchdog:
         if watchdog_status != "running":
             raise ValueError("quality-bridge watchdog is not running")
         watchdog_pid, _, _ = _fresh_active_status(
@@ -541,15 +595,14 @@ def inspect_recovery_supersession(
             raise ValueError("quality-bridge exact-resume command differs")
     else:
         watchdog_pid = watchdog.get("pid")
-        if watchdog_status not in {
-            "complete",
-            "completed",
-            "pass",
-            "passed",
-            "success",
-            "succeeded",
-        } or watchdog.get("child_exit_code") not in {0, None}:
+        if watchdog.get("child_exit_code") not in {0, None}:
             raise ValueError("completed quality-bridge watchdog differs")
+    if cofitok_complete and (
+        last_step != active["watchdog_statuses"][-1]["target_step"]
+        or watchdog_target_step != active["watchdog_statuses"][-1]["target_step"]
+        or not complete_watchdog
+    ):
+        raise ValueError("completed quality-bridge watchdog lineage differs")
 
     synthetic_status = "pass" if complete_successor else "running"
     return {
@@ -590,6 +643,7 @@ def inspect_recovery_supersession(
             "resume_step": exact["resume_step"],
             "trusted_checkpoint_step": exact["checkpoint_step"],
             "live_cofitok_step": last_step,
+            "watchdog_target_step": watchdog_target_step,
             "watchdog_pid": watchdog_pid,
             "claim_boundary": {
                 "training_launch_allowed": False,
