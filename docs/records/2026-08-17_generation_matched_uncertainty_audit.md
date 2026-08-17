@@ -235,3 +235,31 @@ feature file, but it must still extract both generated feature matrices for
 each stream. This inventory is not an uncertainty result and cannot support a
 relative-generation claim by itself. No remote file, sample tree, checkout, or
 GPU process was modified during the inspection.
+
+## Persistent evaluator checkout
+
+The `/tmp` rehearsal checkout was subsequently copied into a dedicated,
+independent data-disk clone so the exact evaluator cannot disappear during
+temporary-directory cleanup:
+
+```text
+/root/autodl-tmp/CoFiTok/checkouts/matched-uncertainty-1c8ef20/CoFiTok-internal
+revision: 1c8ef207cb6d79850d73a45abc345fc421e6aa7f
+tree: a09f14a0eca44af6db8e6781863a463163ddf646
+tracked status: clean
+git fsck: pass
+```
+
+With CUDA hidden and one OMP/MKL thread, the persistent checkout passed all 21
+targeted uncertainty tests, Python compilation, and both immutable source
+manifest preflights. The formal checkout remained at `1ebcc152...`, the active
+training checkout remained at `cf0e5faa...`, and both stayed tracked-clean.
+The only GPU process remained the active quality-bridge trainer; no feature
+extraction or uncertainty output was started.
+
+The machine-readable preparation receipt is:
+
+```text
+artifacts/reports/generation/matched_uncertainty_persistent_checkout_2026-08-18.json
+SHA256: 1f09a43c973ca486490e8fc6b950e9ae3d553b037770e7cd610c0a67c2cd88b5
+```

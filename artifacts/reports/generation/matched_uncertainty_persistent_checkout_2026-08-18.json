@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "role": "matched_uncertainty_persistent_evaluator_checkout_receipt",
+  "created_at": "2026-08-18T00:05:47+08:00",
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "checkout": {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/matched-uncertainty-1c8ef20/CoFiTok-internal",
+    "revision": "1c8ef207cb6d79850d73a45abc345fc421e6aa7f",
+    "tree": "a09f14a0eca44af6db8e6781863a463163ddf646",
+    "detached_head": true,
+    "tracked_dirty": false,
+    "git_fsck": "pass",
+    "parent_bytes": 242867048
+  },
+  "validation": {
+    "cuda_visible_devices": "",
+    "omp_num_threads": 1,
+    "mkl_num_threads": 1,
+    "targeted_test_file": "tests/test_generation_matched_uncertainty.py",
+    "targeted_tests_passed": 21,
+    "python_compile": "pass",
+    "post_validation_tracked_dirty": false,
+    "source_manifest_preflights": [
+      {
+        "path": "configs/generation/diagnostics/matched_uncertainty_formal_10k_execution_v1.json",
+        "stream_id": "frozen_formal_00000000_00010000",
+        "sha256": "2561b76113eb81c4288694302cc7fd683b806fad6fb420c2a0f1336b0ea3faac",
+        "status": "pass"
+      },
+      {
+        "path": "configs/generation/diagnostics/matched_uncertainty_confirmation_10k_execution_v1.json",
+        "stream_id": "confirmation_00010000_00020000",
+        "sha256": "e13518e421970fc7c2fe9ce12d22cb6636f77b421ba5af1b355e5623692a510a",
+        "status": "pass"
+      }
+    ]
+  },
+  "post_validation_observations": {
+    "active_training_step": 28350,
+    "active_gpu_pid": 619775,
+    "active_training_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "active_training_tracked_dirty": false,
+    "formal_revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "formal_tracked_dirty": false
+  },
+  "execution_boundary": {
+    "feature_extraction_performed": false,
+    "gpu_evaluation_performed": false,
+    "uncertainty_output_root_created": false,
+    "formal_checkout_modified": false,
+    "active_training_checkout_modified": false,
+    "training_process_signaled": false
+  },
+  "status": "prepared_for_safe_evaluator_slot"
+}
