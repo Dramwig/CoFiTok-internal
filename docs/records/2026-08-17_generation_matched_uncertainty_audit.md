@@ -84,6 +84,23 @@ verification of the shared-reference cancellation identity, a strong synthetic
 advantage case, and an identical-method negative control that must remain on
 hold.
 
+Locked code identity:
+
+```text
+revision: f70a15d0ba992e63368cddd24c4f2022b15697c6
+tree: a2613f2db4e18a7b9332759810e75749400c7077
+incremental bundle bytes: 22,085
+incremental bundle SHA256: 02acfdfc99a551168a28702df36b18796e75d77d31a4e7fa4bec15d0ba585c9c
+bundle prerequisite: 1ff6bb3db932ef9e43ddfafc067db779dab797d9
+```
+
+The bundle was verified on `pro6000` and fetched only into a disposable isolated
+checkout under `/tmp`. With CUDA hidden and `OMP_NUM_THREADS=1` /
+`MKL_NUM_THREADS=1`, the same 105-test group passed on Linux. Python compilation
+and `git diff --check` passed, and the isolated checkout remained tracked-clean.
+The rehearsal did not modify the formal checkout, observer checkout, active
+training checkout, checkpoints, samples, or GPU process.
+
 ## Execution boundary
 
 No feature extraction or new GPU evaluation was launched while the full-data
