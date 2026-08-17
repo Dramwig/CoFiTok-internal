@@ -263,3 +263,56 @@ The machine-readable preparation receipt is:
 artifacts/reports/generation/matched_uncertainty_persistent_checkout_2026-08-18.json
 SHA256: 1f09a43c973ca486490e8fc6b950e9ae3d553b037770e7cd610c0a67c2cd88b5
 ```
+
+## Source-bound safe-slot waiter
+
+`scripts/run_generation_matched_uncertainty_waiter.py` now provides the missing
+execution boundary around the prepared evaluator. The waiter is permanently
+non-authorizing and performs the following sequence:
+
+1. verifies its own control checkout, the detached `1c8ef20` evaluator
+   checkout, and the active `cf0e5fa` quality-bridge checkout against exact
+   revision/tree/branch and tracked-clean contracts;
+2. waits for
+   `reports/execution_status.json` to be `completed` and
+   `reports/quality_bridge_result.json` to exist, then runs the complete
+   `verify_generation_quality_bridge_result.py` replay from the exact active
+   quality-bridge checkout;
+3. waits for the quality runbook, trainer, watchdog, monitor, sampler, and
+   evaluators to exit without sending any signal;
+4. verifies the existing 50K real Inception feature cache at
+   `409,601,577` bytes and SHA256
+   `20103588dca9ce47bfceef6b68b473fdf4be720f149d1b8bdd96341d27c10dcd`,
+   then creates an atomic hardlink into the dedicated uncertainty cache; only
+   `EXDEV` permits an atomic copy fallback, and the destination is rehashed;
+5. requires at least five consecutive idle-GPU observations plus an immediate
+   final recheck before each GPU audit. If a capacity or unrelated task takes
+   the device first, the idle count resets and the waiter continues waiting;
+6. runs the formal audit, confirmation audit, and repeated-stream summary
+   serially through `scripts/run_generation_stage_once.py`, binding their
+   immutable manifests, source reports, real cache, output reports, generated
+   feature caches, worker sidecars, and restart receipts;
+7. closes normally for either a scientific `pass` or `hold`. Neither outcome
+   replaces FID or a promotion gate, authorizes training/full 300K/release, or
+   supports a broad generation-superiority claim.
+
+The waiter uses an OS-level output-root lock, atomic status JSON, and an active
+PID record. A duplicate waiter is rejected before any output or GPU work. A
+restart reuses only byte-identical completed stage receipts; failed or
+interrupted stage outputs are handled by the existing stage-once archive and
+recovery contract.
+
+Local validation after adding the waiter:
+
+```text
+36/36 matched-uncertainty + waiter tests passed
+97 passed, 1 skipped in the related uncertainty/stage-once/output-lock/
+metrics/supplemental/distribution-support suite
+Python compilation passed
+git diff --check passed
+```
+
+No remote output root, cache, report, checkout, or GPU process was created by
+the implementation and local validation work. Remote deployment remains a
+separate exact-revision step, and the active full-data 100K trainer retains the
+GPU until its own terminal evidence is complete.
