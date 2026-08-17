@@ -240,6 +240,9 @@ def test_capacity_pipeline_observer_is_read_only_and_non_signaling() -> None:
     assert "observe_generation_capacity_pipeline_lineage.py" in runbook
     assert "--recovery-supersession-contract" in runbook
     assert "--expected-recovery-supersession-contract-sha256" in runbook
+    assert "POLL_SECONDS=${POLL_SECONDS:-60}" in runbook
+    assert "STALE_SECONDS=${STALE_SECONDS:-600}" in runbook
+    assert '--stale-seconds "$STALE_SECONDS"' in runbook
     joined = runbook + observer
     assert "train_generation.py" not in joined
     assert "generate_samples.py" not in joined
