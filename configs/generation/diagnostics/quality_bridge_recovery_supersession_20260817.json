@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "role": "quality_bridge_recovery_supersession_contract",
+  "superseded_failure": {
+    "role": "cofitok_quality_bridge_100k_bounded_recovery_supervisor",
+    "detail_prefix": "nonretryable_recovery_controller_exit_1",
+    "source": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor_status.json",
+      "sha256": "035037c1e1c4cca78ebd0429c85218dce5ecf08435523ae3d89b6ee22e9e9a88"
+    }
+  },
+  "successor": {
+    "role": "cofitok_quality_bridge_100k_bounded_recovery_supervisor_v2",
+    "status_path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor_v2_status.json",
+    "deployment_receipt": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/recovery_incident_2026-08-17_pin_memory/recovery_supervisor_v2_deployment_receipt.json",
+      "sha256": "c20cf6193db929adbecd2dbe2822deb907f6aedfb29095175317524b1a6cc075"
+    }
+  },
+  "active_chain": {
+    "execution_status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/execution_status.json",
+    "pair_monitor_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/pair_monitor.json",
+    "watchdog_statuses": [
+      {
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_watchdog_step_00050000.json",
+        "target_step": 50000
+      },
+      {
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_watchdog_step_00100000.json",
+        "target_step": 100000
+      }
+    ]
+  },
+  "exact_resume": {
+    "run_manifest": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/run_manifest.json",
+      "sha256": "c81bc1f1b75b1e09f257ee8177b144e12832f305ccdefda8c0715f8e145a061b"
+    },
+    "reconciliation": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/metrics_resume_reconciliation_00020000_6b3c4bca8ffa.json",
+      "sha256": "dfe268c1defbaaa424cb93df108deb1421080f9568c47b02f1607568d6f57aca"
+    },
+    "resume_step": 20000,
+    "checkpoint_audit": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/checkpoint_audits/cofitok_checkpoint_step_00025000_physical_integrity_audit.json",
+      "sha256": "3b89622a286d5ef6b7244daa47a1866f272da447b564887ad477c53138a6d1f9"
+    },
+    "checkpoint_step": 25000
+  },
+  "expected_training": {
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+    "dataset_identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+    "effective_batch": 64
+  }
+}

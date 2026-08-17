@@ -20,6 +20,15 @@ TREE = "6" * 40
 BRANCH = "scale/generation-stability-quality-bridge-100k"
 DATASET = "d" * 64
 RUNTIME = "e" * 64
+ROOT = Path(__file__).resolve().parents[1]
+LIVE_CONTRACT = (
+    ROOT
+    / "configs/generation/diagnostics/"
+    "quality_bridge_recovery_supersession_20260817.json"
+)
+LIVE_CONTRACT_SHA256 = (
+    "28318ff89c009be65899117bbb9d45f533bc116f63b6bd335e21463818d5f609"
+)
 
 
 def _write(path: Path, payload: dict) -> None:
@@ -356,6 +365,38 @@ def _inspect(fixture: dict, *, alive: set[int] | None = None) -> dict:
         now=NOW,
         stale_seconds=240.0,
         process_exists=lambda pid: pid in live,
+    )
+
+
+def test_checked_in_recovery_supersession_contract_pins_live_evidence() -> None:
+    contract = load_recovery_supersession_contract(LIVE_CONTRACT)
+    assert contract["identity"]["sha256"] == LIVE_CONTRACT_SHA256
+    assert contract["superseded_failure"]["source"]["sha256"] == (
+        "035037c1e1c4cca78ebd0429c85218dce5ecf08435523ae3d89b6ee22e9e9a88"
+    )
+    assert contract["successor"]["deployment_receipt"]["sha256"] == (
+        "c20cf6193db929adbecd2dbe2822deb907f6aedfb29095175317524b1a6cc075"
+    )
+    assert contract["exact_resume"]["run_manifest"]["sha256"] == (
+        "c81bc1f1b75b1e09f257ee8177b144e12832f305ccdefda8c0715f8e145a061b"
+    )
+    assert contract["exact_resume"]["reconciliation"]["sha256"] == (
+        "dfe268c1defbaaa424cb93df108deb1421080f9568c47b02f1607568d6f57aca"
+    )
+    assert contract["exact_resume"]["checkpoint_audit"]["sha256"] == (
+        "3b89622a286d5ef6b7244daa47a1866f272da447b564887ad477c53138a6d1f9"
+    )
+    assert contract["exact_resume"]["resume_step"] == 20_000
+    assert contract["exact_resume"]["checkpoint_step"] == 25_000
+    assert [
+        row["target_step"]
+        for row in contract["active_chain"]["watchdog_statuses"]
+    ] == [50_000, 100_000]
+    assert contract["expected_training"]["dataset_identity_sha256"] == (
+        "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659"
+    )
+    assert contract["expected_training"]["runtime_environment_sha256"] == (
+        "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e"
     )
 
 

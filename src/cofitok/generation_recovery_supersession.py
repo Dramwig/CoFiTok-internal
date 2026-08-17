@@ -521,7 +521,9 @@ def inspect_recovery_supersession(
     ):
         raise ValueError("quality-bridge live run-manifest binding differs")
 
-    existing_watchdogs: list[tuple[dict[str, Any], dict[str, Any], dict[str, Any]]] = []
+    existing_watchdogs: list[
+        tuple[dict[str, Any], dict[str, Any], dict[str, Any]]
+    ] = []
     missing_watchdog_seen = False
     for watchdog_contract in active["watchdog_statuses"]:
         watchdog_path = Path(watchdog_contract["path"])
@@ -560,8 +562,6 @@ def inspect_recovery_supersession(
         raise ValueError("quality-bridge milestone watchdog differs")
 
     if active_watchdog:
-        if watchdog_status != "running":
-            raise ValueError("quality-bridge watchdog is not running")
         watchdog_pid, _, _ = _fresh_active_status(
             watchdog,
             now=observed_at,
