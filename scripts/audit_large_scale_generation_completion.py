@@ -24,7 +24,6 @@ from cofitok.generation.artifact import (
     verify_inference_export_manifest,
 )
 from cofitok.generation_authorization import validate_generation_gate_binding
-from cofitok.generation_cost import training_cost_summary
 from cofitok.gpu_contention import validate_gpu_contention_evidence
 from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.generation_gate_sources import verify_generation_gate_source_reports
@@ -152,6 +151,28 @@ def _gate_evidence(
     ):
         raise ValueError(f"{stage} gate source-report verification differs")
     evidence["source_reports"] = source_verification["source_reports"]
+    if int(gate.get("schema_version", 0) or 0) >= 6:
+        verified_adjustments = source_verification.get(
+            "resume_compute_adjustments"
+        )
+        training_costs = source_verification.get("training_costs")
+        if not isinstance(verified_adjustments, dict) or not isinstance(
+            training_costs, dict
+        ):
+            raise ValueError(
+                f"{stage} gate resume-compute source verification is incomplete"
+            )
+        identities = {
+            method: verification.get("identity")
+            for method, verification in verified_adjustments.items()
+            if isinstance(verification, dict)
+        }
+        if identities != gate.get("resume_compute_adjustments"):
+            raise ValueError(
+                f"{stage} gate resume-compute source identities differ"
+            )
+        evidence["resume_compute_adjustments"] = identities
+        evidence["training_costs"] = training_costs
     return evidence
 
 
@@ -1994,6 +2015,21 @@ def _comparison_evidence(
         or source_verification.get("source_reports") != report.get("source_reports")
     ):
         raise ValueError("comparison source-report verification differs")
+    source_training_costs = source_verification.get("training_costs")
+    if not isinstance(source_training_costs, dict):
+        raise ValueError("comparison source verification lacks training costs")
+    verified_adjustments = source_verification.get("resume_compute_adjustments")
+    if not isinstance(verified_adjustments, dict):
+        raise ValueError(
+            "comparison source verification lacks resume-compute adjustments"
+        )
+    verified_adjustment_identities = {
+        method: verification.get("identity")
+        for method, verification in verified_adjustments.items()
+        if isinstance(verification, dict)
+    }
+    if verified_adjustment_identities != report.get("resume_compute_adjustments"):
+        raise ValueError("comparison resume-compute source identities differ")
     training_contention = validate_gpu_contention_evidence(
         training_contention_report
     )
@@ -2065,9 +2101,12 @@ def _comparison_evidence(
         row = indexed[method]
         key = method_keys[method]
         training = training_reports[key]
-        cost = training_cost_summary(training)
+        cost = source_training_costs.get(key)
+        if not isinstance(cost, dict):
+            raise ValueError(f"comparison {method} verified training cost is missing")
         if cost["valid"] is not True:
             raise ValueError(f"comparison {method} source training cost is invalid")
+        adjustment = cost["resume_compute_adjustment"]
         if (
             row.get("comparison_tier") != "matched_training_direct"
             or row.get("directly_comparable_to_cofitok") is not True
@@ -2089,6 +2128,23 @@ def _comparison_evidence(
             is not training_contention["direct_comparison_allowed"]
             or row.get("training_wall_clock_comparison_reason")
             != training_contention["reason"]
+            or row.get("training_reported_elapsed_seconds")
+            != cost["reported_elapsed_seconds"]
+            or row.get("training_resume_compute_adjustment_seconds")
+            != adjustment["seconds"]
+            or row.get("training_resume_compute_adjustment_hours")
+            != adjustment["hours"]
+            or row.get("training_resume_compute_adjustment_event_count")
+            != adjustment["event_count"]
+            or row.get("training_orphaned_optimizer_steps_lower_bound")
+            != adjustment["orphaned_optimizer_steps_lower_bound"]
+            or row.get("training_orphaned_images_lower_bound")
+            != adjustment["orphaned_images_lower_bound"]
+            or row.get("training_elapsed_seconds") != cost["elapsed_seconds"]
+            or row.get("training_elapsed_seconds_role")
+            != cost["elapsed_seconds_role"]
+            or row.get("training_images_per_second")
+            != cost["images_per_second"]
         ):
             raise ValueError(f"comparison {method} matched protocol metadata differs")
         if row.get("checkpoint_sha256") != provenance.get("checkpoint_sha256"):

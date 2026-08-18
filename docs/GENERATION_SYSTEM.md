@@ -699,8 +699,18 @@ rows. It encodes the actual budget basis as matched optimizer steps and training
 images (plus dataset, resolution, and effective batch), while permanently
 setting equal wall-clock, GPU-hours, FLOPs, and generic compute-matched claims
 to false. Time, throughput, and peak VRAM are measured outcomes rather than
-pre-equalized budgets. The
-full paired-config preflight confirms 62,836,011 vs 62,824,707 parameters
+pre-equalized budgets. The full-data quality-bridge runtime/compute audit
+additionally binds recovery compute and the exact shared runtime configuration.
+Its legacy field `observed_pair_runtime_parity_established` must be interpreted
+only as configuration/steps/images parity, never as elapsed-time parity.
+Runtime claim language for that bridge is authoritative only after
+`generation_runtime_compute_claim_guard` binds the terminal audit to the
+terminal pair monitor's GPU-contention evidence. Incomplete or contended
+coverage forces wall-clock, throughput, and cost-efficiency claims to
+observational physical lower bounds; the raw fairness report must not be cited
+to bypass that guard. See
+`docs/records/2026-08-18_generation_quality_bridge_runtime_claim_guard_waiter.md`.
+The full paired-config preflight confirms 62,836,011 vs 62,824,707 parameters
 (+0.017993%). See
 `docs/records/2026-07-12_generation_matched_compute_accounting.md` and
 `docs/records/2026-08-02_generation_gpu_contention_provenance.md`; the explicit

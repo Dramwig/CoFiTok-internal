@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "role": "quality_bridge_runtime_claim_guard_waiter_deployment_evidence",
+  "status": "pass",
+  "date": "2026-08-18",
+  "control_git": {
+    "branch": "analysis/generation-quality-bridge-runtime-claim-guard-v1",
+    "revision": "6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46",
+    "tree": "bc41a4df45b83cef3c81cc63aad1668c49b85a75",
+    "tracked_dirty": false
+  },
+  "implementation": {
+    "builder": "scripts/build_generation_runtime_compute_claim_guard.py",
+    "waiter": "scripts/run_generation_quality_bridge_runtime_claim_guard_waiter.py",
+    "tests": "tests/test_generation_runtime_compute_claim_guard.py"
+  },
+  "bundle": {
+    "path": "/tmp/cofitok-runtime-claim-guard-6fdeebe-from-1ebcc.bundle",
+    "bytes": 40214926,
+    "sha256": "c0132b144a95df42b3820dbd08ae37d553909994eb8d200dfa69a789c117dd0e",
+    "advertised_head": "6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46",
+    "prerequisites": [
+      "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+      "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+    ],
+    "verified_against_formal_repository": true
+  },
+  "new_server_bundle_adjustment": {
+    "initial_incremental_bundle_bytes": 14407,
+    "initial_incremental_bundle_sha256": "efb6a0585578e63f5f6584606ca9a71ab1dc1efae17b228dde14e740b9235a7f",
+    "missing_prerequisite": "7b19e96eeef907e4c44ad859b401a444929c5e14",
+    "formal_repository_was_not_modified": true,
+    "resolution": "Rebuilt from prerequisites already present in the newly cloned formal repository."
+  },
+  "linux_rehearsal": {
+    "checkout": "/tmp/cofitok-runtime-claim-guard-rehearsal-6fdeebe/CoFiTok-internal",
+    "cuda_visible_devices": "",
+    "omp_num_threads": 1,
+    "mkl_num_threads": 1,
+    "related_tests_passed": 131,
+    "focused_tests_passed": 8,
+    "python_compile_passed": true,
+    "cli_help_passed_with_pythonpath_root_and_src": true,
+    "git_diff_check_passed": true,
+    "tracked_clean": true
+  },
+  "persistent_checkout": {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-runtime-claim-guard-6fdeebe/CoFiTok-internal",
+    "revision": "6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46",
+    "tree": "bc41a4df45b83cef3c81cc63aad1668c49b85a75",
+    "branch": "analysis/generation-quality-bridge-runtime-claim-guard-v1",
+    "tracked_dirty": false,
+    "git_fsck_passed": true
+  },
+  "source_runtime_fairness": {
+    "pid": 832803,
+    "deployment_receipt": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/runtime_compute_fairness/deployment_receipt.json",
+      "bytes": 4403,
+      "sha256": "f1e60458fac0e5c6145f8a872d5bcc9f382b4afc844b7fc11739942a074fc418"
+    },
+    "status_at_deployment": "waiting",
+    "detail_at_deployment": "waiting_for_both_exact_100k_training_reports"
+  },
+  "deployed_waiter": {
+    "pid": 912744,
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/runtime_compute_claim_guard_v1",
+    "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/runtime_compute_claim_guard_v1/waiter_status.json",
+    "guard_output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/runtime_compute_claim_guard_v1/runtime_compute_claim_guard.json",
+    "status_at_deployment": "waiting",
+    "detail_at_deployment": "waiting_for_runtime_fairness_source",
+    "deployment_receipt": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/runtime_compute_claim_guard_v1/deployment_receipt.json",
+      "bytes": 3186,
+      "sha256": "5909fda4073088aa6b8b52a6eaf5c1ca2c8481a1d9e11b837f1a10cf30a53098"
+    }
+  },
+  "claim_semantics": {
+    "runtime_configuration_parity_may_be_reported": true,
+    "physical_recovery_compute_accounting_may_be_reported": true,
+    "raw_observed_pair_runtime_parity_field_is_elapsed_parity": false,
+    "wall_clock_direct_comparison_requires_terminal_contention_pass": true,
+    "throughput_direct_comparison_requires_terminal_contention_pass": true,
+    "cost_efficiency_ranking_requires_terminal_contention_pass": true,
+    "equal_wall_clock_budget_claim_allowed": false,
+    "equal_gpu_hours_budget_claim_allowed": false,
+    "equal_flops_budget_claim_allowed": false,
+    "training_speed_advantage_predeclared": false,
+    "quality_claim_allowed": false
+  },
+  "live_training_at_deployment": {
+    "trainer_pid": 619775,
+    "cofitok_step": 38900,
+    "dense_step": 0,
+    "gpu_used_memory_mib": 85286,
+    "formal_checkout_revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "formal_checkout_branch": "scale/generative-system",
+    "formal_checkout_tracked_dirty": false
+  },
+  "scope": {
+    "cpu_only": true,
+    "gpu_execution_allowed": false,
+    "training_process_signals_allowed": false,
+    "unrelated_process_signals_allowed": false,
+    "source_waiter_signals_allowed": false,
+    "pair_monitor_signals_allowed": false,
+    "training_launch_allowed": false,
+    "sampling_launch_allowed": false,
+    "promotion_or_release_allowed": false,
+    "broad_generation_superiority_claim_allowed": false
+  }
+}

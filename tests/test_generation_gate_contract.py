@@ -45,6 +45,47 @@ from cofitok.training.checkpointing import (
 
 def _gate(stage: str = "scaling", *, source_profile: str | None = None) -> dict:
     full = stage == "full"
+    target_steps = 300_000 if full else 50_000
+    training_report = {
+        "config": {
+            "data": {"batch_size": 4},
+            "optimization": {"gradient_accumulation_steps": 2},
+            "runtime": {"device": "cuda"},
+        },
+        "target_steps": target_steps,
+        "final_metrics": {"samples_seen": target_steps * 8},
+        "elapsed_seconds": 1000.0,
+        "peak_vram_bytes": 1024,
+    }
+    training_cost = {
+        "valid": True,
+        "target_steps": target_steps,
+        "micro_batch_size": 4,
+        "gradient_accumulation_steps": 2,
+        "effective_batch_size": 8,
+        "expected_samples_seen": target_steps * 8,
+        "samples_seen": target_steps * 8,
+        "reported_elapsed_seconds": 1000.0,
+        "resume_compute_adjustment": {
+            "valid": True,
+            "required": False,
+            "provided": False,
+            "applied": False,
+            "seconds": 0.0,
+            "hours": 0.0,
+            "event_count": 0,
+            "orphaned_optimizer_steps_lower_bound": 0,
+            "orphaned_images_lower_bound": 0,
+            "discovered_orphan_archive_count": 0,
+            "covered_orphan_archive_count": 0,
+            "required_reasons": [],
+            "issues": [],
+        },
+        "elapsed_seconds": 1000.0,
+        "elapsed_seconds_role": "reported_training_elapsed_seconds",
+        "images_per_second": target_steps * 8 / 1000.0,
+        "peak_vram_bytes": 1024,
+    }
     summary = {
         "cofitok_fid": 19.5 if full else 90.0,
         "dense_fid": 19.0 if full else 89.0,
@@ -57,6 +98,8 @@ def _gate(stage: str = "scaling", *, source_profile: str | None = None) -> dict:
         "ordered_rank": 1,
         "order_count": 24,
         "coarse_token_energy_ratio": 0.06,
+        "cofitok_training_cost": copy.deepcopy(training_cost),
+        "dense_training_cost": copy.deepcopy(training_cost),
     }
     thresholds = {
         "min_samples": 50_000 if full else 10_000,
@@ -76,6 +119,11 @@ def _gate(stage: str = "scaling", *, source_profile: str | None = None) -> dict:
                 "cofitok_fid": summary["cofitok_fid"],
                 "dense_fid": summary["dense_fid"],
                 "max_regression": thresholds["max_fid_regression"],
+            }
+        if name == "training_cost_accounting":
+            return {
+                "cofitok": copy.deepcopy(training_cost),
+                "dense": copy.deepcopy(training_cost),
             }
         if name == "absolute_fid_quality":
             return {
@@ -170,6 +218,8 @@ def _gate(stage: str = "scaling", *, source_profile: str | None = None) -> dict:
             for name in sorted(required_gates)
         ],
         "summary": summary,
+        "resume_compute_adjustments": {},
+        "_test_training_report": training_report,
     }
     if source_profile is not None:
         gate["source_profile"] = source_profile
@@ -182,15 +232,18 @@ def _bind_gate_sources(gate: dict, tmp_path: Path) -> dict[str, Path]:
     for index, (name, suffix) in enumerate(GATE_SOURCE_SUFFIXES[stage].items()):
         path = tmp_path / suffix
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            json.dumps({"name": name, "index": index}),
-            encoding="utf-8",
+        payload = (
+            gate["_test_training_report"]
+            if name in {"cofitok_training", "dense_training"}
+            else {"name": name, "index": index}
         )
+        path.write_text(json.dumps(payload), encoding="utf-8")
         paths[name] = path
     gate["source_reports"] = build_generation_gate_source_reports(
         stage=stage,
         paths=paths,
     )
+    gate.pop("_test_training_report", None)
     return paths
 
 

@@ -48,6 +48,8 @@ export PYTHONPATH="$PROJECT:$PROJECT/src${PYTHONPATH:+:$PYTHONPATH}"
 [[ "$(git rev-parse HEAD)" == "$EXPECTED_TARGET_REVISION" ]]
 [[ "$(git branch --show-current)" == "$EXPECTED_TARGET_BRANCH" ]]
 [[ -z "$(git status --porcelain)" ]]
+source "$PROJECT/artifacts/runbooks/lib/generation_exact_runbook_identity.sh"
+cofitok_capture_runbook_monitor_identity "$PYTHON" "$PROJECT" "$$"
 [[ -f "$PREPARATION" ]]
 [[ -f "$QUALITY_BRIDGE_EXECUTION_APPROVAL" ]]
 [[ "$(sha256sum "$PREPARATION" | awk '{print $1}')" == "$EXPECTED_PREPARATION_SHA256" ]]
@@ -263,11 +265,16 @@ if not path.is_file():
     raise SystemExit(1)
 report = json.loads(path.read_text(encoding="utf-8"))
 git = report.get("git", {})
+identity = report.get("runbook_identity", {})
 if (
     report.get("monitor") != sys.argv[2]
     or report.get("status") != "pass"
     or report.get("stage") != "complete"
     or report.get("issues") != []
+    or identity.get("role") != "generation_exact_runbook_process_identity"
+    or identity.get("mode") != "exact_process_identity"
+    or identity.get("status") != "active"
+    or identity.get("mismatches") != []
     or git.get("revision") != sys.argv[3]
     or git.get("branch") != sys.argv[4]
     or git.get("tracked_dirty") is not False
@@ -298,7 +305,9 @@ start_monitor() {
         || "$existing_argv" != *"$EXPECTED_TARGET_REVISION"* \
         || "$existing_cwd" != "$PROJECT" \
         || ${#matching_monitor_pids[@]} -ne 1 \
-        || "${matching_monitor_pids[0]}" != "$existing_pid" ]]; then
+        || "${matching_monitor_pids[0]}" != "$existing_pid" ]] \
+        || ! cofitok_monitor_report_matches_bound_controller \
+          "$PYTHON" "$MONITOR_REPORT" "$MONITOR_NAME"; then
         printf 'quality bridge monitor PID file points to another process\n' >&2
         exit 13
       fi
@@ -319,6 +328,11 @@ start_monitor() {
     --expected-steps 100000 \
     --training-process-pattern '[s]cripts/train_generation.py.*stability_quality_bridge.*100k' \
     --runbook-process-pattern '[g]eneration_stability_full_data_quality_bridge_100k_execute.sh' \
+    --runbook-process-pid "$COFITOK_RUNBOOK_PROCESS_PID" \
+    --runbook-process-start-ticks "$COFITOK_RUNBOOK_PROCESS_START_TICKS" \
+    --runbook-process-executable "$COFITOK_RUNBOOK_PROCESS_EXECUTABLE" \
+    --runbook-process-cwd "$COFITOK_RUNBOOK_PROCESS_CWD" \
+    --runbook-process-cmdline-sha256 "$COFITOK_RUNBOOK_PROCESS_CMDLINE_SHA256" \
     --checkpoint-interval 5000 \
     --checkpoint-grace-steps 250 \
     --checkpoint-integrity-policy required \
@@ -348,6 +362,11 @@ snapshot_monitor() {
     --expected-steps 100000 \
     --training-process-pattern '[s]cripts/train_generation.py.*stability_quality_bridge.*100k' \
     --runbook-process-pattern '[g]eneration_stability_full_data_quality_bridge_100k_execute.sh' \
+    --runbook-process-pid "$COFITOK_RUNBOOK_PROCESS_PID" \
+    --runbook-process-start-ticks "$COFITOK_RUNBOOK_PROCESS_START_TICKS" \
+    --runbook-process-executable "$COFITOK_RUNBOOK_PROCESS_EXECUTABLE" \
+    --runbook-process-cwd "$COFITOK_RUNBOOK_PROCESS_CWD" \
+    --runbook-process-cmdline-sha256 "$COFITOK_RUNBOOK_PROCESS_CMDLINE_SHA256" \
     --checkpoint-interval 5000 \
     --checkpoint-grace-steps 250 \
     --checkpoint-integrity-policy required \

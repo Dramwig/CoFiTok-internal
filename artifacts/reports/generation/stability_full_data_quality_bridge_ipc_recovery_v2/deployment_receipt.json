@@ -1,0 +1,76 @@
+{
+  "authorization": {
+    "standing_authorization_path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/standing_authorization.json",
+    "standing_authorization_sha256": "5fe64a0941acb55a21cb6479a726987c6259e93a772c47290f2d6883752de4df"
+  },
+  "bundle": {
+    "advertised_head": "564b751b31e0a75fb5a8756d12325cdcc515c531",
+    "bytes": 13359,
+    "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/quality_bridge_ipc_recovery_v2.bundle",
+    "prerequisite": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "sha256": "b886d92ad9d0d2943aeb7555e73a36e3b8c4b7be5103aad81bf0cfbcc5ffeffa",
+    "verify_status": "pass"
+  },
+  "created_at": "2026-08-17T18:07:09+08:00",
+  "deployment": {
+    "deployed_source_bytes": 36799,
+    "deployed_source_path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor_v2.py",
+    "deployed_source_sha256": "bc920eacc7d95141396c4257fe537bd77ca8dec5e0a7d7337d064ddfb30c6447",
+    "incident_evidence_copy": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/recovery_incident_2026-08-17_pin_memory/recovery_supervisor_v2.py",
+    "pid_at_receipt": 630988,
+    "status_at_receipt": "observing",
+    "supervisor_attempt_at_receipt": 0
+  },
+  "formal_checkout_observation": {
+    "branch": "scale/generative-system",
+    "porcelain_count": 89,
+    "porcelain_sha256": "18e5981f22a2ac255c7f60343429daa6ceea86412b1d7bd09bc474f2faf74004",
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tracked_dirty": false
+  },
+  "git": {
+    "branch": "fix/quality-bridge-ipc-recovery-v2",
+    "code_commit": "c58a233148cbc1afa16c1144b852cea12307c0f5",
+    "deployment_evidence_commit": "2e32be2b2d1a56351e29bb3a5fe1eb212fa71c35",
+    "record_commit": "564b751b31e0a75fb5a8756d12325cdcc515c531",
+    "source_path": "scripts/run_generation_quality_bridge_ipc_recovery_supervisor_v2.py",
+    "training_parent": "cf0e5faa94bf4ab38d947b921935b3b765b5537a"
+  },
+  "remote_checkout": {
+    "branch": "fix/quality-bridge-ipc-recovery-v2",
+    "head": "564b751b31e0a75fb5a8756d12325cdcc515c531",
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-ipc-recovery-564b751",
+    "tracked_dirty": false
+  },
+  "role": "cofitok_quality_bridge_ipc_recovery_v2_deployment_receipt",
+  "runbook": {
+    "execution_approval_sha256": "e9da52a4e7ff1b4700b70aadaa8703ee40fb1a9862e847dcfb6e75933d295a4b",
+    "launch_receipt_sha256": "4a9fd8577c24a92583d9538846dcab35c2d73e6066d164050f49b976985a3a21",
+    "preparation_sha256": "7398d9a6f096ea9c178295c9016bb56fd38e28dff30f26662ae4225aded208ea",
+    "runbook_sha256": "f0531763b4b888964a75923a8d59cb8cf8d1c79bd7782f845006c39e1a57fe73"
+  },
+  "schema_version": 1,
+  "scope": {
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "quality_bridge_exact_resume_allowed": true,
+    "release_authorization_allowed": false,
+    "retryable_signature": "watchdog_child_failed_exit_1_and_exact_pin_memory_resource_sharer_filenotfound",
+    "unrelated_gpu_processes_must_not_be_signaled": true
+  },
+  "status": "pass",
+  "tests": {
+    "actual_incident_replay": "bounded_pin_memory_resource_sharer_failure",
+    "integrity_guard_replay": "exit_1_has_nontransient_monitor_issue",
+    "linux_py_compile": "pass",
+    "linux_self_test": "pass",
+    "linux_targeted_pytest": "5 passed",
+    "windows_targeted_pytest": "5 passed"
+  },
+  "training": {
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tree": "6cef27723196fd363379bca2e7b85b1678ebd777"
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "authorization_boundary": {
+    "active_monitor_replacement_allowed": false,
+    "checkpoint_payload_loading_allowed": false,
+    "diagnostic_non_authorizing": true,
+    "full_300k_launch_allowed": false,
+    "gpu_execution_allowed": false,
+    "process_signals_allowed": false,
+    "promotion_authorization_allowed": false,
+    "release_authorization_allowed": false,
+    "training_launch_allowed": false
+  },
+  "bundle": {
+    "advertised_revision": "261fbca92e6259b678b9f3fc498942695cefc763",
+    "bytes": 14548,
+    "local_archive": "C:/Users/17194/.codex/bundles/CoFiTok/exact_runbook_monitor_wiring_261fbca.bundle",
+    "prerequisite_revision": "ab2999d6e2fd8a6e4bacca1f8962469f5c778a06",
+    "remote_path": "/tmp/exact_runbook_monitor_wiring_261fbca.bundle",
+    "sha256": "061b37602797620a4aa95c803914ecda7afe5cc6fab650661f361a86d2dc5fa1",
+    "verification": "pass"
+  },
+  "created_at": "2026-08-18T10:03:45.3944263+08:00",
+  "git": {
+    "branch": "fix/generation-monitor-exact-runbook-identity-v1",
+    "revision": "261fbca92e6259b678b9f3fc498942695cefc763",
+    "subject": "Wire exact controller identity into matched runbooks",
+    "tracked_dirty": false,
+    "tree": "7a83ee671b2f8ef4da6b150c2534f598ee9e7697"
+  },
+  "live_proc_rehearsal": {
+    "captured_identity": {
+      "cmdline_sha256": "db131d99db4790229bcf9d178183cfe8b88aa65d06d7e961eed4a5802db1fa6e",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-monitor-runbook-wiring-261fbca/CoFiTok-internal",
+      "executable": "/usr/bin/bash",
+      "pid": 938958,
+      "start_ticks": 1666834224
+    },
+    "negative_case": {
+      "mutation": "expected start_ticks plus one",
+      "rejected": true
+    },
+    "positive_report_sha256": "47132195c1dbea45a1f10fa9ab154f2feee4487e002a583f8d337f645573da2d",
+    "status": "pass",
+    "temporary_reports_removed": true
+  },
+  "non_interference_snapshot": {
+    "active_controller_guard": {
+      "detail": "exact_bound_controller_identity_is_active",
+      "identity_loss_polls": 0,
+      "status": "observing"
+    },
+    "active_pair": {
+      "cofitok_step": 41050,
+      "dense_step": 0,
+      "issues": [],
+      "stage": "cofitok_training",
+      "status": "running"
+    },
+    "active_trainer": {
+      "gpu_memory_mib": 85286,
+      "pid": 619775
+    },
+    "checkpoint_50000_waiter": {
+      "detail": "checkpoint_missing",
+      "status": "waiting"
+    },
+    "formal_checkout_revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "prior_rehearsal_checkout_revision": "ab2999d6e2fd8a6e4bacca1f8962469f5c778a06"
+  },
+  "remote_checkout": {
+    "branch": "fix/generation-monitor-exact-runbook-identity-v1",
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-monitor-runbook-wiring-261fbca/CoFiTok-internal",
+    "revision": "261fbca92e6259b678b9f3fc498942695cefc763",
+    "tracked_dirty": false
+  },
+  "role": "generation_pair_monitor_exact_runbook_wiring_rehearsal_receipt",
+  "schema_version": 1,
+  "scope": {
+    "monitor_identity_mode": "exact_process_identity",
+    "runbooks": [
+      "artifacts/runbooks/generation_stability_ema_teacher_matched_50k_after_gate.sh",
+      "artifacts/runbooks/generation_stability_full_data_quality_bridge_100k_execute.sh",
+      "artifacts/runbooks/generation_stability_ema_teacher_full_matched_300k_after_gate.sh",
+      "artifacts/runbooks/generation_full_matched_300k_after_gate.sh"
+    ]
+  },
+  "status": "pass",
+  "validation": {
+    "bash_syntax": {
+      "local_git_bash": "pass",
+      "remote_native_linux": "pass"
+    },
+    "linux_full_suite": {
+      "correct_parent_layout": {
+        "passed": 1144,
+        "skipped": 2,
+        "status": "pass"
+      },
+      "first_isolated_layout": {
+        "failed": 4,
+        "failure_scope": "missing sibling paper directory only",
+        "passed": 1140,
+        "skipped": 2,
+        "status": "layout_incomplete"
+      },
+      "temporary_paper_link_removed": true
+    },
+    "python_compile": {
+      "local": "pass",
+      "remote": "pass"
+    },
+    "targeted_tests": {
+      "local": {
+        "passed": 62,
+        "skipped": 2,
+        "status": "pass"
+      },
+      "remote": {
+        "passed": 62,
+        "skipped": 2,
+        "status": "pass"
+      }
+    }
+  }
+}

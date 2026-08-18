@@ -410,7 +410,7 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     report = _report()
 
     assert report["status"] == "ready"
-    assert report["schema_version"] == 8
+    assert report["schema_version"] == 9
     assert report["source_reports"] == _source_reports()
     assert len(report["matched_training_rows"]) == 2
     assert len(report["official_context_rows"]) == 3
@@ -457,7 +457,7 @@ def test_comparison_separates_matched_and_official_protocols() -> None:
     assert "VRAM GiB" in render_markdown(report)
     assert "sample img/s" in render_markdown(report)
     assert "sample batch" in render_markdown(report)
-    assert "train h (raw)" in render_markdown(report)
+    assert "physical train h (LB)" in render_markdown(report)
     assert "not an equal wall-clock, GPU-hours, or FLOPs budget" in render_markdown(
         report
     )
@@ -482,7 +482,7 @@ def test_comparison_labels_contended_training_time_as_observational_only() -> No
     )
     assert report["training_budget_policy"]["cost_efficiency_ranking_allowed"] is False
     markdown = render_markdown(report)
-    assert "raw observations only" in markdown
+    assert "physical lower-bound observations" in markdown
     assert "external_gpu_contention_observed" in markdown
 
 
@@ -656,6 +656,7 @@ def test_comparison_accepts_stability_full_source_profile(tmp_path) -> None:
         source_reports[name] = source_report_identity(path)
 
     report = _report()
+    report["schema_version"] = 8
     report["source_profile"] = "stability_full"
     report["source_reports"] = source_reports
 

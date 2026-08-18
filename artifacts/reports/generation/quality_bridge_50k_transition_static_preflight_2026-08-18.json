@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "role": "quality_bridge_50k_transition_static_preflight",
+  "status": "pass",
+  "audited_at": "2026-08-18T03:28:20+08:00",
+  "scope": {
+    "read_only": true,
+    "cpu_only": true,
+    "checkpoint_payload_loading": false,
+    "gpu_execution": false,
+    "training_process_signals": false,
+    "unrelated_process_signals": false,
+    "promotion_authorization": false,
+    "release_authorization": false,
+    "full_300k_launch_authorization": false
+  },
+  "quality_bridge": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "git": {
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+      "branch": "scale/generation-stability-quality-bridge-100k",
+      "tracked_dirty": false
+    },
+    "pair_status": "running",
+    "pair_stage": "cofitok_training",
+    "issues": []
+  },
+  "training_health": {
+    "method": "cofitok",
+    "latest_step": 32650,
+    "latest_samples_seen": 2089600,
+    "target_step": 100000,
+    "recent_window": {
+      "first_step": 30100,
+      "last_step": 32650,
+      "row_count": 52,
+      "step_interval": 50,
+      "epsilon_mean": 0.027535962442365978,
+      "epsilon_min": 0.016526220366358757,
+      "epsilon_max": 0.034545853734016418,
+      "total_mean": 0.04910131980879949,
+      "grad_norm_max": 3.6201052665710449,
+      "last_ema_teacher_scale": 0.26499998569488525,
+      "finite_issues": 0,
+      "step_issues": 0,
+      "samples_seen_issues": 0,
+      "ema_teacher_schedule_issues": 0
+    },
+    "observed_rate": {
+      "window_steps": 2550,
+      "window_seconds": 7207.90794157982,
+      "seconds_per_step": 2.8266305653254196,
+      "estimated_hours_to_40k": 5.7710374042060648,
+      "estimated_40k_at": "2026-08-18T09:14:09+08:00"
+    }
+  },
+  "schedule_waiter": {
+    "pid": 816282,
+    "status": "waiting",
+    "detail": "transition_target_not_reached",
+    "target_step": 40000,
+    "first_active_step": 39500,
+    "minimum_active_rows": 11,
+    "timeout_seconds": 43200,
+    "source": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-ema-transition-2a80f6e/scripts/wait_generation_consistency_schedule_transition.py",
+      "bytes": 20796,
+      "sha256": "10c1676d0de5e7aaa94f428a65448ab78da7fdbdc7184a76de7278aaad6d9998"
+    },
+    "git": {
+      "revision": "2a80f6e55f71c9c25c405564bc4393bf06cb3154",
+      "tree": "60221d9e3ac5faf5f27fae555d2320048612f2a8"
+    }
+  },
+  "server_environment": {
+    "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+    "conda_initialization": "/root/miniconda3/etc/profile.d/conda.sh",
+    "python": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+    "python_version": "3.10.20",
+    "cuda_visible_devices_for_cli_preflight": "",
+    "available_storage_bytes": 325207347200
+  },
+  "runbooks": {
+    "quality_bridge": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/artifacts/runbooks/generation_stability_full_data_quality_bridge_100k_execute.sh",
+      "bytes": 27943,
+      "sha256": "f0531763b4b888964a75923a8d59cb8cf8d1c79bd7782f845006c39e1a57fe73",
+      "bash_syntax": "pass"
+    },
+    "milestone_evaluation": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/artifacts/runbooks/generation_full_milestone_eval.sh",
+      "bytes": 1889,
+      "sha256": "cf0f53c5c6bcfd7ca861e5f583b2d503213d633275b5751c7ba5964bd3a0cb56",
+      "bash_syntax": "pass"
+    },
+    "50k_order": [
+      "train CoFiTok to exact 50K and verify checkpoint",
+      "run CoFiTok 2,048-sample DDIM-50 milestone evaluation",
+      "train dense_identity to exact 50K and verify checkpoint",
+      "run dense_identity 2,048-sample DDIM-50 milestone evaluation",
+      "build and validate the paired 50K milestone report"
+    ]
+  },
+  "milestone_protocol": {
+    "samples_per_method": 2048,
+    "sample_steps": 50,
+    "guidance_scale": 1.5,
+    "batch_size": 32,
+    "weights": "ema",
+    "precision": "bf16",
+    "cofitok_prefix_budget": 8,
+    "dense_prefix_budget": 1,
+    "cofitok_random_order_diagnostics": 4,
+    "dense_random_order_diagnostics": 0,
+    "distribution_metrics_skip_prc": true
+  },
+  "data_and_cache": {
+    "validation_images": {
+      "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+      "file_count": 50000,
+      "bytes": 707180897
+    },
+    "inception_feature_cache": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/eval_cache/torch_fidelity/imagenet256_val_50k_torch_fidelity_v04__cofitok_19ace4e37bee2fca-inception-v3-compat-features-2048.pt",
+      "bytes": 409601577,
+      "expected_sha256": "20103588dca9ce47bfceef6b68b473fdf4be720f149d1b8bdd96341d27c10dcd",
+      "sha_source": "source-bound matched uncertainty waiter",
+      "presence_and_bytes_verified": true,
+      "payload_rehashed_during_this_preflight": false
+    }
+  },
+  "cli_preflight": {
+    "preflight_generation_sampling": "pass",
+    "evaluate_generation_checkpoint": "pass",
+    "generate_samples": "pass",
+    "evaluate_generation_metrics": "pass",
+    "evaluate_generation_class_fidelity": "pass",
+    "build_generation_milestone_report": "pass",
+    "validate_generation_milestone_report": "pass"
+  },
+  "downstream_orchestration": {
+    "matched_uncertainty": {
+      "status": "waiting",
+      "detail": "waiting_for_quality_bridge_terminal_result",
+      "gpu_compute_rows": []
+    },
+    "quality_bridge_followup_decision": {
+      "status": "waiting",
+      "detail": "waiting_for_quality_bridge_result",
+      "decision_exists": false
+    },
+    "capacity_pipeline": {
+      "lineage_observer_status": "running",
+      "lineage_issues": [],
+      "capacity_cofitok_run_dir_exists": false,
+      "capacity_dense_run_dir_exists": false,
+      "probe_or_larger_training_started": false
+    },
+    "only_gpu_compute_pid": 619775,
+    "only_gpu_compute_role": "active base128 CoFiTok trainer",
+    "only_gpu_compute_memory_mib": 85284,
+    "unrelated_gpu_processes": []
+  },
+  "decision": {
+    "50k_environment_preflight": "pass",
+    "40k_schedule_evidence": "pending_target_step",
+    "50k_checkpoint_evidence": "pending_target_step",
+    "50k_sample_quality": "pending_target_step",
+    "dense_observed_runtime": "pending_dense_start"
+  },
+  "claim_boundary": {
+    "environment_readiness_established": true,
+    "active_training_health_at_boundary_established": true,
+    "40k_schedule_transition_established": false,
+    "50k_checkpoint_integrity_established": false,
+    "50k_sample_quality_established": false,
+    "broad_generation_superiority_claim_allowed": false,
+    "promotion_authorization_allowed": false,
+    "release_authorization_allowed": false,
+    "full_300k_launch_allowed": false
+  }
+}

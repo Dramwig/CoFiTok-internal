@@ -12,7 +12,13 @@ from cofitok.generation import sampling_protocol_contract
 from cofitok.generation_class_fidelity import (
     validate_class_fidelity_qualification,
 )
-from cofitok.generation_cost import training_cost_summary
+from cofitok.generation_cost import (
+    RESUME_COMPUTE_ADJUSTMENT_METHODS,
+    resume_compute_adjustment_source_identity,
+    training_cost_summary,
+    validate_resume_compute_adjustment_source_identities,
+    verify_resume_compute_adjustment_source,
+)
 from cofitok.gpu_contention import validate_gpu_contention_evidence
 from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
 from cofitok.reporting import file_sha256, write_json_report, write_text_report
@@ -20,7 +26,7 @@ from cofitok.reporting import file_sha256, write_json_report, write_text_report
 
 EXTERNAL_ALIASES = {"d_ar", "mar", "retok"}
 EXTERNAL_METHODS = {"d_ar": "D-AR", "mar": "MAR", "retok": "ReTok"}
-COMPARISON_REPORT_SCHEMA_VERSION = 8
+COMPARISON_REPORT_SCHEMA_VERSION = 9
 MATCHED_TRAINING_BUDGET_BASIS = "matched_steps_and_training_images"
 MATCHED_TRAINING_PROTOCOL_NOTE = (
     "Matched dataset, resolution, shared backbone contract, optimizer schedule, "
@@ -145,6 +151,19 @@ def _validate_source_report_identities(
             raise ValueError(f"comparison source-report identity is invalid: {name}")
 
 
+def resume_compute_adjustment_identities(
+    paths: dict[str, str | Path],
+) -> dict[str, dict[str, Any]]:
+    if not set(paths).issubset(RESUME_COMPUTE_ADJUSTMENT_METHODS):
+        raise ValueError("comparison resume-compute methods are invalid")
+    identities = {
+        method: resume_compute_adjustment_source_identity(path)
+        for method, path in paths.items()
+    }
+    validate_resume_compute_adjustment_source_identities(identities)
+    return identities
+
+
 def verify_comparison_source_reports(report: dict[str, Any]) -> dict[str, Any]:
     source_reports = report.get("source_reports")
     if not isinstance(source_reports, dict):
@@ -160,11 +179,90 @@ def verify_comparison_source_reports(report: dict[str, Any]) -> dict[str, Any]:
         if actual != expected:
             raise ValueError(f"comparison source report changed after binding: {name}")
         verified[name] = actual
-    return {
+    result = {
         "status": "verified",
         "source_profile": source_profile,
         "source_reports": verified,
     }
+    if int(report.get("schema_version", 0) or 0) >= 9:
+        adjustments = report.get("resume_compute_adjustments")
+        if not isinstance(adjustments, dict):
+            raise ValueError(
+                "comparison resume-compute adjustment bindings are missing"
+            )
+        validate_resume_compute_adjustment_source_identities(adjustments)
+        final_gate = _read(verified["final_gate"]["path"])
+        if final_gate.get("resume_compute_adjustments", {}) != adjustments:
+            raise ValueError(
+                "comparison resume-compute bindings differ from the final gate"
+            )
+        training_reports = {
+            "cofitok": _read(verified["cofitok_training"]["path"]),
+            "dense_identity": _read(verified["dense_training"]["path"]),
+        }
+        verified_adjustments: dict[str, dict[str, Any]] = {}
+        training_costs: dict[str, dict[str, Any]] = {}
+        for method, training_report in training_reports.items():
+            identity = adjustments.get(method)
+            if identity is None:
+                cost = training_cost_summary(training_report)
+                if cost["valid"] is not True:
+                    raise ValueError(
+                        f"comparison {method} training cost requires a "
+                        "resume-compute adjustment"
+                    )
+            else:
+                verification = verify_resume_compute_adjustment_source(
+                    identity,
+                    method=method,
+                    training_report=training_report,
+                )
+                verified_adjustments[method] = verification
+                cost = verification["training_cost"]
+            training_costs[method] = cost
+        rows = report.get("matched_training_rows")
+        if not isinstance(rows, list):
+            raise ValueError("comparison matched training rows are malformed")
+        indexed = {
+            row.get("method"): row for row in rows if isinstance(row, dict)
+        }
+        for row_name, method in (
+            ("CoFiTok K=8", "cofitok"),
+            ("Dense identity", "dense_identity"),
+        ):
+            row = indexed.get(row_name)
+            cost = training_costs[method]
+            adjustment = cost["resume_compute_adjustment"]
+            expected_fields = {
+                "training_reported_elapsed_seconds": cost[
+                    "reported_elapsed_seconds"
+                ],
+                "training_resume_compute_adjustment_seconds": adjustment[
+                    "seconds"
+                ],
+                "training_resume_compute_adjustment_hours": adjustment["hours"],
+                "training_resume_compute_adjustment_event_count": adjustment[
+                    "event_count"
+                ],
+                "training_orphaned_optimizer_steps_lower_bound": adjustment[
+                    "orphaned_optimizer_steps_lower_bound"
+                ],
+                "training_orphaned_images_lower_bound": adjustment[
+                    "orphaned_images_lower_bound"
+                ],
+                "training_elapsed_seconds": cost["elapsed_seconds"],
+                "training_elapsed_seconds_role": cost["elapsed_seconds_role"],
+                "training_images_per_second": cost["images_per_second"],
+            }
+            if not isinstance(row, dict) or any(
+                row.get(field) != value for field, value in expected_fields.items()
+            ):
+                raise ValueError(
+                    f"comparison {row_name} training cost differs from physical sources"
+                )
+        result["resume_compute_adjustments"] = verified_adjustments
+        result["training_costs"] = training_costs
+    return result
 
 
 def _finite_metric(report: dict[str, Any], key: str) -> float:
@@ -197,6 +295,7 @@ def _matched_row(
     generation: dict[str, Any],
     training_contention: dict[str, Any],
     class_fidelity_metrics: dict[str, Any] | None = None,
+    resume_compute_adjustment: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     provenance = generation["sample_provenance"]
     sampling = provenance["sampling"]
@@ -215,7 +314,7 @@ def _matched_row(
         raise ValueError(f"{method} real-set provenance is invalid")
     if len(evaluator_environment_sha) != 64:
         raise ValueError(f"{method} evaluator environment SHA256 is malformed")
-    training_cost = training_cost_summary(training)
+    training_cost = training_cost_summary(training, resume_compute_adjustment)
     if training_cost["valid"] is not True:
         raise ValueError(f"{method} training cost accounting is invalid")
     sampling_elapsed_seconds = float(sampling_progress["cumulative_elapsed_seconds"])
@@ -238,7 +337,26 @@ def _matched_row(
         "parameter_count": int(training["parameter_count"]),
         "effective_batch_size": training_cost["effective_batch_size"],
         "training_images_seen": training_cost["samples_seen"],
+        "training_reported_elapsed_seconds": training_cost[
+            "reported_elapsed_seconds"
+        ],
+        "training_resume_compute_adjustment_seconds": training_cost[
+            "resume_compute_adjustment"
+        ]["seconds"],
+        "training_resume_compute_adjustment_hours": training_cost[
+            "resume_compute_adjustment"
+        ]["hours"],
+        "training_resume_compute_adjustment_event_count": training_cost[
+            "resume_compute_adjustment"
+        ]["event_count"],
+        "training_orphaned_optimizer_steps_lower_bound": training_cost[
+            "resume_compute_adjustment"
+        ]["orphaned_optimizer_steps_lower_bound"],
+        "training_orphaned_images_lower_bound": training_cost[
+            "resume_compute_adjustment"
+        ]["orphaned_images_lower_bound"],
         "training_elapsed_seconds": training_cost["elapsed_seconds"],
+        "training_elapsed_seconds_role": training_cost["elapsed_seconds_role"],
         "training_images_per_second": training_cost["images_per_second"],
         "training_time_measurement": training_contention["measurement"],
         "training_budget_basis": MATCHED_TRAINING_BUDGET_BASIS,
@@ -429,6 +547,9 @@ def build_report(
     official_source_sha256: str,
     source_reports: dict[str, dict[str, Any]],
     source_profile: str = "full",
+    cofitok_resume_compute_adjustment: dict[str, Any] | None = None,
+    dense_resume_compute_adjustment: dict[str, Any] | None = None,
+    resume_compute_adjustments: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     if len(official_source_sha256) != 64:
         raise ValueError("official related-method source SHA256 is malformed")
@@ -438,6 +559,24 @@ def build_report(
         source_reports,
         source_profile=source_profile,
     )
+    adjustment_identities = resume_compute_adjustments or {}
+    validate_resume_compute_adjustment_source_identities(adjustment_identities)
+    provided_adjustment_methods = {
+        method
+        for method, adjustment in (
+            ("cofitok", cofitok_resume_compute_adjustment),
+            ("dense_identity", dense_resume_compute_adjustment),
+        )
+        if adjustment is not None
+    }
+    if set(adjustment_identities) != provided_adjustment_methods:
+        raise ValueError(
+            "comparison resume-compute payloads and source bindings differ"
+        )
+    if final_gate.get("resume_compute_adjustments", {}) != adjustment_identities:
+        raise ValueError(
+            "comparison resume-compute bindings differ from the final gate"
+        )
     contention = validate_gpu_contention_evidence(training_contention)
     class_fidelity = None
     if class_fidelity_qualification is not None:
@@ -503,6 +642,7 @@ def build_report(
                 if class_fidelity is not None
                 else None
             ),
+            cofitok_resume_compute_adjustment,
         ),
         _matched_row(
             "Dense identity",
@@ -514,6 +654,7 @@ def build_report(
                 if class_fidelity is not None
                 else None
             ),
+            dense_resume_compute_adjustment,
         ),
     ]
     if matched[0]["evaluator"] != matched[1]["evaluator"]:
@@ -635,6 +776,7 @@ def build_report(
             "schema_version": official_related.get("schema_version"),
         },
         "source_reports": source_reports,
+        "resume_compute_adjustments": adjustment_identities,
         "training_contention": contention,
         "class_fidelity": (
             {
@@ -685,17 +827,23 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "## Matched steps/images training (direct quality comparison)",
         "",
-        "| method | params | steps | eff. batch | train images | train h (raw) | train img/s (raw) | VRAM GiB | samples | sample batch | sample h | sample img/s | FID | IS | precision | recall | class top-1 | class top-5 | class coverage | class entropy |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| method | params | steps | eff. batch | train images | reported train h | recovery h | physical train h (LB) | physical img/s (LB) | VRAM GiB | samples | sample batch | sample h | sample img/s | FID | IS | precision | recall | class top-1 | class top-5 | class coverage | class entropy |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
     for row in report["matched_training_rows"]:
         lines.append(
-            "| {method} | {params} | {steps} | {batch} | {train_images} | {hours} | {throughput} | {vram} | {samples} | {sample_batch} | {sample_hours} | {sample_throughput} | {fid} | {iscore} | {precision} | {recall} | {class_top1} | {class_top5} | {class_coverage} | {class_entropy} |".format(
+            "| {method} | {params} | {steps} | {batch} | {train_images} | {reported_hours} | {recovery_hours} | {hours} | {throughput} | {vram} | {samples} | {sample_batch} | {sample_hours} | {sample_throughput} | {fid} | {iscore} | {precision} | {recall} | {class_top1} | {class_top5} | {class_coverage} | {class_entropy} |".format(
                 method=row["method"],
                 params=row["parameter_count"],
                 steps=row["training_steps"],
                 batch=row["effective_batch_size"],
                 train_images=row["training_images_seen"],
+                reported_hours=_fmt(
+                    row["training_reported_elapsed_seconds"] / 3600.0
+                ),
+                recovery_hours=_fmt(
+                    row["training_resume_compute_adjustment_hours"]
+                ),
                 hours=_fmt(row["training_elapsed_seconds"] / 3600.0),
                 throughput=_fmt(row["training_images_per_second"]),
                 vram=_fmt(row["peak_vram_bytes"] / (1024**3)),
@@ -729,7 +877,8 @@ def render_markdown(report: dict[str, Any]) -> str:
                     "training_wall_clock_direct_comparison_allowed"
                 ]
                 else (
-                    "Training wall-clock and throughput are raw observations only; "
+                    "Training wall-clock and throughput are physical lower-bound "
+                    "observations (including bound recovery compute) only; "
                     "do not interpret them as a model-efficiency ranking "
                     f"(`{report['comparison_policy']['training_wall_clock_comparison_reason']}`)."
                 )
@@ -774,7 +923,14 @@ def render_csv(report: dict[str, Any]) -> str:
         "training_steps",
         "effective_batch_size",
         "training_images_seen",
+        "training_reported_elapsed_seconds",
+        "training_resume_compute_adjustment_seconds",
+        "training_resume_compute_adjustment_hours",
+        "training_resume_compute_adjustment_event_count",
+        "training_orphaned_optimizer_steps_lower_bound",
+        "training_orphaned_images_lower_bound",
         "training_elapsed_seconds",
+        "training_elapsed_seconds_role",
         "training_images_per_second",
         "training_time_measurement",
         "training_budget_basis",
@@ -835,6 +991,8 @@ def main() -> None:
     parser.add_argument("--cofitok-generation", required=True)
     parser.add_argument("--dense-generation", required=True)
     parser.add_argument("--final-gate", required=True)
+    parser.add_argument("--cofitok-resume-compute-adjustment")
+    parser.add_argument("--dense-resume-compute-adjustment")
     parser.add_argument("--class-fidelity-qualification")
     parser.add_argument("--official-related", required=True)
     parser.add_argument("--training-contention", required=True)
@@ -869,6 +1027,16 @@ def main() -> None:
         raise ValueError(
             "stability-full comparison requires --class-fidelity-qualification"
         )
+    adjustment_paths = {}
+    if args.cofitok_resume_compute_adjustment:
+        adjustment_paths["cofitok"] = Path(
+            args.cofitok_resume_compute_adjustment
+        )
+    if args.dense_resume_compute_adjustment:
+        adjustment_paths["dense_identity"] = Path(
+            args.dense_resume_compute_adjustment
+        )
+    adjustment_identities = resume_compute_adjustment_identities(adjustment_paths)
     report = build_report(
         cofitok_training=_read(source_paths["cofitok_training"]),
         dense_training=_read(source_paths["dense_training"]),
@@ -888,6 +1056,17 @@ def main() -> None:
             name: source_report_identity(path) for name, path in source_paths.items()
         },
         source_profile=args.source_profile,
+        cofitok_resume_compute_adjustment=(
+            _read(args.cofitok_resume_compute_adjustment)
+            if args.cofitok_resume_compute_adjustment
+            else None
+        ),
+        dense_resume_compute_adjustment=(
+            _read(args.dense_resume_compute_adjustment)
+            if args.dense_resume_compute_adjustment
+            else None
+        ),
+        resume_compute_adjustments=adjustment_identities,
     )
     output_dir = Path(args.output_dir)
     write_json_report(output_dir / "large_scale_generation_comparison.json", report)

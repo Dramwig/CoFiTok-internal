@@ -32,6 +32,7 @@ from cofitok.generation_gate import (
     GENERATION_GATE_SCHEMA_VERSION,
     REQUIRED_GENERATION_GATES,
 )
+from cofitok.generation_cost import training_cost_summary
 from cofitok.generation_gate_sources import (
     GATE_SOURCE_SUFFIXES,
     build_generation_gate_source_reports,
@@ -75,7 +76,24 @@ def _training_authorization(tmp_path) -> dict:
     }
 
 
+def _gate_training_report() -> dict:
+    return {
+        "target_steps": 300_000,
+        "completed_steps": 300_000,
+        "config": {
+            "data": {"batch_size": 16},
+            "optimization": {"gradient_accumulation_steps": 4},
+            "runtime": {"device": "cuda"},
+        },
+        "final_metrics": {"samples_seen": 19_200_000},
+        "elapsed_seconds": 100_000.0,
+        "peak_vram_bytes": 24 * 1024**3,
+    }
+
+
 def _full_gate() -> dict:
+    cofitok_training_cost = training_cost_summary(_gate_training_report())
+    dense_training_cost = training_cost_summary(_gate_training_report())
     summary = {
         "cofitok_fid": 19.5,
         "dense_fid": 19.0,
@@ -88,6 +106,8 @@ def _full_gate() -> dict:
         "ordered_rank": 1,
         "order_count": 24,
         "coarse_token_energy_ratio": 0.06,
+        "cofitok_training_cost": cofitok_training_cost,
+        "dense_training_cost": dense_training_cost,
     }
     thresholds = {
         "min_samples": 50_000,
@@ -162,6 +182,11 @@ def _full_gate() -> dict:
                     )
                 },
             }
+        if name == "training_cost_accounting":
+            return {
+                "cofitok": cofitok_training_cost,
+                "dense": dense_training_cost,
+            }
         return {}
 
     return {
@@ -169,6 +194,7 @@ def _full_gate() -> dict:
         "stage": "full",
         "status": "pass",
         "decision": "large_scale_generation_ready",
+        "resume_compute_adjustments": {},
         "thresholds": thresholds,
         "gates": [
             {"name": name, "passed": True, "evidence": evidence(name)}
@@ -184,8 +210,13 @@ def _release_gate_path(tmp_path):
     for index, (name, suffix) in enumerate(GATE_SOURCE_SUFFIXES["full"].items()):
         path = tmp_path / suffix
         path.parent.mkdir(parents=True, exist_ok=True)
+        payload = (
+            _gate_training_report()
+            if name in {"cofitok_training", "dense_training"}
+            else {"name": name, "index": index}
+        )
         path.write_text(
-            json.dumps({"name": name, "index": index}),
+            json.dumps(payload),
             encoding="utf-8",
         )
         paths[name] = path

@@ -8,9 +8,12 @@ from typing import Any
 from cofitok.generation_class_fidelity import (
     validate_class_fidelity_qualification,
 )
+from cofitok.generation_cost import (
+    validate_resume_compute_adjustment_source_identities,
+)
 
-GENERATION_GATE_SCHEMA_VERSION = 5
-SUPPORTED_GENERATION_GATE_SCHEMA_VERSIONS = frozenset({2, 3, 4, 5})
+GENERATION_GATE_SCHEMA_VERSION = 6
+SUPPORTED_GENERATION_GATE_SCHEMA_VERSIONS = frozenset({2, 3, 4, 5, 6})
 
 _STAGE_DECISIONS = {
     "scaling": "promote_to_full_imagenet256",
@@ -244,6 +247,65 @@ def _validate_scientific_gate_evidence(
         right_value = _finite_number(right, name=name)
         if not math.isclose(left_value, right_value, rel_tol=0.0, abs_tol=1e-12):
             raise ValueError(f"generation gate {name} evidence differs from its summary")
+
+    if schema_version >= 6:
+        adjustments = gate.get("resume_compute_adjustments")
+        if not isinstance(adjustments, dict):
+            raise ValueError(
+                "generation gate resume-compute adjustment bindings are missing"
+            )
+        validate_resume_compute_adjustment_source_identities(adjustments)
+        cost_evidence = evidence("training_cost_accounting")
+        for evidence_name, summary_name, adjustment_method in (
+            ("cofitok", "cofitok_training_cost", "cofitok"),
+            ("dense", "dense_training_cost", "dense_identity"),
+        ):
+            cost = cost_evidence.get(evidence_name)
+            if not isinstance(cost, dict) or cost != summary.get(summary_name):
+                raise ValueError(
+                    f"generation gate {evidence_name} training cost differs from summary"
+                )
+            adjustment = cost.get("resume_compute_adjustment")
+            adjustment = adjustment if isinstance(adjustment, dict) else {}
+            applied = adjustment.get("applied") is True
+            reported_elapsed = _finite_number(
+                cost.get("reported_elapsed_seconds"),
+                name=f"{evidence_name} reported training elapsed",
+            )
+            adjusted_elapsed = _finite_number(
+                cost.get("elapsed_seconds"),
+                name=f"{evidence_name} adjusted training elapsed",
+            )
+            if (
+                cost.get("valid") is not True
+                or reported_elapsed <= 0.0
+                or adjusted_elapsed < reported_elapsed
+                or int(cost.get("samples_seen", -1))
+                != int(cost.get("expected_samples_seen", -2))
+                or adjustment.get("valid") is not True
+                or adjustment.get("provided") is not applied
+                or (adjustment_method in adjustments) is not applied
+                or (
+                    applied
+                    and (
+                        _finite_number(
+                            adjustment.get("seconds"),
+                            name=f"{evidence_name} recovery adjustment seconds",
+                        )
+                        <= 0.0
+                        or cost.get("elapsed_seconds_role")
+                        != "physical_lower_bound_including_orphaned_recovery_compute"
+                    )
+                )
+                or (
+                    not applied
+                    and cost.get("elapsed_seconds_role")
+                    != "reported_training_elapsed_seconds"
+                )
+            ):
+                raise ValueError(
+                    f"generation gate {evidence_name} training cost is invalid"
+                )
 
     fid = evidence("fid_within_tolerance")
     require_same("cofitok_fid", fid.get("cofitok_fid"), summary.get("cofitok_fid"))

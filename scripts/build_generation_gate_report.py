@@ -16,6 +16,7 @@ from cofitok.generation_gate import GENERATION_GATE_SCHEMA_VERSION
 from cofitok.generation_gate_sources import (
     GATE_SOURCE_SUFFIXES,
     build_generation_gate_diagnostic_reports,
+    build_generation_gate_resume_compute_adjustments,
     build_generation_gate_source_reports,
 )
 from cofitok.generation_pair import generation_pair_contract
@@ -31,6 +32,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dense-generation", required=True)
     parser.add_argument("--cofitok-checkpoint-eval", required=True)
     parser.add_argument("--dense-checkpoint-eval", required=True)
+    parser.add_argument(
+        "--cofitok-resume-compute-adjustment",
+        help=(
+            "Optional source-bound accounting report for physical compute "
+            "orphaned by a CoFiTok exact-resume rollback."
+        ),
+    )
+    parser.add_argument(
+        "--dense-resume-compute-adjustment",
+        help=(
+            "Optional source-bound accounting report for physical compute "
+            "orphaned by a dense exact-resume rollback."
+        ),
+    )
     parser.add_argument(
         "--rollout-stability-qualification",
         help=(
@@ -412,6 +427,8 @@ def build_report(
     expected_training_branch: str = "scale/generative-system",
     expected_evaluation_revision: str | None = None,
     expected_evaluation_branch: str = "scale/generative-system",
+    cofitok_resume_compute_adjustment: dict[str, Any] | None = None,
+    dense_resume_compute_adjustment: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if stage not in {"scaling", "full"}:
         raise ValueError("stage must be scaling or full")
@@ -541,8 +558,14 @@ def build_report(
             )
         )
 
-    cofitok_cost = training_cost_summary(cofitok_training)
-    dense_cost = training_cost_summary(dense_training)
+    cofitok_cost = training_cost_summary(
+        cofitok_training,
+        cofitok_resume_compute_adjustment,
+    )
+    dense_cost = training_cost_summary(
+        dense_training,
+        dense_resume_compute_adjustment,
+    )
     pair_contract = generation_pair_contract(
         cofitok_training["config"], dense_training["config"]
     )
@@ -1019,6 +1042,7 @@ def build_report(
             "evaluation_revision": required_evaluation_revision,
             "evaluation_branch": expected_evaluation_branch,
         },
+        "resume_compute_adjustments": {},
         "thresholds": {
             "min_samples": min_samples,
             "max_fid_regression": max_fid_regression,
@@ -1099,6 +1123,16 @@ def main() -> None:
         expected_training_branch=args.expected_training_branch,
         expected_evaluation_revision=args.expected_evaluation_revision,
         expected_evaluation_branch=args.expected_evaluation_branch,
+        cofitok_resume_compute_adjustment=(
+            _read(args.cofitok_resume_compute_adjustment)
+            if args.cofitok_resume_compute_adjustment
+            else None
+        ),
+        dense_resume_compute_adjustment=(
+            _read(args.dense_resume_compute_adjustment)
+            if args.dense_resume_compute_adjustment
+            else None
+        ),
     )
     report["source_reports"] = build_generation_gate_source_reports(
         stage=args.stage,
@@ -1113,6 +1147,14 @@ def main() -> None:
         },
     )
     report["source_profile"] = source_profile
+    adjustment_paths = {}
+    if args.cofitok_resume_compute_adjustment:
+        adjustment_paths["cofitok"] = args.cofitok_resume_compute_adjustment
+    if args.dense_resume_compute_adjustment:
+        adjustment_paths["dense_identity"] = args.dense_resume_compute_adjustment
+    report["resume_compute_adjustments"] = (
+        build_generation_gate_resume_compute_adjustments(adjustment_paths)
+    )
     if args.rollout_stability_qualification:
         if report["source_profile"] not in stability_profiles:
             raise ValueError(
