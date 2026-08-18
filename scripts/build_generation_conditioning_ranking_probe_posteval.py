@@ -500,6 +500,11 @@ def _validate_sensitivity_reports(
     reports: Mapping[str, Mapping[str, Any]],
     training_contract: Mapping[str, Any],
     evaluator_git: Mapping[str, Any],
+    expected_request: Mapping[str, Any] = EXPECTED_REQUEST,
+    expected_dataset: str = EXPECTED_DATASET,
+    expected_num_classes: int = EXPECTED_NUM_CLASSES,
+    expected_steps: int = EXPECTED_STEPS,
+    expected_checkpoint_filename: str = "checkpoint_step_00001000.pt",
 ) -> dict[str, Any]:
     if set(reports) != set(RUN_NAMES):
         raise ValueError("Four-arm sensitivity reports are incomplete")
@@ -510,7 +515,7 @@ def _validate_sensitivity_reports(
         report = reports[run]
         if (
             report.get("git") != evaluator_git
-            or report.get("request") != EXPECTED_REQUEST
+            or report.get("request") != expected_request
             or report.get("weights") != "ema"
             or report.get("claim_boundary") != SENSITIVITY_CLAIM_BOUNDARY
         ):
@@ -519,7 +524,7 @@ def _validate_sensitivity_reports(
         if (
             not isinstance(runtime, Mapping)
             or runtime.get("device") != "cpu"
-            or int(runtime.get("threads", -1)) != EXPECTED_REQUEST["threads"]
+            or int(runtime.get("threads", -1)) != expected_request["threads"]
             or not math.isfinite(float(runtime.get("elapsed_seconds", math.nan)))
             or float(runtime["elapsed_seconds"]) <= 0.0
         ):
@@ -528,7 +533,7 @@ def _validate_sensitivity_reports(
         dataset_contract = training_contract["runs"][run]["dataset_contract"]
         if (
             not isinstance(dataset, Mapping)
-            or dataset.get("alias") != EXPECTED_DATASET
+            or dataset.get("alias") != expected_dataset
             or dataset.get("alias") != dataset_contract["alias"]
             or dataset.get("root") != dataset_contract["root"]
         ):
@@ -540,12 +545,12 @@ def _validate_sensitivity_reports(
             or int(label_map.get("bytes", 0)) <= 0
             or not _is_sha256(label_map.get("sha256"))
             or not isinstance(samples, list)
-            or len(samples) != EXPECTED_REQUEST["num_samples"]
+            or len(samples) != expected_request["num_samples"]
         ):
             raise ValueError(f"{run} sensitivity dataset identity is malformed")
         expected_sample_metadata: dict[int, dict[str, Any]] = {}
         for sample_index, sample in enumerate(samples):
-            expected_label = EXPECTED_REQUEST["start_label"] + sample_index
+            expected_label = expected_request["start_label"] + sample_index
             image = sample.get("image") if isinstance(sample, Mapping) else None
             if (
                 not isinstance(sample, Mapping)
@@ -561,11 +566,11 @@ def _validate_sensitivity_reports(
                 "correct_label": expected_label,
                 "correct_wnid": sample["wnid"],
                 "wrong_label": (
-                    expected_label + EXPECTED_REQUEST["wrong_label_offset"]
+                    expected_label + expected_request["wrong_label_offset"]
                 )
-                % EXPECTED_NUM_CLASSES,
-                "null_label": EXPECTED_NUM_CLASSES,
-                "noise_seed": EXPECTED_REQUEST["noise_seed"] + sample_index,
+                % expected_num_classes,
+                "null_label": expected_num_classes,
+                "noise_seed": expected_request["noise_seed"] + sample_index,
             }
         datasets.append(dataset)
         model = report.get("model")
@@ -585,24 +590,38 @@ def _validate_sensitivity_reports(
             if isinstance(checkpoint, Mapping)
             else None
         )
+        expected_checkpoint_integrity = training_contract["runs"][run].get(
+            "checkpoint_integrity_manifest"
+        )
         if (
             not isinstance(checkpoint, Mapping)
             or checkpoint.get("path")
-            != f'{training_contract["runs"][run]["run_dir"]}/checkpoint_step_00001000.pt'
+            != (
+                f'{training_contract["runs"][run]["run_dir"]}/'
+                f"{expected_checkpoint_filename}"
+            )
             or int(checkpoint.get("bytes", -1))
             != int(training_contract["runs"][run]["checkpoint_bytes"])
             or checkpoint.get("sha256")
             != training_contract["runs"][run]["checkpoint_sha256"]
-            or int(checkpoint.get("step", -1)) != EXPECTED_STEPS
+            or int(checkpoint.get("step", -1)) != expected_steps
             or int(checkpoint.get("format_version", -1)) != 1
             or not isinstance(checkpoint_integrity, Mapping)
             or checkpoint_integrity.get("path")
             != (
                 f'{training_contract["runs"][run]["run_dir"]}/'
-                "checkpoint_step_00001000.pt.integrity.json"
+                f"{expected_checkpoint_filename}.integrity.json"
             )
             or int(checkpoint_integrity.get("bytes", 0)) <= 0
             or not _is_sha256(checkpoint_integrity.get("sha256"))
+            or (
+                isinstance(expected_checkpoint_integrity, Mapping)
+                and any(
+                    checkpoint_integrity.get(field)
+                    != expected_checkpoint_integrity.get(field)
+                    for field in ("path", "bytes", "sha256")
+                )
+            )
             or checkpoint.get("dataset_identity_sha256")
             != training_contract["runs"][run]["checkpoint_dataset_identity_sha256"]
             or checkpoint.get("runtime_environment_sha256")
@@ -618,7 +637,9 @@ def _validate_sensitivity_reports(
         ):
             raise ValueError(f"{run} sensitivity checkpoint differs from training")
         rows = report.get("sample_rows")
-        expected_rows = EXPECTED_REQUEST["num_samples"] * len(EXPECTED_REQUEST["timesteps"])
+        expected_rows = expected_request["num_samples"] * len(
+            expected_request["timesteps"]
+        )
         if not isinstance(rows, list) or len(rows) != expected_rows:
             raise ValueError(f"{run} sensitivity row count differs")
         row_keys = [_row_key(row) for row in rows]
@@ -626,7 +647,7 @@ def _validate_sensitivity_reports(
             raise ValueError(f"{run} sensitivity rows contain duplicate identities")
         expected_row_keys = []
         for sample_index, metadata in expected_sample_metadata.items():
-            for timestep in EXPECTED_REQUEST["timesteps"]:
+            for timestep in expected_request["timesteps"]:
                 expected_row_keys.append(
                     (
                         sample_index,
@@ -687,7 +708,7 @@ def _validate_sensitivity_reports(
     if len(set(checkpoint_shas)) != len(checkpoint_shas):
         raise ValueError("Four-arm sensitivity reports require distinct checkpoints")
     return {
-        "request": dict(EXPECTED_REQUEST),
+        "request": dict(expected_request),
         "dataset": datasets[0],
         "weights": "ema",
         "evaluator_git": dict(evaluator_git),
@@ -738,6 +759,7 @@ def _method_postevaluation(
     control: Mapping[str, Any],
     ranked: Mapping[str, Any],
     eligible_timesteps: Sequence[int],
+    expected_num_samples: int = EXPECTED_REQUEST["num_samples"],
 ) -> dict[str, Any]:
     control_rows = {_row_key(row): row for row in control["sample_rows"]}
     ranked_rows = {_row_key(row): row for row in ranked["sample_rows"]}
@@ -759,7 +781,7 @@ def _method_postevaluation(
                 "ranked": ranked_row,
             }
         )
-    if len(per_sample) != EXPECTED_REQUEST["num_samples"]:
+    if len(per_sample) != expected_num_samples:
         raise ValueError("Eligible sensitivity sample count differs from the contract")
 
     sample_rows = []
