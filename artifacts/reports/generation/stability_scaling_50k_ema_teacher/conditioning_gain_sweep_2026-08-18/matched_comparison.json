@@ -1,0 +1,409 @@
+{
+  "claim_boundary": {
+    "authorizes_checkpoint_modification": false,
+    "authorizes_sampling": false,
+    "authorizes_training": false,
+    "diagnostic_only": true,
+    "replaces_formal_quality_gate": false
+  },
+  "diagnostic_interpretation": {
+    "baseline_gain": 1.0,
+    "gain_only_amplifies_without_semantic_recovery": true,
+    "higher_gain_rows": [
+      {
+        "amplifies_both_methods_correct_vs_wrong_output_delta": true,
+        "gain": 2.0,
+        "improves_both_methods_correct_vs_null_mean": false,
+        "improves_both_methods_correct_vs_wrong_mean": false,
+        "strict_shared_semantic_recovery": false
+      },
+      {
+        "amplifies_both_methods_correct_vs_wrong_output_delta": true,
+        "gain": 4.0,
+        "improves_both_methods_correct_vs_null_mean": false,
+        "improves_both_methods_correct_vs_wrong_mean": true,
+        "strict_shared_semantic_recovery": false
+      }
+    ],
+    "recommended_next_action": "develop_matched_training_time_label_ranking_or_contrastive_denoising_loss",
+    "shared_inference_gain_recovery_supported": false
+  },
+  "git": {
+    "branch": "analysis/generation-conditioning-sensitivity-diagnostic-v1",
+    "revision": "3db734143bcbfb8e846c7c23decd8e3c86f1d4fd",
+    "tracked_dirty": false
+  },
+  "methods": {
+    "cofitok_k8": {
+      "0": {
+        "correct_better_count": {
+          "than_null": 0,
+          "than_wrong": 0
+        },
+        "correct_better_fraction": {
+          "than_null": 0.0,
+          "than_wrong": 0.0
+        },
+        "correct_relative_mse_improvement_mean": {
+          "versus_null": 0.0,
+          "versus_wrong": 0.0
+        },
+        "one_sided_sign_test_pvalue": {
+          "than_null": 1.0,
+          "than_wrong": 1.0
+        },
+        "relative_delta_to_correct_rms_mean": {
+          "correct_vs_null": 0.0,
+          "correct_vs_wrong": 0.0,
+          "wrong_vs_null": 0.0
+        },
+        "row_count": 8
+      },
+      "0.5": {
+        "correct_better_count": {
+          "than_null": 4,
+          "than_wrong": 5
+        },
+        "correct_better_fraction": {
+          "than_null": 0.5,
+          "than_wrong": 0.625
+        },
+        "correct_relative_mse_improvement_mean": {
+          "versus_null": -2.555551618526983e-05,
+          "versus_wrong": 0.0006366083112777905
+        },
+        "one_sided_sign_test_pvalue": {
+          "than_null": 0.63671875,
+          "than_wrong": 0.36328125
+        },
+        "relative_delta_to_correct_rms_mean": {
+          "correct_vs_null": 0.002726218361261817,
+          "correct_vs_wrong": 0.0033385227139436442,
+          "wrong_vs_null": 0.0027085382129752285
+        },
+        "row_count": 8
+      },
+      "1": {
+        "correct_better_count": {
+          "than_null": 4,
+          "than_wrong": 5
+        },
+        "correct_better_fraction": {
+          "than_null": 0.5,
+          "than_wrong": 0.625
+        },
+        "correct_relative_mse_improvement_mean": {
+          "versus_null": -0.0011121841762908012,
+          "versus_wrong": 0.0011257009654571637
+        },
+        "one_sided_sign_test_pvalue": {
+          "than_null": 0.63671875,
+          "than_wrong": 0.36328125
+        },
+        "relative_delta_to_correct_rms_mean": {
+          "correct_vs_null": 0.004687058353380853,
+          "correct_vs_wrong": 0.006576995806772859,
+          "wrong_vs_null": 0.0044769802991175755
+        },
+        "row_count": 8
+      },
+      "2": {
+        "correct_better_count": {
+          "than_null": 0,
+          "than_wrong": 6
+        },
+        "correct_better_fraction": {
+          "than_null": 0.0,
+          "than_wrong": 0.75
+        },
+        "correct_relative_mse_improvement_mean": {
+          "versus_null": -0.16613013560028095,
+          "versus_wrong": -0.07413333442195916
+        },
+        "one_sided_sign_test_pvalue": {
+          "than_null": 1.0,
+          "than_wrong": 0.14453125
+        },
+        "relative_delta_to_correct_rms_mean": {
+          "correct_vs_null": 0.02966946330886634,
+          "correct_vs_wrong": 0.030014104087076655,
+          "wrong_vs_null": 0.02746888258509805
+        },
+        "row_count": 8
+      },
+      "4": {
+        "correct_better_count": {
+          "than_null": 0,
+          "than_wrong": 7
+        },
+        "correct_better_fraction": {
+          "than_null": 0.0,
+          "than_wrong": 0.875
+        },
+        "correct_relative_mse_improvement_mean": {
+          "versus_null": -7.5356161983949965,
+          "versus_wrong": 0.09357133865502885
+        },
+        "one_sided_sign_test_pvalue": {
+          "than_null": 1.0,
+          "than_wrong": 0.03515625
+        },
+        "relative_delta_to_correct_rms_mean": {
+          "correct_vs_null": 0.2515021878008624,
+          "correct_vs_wrong": 0.21209387512977143,
+          "wrong_vs_null": 0.2696582382494019
+        },
+        "row_count": 8
+      }
+    },
+    "dense_identity": {
+      "0": {
+        "correct_better_count": {
+          "than_null": 0,
+          "than_wrong": 0
+        },
+        "correct_better_fraction": {
+          "than_null": 0.0,
+          "than_wrong": 0.0
+        },
+        "correct_relative_mse_improvement_mean": {
+          "versus_null": 0.0,
+          "versus_wrong": 0.0
+        },
+        "one_sided_sign_test_pvalue": {
+          "than_null": 1.0,
+          "than_wrong": 1.0
+        },
+        "relative_delta_to_correct_rms_mean": {
+          "correct_vs_null": 0.0,
+          "correct_vs_wrong": 0.0,
+          "wrong_vs_null": 0.0
+        },
+        "row_count": 8
+      },
+      "0.5": {
+        "correct_better_count": {
+          "than_null": 2,
+          "than_wrong": 2
+        },
+        "correct_better_fraction": {
+          "than_null": 0.25,
+          "than_wrong": 0.25
+        },
+        "correct_relative_mse_improvement_mean": {
+          "versus_null": -0.001038658251834013,
+          "versus_wrong": -0.000956691980715599
+        },
+        "one_sided_sign_test_pvalue": {
+          "than_null": 0.96484375,
+          "than_wrong": 0.96484375
+        },
+        "relative_delta_to_correct_rms_mean": {
+          "correct_vs_null": 0.002645799957028665,
+          "correct_vs_wrong": 0.003004743493101382,
+          "wrong_vs_null": 0.002273853564630112
+        },
+        "row_count": 8
+      },
+      "1": {
+        "correct_better_count": {
+          "than_null": 1,
+          "than_wrong": 5
+        },
+        "correct_better_fraction": {
+          "than_null": 0.125,
+          "than_wrong": 0.625
+        },
+        "correct_relative_mse_improvement_mean": {
+          "versus_null": -0.002444903572202282,
+          "versus_wrong": -0.0003704203317861961
+        },
+        "one_sided_sign_test_pvalue": {
+          "than_null": 0.99609375,
+          "than_wrong": 0.36328125
+        },
+        "relative_delta_to_correct_rms_mean": {
+          "correct_vs_null": 0.004264500538940133,
+          "correct_vs_wrong": 0.005836915868389789,
+          "wrong_vs_null": 0.0040942777871840275
+        },
+        "row_count": 8
+      },
+      "2": {
+        "correct_better_count": {
+          "than_null": 0,
+          "than_wrong": 5
+        },
+        "correct_better_fraction": {
+          "than_null": 0.0,
+          "than_wrong": 0.625
+        },
+        "correct_relative_mse_improvement_mean": {
+          "versus_null": -0.5595435855592924,
+          "versus_wrong": -0.2672889808234444
+        },
+        "one_sided_sign_test_pvalue": {
+          "than_null": 1.0,
+          "than_wrong": 0.36328125
+        },
+        "relative_delta_to_correct_rms_mean": {
+          "correct_vs_null": 0.05941705724096608,
+          "correct_vs_wrong": 0.08284912090104175,
+          "wrong_vs_null": 0.05738277812927517
+        },
+        "row_count": 8
+      },
+      "4": {
+        "correct_better_count": {
+          "than_null": 0,
+          "than_wrong": 5
+        },
+        "correct_better_fraction": {
+          "than_null": 0.0,
+          "than_wrong": 0.625
+        },
+        "correct_relative_mse_improvement_mean": {
+          "versus_null": -29.12705951842391,
+          "versus_wrong": 0.1092606770228994
+        },
+        "one_sided_sign_test_pvalue": {
+          "than_null": 1.0,
+          "than_wrong": 0.36328125
+        },
+        "relative_delta_to_correct_rms_mean": {
+          "correct_vs_null": 1.0236706602811023,
+          "correct_vs_wrong": 0.48423297564899576,
+          "wrong_vs_null": 1.084013966211804
+        },
+        "row_count": 8
+      }
+    }
+  },
+  "paired_contract": {
+    "dataset": {
+      "alias": "imagenet_256_10pct",
+      "label_map": {
+        "bytes": 23918,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/metadata/label_to_wnid.json",
+        "sha256": "3e8c34f680433258998fdd30cf4c15442e2ce3cbd35c27507becc0f690b19b91"
+      },
+      "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct",
+      "samples": [
+        {
+          "image": {
+            "bytes": 17806,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01440764/ILSVRC2012_val_00000293_n01440764.jpg",
+            "sha256": "ef41d8ec2700ed0813eea201bb42b1c426195936cdb5bb85b633748cb223bca8"
+          },
+          "label": 0,
+          "wnid": "n01440764"
+        },
+        {
+          "image": {
+            "bytes": 9070,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01443537/ILSVRC2012_val_00000236_n01443537.jpg",
+            "sha256": "7a32078d2d9b9955f2509627aae4bbe954f3775b8ead680180569d11c082881e"
+          },
+          "label": 1,
+          "wnid": "n01443537"
+        },
+        {
+          "image": {
+            "bytes": 8700,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01484850/ILSVRC2012_val_00002338_n01484850.jpg",
+            "sha256": "01290801b5a2bfdb60c5fb67c1ae438be7e398aaad9b003d3ac04cf6f6e47c11"
+          },
+          "label": 2,
+          "wnid": "n01484850"
+        },
+        {
+          "image": {
+            "bytes": 8206,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01491361/ILSVRC2012_val_00002922_n01491361.jpg",
+            "sha256": "370fe16fd2912e21f068cd806aab3012714565df3d3e84559d30b95dab2ad1a5"
+          },
+          "label": 3,
+          "wnid": "n01491361"
+        },
+        {
+          "image": {
+            "bytes": 9010,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01494475/ILSVRC2012_val_00001676_n01494475.jpg",
+            "sha256": "cb364acb7148c8be1a5efb781c388978f8b626c9b770b483942e8fdadb7a7dec"
+          },
+          "label": 4,
+          "wnid": "n01494475"
+        },
+        {
+          "image": {
+            "bytes": 15573,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01496331/ILSVRC2012_val_00000921_n01496331.jpg",
+            "sha256": "4d519520a660c3d58d0723f988756c9caa06172a49adf7056591d331d4b6c122"
+          },
+          "label": 5,
+          "wnid": "n01496331"
+        },
+        {
+          "image": {
+            "bytes": 17167,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01498041/ILSVRC2012_val_00001935_n01498041.jpg",
+            "sha256": "ef1f40352c869899a9c9118e033dd74e0eb35a6d0ca1b4439912d985e2a9f3f7"
+          },
+          "label": 6,
+          "wnid": "n01498041"
+        },
+        {
+          "image": {
+            "bytes": 15538,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01514668/ILSVRC2012_val_00000329_n01514668.jpg",
+            "sha256": "50dc6e79e309adc4c891c50c89f79de664463d6b552ba8de9d4da890738b0d52"
+          },
+          "label": 7,
+          "wnid": "n01514668"
+        }
+      ]
+    },
+    "git": {
+      "branch": "analysis/generation-conditioning-sensitivity-diagnostic-v1",
+      "revision": "6a2b00edfb2e9f2f104afaea821597d929d5537f",
+      "tracked_dirty": false
+    },
+    "request": {
+      "gains": [
+        0.0,
+        0.5,
+        1.0,
+        2.0,
+        4.0
+      ],
+      "noise_seed": 102030,
+      "num_samples": 8,
+      "start_label": 0,
+      "threads": 2,
+      "timesteps": [
+        500
+      ],
+      "weights": "ema",
+      "wrong_label_offset": 500
+    },
+    "shared_model": {
+      "num_classes": 1000,
+      "predictor_type": "scalable_unet"
+    }
+  },
+  "role": "generation_conditioning_gain_sweep_comparison",
+  "schema_version": 1,
+  "sources": {
+    "cofitok_k8": {
+      "bytes": 80582,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/conditioning_gain_sweep_6a2b00e/cofitok_k8.json",
+      "sha256": "1f1f72443901dcca68f802412907cb646e4261d49bdef86eefa48f062438826a"
+    },
+    "dense_identity": {
+      "bytes": 80519,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/conditioning_gain_sweep_6a2b00e/dense_identity.json",
+      "sha256": "ee4027272b40644b1a7bb71db8c8b4fcc0c0e6cea479e73e06781060455bac9f"
+    }
+  },
+  "status": "completed"
+}
