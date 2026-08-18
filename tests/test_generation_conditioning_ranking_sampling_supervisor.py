@@ -174,6 +174,11 @@ def test_sampling_runbook_contains_the_complete_resumable_physical_sequence() ->
     assert "--start-index 0" in source
     assert "--guidance-scale 1.5" in source
     assert "--skip-prc" in source
+    assert (
+        "/root/autodl-tmp/CoFiTok/checkpoints/evaluators/torchvision/"
+        "resnet50-11ad3fa6.pth"
+    ) in source
+    assert "checkpoints/generation/evaluators/torchvision" not in source
     assert "evaluate_generation_conditioning_ranking_samples.py" in source
     assert "CUDA_VISIBLE_DEVICES=-1" in source
     assert "--cpu" in source
