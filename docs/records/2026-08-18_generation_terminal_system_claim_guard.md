@@ -80,11 +80,56 @@ Using `C:/qbfd5/.venv/Scripts/python.exe` with
 
 The existing Linux-only visual waiter imports `fcntl`, so its direct waiter test
 is not collectable under native Windows. The new waiter has a Windows-safe local
-test path while retaining an exclusive `fcntl` lock on Linux. A Linux rehearsal
-is required before deployment.
+test path while retaining an exclusive `fcntl` lock on Linux.
+
+An isolated Linux checkout at commit
+`8ec9a09ddcd981c1ffbd06b6bda81386b33321de` then passed:
+
+- the focused quality/statistical/visual/new-guard subset: `44 passed`;
+- the complete terminal uncertainty/claim/visual/new-guard subset: `100 passed`.
+
+The second run used the real non-symlink executable
+`/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10`. Running the same tests
+through the conda `python` symlink correctly triggered four pre-existing
+symlink-rejection tests; this was an invocation issue rather than a code failure.
+
+## CPU waiter deployment
+
+The source-bound waiter was deployed from the isolated checkout:
+
+```text
+/root/autodl-tmp/CoFiTok/checkouts/terminal-system-guard-8ec9a09/CoFiTok-internal
+revision: 8ec9a09ddcd981c1ffbd06b6bda81386b33321de
+tree: 344f6365d2e962e350b73f5ce4bc18c005f6dff9
+PID: 965918
+```
+
+Authoritative outputs:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/
+  stability_full_data_100k_base128_quality_bridge_v1/reports/
+  terminal_system_claim_guard_v1/
+```
+
+The deployment receipt is `deployment_receipt.json`, `5,455` bytes, SHA256
+`28fbdae892f8072f63849fd29d82bbb16de4c02076c46410172f276dea29d9ad`.
+It binds the incremental bundle, builder/waiter bytes and SHA256 values, exact
+checkout identity, process start ticks and argv, target paths, formal-checkout
+snapshot, and GPU snapshot.
+
+The compact local deployment summary is
+`artifacts/reports/generation/terminal_system_claim_guard_waiter_deployment_2026-08-18.json`.
+
+Initial waiter status is `waiting` for the exact quality result, statistical
+claim guard, runtime claim guard, and terminal visual-audit status. This is the
+expected state while the matched 100K pair remains incomplete.
 
 ## Live-process boundary
 
-No trainer, controller, monitor, waiter, or GPU process was signaled, paused,
-restarted, or replaced while implementing this guard. The formal remote checkout
-was not modified.
+No trainer, controller, monitor, upstream waiter, or GPU process was signaled,
+paused, restarted, or replaced while implementing or deploying this guard. At
+the post-deployment snapshot, CoFiTok training remained active at step `42,600`,
+the pair monitor remained `running / cofitok_training / issues=[]`, and the only
+GPU compute process remained trainer PID `619775`. The formal remote checkout
+remained at `1ebcc15210e63a776a2ba448481cbd8bb94a4066` and was not modified.

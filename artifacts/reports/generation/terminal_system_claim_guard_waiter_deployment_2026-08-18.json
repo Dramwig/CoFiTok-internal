@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "role": "generation_terminal_system_claim_guard_waiter_deployment_summary",
+  "status": "pass",
+  "date_cst": "2026-08-18",
+  "deployed_checkout": {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-system-guard-8ec9a09/CoFiTok-internal",
+    "revision": "8ec9a09ddcd981c1ffbd06b6bda81386b33321de",
+    "tree": "344f6365d2e962e350b73f5ce4bc18c005f6dff9",
+    "branch": "analysis/generation-terminal-system-claim-guard-v1",
+    "tracked_dirty": false
+  },
+  "bundle": {
+    "path": "/tmp/cofitok-terminal-system-guard-8ec9a09.bundle",
+    "bytes": 23730,
+    "sha256": "6872b211c79c325d9508c2cf9c85e53e61ff1ba9a888ffa7d0539cfffab5623f",
+    "prerequisite": "5fab079a7b48024b05e2a306b95040baf839e276"
+  },
+  "validation": {
+    "native_windows_new_tests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "linux_focused_regression": {
+      "passed": 44,
+      "failed": 0
+    },
+    "linux_terminal_evidence_regression": {
+      "passed": 100,
+      "failed": 0,
+      "python": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+      "cuda_visible_devices": ""
+    }
+  },
+  "deployment": {
+    "pid": 965918,
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/terminal_system_claim_guard_v1",
+    "receipt": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/terminal_system_claim_guard_v1/deployment_receipt.json",
+      "bytes": 5455,
+      "sha256": "28fbdae892f8072f63849fd29d82bbb16de4c02076c46410172f276dea29d9ad"
+    },
+    "initial_status": "waiting",
+    "initial_missing": [
+      "quality_result",
+      "statistical_claim_guard",
+      "runtime_claim_guard",
+      "visual_audit_waiter_terminal_status"
+    ]
+  },
+  "live_snapshot": {
+    "pair_monitor_status": "running",
+    "pair_monitor_stage": "cofitok_training",
+    "pair_monitor_issues": [],
+    "cofitok_step": 42600,
+    "dense_step": 0,
+    "gpu_compute_processes": [
+      {
+        "pid": 619775,
+        "used_memory_mib": 85286,
+        "role": "active_quality_bridge_trainer"
+      }
+    ],
+    "formal_checkout_revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "formal_checkout_modified": false
+  },
+  "authorization_boundary": {
+    "cpu_only_waiter": true,
+    "gpu_execution_allowed": false,
+    "training_or_sampling_launch_allowed": false,
+    "process_signals_allowed": false,
+    "promotion_or_release_allowed": false,
+    "full_300k_launch_allowed": false,
+    "broad_generation_superiority_claim_allowed": false,
+    "sota_claim_allowed": false
+  }
+}
