@@ -35,6 +35,8 @@ export PYTHONPATH=src
 [[ "$(git rev-parse HEAD)" == "$EXPECTED_TARGET_REVISION" ]]
 [[ "$(git branch --show-current)" == "$EXPECTED_TARGET_BRANCH" ]]
 [[ -z "$(git status --porcelain --untracked-files=no)" ]]
+source "$PROJECT/artifacts/runbooks/lib/generation_exact_runbook_identity.sh"
+cofitok_capture_runbook_monitor_identity "$PYTHON" "$PROJECT" "$$"
 mkdir -p "$OUTPUT_ROOT" "$REPORT_ROOT"
 
 "$PYTHON" scripts/validate_generation_stability_scaling_decision.py \
@@ -89,10 +91,15 @@ path = Path(sys.argv[1])
 if not path.is_file():
     raise SystemExit(1)
 report = json.loads(path.read_text(encoding="utf-8"))
+identity = report.get("runbook_identity", {})
 if (
     report.get("monitor") != sys.argv[2]
     or report.get("status") != "pass"
     or report.get("stage") != "complete"
+    or identity.get("role") != "generation_exact_runbook_process_identity"
+    or identity.get("mode") != "exact_process_identity"
+    or identity.get("status") != "active"
+    or identity.get("mismatches") != []
 ):
     raise SystemExit(1)
 PY
@@ -107,6 +114,11 @@ start_monitor() {
     local existing_pid
     existing_pid="$(cat "$MONITOR_PID_FILE")"
     if [[ "$existing_pid" =~ ^[0-9]+$ ]] && kill -0 "$existing_pid" 2>/dev/null; then
+      if ! cofitok_monitor_report_matches_bound_controller \
+        "$PYTHON" "$MONITOR_REPORT" "$MONITOR_NAME"; then
+        printf 'stability matched 50K monitor belongs to another controller\n' >&2
+        exit 10
+      fi
       printf 'stability matched 50K monitor already active as PID %s\n' \
         "$existing_pid"
       return
@@ -121,6 +133,11 @@ start_monitor() {
     --expected-steps 50000 \
     --training-process-pattern '[s]cripts/train_generation.py.*ema_teacher.*50k' \
     --runbook-process-pattern '[g]eneration_stability_ema_teacher_matched_50k_after_gate.sh' \
+    --runbook-process-pid "$COFITOK_RUNBOOK_PROCESS_PID" \
+    --runbook-process-start-ticks "$COFITOK_RUNBOOK_PROCESS_START_TICKS" \
+    --runbook-process-executable "$COFITOK_RUNBOOK_PROCESS_EXECUTABLE" \
+    --runbook-process-cwd "$COFITOK_RUNBOOK_PROCESS_CWD" \
+    --runbook-process-cmdline-sha256 "$COFITOK_RUNBOOK_PROCESS_CMDLINE_SHA256" \
     --checkpoint-interval 5000 \
     --checkpoint-grace-steps 250 \
     --checkpoint-integrity-policy required \
@@ -150,6 +167,11 @@ snapshot_monitor() {
     --expected-steps 50000 \
     --training-process-pattern '[s]cripts/train_generation.py.*ema_teacher.*50k' \
     --runbook-process-pattern '[g]eneration_stability_ema_teacher_matched_50k_after_gate.sh' \
+    --runbook-process-pid "$COFITOK_RUNBOOK_PROCESS_PID" \
+    --runbook-process-start-ticks "$COFITOK_RUNBOOK_PROCESS_START_TICKS" \
+    --runbook-process-executable "$COFITOK_RUNBOOK_PROCESS_EXECUTABLE" \
+    --runbook-process-cwd "$COFITOK_RUNBOOK_PROCESS_CWD" \
+    --runbook-process-cmdline-sha256 "$COFITOK_RUNBOOK_PROCESS_CMDLINE_SHA256" \
     --checkpoint-interval 5000 \
     --checkpoint-grace-steps 250 \
     --checkpoint-integrity-policy required \

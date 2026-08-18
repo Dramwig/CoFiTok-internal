@@ -24,6 +24,8 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   printf 'full matched 300K training requires a clean tracked worktree\n' >&2
   exit 66
 fi
+source "$PROJECT/artifacts/runbooks/lib/generation_exact_runbook_identity.sh"
+cofitok_capture_runbook_monitor_identity python "$PROJECT" "$$"
 mkdir -p "$FULL_REPORT_ROOT"
 
 python scripts/validate_generation_configs.py \
@@ -72,7 +74,15 @@ if not path.is_file():
     raise SystemExit(1)
 with path.open(encoding="utf-8") as handle:
     report = json.load(handle)
-if report.get("status") != "pass" or report.get("stage") != "complete":
+identity = report.get("runbook_identity", {})
+if (
+    report.get("status") != "pass"
+    or report.get("stage") != "complete"
+    or identity.get("role") != "generation_exact_runbook_process_identity"
+    or identity.get("mode") != "exact_process_identity"
+    or identity.get("status") != "active"
+    or identity.get("mismatches") != []
+):
     raise SystemExit(1)
 PY
 }
@@ -86,6 +96,11 @@ start_full_monitor() {
     local existing_pid
     existing_pid="$(cat "$MONITOR_PID_FILE")"
     if [[ "$existing_pid" =~ ^[0-9]+$ ]] && kill -0 "$existing_pid" 2>/dev/null; then
+      if ! cofitok_monitor_report_matches_bound_controller \
+        python "$MONITOR_REPORT" generation_full_matched_300k; then
+        printf 'full matched monitor belongs to another controller\n' >&2
+        exit 1
+      fi
       printf 'full matched monitor already active as PID %s\n' "$existing_pid"
       return
     fi
@@ -97,6 +112,11 @@ start_full_monitor() {
     --dense-run imagenet256_full_dense_300k --expected-steps 300000 \
     --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_.*300k' \
     --runbook-process-pattern '[g]eneration_full_matched_300k_after_gate.sh' \
+    --runbook-process-pid "$COFITOK_RUNBOOK_PROCESS_PID" \
+    --runbook-process-start-ticks "$COFITOK_RUNBOOK_PROCESS_START_TICKS" \
+    --runbook-process-executable "$COFITOK_RUNBOOK_PROCESS_EXECUTABLE" \
+    --runbook-process-cwd "$COFITOK_RUNBOOK_PROCESS_CWD" \
+    --runbook-process-cmdline-sha256 "$COFITOK_RUNBOOK_PROCESS_CMDLINE_SHA256" \
     --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
     --checkpoint-integrity-policy required \
     --poll-seconds 300 --stall-seconds 1800 \
@@ -125,6 +145,11 @@ snapshot_full_monitor() {
     --dense-run imagenet256_full_dense_300k --expected-steps 300000 \
     --training-process-pattern '[s]cripts/train_generation.py.*imagenet256_.*300k' \
     --runbook-process-pattern '[g]eneration_full_matched_300k_after_gate.sh' \
+    --runbook-process-pid "$COFITOK_RUNBOOK_PROCESS_PID" \
+    --runbook-process-start-ticks "$COFITOK_RUNBOOK_PROCESS_START_TICKS" \
+    --runbook-process-executable "$COFITOK_RUNBOOK_PROCESS_EXECUTABLE" \
+    --runbook-process-cwd "$COFITOK_RUNBOOK_PROCESS_CWD" \
+    --runbook-process-cmdline-sha256 "$COFITOK_RUNBOOK_PROCESS_CMDLINE_SHA256" \
     --checkpoint-interval 5000 --checkpoint-grace-steps 250 \
     --checkpoint-integrity-policy required \
     --poll-seconds 300 --stall-seconds 1800 \

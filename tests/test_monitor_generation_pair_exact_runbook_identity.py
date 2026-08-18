@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
+from cofitok import process_identity
 from scripts import monitor_generation_pair as monitor
 
 
@@ -77,7 +78,7 @@ def test_exact_identity_ignores_nonbound_pattern_candidate(tmp_path: Path) -> No
     )
     raw = _raw_cmdline(controller_argv)
 
-    with patch.object(monitor.os, "readlink", side_effect=_readlink):
+    with patch.object(process_identity.os, "readlink", side_effect=_readlink):
         live, evidence = monitor.inspect_exact_runbook_identity(
             expected=_expected(raw),
             pattern_processes=[
@@ -116,7 +117,7 @@ def test_missing_bound_controller_cannot_be_replaced_by_pattern_waiter(
         "cmdline_sha256": "a" * 64,
     }
 
-    with patch.object(monitor.os, "readlink", side_effect=_readlink):
+    with patch.object(process_identity.os, "readlink", side_effect=_readlink):
         live, evidence = monitor.inspect_exact_runbook_identity(
             expected=expected,
             pattern_processes=[
@@ -140,7 +141,7 @@ def test_start_tick_change_invalidates_pid_reuse(tmp_path: Path) -> None:
         argv=controller_argv,
     )
 
-    with patch.object(monitor.os, "readlink", side_effect=_readlink):
+    with patch.object(process_identity.os, "readlink", side_effect=_readlink):
         live, evidence = monitor.inspect_exact_runbook_identity(
             expected=_expected(_raw_cmdline(controller_argv)),
             pattern_processes=[

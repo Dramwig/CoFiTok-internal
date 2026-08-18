@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import shutil
@@ -18,6 +17,10 @@ from cofitok.monitoring import (
     CHECKPOINT_INTEGRITY_POLICIES,
     build_monitor_report,
     inspect_run,
+)
+from cofitok.process_identity import (
+    linux_process_identity_mismatches,
+    read_linux_process_identity,
 )
 
 
@@ -41,32 +44,7 @@ def _read_process_identity(
     *,
     proc_root: Path = Path("/proc"),
 ) -> dict[str, Any] | None:
-    proc = proc_root / str(pid)
-    if not proc.is_dir():
-        return None
-    try:
-        raw_cmdline = (proc / "cmdline").read_bytes()
-        argv = raw_cmdline.replace(b"\0", b" ").decode(
-            errors="replace"
-        ).strip()
-        stat = (proc / "stat").read_text(encoding="utf-8").rsplit(
-            ")", 1
-        )[1].split()
-        executable = os.readlink(proc / "exe")
-        cwd = os.readlink(proc / "cwd")
-        start_ticks = int(stat[19])
-    except (FileNotFoundError, IndexError, OSError, PermissionError, ValueError):
-        return None
-    if not argv:
-        return None
-    return {
-        "pid": pid,
-        "start_ticks": start_ticks,
-        "argv": argv,
-        "cwd": cwd,
-        "executable": executable,
-        "cmdline_sha256": hashlib.sha256(raw_cmdline).hexdigest(),
-    }
+    return read_linux_process_identity(pid, proc_root=proc_root)
 
 
 def _process_records(
@@ -94,19 +72,7 @@ def _runbook_identity_mismatches(
     *,
     expected: dict[str, Any],
 ) -> list[str]:
-    if observed is None:
-        return ["process_missing"]
-    return [
-        field
-        for field in (
-            "pid",
-            "start_ticks",
-            "executable",
-            "cwd",
-            "cmdline_sha256",
-        )
-        if observed.get(field) != expected.get(field)
-    ]
+    return linux_process_identity_mismatches(observed, expected=expected)
 
 
 def inspect_exact_runbook_identity(
