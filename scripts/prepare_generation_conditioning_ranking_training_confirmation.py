@@ -7,6 +7,7 @@ from typing import Any
 
 from cofitok.configs import config_to_dict, load_config
 from cofitok.generation.conditioning_ranking_training_confirmation import (
+    CONFIG_RELATIVE_PATHS,
     EXPECTED_OUTPUT_ROOT,
     RUN_NAMES,
     build_training_confirmation_preparation,
@@ -19,6 +20,9 @@ from cofitok.inference_replay import (
 )
 from cofitok.models import CoFiTokTiny
 from cofitok.reporting import git_provenance
+from scripts.build_generation_conditioning_ranking_sampling_validation import (
+    replay_sampling_validation,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -70,11 +74,11 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = _parse_args()
-    sampling, sampling_identity = _bound_json(
+    sampling, sampling_identity = replay_sampling_validation(
         args.sampling_validation,
-        expected_sha256=args.expected_sampling_validation_sha256,
-        label="conditioning-ranking 5K sampling validation",
     )
+    if sampling_identity["sha256"] != args.expected_sampling_validation_sha256:
+        raise ValueError("conditioning-ranking 5K sampling validation SHA256 differs")
     standing, standing_identity = _bound_json(
         args.standing_authorization,
         expected_sha256=args.expected_standing_authorization_sha256,
@@ -100,6 +104,12 @@ def main() -> None:
     }
     if set(paths) != set(RUN_NAMES) or any(not path.is_file() for path in paths.values()):
         raise FileNotFoundError("training confirmation config set is incomplete")
+    expected_paths = {
+        name: (PROJECT_ROOT / relative).resolve()
+        for name, relative in CONFIG_RELATIVE_PATHS.items()
+    }
+    if paths != expected_paths:
+        raise ValueError("training confirmation config paths differ")
     configs = {name: config_to_dict(load_config(path)) for name, path in paths.items()}
     report = build_training_confirmation_preparation(
         sampling_validation=sampling,

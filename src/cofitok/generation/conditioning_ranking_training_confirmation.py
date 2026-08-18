@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import math
 from typing import Any, Mapping
 
 from cofitok.generation.conditioning_ranking_probe import (
@@ -16,6 +17,12 @@ STAGE = "conditioning_ranking_four_arm_train5k_confirmation_v1"
 SCOPE = "imagenet256_10pct_four_arm_class_ranking_train5k_confirmation_only"
 PREPARATION_ROLE = (
     "generation_conditioning_ranking_four_arm_train5k_confirmation_preparation"
+)
+EXECUTION_RECEIPT_ROLE = (
+    "generation_conditioning_ranking_four_arm_train5k_confirmation_execution_receipt"
+)
+IDLE_GPU_EVIDENCE_ROLE = (
+    "generation_conditioning_ranking_four_arm_train5k_confirmation_idle_gpu_evidence"
 )
 EXPECTED_OUTPUT_ROOT = (
     "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
@@ -80,6 +87,28 @@ RUN_NAMES = (
     "control_dense_identity",
     "ranked_dense_identity",
 )
+CONFIG_RELATIVE_PATHS = {
+    "control_cofitok": (
+        "configs/generation/imagenet256_10pct_stability_rgbtail3_"
+        "rollout_x0_u2_ema_teacher_k8_probe5k.json"
+    ),
+    "control_dense_identity": (
+        "configs/generation/imagenet256_10pct_stability_"
+        "rollout_x0_u2_ema_teacher_dense_probe5k.json"
+    ),
+    "ranked_cofitok": (
+        "configs/generation/imagenet256_10pct_stability_rgbtail3_"
+        "rollout_x0_u2_ema_teacher_classrank_k8_confirm5k.json"
+    ),
+    "ranked_dense_identity": (
+        "configs/generation/imagenet256_10pct_stability_"
+        "rollout_x0_u2_ema_teacher_classrank_dense_confirm5k.json"
+    ),
+}
+RUNBOOK_RELATIVE_PATH = (
+    "artifacts/runbooks/"
+    "generation_conditioning_ranking_four_arm_train5k_confirmation_v1.sh"
+)
 EXECUTION_BOUNDARY = {
     "preparation_only": True,
     "standing_authorization_required": True,
@@ -115,6 +144,29 @@ CLAIM_BOUNDARY = {
     "authorizes_full_100k_or_300k": False,
     "authorizes_release": False,
     "replaces_active_quality_bridge": False,
+}
+EXECUTION_AUTHORIZATION_BOUNDARY = {
+    "standing_authorization_required": True,
+    "exact_shared_sampling_validation_required": True,
+    "exact_preparation_required": True,
+    "exact_revision_stage_output_config_and_runbook_binding_required": True,
+    "independent_clean_checkout_required": True,
+    "five_consecutive_idle_gpu_polls_required": True,
+    "fresh_four_arm_training_required": True,
+    "resume_from_1k_checkpoint_allowed": False,
+    "steps_per_run": 5_000,
+    "training_runs": list(RUN_NAMES),
+    "gpu_execution_authorized": True,
+    "training_allowed": True,
+    "runbook_launch_count_maximum": 1,
+    "automatic_runbook_relaunch_allowed": False,
+    "sampling_allowed": False,
+    "checkpoint_promotion_allowed": False,
+    "followup_training_allowed": False,
+    "full_training_launch_allowed": False,
+    "full_100k_or_300k_launch_allowed": False,
+    "release_authorization_allowed": False,
+    "unrelated_process_signaling_allowed": False,
 }
 
 
@@ -220,6 +272,264 @@ def validate_shared_sampling_recovery(
     ):
         raise ValueError("conditioning-ranking shared sampling evidence is malformed")
     return copy.deepcopy(dict(report))
+
+
+def sampling_validation_route(report: Mapping[str, Any]) -> str:
+    methods = report.get("methods")
+    sampling_contract = report.get("sampling_contract")
+    decision = report.get("decision")
+    if (
+        report.get("schema_version") != SCHEMA_VERSION
+        or report.get("role") != SOURCE_SAMPLING_ROLE
+        or report.get("status") != "completed"
+        or report.get("stage") != SOURCE_SAMPLING_STAGE
+        or report.get("output_root") != SOURCE_SAMPLING_OUTPUT_ROOT
+        or report.get("git") != SOURCE_SAMPLING_GIT
+        or report.get("claim_boundary") != SOURCE_CLAIM_BOUNDARY
+        or not isinstance(methods, Mapping)
+        or set(methods) != {"cofitok", "dense_identity"}
+        or not isinstance(sampling_contract, Mapping)
+        or sampling_contract.get("sample_count_per_arm") != 5_000
+        or sampling_contract.get("sample_run_name")
+        != "samples_5000_ddim50_cfg15"
+        or not isinstance(sampling_contract.get("methods"), Mapping)
+        or set(sampling_contract["methods"]) != {"cofitok", "dense_identity"}
+        or not isinstance(decision, Mapping)
+    ):
+        return "invalid"
+    method_passes: dict[str, bool] = {}
+    for name in ("cofitok", "dense_identity"):
+        row = methods.get(name)
+        gates = row.get("gates") if isinstance(row, Mapping) else None
+        if (
+            not isinstance(row, Mapping)
+            or type(row.get("pass")) is not bool
+            or not isinstance(gates, Mapping)
+            or set(gates) != SOURCE_METHOD_GATES
+            or any(type(gates[gate]) is not bool for gate in SOURCE_METHOD_GATES)
+            or row["pass"] is not all(gates.values())
+        ):
+            return "invalid"
+        method_passes[name] = row["pass"]
+    shared = all(method_passes.values())
+    if shared:
+        action = "prepare_separately_bound_matched_5k_training_recipe_confirmation"
+    elif any(method_passes.values()):
+        action = "reject_shared_repair_due_method_asymmetry"
+    else:
+        action = "revise_training_time_semantic_alignment_objective"
+    expected_decision = {
+        "method_passes": method_passes,
+        "shared_generated_class_alignment_recovery_supported": shared,
+        "cofitok_specific_advantage_claim_allowed": False,
+        "recommended_next_action": action,
+    }
+    if dict(decision) != expected_decision:
+        return "invalid"
+    if shared:
+        validate_shared_sampling_recovery(report)
+        return "selected"
+    return "not_selected"
+
+
+def validate_idle_gpu_evidence(
+    report: Mapping[str, Any],
+    *,
+    expected_git: Mapping[str, Any],
+    expected_output_root: str,
+    required_polls: int = 5,
+) -> dict[str, Any]:
+    observations = report.get("observations")
+    if (
+        report.get("schema_version") != SCHEMA_VERSION
+        or report.get("role") != IDLE_GPU_EVIDENCE_ROLE
+        or report.get("status") != "pass"
+        or report.get("stage") != STAGE
+        or report.get("output_root") != expected_output_root
+        or report.get("required_consecutive_idle_polls") != required_polls
+        or _clean_git(report.get("git", {}), label="idle GPU evidence")
+        != _clean_git(expected_git, label="expected training confirmation Git")
+        or not isinstance(observations, list)
+        or len(observations) != required_polls
+    ):
+        raise ValueError("training confirmation idle GPU evidence differs")
+    previous = -math.inf
+    for index, observation in enumerate(observations, start=1):
+        if not isinstance(observation, Mapping):
+            raise ValueError("training confirmation idle GPU observation is malformed")
+        timestamp = observation.get("observed_at_unix")
+        if (
+            observation.get("poll_index") != index
+            or isinstance(timestamp, bool)
+            or not isinstance(timestamp, (int, float))
+            or not math.isfinite(float(timestamp))
+            or float(timestamp) <= previous
+            or observation.get("gpu_compute_pids") != []
+        ):
+            raise ValueError("training confirmation idle GPU observation differs")
+        previous = float(timestamp)
+    return copy.deepcopy(dict(report))
+
+
+def _validate_preparation_for_execution(
+    *,
+    preparation: Mapping[str, Any],
+    sampling_validation: Mapping[str, Any],
+    sampling_validation_identity: Mapping[str, Any],
+    standing_authorization: Mapping[str, Any],
+    standing_authorization_identity: Mapping[str, Any],
+    config_identities: Mapping[str, Mapping[str, Any]],
+    expected_git: Mapping[str, Any],
+    expected_output_root: str,
+) -> dict[str, Any]:
+    expected_git_clean = _clean_git(
+        expected_git,
+        label="expected training confirmation Git",
+    )
+    source = validate_shared_sampling_recovery(sampling_validation)
+    standing = validate_standing_experiment_authorization(standing_authorization)
+    sampling_identity = _identity(
+        sampling_validation_identity,
+        label="conditioning-ranking 5K sampling validation",
+    )
+    standing_identity = _identity(
+        standing_authorization_identity,
+        label="standing experiment authorization",
+    )
+    if set(config_identities) != set(RUN_NAMES):
+        raise ValueError("training confirmation execution config set differs")
+    configs = {
+        name: _identity(config_identities.get(name, {}), label=f"{name} config")
+        for name in RUN_NAMES
+    }
+    counts = preparation.get("parameter_counts")
+    if (
+        preparation.get("schema_version") != SCHEMA_VERSION
+        or preparation.get("role") != PREPARATION_ROLE
+        or preparation.get("status") != "pass"
+        or preparation.get("valid") is not True
+        or preparation.get("stage") != STAGE
+        or preparation.get("scope") != SCOPE
+        or preparation.get("output_root") != expected_output_root
+        or preparation.get("git") != expected_git_clean
+        or preparation.get("source_reports")
+        != {
+            "sampling_validation": sampling_identity,
+            "standing_authorization": standing_identity,
+        }
+        or preparation.get("source_sampling_decision") != source["decision"]
+        or preparation.get("standing_authorization") != standing
+        or preparation.get("configs") != configs
+        or preparation.get("execution_boundary") != EXECUTION_BOUNDARY
+        or preparation.get("claim_boundary") != CLAIM_BOUNDARY
+        or preparation.get("gpu_execution_authorized") is not False
+        or preparation.get("authorization_required") is not True
+        or not isinstance(counts, Mapping)
+        or set(counts) != set(RUN_NAMES)
+        or any(type(counts[name]) is not int or counts[name] <= 0 for name in RUN_NAMES)
+        or counts["control_cofitok"] != counts["ranked_cofitok"]
+        or counts["control_dense_identity"] != counts["ranked_dense_identity"]
+    ):
+        raise ValueError("training confirmation preparation differs")
+    return copy.deepcopy(dict(preparation))
+
+
+def build_training_confirmation_execution_receipt(
+    *,
+    preparation: Mapping[str, Any],
+    preparation_identity: Mapping[str, Any],
+    sampling_validation: Mapping[str, Any],
+    sampling_validation_identity: Mapping[str, Any],
+    standing_authorization: Mapping[str, Any],
+    standing_authorization_identity: Mapping[str, Any],
+    idle_gpu_evidence: Mapping[str, Any],
+    idle_gpu_evidence_identity: Mapping[str, Any],
+    config_identities: Mapping[str, Mapping[str, Any]],
+    runbook_identity: Mapping[str, Any],
+    receipt_git: Mapping[str, Any],
+    expected_revision: str,
+    expected_branch: str,
+    expected_output_root: str,
+) -> dict[str, Any]:
+    git = _clean_git(receipt_git, label="training confirmation receipt builder")
+    expected_git = {
+        "revision": expected_revision,
+        "branch": expected_branch,
+        "tracked_dirty": False,
+    }
+    if git != expected_git:
+        raise ValueError("training confirmation receipt builder Git differs")
+    if expected_output_root != EXPECTED_OUTPUT_ROOT:
+        raise ValueError("training confirmation receipt output root differs")
+    validated_preparation = _validate_preparation_for_execution(
+        preparation=preparation,
+        sampling_validation=sampling_validation,
+        sampling_validation_identity=sampling_validation_identity,
+        standing_authorization=standing_authorization,
+        standing_authorization_identity=standing_authorization_identity,
+        config_identities=config_identities,
+        expected_git=expected_git,
+        expected_output_root=expected_output_root,
+    )
+    idle = validate_idle_gpu_evidence(
+        idle_gpu_evidence,
+        expected_git=expected_git,
+        expected_output_root=expected_output_root,
+    )
+    standing = validate_standing_experiment_authorization(standing_authorization)
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "role": EXECUTION_RECEIPT_ROLE,
+        "status": "authorized",
+        "authorization_mode": "active_standing_experiment_authorization",
+        "stage": STAGE,
+        "scope": SCOPE,
+        "authorized_revision": expected_revision,
+        "authorized_branch": expected_branch,
+        "output_root": expected_output_root,
+        "git": git,
+        "source_reports": {
+            "preparation": _identity(
+                preparation_identity,
+                label="training confirmation preparation",
+            ),
+            "sampling_validation": _identity(
+                sampling_validation_identity,
+                label="conditioning-ranking 5K sampling validation",
+            ),
+            "standing_authorization": _identity(
+                standing_authorization_identity,
+                label="standing experiment authorization",
+            ),
+            "idle_gpu_evidence": _identity(
+                idle_gpu_evidence_identity,
+                label="idle GPU evidence",
+            ),
+            "runbook": _identity(
+                runbook_identity,
+                label="training confirmation runbook",
+            ),
+            "configs": {
+                name: _identity(
+                    config_identities[name],
+                    label=f"{name} config",
+                )
+                for name in RUN_NAMES
+            },
+        },
+        "standing_authorization": standing,
+        "source_sampling_decision": copy.deepcopy(
+            validated_preparation["source_sampling_decision"]
+        ),
+        "parameter_counts": copy.deepcopy(
+            validated_preparation["parameter_counts"]
+        ),
+        "idle_gpu_evidence": idle,
+        "authorization_boundary": copy.deepcopy(
+            EXECUTION_AUTHORIZATION_BOUNDARY
+        ),
+        "claim_boundary": copy.deepcopy(CLAIM_BOUNDARY),
+    }
 
 
 def training_confirmation_contract(

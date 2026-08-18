@@ -265,6 +265,14 @@ def test_prepare_cli_writes_once_and_replays_exactly(
     )
     monkeypatch.setattr(
         prepare_cli,
+        "replay_sampling_validation",
+        lambda path: (
+            json.loads(path.read_text(encoding="utf-8")),
+            prepare_cli.file_identity(path),
+        ),
+    )
+    monkeypatch.setattr(
+        prepare_cli,
         "_parameter_count",
         lambda path: 90 if "dense" in path.name else 100,
     )

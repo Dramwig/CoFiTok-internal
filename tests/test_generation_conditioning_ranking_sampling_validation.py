@@ -1,14 +1,20 @@
 from __future__ import annotations
 
 import copy
+import json
+from pathlib import Path
 
 import pytest
 
+from scripts import (
+    build_generation_conditioning_ranking_sampling_validation as validation_script,
+)
 from scripts.build_generation_conditioning_ranking_sampling_validation import (
     CLAIM_BOUNDARY,
     RUN_NAMES,
     build_sampling_validation,
     method_sampling_decision,
+    replay_sampling_validation,
 )
 from scripts.evaluate_generation_conditioning_ranking_samples import (
     paired_class_fidelity_summary,
@@ -215,3 +221,67 @@ def test_zero_fid_pair_has_a_finite_identity_ratio() -> None:
 
     assert decision["ranked_minus_control"]["fid_ratio"] == 1.0
     assert decision["gates"]["fid_within_tolerance"] is True
+
+
+def test_sampling_validation_replay_rebuilds_all_bound_sources(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inputs = _inputs()
+    report = build_sampling_validation(**inputs)
+    report_path = tmp_path / "sampling_validation.json"
+    report_path.write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        validation_script,
+        "replay_postevaluation",
+        lambda _path: (
+            inputs["postevaluation"],
+            inputs["postevaluation_identity"],
+            {},
+        ),
+    )
+    monkeypatch.setattr(
+        validation_script,
+        "validate_training_checkpoints",
+        lambda _postevaluation, _reports: inputs["checkpoint_evidence"],
+    )
+    monkeypatch.setattr(
+        validation_script,
+        "validate_sampling_evidence",
+        lambda **_kwargs: (
+            inputs["sampling_provenance"],
+            inputs["sampling_sources"],
+        ),
+    )
+    monkeypatch.setattr(
+        validation_script,
+        "validate_generation_metrics_reports",
+        lambda **_kwargs: (
+            inputs["generation_reports"],
+            inputs["generation_sources"],
+        ),
+    )
+    monkeypatch.setattr(
+        validation_script,
+        "validate_paired_class_reports",
+        lambda **_kwargs: (
+            inputs["paired_reports"],
+            inputs["paired_sources"],
+        ),
+    )
+
+    replayed, identity = replay_sampling_validation(report_path)
+    assert replayed == report
+    assert identity["path"] == report_path.resolve().as_posix()
+
+    tampered = copy.deepcopy(report)
+    tampered["decision"]["cofitok_specific_advantage_claim_allowed"] = True
+    report_path.write_text(
+        json.dumps(tampered, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="replay differs"):
+        replay_sampling_validation(report_path)

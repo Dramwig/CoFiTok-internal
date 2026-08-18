@@ -744,6 +744,82 @@ def build_sampling_validation(
     }
 
 
+def replay_sampling_validation(
+    path: str | Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    report, report_identity = _load_json_source(
+        path,
+        label="conditioning-ranking 5K sampling validation",
+    )
+    if (
+        report.get("schema_version") != REPORT_SCHEMA_VERSION
+        or report.get("role") != REPORT_ROLE
+        or report.get("status") != "completed"
+        or report.get("stage") != STAGE
+        or report.get("output_root") != EXPECTED_OUTPUT_ROOT
+    ):
+        raise ValueError("conditioning-ranking 5K sampling validation differs")
+    sources = report.get("sources")
+    if not isinstance(sources, Mapping):
+        raise ValueError("conditioning-ranking sampling-validation sources are missing")
+    postevaluation_descriptor = sources.get("postevaluation")
+    if not isinstance(postevaluation_descriptor, Mapping):
+        raise ValueError("conditioning-ranking postevaluation source is missing")
+    postevaluation, postevaluation_identity, training_reports = replay_postevaluation(
+        str(postevaluation_descriptor.get("path", ""))
+    )
+    if postevaluation_identity != postevaluation_descriptor:
+        raise ValueError("conditioning-ranking postevaluation identity differs")
+    checkpoint_evidence = validate_training_checkpoints(
+        postevaluation,
+        training_reports,
+    )
+    if sources.get("training_checkpoints") != checkpoint_evidence:
+        raise ValueError("conditioning-ranking checkpoint evidence differs")
+    output_root = Path(EXPECTED_OUTPUT_ROOT).resolve()
+    expected_git = _clean_git(
+        report.get("git", {}),
+        label="sampling validation replay Git",
+    )
+    sampling_provenance, sampling_sources = validate_sampling_evidence(
+        output_root=output_root,
+        checkpoint_evidence=checkpoint_evidence,
+        expected_git=expected_git,
+    )
+    if sources.get("sampling") != sampling_sources:
+        raise ValueError("conditioning-ranking sampling source identities differ")
+    generation_reports, generation_sources = validate_generation_metrics_reports(
+        output_root=output_root,
+        sampling_provenance=sampling_provenance,
+        expected_git=expected_git,
+    )
+    if sources.get("generation_metrics") != generation_sources:
+        raise ValueError("conditioning-ranking generation-metrics sources differ")
+    paired_reports, paired_sources = validate_paired_class_reports(
+        output_root=output_root,
+        sampling_provenance=sampling_provenance,
+        expected_git=expected_git,
+    )
+    if sources.get("paired_class_fidelity") != paired_sources:
+        raise ValueError("conditioning-ranking paired-class sources differ")
+    expected = build_sampling_validation(
+        postevaluation=postevaluation,
+        postevaluation_identity=postevaluation_identity,
+        checkpoint_evidence=checkpoint_evidence,
+        sampling_provenance=sampling_provenance,
+        sampling_sources=sampling_sources,
+        generation_reports=generation_reports,
+        generation_sources=generation_sources,
+        paired_reports=paired_reports,
+        paired_sources=paired_sources,
+        git=expected_git,
+        output_root=EXPECTED_OUTPUT_ROOT,
+    )
+    if expected != report:
+        raise ValueError("conditioning-ranking sampling validation replay differs")
+    return report, report_identity
+
+
 def main() -> None:
     args = parse_args()
     output_root = reject_symlink_chain(
