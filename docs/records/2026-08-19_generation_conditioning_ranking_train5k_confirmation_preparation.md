@@ -69,3 +69,33 @@ and output root. It records `gpu_execution_authorized=false` and
 `training_allowed=false`; a separate source-bound execution receipt and
 supervisor remain required before any GPU work can start.
 
+## Latest Linux rehearsal
+
+The hardened preparation commit was rehearsed on `pro6000` without touching
+the formal checkout or exposing CUDA:
+
+```text
+revision: 9ec0d0bd3a714be2b7fa6f3f2008852c2d761329
+tree: 8dbc8a31318068fe09b1e074afb6a2a1f9984b9e
+prerequisite: f77e311546beba697020debd35e26888096ca258
+bundle: /tmp/conditioning-confirm5k-9ec0d0b.bundle
+bundle bytes: 11,663
+bundle SHA256: 976889e4f6c7ddd11e1bddb91103c757cbc32bbb55d007f5aa2d7cf8bf7e60a2
+isolated checkout: /tmp/cofitok-conditioning-confirm5k-rehearsal-9ec0d0b.Ygws4Q/CoFiTok-internal
+CUDA_VISIBLE_DEVICES: -1
+CPU/IO priority: nice 15, ionice idle class
+related tests: 79 passed
+post-test tracked/untracked status bytes: 0
+verified at: 2026-08-19T03:11:30+08:00
+```
+
+The tested set covers the training-conditioning and ranking losses, the shared
+pair contract, the 1K probe and post-evaluation chain, the matched 5K sampling
+execution and validation chain, and the new 5K training-confirmation
+preparation. Python compilation also passed for the new module, CLI, and test.
+
+The formal remote checkout remained unchanged at
+`1ebcc15210e63a776a2ba448481cbd8bb94a4066` on `scale/generative-system` with
+zero tracked-status bytes. The only GPU compute process remained the active
+full-data 100K bridge training process, PID `79894`; the rehearsal performed no
+GPU work and created no training output root.
