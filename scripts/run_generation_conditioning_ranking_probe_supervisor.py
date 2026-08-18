@@ -216,6 +216,7 @@ def main() -> int:
     while True:
         if time.monotonic() - started > args.timeout_seconds:
             _write_status(
+                status_output,
                 status="failed",
                 detail="timeout_before_probe_launch",
                 project=project,
@@ -226,6 +227,7 @@ def main() -> int:
             return 4
         if not args.followup_decision.is_file():
             _write_status(
+                status_output,
                 status="waiting",
                 detail="waiting_for_quality_bridge_followup_decision",
                 project=project,
@@ -244,6 +246,7 @@ def main() -> int:
         route = followup_route(followup)
         if route == "not_selected":
             _write_status(
+                status_output,
                 status="completed",
                 detail="conditioning_ranking_probe_not_selected",
                 project=project,
@@ -256,6 +259,7 @@ def main() -> int:
             raise ValueError("quality-bridge follow-up decision is malformed")
         if not args.terminal_system_guard.is_file():
             _write_status(
+                status_output,
                 status="waiting",
                 detail="waiting_for_terminal_system_and_visual_evidence",
                 project=project,
@@ -298,6 +302,7 @@ def main() -> int:
         idle_polls = idle_polls + 1 if not pids else 0
         if idle_polls < args.required_idle_polls:
             _write_status(
+                status_output,
                 status="waiting",
                 detail=("waiting_for_consecutive_idle_gpu_polls" if not pids else "gpu_busy"),
                 project=project,
@@ -335,6 +340,7 @@ def main() -> int:
         )
         while child.poll() is None:
             _write_status(
+                status_output,
                 status="running",
                 detail="conditioning_ranking_four_arm_probe_and_posteval_running",
                 project=project,
@@ -346,6 +352,7 @@ def main() -> int:
             time.sleep(min(args.poll_seconds, 60.0))
         if child.returncode != 0:
             _write_status(
+                status_output,
                 status="failed",
                 detail="conditioning_ranking_runbook_failed",
                 project=project,
@@ -366,6 +373,7 @@ def main() -> int:
             raise FileNotFoundError("conditioning-ranking postevaluation is missing")
         sources["postevaluation"] = file_identity(postevaluation)
         _write_status(
+            status_output,
             status="completed",
             detail="conditioning_ranking_four_arm_probe_and_posteval_completed",
             project=project,

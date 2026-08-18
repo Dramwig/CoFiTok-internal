@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 from pathlib import Path
 
 import pytest
@@ -66,3 +67,24 @@ def test_supervisor_never_signals_or_authorizes_later_stages() -> None:
     assert "kill(" not in source
     assert "required_idle_polls" in source
     assert "terminal_system_claim_guard" in source
+
+
+def test_every_supervisor_status_write_supplies_the_output_path() -> None:
+    source = (
+        ROOT
+        / "scripts"
+        / "run_generation_conditioning_ranking_probe_supervisor.py"
+    ).read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    calls = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "_write_status"
+    ]
+    assert calls
+    assert all(
+        call.args or any(keyword.arg == "path" for keyword in call.keywords)
+        for call in calls
+    )
