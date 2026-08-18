@@ -1,0 +1,102 @@
+{
+  "active_chain": {
+    "cofitok_progress": {
+      "step": 44000,
+      "target_steps": 100000
+    },
+    "controller_pid": 618821,
+    "dense_progress": {
+      "step": 0,
+      "target_steps": 100000
+    },
+    "formal_checkout_revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "gpu_contention": {
+      "direct_comparison_allowed": false,
+      "maximum_gap_seconds": 16377.985275,
+      "reason": "incomplete_gpu_observation_coverage",
+      "unrelated_gpu_compute_observed": false
+    },
+    "only_gpu_compute_pid": 619775,
+    "runtime_claim_guard": {
+      "detail": "waiting_for_runtime_fairness_source",
+      "pid": 912744,
+      "revision": "6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46",
+      "status": "waiting"
+    },
+    "runtime_fairness_waiter": {
+      "detail": "waiting_for_both_exact_100k_training_reports",
+      "pid": 832803,
+      "revision": "85bf1d6ae5b44f401153d0d1e390fc3973ff4bed",
+      "status": "waiting"
+    },
+    "terminal_system_guard": {
+      "pid": 965918,
+      "revision": "8ec9a09ddcd981c1ffbd06b6bda81386b33321de",
+      "status": "waiting"
+    },
+    "trainer_pid": 619775,
+    "training_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a"
+  },
+  "claim_boundary": {
+    "active_waiter_replaced": false,
+    "broad_generation_superiority_claim_allowed": false,
+    "cost_efficiency_ranking_allowed": false,
+    "direct_runtime_comparison_allowed": false,
+    "full_300k_launch_allowed": false,
+    "gpu_execution_performed": false,
+    "process_signals_sent": false,
+    "quality_claim_allowed": false,
+    "release_authorization_allowed": false,
+    "training_launch_allowed": false
+  },
+  "finding": {
+    "current_deployed_chain_is_fail_closed": true,
+    "current_live_overclaim_present": false,
+    "future_regression_gap_present_before_fix": true,
+    "gap": "exclusive GPU coverage alone cannot make recovery-derived elapsed-time lower bounds exact enough for direct wall-clock, throughput, or cost-efficiency ranking",
+    "recovery_adjustment": {
+      "elapsed_seconds_role": "physical_lower_bound_including_orphaned_recovery_compute",
+      "orphaned_compute_seconds_lower_bound": 560.6116147041321,
+      "orphaned_images_lower_bound": 12800,
+      "orphaned_optimizer_steps_lower_bound": 200
+    }
+  },
+  "observed_at": "2026-08-18T12:23:15+08:00",
+  "role": "quality_bridge_runtime_lower_bound_claim_guard_audit",
+  "schema_version": 1,
+  "status": "pass",
+  "safeguard": {
+    "branch": "analysis/generation-quality-bridge-runtime-claim-guard-v1",
+    "deployed": false,
+    "direct_runtime_requirements": [
+      "complete_continuous_exclusive_gpu_observation_coverage",
+      "no_recovery_derived_elapsed_time_lower_bound_for_either_method"
+    ],
+    "revision": "0d1fa8db971c9b33b16f943f511efaf5e51b0ace",
+    "tree": "02bed3345634098b598f534721bd3c336eb41058"
+  },
+  "validation": {
+    "bundle": {
+      "bytes": 12171,
+      "removed_after_rehearsal": true,
+      "required_revision": "6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46",
+      "sha256": "8ce1d8b3f0a79acdaa930725bda10ce1e548f7e523d28cb94e2844c365a9bef4"
+    },
+    "local": {
+      "git_diff_check": "pass",
+      "python_compile": "pass",
+      "related_tests_passed": 144,
+      "tracked_clean": true
+    },
+    "remote_cpu_only": {
+      "cuda_visible_devices": "-1",
+      "git_diff_check": "pass",
+      "mkl_threads": 1,
+      "omp_threads": 1,
+      "path": "/tmp/cofitok-runtime-lower-bound-0d1fa8d-G7fIYW/CoFiTok-internal",
+      "python_compile": "pass",
+      "related_tests_passed": 144,
+      "tracked_clean": true
+    }
+  }
+}

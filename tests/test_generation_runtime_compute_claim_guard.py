@@ -78,11 +78,19 @@ def _cost(*, elapsed: float, peak_vram: int, adjustment: float = 0.0) -> dict:
     }
 
 
-def _fairness_report(tmp_path: Path) -> dict:
+def _fairness_report(
+    tmp_path: Path,
+    *,
+    cofitok_adjustment: float = 22.0,
+) -> dict:
     output_root = tmp_path / "quality"
     cofitok_run = output_root / "cofitok"
     dense_run = output_root / "dense"
-    cofitok = _cost(elapsed=10_022.0, peak_vram=80_000, adjustment=22.0)
+    cofitok = _cost(
+        elapsed=10_000.0 + cofitok_adjustment,
+        peak_vram=80_000,
+        adjustment=cofitok_adjustment,
+    )
     dense = _cost(elapsed=9_000.0, peak_vram=70_000)
     return {
         "schema_version": 1,
@@ -152,9 +160,12 @@ def _fairness_report(tmp_path: Path) -> dict:
         },
         "descriptive_comparison": {
             "role": "measured_outcomes_not_predeclared_advantage",
-            "cofitok_minus_dense_adjusted_elapsed_seconds": 1_022.0,
-            "cofitok_adjusted_elapsed_relative_change": 10_022.0 / 9_000.0
-            - 1.0,
+            "cofitok_minus_dense_adjusted_elapsed_seconds": (
+                cofitok["elapsed_seconds"] - dense["elapsed_seconds"]
+            ),
+            "cofitok_adjusted_elapsed_relative_change": (
+                cofitok["elapsed_seconds"] / dense["elapsed_seconds"] - 1.0
+            ),
             "cofitok_throughput_relative_change": (
                 cofitok["images_per_second"] / dense["images_per_second"] - 1.0
             ),
@@ -239,8 +250,16 @@ def _pair_report(fairness: dict, *, direct: bool) -> dict:
     }
 
 
-def _build(tmp_path: Path, *, direct: bool) -> dict:
-    fairness = _fairness_report(tmp_path)
+def _build(
+    tmp_path: Path,
+    *,
+    direct: bool,
+    cofitok_adjustment: float = 22.0,
+) -> dict:
+    fairness = _fairness_report(
+        tmp_path,
+        cofitok_adjustment=cofitok_adjustment,
+    )
     pair = _pair_report(fairness, direct=direct)
     fairness_path = tmp_path / "fairness.json"
     pair_path = tmp_path / "pair.json"
@@ -268,21 +287,79 @@ def test_guard_marks_incomplete_gpu_coverage_observational_only(
     assert policy["training_throughput_direct_comparison_allowed"] is False
     assert policy["cost_efficiency_ranking_allowed"] is False
     assert policy["observed_pair_runtime_parity_claim_allowed"] is False
-    assert "observational physical lower bounds" in report["claim_text"]
+    assert policy["physical_lower_bound_label_required"] is True
+    assert report["metric_roles"]["adjusted_training_elapsed_and_throughput"][
+        "role"
+    ] == "observational_physical_lower_bounds_only"
+    assert "physical lower bound" in report["claim_text"]
 
 
 def test_guard_allows_descriptive_runtime_comparison_only_with_complete_coverage(
     tmp_path: Path,
 ) -> None:
-    report = _build(tmp_path, direct=True)
+    report = _build(tmp_path, direct=True, cofitok_adjustment=0.0)
 
     assert report["decision"] == "direct_runtime_outcome_comparison_allowed"
     policy = report["claim_policy"]
     assert policy["training_wall_clock_direct_comparison_allowed"] is True
     assert policy["training_throughput_direct_comparison_allowed"] is True
     assert policy["cost_efficiency_ranking_allowed"] is True
+    assert policy["exclusive_gpu_observation_coverage_verified"] is True
+    assert policy["recovery_adjusted_elapsed_exact_for_both_methods"] is True
+    assert policy["physical_lower_bound_label_required"] is False
     assert policy["equal_wall_clock_budget_claim_allowed"] is False
     assert policy["training_speed_advantage_predeclared"] is False
+
+
+def test_guard_keeps_recovery_lower_bound_observational_with_complete_coverage(
+    tmp_path: Path,
+) -> None:
+    report = _build(tmp_path, direct=True, cofitok_adjustment=22.0)
+
+    assert report["decision"] == "runtime_cost_claims_observational_only"
+    policy = report["claim_policy"]
+    assert policy["exclusive_gpu_observation_coverage_verified"] is True
+    assert policy["recovery_adjusted_elapsed_exact_for_both_methods"] is False
+    assert policy["training_wall_clock_direct_comparison_allowed"] is False
+    assert policy["training_throughput_direct_comparison_allowed"] is False
+    assert policy["cost_efficiency_ranking_allowed"] is False
+    assert policy["physical_lower_bound_label_required"] is True
+    assert "GPU observation coverage is complete" in report["claim_text"]
+    assert "physical lower bound" in report["claim_text"]
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (
+        ("required", False),
+        ("provided", False),
+        ("orphaned_images_lower_bound", 1),
+        ("covered_orphan_archive_count", 0),
+    ),
+)
+def test_guard_rejects_inconsistent_recovery_adjustment_contract(
+    tmp_path: Path,
+    field: str,
+    value: object,
+) -> None:
+    fairness = _fairness_report(tmp_path)
+    pair = _pair_report(fairness, direct=False)
+    fairness["methods"]["cofitok"]["training_cost"][
+        "resume_compute_adjustment"
+    ][field] = value
+    fairness_path = tmp_path / "fairness.json"
+    pair_path = tmp_path / "pair.json"
+    fairness_identity = _write(fairness_path, fairness)
+    pair_identity = _write(pair_path, pair)
+
+    with pytest.raises(ValueError, match="recovery adjustment"):
+        build_guard(
+            runtime_fairness_report_path=fairness_path,
+            expected_runtime_fairness_sha256=fairness_identity["sha256"],
+            pair_monitor_path=pair_path,
+            expected_pair_monitor_sha256=pair_identity["sha256"],
+            expected_monitor_name=MONITOR,
+        )
 
 
 def test_guard_rejects_tampered_descriptive_runtime(tmp_path: Path) -> None:

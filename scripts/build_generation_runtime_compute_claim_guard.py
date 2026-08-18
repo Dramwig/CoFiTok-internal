@@ -70,6 +70,70 @@ def _relative_change(value: float, baseline: float) -> float:
     return (value - baseline) / baseline
 
 
+def _validate_recovery_adjustment(
+    method: str,
+    adjustment: Mapping[str, Any],
+    *,
+    effective_batch: int,
+) -> float:
+    required = adjustment.get("required")
+    provided = adjustment.get("provided")
+    applied = adjustment.get("applied")
+    if not all(isinstance(value, bool) for value in (required, provided, applied)):
+        raise ValueError(f"{method} recovery adjustment flags are invalid")
+    seconds = _finite(
+        adjustment.get("seconds"),
+        label=f"{method} recovery adjustment seconds",
+    )
+    hours = _finite(
+        adjustment.get("hours"),
+        label=f"{method} recovery adjustment hours",
+    )
+    event_count = int(adjustment.get("event_count", -1))
+    orphaned_steps = int(
+        adjustment.get("orphaned_optimizer_steps_lower_bound", -1)
+    )
+    orphaned_images = int(
+        adjustment.get("orphaned_images_lower_bound", -1)
+    )
+    discovered = int(adjustment.get("discovered_orphan_archive_count", -1))
+    covered = int(adjustment.get("covered_orphan_archive_count", -1))
+    reasons = adjustment.get("required_reasons")
+    issues = adjustment.get("issues")
+    if (
+        seconds < 0.0
+        or not _same_float(hours, seconds / 3600.0)
+        or not isinstance(reasons, list)
+        or issues != []
+        or required is not applied
+        or provided is not applied
+    ):
+        raise ValueError(f"{method} recovery adjustment contract differs")
+    if applied:
+        if (
+            seconds <= 0.0
+            or event_count < 1
+            or orphaned_steps < 1
+            or orphaned_images != orphaned_steps * effective_batch
+            or discovered < 1
+            or covered != discovered
+            or event_count != discovered
+            or not reasons
+        ):
+            raise ValueError(f"{method} recovery adjustment evidence differs")
+    elif (
+        seconds != 0.0
+        or event_count != 0
+        or orphaned_steps != 0
+        or orphaned_images != 0
+        or discovered != 0
+        or covered != 0
+        or reasons
+    ):
+        raise ValueError(f"{method} unexpected recovery adjustment evidence")
+    return seconds
+
+
 def _bound_json(
     path: Path,
     *,
@@ -108,7 +172,10 @@ def _validate_cost(
         if int(cost.get(key, -1)) != expected:
             raise ValueError(f"{method} {key} differs from the runtime contract")
     if (
-        int(cost.get("samples_seen", -1)) != expected_samples
+        int(cost.get("target_steps", -1))
+        != expected_samples // expected_runtime["effective_batch_size"]
+        or expected_samples % expected_runtime["effective_batch_size"] != 0
+        or int(cost.get("samples_seen", -1)) != expected_samples
         or int(cost.get("expected_samples_seen", -1)) != expected_samples
     ):
         raise ValueError(f"{method} training images differ from the runtime contract")
@@ -133,9 +200,10 @@ def _validate_cost(
         or not _same_float(throughput, expected_samples / elapsed)
     ):
         raise ValueError(f"{method} adjusted physical cost is inconsistent")
-    adjustment_seconds = _finite(
-        adjustment.get("seconds"),
-        label=f"{method} recovery adjustment seconds",
+    adjustment_seconds = _validate_recovery_adjustment(
+        method,
+        adjustment,
+        effective_batch=expected_runtime["effective_batch_size"],
     )
     if adjustment_seconds < 0.0 or not _same_float(
         elapsed, reported + adjustment_seconds
@@ -349,25 +417,57 @@ def build_guard(
         fairness=fairness,
         expected_monitor_name=expected_monitor_name,
     )
-    direct = contention["direct_comparison_allowed"] is True
+    contention_direct = contention["direct_comparison_allowed"] is True
+    lower_bound_methods = [
+        method
+        for method in EXPECTED_METHODS
+        if fairness["costs"][method]["elapsed_seconds_role"]
+        == "physical_lower_bound_including_orphaned_recovery_compute"
+    ]
+    recovery_elapsed_exact = not lower_bound_methods
+    direct = contention_direct and recovery_elapsed_exact
     decision = (
         "direct_runtime_outcome_comparison_allowed"
         if direct
         else "runtime_cost_claims_observational_only"
     )
-    claim_text = (
-        "The matched pair used the same resolved runtime configuration, steps, "
-        "and training images, and complete exclusive GPU observation coverage "
-        "permits a descriptive direct comparison of recovery-adjusted training "
-        "wall-clock and throughput. This remains a measured outcome rather than "
-        "an equal wall-clock, GPU-hour, or FLOP training budget."
+    if direct:
+        claim_text = (
+            "The matched pair used the same resolved runtime configuration, "
+            "steps, and training images. Complete exclusive GPU observation "
+            "coverage and the absence of recovery-derived elapsed-time lower "
+            "bounds permit a descriptive direct comparison of training "
+            "wall-clock and throughput. This remains a measured outcome rather "
+            "than an equal wall-clock, GPU-hour, or FLOP training budget."
+        )
+    elif lower_bound_methods:
+        coverage_clause = (
+            "GPU observation coverage is also insufficient. "
+            if not contention_direct
+            else "GPU observation coverage is complete, but "
+        )
+        claim_text = (
+            "The matched pair used the same resolved runtime configuration, "
+            "steps, and training images, and recovery compute was accounted for. "
+            + coverage_clause
+            + "At least one recovery-adjusted elapsed value is only a physical "
+            "lower bound, so wall-clock, throughput, and cost-efficiency ranking "
+            "remain observational-only."
+        )
+    else:
+        claim_text = (
+            "The matched pair used the same resolved runtime configuration, "
+            "steps, and training images. GPU observation coverage is "
+            "insufficient for direct wall-clock, throughput, or cost-efficiency "
+            "ranking, so the process-time values are observational only."
+        )
+    elapsed_metric_role = (
+        "descriptive_direct_measured_outcomes"
         if direct
         else (
-            "The matched pair used the same resolved runtime configuration, "
-            "steps, and training images, and recovery-adjusted physical elapsed "
-            "time was accounted for. GPU observation coverage is insufficient "
-            "for direct wall-clock, throughput, or cost-efficiency ranking, so "
-            "those values are observational physical lower bounds only."
+            "observational_physical_lower_bounds_only"
+            if lower_bound_methods
+            else "observational_process_time_measurements_only"
         )
     )
     return {
@@ -393,11 +493,8 @@ def build_guard(
         },
         "metric_roles": {
             "adjusted_training_elapsed_and_throughput": {
-                "role": (
-                    "descriptive_direct_measured_outcomes"
-                    if direct
-                    else "observational_physical_lower_bounds_only"
-                ),
+                "role": elapsed_metric_role,
+                "physical_lower_bound_methods": lower_bound_methods,
                 "methods": {
                     method: {
                         "elapsed_seconds": fairness["costs"][method][
@@ -427,6 +524,12 @@ def build_guard(
             "runtime_configuration_parity_claim_allowed": True,
             "physical_recovery_compute_accounting_claim_allowed": True,
             "adjusted_elapsed_point_estimate_reporting_allowed": True,
+            "exclusive_gpu_observation_coverage_verified": contention_direct,
+            "recovery_adjusted_elapsed_exact_for_both_methods": (
+                recovery_elapsed_exact
+            ),
+            "physical_lower_bound_label_required": bool(lower_bound_methods),
+            "observational_only_label_required": not direct,
             "training_wall_clock_direct_comparison_allowed": direct,
             "training_throughput_direct_comparison_allowed": direct,
             "cost_efficiency_ranking_allowed": direct,
@@ -452,6 +555,12 @@ def build_guard(
                 "Direct wall-clock and throughput comparison requires complete, "
                 "continuous GPU observation coverage with no unrelated GPU "
                 "compute, as verified from the terminal pair monitor."
+            ),
+            (
+                "A recovery adjustment derived from orphaned metrics is a "
+                "physical elapsed-time lower bound. Any such method disables "
+                "direct wall-clock, throughput, and cost-efficiency ranking even "
+                "when GPU observation coverage is otherwise complete."
             ),
             (
                 "Equal optimizer steps and images do not establish an equal "
