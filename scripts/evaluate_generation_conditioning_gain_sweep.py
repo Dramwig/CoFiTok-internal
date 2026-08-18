@@ -185,7 +185,7 @@ def _request(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
-def _validate_completed_report(
+def validate_completed_gain_sweep_report(
     report: Mapping[str, Any],
     *,
     git: Mapping[str, Any],
@@ -205,15 +205,32 @@ def _validate_completed_report(
         raise ValueError("Completed conditioning gain sweep binding differs")
     runtime = report.get("runtime")
     summary = report.get("gain_summary")
+    rows_by_gain = report.get("rows_by_gain")
+    timestep_summaries = report.get("timestep_summaries")
+    gain_keys = {
+        format(float(gain), ".12g") for gain in request["gains"]
+    }
     if (
         not isinstance(runtime, Mapping)
         or runtime.get("device") != "cpu"
         or not math.isfinite(float(runtime.get("elapsed_seconds", -1.0)))
         or float(runtime["elapsed_seconds"]) <= 0.0
         or not isinstance(summary, Mapping)
-        or len(summary) != len(request["gains"])
+        or set(summary) != gain_keys
+        or not isinstance(rows_by_gain, Mapping)
+        or set(rows_by_gain) != gain_keys
+        or not isinstance(timestep_summaries, Mapping)
+        or set(timestep_summaries) != gain_keys
     ):
         raise ValueError("Completed conditioning gain sweep is malformed")
+    expected_rows = int(request["num_samples"]) * len(request["timesteps"])
+    if any(
+        not isinstance(rows, list) or len(rows) != expected_rows
+        for rows in rows_by_gain.values()
+    ):
+        raise ValueError("Completed conditioning gain sweep row count differs")
+    if summarize_gain_rows(rows_by_gain) != summary:
+        raise ValueError("Completed conditioning gain sweep summary differs")
 
 
 def main() -> None:
@@ -266,7 +283,7 @@ def main() -> None:
                     "Conditioning gain sweep exists; pass --resume to validate it"
                 )
             report = read_json_object(output, name="conditioning gain sweep")
-            _validate_completed_report(
+            validate_completed_gain_sweep_report(
                 report,
                 git=git,
                 checkpoint=checkpoint,
@@ -337,7 +354,7 @@ def main() -> None:
             },
         }
         write_json_report(output, report)
-        _validate_completed_report(
+        validate_completed_gain_sweep_report(
             report,
             git=git,
             checkpoint=checkpoint,

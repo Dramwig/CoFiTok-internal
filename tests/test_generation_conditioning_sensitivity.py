@@ -38,6 +38,9 @@ from scripts.evaluate_generation_conditioning_gain_sweep import (
     apply_class_embedding_gain,
     summarize_gain_rows,
 )
+from scripts.build_generation_conditioning_gain_sweep_comparison import (
+    build_comparison as build_gain_comparison,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -492,3 +495,105 @@ def test_summarize_gain_rows_tracks_correct_label_advantage() -> None:
     assert summary["relative_delta_to_correct_rms_mean"][
         "correct_vs_wrong"
     ] == pytest.approx(0.3)
+
+
+def _gain_comparison_source(
+    checkpoint_sha: str,
+    *,
+    synthesis_mode: str,
+    recovered: bool,
+) -> dict:
+    def gain_summary(
+        *,
+        count: int,
+        improvement: float,
+        delta: float,
+    ) -> dict:
+        return {
+            "row_count": 8,
+            "correct_better_count": {
+                "than_wrong": count,
+                "than_null": count,
+            },
+            "correct_relative_mse_improvement_mean": {
+                "versus_wrong": improvement,
+                "versus_null": improvement,
+            },
+            "relative_delta_to_correct_rms_mean": {
+                "correct_vs_wrong": delta,
+                "correct_vs_null": delta,
+                "wrong_vs_null": delta,
+            },
+        }
+
+    return {
+        "git": {
+            "revision": "a" * 40,
+            "branch": "conditioning-gain",
+            "tracked_dirty": False,
+        },
+        "request": {
+            "weights": "ema",
+            "num_samples": 8,
+            "start_label": 0,
+            "wrong_label_offset": 2,
+            "timesteps": [5],
+            "gains": [1.0, 2.0],
+            "noise_seed": 100,
+            "threads": 1,
+        },
+        "dataset": {"alias": "imagenet_256", "samples": list(range(8))},
+        "checkpoint": {"sha256": checkpoint_sha},
+        "model": {
+            "predictor_type": "scalable_unet",
+            "synthesis_mode": synthesis_mode,
+            "num_classes": 1000,
+        },
+        "gain_summary": {
+            "1": gain_summary(count=4, improvement=0.0, delta=0.1),
+            "2": gain_summary(
+                count=8 if recovered else 4,
+                improvement=0.1 if recovered else 0.0,
+                delta=0.2,
+            ),
+        },
+    }
+
+
+@pytest.mark.parametrize(
+    ("recovered", "expected_action"),
+    [
+        (True, "validate_shared_conditioning_gain_in_sampling"),
+        (
+            False,
+            "develop_matched_training_time_label_ranking_or_contrastive_"
+            "denoising_loss",
+        ),
+    ],
+)
+def test_build_gain_comparison_selects_evidence_based_next_action(
+    recovered: bool,
+    expected_action: str,
+) -> None:
+    cofitok = _gain_comparison_source(
+        "a" * 64,
+        synthesis_mode="fixed_basis",
+        recovered=recovered,
+    )
+    dense = _gain_comparison_source(
+        "b" * 64,
+        synthesis_mode="dense_identity",
+        recovered=recovered,
+    )
+
+    report = build_gain_comparison(
+        cofitok=cofitok,
+        dense=dense,
+        sources={"cofitok_k8": {"sha256": "c" * 64}, "dense_identity": {"sha256": "d" * 64}},
+        git={"revision": "e" * 40, "branch": "comparison", "tracked_dirty": False},
+    )
+
+    interpretation = report["diagnostic_interpretation"]
+    assert interpretation["shared_inference_gain_recovery_supported"] is recovered
+    assert interpretation["recommended_next_action"] == expected_action
+    assert report["claim_boundary"]["authorizes_training"] is False
