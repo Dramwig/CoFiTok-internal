@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "role": "generation_terminal_evidence_chain_live_continuation_receipt",
+  "captured_at": "2026-08-18T12:35:46+08:00",
+  "status": "in_progress",
+  "scientific_qualification": "pending",
+  "active_training": {
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "pair_status": "running",
+    "stage": "cofitok_training",
+    "issues": [],
+    "cofitok_step": 44250,
+    "cofitok_samples_seen": 2832000,
+    "dense_step": 0
+  },
+  "latest_bound_checkpoint": {
+    "step": 40000,
+    "bytes": 1010937514,
+    "sha256": "f6b0b3d285d4565d7d163dedc4727d5d9580581cf857e4856df6801dfff283a2",
+    "latest_json_sha256": "4b2c77ef34a711cc482b9980ee5ed618f411191223ebca4fc23188edf9288f54"
+  },
+  "transition_state": {
+    "cofitok_50k_checkpoint_waiter": {
+      "pid": 822372,
+      "status": "waiting",
+      "detail": "checkpoint_missing"
+    },
+    "controller_identity_guard": {
+      "status": "observing",
+      "detail": "exact_bound_controller_identity_is_active",
+      "identity_loss_polls": 0,
+      "identity_mismatches": []
+    },
+    "serial_50k_transition_static_audit": {
+      "revision": "7c7bc42e26c80df809180339fa69279d238eb24f",
+      "tree": "6a3884177c64b8f066a1816535d9dcc31ccf1e76",
+      "result": "pass"
+    }
+  },
+  "terminal_chain": {
+    "terminal_evidence_audit_revision": "8cc6ab6dedad",
+    "runtime_fairness": "waiting_for_both_exact_100k_training_reports",
+    "runtime_claim_guard": "waiting_for_runtime_fairness_source",
+    "terminal_system_guard": "waiting_for_exact_terminal_system_sources",
+    "required_terminal_reports_exist": false
+  },
+  "runtime_claim_boundary": {
+    "active_run_direct_runtime_ranking_allowed": false,
+    "reason": [
+      "immutable_gpu_observation_gap",
+      "cofitok_recovery_elapsed_is_a_physical_lower_bound"
+    ],
+    "future_guard_revision": "0d1fa8db971c9b33b16f943f511efaf5e51b0ace",
+    "future_guard_evidence_revision": "8f72d931130f"
+  },
+  "source_identities": {
+    "pair_monitor": {
+      "bytes": 22049,
+      "sha256": "f461a0868399e0ade77a7ab5591893113e864ce2bb4a2a475d67b564f4cdb89b"
+    },
+    "train_metrics_prefix": {
+      "bytes": 837328,
+      "sha256": "98d43584622ffbb1b26a87937d9eaa8746e0b9ab1ea0a94974d9fa4b8d04d483"
+    },
+    "cofitok_50k_waiter_status": {
+      "bytes": 1170,
+      "sha256": "f06471b4280cda43cb1046bbf3432828362b606a64ac2e63b9f776e236cc9d11"
+    },
+    "controller_identity_guard_status": {
+      "bytes": 3947,
+      "sha256": "e3ebc54fcf1092b61464a0e950de63855f487da94c0630b3e31805504c8c0ca8"
+    },
+    "runtime_fairness_waiter_status": {
+      "bytes": 1659,
+      "sha256": "bc072ed8be1ac4069dfdbc4a85ee097e8c8ecdf7531b20b2f63bf1f4b32cafda"
+    },
+    "runtime_claim_guard_waiter_status": {
+      "bytes": 3762,
+      "sha256": "8d0376553403c49f7d83469d85f6f0a0fca318fff9fbbea9edffa06053c2a870"
+    },
+    "terminal_system_guard_waiter_status": {
+      "bytes": 2550,
+      "sha256": "3fadc1d12aea02903c282619bf12f2757da153844c371c0bb688de7bb742ce80"
+    }
+  },
+  "claim_boundary": {
+    "mechanism_advantage_established": true,
+    "repeated_directional_fid_advantage_established": true,
+    "terminal_matched_large_scale_quality_claim_established": false,
+    "broad_generation_superiority_allowed": false,
+    "sota_claim_allowed": false,
+    "release_or_training_authorization_granted": false
+  }
+}
