@@ -27,6 +27,9 @@ from scripts.evaluate_generation_conditioning_sensitivity import (
     parameter_update_statistics,
     summarize_timestep_rows,
 )
+from scripts.build_generation_conditioning_sensitivity_comparison import (
+    build_comparison,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -231,3 +234,78 @@ def test_conditioning_sensitivity_cli_rejects_existing_output_without_resume(
 
     assert repeated.returncode != 0
     assert "pass --resume" in repeated.stderr
+
+
+def _comparison_source(checkpoint_sha: str, *, synthesis_mode: str) -> dict:
+    rows = []
+    for index in range(2):
+        rows.append(
+            {
+                "sample_index": index,
+                "timestep": 5,
+                "correct_label": index,
+                "wrong_label": index + 1,
+                "noise_seed": 100 + index,
+                "relative_delta_to_correct_rms": {
+                    "correct_vs_wrong": 0.01 + index * 0.001,
+                    "correct_vs_null": 0.009 + index * 0.001,
+                    "wrong_vs_null": 0.008,
+                },
+                "correct_relative_mse_improvement": {
+                    "versus_wrong": 0.001 if index == 0 else -0.001,
+                    "versus_null": -0.002,
+                },
+                "correct_better": {
+                    "than_wrong": index == 0,
+                    "than_null": False,
+                },
+            }
+        )
+    return {
+        "git": {"revision": "a" * 40, "branch": "diagnostic", "tracked_dirty": False},
+        "request": {
+            "weights": "ema",
+            "num_samples": 2,
+            "start_label": 0,
+            "wrong_label_offset": 1,
+            "timesteps": [5],
+            "noise_seed": 100,
+            "threads": 1,
+        },
+        "dataset": {"alias": "imagenet_256", "samples": [1, 2]},
+        "weights": "ema",
+        "checkpoint": {"sha256": checkpoint_sha},
+        "model": {
+            "predictor_type": "scalable_unet",
+            "synthesis_mode": synthesis_mode,
+            "num_classes": 4,
+        },
+        "sample_rows": rows,
+        "parameter_update_audit": {
+            "ema": {
+                "predictor.class_embed.weight": {"relative_update_rms": 0.03}
+            }
+        },
+    }
+
+
+def test_build_conditioning_comparison_reports_matched_sign_tests() -> None:
+    cofitok = _comparison_source("a" * 64, synthesis_mode="fixed_basis")
+    dense = _comparison_source("b" * 64, synthesis_mode="dense_identity")
+
+    report = build_comparison(
+        cofitok=cofitok,
+        dense=dense,
+        sources={"cofitok_k8": {"sha256": "c" * 64}, "dense_identity": {"sha256": "d" * 64}},
+        git={"revision": "e" * 40, "branch": "comparison", "tracked_dirty": False},
+    )
+
+    assert report["status"] == "completed"
+    assert report["paired_differences"]["row_count"] == 2
+    assert report["methods"]["cofitok_k8"]["correct_better_count"] == {
+        "than_wrong": 1,
+        "than_null": 0,
+    }
+    assert report["diagnostic_interpretation"][
+        "shared_conditioning_weakness_supported"
+    ] is True

@@ -300,7 +300,7 @@ def _manifest(
     }
 
 
-def _validate_completed_report(
+def validate_completed_report(
     report: Mapping[str, Any],
     *,
     manifest: Mapping[str, Any],
@@ -725,7 +725,7 @@ def main() -> None:
                 report_path,
                 name="conditioning sensitivity report",
             )
-            _validate_completed_report(
+            validate_completed_report(
                 report,
                 manifest=expected_manifest,
                 manifest_identity=manifest_identity,
@@ -819,7 +819,7 @@ def main() -> None:
             },
         }
         write_json_report(report_path, report)
-        _validate_completed_report(
+        validate_completed_report(
             report,
             manifest=expected_manifest,
             manifest_identity=manifest_identity,
