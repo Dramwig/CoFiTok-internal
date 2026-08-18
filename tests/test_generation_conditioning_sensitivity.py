@@ -30,6 +30,10 @@ from scripts.evaluate_generation_conditioning_sensitivity import (
 from scripts.build_generation_conditioning_sensitivity_comparison import (
     build_comparison,
 )
+from scripts.audit_generation_conditioning_path import (
+    audit_conditioning_path,
+    summarize_path_rows,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -309,3 +313,44 @@ def test_build_conditioning_comparison_reports_matched_sign_tests() -> None:
     assert report["diagnostic_interpretation"][
         "shared_conditioning_weakness_supported"
     ] is True
+
+
+def test_conditioning_path_audit_reports_every_block_and_timestep() -> None:
+    config = ModelConfig(
+        image_channels=3,
+        image_size=8,
+        token_count=1,
+        token_channels=3,
+        base_channels=8,
+        predictor_type="scalable_unet",
+        predictor_use_feedback=False,
+        predictor_channel_multipliers=[1],
+        predictor_num_res_blocks=1,
+        predictor_attention_resolutions=[],
+        predictor_num_heads=1,
+        num_classes=4,
+        synthesis_mode="dense_identity",
+    )
+    model = CoFiTokTiny(config).eval()
+
+    audit = audit_conditioning_path(
+        model=model,
+        labels=[0, 1],
+        wrong_label_offset=1,
+        timesteps=[1, 2],
+    )
+
+    assert audit["row_count"] == 4
+    assert audit["block_count"] == 4
+    assert len(audit["summary"]) == 2
+    assert audit["summary"][0]["label_count"] == 2
+    assert (
+        audit["summary"][0]["block_modulation_relative_delta"]
+        ["correct_vs_wrong"]["mean"]
+        > 0.0
+    )
+
+
+def test_summarize_path_rows_rejects_missing_timestep() -> None:
+    with pytest.raises(ValueError, match="No conditioning path rows"):
+        summarize_path_rows([], [5])
