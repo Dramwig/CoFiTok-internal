@@ -16,6 +16,7 @@ SCHEMA_VERSION = 1
 MANIFEST_ROLE = "generation_postbridge_two_stage_deployment_manifest"
 REPORT_ROLE = "generation_postbridge_two_stage_deployment"
 FORMAL_BRANCH = "scale/generative-system"
+PREFLIGHT_BLOCKED_EXIT_CODE = 76
 DEFAULT_TERMINAL_STATUSES = [
     "cancelled",
     "complete",
@@ -853,10 +854,6 @@ def preflight_deployment(
         current_revision=manifest["formal_repository"]["revision"],
         target_added_paths=target_added_paths,
     )
-    if conflict_scan["status"] != "pass":
-        raise ValueError(
-            f"formal repository has target-added untracked conflicts: {conflict_scan['conflicts']}"
-        )
     after = git_state(formal_repository)
     immutable_fields = (
         "revision",
@@ -872,11 +869,13 @@ def preflight_deployment(
     )
     if any(before[field] != after[field] for field in immutable_fields):
         raise ValueError("formal repository changed during preflight")
+    apply_ready = conflict_scan["status"] == "pass"
     return {
         "schema_version": SCHEMA_VERSION,
         "role": REPORT_ROLE,
-        "status": "pass",
+        "status": "pass" if apply_ready else "blocked",
         "mode": "preflight",
+        "apply_ready": apply_ready,
         "created_at": _utc_now(),
         "manifest": dict(manifest_identity),
         "formal_repository": {
@@ -1075,6 +1074,11 @@ def apply_deployment(
         integration_bundle=integration_bundle,
         temporary_parent=temporary_parent,
     )
+    if preflight.get("status") != "pass" or preflight.get("apply_ready") is not True:
+        raise ValueError(
+            "post-bridge preflight is not apply-ready: "
+            f"{preflight.get('untracked_target_conflicts', {}).get('conflicts', [])}"
+        )
     inactivity_before_fetch = require_inactive_bound_training(
         manifest,
         proc_root=proc_root,
@@ -1262,6 +1266,8 @@ def main() -> None:
         )
     write_json_atomic(output, report)
     print(output)
+    if args.mode == "preflight" and report.get("status") != "pass":
+        raise SystemExit(PREFLIGHT_BLOCKED_EXIT_CODE)
 
 
 if __name__ == "__main__":

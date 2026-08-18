@@ -422,7 +422,7 @@ def test_apply_requires_exact_target_and_rejects_untracked_target_conflict(
     conflict = fixture["formal"] / "src/postbridge.py"
     conflict.parent.mkdir(parents=True)
     conflict.write_text("user-owned\n", encoding="utf-8")
-    with pytest.raises(ValueError, match="target-added untracked conflicts"):
+    with pytest.raises(ValueError, match="preflight is not apply-ready"):
         apply_deployment(
             manifest=fixture["manifest"],
             manifest_identity=fixture["manifest_identity"],
@@ -448,9 +448,13 @@ def test_preflight_rejects_ignored_untracked_target_conflict(tmp_path: Path) -> 
     conflict.parent.mkdir(parents=True)
     conflict.write_text("ignored user-owned content\n", encoding="utf-8")
 
-    with pytest.raises(ValueError, match="target-added untracked conflicts"):
-        _preflight(fixture)
+    report = _preflight(fixture)
 
+    assert report["status"] == "blocked"
+    assert report["apply_ready"] is False
+    assert report["untracked_target_conflicts"]["conflicts"] == [
+        "src/postbridge.py"
+    ]
     assert conflict.read_text(encoding="utf-8") == "ignored user-owned content\n"
     assert _git(fixture["formal"], "rev-parse", "HEAD") == fixture[
         "formal_revision"
@@ -580,3 +584,45 @@ def test_load_manifest_rejects_manifest_sha_drift(tmp_path: Path) -> None:
     assert file_identity(fixture["manifest_path"])["sha256"] == fixture[
         "manifest_identity"
     ]["sha256"]
+
+
+def test_cli_persists_blocked_preflight_report_before_nonzero_exit(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    conflict = fixture["formal"] / "src/postbridge.py"
+    conflict.parent.mkdir(parents=True)
+    conflict.write_text("user-owned\n", encoding="utf-8")
+    output = tmp_path / "reports/blocked-preflight.json"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(DEPLOYER),
+            "--manifest",
+            str(fixture["manifest_path"]),
+            "--formal-repository",
+            str(fixture["formal"]),
+            "--bootstrap-bundle",
+            str(fixture["bootstrap_bundle"]),
+            "--integration-bundle",
+            str(fixture["integration_bundle"]),
+            "--output",
+            str(output),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 76
+    report = json.loads(output.read_text(encoding="utf-8"))
+    assert report["status"] == "blocked"
+    assert report["apply_ready"] is False
+    assert report["formal_repository"]["unchanged"] is True
+    assert report["untracked_target_conflicts"]["conflicts"] == [
+        "src/postbridge.py"
+    ]
+    assert _git(fixture["formal"], "rev-parse", "HEAD") == fixture[
+        "formal_revision"
+    ]
