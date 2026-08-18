@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "role": "generation_postbridge_two_stage_bundle_rehearsal_receipt",
+  "status": "pass",
+  "created_at": "2026-08-18T13:45:28.9348808+08:00",
+  "integration": {
+    "branch": "integration/generation-postbridge-hardening-v1",
+    "revision": "dc02bb8a94068bd33157b446cf4f19fa16f7a5f3",
+    "tree": "d20bd8e72f7fb8b03971de29b26cac2213396786",
+    "training_base_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a"
+  },
+  "new_server_formal_repository": {
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "branch": "scale/generative-system",
+    "revision_before": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "revision_after": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tracked_rows_before": 0,
+    "tracked_rows_after": 0,
+    "training_base_object_present_before": false,
+    "secondary_bootstrap_prerequisite_present": true,
+    "secondary_bootstrap_prerequisite": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+    "direct_integration_bundle_verify_possible_before_bootstrap": false,
+    "formal_repository_fetched_or_modified": false
+  },
+  "bootstrap_bundle": {
+    "purpose": "Provide the active training revision to a newly recloned server repository without embedding the later integration history.",
+    "bytes": 40132480,
+    "sha256": "f815fb52478e49cc3c1b1815e8abc46b5d3cc12a6c24fb74a9f1b0c6eeb780b1",
+    "advertised_ref": "refs/heads/rehearsal/generation-training-base-cf0",
+    "advertised_head": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "prerequisites": [
+      "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+      "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+    ],
+    "commit_count_from_formal_head": 232,
+    "local_verify": "pass",
+    "formal_repository_read_only_verify": "pass",
+    "isolated_clone_fetch": "pass"
+  },
+  "integration_bundle": {
+    "purpose": "Advance the exact active training revision to the validated post-bridge integration head.",
+    "bytes": 8638145,
+    "sha256": "9735184a62e10fddbcc7b06f9b0c5f6f6ffcb6ee5d12316882564fb3fca1b789",
+    "advertised_ref": "refs/heads/integration/generation-postbridge-hardening-v1",
+    "advertised_head": "dc02bb8a94068bd33157b446cf4f19fa16f7a5f3",
+    "prerequisites": [
+      "cf0e5faa94bf4ab38d947b921935b3b765b5537a"
+    ],
+    "commit_count_from_training_base": 164,
+    "local_verify": "pass",
+    "isolated_clone_verify_after_bootstrap": "pass",
+    "isolated_clone_fetch": "pass"
+  },
+  "isolated_remote_rehearsal": {
+    "repository": "/tmp/cofitok-postbridge-hardening-rehearsal-dc02bb8",
+    "clone_mode": "local_no_hardlinks",
+    "training_base_after_bootstrap": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "integration_head_after_second_fetch": "dc02bb8a94068bd33157b446cf4f19fa16f7a5f3",
+    "git_fsck_no_dangling": "pass",
+    "formal_head_unchanged": true,
+    "formal_branch_unchanged": true,
+    "formal_tracked_state_unchanged": true
+  },
+  "cleanup": {
+    "local_temporary_bundles_removed": true,
+    "remote_temporary_bundles_removed": true,
+    "remote_isolated_clone_removed": true,
+    "checkpoint_or_project_output_removed": false
+  },
+  "active_training_snapshot": {
+    "checked_at": "2026-08-18T13:44:55.1266573+08:00",
+    "status": "running",
+    "stage": "cofitok_training",
+    "issues": [],
+    "cofitok_step": 45700,
+    "cofitok_samples_seen": 2924800,
+    "dense_step": 0,
+    "latest_checkpoint": {
+      "step": 45000,
+      "sha256": "703a89752ad8f6937f78fff2b446062c4b3cbe801c871fd2ed9dd0fae805ef2b"
+    },
+    "free_bytes": 321599799296
+  },
+  "transition_chain": {
+    "cofitok_30k_ema_transition": "pass",
+    "cofitok_31k_first_post_teacher_validation": "pass",
+    "cofitok_40k_full_warmup": "pass",
+    "cofitok_50k_checkpoint_waiter": "waiting_checkpoint_missing",
+    "controller_identity_guard": "observing_exact_bound_identity",
+    "controller_identity_loss_polls": 0,
+    "controller_identity_mismatches": [],
+    "terminal_and_capacity_children_started": false
+  },
+  "claim_boundary": {
+    "deployment_performed": false,
+    "formal_checkout_fetch_performed": false,
+    "active_training_checkout_modified": false,
+    "training_process_signals_sent": false,
+    "gpu_work_started": false,
+    "sampling_or_evaluation_started": false,
+    "full_300k_launch_performed": false,
+    "release_authorization_created": false,
+    "large_scale_generation_advantage_claim_created": false
+  }
+}
