@@ -179,3 +179,41 @@ It does not replace the pair monitor, training reports, terminal quality
 result, matched uncertainty report, promotion gate, or completion audit. Its
 only claim is that the exact bound controller remains present, or that its
 identity was lost before terminal completion.
+
+## Post-deployment 40K milestone
+
+The guard remained `observing` with zero identity-loss polls while the CoFiTok
+run crossed step 40,000. The independently deployed EMA-teacher full-warmup
+waiter then reached a terminal pass:
+
+```text
+status:                    pass
+detail:                    consistency_schedule_transition_verified
+audited steps:             39,500 through 40,000
+active rows:               11
+EMA consistency scale:     0.95 through 1.00
+samples_seen binding:      verified (step * 64)
+strictly increasing rows:  true
+report bytes:              20,929
+report SHA256:             75dfadd6566414a83e2c0ca7cfe32728d78365f4c76742dccd4dffa45198b754
+```
+
+The step-40,000 atomic checkpoint and adjacent integrity manifest were also
+present without loading or hashing the checkpoint payload during active
+training:
+
+```text
+checkpoint bytes:   1,010,937,514
+bound checkpoint SHA256 from latest.json/sidecar:
+  f6b0b3d285d4565d7d163dedc4727d5d9580581cf857e4856df6801dfff283a2
+dataset SHA256:
+  6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659
+runtime SHA256:
+  d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e
+training revision:
+  cf0e5faa94bf4ab38d947b921935b3b765b5537a
+```
+
+The 50K physical-integrity waiter remains active and read-only. No conclusion
+about the 50K checkpoint, CoFiTok 100K completion, dense 100K completion, or
+terminal generation quality is implied by this 40K pass.
