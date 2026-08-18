@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "role": "generation_quality_bridge_50k_transition_readiness_audit",
+  "status": "pass",
+  "decision": "ready_for_existing_runbook_50k_transition",
+  "audited_at": "2026-08-18T11:40:41+08:00",
+  "scope": {
+    "read_only": true,
+    "cpu_only_tests": true,
+    "active_training_modified": false,
+    "process_signals_sent": false,
+    "gpu_processes_started": false,
+    "promotion_or_release_authorization": false,
+    "full_300k_launch_allowed": false
+  },
+  "training_identity": {
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1"
+  },
+  "audited_sources": {
+    "checkpointing": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/src/cofitok/training/checkpointing.py",
+      "bytes": 27939,
+      "sha256": "339334890bc44bcabf04ba004ead3e855d08e8efcc73feca42580258257281f2"
+    },
+    "trainer": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/scripts/train_generation.py",
+      "bytes": 40169,
+      "sha256": "6377b3cb6c4a8bdd13d6572e19ddd394ded716537bfd09367ae2efdce9ed5131"
+    },
+    "runbook": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/artifacts/runbooks/generation_stability_full_data_quality_bridge_100k_execute.sh",
+      "bytes": 27943,
+      "sha256": "f0531763b4b888964a75923a8d59cb8cf8d1c79bd7782f845006c39e1a57fe73"
+    },
+    "cofitok_config": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/configs/generation/imagenet256_stability_quality_bridge_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k.json",
+      "bytes": 3019,
+      "sha256": "40b5815c1aa92c1a22c585ddbe57d5232e57a031ece238bd27d1a0a1422fa14e"
+    },
+    "checkpoint_waiter": {
+      "revision": "172388fc4d873bb1001313f979442516ea7b5069",
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-checkpoint-waiter-172388f/scripts/wait_generation_checkpoint_integrity_audit.py",
+      "bytes": 14973,
+      "sha256": "eafc4e1f7b33f8b890883ac4878944a1d57f41aca02dc0483b9e82d1259fca8b"
+    }
+  },
+  "checkpoint_contract": {
+    "target_steps": 100000,
+    "checkpoint_interval": 5000,
+    "keep_last_checkpoints": 3,
+    "protected_checkpoint_steps": [50000, 100000],
+    "evaluation_interval": 1000,
+    "log_interval": 50,
+    "publication_order": [
+      "temporary payload write and file fsync",
+      "atomic payload replace",
+      "payload byte count and streaming SHA256",
+      "atomic integrity sidecar publication",
+      "atomic latest.json publication",
+      "retention pruning"
+    ],
+    "exact_resume_state": [
+      "model",
+      "EMA",
+      "optimizer",
+      "scheduler",
+      "GradScaler when present",
+      "Python/NumPy/Torch CPU and CUDA RNG",
+      "stateful sampler",
+      "fully resolved config",
+      "runtime environment",
+      "Git provenance",
+      "dataset provenance",
+      "metrics reconciliation"
+    ]
+  },
+  "active_resume_evidence": {
+    "resume_checkpoint_step": 20000,
+    "metrics_reconciliation": {
+      "status": "reconciled",
+      "retained_rows": 401,
+      "orphaned_rows": 4,
+      "orphan_sha256": "6b3c4bca8ffa99e814ee77559d140f3a0db6cf7b78a8d78e58ef1b716e2f1cec",
+      "report_bytes": 613,
+      "report_sha256": "dfe268c1defbaaa424cb93df108deb1421080f9568c47b02f1607568d6f57aca"
+    }
+  },
+  "live_snapshot": {
+    "captured_at": "2026-08-18T11:40:41+08:00",
+    "stage": "cofitok_training",
+    "status": "running",
+    "issues": [],
+    "cofitok_step": 43100,
+    "cofitok_samples_seen": 2758400,
+    "metrics_rows_at_detailed_audit": 863,
+    "metrics_last_step_at_detailed_audit": 43050,
+    "metrics_strictly_increasing": true,
+    "samples_seen_binding_verified": true,
+    "all_numeric_metrics_finite": true,
+    "validation_events_at_detailed_audit": 43,
+    "current_checkpoint_steps_at_detailed_audit": [30000, 35000, 40000],
+    "gpu_compute_processes": [
+      {
+        "pid": 619775,
+        "process": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 85286,
+        "role": "authorized CoFiTok trainer"
+      }
+    ],
+    "unrelated_gpu_processes": []
+  },
+  "waiter_acceptance_contract": {
+    "requires_payload": true,
+    "requires_integrity_sidecar": true,
+    "requires_latest_pointer_at_exact_target": true,
+    "requires_metrics_at_or_beyond_target": true,
+    "performs_physical_checkpoint_sha256": true,
+    "binds_git_dataset_runtime_and_metric_continuity": true,
+    "partial_publication_can_pass": false,
+    "advanced_latest_before_audit_fails_closed": true
+  },
+  "runbook_transition_order": [
+    "CoFiTok to 50K",
+    "physical checkpoint verification and monitor snapshot",
+    "CoFiTok 50K milestone evaluation",
+    "dense_identity to 50K",
+    "physical checkpoint verification and monitor snapshot",
+    "dense_identity 50K milestone evaluation",
+    "paired 50K report",
+    "CoFiTok to 100K",
+    "dense_identity to 100K"
+  ],
+  "tests": {
+    "remote_environment": {
+      "cuda_visible_devices": "",
+      "nice": 19,
+      "gpu_required": false
+    },
+    "checkpoint_resume_retention_reporting": {
+      "passed": 56,
+      "skipped": 2,
+      "failed": 0,
+      "files": [
+        "tests/test_reporting.py",
+        "tests/test_generation_exact_resume.py",
+        "tests/test_generation_metrics_resume.py",
+        "tests/test_generation_system.py"
+      ]
+    },
+    "checkpoint_integrity_waiter": {
+      "passed": 3,
+      "skipped": 0,
+      "failed": 0,
+      "file": "tests/test_wait_generation_checkpoint_integrity_audit.py"
+    }
+  },
+  "non_blocking_observations": [
+    "The waiter records the approximately 1.01 GB checkpoint identity after an independent streaming verification; the host had 899376902144 available RAM bytes, so this is not a transition blocker and uses no GPU.",
+    "The active cf0e5fa trainer derives legacy validation-event alignment from the step. The planned 50K stop is a normal stop-after boundary, so validation executes before checkpoint publication. A later capacity branch persists the counter explicitly for signal-at-boundary resumes."
+  ],
+  "conclusion": {
+    "current_50k_transition_blocker_found": false,
+    "cpu_side_hotfix_required": false,
+    "active_waiter_replacement_allowed": false,
+    "reason": "The active runbook, checkpoint publication, retention, exact-resume path, and physical waiter fail closed at the 50K boundary, and all focused CPU-only tests passed."
+  }
+}
