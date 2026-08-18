@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import copy
+import json
 from pathlib import Path
+import sys
 
 import pytest
 
@@ -27,6 +29,7 @@ from cofitok.generation.conditioning_ranking_training_confirmation import (
     training_confirmation_contract,
     validate_shared_sampling_recovery,
 )
+from scripts import prepare_generation_conditioning_ranking_training_confirmation as prepare_cli
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -232,3 +235,74 @@ def test_preparation_rejects_parameter_or_output_drift() -> None:
     kwargs["expected_output_root"] = "/tmp/wrong"
     with pytest.raises(ValueError, match="output root differs"):
         build_training_confirmation_preparation(**kwargs)
+
+
+def test_prepare_cli_writes_once_and_replays_exactly(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sampling = tmp_path / "sampling_validation.json"
+    standing = tmp_path / "standing_authorization.json"
+    output = tmp_path / "preparation.json"
+    sampling.write_text(
+        json.dumps(_sampling_validation(), sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    standing.write_text(
+        json.dumps(_standing_authorization(), sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    revision = "b" * 40
+    branch = "scale/generation-label-ranking-5k-training-confirmation-v1"
+    monkeypatch.setattr(
+        prepare_cli,
+        "git_provenance",
+        lambda _root: {
+            "revision": revision,
+            "branch": branch,
+            "tracked_dirty": False,
+        },
+    )
+    monkeypatch.setattr(
+        prepare_cli,
+        "_parameter_count",
+        lambda path: 90 if "dense" in path.name else 100,
+    )
+    arguments = [
+        "prepare_generation_conditioning_ranking_training_confirmation.py",
+        "--sampling-validation",
+        str(sampling),
+        "--expected-sampling-validation-sha256",
+        prepare_cli.file_identity(sampling)["sha256"],
+        "--standing-authorization",
+        str(standing),
+        "--expected-standing-authorization-sha256",
+        prepare_cli.file_identity(standing)["sha256"],
+        "--control-cofitok",
+        str(PROJECT_ROOT / CONFIGS["control_cofitok"]),
+        "--control-dense",
+        str(PROJECT_ROOT / CONFIGS["control_dense_identity"]),
+        "--ranked-cofitok",
+        str(PROJECT_ROOT / CONFIGS["ranked_cofitok"]),
+        "--ranked-dense",
+        str(PROJECT_ROOT / CONFIGS["ranked_dense_identity"]),
+        "--expected-revision",
+        revision,
+        "--expected-branch",
+        branch,
+        "--output",
+        str(output),
+    ]
+    monkeypatch.setattr(sys, "argv", arguments)
+    prepare_cli.main()
+    first = output.read_bytes()
+
+    monkeypatch.setattr(sys, "argv", [*arguments, "--resume"])
+    prepare_cli.main()
+
+    assert output.read_bytes() == first
+    report = json.loads(first)
+    assert report["source_reports"]["sampling_validation"] == prepare_cli.file_identity(
+        sampling
+    )
+    assert report["gpu_execution_authorized"] is False
