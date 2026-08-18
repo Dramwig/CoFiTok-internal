@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import fcntl
 import json
 import os
 import socket
@@ -17,6 +16,11 @@ from cofitok.generation.quality_bridge import (
 )
 from cofitok.inference_replay import file_identity, read_json_object, reject_symlink_chain
 from cofitok.reporting import git_provenance, write_json_report
+
+try:
+    import fcntl
+except ModuleNotFoundError:  # pragma: no cover - exercised through the helper
+    fcntl = None
 
 try:
     from scripts.build_generation_requested_class_visual_audit import (
@@ -219,6 +223,15 @@ def _write_status(
     )
 
 
+def acquire_exclusive_waiter_lock(lock_handle: Any) -> None:
+    if fcntl is None:
+        raise RuntimeError("POSIX fcntl locking is unavailable")
+    try:
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError as error:
+        raise RuntimeError("another terminal visual-audit waiter owns the lock") from error
+
+
 def run(args: argparse.Namespace) -> int:
     if args.poll_seconds < 1:
         raise ValueError("poll_seconds must be positive")
@@ -232,10 +245,7 @@ def run(args: argparse.Namespace) -> int:
     base = _base_status(args)
     polls = 0
     with lock_path.open("a+", encoding="utf-8") as lock_handle:
-        try:
-            fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as error:
-            raise RuntimeError("another terminal visual-audit waiter owns the lock") from error
+        acquire_exclusive_waiter_lock(lock_handle)
         try:
             while True:
                 git = validate_self_git(

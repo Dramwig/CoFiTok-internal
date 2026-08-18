@@ -12,6 +12,7 @@ from cofitok.generation.quality_bridge import (
     RESULT_AUTHORIZATION_BOUNDARY,
 )
 from cofitok.inference_replay import file_identity
+from scripts import wait_for_generation_requested_class_visual_audit as waiter
 from scripts.build_generation_requested_class_visual_audit import (
     CLAIM_BOUNDARY as VISUAL_AUDIT_CLAIM_BOUNDARY,
     REPORT_FILENAME as VISUAL_AUDIT_REPORT_FILENAME,
@@ -74,7 +75,7 @@ def test_visual_audit_command_is_fixed_cpu_diagnostic_selection(tmp_path: Path) 
     )
     command = build_visual_audit_command(args)
 
-    assert command[0] == python.resolve().as_posix()
+    assert Path(command[0]) == python.resolve()
     assert command[command.index("--indices") + 1] == ",".join(
         str(index) for index in FIXED_INDICES
     )
@@ -122,3 +123,13 @@ def test_visual_report_revalidates_fixed_indices_and_panel_identities(
     _write_json(report_path, report)
     with pytest.raises(ValueError, match="report differs"):
         validate_visual_audit_report(output)
+
+
+def test_waiter_lock_fails_closed_without_posix_fcntl(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(waiter, "fcntl", None)
+    with (tmp_path / "waiter.lock").open("a+", encoding="utf-8") as lock_handle:
+        with pytest.raises(RuntimeError, match="fcntl locking is unavailable"):
+            waiter.acquire_exclusive_waiter_lock(lock_handle)
