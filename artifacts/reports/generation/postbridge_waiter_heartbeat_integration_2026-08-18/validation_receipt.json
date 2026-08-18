@@ -1,0 +1,58 @@
+{
+  "active_run_snapshot": {
+    "cofitok_last_step": 48700,
+    "cofitok_samples_seen": 3116800,
+    "dense_exists": false,
+    "free_bytes": 321599881216,
+    "gpu_compute": [
+      {
+        "pid": 619775,
+        "used_memory_mib": 85286
+      }
+    ],
+    "latest_checkpoint_step": 45000,
+    "latest_checkpoint_status": "metadata_verified",
+    "pair_issues": [],
+    "pair_stage": "cofitok_training",
+    "pair_status": "running",
+    "quality_result_exists": false,
+    "step_50000_integrity_sidecar_exists": false,
+    "unrelated_gpu_processes": [],
+    "verified_at": "2026-08-18T16:03:31+08:00"
+  },
+  "authorization_boundary": {
+    "active_process_mutation_allowed": false,
+    "deployment_allowed_during_active_100k": false,
+    "full_300k_launch_allowed": false,
+    "release_allowed": false,
+    "sampling_or_evaluation_launch_allowed": false,
+    "training_launch_allowed": false
+  },
+  "code": {
+    "branch": "integration/generation-postbridge-hardening-v1",
+    "revision": "9a90c4c629b53fafc87707105817fe6cebebf713",
+    "tree": "9e0a0a44ee01c25f8bd5a6f1b454e1f9d42adac8"
+  },
+  "full_suite": {
+    "errors": 0,
+    "failures": 0,
+    "junit_bytes": 248572,
+    "junit_sha256": "85c8b23b8669cd46ab3ca25628f35958899ce2a641d68a6b0bb54e8665a0f2c0",
+    "passed": 1637,
+    "seconds": 738.882,
+    "skipped": 9,
+    "tests": 1646
+  },
+  "role": "postbridge_waiter_child_heartbeat_integration_validation",
+  "schema_version": 1,
+  "scope": {
+    "finite_positive_poll_interval_required": true,
+    "heartbeat_preserves_existing_status_contract": true,
+    "waiters": [
+      "generation_stability_50k_posteval_waiter",
+      "generation_stability_frozen_supplemental_waiter",
+      "generation_stability_full_readiness_waiter"
+    ]
+  },
+  "status": "pass"
+}
