@@ -1,0 +1,291 @@
+{
+  "claim_boundary": {
+    "authorizes_sampling": false,
+    "authorizes_training": false,
+    "diagnostic_only": true,
+    "replaces_formal_quality_gate": false
+  },
+  "contract": {
+    "dataset": {
+      "alias": "imagenet_256_10pct",
+      "label_map": {
+        "bytes": 23918,
+        "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/metadata/label_to_wnid.json",
+        "sha256": "3e8c34f680433258998fdd30cf4c15442e2ce3cbd35c27507becc0f690b19b91"
+      },
+      "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct",
+      "samples": [
+        {
+          "image": {
+            "bytes": 17806,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01440764/ILSVRC2012_val_00000293_n01440764.jpg",
+            "sha256": "ef41d8ec2700ed0813eea201bb42b1c426195936cdb5bb85b633748cb223bca8"
+          },
+          "label": 0,
+          "wnid": "n01440764"
+        },
+        {
+          "image": {
+            "bytes": 9070,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01443537/ILSVRC2012_val_00000236_n01443537.jpg",
+            "sha256": "7a32078d2d9b9955f2509627aae4bbe954f3775b8ead680180569d11c082881e"
+          },
+          "label": 1,
+          "wnid": "n01443537"
+        },
+        {
+          "image": {
+            "bytes": 8700,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01484850/ILSVRC2012_val_00002338_n01484850.jpg",
+            "sha256": "01290801b5a2bfdb60c5fb67c1ae438be7e398aaad9b003d3ac04cf6f6e47c11"
+          },
+          "label": 2,
+          "wnid": "n01484850"
+        },
+        {
+          "image": {
+            "bytes": 8206,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01491361/ILSVRC2012_val_00002922_n01491361.jpg",
+            "sha256": "370fe16fd2912e21f068cd806aab3012714565df3d3e84559d30b95dab2ad1a5"
+          },
+          "label": 3,
+          "wnid": "n01491361"
+        },
+        {
+          "image": {
+            "bytes": 9010,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01494475/ILSVRC2012_val_00001676_n01494475.jpg",
+            "sha256": "cb364acb7148c8be1a5efb781c388978f8b626c9b770b483942e8fdadb7a7dec"
+          },
+          "label": 4,
+          "wnid": "n01494475"
+        },
+        {
+          "image": {
+            "bytes": 15573,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01496331/ILSVRC2012_val_00000921_n01496331.jpg",
+            "sha256": "4d519520a660c3d58d0723f988756c9caa06172a49adf7056591d331d4b6c122"
+          },
+          "label": 5,
+          "wnid": "n01496331"
+        },
+        {
+          "image": {
+            "bytes": 17167,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01498041/ILSVRC2012_val_00001935_n01498041.jpg",
+            "sha256": "ef1f40352c869899a9c9118e033dd74e0eb35a6d0ca1b4439912d985e2a9f3f7"
+          },
+          "label": 6,
+          "wnid": "n01498041"
+        },
+        {
+          "image": {
+            "bytes": 15538,
+            "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct/extracted/val/n01514668/ILSVRC2012_val_00000329_n01514668.jpg",
+            "sha256": "50dc6e79e309adc4c891c50c89f79de664463d6b552ba8de9d4da890738b0d52"
+          },
+          "label": 7,
+          "wnid": "n01514668"
+        }
+      ]
+    },
+    "git": {
+      "branch": "analysis/generation-conditioning-sensitivity-diagnostic-v1",
+      "revision": "a5c647885ee455cbd63e093db36747625fc7e0f1",
+      "tracked_dirty": false
+    },
+    "request": {
+      "noise_seed": 102030,
+      "num_samples": 8,
+      "start_label": 0,
+      "threads": 2,
+      "timesteps": [
+        100,
+        500,
+        900
+      ],
+      "weights": "ema",
+      "wrong_label_offset": 500
+    },
+    "shared_model": {
+      "num_classes": 1000,
+      "predictor_type": "scalable_unet"
+    },
+    "weights": "ema"
+  },
+  "diagnostic_interpretation": {
+    "correct_label_advantage_not_demonstrated": {
+      "cofitok_k8": {
+        "over_null_not_significant_at_0_05": true,
+        "over_wrong_not_significant_at_0_05": true
+      },
+      "dense_identity": {
+        "over_null_not_significant_at_0_05": true,
+        "over_wrong_not_significant_at_0_05": true
+      }
+    },
+    "scope": "Internal checkpoint response diagnostic only; this does not replace formal generated-sample class fidelity or quality gates.",
+    "shared_conditioning_weakness_supported": true
+  },
+  "git": {
+    "branch": "analysis/generation-conditioning-sensitivity-diagnostic-v1",
+    "revision": "2aef72c0edf6e464b391392ed213a1f95be2f254",
+    "tracked_dirty": false
+  },
+  "methods": {
+    "cofitok_k8": {
+      "checkpoint": {
+        "bytes": 1006325418,
+        "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+        "format_version": 1,
+        "git": {
+          "branch": "scale/generation-stability-50k-preflight",
+          "dirty": false,
+          "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+        },
+        "integrity_manifest": {
+          "bytes": 590,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00050000.pt.integrity.json",
+          "sha256": "4f3f6f3f401f34131f902b016baf41897b35f95d242bb023981feff4a36226a8"
+        },
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00050000.pt",
+        "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+        "sha256": "ec7b9a0981f1d45420a9a86cdb80339d6d87b87fa77891c234db3d1b84376c2a",
+        "step": 50000
+      },
+      "correct_better_count": {
+        "than_null": 7,
+        "than_wrong": 13
+      },
+      "correct_better_fraction": {
+        "than_null": 0.2916666666666667,
+        "than_wrong": 0.5416666666666666
+      },
+      "correct_relative_mse_improvement_mean": {
+        "versus_null": -0.0019402213491681948,
+        "versus_wrong": 0.00030979858801545
+      },
+      "ema_relative_parameter_update": {
+        "predictor.class_embed.weight": 0.034906926771960764,
+        "predictor.encoder.0.blocks.0.embedding.1.weight": 0.49921580261960413,
+        "predictor.encoder.0.blocks.0.in_conv.weight": 0.883580028208177,
+        "predictor.input_proj.weight": 0.14208367200202712,
+        "predictor.token_heads.0.weight": null
+      },
+      "model": {
+        "name": "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k",
+        "num_classes": 1000,
+        "parameter_count": 62834083,
+        "predictor_type": "scalable_unet",
+        "synthesis_mode": "fixed_basis",
+        "token_count": 8
+      },
+      "one_sided_sign_test_pvalue": {
+        "than_null": 0.9886720776557922,
+        "than_wrong": 0.4194098711013794
+      },
+      "relative_delta_to_correct_rms_mean": {
+        "correct_vs_null": 0.0060707277891176165,
+        "correct_vs_wrong": 0.007901650987539699,
+        "wrong_vs_null": 0.005665688517800502
+      },
+      "row_count": 24
+    },
+    "dense_identity": {
+      "checkpoint": {
+        "bytes": 1006120214,
+        "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+        "format_version": 1,
+        "git": {
+          "branch": "scale/generation-stability-50k-preflight",
+          "dirty": false,
+          "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+        },
+        "integrity_manifest": {
+          "bytes": 590,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00050000.pt.integrity.json",
+          "sha256": "31b1cf05a0bafaf06e3fb434ebabe3fbed41800687e28e447140565b8f4cafff"
+        },
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00050000.pt",
+        "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+        "sha256": "325da25f9fd228ab224abd977da7f9e1d000ba36e3e8136b55edae9c9f47c716",
+        "step": 50000
+      },
+      "correct_better_count": {
+        "than_null": 5,
+        "than_wrong": 13
+      },
+      "correct_better_fraction": {
+        "than_null": 0.20833333333333334,
+        "than_wrong": 0.5416666666666666
+      },
+      "correct_relative_mse_improvement_mean": {
+        "versus_null": -0.0025617340733851686,
+        "versus_wrong": -0.000734265149099968
+      },
+      "ema_relative_parameter_update": {
+        "predictor.class_embed.weight": 0.03139067593766391,
+        "predictor.encoder.0.blocks.0.embedding.1.weight": 0.5445850252414899,
+        "predictor.encoder.0.blocks.0.in_conv.weight": 0.8853108602575394,
+        "predictor.input_proj.weight": 0.14742949196153196,
+        "predictor.token_heads.0.weight": null
+      },
+      "model": {
+        "name": "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k",
+        "num_classes": 1000,
+        "parameter_count": 62824707,
+        "predictor_type": "scalable_unet",
+        "synthesis_mode": "dense_identity",
+        "token_count": 1
+      },
+      "one_sided_sign_test_pvalue": {
+        "than_null": 0.9992280602455139,
+        "than_wrong": 0.4194098711013794
+      },
+      "relative_delta_to_correct_rms_mean": {
+        "correct_vs_null": 0.005781099699034338,
+        "correct_vs_wrong": 0.0076253616642280525,
+        "wrong_vs_null": 0.005253873404833124
+      },
+      "row_count": 24
+    }
+  },
+  "paired_differences": {
+    "cofitok_minus_dense_mean": {
+      "correct_vs_null_mse_improvement": 0.0006215127242169731,
+      "correct_vs_null_relative_delta": 0.0002896280900832791,
+      "correct_vs_wrong_mse_improvement": 0.0010440637371154176,
+      "correct_vs_wrong_relative_delta": 0.0002762893233116449
+    },
+    "row_count": 24
+  },
+  "role": "generation_conditioning_sensitivity_comparison",
+  "schema_version": 1,
+  "sources": {
+    "cofitok_k8": {
+      "manifest": {
+        "bytes": 4970,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/conditioning_sensitivity_a5c6478/cofitok_k8/conditioning_sensitivity_manifest.json",
+        "sha256": "c97a9e12c1a65fb20b615ac48cf9f6687d43b792873613476f19c07390d9bbfd"
+      },
+      "report": {
+        "bytes": 62769,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/conditioning_sensitivity_a5c6478/cofitok_k8/conditioning_sensitivity_report.json",
+        "sha256": "2aa880fbf00b49a0d62ec624292c39b30296307794a6b69599aa7507bfce504f"
+      }
+    },
+    "dense_identity": {
+      "manifest": {
+        "bytes": 4956,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/conditioning_sensitivity_a5c6478/dense_identity/conditioning_sensitivity_manifest.json",
+        "sha256": "b8f4857744470e6ae665aa73c626b98356e0064244809e6f50390be709ffd18b"
+      },
+      "report": {
+        "bytes": 62747,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/conditioning_sensitivity_a5c6478/dense_identity/conditioning_sensitivity_report.json",
+        "sha256": "d26bed83596bbb09e9951c97402fc9882a076f770c511b24f061bd8a2a4dec27"
+      }
+    }
+  },
+  "status": "completed"
+}
