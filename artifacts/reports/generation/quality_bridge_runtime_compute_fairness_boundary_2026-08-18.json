@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "role": "quality_bridge_runtime_compute_fairness_boundary_audit",
+  "status": "pass",
+  "audited_at": "2026-08-18T02:53:00+08:00",
+  "quality_bridge": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "dataset": "imagenet_256",
+    "target_steps_per_method": 100000,
+    "git": {
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+      "branch": "scale/generation-stability-quality-bridge-100k",
+      "tracked_dirty": false
+    }
+  },
+  "source_identities": {
+    "launch_receipt": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/launch_receipt.json",
+      "bytes": 8588,
+      "sha256": "4a9fd8577c24a92583d9538846dcab35c2d73e6066d164050f49b976985a3a21"
+    },
+    "config_validation": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/config_validation.json",
+      "bytes": 14827,
+      "sha256": "cce5afbccac509903fceb93cf5bb3c7bcfa53a7637430545f6d0ae6b317b0fe2"
+    },
+    "runtime_selection": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/runtime_selection.json",
+      "bytes": 75953,
+      "sha256": "a0d92f0db3cdcff5641bc94944b5b166952a915d4a693326df7a95c898d280fe"
+    },
+    "active_runbook": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/artifacts/runbooks/generation_stability_full_data_quality_bridge_100k_execute.sh",
+      "bytes": 27943,
+      "sha256": "f0531763b4b888964a75923a8d59cb8cf8d1c79bd7782f845006c39e1a57fe73"
+    },
+    "cofitok_run_manifest": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/run_manifest.json",
+      "bytes": 8997,
+      "sha256": "c81bc1f1b75b1e09f257ee8177b144e12832f305ccdefda8c0715f8e145a061b"
+    },
+    "cofitok_31k_schedule_audit": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/cofitok_ema_teacher_first_post_validation_00030000_00031000.json",
+      "bytes": 31913,
+      "sha256": "f044ab66d45f3c585126c3c375753f98bf5d129ba063f7efd557523ff437051e"
+    },
+    "cofitok_resume_compute_adjustment": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/recovery_incident_2026-08-17_pin_memory/resume_compute_adjustment.json",
+      "bytes": 5734,
+      "sha256": "7e4c2362ee38b4b973034dbe492a8ac64044c17f805e6f3cd66b7421c48af740"
+    },
+    "recovery_cost_hardening_deployment_receipt": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/recovery_incident_2026-08-17_pin_memory/recovery_cost_audit_code_deployment_v1/deployment_receipt.json",
+      "bytes": 7387,
+      "sha256": "7c805de473633d4073e95facdb0beea3b0e84278e057e073026c404c4c649899"
+    }
+  },
+  "matched_contract": {
+    "status": "proven",
+    "config_validation_status": "pass",
+    "config_mismatches": [],
+    "parameter_counts": {
+      "cofitok": 62834083,
+      "dense_identity": 62824707,
+      "relative_gap": 0.00014924064826915946
+    },
+    "launch_runtime": {
+      "micro_batch_size": 64,
+      "gradient_accumulation_steps": 1,
+      "effective_batch_size": 64,
+      "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e"
+    },
+    "runbook_binding": {
+      "selection_read_once_from_immutable_launch_receipt": true,
+      "same_runtime_arguments_used_by_shared_train_to_milestone_function": true,
+      "cofitok_and_dense_both_validated_against_selected_runtime": true,
+      "post_completion_training_pair_validation_required": true
+    },
+    "claim": "The launch and execution contract requires identical 64x1 runtime settings and effective batch 64 for both methods."
+  },
+  "observed_runtime": {
+    "cofitok": {
+      "status": "observed",
+      "micro_batch_size": 64,
+      "gradient_accumulation_steps": 1,
+      "effective_batch_size": 64,
+      "evidence": "run manifest and source-bound 31K schedule audit"
+    },
+    "dense_identity": {
+      "status": "pending",
+      "reason": "dense training had not started at the audited boundary",
+      "actual_micro_batch_size": null,
+      "actual_gradient_accumulation_steps": null,
+      "actual_effective_batch_size": null
+    },
+    "observed_pair_runtime_parity_proven": false
+  },
+  "physical_compute_accounting": {
+    "cofitok": {
+      "resume_adjustment_required": true,
+      "resume_adjustment_available": true,
+      "orphaned_compute_seconds_lower_bound": 560.6116147041321,
+      "orphaned_compute_hours_lower_bound": 0.1557254485289256,
+      "orphaned_optimizer_steps_lower_bound": 200,
+      "orphaned_images_lower_bound": 12800,
+      "final_elapsed_formula": "training_report.elapsed_seconds + 560.6116147041321",
+      "throughput_formula": "training_report.final_metrics.samples_seen / adjusted_elapsed_seconds"
+    },
+    "dense_identity": {
+      "training_report_available": false,
+      "resume_adjustment_required": null,
+      "resume_adjustment_available": null,
+      "final_elapsed_seconds": null,
+      "images_per_second": null,
+      "peak_vram_bytes": null
+    },
+    "final_matched_compute_comparison_available": false,
+    "training_speed_advantage_claim_allowed": false,
+    "memory_advantage_claim_allowed": false
+  },
+  "terminal_pipeline_coverage": {
+    "both_training_reports_must_complete_exactly": true,
+    "both_actual_runtime_overrides_must_match_launch_receipt": true,
+    "effective_batch_and_training_pair_contract_revalidated": true,
+    "training_elapsed_throughput_and_peak_vram_in_quality_bridge_result": false,
+    "resume_compute_adjustment_in_active_quality_bridge_result": false,
+    "dedicated_terminal_runtime_compute_fairness_waiter_deployed": false,
+    "hardened_follow_on_gate_comparison_completion_support_available": true,
+    "hardened_code": {
+      "revision": "2b3c3975255f92cc9613f9990592f37ba2cfa968",
+      "tree": "261187b87f85f8b0bf06cd6bac910c17dc0bc95b",
+      "branch": "fix/quality-bridge-ipc-recovery-v2"
+    }
+  },
+  "decision": {
+    "fairness_state": "contract_parity_proven_observed_pair_parity_pending",
+    "terminal_waiter_needed": true,
+    "terminal_waiter_requirements": [
+      "validate both completed training reports against the immutable 64x1 launch runtime",
+      "verify 6,400,000 canonical training images per method",
+      "bind reported and physical-lower-bound elapsed time",
+      "include CoFiTok's 560.6116147041321-second recovery adjustment",
+      "detect and require a separate dense adjustment if dense later creates orphan metrics",
+      "report corrected throughput and peak VRAM without claiming an advantage in advance"
+    ]
+  },
+  "claim_boundary": {
+    "matched_runtime_contract_established": true,
+    "cofitok_actual_runtime_observed": true,
+    "dense_actual_runtime_observed": false,
+    "matched_physical_compute_comparison_established": false,
+    "training_speed_advantage_established": false,
+    "memory_advantage_established": false,
+    "sample_quality_established": false,
+    "promotion_authorization_allowed": false,
+    "release_authorization_allowed": false,
+    "full_300k_launch_allowed": false
+  }
+}

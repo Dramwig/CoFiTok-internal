@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "role": "quality_bridge_50k_checkpoint_waiters_deployment_evidence",
+  "status": "pass",
+  "deployed_at": "2026-08-17T18:20:59.952070+00:00",
+  "quality_bridge": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "training_checkout": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+    "git": {
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+      "branch": "scale/generation-stability-quality-bridge-100k",
+      "tracked_dirty": false
+    },
+    "dataset_identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+    "effective_batch": 64,
+    "target_steps": 100000
+  },
+  "implementation": {
+    "checkout": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-checkpoint-waiter-172388f",
+    "git": {
+      "revision": "172388fc4d873bb1001313f979442516ea7b5069",
+      "tree": "d7e54a8ea9ff5b6c6a3eea342ec787605d0ebc50"
+    },
+    "source": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-checkpoint-waiter-172388f/scripts/wait_generation_checkpoint_integrity_audit.py",
+      "bytes": 14973,
+      "sha256": "eafc4e1f7b33f8b890883ac4878944a1d57f41aca02dc0483b9e82d1259fca8b"
+    }
+  },
+  "waiters": {
+    "cofitok": {
+      "pid": 822372,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+      "checkpoint_step": 50000,
+      "status": "waiting",
+      "detail": "checkpoint_missing",
+      "poll_seconds": 30,
+      "timeout_seconds": 604800,
+      "audit_output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/checkpoint_audits/cofitok_checkpoint_step_00050000_physical_integrity_audit.json",
+      "initial_status": {
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/checkpoint_audits/cofitok_checkpoint_step_00050000_waiter_status.json",
+        "bytes": 1170,
+        "sha256": "7eec19ea104b861aed271e30ed943cbe0a26074c2383de3d74e4ce495637efc1"
+      }
+    },
+    "dense_identity": {
+      "pid": 822373,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher",
+      "checkpoint_step": 50000,
+      "status": "waiting",
+      "detail": "checkpoint_missing",
+      "poll_seconds": 30,
+      "timeout_seconds": 604800,
+      "audit_output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/checkpoint_audits/dense_checkpoint_step_00050000_physical_integrity_audit.json",
+      "initial_status": {
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/checkpoint_audits/dense_checkpoint_step_00050000_waiter_status.json",
+        "bytes": 1157,
+        "sha256": "eb82004307430b67b3dfb05e882c5b181399ce6e3c62838439c919b9fa914b0e"
+      }
+    }
+  },
+  "expected_audit_contract": {
+    "physical_payload_sha256_verified": true,
+    "integrity_sidecar_verified": true,
+    "latest_pointer_exact_target_binding_verified": true,
+    "git_revision_branch_clean_state_verified": true,
+    "dataset_identity_verified": true,
+    "runtime_environment_identity_verified": true,
+    "strictly_increasing_metrics_verified": true,
+    "samples_seen_binding": "samples_seen == step * 64",
+    "target_metric_row_required": true
+  },
+  "resource_isolation": {
+    "cuda_visible_devices": "",
+    "omp_num_threads": 1,
+    "mkl_num_threads": 1,
+    "nice": 10,
+    "ionice_class": "idle",
+    "parent_pid": 1,
+    "gpu_required": false,
+    "gpu_compute_processes_added": 0,
+    "checkpoint_hashing_policy": "physical SHA256 is computed only after the exact 50K checkpoint, sidecar, latest pointer, and metrics target are present; idle I/O priority yields to training and milestone evaluation"
+  },
+  "deployment_snapshot": {
+    "cofitok_last_step": 31250,
+    "cofitok_samples_seen": 2000000,
+    "dense_state": "not_started",
+    "gpu_compute_processes": [
+      {
+        "pid": 619775,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 85284,
+        "role": "quality_bridge_cofitok_trainer"
+      }
+    ],
+    "unrelated_gpu_processes": []
+  },
+  "scope": {
+    "read_only_checkpoint_verification": true,
+    "training_launch_allowed": false,
+    "gpu_work_allowed": false,
+    "training_process_signals_allowed": false,
+    "unrelated_process_signals_allowed": false,
+    "promotion_authorization_allowed": false,
+    "release_authorization_allowed": false,
+    "full_300k_launch_allowed": false
+  }
+}

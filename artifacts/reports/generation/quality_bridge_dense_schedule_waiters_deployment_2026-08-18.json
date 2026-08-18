@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "role": "quality_bridge_dense_schedule_waiters_deployment_evidence",
+  "status": "pass",
+  "deployed_at": "2026-08-17T18:16:37.759882+00:00",
+  "quality_bridge": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "dense_run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher",
+    "training_checkout": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+    "git": {
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+      "branch": "scale/generation-stability-quality-bridge-100k",
+      "tracked_dirty": false
+    },
+    "effective_batch": 64,
+    "target_steps": 100000
+  },
+  "implementation": {
+    "checkout": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-ema-transition-2a80f6e",
+    "source": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-ema-transition-2a80f6e/scripts/wait_generation_consistency_schedule_transition.py",
+      "bytes": 20796,
+      "sha256": "10c1676d0de5e7aaa94f428a65448ab78da7fdbdc7184a76de7278aaad6d9998"
+    },
+    "dense_config": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/configs/generation/imagenet256_stability_quality_bridge_rollout_x0_u2_ema_teacher_dense_100k.json",
+      "bytes": 2459,
+      "sha256": "f8f1c1967468bef4db1e9a00e8f80c3da5af22e417d8ab4864afcb4fb68f884c"
+    },
+    "schedule": {
+      "start_step": 30000,
+      "warmup_steps": 10000,
+      "weight": 0.25,
+      "log_interval": 50
+    }
+  },
+  "waiters": {
+    "first_post_teacher_validation": {
+      "pid": 821572,
+      "status": "waiting",
+      "detail": "metrics_missing",
+      "first_active_step": 30050,
+      "target_step": 31000,
+      "minimum_active_rows": 20,
+      "poll_seconds": 60,
+      "timeout_seconds": 604800,
+      "report_output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/dense_ema_teacher_first_post_validation_00030000_00031000.json",
+      "initial_status": {
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/dense_ema_teacher_first_post_validation_00030000_00031000_waiter_status.json",
+        "bytes": 975,
+        "sha256": "3251b6bfbabcfc7ad35f29e08fa9a58294124620a6358f4a60bf166ea81d459a"
+      }
+    },
+    "full_warmup": {
+      "pid": 821573,
+      "status": "waiting",
+      "detail": "metrics_missing",
+      "first_active_step": 39500,
+      "target_step": 40000,
+      "minimum_active_rows": 11,
+      "poll_seconds": 60,
+      "timeout_seconds": 604800,
+      "report_output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/dense_ema_teacher_full_warmup_00030000_00040000.json",
+      "initial_status": {
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/dense_ema_teacher_full_warmup_00030000_00040000_waiter_status.json",
+        "bytes": 965,
+        "sha256": "f816e0b5fa092988b3d354d25822514b3b852a8e8cc044828c7f795ebf6c0136"
+      }
+    }
+  },
+  "resource_isolation": {
+    "cuda_visible_devices": "",
+    "omp_num_threads": 1,
+    "mkl_num_threads": 1,
+    "nice": 10,
+    "ionice_class": "idle",
+    "parent_pid": 1,
+    "gpu_required": false,
+    "gpu_compute_processes_added": 0
+  },
+  "deployment_snapshot": {
+    "cofitok_last_step": 31150,
+    "cofitok_samples_seen": 1993600,
+    "dense_metrics_state": "missing_before_dense_training_start",
+    "gpu_compute_processes": [
+      {
+        "pid": 619775,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 85284,
+        "role": "quality_bridge_cofitok_trainer"
+      }
+    ],
+    "unrelated_gpu_processes": []
+  },
+  "scope": {
+    "read_only_metrics_verification": true,
+    "training_launch_allowed": false,
+    "gpu_work_allowed": false,
+    "training_process_signals_allowed": false,
+    "unrelated_process_signals_allowed": false,
+    "promotion_authorization_allowed": false,
+    "release_authorization_allowed": false,
+    "full_300k_launch_allowed": false
+  },
+  "expected_outcome": {
+    "step_31000": "source-bound dense first post-teacher validation and schedule audit",
+    "step_40000": "source-bound dense fully warmed EMA-teacher schedule audit",
+    "failure_semantics": "A failed waiter is diagnostic evidence only and must not signal or restart training."
+  }
+}
