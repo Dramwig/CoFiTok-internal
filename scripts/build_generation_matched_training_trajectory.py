@@ -15,6 +15,7 @@ from cofitok.reporting import file_sha256, write_json_report
 _SHARED_SCHEDULES = (
     "rollout_consistency",
     "ema_teacher_consistency",
+    "class_conditioning_ranking",
 )
 _SCHEDULE_PHASES = (
     "disabled",
@@ -198,6 +199,7 @@ def _validate_rows(
     log_interval: int,
     evaluation_interval: int,
     effective_batch: int,
+    schedule_contracts: dict[str, Any],
 ) -> dict[str, Any]:
     steps = [int(row["step"]) for row in rows]
     expected = _expected_steps(cutoff_step=cutoff_step, log_interval=log_interval)
@@ -210,14 +212,39 @@ def _validate_rows(
         for field, value in row.items():
             if isinstance(value, (int, float)) and not isinstance(value, bool):
                 _finite_number(value, label=f"{label} step {step} {field}")
-        for field in (
-            "epsilon",
-            "rollout_consistency",
-            "rollout_consistency_scale",
-            "ema_teacher_consistency",
-            "ema_teacher_consistency_scale",
-        ):
-            _finite_number(row.get(field), label=f"{label} step {step} {field}")
+        _finite_number(row.get("epsilon"), label=f"{label} step {step} epsilon")
+        for name, contract in schedule_contracts.items():
+            for suffix in ("", "_scale"):
+                field = f"{name}{suffix}"
+                default = 0.0 if contract["enabled"] is not True else None
+                _finite_number(
+                    row.get(field, default),
+                    label=f"{label} step {step} {field}",
+                )
+        ranking_contract = schedule_contracts["class_conditioning_ranking"]
+        if ranking_contract["enabled"] is True:
+            for field in (
+                "class_conditioning_correct_mse",
+                "class_conditioning_wrong_mse",
+                "class_conditioning_null_mse",
+            ):
+                value = _finite_number(
+                    row.get(field), label=f"{label} step {step} {field}"
+                )
+                if value < 0.0:
+                    raise ValueError(f"{label} step {step} {field} is negative")
+            for field in (
+                "class_conditioning_correct_better_wrong_fraction",
+                "class_conditioning_correct_better_null_fraction",
+                "class_conditioning_ranking_selected_fraction",
+            ):
+                value = _finite_number(
+                    row.get(field), label=f"{label} step {step} {field}"
+                )
+                if not 0.0 <= value <= 1.0:
+                    raise ValueError(
+                        f"{label} step {step} {field} is outside [0, 1]"
+                    )
     validation_rows = [row for row in rows if "validation_epsilon_mse" in row]
     expected_validation_steps = list(
         range(evaluation_interval, cutoff_step + 1, evaluation_interval)
@@ -257,8 +284,16 @@ def _validate_rows(
         "validation_provenance_complete": True,
         "endpoint": {
             "epsilon": float(endpoint["epsilon"]),
-            "rollout_consistency": float(endpoint["rollout_consistency"]),
-            "rollout_consistency_scale": float(endpoint["rollout_consistency_scale"]),
+            **{
+                field: float(
+                    endpoint.get(
+                        field,
+                        0.0 if contract["enabled"] is not True else None,
+                    )
+                )
+                for name, contract in schedule_contracts.items()
+                for field in (name, f"{name}_scale")
+            },
         },
         "validation_rows": validation_rows,
     }
@@ -270,6 +305,22 @@ def _schedule_contract(config: dict[str, Any], *, label: str) -> dict[str, Any]:
         raise ValueError(f"{label} config lacks its loss schedule")
     result: dict[str, Any] = {}
     for name in _SHARED_SCHEDULES:
+        fields = (
+            f"{name}_weight",
+            f"{name}_start_step",
+            f"{name}_warmup_steps",
+        )
+        if name == "class_conditioning_ranking" and not any(
+            field in loss for field in fields
+        ):
+            result[name] = {
+                "enabled": False,
+                "weight": 0.0,
+                "start_step": 0,
+                "warmup_steps": 0,
+                "full_scale_step": None,
+            }
+            continue
         weight = _finite_number(
             loss.get(f"{name}_weight"),
             label=f"{label} {name}_weight",
@@ -422,13 +473,14 @@ def _paired_validation(
         observed_schedule_scales: dict[str, float] = {}
         for name, phase in schedule_phases.items():
             field = f"{name}_scale"
+            default = 0.0 if phase == "disabled" else None
             cofitok_scale = _validate_observed_schedule_scale(
-                cofitok.get(field),
+                cofitok.get(field, default),
                 label=f"cofitok step {step} {field}",
                 phase=phase,
             )
             dense_scale = _validate_observed_schedule_scale(
-                dense.get(field),
+                dense.get(field, default),
                 label=f"dense_identity step {step} {field}",
                 phase=phase,
             )
@@ -525,6 +577,7 @@ def build_report(
         log_interval=log_interval,
         evaluation_interval=evaluation_interval,
         effective_batch=effective_batch,
+        schedule_contracts=schedule_contracts,
     )
     dense_trajectory = _validate_rows(
         dense_metrics["rows"],
@@ -533,6 +586,7 @@ def build_report(
         log_interval=log_interval,
         evaluation_interval=evaluation_interval,
         effective_batch=effective_batch,
+        schedule_contracts=schedule_contracts,
     )
     paired = _paired_validation(
         cofitok_trajectory.pop("validation_rows"),
@@ -574,6 +628,7 @@ def build_report(
         "comparison_policy": {
             "shared_primary_training_epsilon_reported_descriptively": True,
             "shared_rollout_consistency_reported_descriptively": True,
+            "shared_class_conditioning_ranking_reported_descriptively": True,
             "total_loss_comparison_allowed": False,
             "training_wall_clock_comparison_allowed": False,
             "reason": (

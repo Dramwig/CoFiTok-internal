@@ -142,6 +142,15 @@ def _expected_shared(stage: str) -> dict[str, Any]:
         "optimization.grad_clip_norm": 1.0,
         "optimization.ema_decay": 0.9999,
         "optimization.ema_warmup_steps": 2_000,
+        # Existing formal recipes remain immutable.  The new semantic-ranking
+        # objective is admitted only by a separately reviewed probe contract.
+        "loss.class_conditioning_ranking_weight": 0.0,
+        "loss.class_conditioning_ranking_start_step": 0,
+        "loss.class_conditioning_ranking_warmup_steps": 0,
+        "loss.class_conditioning_ranking_batch_fraction": 0.0625,
+        "loss.class_conditioning_ranking_margin": 0.0,
+        "loss.class_conditioning_ranking_wrong_label_offset": 1,
+        "loss.class_conditioning_ranking_min_timestep": 0,
     }
     if stability:
         if full:

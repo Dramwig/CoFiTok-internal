@@ -24,8 +24,22 @@ FINITE_METRICS = {
     "ema_teacher_consistency_scale",
     "rollout_consistency",
     "rollout_consistency_scale",
+    "class_conditioning_ranking",
+    "class_conditioning_ranking_scale",
+    "class_conditioning_correct_mse",
+    "class_conditioning_wrong_mse",
+    "class_conditioning_null_mse",
+    "class_conditioning_correct_better_wrong_fraction",
+    "class_conditioning_correct_better_null_fraction",
+    "class_conditioning_ranking_selected_fraction",
 }
 NONNEGATIVE_METRICS = FINITE_METRICS - {"ema_decay"}
+UNIT_INTERVAL_METRICS = {
+    "class_conditioning_ranking_scale",
+    "class_conditioning_correct_better_wrong_fraction",
+    "class_conditioning_correct_better_null_fraction",
+    "class_conditioning_ranking_selected_fraction",
+}
 METHOD_PROCESS_PATTERNS = {
     "cofitok": re.compile(r"imagenet256\S*cofitok", re.IGNORECASE),
     "dense_identity": re.compile(r"imagenet256\S*dense", re.IGNORECASE),
@@ -68,6 +82,10 @@ def _read_metrics(
                     issues.append(f"metric {key} is non-finite at line {line_number}")
                 elif key in NONNEGATIVE_METRICS and float(value) < 0.0:
                     issues.append(f"metric {key} is negative at line {line_number}")
+                elif key in UNIT_INTERVAL_METRICS and float(value) > 1.0:
+                    issues.append(
+                        f"metric {key} exceeds one at line {line_number}"
+                    )
             last = row
             rows.append(row)
     return last, row_count, issues, rows
@@ -352,18 +370,30 @@ def _inspect_run_manifest(
             issues.append("run manifest dataset identity SHA256 is malformed")
 
     schedule_contracts = {}
-    for prefix in ("rollout_consistency", "ema_teacher_consistency"):
+    for prefix in (
+        "rollout_consistency",
+        "ema_teacher_consistency",
+        "class_conditioning_ranking",
+    ):
         scale_field = f"{prefix}_scale"
         weight_field = f"{prefix}_weight"
         start_field = f"{prefix}_start_step"
         warmup_field = f"{prefix}_warmup_steps"
-        try:
-            weight = float(loss[weight_field])
-            start_step = int(loss[start_field])
-            warmup_steps = int(loss[warmup_field])
-        except (KeyError, TypeError, ValueError):
-            issues.append(f"run manifest {prefix} schedule is malformed")
-            continue
+        schedule_fields = (weight_field, start_field, warmup_field)
+        if prefix == "class_conditioning_ranking" and not any(
+            field in loss for field in schedule_fields
+        ):
+            weight = 0.0
+            start_step = 0
+            warmup_steps = 0
+        else:
+            try:
+                weight = float(loss[weight_field])
+                start_step = int(loss[start_field])
+                warmup_steps = int(loss[warmup_field])
+            except (KeyError, TypeError, ValueError):
+                issues.append(f"run manifest {prefix} schedule is malformed")
+                continue
         mismatched_steps = []
         missing_steps = []
         for row in metrics_rows:

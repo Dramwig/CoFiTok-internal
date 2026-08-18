@@ -35,6 +35,7 @@ from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import (
     ExponentialMovingAverage,
     capture_generation_training_authorization,
+    class_conditioning_ranking_loss,
     compute_losses,
     consistency_weight_scale,
     ema_teacher_consistency_loss,
@@ -188,6 +189,49 @@ def _validate_config(config: ExperimentConfig) -> None:
         raise ValueError(
             "ema_teacher_consistency_batch_fraction must be in (0, 1]"
         )
+    if config.loss.class_conditioning_ranking_weight < 0.0:
+        raise ValueError("class_conditioning_ranking_weight must be non-negative")
+    if config.loss.class_conditioning_ranking_start_step < 0:
+        raise ValueError("class_conditioning_ranking_start_step must be non-negative")
+    if config.loss.class_conditioning_ranking_warmup_steps < 0:
+        raise ValueError("class_conditioning_ranking_warmup_steps must be non-negative")
+    if not 0.0 < config.loss.class_conditioning_ranking_batch_fraction <= 1.0:
+        raise ValueError(
+            "class_conditioning_ranking_batch_fraction must be in (0, 1]"
+        )
+    if (
+        not math.isfinite(config.loss.class_conditioning_ranking_margin)
+        or not 0.0 <= config.loss.class_conditioning_ranking_margin < 1.0
+    ):
+        raise ValueError("class_conditioning_ranking_margin must be in [0, 1)")
+    if config.loss.class_conditioning_ranking_wrong_label_offset < 1:
+        raise ValueError(
+            "class_conditioning_ranking_wrong_label_offset must be positive"
+        )
+    if config.loss.class_conditioning_ranking_min_timestep < 0:
+        raise ValueError(
+            "class_conditioning_ranking_min_timestep must be non-negative"
+        )
+    if config.loss.class_conditioning_ranking_weight > 0.0:
+        if not config.data.class_conditional or config.model.num_classes < 2:
+            raise ValueError(
+                "class_conditioning_ranking_weight requires class-conditional training"
+            )
+        if (
+            config.loss.class_conditioning_ranking_wrong_label_offset
+            % config.model.num_classes
+            == 0
+        ):
+            raise ValueError(
+                "class_conditioning_ranking_wrong_label_offset must change the class"
+            )
+        if (
+            config.loss.class_conditioning_ranking_min_timestep
+            >= config.diffusion.num_train_timesteps
+        ):
+            raise ValueError(
+                "class_conditioning_ranking_min_timestep is outside the diffusion schedule"
+            )
     protected_steps = config.runtime.protected_checkpoint_steps
     if protected_steps != sorted(set(protected_steps)):
         raise ValueError("protected_checkpoint_steps must be sorted and unique")
@@ -731,6 +775,38 @@ def main() -> None:
                             config.loss.ema_teacher_consistency_batch_fraction
                         ),
                     )
+                class_ranking_scale = consistency_weight_scale(
+                    step,
+                    start_step=config.loss.class_conditioning_ranking_start_step,
+                    warmup_steps=config.loss.class_conditioning_ranking_warmup_steps,
+                )
+                class_ranking = None
+                if (
+                    config.loss.class_conditioning_ranking_weight > 0.0
+                    and class_ranking_scale > 0.0
+                ):
+                    if labels is None:
+                        raise RuntimeError(
+                            "class-conditioning ranking requires class labels"
+                        )
+                    class_ranking = class_conditioning_ranking_loss(
+                        base_model,
+                        noisy_images=noisy,
+                        noise=noise,
+                        timesteps=timesteps,
+                        class_labels=labels,
+                        num_classes=config.model.num_classes,
+                        batch_fraction=(
+                            config.loss.class_conditioning_ranking_batch_fraction
+                        ),
+                        margin=config.loss.class_conditioning_ranking_margin,
+                        wrong_label_offset=(
+                            config.loss.class_conditioning_ranking_wrong_label_offset
+                        ),
+                        min_timestep=(
+                            config.loss.class_conditioning_ranking_min_timestep
+                        ),
+                    )
                 rollout_scale = rollout_consistency_weight_scale(
                     step,
                     start_step=config.loss.rollout_consistency_start_step,
@@ -769,6 +845,8 @@ def main() -> None:
                     rollout_consistency_scale=rollout_scale,
                     ema_teacher_consistency=ema_teacher_loss,
                     ema_teacher_consistency_scale=ema_teacher_scale,
+                    class_conditioning_ranking=class_ranking,
+                    class_conditioning_ranking_scale=class_ranking_scale,
                 )
                 scaled_loss = losses.total / accumulation
             if not torch.isfinite(scaled_loss):

@@ -44,6 +44,13 @@ def _config(*, dense: bool) -> dict:
             "ema_teacher_consistency_start_step": 100,
             "ema_teacher_consistency_warmup_steps": 100,
             "ema_teacher_consistency_batch_fraction": 0.0625,
+            "class_conditioning_ranking_weight": 0.05,
+            "class_conditioning_ranking_start_step": 100,
+            "class_conditioning_ranking_warmup_steps": 100,
+            "class_conditioning_ranking_batch_fraction": 0.0625,
+            "class_conditioning_ranking_margin": 0.01,
+            "class_conditioning_ranking_wrong_label_offset": 500,
+            "class_conditioning_ranking_min_timestep": 500,
             "prefix_weight": 0.0,
         },
     }
@@ -77,6 +84,16 @@ def _rows(*, dense: bool) -> list[dict]:
             "ema_teacher_consistency_scale": (
                 0.0 if step < 100 else min((step - 100) / 100, 1.0)
             ),
+            "class_conditioning_ranking": 0.0,
+            "class_conditioning_ranking_scale": (
+                0.0 if step <= 100 else min((step - 100) / 100, 1.0)
+            ),
+            "class_conditioning_correct_mse": 0.03,
+            "class_conditioning_wrong_mse": 0.031,
+            "class_conditioning_null_mse": 0.032,
+            "class_conditioning_correct_better_wrong_fraction": 0.5,
+            "class_conditioning_correct_better_null_fraction": 0.5,
+            "class_conditioning_ranking_selected_fraction": 0.125,
         }
         if step in (100, 200):
             event = step // 100 - 1
@@ -125,6 +142,11 @@ def test_report_binds_matched_validation_without_claiming_quality() -> None:
     assert rollout[1]["event_steps"] == [200]
     ema_teacher = regimes["by_schedule"]["ema_teacher_consistency"]
     assert [entry["phase"] for entry in ema_teacher] == ["warmup", "full_scale"]
+    ranking = regimes["by_schedule"]["class_conditioning_ranking"]
+    assert [entry["phase"] for entry in ranking] == ["warmup", "full_scale"]
+    assert report["trajectories"]["cofitok"]["endpoint"][
+        "class_conditioning_ranking_scale"
+    ] == 1.0
     assert regimes["individual_regime_significance_claim_allowed"] is False
     assert report["comparison_policy"]["total_loss_comparison_allowed"] is False
     assert report["comparison_policy"]["training_wall_clock_comparison_allowed"] is False

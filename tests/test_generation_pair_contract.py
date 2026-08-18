@@ -126,6 +126,39 @@ def test_ema_teacher_consistency_is_a_matched_training_loss() -> None:
     ]
 
 
+def test_class_conditioning_ranking_is_a_matched_training_loss() -> None:
+    cofitok = _read("imagenet256_10pct_fixed_basis_cofitok_k8_50k.json")
+    dense = _read("imagenet256_10pct_fixed_basis_dense_50k.json")
+    shared = {
+        "class_conditioning_ranking_weight": 0.05,
+        "class_conditioning_ranking_start_step": 500,
+        "class_conditioning_ranking_warmup_steps": 500,
+        "class_conditioning_ranking_batch_fraction": 0.0625,
+        "class_conditioning_ranking_margin": 0.01,
+        "class_conditioning_ranking_wrong_label_offset": 500,
+        "class_conditioning_ranking_min_timestep": 500,
+    }
+    for config in (cofitok, dense):
+        config["loss"].update(shared)
+
+    report = generation_pair_contract(cofitok, dense)
+
+    assert report["valid"] is True, report["issues"]
+    assert report["mismatched_shared_training_loss_fields"] == []
+    assert (
+        "class_conditioning_ranking_weight"
+        not in report["dense_nonzero_auxiliary_losses"]
+    )
+
+    mismatched = copy.deepcopy(dense)
+    mismatched["loss"]["class_conditioning_ranking_margin"] = 0.02
+    report = generation_pair_contract(cofitok, mismatched)
+    assert report["valid"] is False
+    assert report["mismatched_shared_training_loss_fields"] == [
+        "class_conditioning_ranking_margin"
+    ]
+
+
 def test_ema_teacher_5k_pair_targets_the_late_drift_window() -> None:
     cofitok = _read(
         "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_probe5k.json"

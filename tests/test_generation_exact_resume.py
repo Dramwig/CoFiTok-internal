@@ -4,6 +4,7 @@ import os
 import json
 import subprocess
 import sys
+from copy import deepcopy
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
 from pathlib import Path
@@ -13,8 +14,12 @@ import numpy as np
 import pytest
 import torch
 
-from cofitok.configs import config_from_dict, load_config
+from cofitok.configs import config_from_dict, config_to_dict, load_config
 from cofitok.environment import runtime_environment_sha256
+from cofitok.training.checkpointing import (
+    _config_mismatch_paths,
+    _normalize_exact_resume_config,
+)
 from scripts.train_generation import (
     _augment_training_images,
     _resolve_resume_git_provenance,
@@ -85,6 +90,17 @@ def _assert_nested_equal(left: Any, right: Any) -> None:
 def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> None:
     config = json.loads(CONFIG.read_text(encoding="utf-8"))
     config["data"]["random_horizontal_flip_prob"] = 0.5
+    config["loss"].update(
+        {
+            "class_conditioning_ranking_weight": 0.05,
+            "class_conditioning_ranking_start_step": 0,
+            "class_conditioning_ranking_warmup_steps": 1,
+            "class_conditioning_ranking_batch_fraction": 0.5,
+            "class_conditioning_ranking_margin": 0.01,
+            "class_conditioning_ranking_wrong_label_offset": 5,
+            "class_conditioning_ranking_min_timestep": 8,
+        }
+    )
     config_path = tmp_path / "smoke_random_cpu_flip.json"
     config_path.write_text(json.dumps(config), encoding="utf-8")
     uninterrupted = tmp_path / "uninterrupted"
@@ -121,6 +137,11 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
         "validation_event_index",
         "validation_noise_seed",
         "validation_num_images",
+        "class_conditioning_ranking",
+        "class_conditioning_ranking_scale",
+        "class_conditioning_correct_mse",
+        "class_conditioning_wrong_mse",
+        "class_conditioning_null_mse",
     ):
         assert uninterrupted_checkpoint["metrics"][key] == resumed_checkpoint["metrics"][key]
 
@@ -225,6 +246,33 @@ def test_legacy_config_defaults_to_no_random_horizontal_flip() -> None:
     assert config.data.random_horizontal_flip_prob == 0.0
 
 
+def test_legacy_checkpoint_config_accepts_only_disabled_ranking_defaults() -> None:
+    expected = config_to_dict(load_config(CONFIG))
+    legacy = deepcopy(expected)
+    for field in (
+        "class_conditioning_ranking_weight",
+        "class_conditioning_ranking_start_step",
+        "class_conditioning_ranking_warmup_steps",
+        "class_conditioning_ranking_batch_fraction",
+        "class_conditioning_ranking_margin",
+        "class_conditioning_ranking_wrong_label_offset",
+        "class_conditioning_ranking_min_timestep",
+    ):
+        legacy["loss"].pop(field)
+
+    assert _config_mismatch_paths(
+        _normalize_exact_resume_config(expected),
+        _normalize_exact_resume_config(legacy),
+    ) == []
+
+    enabled = deepcopy(expected)
+    enabled["loss"]["class_conditioning_ranking_weight"] = 0.05
+    assert _config_mismatch_paths(
+        _normalize_exact_resume_config(enabled),
+        _normalize_exact_resume_config(legacy),
+    ) == ["config.loss.class_conditioning_ranking_weight"]
+
+
 def test_training_accepts_fixed_basis_restricted_synthesis() -> None:
     config = load_config(CONFIG)
     fixed_basis = replace(
@@ -304,6 +352,53 @@ def test_training_rejects_invalid_ema_teacher_config(
 
     with pytest.raises(ValueError, match=field):
         _validate_config(invalid)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("class_conditioning_ranking_weight", -0.1),
+        ("class_conditioning_ranking_start_step", -1),
+        ("class_conditioning_ranking_warmup_steps", -1),
+        ("class_conditioning_ranking_batch_fraction", 0.0),
+        ("class_conditioning_ranking_batch_fraction", 1.1),
+        ("class_conditioning_ranking_margin", -0.1),
+        ("class_conditioning_ranking_margin", 1.0),
+        ("class_conditioning_ranking_wrong_label_offset", 0),
+        ("class_conditioning_ranking_min_timestep", -1),
+    ],
+)
+def test_training_rejects_invalid_class_conditioning_ranking_config(
+    field: str,
+    value: float,
+) -> None:
+    config = load_config(CONFIG)
+    invalid = replace(
+        config,
+        loss=replace(config.loss, **{field: value}),
+    )
+
+    with pytest.raises(ValueError, match=field):
+        _validate_config(invalid)
+
+
+def test_training_accepts_enabled_class_conditioning_ranking_config() -> None:
+    config = load_config(CONFIG)
+    enabled = replace(
+        config,
+        loss=replace(
+            config.loss,
+            class_conditioning_ranking_weight=0.05,
+            class_conditioning_ranking_start_step=10,
+            class_conditioning_ranking_warmup_steps=20,
+            class_conditioning_ranking_batch_fraction=0.5,
+            class_conditioning_ranking_margin=0.01,
+            class_conditioning_ranking_wrong_label_offset=5,
+            class_conditioning_ranking_min_timestep=8,
+        ),
+    )
+
+    _validate_config(enabled)
 
 
 @pytest.mark.parametrize(

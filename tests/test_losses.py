@@ -4,6 +4,7 @@ import torch
 from cofitok.configs import DiffusionConfig, LossConfig
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.models import CoFiTokOutput
+from cofitok.training.conditioning import ClassConditioningRankingResult
 from cofitok.training.losses import (
     _component_energy_distribution_loss,
     _low_snr_high_frequency_loss,
@@ -114,6 +115,51 @@ def test_ema_teacher_consistency_is_scaled_in_total() -> None:
     assert losses.total.item() == pytest.approx(4.0)
     assert losses.ema_teacher_consistency.item() == pytest.approx(4.0)
     assert losses.ema_teacher_consistency_scale.item() == pytest.approx(0.5)
+
+
+def test_class_conditioning_ranking_is_scaled_and_reported_in_total() -> None:
+    output = _fake_output()
+    schedule = DiffusionSchedule(DiffusionConfig(num_train_timesteps=10), device="cpu")
+    clean = torch.zeros(2, 3, 4, 4)
+    noise = output.epsilon.detach().clone()
+    timesteps = torch.tensor([1, 2])
+    noisy = schedule.add_noise(clean, noise, timesteps)
+    ranking = ClassConditioningRankingResult(
+        loss=torch.tensor(2.0),
+        correct_mse=torch.tensor(0.2),
+        wrong_mse=torch.tensor(0.3),
+        null_mse=torch.tensor(0.4),
+        correct_better_wrong_fraction=torch.tensor(0.75),
+        correct_better_null_fraction=torch.tensor(0.5),
+        selected_fraction=torch.tensor(0.125),
+    )
+
+    losses = compute_losses(
+        LossConfig(
+            epsilon_weight=0.0,
+            prefix_weight=0.0,
+            monotonic_weight=0.0,
+            zero_token_weight=0.0,
+            class_conditioning_ranking_weight=3.0,
+        ),
+        output,
+        schedule,
+        noisy,
+        clean,
+        noise,
+        timesteps,
+        class_conditioning_ranking=ranking,
+        class_conditioning_ranking_scale=0.5,
+    )
+
+    assert losses.total.item() == pytest.approx(3.0)
+    assert losses.class_conditioning_ranking.item() == pytest.approx(2.0)
+    assert losses.class_conditioning_ranking_scale.item() == pytest.approx(0.5)
+    assert losses.class_conditioning_correct_mse.item() == pytest.approx(0.2)
+    assert losses.class_conditioning_ranking_selected_fraction.item() == pytest.approx(
+        0.125
+    )
+    assert "class_conditioning_correct_better_null_fraction" in losses.as_dict()
 
 
 def test_consistency_scales_remain_float32_for_bfloat16_outputs() -> None:

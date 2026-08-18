@@ -17,6 +17,9 @@ def _write_required_manifest(
     teacher_weight: float = 0.0,
     teacher_start: int = 0,
     teacher_warmup: int = 0,
+    ranking_weight: float = 0.0,
+    ranking_start: int = 0,
+    ranking_warmup: int = 0,
 ) -> None:
     (tmp_path / "run_manifest.json").write_text(
         json.dumps(
@@ -33,6 +36,9 @@ def _write_required_manifest(
                         "ema_teacher_consistency_weight": teacher_weight,
                         "ema_teacher_consistency_start_step": teacher_start,
                         "ema_teacher_consistency_warmup_steps": teacher_warmup,
+                        "class_conditioning_ranking_weight": ranking_weight,
+                        "class_conditioning_ranking_start_step": ranking_start,
+                        "class_conditioning_ranking_warmup_steps": ranking_warmup,
                     },
                 },
                 "git": {
@@ -494,6 +500,9 @@ def test_required_monitor_validates_manifest_consistency_schedules(tmp_path) -> 
         teacher_weight=0.25,
         teacher_start=3_000,
         teacher_warmup=1_000,
+        ranking_weight=0.05,
+        ranking_start=0,
+        ranking_warmup=1_000,
     )
     (tmp_path / "train_metrics.jsonl").write_text(
         json.dumps(
@@ -502,6 +511,7 @@ def test_required_monitor_validates_manifest_consistency_schedules(tmp_path) -> 
                 "total": 0.1,
                 "rollout_consistency_scale": 0.5,
                 "ema_teacher_consistency_scale": 0.0,
+                "class_conditioning_ranking_scale": 0.5,
             }
         )
         + "\n",
@@ -526,6 +536,9 @@ def test_required_monitor_validates_manifest_consistency_schedules(tmp_path) -> 
         ]
         == 1
     )
+    assert report["run_manifest"]["schedule_contracts"][
+        "class_conditioning_ranking"
+    ]["mismatched_steps"] == []
 
 
 def test_required_monitor_rejects_manifest_schedule_drift(tmp_path) -> None:

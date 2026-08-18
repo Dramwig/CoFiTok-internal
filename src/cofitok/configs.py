@@ -103,6 +103,13 @@ class LossConfig:
     ema_teacher_consistency_start_step: int = 0
     ema_teacher_consistency_warmup_steps: int = 0
     ema_teacher_consistency_batch_fraction: float = 0.0625
+    class_conditioning_ranking_weight: float = 0.0
+    class_conditioning_ranking_start_step: int = 0
+    class_conditioning_ranking_warmup_steps: int = 0
+    class_conditioning_ranking_batch_fraction: float = 0.0625
+    class_conditioning_ranking_margin: float = 0.0
+    class_conditioning_ranking_wrong_label_offset: int = 1
+    class_conditioning_ranking_min_timestep: int = 0
     tail_early_dropout_weight: float = 0.0
     tail_early_dropout_prob: float = 0.0
     tail_early_dropout_start: int = 1

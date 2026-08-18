@@ -6,6 +6,10 @@ from cofitok.training.checkpointing import (
     save_training_checkpoint,
 )
 from cofitok.training.ema import ExponentialMovingAverage
+from cofitok.training.conditioning import (
+    ClassConditioningRankingResult,
+    class_conditioning_ranking_loss,
+)
 from cofitok.training.authorization import (
     build_generation_training_authorization,
     capture_generation_training_authorization,
@@ -26,9 +30,11 @@ from cofitok.training.rollout import (
 
 __all__ = [
     "ExponentialMovingAverage",
+    "ClassConditioningRankingResult",
     "LossBreakdown",
     "SmokeStepOutput",
     "compute_losses",
+    "class_conditioning_ranking_loss",
     "build_generation_training_authorization",
     "capture_generation_training_authorization",
     "ensure_fresh_training_output",

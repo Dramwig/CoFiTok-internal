@@ -394,6 +394,7 @@ def _write_schedule_config(
     *,
     rollout_weight: float = 0.1,
     teacher_weight: float = 0.25,
+    ranking_weight: float = 0.0,
 ) -> None:
     path.write_text(
         json.dumps(
@@ -409,6 +410,9 @@ def _write_schedule_config(
                     "ema_teacher_consistency_weight": teacher_weight,
                     "ema_teacher_consistency_start_step": 2_000,
                     "ema_teacher_consistency_warmup_steps": 1_000,
+                    "class_conditioning_ranking_weight": ranking_weight,
+                    "class_conditioning_ranking_start_step": 1_000,
+                    "class_conditioning_ranking_warmup_steps": 1_000,
                 },
                 "runtime": {},
                 "optimization": {},
@@ -418,7 +422,12 @@ def _write_schedule_config(
     )
 
 
-def _write_schedule_metrics(run_dir, *, corrupt: str = "") -> None:
+def _write_schedule_metrics(
+    run_dir,
+    *,
+    corrupt: str = "",
+    include_ranking: bool = False,
+) -> None:
     run_dir.mkdir(parents=True, exist_ok=True)
     rows = []
     for step in (1, 500, 1_000, 2_000, 2_500, 3_000):
@@ -436,6 +445,18 @@ def _write_schedule_metrics(run_dir, *, corrupt: str = "") -> None:
                 "rollout_consistency": 0.0 if rollout_scale == 0.0 else 0.02,
                 "ema_teacher_consistency_scale": teacher_scale,
                 "ema_teacher_consistency": 0.0 if teacher_scale == 0.0 else 0.01,
+                **(
+                    {
+                        "class_conditioning_ranking_scale": (
+                            0.0
+                            if step <= 1_000
+                            else min((step - 1_000) / 1_000, 1.0)
+                        ),
+                        "class_conditioning_ranking": 0.0,
+                    }
+                    if include_ranking
+                    else {}
+                ),
             }
         )
     if corrupt == "rollout_scale":
@@ -518,6 +539,26 @@ def test_audit_rejects_consistency_loss_that_is_zero_after_activation(tmp_path) 
 
     assert report["status"] == "invalid"
     assert "rollout_consistency is zero for all active schedule rows" in report["issues"]
+
+
+def test_audit_accepts_zero_hinge_after_ranking_activation(tmp_path) -> None:
+    config = tmp_path / "config.json"
+    _write_schedule_config(config, ranking_weight=0.05)
+    _write_schedule_metrics(tmp_path, include_ranking=True)
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=4_000,
+        checkpoint_interval=5_000,
+        config_path=config,
+    )
+
+    assert report["status"] == "healthy"
+    ranking = report["consistency_schedules"]["schedules"][
+        "class_conditioning_ranking"
+    ]
+    assert ranking["active_rows"] == 3
+    assert ranking["nonzero_loss_rows"] == 0
 
 
 def test_audit_uses_zero_effective_scale_when_consistency_weight_is_zero(tmp_path) -> None:

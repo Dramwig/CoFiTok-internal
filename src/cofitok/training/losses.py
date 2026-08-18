@@ -9,6 +9,7 @@ import torch.nn.functional as F
 from cofitok.configs import LossConfig
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.models import CoFiTokOutput
+from cofitok.training.conditioning import ClassConditioningRankingResult
 
 
 @dataclass
@@ -36,6 +37,14 @@ class LossBreakdown:
     rollout_consistency_scale: torch.Tensor
     ema_teacher_consistency: torch.Tensor
     ema_teacher_consistency_scale: torch.Tensor
+    class_conditioning_ranking: torch.Tensor
+    class_conditioning_ranking_scale: torch.Tensor
+    class_conditioning_correct_mse: torch.Tensor
+    class_conditioning_wrong_mse: torch.Tensor
+    class_conditioning_null_mse: torch.Tensor
+    class_conditioning_correct_better_wrong_fraction: torch.Tensor
+    class_conditioning_correct_better_null_fraction: torch.Tensor
+    class_conditioning_ranking_selected_fraction: torch.Tensor
 
     def as_dict(self) -> dict[str, torch.Tensor]:
         return {
@@ -65,6 +74,24 @@ class LossBreakdown:
             ),
             "ema_teacher_consistency_scale": (
                 self.ema_teacher_consistency_scale.detach()
+            ),
+            "class_conditioning_ranking": self.class_conditioning_ranking.detach(),
+            "class_conditioning_ranking_scale": (
+                self.class_conditioning_ranking_scale.detach()
+            ),
+            "class_conditioning_correct_mse": (
+                self.class_conditioning_correct_mse.detach()
+            ),
+            "class_conditioning_wrong_mse": self.class_conditioning_wrong_mse.detach(),
+            "class_conditioning_null_mse": self.class_conditioning_null_mse.detach(),
+            "class_conditioning_correct_better_wrong_fraction": (
+                self.class_conditioning_correct_better_wrong_fraction.detach()
+            ),
+            "class_conditioning_correct_better_null_fraction": (
+                self.class_conditioning_correct_better_null_fraction.detach()
+            ),
+            "class_conditioning_ranking_selected_fraction": (
+                self.class_conditioning_ranking_selected_fraction.detach()
             ),
         }
 
@@ -582,6 +609,8 @@ def compute_losses(
     rollout_consistency_scale: float = 1.0,
     ema_teacher_consistency: torch.Tensor | None = None,
     ema_teacher_consistency_scale: float = 1.0,
+    class_conditioning_ranking: ClassConditioningRankingResult | None = None,
+    class_conditioning_ranking_scale: float = 1.0,
 ) -> LossBreakdown:
     def float32_scalar(value: float) -> torch.Tensor:
         return torch.as_tensor(
@@ -722,6 +751,32 @@ def compute_losses(
     else:
         ema_teacher_consistency_loss = output.epsilon.new_zeros(())
         ema_teacher_scale = float32_scalar(0.0)
+    if (
+        config.class_conditioning_ranking_weight > 0.0
+        and class_conditioning_ranking is not None
+        and class_conditioning_ranking_scale > 0.0
+    ):
+        class_ranking_loss = class_conditioning_ranking.loss
+        class_ranking_scale = float32_scalar(class_conditioning_ranking_scale)
+        class_correct_mse = class_conditioning_ranking.correct_mse
+        class_wrong_mse = class_conditioning_ranking.wrong_mse
+        class_null_mse = class_conditioning_ranking.null_mse
+        class_correct_better_wrong = (
+            class_conditioning_ranking.correct_better_wrong_fraction
+        )
+        class_correct_better_null = (
+            class_conditioning_ranking.correct_better_null_fraction
+        )
+        class_selected_fraction = class_conditioning_ranking.selected_fraction
+    else:
+        class_ranking_loss = output.epsilon.new_zeros(())
+        class_ranking_scale = float32_scalar(0.0)
+        class_correct_mse = output.epsilon.new_zeros(())
+        class_wrong_mse = output.epsilon.new_zeros(())
+        class_null_mse = output.epsilon.new_zeros(())
+        class_correct_better_wrong = output.epsilon.new_zeros(())
+        class_correct_better_null = output.epsilon.new_zeros(())
+        class_selected_fraction = output.epsilon.new_zeros(())
     total = (
         config.epsilon_weight * epsilon_loss
         + config.prefix_weight * prefix_loss
@@ -746,6 +801,9 @@ def compute_losses(
         + config.ema_teacher_consistency_weight
         * ema_teacher_scale
         * ema_teacher_consistency_loss
+        + config.class_conditioning_ranking_weight
+        * class_ranking_scale
+        * class_ranking_loss
     )
     return LossBreakdown(
         total=total,
@@ -771,4 +829,16 @@ def compute_losses(
         rollout_consistency_scale=rollout_scale,
         ema_teacher_consistency=ema_teacher_consistency_loss,
         ema_teacher_consistency_scale=ema_teacher_scale,
+        class_conditioning_ranking=class_ranking_loss,
+        class_conditioning_ranking_scale=class_ranking_scale,
+        class_conditioning_correct_mse=class_correct_mse,
+        class_conditioning_wrong_mse=class_wrong_mse,
+        class_conditioning_null_mse=class_null_mse,
+        class_conditioning_correct_better_wrong_fraction=(
+            class_correct_better_wrong
+        ),
+        class_conditioning_correct_better_null_fraction=(
+            class_correct_better_null
+        ),
+        class_conditioning_ranking_selected_fraction=class_selected_fraction,
     )

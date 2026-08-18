@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import os
 import random
@@ -26,6 +27,15 @@ from cofitok.training.ema import ExponentialMovingAverage
 
 CHECKPOINT_FORMAT_VERSION = 1
 CHECKPOINT_INTEGRITY_VERSION = 1
+_EXACT_RESUME_COMPATIBLE_LOSS_DEFAULTS = {
+    "class_conditioning_ranking_weight": 0.0,
+    "class_conditioning_ranking_start_step": 0,
+    "class_conditioning_ranking_warmup_steps": 0,
+    "class_conditioning_ranking_batch_fraction": 0.0625,
+    "class_conditioning_ranking_margin": 0.0,
+    "class_conditioning_ranking_wrong_label_offset": 1,
+    "class_conditioning_ranking_min_timestep": 0,
+}
 
 
 def _config_mismatch_paths(
@@ -46,6 +56,24 @@ def _config_mismatch_paths(
             )
         return mismatches
     return [] if expected == actual else [path]
+
+
+def _normalize_exact_resume_config(config: Mapping[str, Any]) -> dict[str, Any]:
+    """Backfill only newly introduced disabled defaults for legacy checkpoints.
+
+    A missing field is interpreted as its historical disabled value.  Any current
+    non-default value still differs from that value and therefore fails closed.
+    No other config field is normalized.
+    """
+
+    normalized = copy.deepcopy(dict(config))
+    loss = normalized.get("loss")
+    if isinstance(loss, Mapping):
+        normalized_loss = dict(loss)
+        for field, default in _EXACT_RESUME_COMPATIBLE_LOSS_DEFAULTS.items():
+            normalized_loss.setdefault(field, default)
+        normalized["loss"] = normalized_loss
+    return normalized
 
 
 def _validate_git_provenance(
@@ -479,7 +507,10 @@ def load_training_checkpoint(
         checkpoint_config = checkpoint.get("config")
         if not isinstance(checkpoint_config, Mapping):
             raise ValueError("Checkpoint is missing its exact-resume config")
-        mismatches = _config_mismatch_paths(expected_config, checkpoint_config)
+        mismatches = _config_mismatch_paths(
+            _normalize_exact_resume_config(expected_config),
+            _normalize_exact_resume_config(checkpoint_config),
+        )
         if mismatches:
             preview = ", ".join(mismatches[:8])
             if len(mismatches) > 8:

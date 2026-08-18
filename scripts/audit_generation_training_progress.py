@@ -145,6 +145,7 @@ def _audit_consistency_schedules(
             "weight": config.loss.rollout_consistency_weight,
             "start_step": config.loss.rollout_consistency_start_step,
             "warmup_steps": config.loss.rollout_consistency_warmup_steps,
+            "requires_nonzero_active_loss": True,
         },
         "ema_teacher_consistency": {
             "scale_field": "ema_teacher_consistency_scale",
@@ -152,6 +153,15 @@ def _audit_consistency_schedules(
             "weight": config.loss.ema_teacher_consistency_weight,
             "start_step": config.loss.ema_teacher_consistency_start_step,
             "warmup_steps": config.loss.ema_teacher_consistency_warmup_steps,
+            "requires_nonzero_active_loss": True,
+        },
+        "class_conditioning_ranking": {
+            "scale_field": "class_conditioning_ranking_scale",
+            "loss_field": "class_conditioning_ranking",
+            "weight": config.loss.class_conditioning_ranking_weight,
+            "start_step": config.loss.class_conditioning_ranking_start_step,
+            "warmup_steps": config.loss.class_conditioning_ranking_warmup_steps,
+            "requires_nonzero_active_loss": False,
         },
     }
     issues: list[str] = []
@@ -171,7 +181,7 @@ def _audit_consistency_schedules(
                 warmup_steps=int(schedule["warmup_steps"]),
             )
             expected_scale = scheduled_scale if weight > 0.0 else 0.0
-            actual_scale = row.get(scale_field)
+            actual_scale = row.get(scale_field, 0.0 if weight == 0.0 else None)
             try:
                 actual_scale_value = float(actual_scale)
             except (TypeError, ValueError):
@@ -184,7 +194,7 @@ def _audit_consistency_schedules(
                 actual_scale_value, expected_scale, rel_tol=0.0, abs_tol=1e-6
             ):
                 issues.append(f"row {index} {scale_field} differs from config schedule")
-            loss = row.get(loss_field)
+            loss = row.get(loss_field, 0.0 if weight == 0.0 else None)
             try:
                 loss_value = float(loss)
             except (TypeError, ValueError):
@@ -202,7 +212,11 @@ def _audit_consistency_schedules(
                 if not math.isclose(loss_value, 0.0, rel_tol=0.0, abs_tol=1e-12):
                     nonzero_loss_rows += 1
             verified_rows += 1
-        if active_rows > 0 and nonzero_loss_rows == 0:
+        if (
+            schedule.get("requires_nonzero_active_loss") is True
+            and active_rows > 0
+            and nonzero_loss_rows == 0
+        ):
             issues.append(f"{loss_field} is zero for all active schedule rows")
         last_step = int(rows[-1]["step"])
         scheduled_scale_at_last_step = consistency_weight_scale(

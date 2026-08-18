@@ -33,6 +33,13 @@ SHARED_TRAINING_LOSS_FIELDS = {
     "ema_teacher_consistency_start_step",
     "ema_teacher_consistency_warmup_steps",
     "ema_teacher_consistency_batch_fraction",
+    "class_conditioning_ranking_weight",
+    "class_conditioning_ranking_start_step",
+    "class_conditioning_ranking_warmup_steps",
+    "class_conditioning_ranking_batch_fraction",
+    "class_conditioning_ranking_margin",
+    "class_conditioning_ranking_wrong_label_offset",
+    "class_conditioning_ranking_min_timestep",
 }
 
 
