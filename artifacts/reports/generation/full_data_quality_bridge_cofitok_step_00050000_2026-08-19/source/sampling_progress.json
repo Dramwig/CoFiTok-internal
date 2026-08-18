@@ -1,0 +1,28 @@
+{
+  "completed_fraction": 1.0,
+  "completed_samples": 2048,
+  "cumulative_elapsed_seconds": 2198.5056023597717,
+  "error": null,
+  "error_type": null,
+  "eta_seconds": 0.0,
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "invocation": 1,
+  "invocation_elapsed_seconds": 2198.5056023597717,
+  "last_completed_index": 2047,
+  "pid": 69221,
+  "prefix_budgets": [
+    8
+  ],
+  "sample_sets": {
+    "8": {
+      "count": 2048,
+      "sha256": "2d1efc1c15d057ee6c916f9685145d324b9c4deb08f28a27eaea31401f5dfe61"
+    }
+  },
+  "samples_per_second": 0.9315418608903129,
+  "sampling_manifest_sha256": "e6df896c8156c2b8c8aa032a7df704de0b4cd07ecd7c78c427563be150174c51",
+  "schema_version": 1,
+  "start_index": 0,
+  "status": "completed",
+  "total_samples": 2048
+}

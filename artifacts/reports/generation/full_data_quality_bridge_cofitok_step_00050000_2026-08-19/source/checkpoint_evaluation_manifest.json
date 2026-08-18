@@ -1,0 +1,32 @@
+{
+  "checkpoint": {
+    "artifact_type": "training_checkpoint",
+    "bytes": 1010937514,
+    "format_version": 1,
+    "integrity_manifest": {
+      "bytes": 596,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00050000.pt.integrity.json",
+      "sha256": "a23bc56ff3ba398dff65c0d659edce1a79f37ef68ba8bd37d1be9bea7046459c"
+    },
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00050000.pt",
+    "sha256": "d7100a6e8f67adb2b1630d36c17d0f2bc94fb93ed99d3e270a0867979c3343b4",
+    "step": 50000
+  },
+  "git": {
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tracked_dirty": false
+  },
+  "output_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00050000/checkpoint_eval",
+  "report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00050000/checkpoint_eval/checkpoint_evaluation_report.json",
+  "request": {
+    "num_images": 256,
+    "precision": "bf16",
+    "random_orders": 4,
+    "seed": 2027,
+    "timestep": 500,
+    "weights": "ema"
+  },
+  "role": "generation_checkpoint_evaluation_manifest",
+  "schema_version": 1
+}

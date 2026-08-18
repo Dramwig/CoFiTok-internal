@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "role": "full_data_quality_bridge_single_method_milestone_audit",
+  "status": "pass",
+  "method": "cofitok_k8",
+  "stage": "cofitok_step_00050000_exploratory_milestone",
+  "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+  "training": {
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tracked_dirty": false,
+    "dataset": "imagenet_256",
+    "dataset_identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+    "parameter_count": 62834083,
+    "completed_steps": 50000,
+    "target_steps": 100000,
+    "samples_seen": 3200000,
+    "effective_batch_size": 64,
+    "elapsed_seconds": 140097.9010260105,
+    "peak_vram_bytes": 56839124480,
+    "validation_epsilon_mse": 0.029245179146528244
+  },
+  "checkpoint": {
+    "filename": "checkpoint_step_00050000.pt",
+    "step": 50000,
+    "bytes": 1010937514,
+    "sha256": "d7100a6e8f67adb2b1630d36c17d0f2bc94fb93ed99d3e270a0867979c3343b4",
+    "integrity_policy": "required",
+    "integrity_sidecar_present": true,
+    "latest_binding_matches": true,
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e"
+  },
+  "sampling": {
+    "status": "completed",
+    "weights": "ema",
+    "sampler": "ddim",
+    "sample_steps": 50,
+    "num_samples": 2048,
+    "batch_size": 32,
+    "guidance_scale": 1.5,
+    "guidance_rescale": 0.0,
+    "eta": 0.0,
+    "class_schedule": "balanced_modulo",
+    "precision": "bf16",
+    "seed": 0,
+    "start_index": 0,
+    "selected_prefix_budget": 8,
+    "elapsed_seconds": 2198.5056023597717,
+    "samples_per_second": 0.9315418608903129,
+    "sample_set_sha256": "2d1efc1c15d057ee6c916f9685145d324b9c4deb08f28a27eaea31401f5dfe61",
+    "sampling_manifest_sha256": "e6df896c8156c2b8c8aa032a7df704de0b4cd07ecd7c78c427563be150174c51"
+  },
+  "distribution_metrics": {
+    "generated_image_count": 2048,
+    "real_image_count": 50000,
+    "real_set_sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f",
+    "frechet_inception_distance": 221.05073384081678,
+    "inception_score_mean": 4.484192228313476,
+    "inception_score_std": 0.40505558278436565,
+    "precision_recall_enabled": false
+  },
+  "class_fidelity": {
+    "sample_count": 2048,
+    "requested_class_count": 1000,
+    "requested_count_min": 2,
+    "requested_count_max": 3,
+    "top1_correct": 3,
+    "top1_accuracy": 0.00146484375,
+    "top5_correct": 14,
+    "top5_accuracy": 0.0068359375,
+    "mean_target_probability": 0.0010549417772836023,
+    "target_negative_log_likelihood": 7.5148486122488976,
+    "predicted_class_count": 213,
+    "predicted_class_fraction": 0.213,
+    "normalized_predicted_class_entropy": 0.5389640309482758
+  },
+  "mechanism": {
+    "evaluated_images": 256,
+    "timestep": 500,
+    "tested_order_count": 6,
+    "ordered_rank_by_path_auc": 1,
+    "ranked_orders_by_path_auc": [
+      "ordered",
+      "random_00",
+      "random_02",
+      "random_03",
+      "random_01",
+      "reverse"
+    ],
+    "ordered_endpoint_clean_mse": 0.015631082467734814,
+    "ordered_prefix_path_mse_auc": 0.09299268137796649,
+    "zero_token_max_abs": 0.0,
+    "shuffled_to_ordered_endpoint_ratio": 130.348306132117,
+    "component_energy_ratio_per_sample_mean": [
+      0.013002322288230062,
+      0.014819505857303739,
+      0.028913825284689665,
+      0.028947732411324978,
+      0.05620569549500942,
+      0.2846543714404106,
+      0.2867199182510376,
+      0.2867366448044777
+    ]
+  },
+  "visual_audit": {
+    "contact_sheet": "../../../figures/generation/full_data_quality_bridge_cofitok_step_00050000_2026-08-19/requested_classes_000_015_contact_sheet.png",
+    "requested_classes": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "observation": "All sixteen samples retain severe high-frequency residual structure. A few coarse silhouettes are visible, but requested-class identity is not reliable.",
+    "qualitative_quality_pass": false
+  },
+  "claim_boundary": {
+    "single_method_milestone": true,
+    "dense_step_50000_milestone_available": false,
+    "direct_method_quality_comparison_allowed": false,
+    "absolute_generation_quality_claim_allowed": false,
+    "class_conditioning_quality_claim_allowed": false,
+    "mechanism_claim_allowed": true,
+    "formal_terminal_gate_substitute": false,
+    "precision_recall_claim_allowed": false,
+    "cross_protocol_comparison_to_frozen_10pct_gate_allowed": false,
+    "required_next_evidence": "exact dense step-50000 milestone under the same protocol, followed by both methods at exact 100K and the terminal matched 10K DDIM-100 evaluation"
+  },
+  "source_artifacts": [
+    {
+      "path": "source/training_report.json",
+      "bytes": 11245,
+      "sha256": "6ac71cc89e5f5769fe5d4b4e9e6789f1ea377ccd9179f435e23ce4e27ea81cd7"
+    },
+    {
+      "path": "source/latest.json",
+      "bytes": 666,
+      "sha256": "05b2572a996a6cf7fd8859e37aafb9dd3c25761531ffd62b06d4738662bd8f96"
+    },
+    {
+      "path": "source/checkpoint_step_00050000.pt.integrity.json",
+      "bytes": 596,
+      "sha256": "a23bc56ff3ba398dff65c0d659edce1a79f37ef68ba8bd37d1be9bea7046459c"
+    },
+    {
+      "path": "source/sampling_preflight.json",
+      "bytes": 4335,
+      "sha256": "91c0590dec0047a2d2388edd4b9bb980d7f6caadc378faae89f4794d9f0403dc"
+    },
+    {
+      "path": "source/checkpoint_evaluation_manifest.json",
+      "bytes": 1576,
+      "sha256": "f992810510a6bdaea5d03384067d75d1959563394c8a22b87f38a1b2b81a5a58"
+    },
+    {
+      "path": "source/checkpoint_evaluation_report.json",
+      "bytes": 16238,
+      "sha256": "0b7f4a6320243b25a425eae1430ce63471b34f57410ca1aa94be64ed4fa37016"
+    },
+    {
+      "path": "source/sampling_manifest.json",
+      "bytes": 4321,
+      "sha256": "e6df896c8156c2b8c8aa032a7df704de0b4cd07ecd7c78c427563be150174c51"
+    },
+    {
+      "path": "source/sampling_progress.json",
+      "bytes": 760,
+      "sha256": "86cfeb1ffc01ff105b48819e2fe4d6f646d76e3466efa42348973d65dfe896fd"
+    },
+    {
+      "path": "source/sampling_report.json",
+      "bytes": 4978,
+      "sha256": "f4920236cea9769c19e9695c2f41de305f4794c3641de5130e5e505d20a3890f"
+    },
+    {
+      "path": "source/generation_metrics_report.json",
+      "bytes": 12754,
+      "sha256": "34d3b9b31ebdac0b177795fd1e629210c8b390da66cadbe7fe199850c5cde2b1"
+    },
+    {
+      "path": "source/class_fidelity_report.json",
+      "bytes": 13052,
+      "sha256": "db5c40e983c84cac199b41addf0d02d1f978f7aa603b90d368d8a662da57018f"
+    },
+    {
+      "path": "../../../figures/generation/full_data_quality_bridge_cofitok_step_00050000_2026-08-19/requested_classes_000_015_contact_sheet.png",
+      "bytes": 2999262,
+      "sha256": "c9df6f76cdc2e3b3b1226a6e8658d59ddf4aa968674ae46b0e97075a08c4594b"
+    }
+  ]
+}
