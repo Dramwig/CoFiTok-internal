@@ -695,6 +695,173 @@ def find_untracked_conflicts(
     }
 
 
+def _target_entry_identity(
+    repository: Path,
+    *,
+    revision: str,
+    path: str,
+) -> dict[str, Any]:
+    completed = _git(
+        repository,
+        "ls-tree",
+        "-z",
+        revision,
+        "--",
+        path,
+    )
+    rows = [value for value in str(completed.stdout).split("\0") if value]
+    exact = []
+    for row in rows:
+        metadata, _, observed_path = row.partition("\t")
+        if observed_path != path:
+            continue
+        fields = metadata.split()
+        if len(fields) != 3:
+            raise ValueError(f"target tree entry is malformed: {path}")
+        mode, object_type, object_id = fields
+        if not _is_object_id(object_id):
+            raise ValueError(f"target tree object id is malformed: {path}")
+        exact.append((mode, object_type, object_id.lower()))
+    if len(exact) != 1:
+        return {
+            "path": path,
+            "present": False,
+            "mode": None,
+            "object_type": None,
+            "object_id": None,
+            "bytes": None,
+            "sha256": None,
+        }
+    mode, object_type, object_id = exact[0]
+    result: dict[str, Any] = {
+        "path": path,
+        "present": True,
+        "mode": mode,
+        "object_type": object_type,
+        "object_id": object_id,
+        "bytes": None,
+        "sha256": None,
+    }
+    if object_type == "blob":
+        payload = bytes(
+            _run(
+                ["git", "cat-file", "blob", object_id],
+                cwd=repository,
+                text=False,
+            ).stdout
+        )
+        result["bytes"] = len(payload)
+        result["sha256"] = _sha256_bytes(payload)
+    return result
+
+
+def _local_path_identity(repository: Path, path: str) -> dict[str, Any]:
+    source = repository.joinpath(*PurePosixPath(path).parts)
+    ignored = (
+        _git(repository, "check-ignore", "-q", "--", path, check=False).returncode
+        == 0
+    )
+    if source.is_symlink():
+        target = os.readlink(source)
+        encoded = target.encode("utf-8", errors="surrogateescape")
+        return {
+            "path": path,
+            "kind": "symlink",
+            "bytes": len(encoded),
+            "sha256": _sha256_bytes(encoded),
+            "ignored": ignored,
+        }
+    if source.is_file():
+        payload = source.read_bytes()
+        return {
+            "path": path,
+            "kind": "file",
+            "bytes": len(payload),
+            "sha256": _sha256_bytes(payload),
+            "ignored": ignored,
+        }
+    if source.is_dir():
+        return {
+            "path": path,
+            "kind": "directory",
+            "bytes": None,
+            "sha256": None,
+            "ignored": ignored,
+        }
+    return {
+        "path": path,
+        "kind": "missing",
+        "bytes": None,
+        "sha256": None,
+        "ignored": ignored,
+    }
+
+
+def analyze_untracked_conflicts(
+    *,
+    formal_repository: Path,
+    target_repository: Path,
+    target_revision: str,
+    conflicts: Sequence[str],
+) -> dict[str, Any]:
+    rows = []
+    for path in conflicts:
+        local = _local_path_identity(formal_repository, path)
+        target = _target_entry_identity(
+            target_repository,
+            revision=target_revision,
+            path=path,
+        )
+        byte_identical = (
+            local["kind"] == "file"
+            and target["present"] is True
+            and target["object_type"] == "blob"
+            and local["bytes"] == target["bytes"]
+            and local["sha256"] == target["sha256"]
+        )
+        rows.append(
+            {
+                "path": path,
+                "local": local,
+                "target": target,
+                "byte_identical": byte_identical,
+            }
+        )
+    summary = {
+        "conflict_count": len(rows),
+        "byte_identical_file_count": sum(
+            row["byte_identical"] is True for row in rows
+        ),
+        "divergent_file_count": sum(
+            row["local"]["kind"] == "file"
+            and row["target"]["object_type"] == "blob"
+            and row["byte_identical"] is False
+            for row in rows
+        ),
+        "local_symlink_count": sum(
+            row["local"]["kind"] == "symlink" for row in rows
+        ),
+        "local_directory_count": sum(
+            row["local"]["kind"] == "directory" for row in rows
+        ),
+        "local_missing_count": sum(
+            row["local"]["kind"] == "missing" for row in rows
+        ),
+        "ignored_local_path_count": sum(
+            row["local"]["ignored"] is True for row in rows
+        ),
+    }
+    summary["all_conflicts_are_byte_identical_files"] = bool(rows) and (
+        summary["byte_identical_file_count"] == len(rows)
+    )
+    return {
+        "status": "analyzed",
+        "summary": summary,
+        "conflicts": rows,
+        "automatic_resolution_performed": False,
+    }
+
+
 def _fetch_bundle(
     repository: Path,
     *,
@@ -837,6 +1004,17 @@ def preflight_deployment(
             current_revision=manifest["formal_repository"]["revision"],
             target_revision=manifest["target"]["revision"],
         )
+        conflict_scan = find_untracked_conflicts(
+            formal_repository,
+            current_revision=manifest["formal_repository"]["revision"],
+            target_added_paths=target_added_paths,
+        )
+        conflict_analysis = analyze_untracked_conflicts(
+            formal_repository=formal_repository,
+            target_repository=isolated,
+            target_revision=manifest["target"]["revision"],
+            conflicts=conflict_scan["conflicts"],
+        )
         isolated_evidence = {
             "clone_mode": "no_local_no_hardlinks_no_checkout",
             "bootstrap_head": manifest["bootstrap_bundle"]["advertised_heads"][0][
@@ -849,11 +1027,6 @@ def preflight_deployment(
             "git_fsck_stderr": str(fsck.stderr).strip(),
         }
 
-    conflict_scan = find_untracked_conflicts(
-        formal_repository,
-        current_revision=manifest["formal_repository"]["revision"],
-        target_added_paths=target_added_paths,
-    )
     after = git_state(formal_repository)
     immutable_fields = (
         "revision",
@@ -901,6 +1074,7 @@ def preflight_deployment(
         },
         "isolated_preflight": isolated_evidence,
         "untracked_target_conflicts": conflict_scan,
+        "untracked_conflict_content_analysis": conflict_analysis,
         "target_added_paths": target_added_paths,
         "authorization_boundary": dict(AUTHORIZATION_BOUNDARY),
         "effects": {

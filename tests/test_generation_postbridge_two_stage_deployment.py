@@ -455,10 +455,42 @@ def test_preflight_rejects_ignored_untracked_target_conflict(tmp_path: Path) -> 
     assert report["untracked_target_conflicts"]["conflicts"] == [
         "src/postbridge.py"
     ]
+    assert report["untracked_conflict_content_analysis"]["summary"] == {
+        "conflict_count": 1,
+        "byte_identical_file_count": 0,
+        "divergent_file_count": 1,
+        "local_symlink_count": 0,
+        "local_directory_count": 0,
+        "local_missing_count": 0,
+        "ignored_local_path_count": 1,
+        "all_conflicts_are_byte_identical_files": False,
+    }
     assert conflict.read_text(encoding="utf-8") == "ignored user-owned content\n"
     assert _git(fixture["formal"], "rev-parse", "HEAD") == fixture[
         "formal_revision"
     ]
+
+
+def test_preflight_classifies_byte_identical_untracked_conflict(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    conflict = fixture["formal"] / "src/postbridge.py"
+    conflict.parent.mkdir(parents=True)
+    conflict.write_bytes(b"POSTBRIDGE = True\n")
+
+    report = _preflight(fixture)
+
+    summary = report["untracked_conflict_content_analysis"]["summary"]
+    assert report["status"] == "blocked"
+    assert summary["conflict_count"] == 1
+    assert summary["byte_identical_file_count"] == 1
+    assert summary["divergent_file_count"] == 0
+    assert summary["all_conflicts_are_byte_identical_files"] is True
+    row = report["untracked_conflict_content_analysis"]["conflicts"][0]
+    assert row["path"] == "src/postbridge.py"
+    assert row["byte_identical"] is True
+    assert row["local"]["sha256"] == row["target"]["sha256"]
 
 
 def test_explicit_apply_fast_forwards_only_after_terminal_guard(tmp_path: Path) -> None:
