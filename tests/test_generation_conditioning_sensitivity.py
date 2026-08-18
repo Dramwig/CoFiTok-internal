@@ -34,6 +34,10 @@ from scripts.audit_generation_conditioning_path import (
     audit_conditioning_path,
     summarize_path_rows,
 )
+from scripts.evaluate_generation_conditioning_gain_sweep import (
+    apply_class_embedding_gain,
+    summarize_gain_rows,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -149,6 +153,49 @@ def _run(checkpoint: Path, output: Path, *, resume: bool = False, check: bool = 
     )
 
 
+def _run_gain(
+    checkpoint: Path,
+    output: Path,
+    *,
+    resume: bool = False,
+    check: bool = True,
+):
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = os.pathsep.join(
+        [str(ROOT), str(ROOT / "src")]
+    )
+    command = [
+        sys.executable,
+        str(ROOT / "scripts/evaluate_generation_conditioning_gain_sweep.py"),
+        "--checkpoint",
+        str(checkpoint),
+        "--output",
+        str(output),
+        "--num-samples",
+        "2",
+        "--wrong-label-offset",
+        "1",
+        "--timesteps",
+        "1",
+        "--gains",
+        "0",
+        "1",
+        "2",
+        "--threads",
+        "1",
+    ]
+    if resume:
+        command.append("--resume")
+    return subprocess.run(
+        command,
+        cwd=ROOT,
+        env=environment,
+        check=check,
+        capture_output=True,
+        text=True,
+    )
+
+
 def test_parameter_update_statistics_handles_zero_initialization() -> None:
     result = parameter_update_statistics(torch.zeros(2), torch.ones(2))
 
@@ -238,6 +285,31 @@ def test_conditioning_sensitivity_cli_rejects_existing_output_without_resume(
 
     assert repeated.returncode != 0
     assert "pass --resume" in repeated.stderr
+
+
+def test_conditioning_gain_sweep_cli_is_cpu_only_and_resumable(
+    tmp_path: Path,
+) -> None:
+    _write_dataset(tmp_path, num_classes=4)
+    checkpoint = tmp_path / "checkpoint.pt"
+    output = tmp_path / "conditioning_gain_sweep.json"
+    _write_checkpoint(checkpoint, tmp_path)
+
+    completed = _run_gain(checkpoint, output)
+    assert completed.returncode == 0
+    report = json.loads(output.read_text(encoding="utf-8"))
+    assert report["status"] == "completed"
+    assert report["runtime"]["device"] == "cpu"
+    assert report["request"]["gains"] == [0.0, 1.0, 2.0]
+    assert set(report["gain_summary"]) == {"0", "1", "2"}
+    assert report["gain_summary"]["0"]["correct_better_count"] == {
+        "than_wrong": 0,
+        "than_null": 0,
+    }
+    assert report["claim_boundary"]["authorizes_training"] is False
+
+    resumed = _run_gain(checkpoint, output, resume=True)
+    assert resumed.returncode == 0
 
 
 def _comparison_source(checkpoint_sha: str, *, synthesis_mode: str) -> dict:
@@ -354,3 +426,69 @@ def test_conditioning_path_audit_reports_every_block_and_timestep() -> None:
 def test_summarize_path_rows_rejects_missing_timestep() -> None:
     with pytest.raises(ValueError, match="No conditioning path rows"):
         summarize_path_rows([], [5])
+
+
+def test_apply_class_embedding_gain_preserves_null_and_scales_displacement() -> None:
+    config = ModelConfig(
+        image_channels=3,
+        image_size=8,
+        token_count=1,
+        token_channels=3,
+        base_channels=8,
+        predictor_type="scalable_unet",
+        predictor_use_feedback=False,
+        predictor_channel_multipliers=[1],
+        predictor_num_res_blocks=1,
+        predictor_attention_resolutions=[],
+        predictor_num_heads=1,
+        num_classes=4,
+        synthesis_mode="dense_identity",
+    )
+    model = CoFiTokTiny(config)
+    base = model.predictor.class_embed.weight.detach().clone()
+    null = base[4].clone()
+
+    apply_class_embedding_gain(model, base, 2.0)
+
+    updated = model.predictor.class_embed.weight.detach()
+    assert torch.equal(updated[4], null)
+    assert torch.allclose(updated[0] - null, 2.0 * (base[0] - null))
+
+
+def test_summarize_gain_rows_tracks_correct_label_advantage() -> None:
+    rows = [
+        {
+            "correct_better": {"than_wrong": True, "than_null": False},
+            "correct_relative_mse_improvement": {
+                "versus_wrong": 0.1,
+                "versus_null": -0.1,
+            },
+            "relative_delta_to_correct_rms": {
+                "correct_vs_wrong": 0.2,
+                "correct_vs_null": 0.3,
+                "wrong_vs_null": 0.4,
+            },
+        },
+        {
+            "correct_better": {"than_wrong": False, "than_null": True},
+            "correct_relative_mse_improvement": {
+                "versus_wrong": -0.1,
+                "versus_null": 0.1,
+            },
+            "relative_delta_to_correct_rms": {
+                "correct_vs_wrong": 0.4,
+                "correct_vs_null": 0.5,
+                "wrong_vs_null": 0.6,
+            },
+        },
+    ]
+
+    summary = summarize_gain_rows({"2": rows})["2"]
+
+    assert summary["correct_better_count"] == {"than_wrong": 1, "than_null": 1}
+    assert summary["correct_relative_mse_improvement_mean"][
+        "versus_wrong"
+    ] == pytest.approx(0.0)
+    assert summary["relative_delta_to_correct_rms_mean"][
+        "correct_vs_wrong"
+    ] == pytest.approx(0.3)
