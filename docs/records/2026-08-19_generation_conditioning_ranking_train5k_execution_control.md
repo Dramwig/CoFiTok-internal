@@ -105,7 +105,94 @@ generation-metrics reports, and two paired class-fidelity reports are rebuilt
 and compared with the claimed terminal report. Surface-level JSON agreement is
 therefore insufficient to trigger the confirmation stage.
 
-Remote deployment and GPU launch remain intentionally absent while the active
-full-data 100K quality bridge owns the GPU. A clean Linux rehearsal of the
-eventual exact code revision is required before installing any waiting
-supervisor.
+At code-commit time, remote deployment and GPU launch were intentionally absent
+while the active full-data 100K quality bridge owned the GPU. The clean Linux
+rehearsal and subsequent CPU-only waiting deployment are recorded below; GPU
+training remains unlaunched.
+
+## Exact Linux rehearsal
+
+The complete execution-control revision was rehearsed on `pro6000` in an
+isolated checkout with CUDA hidden and without touching the formal checkout:
+
+```text
+revision: ed9463eb85ffb97545b5506e264123e46ff2fcfc
+tree: 423ab336401bf79eb21ccce822880171bbf246b2
+prerequisite: f77e311546beba697020debd35e26888096ca258
+bundle bytes: 35,679
+bundle SHA256: a9990f744a557e7442fc6c37e4a876226c6965b8c613be287d9fd8ae716cd056
+isolated checkout:
+/tmp/cofitok-conditioning-confirm5k-execution-ed9463e.HlABkJ/CoFiTok-internal
+CUDA_VISIBLE_DEVICES: -1
+CPU/IO priority: nice 15, ionice idle class
+related tests: 91 passed
+runbook bash -n: passed
+post-test tracked/untracked status bytes: 0
+```
+
+The rehearsal checkout was re-read before deployment and still resolved to the
+exact revision/tree with an empty porcelain status. It performed no GPU work.
+
+## Persistent waiting deployment
+
+At `2026-08-19T04:20:21+08:00`, the exact execution revision was installed as
+a persistent isolated checkout:
+
+```text
+checkout:
+/root/autodl-tmp/CoFiTok/checkouts/conditioning-confirm5k-execution-ed9463e/CoFiTok-internal
+revision: ed9463eb85ffb97545b5506e264123e46ff2fcfc
+tree: 423ab336401bf79eb21ccce822880171bbf246b2
+branch: scale/generation-label-ranking-5k-training-confirmation-v1
+full porcelain count: 0
+supervisor PID: 280369
+```
+
+The first installation attempt cloned from the formal repository and stopped
+at `git bundle verify` because that object database did not contain prerequisite
+`f77e311546beba697020debd35e26888096ca258`. It stopped before fetch, checkout,
+control-directory creation, or supervisor launch. That incomplete clone was
+moved, not deleted, to:
+
+```text
+/root/autodl-tmp/CoFiTok/checkouts/conditioning-confirm5k-execution-ed9463e.failed-prerequisite-20260819T0418
+```
+
+The successful installation cloned the existing clean, running source checkout
+`/tmp/cofitok-label-ranking-sampling-standing-auth-f77e311`, verified the same
+prerequisite, verified the incremental bundle, fetched only the advertised
+execution branch, and switched to the exact execution revision. The formal
+checkout remained unchanged at
+`scale/generative-system@1ebcc15210e63a776a2ba448481cbd8bb94a4066` with zero
+tracked changes.
+
+The persistent supervisor is CPU-only while waiting:
+
+```text
+nice: 15
+ionice: idle class
+CUDA_VISIBLE_DEVICES: -1
+OMP_NUM_THREADS: 1
+MKL_NUM_THREADS: 1
+child PID: null
+status: waiting
+detail: waiting_for_shared_pass_5k_sampling_validation
+idle GPU polls: 0
+```
+
+The immutable source report was still absent, and the 5K training output root
+and its lock were both absent. Therefore the supervisor created only its
+control-plane PID/status/log files and did not prepare, reserve, or launch GPU
+work. The first verified status snapshot was `3,742` bytes with SHA256
+`802aa404081cbce92cb4d87045d48db4dfcb390915aa8a11a4024fc750ff932b`;
+the PID manifest was `384` bytes with SHA256
+`24eae1c3c2773964590561aa26142529fa9ba38512366f704882d5677748d01c`.
+The status file is expected to be atomically refreshed while polling, so this
+identity is a timestamped deployment snapshot rather than a permanent expected
+SHA.
+
+At the `2026-08-19T04:21:07+08:00` verification, the only GPU process remained
+PID `79894`, the active matched quality-bridge dense trainer, which had reached
+step `15,100/50,000`. The new supervisor had no child process and did not alter
+GPU occupancy. Its execution revision remains `ed9463e` even when the local
+evidence branch advances with this deployment record.
