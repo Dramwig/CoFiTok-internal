@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "role": "generation_postbridge_two_stage_deployment_preflight_receipt",
+  "recorded_at": "2026-08-18T15:20:46+08:00",
+  "status": "blocked",
+  "decision": "defer_apply_until_bound_100k_is_terminal_and_a_fresh_explicit_apply_passes",
+  "implementation": {
+    "worktree": "C:/qbintegration",
+    "branch": "integration/generation-postbridge-hardening-v1",
+    "revision": "6cd02bb9a3adcd76056bbcbfd7dbbd5b7fb308eb",
+    "tree": "112fb8bb665e60d53c5b92193ae8fc9a12e6fc0c",
+    "tracked_clean": true,
+    "deployer": {
+      "path": "scripts/deploy_generation_postbridge_two_stage.py",
+      "bytes": 60030,
+      "sha256": "284efe1ecd2b21346e78a87714161ae729d6e4a402a0397191891e93921b7484"
+    }
+  },
+  "source_chain": {
+    "bootstrap_bundle": {
+      "bytes": 40134667,
+      "sha256": "21a3fc0dc38a563db334823e4b6e17659702915d2f327999e100d88382260c82",
+      "advertised_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "prerequisites": [
+        "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+        "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+      ]
+    },
+    "integration_bundle": {
+      "bytes": 8664485,
+      "sha256": "5c87b1ca2ced8347fae41ef1e18e56fcb35190ac8cb33b236546ed8c31d58c01",
+      "advertised_revision": "6cd02bb9a3adcd76056bbcbfd7dbbd5b7fb308eb",
+      "prerequisite": "cf0e5faa94bf4ab38d947b921935b3b765b5537a"
+    },
+    "manifest": {
+      "bytes": 4044,
+      "sha256": "53e6799c7026df001f3732e7485037fa2fda7f685960e157b0a6276d5d533713",
+      "created_at": "2026-08-18T15:02:21.500187+08:00"
+    },
+    "preflight_report": {
+      "bytes": 258432,
+      "sha256": "56cd970870e700618ba92ceb00a4e0ce1e77f2648a1583095c9f2d9b885e68aa",
+      "created_at": "2026-08-18T15:04:39.324655+08:00",
+      "process_exit_code": 76,
+      "remote_temporary_source_removed_after_receipt_validation": true
+    }
+  },
+  "preflight": {
+    "mode": "preflight",
+    "status": "blocked",
+    "apply_ready": false,
+    "bootstrap_required": true,
+    "direct_integration_verification_before_bootstrap": false,
+    "isolated_bundle_chain": "pass",
+    "git_fsck_no_dangling": "pass",
+    "target_added_path_count": 1391,
+    "blocking_reason": "target_added_untracked_conflicts",
+    "conflicts": {
+      "count": 92,
+      "byte_identical_regular_files": 92,
+      "divergent_files": 0,
+      "directories": 0,
+      "symlinks": 0,
+      "missing_local_paths": 0,
+      "ignored_local_paths": 0,
+      "all_conflicts_are_byte_identical_files": true,
+      "automatic_resolution_performed": false
+    }
+  },
+  "formal_repository": {
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tree": "659fa94726c4aec0afef49904f82b828bb62872b",
+    "branch": "scale/generative-system",
+    "tracked_status_rows_before": 0,
+    "tracked_status_rows_after": 0,
+    "full_status_rows_before": 89,
+    "full_status_rows_after": 89,
+    "full_status_sha256_before": "637e549971bf34c161c9629b899d298daa6b50506fbefecfa62e0dad69c41b05",
+    "full_status_sha256_after": "637e549971bf34c161c9629b899d298daa6b50506fbefecfa62e0dad69c41b05",
+    "refs_sha256_before": "8d1fc5fde7d228bcdfcf2dbfbee571eeacaa115733ed6ec1b5f820fa89432225",
+    "refs_sha256_after": "8d1fc5fde7d228bcdfcf2dbfbee571eeacaa115733ed6ec1b5f820fa89432225",
+    "object_store_sha256_before": "1fb487517e3e47945f01e4f6b264834b85e8ad9fe7a6e9e8c2cdc1e08c51ee4b",
+    "object_store_sha256_after": "1fb487517e3e47945f01e4f6b264834b85e8ad9fe7a6e9e8c2cdc1e08c51ee4b",
+    "unchanged": true,
+    "fetch_performed": false,
+    "fast_forward_performed": false
+  },
+  "active_training_snapshot": {
+    "captured_at": "2026-08-18T15:20:46+08:00",
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "training_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "training_branch": "scale/generation-stability-quality-bridge-100k",
+    "pair_monitor": {
+      "bytes": 22045,
+      "sha256": "7c5b1b6ebe5635cdfa2ad1aea00f063b4f7edbd578505a64d094b6b751b6496a",
+      "status": "running",
+      "stage": "cofitok_training",
+      "issues": []
+    },
+    "cofitok_step": 47750,
+    "cofitok_expected_steps": 100000,
+    "cofitok_samples_seen": 3056000,
+    "dense_metrics_exist": false,
+    "quality_result_exists": false,
+    "cofitok_50k_checkpoint_exists": false,
+    "cofitok_50k_waiter": {
+      "status": "waiting",
+      "detail": "checkpoint_missing",
+      "pid": 822372,
+      "bytes": 1170,
+      "sha256": "153aef5897eea283b179a0627122df956c7cd4b3baae777b1607ea075039152f"
+    },
+    "trainer_pid": 619775,
+    "trainer_gpu_memory_mib": 85286,
+    "unrelated_gpu_processes": [],
+    "free_bytes_under_autodl_tmp": 321599909888
+  },
+  "validation": {
+    "targeted_new_tool_tests": {
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "duration_seconds": 89.15
+    },
+    "full_suite": {
+      "collected": 1641,
+      "passed": 1632,
+      "skipped": 9,
+      "failed": 0,
+      "errors": 0,
+      "terminal_duration_seconds": 772.04,
+      "junit_time_seconds": 771.92,
+      "junit_bytes": 247924,
+      "junit_sha256": "f839c93d85946ad6258415b78ef09a57f8d5c355537695e4d6673201e8101eb0"
+    },
+    "python_compileall": "pass",
+    "manifest_cli_help": "pass",
+    "deployer_cli_help": "pass",
+    "git_diff_check": "pass"
+  },
+  "cleanup": {
+    "local_temporary_directory": "C:/Users/17194/AppData/Local/Temp/cofitok-postbridge-preflight-fb72266",
+    "remote_temporary_directory": "/tmp/cofitok-postbridge-preflight-fb72266",
+    "exact_paths_verified_before_removal": true,
+    "local_removed": false,
+    "remote_removed": true,
+    "local_removal_blocked_by_execution_policy": true,
+    "deletion_bypass_attempted": false,
+    "project_or_training_artifacts_removed": false
+  },
+  "authorization_boundary": {
+    "default_mode": "preflight",
+    "apply_requires_explicit_mode_manifest_sha_and_exact_target": true,
+    "apply_while_bound_training_or_controller_active_allowed": false,
+    "identical_conflict_archive_requires_explicit_apply_opt_in": true,
+    "training_launch_allowed": false,
+    "sampling_or_evaluation_launch_allowed": false,
+    "promotion_or_release_allowed": false,
+    "full_300k_launch_allowed": false,
+    "process_signaling_allowed": false,
+    "automatic_conflict_resolution_allowed": false
+  },
+  "effects": {
+    "formal_repository_modified": false,
+    "active_training_or_controller_modified": false,
+    "processes_signaled": false,
+    "gpu_work_launched": false,
+    "apply_executed": false,
+    "conflict_quarantine_executed": false
+  }
+}
