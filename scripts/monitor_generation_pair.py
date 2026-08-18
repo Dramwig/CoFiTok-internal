@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
@@ -9,7 +10,7 @@ import subprocess
 import tempfile
 import time
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from cofitok.gpu_contention import update_gpu_contention_evidence
@@ -21,6 +22,8 @@ from cofitok.monitoring import (
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+EXACT_RUNBOOK_IDENTITY_SCHEMA_VERSION = 1
+EXACT_RUNBOOK_IDENTITY_ROLE = "generation_exact_runbook_process_identity"
 
 
 def _processes(pattern: str) -> list[str]:
@@ -33,7 +36,44 @@ def _processes(pattern: str) -> list[str]:
     return [line for line in result.stdout.splitlines() if line.strip()]
 
 
-def _process_records(lines: list[str]) -> list[dict[str, Any]]:
+def _read_process_identity(
+    pid: int,
+    *,
+    proc_root: Path = Path("/proc"),
+) -> dict[str, Any] | None:
+    proc = proc_root / str(pid)
+    if not proc.is_dir():
+        return None
+    try:
+        raw_cmdline = (proc / "cmdline").read_bytes()
+        argv = raw_cmdline.replace(b"\0", b" ").decode(
+            errors="replace"
+        ).strip()
+        stat = (proc / "stat").read_text(encoding="utf-8").rsplit(
+            ")", 1
+        )[1].split()
+        executable = os.readlink(proc / "exe")
+        cwd = os.readlink(proc / "cwd")
+        start_ticks = int(stat[19])
+    except (FileNotFoundError, IndexError, OSError, PermissionError, ValueError):
+        return None
+    if not argv:
+        return None
+    return {
+        "pid": pid,
+        "start_ticks": start_ticks,
+        "argv": argv,
+        "cwd": cwd,
+        "executable": executable,
+        "cmdline_sha256": hashlib.sha256(raw_cmdline).hexdigest(),
+    }
+
+
+def _process_records(
+    lines: list[str],
+    *,
+    proc_root: Path = Path("/proc"),
+) -> list[dict[str, Any]]:
     records = []
     for line in lines:
         raw_pid, separator, _ = line.strip().partition(" ")
@@ -41,28 +81,120 @@ def _process_records(lines: list[str]) -> list[dict[str, Any]]:
             continue
         try:
             pid = int(raw_pid)
-            proc = Path("/proc") / str(pid)
-            argv = (
-                (proc / "cmdline")
-                .read_bytes()
-                .replace(b"\0", b" ")
-                .decode(errors="replace")
-                .strip()
-            )
-            stat = (proc / "stat").read_text(encoding="utf-8").rsplit(")", 1)[
-                1
-            ].split()
-            records.append(
-                {
-                    "pid": pid,
-                    "start_ticks": int(stat[19]),
-                    "argv": argv,
-                    "cwd": (proc / "cwd").resolve().as_posix(),
-                }
-            )
-        except (FileNotFoundError, IndexError, OSError, PermissionError, ValueError):
+        except ValueError:
             continue
+        identity = _read_process_identity(pid, proc_root=proc_root)
+        if identity is not None:
+            records.append(identity)
     return records
+
+
+def _runbook_identity_mismatches(
+    observed: dict[str, Any] | None,
+    *,
+    expected: dict[str, Any],
+) -> list[str]:
+    if observed is None:
+        return ["process_missing"]
+    return [
+        field
+        for field in (
+            "pid",
+            "start_ticks",
+            "executable",
+            "cwd",
+            "cmdline_sha256",
+        )
+        if observed.get(field) != expected.get(field)
+    ]
+
+
+def inspect_exact_runbook_identity(
+    *,
+    expected: dict[str, Any],
+    pattern_processes: list[str],
+    proc_root: Path = Path("/proc"),
+) -> tuple[list[str], dict[str, Any]]:
+    observed = _read_process_identity(int(expected["pid"]), proc_root=proc_root)
+    mismatches = _runbook_identity_mismatches(observed, expected=expected)
+    pattern_records = _process_records(pattern_processes, proc_root=proc_root)
+    pattern_pids = sorted({int(record["pid"]) for record in pattern_records})
+    bound_pid = int(expected["pid"])
+    active = not mismatches
+    evidence = {
+        "schema_version": EXACT_RUNBOOK_IDENTITY_SCHEMA_VERSION,
+        "role": EXACT_RUNBOOK_IDENTITY_ROLE,
+        "mode": "exact_process_identity",
+        "status": "active" if active else "invalid",
+        "expected": dict(expected),
+        "observed": dict(observed) if observed is not None else None,
+        "mismatches": mismatches,
+        "pattern_candidates": {
+            "pids": pattern_pids,
+            "bound_pid_reported": bound_pid in pattern_pids,
+            "nonbound_pids": [pid for pid in pattern_pids if pid != bound_pid],
+            "substring_candidate_contamination_observed": any(
+                pid != bound_pid for pid in pattern_pids
+            ),
+        },
+    }
+    runbook_processes = (
+        [f"{bound_pid} {observed['argv']}"] if active and observed is not None else []
+    )
+    return runbook_processes, evidence
+
+
+def enforce_exact_runbook_identity(
+    report: dict[str, Any],
+    *,
+    evidence: dict[str, Any],
+) -> dict[str, Any]:
+    report["runbook_identity"] = evidence
+    if report.get("status") == "pass" or evidence.get("status") == "active":
+        return report
+    mismatches = evidence.get("mismatches", [])
+    issue = "exact runbook identity is unavailable before pair completion"
+    if isinstance(mismatches, list) and mismatches:
+        issue += ": " + ", ".join(str(value) for value in mismatches)
+    issues = report.setdefault("issues", [])
+    if issue not in issues:
+        issues.append(issue)
+    report["status"] = "failed"
+    return report
+
+
+def _exact_runbook_binding(args: argparse.Namespace) -> dict[str, Any] | None:
+    values = {
+        "pid": int(args.runbook_process_pid),
+        "start_ticks": int(args.runbook_process_start_ticks),
+        "executable": str(args.runbook_process_executable),
+        "cwd": str(args.runbook_process_cwd),
+        "cmdline_sha256": str(args.runbook_process_cmdline_sha256).lower(),
+    }
+    requested = any(
+        (
+            values["pid"] > 0,
+            values["start_ticks"] > 0,
+            bool(values["executable"]),
+            bool(values["cwd"]),
+            bool(values["cmdline_sha256"]),
+        )
+    )
+    if not requested:
+        return None
+    if (
+        values["pid"] < 1
+        or values["start_ticks"] < 1
+        or not PurePosixPath(values["executable"]).is_absolute()
+        or not PurePosixPath(values["cwd"]).is_absolute()
+        or len(values["cmdline_sha256"]) != 64
+        or any(
+            character not in "0123456789abcdef"
+            for character in values["cmdline_sha256"]
+        )
+    ):
+        raise ValueError("exact runbook process identity is incomplete")
+    return values
 
 
 def _gpu_compute_processes() -> tuple[list[dict[str, Any]], bool]:
@@ -238,6 +370,32 @@ def parse_args(defaults: dict[str, Any] | None = None) -> argparse.Namespace:
         required="runbook_process_pattern" not in defaults,
     )
     parser.add_argument(
+        "--runbook-process-pid",
+        type=int,
+        default=defaults.get("runbook_process_pid", 0),
+        help=(
+            "Optional exact controller PID. When set, all exact runbook "
+            "identity fields are required and the pattern is diagnostic only."
+        ),
+    )
+    parser.add_argument(
+        "--runbook-process-start-ticks",
+        type=int,
+        default=defaults.get("runbook_process_start_ticks", 0),
+    )
+    parser.add_argument(
+        "--runbook-process-executable",
+        default=defaults.get("runbook_process_executable", ""),
+    )
+    parser.add_argument(
+        "--runbook-process-cwd",
+        default=defaults.get("runbook_process_cwd", ""),
+    )
+    parser.add_argument(
+        "--runbook-process-cmdline-sha256",
+        default=defaults.get("runbook_process_cmdline_sha256", ""),
+    )
+    parser.add_argument(
         "--checkpoint-interval",
         type=int,
         default=defaults.get("checkpoint_interval", 0),
@@ -276,6 +434,7 @@ def main(defaults: dict[str, Any] | None = None) -> None:
         args.idle_failure_grace_seconds,
     ) <= 0 or min(args.checkpoint_interval, args.checkpoint_grace_steps) < 0:
         raise ValueError("monitor steps and timing thresholds are invalid")
+    exact_runbook_binding = _exact_runbook_binding(args)
 
     output_root = Path(args.output_root)
     output = Path(args.output)
@@ -308,11 +467,20 @@ def main(defaults: dict[str, Any] | None = None) -> None:
         }
         usage = shutil.disk_usage(output_root)
         training_processes = _processes(args.training_process_pattern)
+        pattern_runbook_processes = _processes(args.runbook_process_pattern)
+        runbook_identity = None
+        if exact_runbook_binding is None:
+            runbook_processes = pattern_runbook_processes
+        else:
+            runbook_processes, runbook_identity = inspect_exact_runbook_identity(
+                expected=exact_runbook_binding,
+                pattern_processes=pattern_runbook_processes,
+            )
         updated_at = datetime.now(timezone.utc).isoformat()
         report = build_monitor_report(
             runs=runs,
             training_processes=training_processes,
-            runbook_processes=_processes(args.runbook_process_pattern),
+            runbook_processes=runbook_processes,
             stall_seconds=args.stall_seconds,
             idle_failure_grace_seconds=args.idle_failure_grace_seconds,
             disk={
@@ -326,6 +494,11 @@ def main(defaults: dict[str, Any] | None = None) -> None:
             monitor_name=args.monitor_name,
             git=git_state,
         )
+        if runbook_identity is not None:
+            report = enforce_exact_runbook_identity(
+                report,
+                evidence=runbook_identity,
+            )
         gpu_compute_processes, gpu_query_complete = _gpu_compute_processes()
         report["gpu_contention"] = update_gpu_contention_evidence(
             previous_gpu_contention,
