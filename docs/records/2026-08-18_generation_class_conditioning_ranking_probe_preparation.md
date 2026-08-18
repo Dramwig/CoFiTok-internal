@@ -134,3 +134,78 @@ artifacts/runbooks/generation_conditioning_ranking_four_arm_probe1k_v1.sh
 ```
 
 The active full-data quality bridge remains untouched and authoritative.
+
+## CPU validation and isolated Linux rehearsal
+
+The implementation candidate was committed as:
+
+```text
+revision: 0b48f8fd95c9ffc07b099685d83c99c7ad95a737
+tree: 7a06cdfe9587731d93bdfb077537c2d42be0f350
+branch: scale/generation-label-ranking-probe-v1
+```
+
+Local validation used the project-specific Windows environment in the isolated
+worktree.  `git diff --check` and `compileall` passed.  The complete code suite,
+excluding the known outer-sibling AAAI paper-layout test that cannot resolve
+`paper/` from this standalone worktree, completed with:
+
+```text
+1102 passed, 6 skipped
+```
+
+The first full-suite attempt was invalidated by the local C drive having only
+about 0.18 GB free and ended with `OSError: [Errno 28] No space left on device`.
+No test conclusions were taken from that attempt.  The successful replay used
+an explicit D-drive pytest basetemp, disabled the pytest cache provider, and
+left the Git worktree clean.
+
+The server did not yet contain prerequisite revision `2236073`, so the isolated
+rehearsal used a verified two-bundle prerequisite chain without fetching or
+moving the formal checkout:
+
+| bundle | prerequisite -> advertised revision | bytes | SHA256 |
+|---|---|---:|---|
+| conditioning prerequisite | `3db7341` -> `2236073` | 96,202 | `ed2a8cccb7c04fbd25f52f48ef6820c0cb73079680db692ca1b5ab065c99b9b5` |
+| ranking candidate | `2236073` -> `0b48f8f` | 27,322 | `6a9cd6c0a7099cad25716d438d8046625badf7a270243dd1bd92e5b4284be7a3` |
+
+Both bundles passed `git bundle verify`.  The candidate was checked out at:
+
+```text
+/tmp/cofitok-label-ranking-probe-0b48f8f
+```
+
+with the exact revision/tree/branch above and zero porcelain rows.  The formal
+checkout remained unchanged at revision
+`1ebcc15210e63a776a2ba448481cbd8bb94a4066` on `scale/generative-system`.
+
+Linux validation used Python 3.10 with `CUDA_VISIBLE_DEVICES=-1`, two CPU
+threads, `nice -n 19`, and idle-class I/O priority.  Results:
+
+```text
+compileall: pass, with PYTHONPYCACHEPREFIX outside the checkout
+new runbook bash -n: pass
+focused ranking/resume/pair/auditor/monitor suite: pass
+full code suite excluding the outer paper-layout test: 1107 passed, 2 skipped
+post-test full Git porcelain: empty
+```
+
+The preparation report was independently generated twice from the Linux
+checkout.  The two files were byte-identical:
+
+```text
+bytes: 8,686
+SHA256: 0d6666774318106ac152acfea62fdcea12c536ede48ae1a2299861400e1bdb74
+```
+
+A Windows-generated preparation report is intentionally not used as the
+execution artifact: `core.autocrlf` changes the checked-out config bytes and
+therefore their bound byte counts and SHA256 values.  The execution sentinel
+must bind the Linux preparation report above, and the runbook must recompute it
+from the same exact Linux revision before any training starts.
+
+At the end of rehearsal, the dedicated probe output root was still absent and
+no approval sentinel had been created.  The only GPU compute process was the
+active full-data `dense_identity` trainer; it had reached step 5,300 during the
+final read-only check.  No trainer, controller, monitor, waiter, formal checkout,
+or existing run was signaled or modified.
