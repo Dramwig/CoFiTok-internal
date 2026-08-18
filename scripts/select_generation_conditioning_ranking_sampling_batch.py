@@ -17,6 +17,7 @@ from cofitok.generation.conditioning_ranking_sampling import (
     clean_git,
     identity,
 )
+from cofitok.generation import conditioning_ranking_posttraining_sampling as posttraining
 from cofitok.inference_replay import (
     file_identity,
     read_json_object,
@@ -38,6 +39,29 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 REPORT_ROLE = (
     "generation_conditioning_ranking_four_arm_sampling_batch_selection"
 )
+
+
+def _stage_contract(preparation: Mapping[str, Any]) -> dict[str, Any]:
+    stage = preparation.get("stage")
+    if stage == STAGE:
+        return {
+            "stage": STAGE,
+            "preparation_role": PREPARATION_ROLE,
+            "sampling_protocol": SAMPLING_PROTOCOL,
+            "method_prefix_budgets": METHOD_PREFIX_BUDGETS,
+            "run_methods": RUN_METHODS,
+            "sample_run_name": "samples_5000_ddim50_cfg15",
+        }
+    if stage == posttraining.STAGE:
+        return {
+            "stage": posttraining.STAGE,
+            "preparation_role": posttraining.PREPARATION_ROLE,
+            "sampling_protocol": posttraining.SAMPLING_PROTOCOL,
+            "method_prefix_budgets": posttraining.METHOD_PREFIX_BUDGETS,
+            "run_methods": posttraining.RUN_METHODS,
+            "sample_run_name": posttraining.SAMPLE_RUN_NAME,
+        }
+    raise ValueError("conditioning-ranking sampling stage is unsupported")
 
 
 def _finite(value: Any, *, label: str) -> float:
@@ -183,13 +207,14 @@ def _load_preparation(path: Path, expected_sha256: str) -> tuple[dict, dict]:
     if source_identity["sha256"] != expected_sha256:
         raise ValueError("sampling preparation SHA256 differs")
     report = read_json_object(source, name="sampling preparation")
+    contract = _stage_contract(report)
     if (
         report.get("schema_version") != SCHEMA_VERSION
-        or report.get("role") != PREPARATION_ROLE
+        or report.get("role") != contract["preparation_role"]
         or report.get("status") != "pass"
         or report.get("valid") is not True
-        or report.get("stage") != STAGE
-        or report.get("sampling_protocol") != SAMPLING_PROTOCOL
+        or report.get("stage") != contract["stage"]
+        or report.get("sampling_protocol") != contract["sampling_protocol"]
     ):
         raise ValueError("sampling preparation contract differs")
     return report, source_identity
@@ -226,8 +251,10 @@ def _expected_preflight(
     run: str,
     batch_size: int,
 ) -> dict[str, Any]:
+    stage_contract = _stage_contract(preparation)
+    protocol = stage_contract["sampling_protocol"]
     checkpoint = preparation["source_reports"]["training_checkpoints"][run]
-    method = RUN_METHODS[run]
+    method = stage_contract["run_methods"][run]
     return {
         "checkpoint_identity": {
             "path": checkpoint["checkpoint"]["path"],
@@ -237,14 +264,14 @@ def _expected_preflight(
         },
         "expected_revision": preparation["git"]["revision"],
         "batch_size": batch_size,
-        "prefix_budget": METHOD_PREFIX_BUDGETS[method],
-        "guidance_scale": SAMPLING_PROTOCOL["guidance_scale"],
-        "guidance_rescale": SAMPLING_PROTOCOL["guidance_rescale"],
-        "cfg_batch_mode": SAMPLING_PROTOCOL["cfg_batch_mode"],
-        "weights": SAMPLING_PROTOCOL["weights"],
-        "precision": SAMPLING_PROTOCOL["precision"],
-        "warmup_forwards": SAMPLING_PROTOCOL["warmup_forwards"],
-        "measured_forwards": SAMPLING_PROTOCOL["measured_forwards"],
+        "prefix_budget": stage_contract["method_prefix_budgets"][method],
+        "guidance_scale": protocol["guidance_scale"],
+        "guidance_rescale": protocol["guidance_rescale"],
+        "cfg_batch_mode": protocol["cfg_batch_mode"],
+        "weights": protocol["weights"],
+        "precision": protocol["precision"],
+        "warmup_forwards": protocol["warmup_forwards"],
+        "measured_forwards": protocol["measured_forwards"],
     }
 
 
@@ -254,14 +281,16 @@ def validate_completed_selection(
     preparation: Mapping[str, Any],
     preparation_identity: Mapping[str, Any],
 ) -> dict[str, Any]:
+    stage_contract = _stage_contract(preparation)
+    protocol = stage_contract["sampling_protocol"]
     if (
         selection.get("schema_version") != SCHEMA_VERSION
         or selection.get("role") != REPORT_ROLE
         or selection.get("status") != "selected"
-        or selection.get("stage") != STAGE
+        or selection.get("stage") != stage_contract["stage"]
         or selection.get("output_root") != preparation.get("output_root")
         or selection.get("git") != preparation.get("git")
-        or selection.get("sampling_protocol") != SAMPLING_PROTOCOL
+        or selection.get("sampling_protocol") != protocol
         or selection.get("checkpoints")
         != preparation.get("source_reports", {}).get("training_checkpoints")
         or selection.get("source_reports", {}).get("preparation")
@@ -272,7 +301,7 @@ def validate_completed_selection(
     if (
         not isinstance(candidates, list)
         or [int(row.get("batch_size", -1)) for row in candidates]
-        != SAMPLING_PROTOCOL["candidate_batch_sizes"]
+        != protocol["candidate_batch_sizes"]
     ):
         raise ValueError("four-arm sampling selection candidates differ")
     replay_rows: list[dict[str, Any]] = []
@@ -317,8 +346,8 @@ def validate_completed_selection(
         replay_rows.append({"batch_size": batch_size, "arms": replay_arms})
     recomputed = select_four_arm_sampling_batch(
         replay_rows,
-        baseline_batch_size=SAMPLING_PROTOCOL["baseline_batch_size"],
-        max_memory_fraction=SAMPLING_PROTOCOL["maximum_memory_fraction"],
+        baseline_batch_size=protocol["baseline_batch_size"],
+        max_memory_fraction=protocol["maximum_memory_fraction"],
     )
     for field in ("policy", "selected", "runtime_environment_sha256", "candidates"):
         if selection.get(field) != recomputed[field]:
@@ -346,6 +375,8 @@ def main() -> None:
         args.preparation,
         args.expected_preparation_sha256,
     )
+    stage_contract = _stage_contract(preparation)
+    protocol = stage_contract["sampling_protocol"]
     output_root = reject_symlink_chain(
         args.output_root,
         name="conditioning-ranking sampling output root",
@@ -373,13 +404,13 @@ def main() -> None:
         print(read_json_object(output, name="four-arm sampling batch selection")["selected"]["batch_size"])
         return
     candidates = parse_candidates(
-        ",".join(str(value) for value in SAMPLING_PROTOCOL["candidate_batch_sizes"]),
-        baseline_batch_size=SAMPLING_PROTOCOL["baseline_batch_size"],
+        ",".join(str(value) for value in protocol["candidate_batch_sizes"]),
+        baseline_batch_size=protocol["baseline_batch_size"],
     )
     preflight_root = output_root / "reports" / "sampling_preflight"
     preflight_script = (PROJECT_ROOT / args.preflight_script).resolve()
     sampling_output_dirs = [
-        output_root / run / "samples_5000_ddim50_cfg15" for run in RUN_NAMES
+        output_root / run / stage_contract["sample_run_name"] for run in RUN_NAMES
     ]
     rows: list[dict[str, Any]] = []
     with exclusive_output_locks(
@@ -401,17 +432,19 @@ def main() -> None:
                     },
                     expected_revision=current_git["revision"],
                     batch_size=batch_size,
-                    prefix_budget=METHOD_PREFIX_BUDGETS[RUN_METHODS[run]],
+                    prefix_budget=stage_contract["method_prefix_budgets"][
+                        stage_contract["run_methods"][run]
+                    ],
                     output_root=preflight_root,
                     preflight_script=preflight_script,
                     project_root=PROJECT_ROOT,
-                    guidance_scale=SAMPLING_PROTOCOL["guidance_scale"],
-                    guidance_rescale=SAMPLING_PROTOCOL["guidance_rescale"],
-                    cfg_batch_mode=SAMPLING_PROTOCOL["cfg_batch_mode"],
-                    weights=SAMPLING_PROTOCOL["weights"],
-                    precision=SAMPLING_PROTOCOL["precision"],
-                    warmup_forwards=SAMPLING_PROTOCOL["warmup_forwards"],
-                    measured_forwards=SAMPLING_PROTOCOL["measured_forwards"],
+                    guidance_scale=protocol["guidance_scale"],
+                    guidance_rescale=protocol["guidance_rescale"],
+                    cfg_batch_mode=protocol["cfg_batch_mode"],
+                    weights=protocol["weights"],
+                    precision=protocol["precision"],
+                    warmup_forwards=protocol["warmup_forwards"],
+                    measured_forwards=protocol["measured_forwards"],
                     timeout_seconds=args.timeout_seconds,
                 )
                 report_path = preflight_root / run / f"batch_{batch_size}" / "sampling_preflight.json"
@@ -422,18 +455,18 @@ def main() -> None:
             rows.append({"batch_size": batch_size, "arms": arms})
     selected = select_four_arm_sampling_batch(
         rows,
-        baseline_batch_size=SAMPLING_PROTOCOL["baseline_batch_size"],
-        max_memory_fraction=SAMPLING_PROTOCOL["maximum_memory_fraction"],
+        baseline_batch_size=protocol["baseline_batch_size"],
+        max_memory_fraction=protocol["maximum_memory_fraction"],
     )
     report = {
         "schema_version": SCHEMA_VERSION,
         "role": REPORT_ROLE,
         "status": "selected",
-        "stage": STAGE,
+        "stage": stage_contract["stage"],
         "output_root": output_root.as_posix(),
         "git": preparation["git"],
         "source_reports": {"preparation": preparation_identity},
-        "sampling_protocol": copy.deepcopy(SAMPLING_PROTOCOL),
+        "sampling_protocol": copy.deepcopy(protocol),
         "checkpoints": checkpoints,
         **selected,
     }

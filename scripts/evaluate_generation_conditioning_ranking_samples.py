@@ -12,6 +12,7 @@ from torchvision.io import ImageReadMode, read_image
 from torchvision.models import ResNet50_Weights, resnet50
 
 from cofitok.diffusion import select_sampling_timesteps
+from cofitok.generation import conditioning_ranking_posttraining_sampling as posttraining
 from cofitok.environment import capture_runtime_environment, runtime_environment_sha256
 from cofitok.inference_replay import read_json_object, reject_symlink_chain
 from cofitok.output_lock import exclusive_output_lock
@@ -33,6 +34,7 @@ EXPECTED_SEED = 406_020
 EXPECTED_CHECKPOINT_STEP = 1_000
 EXPECTED_GUIDANCE_SCALE = 1.5
 EXPECTED_GUIDANCE_RESCALE = 0.0
+LEGACY_SAMPLING_STAGE = "conditioning_ranking_four_arm_sampling5k_v1"
 MIN_MEAN_TARGET_LOG_PROBABILITY_DELTA = 0.02
 MIN_TARGET_PROBABILITY_RATIO = 1.02
 MAX_PREDICTED_CLASS_FRACTION_REGRESSION = 0.05
@@ -48,6 +50,30 @@ CLAIM_BOUNDARY = {
     "authorizes_release": False,
     "cofitok_specific_advantage_claim_allowed": False,
 }
+
+
+def _sampling_contract(stage: str) -> dict[str, Any]:
+    if stage == LEGACY_SAMPLING_STAGE:
+        return {
+            "stage": LEGACY_SAMPLING_STAGE,
+            "num_samples": EXPECTED_NUM_SAMPLES,
+            "start_index": 0,
+            "sample_steps": EXPECTED_SAMPLE_STEPS,
+            "seed": EXPECTED_SEED,
+            "checkpoint_step": EXPECTED_CHECKPOINT_STEP,
+            "method_prefix_budgets": METHOD_PREFIX_BUDGETS,
+        }
+    if stage == posttraining.STAGE:
+        return {
+            "stage": posttraining.STAGE,
+            "num_samples": posttraining.SAMPLING_PROTOCOL["num_samples_per_arm"],
+            "start_index": posttraining.SAMPLING_PROTOCOL["start_index"],
+            "sample_steps": posttraining.SAMPLING_PROTOCOL["sample_steps"],
+            "seed": posttraining.SAMPLING_PROTOCOL["seed"],
+            "checkpoint_step": posttraining.EXPECTED_CHECKPOINT_STEP,
+            "method_prefix_budgets": posttraining.METHOD_PREFIX_BUDGETS,
+        }
+    raise ValueError("paired sampling stage is unsupported")
 
 
 def parse_args() -> argparse.Namespace:
@@ -70,6 +96,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--num-workers", type=int, default=8)
     parser.add_argument("--min-samples", type=int, default=EXPECTED_NUM_SAMPLES)
+    parser.add_argument(
+        "--sampling-stage",
+        choices=[LEGACY_SAMPLING_STAGE, posttraining.STAGE],
+        default=LEGACY_SAMPLING_STAGE,
+    )
     parser.add_argument("--cpu", action="store_true")
     parser.add_argument("--resume", action="store_true")
     return parser.parse_args()
@@ -144,10 +175,16 @@ def _arm_metrics(rows: list[dict[str, Any]], arm: str) -> dict[str, Any]:
     }
 
 
-def paired_class_fidelity_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+def paired_class_fidelity_summary(
+    rows: list[dict[str, Any]],
+    *,
+    expected_start_index: int = 0,
+) -> dict[str, Any]:
     if not rows:
         raise ValueError("paired class-fidelity rows are empty")
-    expected_indices = list(range(len(rows)))
+    expected_indices = list(
+        range(expected_start_index, expected_start_index + len(rows))
+    )
     actual_indices = [int(row.get("sample_index", -1)) for row in rows]
     if actual_indices != expected_indices:
         raise ValueError("paired class-fidelity sample indices are not exact and ordered")
@@ -252,20 +289,23 @@ def validate_sampling_pair(
     ranked: Mapping[str, Any],
     *,
     method: str,
+    sampling_stage: str = LEGACY_SAMPLING_STAGE,
 ) -> dict[str, Any]:
-    if method not in METHOD_PREFIX_BUDGETS:
+    contract = _sampling_contract(sampling_stage)
+    prefix_budgets = contract["method_prefix_budgets"]
+    if method not in prefix_budgets:
         raise ValueError("paired sampling method is unsupported")
-    expected_budget = METHOD_PREFIX_BUDGETS[method]
+    expected_budget = prefix_budgets[method]
     expected_sampling = {
-        "num_samples": EXPECTED_NUM_SAMPLES,
-        "start_index": 0,
-        "sample_steps": EXPECTED_SAMPLE_STEPS,
+        "num_samples": contract["num_samples"],
+        "start_index": contract["start_index"],
+        "sample_steps": contract["sample_steps"],
         "num_train_timesteps": 1_000,
         "guidance_scale": EXPECTED_GUIDANCE_SCALE,
         "guidance_rescale": EXPECTED_GUIDANCE_RESCALE,
         "cfg_batch_mode": "batched",
         "eta": 0.0,
-        "seed": EXPECTED_SEED,
+        "seed": contract["seed"],
         "precision": "bf16",
         "class_schedule": "balanced_modulo",
         "sampler": "ddim",
@@ -273,7 +313,9 @@ def validate_sampling_pair(
         "protocol_schema": "cofitok_ddim_sampling_v1",
         "prefix_budgets": [expected_budget],
         "image_shape": [3, 256, 256],
-        "actual_timesteps": select_sampling_timesteps(1_000, EXPECTED_SAMPLE_STEPS),
+        "actual_timesteps": select_sampling_timesteps(
+            1_000, contract["sample_steps"]
+        ),
     }
     for label, source in (("control", control), ("ranked", ranked)):
         sampling = source.get("sampling")
@@ -283,7 +325,8 @@ def validate_sampling_pair(
             raise ValueError(f"{label} paired sampling protocol differs")
         if (
             source.get("weights") != "ema"
-            or int(source.get("checkpoint_step", -1)) != EXPECTED_CHECKPOINT_STEP
+            or int(source.get("checkpoint_step", -1))
+            != contract["checkpoint_step"]
             or int(source.get("selected_prefix_budget", -1)) != expected_budget
             or not isinstance(source.get("git"), Mapping)
             or source["git"].get("tracked_dirty") is not False
@@ -301,17 +344,20 @@ def validate_sampling_pair(
         raise ValueError("control and ranked sampling environment hashes differ")
     if control.get("checkpoint_sha256") == ranked.get("checkpoint_sha256"):
         raise ValueError("control and ranked checkpoints must be distinct")
-    return {
+    result = {
         "method": method,
         "sampling": dict(control["sampling"]),
         "weights": "ema",
-        "checkpoint_step": EXPECTED_CHECKPOINT_STEP,
+        "checkpoint_step": contract["checkpoint_step"],
         "prefix_budget": expected_budget,
         "git": dict(control["git"]),
         "runtime_environment_sha256": control["runtime_environment_sha256"],
         "control": dict(control),
         "ranked": dict(ranked),
     }
+    if sampling_stage != LEGACY_SAMPLING_STAGE:
+        result["sampling_stage"] = sampling_stage
+    return result
 
 
 class _PairedImageDataset(
@@ -458,7 +504,10 @@ def _validate_completed_report(report: Mapping[str, Any], *, expected: Mapping[s
         or len(rows) != int(expected["parameters"]["sample_count"])
     ):
         raise ValueError("completed paired class-fidelity rows are missing")
-    if paired_class_fidelity_summary(rows) != report.get("metrics"):
+    if paired_class_fidelity_summary(
+        rows,
+        expected_start_index=int(expected["parameters"].get("start_index", 0)),
+    ) != report.get("metrics"):
         raise ValueError("completed paired class-fidelity metrics differ from rows")
     runtime = report.get("runtime")
     if (
@@ -471,7 +520,12 @@ def _validate_completed_report(report: Mapping[str, Any], *, expected: Mapping[s
 
 
 def _run(args: argparse.Namespace) -> None:
-    if args.batch_size < 1 or args.num_workers < 0 or args.min_samples != EXPECTED_NUM_SAMPLES:
+    contract = _sampling_contract(args.sampling_stage)
+    if (
+        args.batch_size < 1
+        or args.num_workers < 0
+        or args.min_samples != contract["num_samples"]
+    ):
         raise ValueError("paired class-fidelity batch/workers/sample contract differs")
     control_dir = reject_symlink_chain(
         args.control_generated_dir,
@@ -492,7 +546,10 @@ def _run(args: argparse.Namespace) -> None:
     output, report_path = _prepare_output(args.output_dir, resume=args.resume)
     control_images = find_images(control_dir)
     ranked_images = find_images(ranked_dir)
-    if len(control_images) != EXPECTED_NUM_SAMPLES or len(ranked_images) != EXPECTED_NUM_SAMPLES:
+    if (
+        len(control_images) != contract["num_samples"]
+        or len(ranked_images) != contract["num_samples"]
+    ):
         raise ValueError("paired class-fidelity requires exact 5K sample sets")
     if [path.name for path in control_images] != [path.name for path in ranked_images]:
         raise ValueError("control and ranked sample indices differ")
@@ -510,6 +567,7 @@ def _run(args: argparse.Namespace) -> None:
         control_provenance,
         ranked_provenance,
         method=args.method,
+        sampling_stage=args.sampling_stage,
     )
     classifier = classifier_identity(args.classifier_checkpoint)
     device = torch.device("cuda" if torch.cuda.is_available() and not args.cpu else "cpu")
@@ -519,12 +577,15 @@ def _run(args: argparse.Namespace) -> None:
         "method": args.method,
         "batch_size": args.batch_size,
         "num_workers": args.num_workers,
-        "sample_count": EXPECTED_NUM_SAMPLES,
+        "sample_count": contract["num_samples"],
         "num_classes": 1_000,
         "device": device.type,
         "cpu_requested": bool(args.cpu),
         "paired_unit": "global_sample_index",
     }
+    if args.sampling_stage != LEGACY_SAMPLING_STAGE:
+        parameters["start_index"] = contract["start_index"]
+        parameters["sampling_stage"] = args.sampling_stage
     expected = {
         "git": git_provenance(PROJECT_ROOT),
         "runtime_environment": environment,
@@ -555,7 +616,10 @@ def _run(args: argparse.Namespace) -> None:
         num_workers=args.num_workers,
         device=device,
     )
-    metrics = paired_class_fidelity_summary(rows)
+    metrics = paired_class_fidelity_summary(
+        rows,
+        expected_start_index=contract["start_index"],
+    )
     report = {
         "schema_version": REPORT_SCHEMA_VERSION,
         "role": REPORT_ROLE,

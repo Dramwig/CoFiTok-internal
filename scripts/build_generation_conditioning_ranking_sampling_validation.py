@@ -271,6 +271,8 @@ def replay_postevaluation(
 def validate_training_checkpoints(
     postevaluation: Mapping[str, Any],
     training_reports: Mapping[str, Mapping[str, Any]],
+    *,
+    expected_checkpoint_step: int = EXPECTED_CHECKPOINT_STEP,
 ) -> dict[str, Any]:
     training_contract = postevaluation.get("training_contract")
     contract_runs = (
@@ -301,7 +303,7 @@ def validate_training_checkpoints(
         integrity = verify_training_checkpoint(checkpoint)
         checkpoint_sha = str(integrity.get("checkpoint_sha256", ""))
         if (
-            int(integrity.get("step", -1)) != EXPECTED_CHECKPOINT_STEP
+            int(integrity.get("step", -1)) != expected_checkpoint_step
             or checkpoint_sha != latest.get("checkpoint_sha256")
             or checkpoint_sha != contract.get("checkpoint_sha256")
             or int(integrity.get("checkpoint_bytes", -1))
@@ -320,7 +322,7 @@ def validate_training_checkpoints(
                 "sha256": checkpoint_sha,
             },
             "integrity_manifest": file_identity(integrity_path),
-            "step": EXPECTED_CHECKPOINT_STEP,
+            "step": expected_checkpoint_step,
             "training_report": file_identity(
                 reject_symlink_chain(
                     Path(str(report["output_dir"])) / "training_report.json",
@@ -331,8 +333,13 @@ def validate_training_checkpoints(
     return result
 
 
-def _sampling_paths(output_root: Path, run: str) -> tuple[Path, Path]:
-    sample_root = output_root / run / SAMPLE_RUN_NAME
+def _sampling_paths(
+    output_root: Path,
+    run: str,
+    *,
+    sample_run_name: str = SAMPLE_RUN_NAME,
+) -> tuple[Path, Path]:
+    sample_root = output_root / run / sample_run_name
     return sample_root, sample_root / "sampling_report.json"
 
 
@@ -341,14 +348,23 @@ def validate_sampling_evidence(
     output_root: Path,
     checkpoint_evidence: Mapping[str, Mapping[str, Any]],
     expected_git: Mapping[str, Any],
+    expected_checkpoint_step: int = EXPECTED_CHECKPOINT_STEP,
+    expected_num_samples: int = EXPECTED_NUM_SAMPLES,
+    sample_run_name: str = SAMPLE_RUN_NAME,
+    method_prefix_budgets: Mapping[str, int] = METHOD_PREFIX_BUDGETS,
+    arm_method: Mapping[str, str] = ARM_METHOD,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     provenances: dict[str, Any] = {}
     sources: dict[str, Any] = {}
     normalized_protocols: dict[str, Any] = {}
     for run in RUN_NAMES:
-        method = ARM_METHOD[run]
-        expected_budget = METHOD_PREFIX_BUDGETS[method]
-        sample_root, sampling_report_path = _sampling_paths(output_root, run)
+        method = arm_method[run]
+        expected_budget = method_prefix_budgets[method]
+        sample_root, sampling_report_path = _sampling_paths(
+            output_root,
+            run,
+            sample_run_name=sample_run_name,
+        )
         report = read_json_object(sampling_report_path, name=f"{run} sampling report")
         output_dirs = report.get("output_dirs")
         if not isinstance(output_dirs, Mapping):
@@ -374,13 +390,13 @@ def validate_sampling_evidence(
             or provenance.get("checkpoint_integrity_manifest")
             != checkpoint["integrity_manifest"]["path"]
             or int(provenance.get("checkpoint_step", -1))
-            != EXPECTED_CHECKPOINT_STEP
+            != expected_checkpoint_step
             or provenance.get("weights") != "ema"
             or provenance.get("git") != expected_git
             or int(provenance.get("selected_prefix_budget", -1))
             != expected_budget
             or int(provenance.get("sampling", {}).get("num_samples", -1))
-            != EXPECTED_NUM_SAMPLES
+            != expected_num_samples
         ):
             raise ValueError(f"{run} sampling provenance differs")
         elapsed = _finite(
@@ -428,6 +444,9 @@ def validate_generation_metrics_reports(
     output_root: Path,
     sampling_provenance: Mapping[str, Mapping[str, Any]],
     expected_git: Mapping[str, Any],
+    expected_num_samples: int = EXPECTED_NUM_SAMPLES,
+    sample_run_name: str = SAMPLE_RUN_NAME,
+    expected_real_set: Mapping[str, Any] = EXPECTED_REAL_SET,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     reports: dict[str, Any] = {}
     sources: dict[str, Any] = {}
@@ -435,7 +454,7 @@ def validate_generation_metrics_reports(
         metrics_path = (
             output_root
             / run
-            / SAMPLE_RUN_NAME
+            / sample_run_name
             / "metrics"
             / "generation_metrics_report.json"
         )
@@ -453,13 +472,13 @@ def validate_generation_metrics_reports(
             or report.get("protocol") != "torch_fidelity_directory_metrics"
             or report.get("git") != expected_git
             or report.get("sample_provenance") != sampling_provenance[run]
-            or report.get("real_set") != EXPECTED_REAL_SET
+            or report.get("real_set") != expected_real_set
             or not isinstance(counts, Mapping)
             or int(counts.get("generated_image_count", -1))
-            != EXPECTED_NUM_SAMPLES
+            != expected_num_samples
             or int(counts.get("real_image_count", -1)) != 50_000
             or not isinstance(parameters, Mapping)
-            or int(parameters.get("min_samples", -1)) != EXPECTED_NUM_SAMPLES
+            or int(parameters.get("min_samples", -1)) != expected_num_samples
             or not isinstance(metrics, Mapping)
             or parameters.get("precision_recall_enabled") is not False
             or "precision" in metrics
@@ -517,6 +536,9 @@ def validate_paired_class_reports(
     output_root: Path,
     sampling_provenance: Mapping[str, Mapping[str, Any]],
     expected_git: Mapping[str, Any],
+    expected_num_samples: int = EXPECTED_NUM_SAMPLES,
+    expected_start_index: int = 0,
+    sampling_stage: str = "conditioning_ranking_four_arm_sampling5k_v1",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     reports: dict[str, Any] = {}
     sources: dict[str, Any] = {}
@@ -536,6 +558,7 @@ def validate_paired_class_reports(
             sampling_provenance[arms[0]],
             sampling_provenance[arms[1]],
             method=method,
+            sampling_stage=sampling_stage,
         )
         rows = report.get("sample_rows")
         if (
@@ -548,10 +571,13 @@ def validate_paired_class_reports(
             or report.get("sampling_pair") != expected_pair
             or report.get("claim_boundary") != PAIRED_CLASS_CLAIM_BOUNDARY
             or not isinstance(rows, list)
-            or len(rows) != EXPECTED_NUM_SAMPLES
+            or len(rows) != expected_num_samples
         ):
             raise ValueError(f"{method} paired class-fidelity contract differs")
-        metrics = paired_class_fidelity_summary(rows)
+        metrics = paired_class_fidelity_summary(
+            rows,
+            expected_start_index=expected_start_index,
+        )
         if metrics != report.get("metrics"):
             raise ValueError(f"{method} paired class-fidelity metrics differ")
         environment = report.get("runtime_environment")
