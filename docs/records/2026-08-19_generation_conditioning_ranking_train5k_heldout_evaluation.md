@@ -88,6 +88,68 @@ authorizes GPU work automatically.
 - Python compilation: passed
 - `git diff --check`: passed
 
-The Linux CUDA-hidden rehearsal and deployment of the waiting CPU supervisor
-remain pending. The active full-data quality bridge dense trainer is not
-modified or contended by this work.
+## Linux regression and waiter deployment
+
+The exact evaluator revision was deployed in the independent clean checkout:
+
+```text
+/root/autodl-tmp/CoFiTok/checkouts/conditioning-heldout5k-evaluation-90f7206/CoFiTok-internal
+revision: 90f7206dd6d65b398a05222821cd6bc4cbf95efd
+tree: 987dfcd382f5b7c5dbe52435e42062d0739d73f7
+branch: scale/generation-label-ranking-5k-heldout-evaluation-v1
+```
+
+The full Linux regression used an isolated real
+`CoFiTok/CoFiTok-internal + sibling paper/` layout, exact branch identity,
+`CUDA_VISIBLE_DEVICES=-1`, one BLAS/OMP/MKL/NUMEXPR thread, `nice -n 19`, and
+idle-class IO priority. Pytest collected `1,181` tests and completed with
+`1,179 passed, 2 skipped`; the exact checkout remained clean. An initial
+detached-HEAD rehearsal correctly failed two existing inference-export tests
+because release provenance requires a named Git branch. Repeating at the exact
+required branch passed both targeted tests and the complete suite without a
+source change.
+
+A bounded negative supervisor rehearsal captured:
+
+```text
+status: waiting
+detail: waiting_for_exact_5k_training_status
+child_pid: null
+```
+
+It then timed out fail-closed. The future four-arm training root, held-out
+post-evaluation root, launch receipt, and training-execution replay remained
+absent. The GPU process snapshot was unchanged and contained only the active
+quality-bridge dense trainer.
+
+The real CPU-only supervisor is now deployed at:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_train5k_heldout_evaluation_v1/90f7206dd6d65b398a05222821cd6bc4cbf95efd
+PID: 305233
+runbook SHA256: 975dba32b8933bd0700201261cc72e03d5a37b395ffb83de9ef07062aa6c1659
+```
+
+At `2026-08-19T05:37:40+08:00` its authoritative status was `waiting`, detail
+`waiting_for_exact_5k_training_status`, and `child_pid=null`. The process had
+niceness `19`, idle IO scheduling, CUDA hidden, and all numerical-library
+thread limits set to one. It created no training or post-evaluation output
+root and added no GPU process.
+
+At the same observation, the active full-data matched quality bridge remained
+healthy at revision `cf0e5faa94bf4ab38d947b921935b3b765b5537a`:
+
+```text
+status: running
+stage: dense_identity_training
+issues: []
+CoFiTok segment: 50,000 complete
+dense tail: 16,900 / 50,000
+dense samples_seen: 1,081,600
+quality_bridge_result.json: absent
+```
+
+The active dense trainer remained the sole GPU compute process. This deployment
+does not authorize sampling, training, promotion, full 100K/300K work, or
+release; it only waits for the exact source-bound 5K training evidence and may
+launch the CPU held-out evaluation once.
