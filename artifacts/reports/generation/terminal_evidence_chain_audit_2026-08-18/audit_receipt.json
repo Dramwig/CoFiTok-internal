@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "role": "generation_terminal_evidence_chain_readonly_audit",
+  "status": "pass",
+  "scientific_claim_status": "pending_terminal_100k_sources",
+  "audited_revisions": {
+    "matched_uncertainty_evaluator": {
+      "revision": "1c8ef207cb6d79850d73a45abc345fc421e6aa7f",
+      "tree": "a09f14a0eca44af6db8e6781863a463163ddf646"
+    },
+    "terminal_uncertainty_waiter": {
+      "revision": "e9a424b36bc5b951a9a27d7e1dc7f7afc650f706",
+      "tree": "4f4cf5015ceb4be426e314bbd224778860e98d00"
+    },
+    "claim_qualification": {
+      "revision": "c42ac96c6628ff71f7c67c8957c86ea0523aea0b",
+      "tree": "f94f2deb974b0a347b3a647e68dc3dcba22a0d63"
+    },
+    "claim_language_guard": {
+      "revision": "5fab079a7b48024b05e2a306b95040baf839e276",
+      "tree": "3f5ae4b7f79a26bb17183caa04394070c5e9dcd8"
+    },
+    "runtime_compute_fairness": {
+      "revision": "85bf1d6ae5b44f401153d0d1e390fc3973ff4bed",
+      "tree": "7900c5617c28c18e328c93aba4c547a3889f1aa7"
+    },
+    "runtime_claim_guard": {
+      "revision": "6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46",
+      "tree": "bc41a4df45b83cef3c81cc63aad1668c49b85a75"
+    }
+  },
+  "statistical_contract": {
+    "generated_sample_count": 10000,
+    "block_size": 500,
+    "block_count": 20,
+    "real_fold_count": 5,
+    "bootstrap_repetitions": 10000,
+    "seed": 2027,
+    "pass_requires": [
+      "cofitok_fid_point_estimate_below_dense_identity",
+      "paired_block_kid_bootstrap_ci_high_below_zero",
+      "one_sided_exact_sign_test_p_at_most_0.05",
+      "absolute_quality_screen_pass_for_claim_qualification"
+    ],
+    "fid_statistical_significance_claim_allowed": false,
+    "paired_block_kid_statistical_support_statement_allowed_only_on_pass": true
+  },
+  "provenance_checks": {
+    "execution_manifest_source_bound": true,
+    "sample_set_sha256_bound": true,
+    "checkpoint_sha256_and_step_bound": true,
+    "real_set_tree_sha256_bound": true,
+    "evaluator_and_runtime_identity_bound": true,
+    "matched_global_index_window_bound": true,
+    "source_replay_before_feature_extraction": true,
+    "claim_language_fail_closed": true,
+    "runtime_claim_fail_closed_on_incomplete_gpu_coverage": true
+  },
+  "validation": {
+    "cuda_visible_devices": "-1",
+    "terminal_evidence_tests": {
+      "passed": 61,
+      "skipped": 1,
+      "failed": 0
+    },
+    "runtime_fairness_tests": {
+      "passed": 14,
+      "skipped": 0,
+      "failed": 0
+    },
+    "deployed_to_tested_source_diff": "none_for_audited_files"
+  },
+  "live_snapshot": {
+    "date_cst": "2026-08-18",
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "pair_monitor_status": "running",
+    "pair_monitor_stage": "cofitok_training",
+    "pair_monitor_issues": [],
+    "cofitok_step": 41750,
+    "cofitok_target_step": 100000,
+    "cofitok_samples_seen": 2672000,
+    "dense_started": false,
+    "latest_checkpoint": {
+      "step": 40000,
+      "bytes": 1010937514,
+      "sha256": "f6b0b3d285d4565d7d163dedc4727d5d9580581cf857e4856df6801dfff283a2",
+      "latest_binding_status": "metadata_verified"
+    },
+    "cofitok_50000_checkpoint_waiter": {
+      "status": "waiting",
+      "detail": "checkpoint_missing"
+    }
+  },
+  "claim_boundary": {
+    "matched_large_scale_generation_quality_claim_allowed_now": false,
+    "broad_generation_superiority_claim_allowed": false,
+    "cross_tier_numeric_ranking_allowed": false,
+    "training_or_sampling_authorization_created": false,
+    "process_signals_sent": false,
+    "gpu_work_started_by_this_audit": false
+  }
+}
