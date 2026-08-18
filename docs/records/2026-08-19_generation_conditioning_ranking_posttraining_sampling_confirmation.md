@@ -78,3 +78,31 @@ No route grants automatic GPU work after this stage.
 - Parent-layout paper tests from the canonical local project root: `4 passed`.
 - Runbook syntax: Git Bash `bash -n` passed.
 - No GPU sampling or training was launched during implementation or testing.
+
+## Linux rehearsal
+
+The exact code revision `5cc51b2bef473b49bd90e95399cf3086c7dbed54`
+and tree `27dab2197064815a9206403f05289dcd5c8cf8f2` were packaged in a
+350,138-byte incremental bundle with SHA256
+`3d9f4779c369c6111ad131808895649dd3f72e0955b4387b75592744fbca3d8f`.
+
+An initial isolated clone from the formal checkout failed closed at
+`git bundle verify` because that checkout did not contain the bundle
+prerequisite.  The successful rehearsal cloned the active quality-bridge
+checkout only as a read-only object source, verified the prerequisite, fetched
+the bundle into a new `/tmp` repository, and checked out the exact detached
+revision.  With `CUDA_VISIBLE_DEVICES=-1`:
+
+- all modified/new Python entrypoints passed `py_compile`;
+- the complete conditioning-ranking group passed `84 passed`;
+- the new runbook passed Linux `bash -n`;
+- the isolated checkout remained porcelain-clean.
+
+The formal checkout remained at `1ebcc15210e63a776a2ba448481cbd8bb94a4066`,
+the active quality-bridge checkout remained at
+`cf0e5faa94bf4ab38d947b921935b3b765b5537a`, and the active GPU process stayed
+PID `79894` while dense training advanced from step 18,700 to 18,800.
+
+Machine-readable evidence:
+
+`artifacts/reports/generation/conditioning_ranking_posttraining_sampling5k_linux_rehearsal_2026-08-19/rehearsal_summary.json`

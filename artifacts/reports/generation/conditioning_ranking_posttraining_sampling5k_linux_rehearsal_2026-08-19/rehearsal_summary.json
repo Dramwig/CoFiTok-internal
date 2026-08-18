@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "role": "generation_conditioning_ranking_posttraining_sampling5k_linux_rehearsal",
+  "status": "pass",
+  "tested_git": {
+    "revision": "5cc51b2bef473b49bd90e95399cf3086c7dbed54",
+    "tree": "27dab2197064815a9206403f05289dcd5c8cf8f2",
+    "branch": "scale/generation-label-ranking-posttraining-5k-sampling-confirmation-v1"
+  },
+  "bundle": {
+    "local_path": "D:/cofitok-posttraining5k-5cc51b2.bundle",
+    "remote_path": "/tmp/cofitok-posttraining5k-5cc51b2.bundle",
+    "bytes": 350138,
+    "sha256": "3d9f4779c369c6111ad131808895649dd3f72e0955b4387b75592744fbca3d8f",
+    "prerequisite_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "advertised_heads": {
+      "refs/heads/scale/generation-label-ranking-posttraining-5k-sampling-confirmation-v1": "5cc51b2bef473b49bd90e95399cf3086c7dbed54"
+    }
+  },
+  "remote": {
+    "host": "autodl-container-scvpc4sj5x-0e706d96",
+    "rehearsal_root": "/tmp/cofitok-posttraining5k-rehearsal.jnO4KA",
+    "checkout": "/tmp/cofitok-posttraining5k-rehearsal.jnO4KA/CoFiTok-internal",
+    "read_only_object_source": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+    "python": "3.10.20",
+    "pytest": "9.0.3",
+    "bash": "5.1.16(1)-release",
+    "cuda_visible_devices": "-1"
+  },
+  "checks": {
+    "bundle_verify": "pass",
+    "exact_head": "pass",
+    "exact_tree": "pass",
+    "python_compile": "pass",
+    "conditioning_ranking_pytest": {
+      "status": "pass",
+      "passed": 84
+    },
+    "runbook_bash_n": "pass",
+    "tracked_and_untracked_status_clean_after_rehearsal": true
+  },
+  "fail_closed_observation": {
+    "status": "pass",
+    "detail": "An initial rehearsal clone from the formal checkout was rejected by git bundle verify because that clone lacked the prerequisite revision; no fetch, checkout, or tests ran in that rejected clone. The passing rehearsal used the active quality-bridge checkout only as a read-only object source."
+  },
+  "non_interference": {
+    "formal_checkout_revision_before": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "formal_checkout_revision_after": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "active_quality_bridge_revision_before": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "active_quality_bridge_revision_after": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "active_gpu_pid_before": 79894,
+    "active_gpu_pid_after": 79894,
+    "dense_training_step_before": 18700,
+    "dense_training_step_after": 18800,
+    "gpu_stage_launched_by_rehearsal": false,
+    "formal_checkout_modified": false,
+    "active_quality_bridge_checkout_modified": false
+  },
+  "claim_boundary": {
+    "implementation_and_cpu_rehearsal_only": true,
+    "sampling_executed": false,
+    "training_executed": false,
+    "checkpoint_promotion_authorized": false,
+    "full_100k_or_300k_authorized": false,
+    "release_authorized": false
+  }
+}
