@@ -4,11 +4,12 @@ set -euo pipefail
 PROJECT=${PROJECT:?set the isolated probe checkout}
 PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10}
 EXPECTED_REVISION=${EXPECTED_REVISION:?set the exact probe revision}
-EXPECTED_BRANCH=${EXPECTED_BRANCH:-scale/generation-label-ranking-probe-v1}
+EXPECTED_BRANCH=${EXPECTED_BRANCH:-scale/generation-label-ranking-standing-authorization-v1}
 PREPARATION_REPORT=${PREPARATION_REPORT:?set the immutable preparation report}
 EXPECTED_PREPARATION_SHA256=${EXPECTED_PREPARATION_SHA256:?set its SHA256}
-EXECUTION_APPROVAL=${EXECUTION_APPROVAL:?set the exact user approval sentinel}
-EXPECTED_APPROVAL_SHA256=${EXPECTED_APPROVAL_SHA256:?set its SHA256}
+EXECUTION_AUTHORIZATION=${EXECUTION_AUTHORIZATION:?set the source-bound execution authorization receipt}
+EXPECTED_EXECUTION_AUTHORIZATION_SHA256=${EXPECTED_EXECUTION_AUTHORIZATION_SHA256:?set its SHA256}
+EXPECTED_STANDING_AUTHORIZATION_SHA256=${EXPECTED_STANDING_AUTHORIZATION_SHA256:?set the standing authorization SHA256}
 OUTPUT_ROOT=${OUTPUT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_v1}
 LOCK_DIR=${OUTPUT_ROOT}.lock
 
@@ -23,9 +24,9 @@ cd "$PROJECT"
 [[ -z "$(git status --porcelain)" ]]
 [[ -x "$PYTHON" ]]
 [[ -f "$PREPARATION_REPORT" ]]
-[[ -f "$EXECUTION_APPROVAL" ]]
+[[ -f "$EXECUTION_AUTHORIZATION" ]]
 [[ "$(sha256sum "$PREPARATION_REPORT" | awk '{print $1}')" == "$EXPECTED_PREPARATION_SHA256" ]]
-[[ "$(sha256sum "$EXECUTION_APPROVAL" | awk '{print $1}')" == "$EXPECTED_APPROVAL_SHA256" ]]
+[[ "$(sha256sum "$EXECUTION_AUTHORIZATION" | awk '{print $1}')" == "$EXPECTED_EXECUTION_AUTHORIZATION_SHA256" ]]
 
 if nvidia-smi --query-compute-apps=pid --format=csv,noheader | grep -q '[0-9]'; then
   printf 'refusing class-ranking probe while any GPU compute process is active\n' >&2
@@ -55,15 +56,18 @@ recomputed_preparation="$temporary_dir/preparation.json"
 [[ "$(sha256sum "$recomputed_preparation" | awk '{print $1}')" == "$EXPECTED_PREPARATION_SHA256" ]]
 cmp -- "$PREPARATION_REPORT" "$recomputed_preparation"
 
-"$PYTHON" scripts/validate_generation_conditioning_ranking_probe_approval.py \
-  --approval "$EXECUTION_APPROVAL" \
-  --expected-revision "$EXPECTED_REVISION" \
+"$PYTHON" scripts/verify_generation_conditioning_ranking_probe_execution_authorization.py \
+  --authorization "$EXECUTION_AUTHORIZATION" \
+  --expected-authorization-sha256 "$EXPECTED_EXECUTION_AUTHORIZATION_SHA256" \
+  --expected-standing-authorization-sha256 "$EXPECTED_STANDING_AUTHORIZATION_SHA256" \
   --expected-preparation-sha256 "$EXPECTED_PREPARATION_SHA256" \
+  --expected-revision "$EXPECTED_REVISION" \
+  --expected-branch "$EXPECTED_BRANCH" \
   --expected-output-root "$OUTPUT_ROOT"
 
 mkdir -p "$OUTPUT_ROOT/reports"
 cp -- "$PREPARATION_REPORT" "$OUTPUT_ROOT/reports/preparation.json"
-cp -- "$EXECUTION_APPROVAL" "$OUTPUT_ROOT/reports/execution_approval.json"
+cp -- "$EXECUTION_AUTHORIZATION" "$OUTPUT_ROOT/reports/execution_authorization.json"
 
 run_one() {
   local name=$1
@@ -141,3 +145,16 @@ temporary.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encod
 os.replace(temporary, target)
 print(target)
 PY
+
+training_status=$OUTPUT_ROOT/reports/training_status.json
+training_status_sha256=$(sha256sum "$training_status" | awk '{print $1}')
+PROJECT="$PROJECT" \
+PYTHON="$PYTHON" \
+EXPECTED_REVISION="$EXPECTED_REVISION" \
+EXPECTED_BRANCH="$EXPECTED_BRANCH" \
+OUTPUT_ROOT="$OUTPUT_ROOT" \
+PREPARATION_REPORT="$PREPARATION_REPORT" \
+EXPECTED_PREPARATION_SHA256="$EXPECTED_PREPARATION_SHA256" \
+TRAINING_STATUS="$training_status" \
+EXPECTED_TRAINING_STATUS_SHA256="$training_status_sha256" \
+bash artifacts/runbooks/generation_conditioning_ranking_four_arm_posteval_v1.sh

@@ -4,7 +4,7 @@ set -euo pipefail
 PROJECT=${PROJECT:?set the isolated postevaluation checkout}
 PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10}
 EXPECTED_REVISION=${EXPECTED_REVISION:?set the exact postevaluation revision}
-EXPECTED_BRANCH=${EXPECTED_BRANCH:-analysis/generation-label-ranking-posteval-v1}
+EXPECTED_BRANCH=${EXPECTED_BRANCH:-scale/generation-label-ranking-standing-authorization-v1}
 OUTPUT_ROOT=${OUTPUT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_v1}
 PREPARATION_REPORT=${PREPARATION_REPORT:?set the immutable Linux preparation report}
 EXPECTED_PREPARATION_SHA256=${EXPECTED_PREPARATION_SHA256:?set its SHA256}

@@ -82,7 +82,9 @@ def main() -> None:
             "promotion_authorization_allowed": False,
             "full_training_launch_allowed": False,
             "required_next_evidence": (
-                "an exact user approval sentinel followed by the four fresh 1K runs"
+                "a source-bound execution receipt that replays the active standing "
+                "authorization, exact terminal class-fidelity failure, requested-class "
+                "visual evidence, revision, stage, and output root"
             ),
         },
     }
