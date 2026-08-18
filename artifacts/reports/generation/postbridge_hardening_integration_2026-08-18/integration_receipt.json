@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "role": "generation_postbridge_hardening_integration_receipt",
+  "status": "pass",
+  "created_at": "2026-08-18T13:31:51.3605635+08:00",
+  "integration": {
+    "branch": "integration/generation-postbridge-hardening-v1",
+    "base_revision": "2a2da6345e0fc799e25dc06b55661050b0e429e5",
+    "validated_parent_revision": "b51a8a4f189d3419bd66a8ed11b2c1dd994e7415",
+    "validated_parent_tree": "fde0cc5af1aa65e63c88d5c958aa8488dc136a23",
+    "tracked_dirty_before_receipt": false,
+    "merged_sources": [
+      {
+        "branch": "analysis/generation-quality-bridge-ema-transition-v1",
+        "source_revision": "b5c610674120e7334e16c51d18ea9884ccf42631",
+        "merge_revision": "e8dee05"
+      },
+      {
+        "branch": "analysis/generation-quality-bridge-50k-transition-readiness-v1",
+        "source_revision": "b300e1b9d28bb15f594c70b7feab5e1521361113",
+        "merge_revision": "cd726ab"
+      },
+      {
+        "branch": "analysis/generation-terminal-evidence-chain-audit-v1",
+        "source_revision": "36b49a6fbe854e84b8c92a796888150d7dcde5a1",
+        "merge_revision": "e41b6d5"
+      }
+    ],
+    "integration_fixes": [
+      {
+        "revision": "0a6ac8c",
+        "purpose": "Keep schema-v9 resume-compute fixtures fail-closed and verify deployment evidence from canonical Git blobs instead of checkout-specific line endings."
+      },
+      {
+        "revision": "72749df",
+        "purpose": "Make the terminal visual-audit waiter importable on Windows while preserving POSIX locking and failing closed when fcntl is unavailable."
+      },
+      {
+        "revision": "b51a8a4",
+        "purpose": "Resolve the paper root through the shared Git worktree and bind checkpoint deployment receipts to their implementation-commit blobs."
+      }
+    ]
+  },
+  "validation": {
+    "cuda_visible_devices": "-1",
+    "python": "3.12.13",
+    "uv": "0.12.2",
+    "targeted_generation_group": {
+      "passed": 403,
+      "failed": 0
+    },
+    "full_pytest": {
+      "passed": 1618,
+      "skipped": 9,
+      "failed": 0,
+      "elapsed_seconds": 669.97
+    },
+    "runbook_bash_n": {
+      "checked": 140,
+      "failed": 0
+    },
+    "python_compileall": {
+      "paths": [
+        "scripts",
+        "src",
+        "tests"
+      ],
+      "status": "pass"
+    },
+    "git_diff_check": "pass"
+  },
+  "active_training_snapshot": {
+    "checked_at": "2026-08-18T13:31:41.3855400+08:00",
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "pair_status": "running",
+    "pair_stage": "cofitok_training",
+    "pair_issues": [],
+    "cofitok_step": 45400,
+    "cofitok_samples_seen": 2905600,
+    "dense_step": 0,
+    "latest_checkpoint": {
+      "step": 45000,
+      "sha256": "703a89752ad8f6937f78fff2b446062c4b3cbe801c871fd2ed9dd0fae805ef2b"
+    },
+    "unrelated_gpu_processes": [],
+    "gpu_compute_process": {
+      "pid": 619775,
+      "process": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+      "used_memory_mib": 85286
+    },
+    "free_bytes": 321601044480
+  },
+  "scientific_state": {
+    "ordered_restricted_factorization_and_prefix_control_established": true,
+    "repeated_directional_matched_dense_fid_evidence_exists": true,
+    "terminal_matched_large_scale_generation_advantage_established": false,
+    "terminal_reason": "The active full-data matched 100K pair and its bound terminal quality and uncertainty reports are incomplete."
+  },
+  "claim_boundary": {
+    "active_training_checkout_modified": false,
+    "formal_remote_checkout_modified": false,
+    "training_process_signals_sent": false,
+    "gpu_work_started": false,
+    "sampling_or_evaluation_started": false,
+    "deployment_performed": false,
+    "full_300k_launch_authorized_by_integration": false,
+    "release_authorization_created": false,
+    "runtime_efficiency_ranking_allowed": false,
+    "broad_generation_superiority_claim_allowed": false
+  }
+}
