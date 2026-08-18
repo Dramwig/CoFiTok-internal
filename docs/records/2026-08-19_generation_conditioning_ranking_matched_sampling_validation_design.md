@@ -174,3 +174,45 @@ The stage is permanently non-authorizing.  It cannot:
 
 The active full-data bridge remains authoritative and must not be interrupted
 while this validation is implemented and rehearsed.
+
+## Implemented control plane
+
+The frozen design is implemented by:
+
+```text
+src/cofitok/generation/conditioning_ranking_sampling.py
+scripts/prepare_generation_conditioning_ranking_sampling_validation.py
+scripts/select_generation_conditioning_ranking_sampling_batch.py
+scripts/build_generation_conditioning_ranking_sampling_execution_receipt.py
+scripts/verify_generation_conditioning_ranking_sampling_execution_receipt.py
+scripts/evaluate_generation_conditioning_ranking_samples.py
+scripts/build_generation_conditioning_ranking_sampling_validation.py
+scripts/run_generation_conditioning_ranking_sampling_validation_supervisor.py
+artifacts/runbooks/generation_conditioning_ranking_four_arm_sampling5k_v1.sh
+```
+
+The supervisor authenticates completed postevaluation evidence even when the
+decision is asymmetric or failing, and exits without GPU work unless the exact
+shared-pass decision is reproduced.  For a shared pass it creates one immutable
+preparation, records exactly five consecutive empty GPU-compute observations,
+reserves a one-shot launch receipt, and starts the runbook once.  It never
+signals another process and never relaunches automatically.
+
+The runbook is resumable at the preflight, sampling, metric, paired-class, and
+final-report boundaries.  It recomputes the immutable preparation, selects one
+batch from `16,32,64` using the worst arm, creates and replays the final
+execution receipt, generates all four exact 5K sample sets, evaluates FID/IS
+with PRC disabled, runs both paired ResNet-50 comparisons with CUDA hidden, and
+builds then replays `reports/sampling_validation.json`.
+
+Local validation before the isolated Linux rehearsal:
+
+```text
+Python py_compile: pass
+targeted sampling tests: 18 passed
+related conditioning/sampling/evaluator tests: 71 passed
+new runbook bash -n: pass
+all new and reused CLI --help entrypoints: pass with PYTHONPATH=.:src
+```
+
+No server output root or GPU process was created by this implementation work.
