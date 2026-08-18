@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -30,8 +31,14 @@ def load_receipt() -> dict[str, object]:
     return json.loads(RECEIPT.read_text(encoding="utf-8"))
 
 
-def file_sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def tracked_blob(revision: str, source_path: str) -> bytes:
+    result = subprocess.run(
+        ["git", "show", f"{revision}:{source_path}"],
+        cwd=ROOT,
+        check=True,
+        stdout=subprocess.PIPE,
+    )
+    return result.stdout
 
 
 def test_receipt_binds_the_exact_tracked_supervisor_and_git_chain() -> None:
@@ -49,9 +56,15 @@ def test_receipt_binds_the_exact_tracked_supervisor_and_git_chain() -> None:
     )
     assert datetime.fromisoformat(str(receipt["created_at"])).utcoffset() is not None
 
-    assert SUPERVISOR.stat().st_size == deployment["deployed_source_bytes"]
-    assert file_sha256(SUPERVISOR) == deployment["deployed_source_sha256"]
     assert git["source_path"] == SUPERVISOR.relative_to(ROOT).as_posix()
+    deployed_source = tracked_blob(
+        str(git["code_commit"]),
+        str(git["source_path"]),
+    )
+    assert len(deployed_source) == deployment["deployed_source_bytes"]
+    assert hashlib.sha256(deployed_source).hexdigest() == deployment[
+        "deployed_source_sha256"
+    ]
 
     assert bundle["advertised_head"] == git["record_commit"]
     assert remote_checkout["head"] == bundle["advertised_head"]

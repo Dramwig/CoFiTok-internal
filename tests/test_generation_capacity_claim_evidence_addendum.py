@@ -27,12 +27,62 @@ def _source_path(root: Path, suffix: str) -> Path:
     return root.joinpath(*PurePosixPath(suffix).parts)
 
 
+def _training_report(*, parameter_count: int, token_count: int) -> dict[str, Any]:
+    return {
+        "target_steps": 300_000,
+        "parameter_count": parameter_count,
+        "elapsed_seconds": 100_000.0,
+        "peak_vram_bytes": 24 * 1024**3,
+        "final_metrics": {"samples_seen": 19_200_000},
+        "config": {
+            "data": {"dataset": "imagenet_256", "batch_size": 16},
+            "diffusion": {"num_train_timesteps": 1000},
+            "runtime": {"device": "cuda"},
+            "optimization": {"gradient_accumulation_steps": 4},
+            "model": {"image_size": 256, "token_count": token_count},
+        },
+    }
+
+
+def _training_cost_fields(report: dict[str, Any]) -> dict[str, Any]:
+    cost = comparison_builder.training_cost_summary(report)
+    assert cost["valid"] is True
+    adjustment = cost["resume_compute_adjustment"]
+    return {
+        "training_reported_elapsed_seconds": cost["reported_elapsed_seconds"],
+        "training_resume_compute_adjustment_seconds": adjustment["seconds"],
+        "training_resume_compute_adjustment_hours": adjustment["hours"],
+        "training_resume_compute_adjustment_event_count": adjustment[
+            "event_count"
+        ],
+        "training_orphaned_optimizer_steps_lower_bound": adjustment[
+            "orphaned_optimizer_steps_lower_bound"
+        ],
+        "training_orphaned_images_lower_bound": adjustment[
+            "orphaned_images_lower_bound"
+        ],
+        "training_elapsed_seconds": cost["elapsed_seconds"],
+        "training_elapsed_seconds_role": cost["elapsed_seconds_role"],
+        "training_images_per_second": cost["images_per_second"],
+    }
+
+
 def _case(
     tmp_path: Path,
     *,
     qualification_pass: bool = True,
 ) -> dict[str, Any]:
     source_root = tmp_path / "CoFiTok"
+    training_reports = {
+        "cofitok_training": _training_report(
+            parameter_count=62_950_800,
+            token_count=8,
+        ),
+        "dense_training": _training_report(
+            parameter_count=62_824_707,
+            token_count=1,
+        ),
+    }
     source_reports: dict[str, dict[str, Any]] = {}
     for name, suffix in comparison_builder.SOURCE_REPORT_PROFILES[
         "capacity_full"
@@ -44,7 +94,10 @@ def _case(
                 "status": "pass",
                 "decision": "large_scale_generation_ready",
                 "summary": {"cofitok_fid": 4.0, "dense_fid": 5.0},
+                "resume_compute_adjustments": {},
             }
+        elif name in training_reports:
+            payload = training_reports[name]
         else:
             payload = {"role": name}
         source_reports[name] = _write(path, payload)
@@ -75,6 +128,7 @@ def _case(
             "schema_version": 1,
         },
         "source_reports": source_reports,
+        "resume_compute_adjustments": {},
         "matched_training_rows": [
             {
                 "method": "CoFiTok K=8",
@@ -86,6 +140,7 @@ def _case(
                 "sample_count": 50_000,
                 "weights": "ema",
                 "fid": 4.0,
+                **_training_cost_fields(training_reports["cofitok_training"]),
             },
             {
                 "method": "Dense identity",
@@ -97,6 +152,7 @@ def _case(
                 "sample_count": 50_000,
                 "weights": "ema",
                 "fid": 5.0,
+                **_training_cost_fields(training_reports["dense_training"]),
             },
         ],
         "official_context_rows": [],

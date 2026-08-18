@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -29,6 +30,17 @@ LIVE_CONTRACT = (
 LIVE_CONTRACT_SHA256 = (
     "28318ff89c009be65899117bbb9d45f533bc116f63b6bd335e21463818d5f609"
 )
+
+
+def _tracked_blob_sha256(path: Path, *, revision: str = "HEAD") -> str:
+    relative_path = path.relative_to(ROOT).as_posix()
+    result = subprocess.run(
+        ["git", "show", f"{revision}:{relative_path}"],
+        cwd=ROOT,
+        check=True,
+        stdout=subprocess.PIPE,
+    )
+    return hashlib.sha256(result.stdout).hexdigest()
 
 
 def _write(path: Path, payload: dict) -> None:
@@ -370,7 +382,10 @@ def _inspect(fixture: dict, *, alive: set[int] | None = None) -> dict:
 
 def test_checked_in_recovery_supersession_contract_pins_live_evidence() -> None:
     contract = load_recovery_supersession_contract(LIVE_CONTRACT)
-    assert contract["identity"]["sha256"] == LIVE_CONTRACT_SHA256
+    assert contract["identity"]["sha256"] == hashlib.sha256(
+        LIVE_CONTRACT.read_bytes()
+    ).hexdigest()
+    assert _tracked_blob_sha256(LIVE_CONTRACT) == LIVE_CONTRACT_SHA256
     assert contract["superseded_failure"]["source"]["sha256"] == (
         "035037c1e1c4cca78ebd0429c85218dce5ecf08435523ae3d89b6ee22e9e9a88"
     )
