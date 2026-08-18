@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from cofitok.process_monitoring import wait_for_child_with_heartbeat
 from cofitok.reporting import file_sha256, write_json_report
 
 
@@ -503,7 +504,24 @@ def main() -> int:
             child_pid=child.pid,
         ),
     )
-    exit_code = child.wait()
+    exit_code = wait_for_child_with_heartbeat(
+        child,
+        poll_seconds=args.poll_seconds,
+        heartbeat=lambda: write_json_report(
+            args.status_output,
+            _status(
+                status="running",
+                detail="formal_ema_postevaluation_running",
+                expected=expected,
+                monitor=monitor_observation,
+                pair_summary={
+                    **(summary_observation or {}),
+                    "source": pair_source,
+                },
+                child_pid=child.pid,
+            ),
+        ),
+    )
     final_status = "pass" if exit_code == 0 else "failed"
     write_json_report(
         args.status_output,
