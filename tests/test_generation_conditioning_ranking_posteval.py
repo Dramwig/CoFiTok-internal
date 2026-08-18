@@ -6,12 +6,9 @@ from pathlib import Path
 import pytest
 
 from scripts.build_generation_conditioning_ranking_probe_posteval import (
-    EXPECTED_EVALUATOR_BRANCH,
     EXPECTED_CHECKPOINT_STEPS,
     EXPECTED_OUTPUT_ROOT,
     EXPECTED_REQUEST,
-    EXPECTED_TRAINING_BRANCH,
-    EXPECTED_TRAINING_REVISION,
     REPORT_ROLE,
     RUN_NAMES,
     SENSITIVITY_CLAIM_BOUNDARY,
@@ -20,10 +17,11 @@ from scripts.build_generation_conditioning_ranking_probe_posteval import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TRAINING_REVISION = EXPECTED_TRAINING_REVISION
+TRAINING_REVISION = "7d5ff8c661ee3f17c99b2c5fb17525051b27a92f"
+TRAINING_BRANCH = "scale/generation-label-ranking-standing-authorization-v1"
 EVALUATOR_GIT = {
-    "revision": "b" * 40,
-    "branch": EXPECTED_EVALUATOR_BRANCH,
+    "revision": TRAINING_REVISION,
+    "branch": TRAINING_BRANCH,
     "tracked_dirty": False,
 }
 OUTPUT_ROOT = EXPECTED_OUTPUT_ROOT
@@ -61,7 +59,7 @@ def _preparation() -> dict:
         "issues": [],
         "git": {
             "revision": TRAINING_REVISION,
-            "branch": EXPECTED_TRAINING_BRANCH,
+            "branch": TRAINING_BRANCH,
             "tracked_dirty": False,
         },
         "output_root": OUTPUT_ROOT,
@@ -167,7 +165,7 @@ def _training_evidence() -> tuple[dict, dict[str, dict], dict[str, dict]]:
             "config": expected_configs[run],
             "git": {
                 "revision": TRAINING_REVISION,
-                "branch": EXPECTED_TRAINING_BRANCH,
+                "branch": TRAINING_BRANCH,
                 "dirty": False,
             },
             "parameter_count": PARAMETER_COUNTS[PREPARATION_KEYS[run]],
@@ -352,7 +350,7 @@ def _sensitivity_report(
             },
             "git": {
                 "revision": TRAINING_REVISION,
-                "branch": EXPECTED_TRAINING_BRANCH,
+                "branch": TRAINING_BRANCH,
                 "dirty": False,
             },
             "dataset_identity_sha256": "d" * 64,
@@ -434,6 +432,11 @@ def test_postevaluation_requires_shared_absolute_and_control_relative_recovery()
     report = build_postevaluation(**_build_inputs())
 
     assert report["role"] == REPORT_ROLE
+    assert report["git"] == {
+        "revision": TRAINING_REVISION,
+        "branch": TRAINING_BRANCH,
+        "tracked_dirty": False,
+    }
     assert report["decision"]["shared_semantic_alignment_recovery_supported"] is True
     assert report["decision"]["cofitok_specific_advantage_claim_allowed"] is False
     assert report["decision"]["recommended_next_action"] == (
@@ -512,7 +515,7 @@ def test_postevaluation_rejects_incomplete_training_audit() -> None:
 
 def test_postevaluation_rejects_preparation_config_and_schedule_audit_drift() -> None:
     preparation_drift = _build_inputs()
-    preparation_drift["preparation"]["git"]["revision"] = "f" * 40
+    preparation_drift["preparation"]["git"]["revision"] = "f" * 39
     with pytest.raises(ValueError, match="preparation Git"):
         build_postevaluation(**preparation_drift)
 
@@ -529,6 +532,18 @@ def test_postevaluation_rejects_preparation_config_and_schedule_audit_drift() ->
     ] = "0" * 64
     with pytest.raises(ValueError, match="training audit"):
         build_postevaluation(**audit_drift)
+
+
+def test_postevaluation_requires_the_exact_training_checkout_for_evaluation() -> None:
+    revision_drift = _build_inputs()
+    revision_drift["git"]["revision"] = "b" * 40
+    with pytest.raises(ValueError, match="exact clean probe training checkout"):
+        build_postevaluation(**revision_drift)
+
+    branch_drift = _build_inputs()
+    branch_drift["git"]["branch"] = "analysis/unbound-evaluator"
+    with pytest.raises(ValueError, match="exact clean probe training checkout"):
+        build_postevaluation(**branch_drift)
 
 
 def test_postevaluation_rejects_nonfinite_raw_mse_and_derived_field_tampering() -> None:

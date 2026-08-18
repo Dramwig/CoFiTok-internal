@@ -31,9 +31,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 REPORT_SCHEMA_VERSION = 1
 REPORT_ROLE = "generation_conditioning_ranking_four_arm_postevaluation"
 TRAINING_STATUS_ROLE = "generation_conditioning_ranking_four_arm_probe_training_status"
-EXPECTED_TRAINING_REVISION = "7d5ff8c661ee3f17c99b2c5fb17525051b27a92f"
-EXPECTED_TRAINING_BRANCH = "scale/generation-label-ranking-probe-v1"
-EXPECTED_EVALUATOR_BRANCH = "analysis/generation-label-ranking-posteval-v1"
 EXPECTED_OUTPUT_ROOT = (
     "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
     "conditioning_ranking_four_arm_probe1k_v1"
@@ -188,6 +185,14 @@ def _is_sha256(value: Any) -> bool:
     )
 
 
+def _is_git_revision(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 40
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
 def _validate_preparation(preparation: Mapping[str, Any]) -> dict[str, Any]:
     if (
         preparation.get("schema_version") != 1
@@ -205,8 +210,10 @@ def _validate_preparation(preparation: Mapping[str, Any]) -> dict[str, Any]:
     git = preparation.get("git")
     if (
         not isinstance(git, Mapping)
-        or git.get("revision") != EXPECTED_TRAINING_REVISION
-        or git.get("branch") != EXPECTED_TRAINING_BRANCH
+        or not _is_git_revision(git.get("revision"))
+        or not isinstance(git.get("branch"), str)
+        or not str(git["branch"]).strip()
+        or git.get("branch") != str(git["branch"]).strip()
         or git.get("tracked_dirty") is not False
     ):
         raise ValueError("Ranking-probe preparation Git is malformed")
@@ -888,13 +895,6 @@ def build_postevaluation(
     sources: Mapping[str, Any],
     git: Mapping[str, Any],
 ) -> dict[str, Any]:
-    if (
-        git.get("tracked_dirty") is not False
-        or git.get("branch") != EXPECTED_EVALUATOR_BRANCH
-        or not isinstance(git.get("revision"), str)
-        or len(str(git["revision"])) != 40
-    ):
-        raise ValueError("Postevaluation requires a clean tracked evaluator checkout")
     training_contract = _validate_training_evidence(
         preparation=preparation,
         training_status=training_status,
@@ -902,6 +902,15 @@ def build_postevaluation(
         training_audits=training_audits,
         expected_configs=expected_configs,
     )
+    expected_evaluator_git = {
+        "revision": training_contract["revision"],
+        "branch": training_contract["branch"],
+        "tracked_dirty": False,
+    }
+    if dict(git) != expected_evaluator_git:
+        raise ValueError(
+            "Postevaluation requires the exact clean probe training checkout"
+        )
     sensitivity_contract = _validate_sensitivity_reports(
         reports=sensitivity_reports,
         training_contract=training_contract,
