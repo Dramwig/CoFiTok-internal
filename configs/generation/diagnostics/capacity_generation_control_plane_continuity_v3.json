@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "role": "generation_control_plane_continuity_plan",
+  "authorization_boundary": {
+    "archive_static_control_assets_allowed": true,
+    "restore_into_absent_bounded_paths_allowed": true,
+    "training_launch_allowed": false,
+    "sampling_or_evaluation_launch_allowed": false,
+    "promotion_or_release_allowed": false,
+    "process_signaling_allowed": false,
+    "gpu_allocation_allowed": false,
+    "active_source_process_modification_allowed": false,
+    "formal_checkout_modification_allowed": false
+  },
+  "bundles": [
+    {
+      "name": "quality_bridge_followup_decision",
+      "source_path": "/tmp/cofitok-quality-bridge-followup-decision-9b02fa8.bundle",
+      "archive_relative_path": "bundles/cofitok-quality-bridge-followup-decision-9b02fa8.bundle",
+      "restore_relative_path": "cofitok-quality-bridge-followup-decision-9b02fa8.bundle",
+      "expected_bytes": 137665447,
+      "expected_sha256": "67839784ac4a2c2ef9e0c5723d55703bae6ba20ffc12fb03e214bf7512953861",
+      "expected_revision": "9b02fa83d20b1459a2706d6d82371caf5c023f54",
+      "expected_ref": "refs/heads/scale/generation-quality-bridge-followup-decision-v1",
+      "repository_seed": true
+    },
+    {
+      "name": "quality_bridge_execution",
+      "source_path": "/tmp/cofitok-quality-bridge-cf0e5fa.bundle",
+      "archive_relative_path": "bundles/cofitok-quality-bridge-cf0e5fa.bundle",
+      "restore_relative_path": "cofitok-quality-bridge-cf0e5fa.bundle",
+      "expected_bytes": 40130783,
+      "expected_sha256": "3392e2a66c48237b8bfa0bde519245d4d17d055bb21b4e86321537fe5c3a871a",
+      "expected_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "expected_ref": "refs/heads/codex_temp_quality_bridge_cf0e5fa",
+      "repository_seed": false
+    },
+    {
+      "name": "capacity_probe_reference",
+      "source_path": "/tmp/cofitok-capacity-reference-c7424ed.bundle",
+      "archive_relative_path": "bundles/cofitok-capacity-reference-c7424ed.bundle",
+      "restore_relative_path": "cofitok-capacity-reference-c7424ed.bundle",
+      "expected_bytes": 14553,
+      "expected_sha256": "689c82b4c5a729cce8e567f3bdf365577b9e8a5e02023236c8c40869b828f447",
+      "expected_revision": "c7424ed74da1bd7907d094d10725b337b1d822ac",
+      "expected_ref": "refs/heads/scale/generation-capacity-probe-reference-v1",
+      "repository_seed": false
+    },
+    {
+      "name": "capacity_probe_preparation",
+      "source_path": "/tmp/cofitok-capacity-probe-22a5994.bundle",
+      "archive_relative_path": "bundles/cofitok-capacity-probe-22a5994.bundle",
+      "restore_relative_path": "cofitok-capacity-probe-22a5994.bundle",
+      "expected_bytes": 19459,
+      "expected_sha256": "e8341f11288d37c95e1934afa2a5d899ce9d96929c9fe070945693eae1f5a03b",
+      "expected_revision": "22a5994f0475c29cca38a80188ed6ce00c6e6d15",
+      "expected_ref": "refs/heads/scale/generation-capacity-probe-v1",
+      "repository_seed": false
+    }
+  ],
+  "checkouts": [
+    {
+      "name": "quality_bridge_execution",
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+      "branch": "scale/generation-stability-quality-bridge-100k",
+      "restore_relative_path": "cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal"
+    },
+    {
+      "name": "quality_bridge_followup_decision",
+      "revision": "9b02fa83d20b1459a2706d6d82371caf5c023f54",
+      "tree": "474520aa848f3da143379a7b7f72d59a085fbe38",
+      "branch": "scale/generation-quality-bridge-followup-decision-v1",
+      "restore_relative_path": "cofitok-quality-bridge-followup-decision-9b02fa8"
+    },
+    {
+      "name": "capacity_probe_reference",
+      "revision": "c7424ed74da1bd7907d094d10725b337b1d822ac",
+      "tree": "03f14b6fe32147dd128e427d24a7dc350283e5ad",
+      "branch": "scale/generation-capacity-probe-reference-v1",
+      "restore_relative_path": "cofitok-capacity-reference-c7424ed"
+    },
+    {
+      "name": "capacity_probe_preparation",
+      "revision": "22a5994f0475c29cca38a80188ed6ce00c6e6d15",
+      "tree": "9ec2b0d9c88b572a0a65af3765a03e738c7577d6",
+      "branch": "scale/generation-capacity-probe-v1",
+      "restore_relative_path": "cofitok-capacity-probe-22a5994"
+    }
+  ],
+  "runtime_files": [
+    {
+      "name": "quality_bridge_standing_authorization",
+      "source_path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/standing_authorization.json",
+      "archive_relative_path": "runtime/quality_bridge/standing_authorization.json",
+      "restore_relative_path": "cofitok-quality-bridge-execution-cf0e5fa/standing_authorization.json",
+      "expected_bytes": 865,
+      "expected_sha256": "5fe64a0941acb55a21cb6479a726987c6259e93a772c47290f2d6883752de4df"
+    },
+    {
+      "name": "quality_bridge_execution_approval",
+      "source_path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/execution_approval.json",
+      "archive_relative_path": "runtime/quality_bridge/execution_approval.json",
+      "restore_relative_path": "cofitok-quality-bridge-execution-cf0e5fa/execution_approval.json",
+      "expected_bytes": 1754,
+      "expected_sha256": "e9da52a4e7ff1b4700b70aadaa8703ee40fb1a9862e847dcfb6e75933d295a4b"
+    },
+    {
+      "name": "quality_bridge_recovery_supervisor",
+      "source_path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor.py",
+      "archive_relative_path": "runtime/quality_bridge/recovery_supervisor.py",
+      "restore_relative_path": "cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor.py",
+      "expected_bytes": 33131,
+      "expected_sha256": "008a9d83e59fa433d2d4542dbb3b3e29ec8e5bee8eadf5190f5b3b1c99b40cbf"
+    },
+    {
+      "name": "quality_bridge_idle_waiter",
+      "source_path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/idle_waiter.sh",
+      "archive_relative_path": "runtime/quality_bridge/idle_waiter.sh",
+      "restore_relative_path": "cofitok-quality-bridge-execution-cf0e5fa/idle_waiter.sh",
+      "expected_bytes": 11268,
+      "expected_sha256": "66dca29d14fd1cf4f7bd8129622a6734e12ab3c06a4b1a70d7bd45fc77e80a4e"
+    },
+    {
+      "name": "quality_bridge_followup_waiter",
+      "source_path": "/tmp/cofitok-quality-bridge-followup-decision-9b02fa8/wait_for_quality_bridge_result.py",
+      "archive_relative_path": "runtime/followup_decision/wait_for_quality_bridge_result.py",
+      "restore_relative_path": "cofitok-quality-bridge-followup-decision-9b02fa8/wait_for_quality_bridge_result.py",
+      "expected_bytes": 10743,
+      "expected_sha256": "77859b4bdcff20e79449654a1b20a42d6ad21d1c96bec35e189b01b22f01edd2"
+    }
+  ]
+}

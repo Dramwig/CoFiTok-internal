@@ -143,3 +143,9 @@ DDIM-250. Both use CFG 1.5, zero guidance rescale, batched CFG, `eta=0`,
 `clip_x0=true`, bf16, seed zero, balanced-modulo classes, and per-index random
 streams invariant to batch size and resume boundaries. These are formal
 evidence requirements, not only CLI defaults.
+
+The artifact/session/sampler/preflight failure boundaries were revalidated as a
+bounded 61-test suite on both Windows and CUDA-hidden Linux. The persistent
+Linux JUnit report, exact Git identity, covered recovery cases, and the explicit
+non-quality/non-release scope are recorded in
+`docs/records/2026-08-15_generation_stable_inference_revalidation.md`.

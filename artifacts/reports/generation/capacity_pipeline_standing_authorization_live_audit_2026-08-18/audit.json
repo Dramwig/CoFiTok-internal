@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "role": "generation_capacity_pipeline_standing_authorization_live_audit",
+  "captured_at": "2026-08-18T12:40:12.767128+08:00",
+  "status": "pass",
+  "standing_authorization": {
+    "status": "active",
+    "exact_text": "之后不要我授权你直接运行需要的实验",
+    "interpretation": "Authorize Codex to directly run future experiments that are necessary for the active CoFiTok long-term objective without requesting per-stage approval.",
+    "bytes": 865,
+    "sha256": "5fe64a0941acb55a21cb6479a726987c6259e93a772c47290f2d6883752de4df",
+    "preserved_boundaries": [
+      "exact_revision_stage_and_output_binding_required",
+      "independent_clean_checkout_required",
+      "formal_remote_checkout_must_not_be_modified",
+      "locked_evidence_must_not_be_overwritten",
+      "unrelated_project_processes_must_not_be_modified",
+      "non_authorizing_protocols_remain_non_authorizing"
+    ]
+  },
+  "live_pipeline": {
+    "capacity_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1",
+    "full_300k_output_root_exists": false,
+    "gpu_children": [],
+    "only_gpu_compute_pid": 619775,
+    "only_gpu_compute_role": "active_base128_quality_bridge_cofitok_trainer",
+    "lineage_observer_v2": {
+      "status": "running",
+      "issues": [],
+      "detail": "waiting_at:quality_bridge_100k_recovery:superseded_by_source_bound_exact_resume:existing_quality_bridge_execution_is_active"
+    },
+    "legacy_lineage_observer": {
+      "status": "failed",
+      "detail": "lineage_health_failure:quality_bridge_100k_recovery",
+      "superseded": true,
+      "accepted_as_current_authority": false
+    }
+  },
+  "stages": [
+    {
+      "stage": "capacity_probe_250m_10k",
+      "status": "waiting",
+      "child_pid": null,
+      "required_source": "source-bound quality-bridge follow-up decision and preparation",
+      "scope": "exact matched 250M 10K diagnostic only",
+      "next_stage_authorized_by_result_alone": false
+    },
+    {
+      "stage": "capacity_scaling_250m_50k",
+      "status": "waiting",
+      "child_pid": null,
+      "required_source": "physically replayed exact capacity-probe result and scaling decision",
+      "fresh_training_allowed": false,
+      "resume_from_exact_10k_allowed": true,
+      "next_stage_authorized_by_result_alone": false
+    },
+    {
+      "stage": "capacity_completion_250m_100k",
+      "status": "waiting",
+      "child_pid": null,
+      "required_source": "physically replayed exact completed 50K result and completion decision",
+      "fresh_training_allowed": false,
+      "resume_from_exact_50k_allowed": true,
+      "result_is_promotion_gate": false
+    },
+    {
+      "stage": "capacity_full_300k_readiness",
+      "status": "waiting",
+      "child_pid": null,
+      "required_source": "selected source-compatible 100K result plus a new readiness decision",
+      "training_launch_allowed_by_readiness_supervisor": false,
+      "requires_fresh_output_storage_and_runtime_benchmark": true
+    },
+    {
+      "stage": "capacity_full_300k_training",
+      "status": "waiting",
+      "child_pid": null,
+      "required_source": "exact passed full-readiness receipt and active standing authorization",
+      "fresh_matched_pair_required": true,
+      "capacity_100k_checkpoint_resume_allowed": false,
+      "formal_generation_claim_allowed": false,
+      "release_authorization_allowed": false
+    },
+    {
+      "stage": "capacity_full_300k_postevaluation",
+      "status": "waiting",
+      "child_pid": null,
+      "required_source": "passed exact full-training evidence",
+      "formal_50k_postevaluation_allowed_after_training_pass": true,
+      "release_authorization_allowed": false
+    },
+    {
+      "stage": "capacity_full_300k_finalization",
+      "status": "waiting",
+      "child_pid": null,
+      "required_source": "passed final quality gate, verified exports, and completion audit",
+      "release_receipt_allowed_only_after_completion_pass": true
+    }
+  ],
+  "source_identities": {
+    "preparation_waiter_status": "5a95ae90e309407c7054a1741b4ae5b8ab129079487e421a984e5860986093b4",
+    "probe_execution_supervisor_status": "f2de592cce746fa5523b3db15611cda860e042fdc00f04fc5de974fc88c6b584",
+    "scaling_decision_waiter_status": "9d48791b4ff982a31f5e107ff7945adaa04176adeb97d027e522425764a63bc1",
+    "scaling_50k_supervisor_status": "4a3a232028dd62ca3e96d7f5bf0519eff6863b3a3c5db4cfd85c397a9c73ff59",
+    "completion_100k_decision_waiter_status": "bd995cf2ad8b868d1034407e6faa94004a147b69676b253e9953ce4f621ed112",
+    "completion_100k_supervisor_status": "dd6cd286556c2156c3b907d5eeebc24f9a493ee0b332b023f9c16cfbcb6401c6",
+    "completion_100k_result_waiter_status": "96e36766973800b388a8559763fe1ae24021083d3243dbcbf64817d1e7bd721d",
+    "full_readiness_decision_waiter_status": "c2bc682f28c238f6337a3c4e77c8bb2c4a397970f2c7d6e573613dd5813afa90",
+    "full_readiness_supervisor_status": "0dc74ef97fae7b471401cfdf93453628f9b325f6a1cedcce3fb6fbe3680d7776",
+    "full_training_supervisor_status": "84edb64a19a3192f00fa6a725aa9822853517b6b477ddb69a0c41eaf35d354f6",
+    "full_posteval_supervisor_status": "aa4e086761e4ce981c79866616dd0df0ab69d429ca28064a445db806db354766",
+    "full_finalization_supervisor_status": "9a0aed3574fb1ff404df4ad9bad599bd0ddae3db979120ff8f017e0237297f0f",
+    "lineage_observer_v2": "7e428429fa19b59f2d300f8d2170a7fefddb2301310e22cec327ab01a571301f"
+  },
+  "conclusion": {
+    "standing_authorization_is_self_executing_without_gates": false,
+    "every_future_gpu_stage_is_exact_source_gated": true,
+    "current_capacity_or_full_300k_gpu_stage_running": false,
+    "diagnostic_result_can_directly_grant_release": false,
+    "formal_generation_completion_requires_terminal_gate_and_completion_audit": true,
+    "active_pipeline_requires_intervention": false
+  }
+}

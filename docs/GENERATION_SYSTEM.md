@@ -87,6 +87,12 @@ correction is developed independently on `scale/generation-stability`.
 - Full 300K runs checkpoint every 5K optimizer steps and retain the latest
   three states, matching the 10% gate cadence while bounding recovery loss on
   the multi-day full-data queue.
+- The combined exact-resume, integrity, reconciliation, retention, runtime, and
+  completion boundary was revalidated as 76 collected tests on Windows and
+  CUDA-hidden Linux (`74 passed`, two explicit CUDA-only skips). The clean Git
+  identity, authoritative and interrupted JUnit hashes, and the untested CUDA
+  remap boundary are recorded in
+  `docs/records/2026-08-15_generation_checkpoint_reproducibility_revalidation.md`.
 - Zero-weight objectives are not materialized in the production graph. The
   structural `S_k(0)=0` invariant is enforced by architecture and tested
   separately instead of paying for a gradient-free zero-token term every step.
@@ -710,6 +716,11 @@ coverage forces wall-clock, throughput, and cost-efficiency claims to
 observational physical lower bounds; the raw fairness report must not be cited
 to bypass that guard. See
 `docs/records/2026-08-18_generation_quality_bridge_runtime_claim_guard_waiter.md`.
+The schema-v8 comparison and terminal completion
+boundaries were revalidated as a 119-test suite on Windows and CUDA-hidden
+Linux. The persistent JUnit report, exact Git identity, covered tamper cases,
+and explicit non-quality scope are in
+`docs/records/2026-08-15_generation_strong_baseline_completion_revalidation.md`.
 The full paired-config preflight confirms 62,836,011 vs 62,824,707 parameters
 (+0.017993%). See
 `docs/records/2026-07-12_generation_matched_compute_accounting.md` and
@@ -921,7 +932,11 @@ terminal audit independently rehashes the manifest and completed progress chain;
 legacy smoke reports are not release evidence.
 See `docs/INFERENCE.md` and
 `docs/records/2026-07-12_stable_generation_session.md` plus
-`docs/records/2026-08-02_generation_inference_exact_resume.md`.
+`docs/records/2026-08-02_generation_inference_exact_resume.md`. The complete
+artifact/session/sampler/preflight boundary was revalidated as a 61-test suite
+on Windows and CUDA-hidden Linux, including a persistent JUnit report and
+source-bound Git identity; see
+`docs/records/2026-08-15_generation_stable_inference_revalidation.md`.
 The formal sampler also has an end-to-end CPU checkpoint-to-PNG subprocess
 test and derives actual DDIM timesteps from `GenerationSession.schedule`, so
 the exact 10K/50K CLI entry point is covered beyond lower-level sampler tests.
@@ -1157,6 +1172,36 @@ mismatch, and class fidelity. Any failed row produces a non-authorizing `hold`.
 The result cannot consume an existing full-training authorization and fixes both
 `full_training_launch_allowed=false` and `full_300k_launch_allowed=false`.
 
+These sample-quality and non-authorizing failure boundaries were revalidated as
+103 cross-platform tests plus three Linux-only waiter tests. The persistent
+JUnit report, exact Git identity, metric/mechanism/class/visual scope, and
+explicit non-quality limitation are recorded in
+`docs/records/2026-08-15_generation_sample_quality_gate_revalidation.md`.
+
+The subsequent training-scale control chain was independently revalidated from
+the 250M/10K probe through resume-to-50K, resume-to-100K, full-300K readiness,
+and fresh full-training launch. The same 177 tests passed on Windows and
+CUDA-hidden Linux with no failures, errors, or skips. These tests enforce exact
+source replay, checkpoint and Git identity, per-stage decision boundaries,
+fresh-versus-resume semantics, duplicate refusal, and the separation between
+standing experiment authorization and scientific promotion/release authority.
+They validate the machinery, not completion of any pending training or sample
+quality. Exact module counts, persistent JUnit identity, and the corrected
+Linux invocation are recorded in
+`docs/records/2026-08-15_generation_training_scale_authorization_revalidation.md`.
+
+After the focused capability suites, the complete generation-named test set was
+also executed as one subsystem regression. Windows ran 1,089 tests from 116
+cross-platform modules; Linux ran all 1,092 tests from 117 modules, including
+the POSIX process-group, `/proc`, symlink, and `fcntl` boundaries unavailable on
+Windows. The authoritative Linux result was 1,090 passed with only two explicit
+real-CUDA skips and no failures or errors. A first Linux run that omitted the
+production `PYTHONPATH` is preserved as a non-passing diagnostic; the exact
+failed runtime-selector test and the full suite passed after reproducing the
+runbooks' `$PROJECT:$PROJECT/src` import environment. Exact JUnit identities,
+coverage boundaries, skips, and limitations are recorded in
+`docs/records/2026-08-15_generation_full_subsystem_regression.md`.
+
 Every bridge artifact remains explicitly non-authorizing:
 `quality_bridge_launch_allowed=false`, `full_training_launch_allowed=false`,
 `full_300k_launch_allowed=false`, and `new_gate_required=true`. Preparing or
@@ -1165,3 +1210,58 @@ launch the 300K queue. Details and frozen source values are in
 `docs/records/2026-08-05_generation_full_data_quality_bridge_100k_preparation.md`;
 the source-bound Linux rehearsal receipt is
 `artifacts/reports/generation/stability_full_data_quality_bridge_100k_linux_rehearsal_2026-08-05/rehearsal_summary.json`.
+
+The active bridge-to-capacity chain also has a static control-plane continuity
+archive. Its v3 plan persists four exact Git bundles for all four live checkouts
+under `/tmp`—including the capacity-reference prerequisite bundle and its own
+checkout—plus the bounded
+approval, standing-authorization, recovery supervisor, idle-waiter, and
+follow-up-waiter bytes that are not recoverable from a Git checkout alone.
+Every source has a predeclared byte count and SHA256;
+Git bundles must advertise exactly one declared ref. The sole complete-history
+bundle is restored first, followed by the declared prerequisite-bearing
+incremental bundles, and every resulting revision/tree/branch is rechecked.
+Verification constructs a temporary bare repository and fetches every bundle in
+declared order, so an omitted prerequisite fails before a restore is accepted.
+
+Archive creation reads and copies only static files. Verification rehashes the
+manifest, exact payload membership, file modes, bundle heads, and every payload
+byte. The restore command writes only to the four declared absent path groups
+under an explicitly supplied destination root, uses a new private bare object
+store, and refuses any pre-existing bounded target. It never launches training,
+sampling, evaluation, or a waiter; it never queries or allocates a GPU, signals
+a process, modifies the active source directories, or changes the formal
+checkout. A successful restore is therefore reconstruction evidence, not
+execution authorization. See
+`docs/records/2026-08-15_generation_capacity_control_plane_continuity.md`.
+
+A companion process snapshot covers all 16 live stages plus the lineage
+observer. It binds each complete argv, CWD, safe environment subset,
+PID/start-ticks identity, detached-session metadata, log targets and descriptor
+flags, entrypoint bytes, status role, and clean checkout revision/tree/branch.
+The manifest also binds the v3 static-continuity archive. Two live verifiers
+require all 17 `/proc` identities to match; a separate source-only verifier is
+valid after the old PIDs disappear. Current descriptor flags remain historical
+evidence, while any future relaunch recipe must reopen both logs in append mode
+to avoid truncation. The snapshot is inert JSON and explicitly cannot authorize
+or launch a process; actual recovery still requires absence checks, fresh
+source verification, and a separate execution receipt. See
+`docs/records/2026-08-15_generation_capacity_control_process_snapshot.md`.
+
+The corresponding recovery executor is deliberately fail-closed. A readiness
+pass replays the static snapshot sources, standing authorization, exact formal
+checkout porcelain fingerprint, and the executor's clean Git identity before
+scanning all `/proc` entries by absolute CWD plus resolved entrypoint. Any live
+match prevents approval. Successful stages are skipped; missing/active stages
+are eligible only when every selected signature is absent; hold/failure or
+unknown status is terminal. Execution repeats the complete readiness check
+after approval, reopens logs only in append mode, and launches CPU control
+processes in detached sessions. A partial failure signals only process groups
+created by that execution. The production runbook additionally requires the
+explicit `CONTROL_PROCESS_RELAUNCH_ALLOWED=true` switch, while every recovered
+supervisor retains its own scientific-stage and GPU-idle authorization gate.
+The first production assessment found all 17 processes alive and therefore
+wrote `not_ready` with zero launch/signal/GPU effects. Real POSIX success,
+duplicate-refusal, and owned-rollback rehearsals passed with no dummy residue.
+See
+`docs/records/2026-08-15_generation_capacity_control_process_relaunch.md`.
