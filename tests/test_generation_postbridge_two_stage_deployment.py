@@ -493,6 +493,69 @@ def test_preflight_classifies_byte_identical_untracked_conflict(
     assert row["local"]["sha256"] == row["target"]["sha256"]
 
 
+def test_explicit_apply_quarantines_identical_conflict_and_restores_tracked_file(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path)
+    conflict = fixture["formal"] / "src/postbridge.py"
+    conflict.parent.mkdir(parents=True)
+    conflict.write_bytes(b"POSTBRIDGE = True\n")
+    archive = tmp_path / "deployment-evidence/identical-conflicts"
+
+    report = apply_deployment(
+        manifest=fixture["manifest"],
+        manifest_identity=fixture["manifest_identity"],
+        formal_repository=fixture["formal"],
+        bootstrap_bundle=fixture["bootstrap_bundle"],
+        integration_bundle=fixture["integration_bundle"],
+        confirm_target_revision=fixture["integration_revision"],
+        identical_conflict_archive=archive,
+        proc_root=fixture["proc_root"],
+    )
+
+    reconciliation = report["untracked_conflict_reconciliation"]
+    assert reconciliation["quarantine"]["moved_count"] == 1
+    assert reconciliation["completion"]["restored_count"] == 1
+    archived = archive / "payload/src/postbridge.py"
+    assert archived.read_bytes() == b"POSTBRIDGE = True\n"
+    assert conflict.read_text(encoding="utf-8") == "POSTBRIDGE = True\n"
+    assert _git(
+        fixture["formal"],
+        "ls-files",
+        "--error-unmatch",
+        "src/postbridge.py",
+    ) == "src/postbridge.py"
+    assert (archive / "reconciliation_plan.json").is_file()
+    assert (archive / "quarantine_receipt.json").is_file()
+    assert (archive / "reconciliation_completion.json").is_file()
+
+
+def test_apply_does_not_quarantine_divergent_conflict(tmp_path: Path) -> None:
+    fixture = _fixture(tmp_path)
+    conflict = fixture["formal"] / "src/postbridge.py"
+    conflict.parent.mkdir(parents=True)
+    conflict.write_bytes(b"different user content\n")
+    archive = tmp_path / "deployment-evidence/divergent-conflict"
+
+    with pytest.raises(ValueError, match="not eligible for identical-file quarantine"):
+        apply_deployment(
+            manifest=fixture["manifest"],
+            manifest_identity=fixture["manifest_identity"],
+            formal_repository=fixture["formal"],
+            bootstrap_bundle=fixture["bootstrap_bundle"],
+            integration_bundle=fixture["integration_bundle"],
+            confirm_target_revision=fixture["integration_revision"],
+            identical_conflict_archive=archive,
+            proc_root=fixture["proc_root"],
+        )
+
+    assert conflict.read_bytes() == b"different user content\n"
+    assert not archive.exists()
+    assert _git(fixture["formal"], "rev-parse", "HEAD") == fixture[
+        "formal_revision"
+    ]
+
+
 def test_explicit_apply_fast_forwards_only_after_terminal_guard(tmp_path: Path) -> None:
     fixture = _fixture(tmp_path)
     unrelated = fixture["formal"] / "artifacts/history/user.json"

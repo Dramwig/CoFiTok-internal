@@ -862,6 +862,197 @@ def analyze_untracked_conflicts(
     }
 
 
+def quarantine_byte_identical_conflicts(
+    *,
+    formal_repository: Path,
+    archive_root: Path,
+    manifest_identity: Mapping[str, Any],
+    conflict_analysis: Mapping[str, Any],
+) -> dict[str, Any]:
+    formal_repository = formal_repository.resolve()
+    archive_root = archive_root.resolve()
+    if _path_is_within(archive_root, formal_repository):
+        raise ValueError("identical-conflict archive cannot be inside formal repository")
+    if archive_root.exists() or archive_root.is_symlink():
+        raise FileExistsError(f"identical-conflict archive already exists: {archive_root}")
+    summary = conflict_analysis.get("summary")
+    rows = conflict_analysis.get("conflicts")
+    if (
+        not isinstance(summary, dict)
+        or not isinstance(rows, list)
+        or not rows
+        or summary.get("all_conflicts_are_byte_identical_files") is not True
+        or int(summary.get("byte_identical_file_count", -1)) != len(rows)
+        or int(summary.get("divergent_file_count", -1)) != 0
+        or any(row.get("byte_identical") is not True for row in rows)
+    ):
+        raise ValueError("untracked conflicts are not all byte-identical regular files")
+    archive_root.parent.mkdir(parents=True, exist_ok=True)
+    archive_root.mkdir()
+    payload_root = archive_root / "payload"
+    plan = {
+        "schema_version": SCHEMA_VERSION,
+        "role": "generation_postbridge_identical_conflict_quarantine_plan",
+        "status": "planned",
+        "created_at": _utc_now(),
+        "formal_repository": formal_repository.as_posix(),
+        "manifest": dict(manifest_identity),
+        "conflict_analysis": conflict_analysis,
+        "effects": {
+            "source_files_moved": False,
+            "source_files_deleted": False,
+            "processes_signaled": False,
+            "gpu_queried_or_allocated": False,
+        },
+    }
+    plan_path = archive_root / "reconciliation_plan.json"
+    write_json_atomic(plan_path, plan)
+    moved = []
+    for row in rows:
+        relative = PurePosixPath(str(row.get("path", "")))
+        if relative.is_absolute() or not relative.parts or ".." in relative.parts:
+            raise ValueError("identical-conflict path is unsafe")
+        source = formal_repository.joinpath(*relative.parts)
+        destination = payload_root.joinpath(*relative.parts)
+        observed = _local_path_identity(formal_repository, relative.as_posix())
+        expected_local = row.get("local")
+        target = row.get("target")
+        if (
+            observed != expected_local
+            or observed.get("kind") != "file"
+            or not isinstance(target, dict)
+            or target.get("object_type") != "blob"
+            or observed.get("bytes") != target.get("bytes")
+            or observed.get("sha256") != target.get("sha256")
+            or source.is_symlink()
+            or not source.is_file()
+        ):
+            raise ValueError(
+                f"identical-conflict source changed before quarantine: {relative}"
+            )
+        if source.stat().st_dev != archive_root.parent.stat().st_dev:
+            raise ValueError("identical-conflict archive must be on the same filesystem")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if destination.exists() or destination.is_symlink():
+            raise FileExistsError(
+                f"identical-conflict archive destination exists: {destination}"
+            )
+        os.replace(source, destination)
+        archived_payload = destination.read_bytes()
+        archived = {
+            "path": destination.resolve().as_posix(),
+            "bytes": len(archived_payload),
+            "sha256": _sha256_bytes(archived_payload),
+        }
+        if (
+            archived["bytes"] != observed["bytes"]
+            or archived["sha256"] != observed["sha256"]
+        ):
+            raise ValueError(f"quarantined conflict identity differs: {relative}")
+        moved.append(
+            {
+                "relative_path": relative.as_posix(),
+                "source_path": source.as_posix(),
+                "archive": archived,
+                "target": target,
+            }
+        )
+    receipt = {
+        "schema_version": SCHEMA_VERSION,
+        "role": "generation_postbridge_identical_conflict_quarantine",
+        "status": "quarantined",
+        "created_at": _utc_now(),
+        "formal_repository": formal_repository.as_posix(),
+        "manifest": dict(manifest_identity),
+        "plan": file_identity(plan_path),
+        "archive_root": archive_root.as_posix(),
+        "moved_count": len(moved),
+        "moved": moved,
+        "effects": {
+            "source_files_moved_to_recoverable_archive": True,
+            "source_files_deleted": False,
+            "archive_retained_after_apply": True,
+            "processes_signaled": False,
+            "gpu_queried_or_allocated": False,
+        },
+    }
+    receipt_path = archive_root / "quarantine_receipt.json"
+    write_json_atomic(receipt_path, receipt)
+    return {
+        **receipt,
+        "receipt": file_identity(receipt_path),
+    }
+
+
+def complete_conflict_reconciliation(
+    *,
+    formal_repository: Path,
+    archive_root: Path,
+    quarantine: Mapping[str, Any],
+    target_revision: str,
+) -> dict[str, Any]:
+    formal_repository = formal_repository.resolve()
+    archive_root = archive_root.resolve()
+    moved = quarantine.get("moved")
+    if not isinstance(moved, list) or not moved:
+        raise ValueError("identical-conflict quarantine receipt is malformed")
+    restored = []
+    for row in moved:
+        path = str(row.get("relative_path", ""))
+        target = row.get("target")
+        if not isinstance(target, dict):
+            raise ValueError("identical-conflict target identity is malformed")
+        local = _local_path_identity(formal_repository, path)
+        stage = _git(
+            formal_repository,
+            "ls-files",
+            "--stage",
+            "--error-unmatch",
+            "--",
+            path,
+            check=False,
+        )
+        stage_fields = str(stage.stdout).strip().split(maxsplit=3)
+        tracked = stage.returncode == 0 and len(stage_fields) == 4
+        index_object_id = stage_fields[1].lower() if tracked else None
+        if (
+            not tracked
+            or local.get("kind") != "file"
+            or index_object_id != target.get("object_id")
+        ):
+            raise ValueError(
+                f"fast-forward did not restore quarantined target exactly: {path}"
+            )
+        restored.append(
+            {
+                "relative_path": path,
+                "tracked": True,
+                "index_object_id": index_object_id,
+                "working_tree_bytes": local["bytes"],
+                "working_tree_sha256": local["sha256"],
+            }
+        )
+    completion = {
+        "schema_version": SCHEMA_VERSION,
+        "role": "generation_postbridge_identical_conflict_reconciliation",
+        "status": "pass",
+        "created_at": _utc_now(),
+        "formal_repository": formal_repository.as_posix(),
+        "target_revision": target_revision,
+        "quarantine_receipt": quarantine.get("receipt"),
+        "restored_count": len(restored),
+        "restored": restored,
+        "archive_retained": True,
+        "source_files_deleted": False,
+    }
+    completion_path = archive_root / "reconciliation_completion.json"
+    write_json_atomic(completion_path, completion)
+    return {
+        **completion,
+        "completion": file_identity(completion_path),
+    }
+
+
 def _fetch_bundle(
     repository: Path,
     *,
@@ -1235,6 +1426,7 @@ def apply_deployment(
     bootstrap_bundle: Path,
     integration_bundle: Path,
     confirm_target_revision: str,
+    identical_conflict_archive: Path | None = None,
     proc_root: Path = Path("/proc"),
     temporary_parent: Path | None = None,
 ) -> dict[str, Any]:
@@ -1248,11 +1440,23 @@ def apply_deployment(
         integration_bundle=integration_bundle,
         temporary_parent=temporary_parent,
     )
-    if preflight.get("status") != "pass" or preflight.get("apply_ready") is not True:
+    has_conflicts = preflight.get("apply_ready") is not True
+    conflict_summary = preflight.get(
+        "untracked_conflict_content_analysis", {}
+    ).get("summary", {})
+    if has_conflicts and identical_conflict_archive is None:
         raise ValueError(
             "post-bridge preflight is not apply-ready: "
             f"{preflight.get('untracked_target_conflicts', {}).get('conflicts', [])}"
         )
+    if has_conflicts and conflict_summary.get(
+        "all_conflicts_are_byte_identical_files"
+    ) is not True:
+        raise ValueError(
+            "post-bridge conflicts are not eligible for identical-file quarantine"
+        )
+    if not has_conflicts and identical_conflict_archive is not None:
+        raise ValueError("identical-conflict archive was supplied without conflicts")
     inactivity_before_fetch = require_inactive_bound_training(
         manifest,
         proc_root=proc_root,
@@ -1260,15 +1464,13 @@ def apply_deployment(
     formal_repository = formal_repository.resolve()
     before = git_state(formal_repository)
     _require_formal_state(before, manifest=manifest)
-    conflicts = find_untracked_conflicts(
+    initial_conflicts = find_untracked_conflicts(
         formal_repository,
         current_revision=manifest["formal_repository"]["revision"],
         target_added_paths=preflight["target_added_paths"],
     )
-    if conflicts["status"] != "pass":
-        raise ValueError(
-            f"formal repository has target-added untracked conflicts: {conflicts['conflicts']}"
-        )
+    if initial_conflicts != preflight["untracked_target_conflicts"]:
+        raise ValueError("formal repository conflicts changed after preflight")
 
     verify_bundle(bootstrap_bundle, repository=formal_repository)
     bootstrap_head = manifest["bootstrap_bundle"]["advertised_heads"][0]
@@ -1297,6 +1499,14 @@ def apply_deployment(
         manifest,
         proc_root=proc_root,
     )
+    reconciliation = None
+    if has_conflicts:
+        reconciliation = quarantine_byte_identical_conflicts(
+            formal_repository=formal_repository,
+            archive_root=identical_conflict_archive,
+            manifest_identity=manifest_identity,
+            conflict_analysis=preflight["untracked_conflict_content_analysis"],
+        )
     conflicts_before_merge = find_untracked_conflicts(
         formal_repository,
         current_revision=manifest["formal_repository"]["revision"],
@@ -1325,6 +1535,14 @@ def apply_deployment(
     }
     if {key: after[key] for key in expected_after} != expected_after:
         raise ValueError("formal repository post-apply identity differs")
+    reconciliation_completion = None
+    if reconciliation is not None:
+        reconciliation_completion = complete_conflict_reconciliation(
+            formal_repository=formal_repository,
+            archive_root=identical_conflict_archive,
+            quarantine=reconciliation,
+            target_revision=manifest["target"]["revision"],
+        )
     return {
         "schema_version": SCHEMA_VERSION,
         "role": REPORT_ROLE,
@@ -1345,6 +1563,11 @@ def apply_deployment(
             "fast_forward_performed": True,
         },
         "untracked_target_conflicts": conflicts_before_merge,
+        "untracked_target_conflicts_before_reconciliation": initial_conflicts,
+        "untracked_conflict_reconciliation": {
+            "quarantine": reconciliation,
+            "completion": reconciliation_completion,
+        },
         "authorization_boundary": dict(AUTHORIZATION_BOUNDARY),
         "effects": {
             "formal_repository_fast_forwarded": True,
@@ -1397,6 +1620,7 @@ def _parse_args() -> argparse.Namespace:
         default="preflight",
     )
     parser.add_argument("--confirm-target-revision")
+    parser.add_argument("--identical-conflict-archive", type=Path)
     parser.add_argument("--proc-root", type=Path, default=Path("/proc"))
     parser.add_argument("--temporary-parent", type=Path)
     return parser.parse_args()
@@ -1424,12 +1648,15 @@ def main() -> None:
             bootstrap_bundle=args.bootstrap_bundle,
             integration_bundle=args.integration_bundle,
             confirm_target_revision=args.confirm_target_revision,
+            identical_conflict_archive=args.identical_conflict_archive,
             proc_root=args.proc_root,
             temporary_parent=args.temporary_parent,
         )
     else:
         if args.confirm_target_revision is not None:
             raise ValueError("preflight does not accept apply target confirmation")
+        if args.identical_conflict_archive is not None:
+            raise ValueError("preflight does not accept an identical-conflict archive")
         report = preflight_deployment(
             manifest=manifest,
             manifest_identity=manifest_identity,
