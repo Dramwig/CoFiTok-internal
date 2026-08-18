@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -31,6 +32,16 @@ def load_waiter() -> ModuleType:
     sys.modules[name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def tracked_blob(revision: str, source_path: str) -> bytes:
+    result = subprocess.run(
+        ["git", "show", f"{revision}:{source_path}"],
+        cwd=Path(__file__).resolve().parents[1],
+        check=True,
+        stdout=subprocess.PIPE,
+    )
+    return result.stdout
 
 
 def write_checkpoint_fixture(root: Path, *, step: int = 25) -> tuple[Path, str, str]:
@@ -182,8 +193,12 @@ def test_deployment_receipt_binds_source_and_non_authorizing_scope() -> None:
     assert receipt["role"] == (
         "cofitok_quality_bridge_checkpoint_25k_waiter_deployment_receipt"
     )
-    assert source["bytes"] == SCRIPT.stat().st_size
-    assert source["sha256"] == hashlib.sha256(SCRIPT.read_bytes()).hexdigest()
+    deployed_source = tracked_blob(
+        receipt["git"]["implementation_commit"],
+        source["path"],
+    )
+    assert source["bytes"] == len(deployed_source)
+    assert source["sha256"] == hashlib.sha256(deployed_source).hexdigest()
     assert receipt["bundle"]["advertised_head"] == receipt["git"][
         "implementation_commit"
     ]

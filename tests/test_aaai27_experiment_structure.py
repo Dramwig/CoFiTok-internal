@@ -1,10 +1,39 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[2]
+INTERNAL_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _project_root() -> Path:
+    direct_parent = INTERNAL_ROOT.parent
+    if (direct_parent / "paper").is_dir():
+        return direct_parent
+    result = subprocess.run(
+        [
+            "git",
+            "rev-parse",
+            "--path-format=absolute",
+            "--git-common-dir",
+        ],
+        cwd=INTERNAL_ROOT,
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+    common_dir = Path(result.stdout.strip()).resolve()
+    project_root = common_dir.parent.parent
+    if not (project_root / "paper").is_dir():
+        raise FileNotFoundError(
+            f"CoFiTok paper root is unavailable from {INTERNAL_ROOT}"
+        )
+    return project_root
+
+
+ROOT = _project_root()
 MAIN = ROOT / "paper" / "venues" / "aaai27" / "main.tex"
 VENUE_NEUTRAL_MAIN = ROOT / "paper" / "latex" / "main.tex"
 
