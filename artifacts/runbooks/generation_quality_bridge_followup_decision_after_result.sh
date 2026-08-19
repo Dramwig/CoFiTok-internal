@@ -9,8 +9,9 @@ EXPECTED_DECISION_BRANCH=${EXPECTED_DECISION_BRANCH:?set EXPECTED_DECISION_BRANC
 EXPECTED_DECISION_SHA256=${EXPECTED_DECISION_SHA256:-}
 
 RESULT="$QUALITY_BRIDGE_ROOT/reports/quality_bridge_result.json"
-DECISION="$QUALITY_BRIDGE_ROOT/reports/followup_experiment_decision.json"
-LOCK="$QUALITY_BRIDGE_ROOT/followup_experiment_decision.lock"
+EXPOSURE="$QUALITY_BRIDGE_ROOT/reports/training_exposure_terminal_100k/training_exposure_report.json"
+DECISION="$QUALITY_BRIDGE_ROOT/reports/followup_experiment_decision_exposure_aware_v2.json"
+LOCK="$QUALITY_BRIDGE_ROOT/followup_experiment_decision_exposure_aware_v2.lock"
 
 cd "$PROJECT"
 exec 9>"$LOCK"
@@ -23,11 +24,18 @@ flock -n 9 || {
   printf 'quality bridge terminal result is not available: %s\n' "$RESULT" >&2
   exit 76
 }
+[[ -f "$EXPOSURE" ]] || {
+  printf 'terminal training exposure report is not available: %s\n' "$EXPOSURE" >&2
+  exit 78
+}
 
 result_sha=$(sha256sum "$RESULT" | awk '{print $1}')
+exposure_sha=$(sha256sum "$EXPOSURE" | awk '{print $1}')
 common=(
   --quality-bridge-result "$RESULT"
   --expected-quality-bridge-result-sha256 "$result_sha"
+  --training-exposure-report "$EXPOSURE"
+  --expected-training-exposure-report-sha256 "$exposure_sha"
   --expected-decision-revision "$EXPECTED_DECISION_REVISION"
   --expected-decision-branch "$EXPECTED_DECISION_BRANCH"
 )
