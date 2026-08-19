@@ -40,3 +40,36 @@ def test_wait_for_child_rejects_invalid_poll_interval(poll_seconds: float) -> No
             poll_seconds=poll_seconds,
             heartbeat=lambda: None,
         )
+
+
+def test_wait_for_child_does_not_detach_when_heartbeat_fails(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    heartbeat_calls = 0
+
+    class Child:
+        def __init__(self) -> None:
+            self.wait_calls = 0
+
+        def wait(self, *, timeout: float) -> int:
+            self.wait_calls += 1
+            if self.wait_calls < 3:
+                raise subprocess.TimeoutExpired(["child"], timeout)
+            return 7
+
+    def failed_heartbeat() -> None:
+        nonlocal heartbeat_calls
+        heartbeat_calls += 1
+        raise OSError("status disk is full")
+
+    child = Child()
+    result = wait_for_child_with_heartbeat(
+        child,  # type: ignore[arg-type]
+        poll_seconds=1.0,
+        heartbeat=failed_heartbeat,
+    )
+
+    assert result == 7
+    assert child.wait_calls == 3
+    assert heartbeat_calls == 2
+    assert capsys.readouterr().err.count("status disk is full") == 1

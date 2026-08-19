@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,7 @@ from scripts.run_generation_capacity_probe_execution_supervisor import (
     _git_identity,
     _execution_stage,
     _status,
+    _wait_for_capacity_probe_child,
     classify_execution_exit,
     validate_completed_execution,
     validate_preparation_waiter_status,
@@ -192,6 +194,58 @@ def test_supervisor_status_preserves_safety_boundaries() -> None:
     assert boundary["unrelated_gpu_process_modification_allowed"] is False
     assert boundary["configured_100k_completion_allowed"] is False
     assert boundary["full_300k_launch_allowed"] is False
+
+
+def test_capacity_probe_child_wait_refreshes_running_status(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    execution_status = tmp_path / "execution_status.json"
+    execution_status.write_text(
+        json.dumps({"stage": "cofitok_training"}) + "\n",
+        encoding="utf-8",
+    )
+    reports: list[dict] = []
+
+    class Child:
+        pid = 456
+
+        def __init__(self) -> None:
+            self.wait_calls = 0
+
+        def wait(self, *, timeout: float) -> int:
+            self.wait_calls += 1
+            if self.wait_calls < 3:
+                raise subprocess.TimeoutExpired(["child"], timeout)
+            return 0
+
+    monkeypatch.setattr(
+        "scripts.run_generation_capacity_probe_execution_supervisor._capacity_processes",
+        lambda output_root: [{"pid": 456, "command": "capacity probe"}],
+    )
+    monkeypatch.setattr(
+        "scripts.run_generation_capacity_probe_execution_supervisor._gpu_compute_rows",
+        lambda: [{"pid": 456, "used_memory_mib": 1024}],
+    )
+    child = Child()
+    result = _wait_for_capacity_probe_child(
+        child,  # type: ignore[arg-type]
+        poll_seconds=120.0,
+        execution_status_path=execution_status,
+        output_root=tmp_path,
+        publish=lambda **values: reports.append(values),
+    )
+
+    assert result == 0
+    assert child.wait_calls == 3
+    assert len(reports) == 2
+    assert all(report["status"] == "running" for report in reports)
+    assert all(report["child_pid"] == 456 for report in reports)
+    assert all(report["execution_stage"] == "cofitok_training" for report in reports)
+    assert reports[0]["capacity_processes"] == [
+        {"pid": 456, "command": "capacity probe"}
+    ]
+    assert reports[0]["gpu_rows"] == [{"pid": 456, "used_memory_mib": 1024}]
 
 
 def test_capacity_probe_supervisor_runbook_is_locked_and_non_preemptive() -> None:

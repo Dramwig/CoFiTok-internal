@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
 import json
 import os
 from pathlib import Path
@@ -24,6 +25,7 @@ from cofitok.generation.capacity_probe_result import (
     CAPACITY_PROBE_RESULT_ROLE,
 )
 from cofitok.inference_replay import file_identity, read_json_object
+from cofitok.process_monitoring import wait_for_child_with_heartbeat
 from cofitok.reporting import file_sha256, write_json_report
 
 
@@ -247,6 +249,39 @@ def _execution_stage(report: Mapping[str, Any] | None) -> str:
         return "initialization"
     stage = report.get("stage")
     return str(stage) if isinstance(stage, str) and stage else "initialization"
+
+
+def _wait_for_capacity_probe_child(
+    child: subprocess.Popen[Any],
+    *,
+    poll_seconds: float,
+    execution_status_path: Path,
+    output_root: Path,
+    publish: Callable[..., None],
+) -> int:
+    def heartbeat() -> None:
+        execution_status = (
+            read_json_object(
+                execution_status_path,
+                name="capacity probe execution status",
+            )
+            if execution_status_path.is_file()
+            else None
+        )
+        publish(
+            status="running",
+            detail="capacity_probe_controller_running",
+            child_pid=child.pid,
+            execution_stage=_execution_stage(execution_status),
+            capacity_processes=_capacity_processes(output_root),
+            gpu_rows=_gpu_compute_rows(),
+        )
+
+    return wait_for_child_with_heartbeat(
+        child,
+        poll_seconds=min(poll_seconds, 60.0),
+        heartbeat=heartbeat,
+    )
 
 
 def classify_execution_exit(
@@ -616,12 +651,13 @@ def main() -> int:
                                 cwd=project,
                                 env=environment,
                             )
-                            publish(
-                                status="running",
-                                detail="capacity_probe_controller_running",
-                                child_pid=child.pid,
+                            exit_code = _wait_for_capacity_probe_child(
+                                child,
+                                poll_seconds=args.poll_seconds,
+                                execution_status_path=execution_status_path,
+                                output_root=output_root,
+                                publish=publish,
                             )
-                            exit_code = child.wait()
                             status_after = (
                                 file_identity(execution_status_path)
                                 if execution_status_path.is_file()
