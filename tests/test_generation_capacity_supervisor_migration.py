@@ -12,6 +12,9 @@ from typing import Any
 
 import pytest
 
+if os.name == "posix":
+    import fcntl
+
 from cofitok.generation.capacity_probe_execution import (
     STANDING_AUTHORIZATION_EXACT_TEXT,
     STANDING_AUTHORIZATION_INTERPRETATION,
@@ -96,6 +99,7 @@ def _fixture(tmp_path: Path) -> dict[str, Any]:
     old_git: dict[str, dict[str, Any]] = {}
     status_paths: dict[str, Path] = {}
     barrier_paths: dict[str, list[Path]] = {}
+    lifetime_locks: dict[tuple[int, str], dict[str, Any]] = {}
     pids: dict[str, int] = {}
     for index, spec in enumerate(SUPERVISOR_SPECS):
         name = str(spec["name"])
@@ -113,6 +117,20 @@ def _fixture(tmp_path: Path) -> dict[str, Any]:
         )
         status_path = tmp_path / "statuses" / f"{name}.json"
         status_paths[name] = status_path
+        lock_filename = spec.get("lock_filename")
+        if lock_filename is not None:
+            lock_path = (status_path.parent.parent / str(lock_filename)).resolve()
+            lock_path.touch()
+            stat = lock_path.stat()
+            lifetime_locks[(pid, lock_path.as_posix())] = {
+                "path": lock_path.as_posix(),
+                "identity": file_identity(lock_path),
+                "device": stat.st_dev,
+                "inode": stat.st_ino,
+                "owner_pid": pid,
+                "owner_descriptors": [9],
+                "exclusive_nonblocking_probe": "contended",
+            }
         argv = [
             sys.executable,
             str(spec["entrypoint"]),
@@ -176,6 +194,9 @@ def _fixture(tmp_path: Path) -> dict[str, Any]:
     def inspect_git(path: Path) -> dict[str, Any]:
         return dict(states[path.resolve().as_posix()])
 
+    def inspect_lock(pid: int, path: Path) -> dict[str, Any]:
+        return dict(lifetime_locks[(pid, path.resolve().as_posix())])
+
     return {
         "target": target,
         "formal": formal,
@@ -186,6 +207,7 @@ def _fixture(tmp_path: Path) -> dict[str, Any]:
         "runtimes": runtimes,
         "inspect": inspect,
         "inspect_git": inspect_git,
+        "inspect_lock": inspect_lock,
         "status_paths": status_paths,
         "barrier_paths": barrier_paths,
     }
@@ -205,6 +227,7 @@ def _plan(fixture: dict[str, Any], **overrides: Any) -> dict[str, Any]:
         "inspect_process": fixture["inspect"],
         "session_scanner": lambda _pids: [],
         "git_inspector": fixture["inspect_git"],
+        "lock_inspector": fixture["inspect_lock"],
     }
     arguments.update(overrides)
     return build_supervisor_migration_plan(**arguments)
@@ -333,6 +356,7 @@ def test_stop_rechecks_waiting_barrier_before_signal(
             grace_seconds=0.1,
             inspect_process=fixture["inspect"],
             session_scanner=lambda _pids: [],
+            lock_inspector=fixture["inspect_lock"],
         )
 
     assert signals == []
@@ -434,6 +458,7 @@ def _execute(
         launcher=launcher,
         status_waiter=waiter,
         terminator=terminate,
+        lock_inspector=fixture["inspect_lock"],
     )
     return report, {
         "stopped": stopped,
@@ -576,6 +601,7 @@ def _launch_detached(
     cwd: Path,
     environment: dict[str, str],
     log: Path,
+    lock: Path | None = None,
 ) -> None:
     first = os.fork()
     if first == 0:
@@ -591,6 +617,15 @@ def _launch_detached(
         os.dup2(output, 2)
         os.close(stdin)
         os.close(output)
+        if lock is not None:
+            lock.parent.mkdir(parents=True, exist_ok=True)
+            lock_descriptor = os.open(
+                lock,
+                os.O_WRONLY | os.O_CREAT,
+                0o600,
+            )
+            fcntl.flock(lock_descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            os.set_inheritable(lock_descriptor, True)
         os.execve(argv[0], argv, environment)
     os.waitpid(first, 0)
 
@@ -714,6 +749,11 @@ def test_posix_migrates_six_real_detached_waiting_supervisors(
                 cwd=checkout,
                 environment=process_environment,
                 log=log,
+                lock=(
+                    status.parent.parent / str(spec["lock_filename"])
+                    if spec.get("lock_filename") is not None
+                    else None
+                ),
             )
             pid = _wait_for_pid(status)
             pids[str(spec["name"])] = pid
@@ -746,5 +786,15 @@ def test_posix_migrates_six_real_detached_waiting_supervisors(
             os.readlink(f"/proc/{pid}/cwd") == target.resolve().as_posix()
             for pid in migrated_pids
         )
+        for spec in SUPERVISOR_SPECS:
+            if spec.get("lock_filename") is None:
+                continue
+            lock_path = tmp_path / str(spec["lock_filename"])
+            descriptor = os.open(lock_path, os.O_WRONLY)
+            try:
+                with pytest.raises(BlockingIOError):
+                    fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            finally:
+                os.close(descriptor)
     finally:
         _terminate_groups(cleanup)

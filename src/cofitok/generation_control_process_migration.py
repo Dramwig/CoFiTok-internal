@@ -11,6 +11,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - exercised only on non-POSIX hosts
+    fcntl = None  # type: ignore[assignment]
+
 from cofitok.generation.capacity_probe_execution import (
     validate_standing_experiment_authorization,
 )
@@ -33,6 +38,7 @@ SUPERVISOR_SPECS = (
         "entrypoint": "scripts/run_generation_capacity_scaling_50k_supervisor.py",
         "waiting_detail": "waiting_for_source_replayed_capacity_scaling_decision",
         "barrier_options": ("--decision",),
+        "lock_filename": None,
     },
     {
         "name": "capacity_completion_100k_execution",
@@ -40,6 +46,7 @@ SUPERVISOR_SPECS = (
         "entrypoint": "scripts/run_generation_capacity_completion_100k_supervisor.py",
         "waiting_detail": "waiting_for_source_replayed_capacity_completion_decision",
         "barrier_options": ("--decision",),
+        "lock_filename": None,
     },
     {
         "name": "capacity_full_300k_readiness",
@@ -47,6 +54,7 @@ SUPERVISOR_SPECS = (
         "entrypoint": "scripts/run_generation_capacity_full_300k_readiness_supervisor.py",
         "waiting_detail": "waiting_for_source_bound_capacity_full_readiness_decision",
         "barrier_options": ("--decision",),
+        "lock_filename": "capacity_full_300k_readiness_supervisor.lock",
     },
     {
         "name": "capacity_full_300k_training",
@@ -54,6 +62,7 @@ SUPERVISOR_SPECS = (
         "entrypoint": "scripts/run_generation_capacity_full_300k_training_supervisor.py",
         "waiting_detail": "waiting_for_passed_capacity_full_readiness",
         "barrier_options": ("--readiness",),
+        "lock_filename": "capacity_full_300k_training_supervisor.lock",
     },
     {
         "name": "capacity_full_300k_posteval",
@@ -61,6 +70,7 @@ SUPERVISOR_SPECS = (
         "entrypoint": "scripts/run_generation_capacity_full_300k_posteval_supervisor.py",
         "waiting_detail": "waiting_for_passed_capacity_full_training",
         "barrier_options": ("--cofitok-training", "--dense-training"),
+        "lock_filename": "capacity_full_300k_posteval_supervisor.lock",
     },
     {
         "name": "capacity_full_300k_finalization",
@@ -72,6 +82,7 @@ SUPERVISOR_SPECS = (
             "--completion-audit",
             "--release-receipt",
         ),
+        "lock_filename": "capacity_full_300k_finalization_supervisor.lock",
     },
 )
 SUPERVISOR_NAMES = tuple(str(value["name"]) for value in SUPERVISOR_SPECS)
@@ -225,6 +236,75 @@ def _barriers(
     return values
 
 
+def _lock_path(row: Mapping[str, Any], *, status_path: Path) -> Path | None:
+    filename = row.get("lock_filename")
+    if filename is None:
+        return None
+    if not isinstance(filename, str) or not filename.endswith(".lock"):
+        raise ValueError(f"invalid lifetime lock filename: {row['name']}")
+    return (status_path.parent.parent / filename).resolve()
+
+
+def inspect_linux_lifetime_lock(
+    pid: int,
+    path: Path,
+    *,
+    proc_root: Path = Path("/proc"),
+) -> dict[str, Any]:
+    if fcntl is None:
+        raise RuntimeError("lifetime-lock inspection requires POSIX fcntl")
+    target = path.resolve()
+    if not target.is_file():
+        raise ValueError(f"supervisor lifetime lock is missing: {target}")
+    descriptors = []
+    fd_root = proc_root / str(pid) / "fd"
+    try:
+        entries = list(fd_root.iterdir())
+    except OSError as error:
+        raise ProcessLookupError(pid) from error
+    for entry in entries:
+        try:
+            if os.path.samefile(entry, target):
+                descriptors.append(int(entry.name))
+        except (FileNotFoundError, OSError, ValueError):
+            continue
+    if not descriptors:
+        raise ValueError(f"supervisor does not hold lifetime-lock descriptor: {pid}")
+
+    descriptor = os.open(target, os.O_WRONLY)
+    try:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            pass
+        else:
+            fcntl.flock(descriptor, fcntl.LOCK_UN)
+            raise ValueError(f"supervisor lifetime lock is not contended: {pid}")
+    finally:
+        os.close(descriptor)
+    stat = target.stat()
+    return {
+        "path": target.as_posix(),
+        "identity": file_identity(target),
+        "device": stat.st_dev,
+        "inode": stat.st_ino,
+        "owner_pid": pid,
+        "owner_descriptors": sorted(descriptors),
+        "exclusive_nonblocking_probe": "contended",
+    }
+
+
+def _validate_lock_identity(lock: Mapping[str, Any] | None) -> None:
+    if lock is None:
+        return
+    path = Path(str(lock.get("path", ""))).resolve()
+    if file_identity(path) != lock.get("identity"):
+        raise ValueError(f"supervisor lifetime lock changed: {path}")
+    stat = path.stat()
+    if stat.st_dev != lock.get("device") or stat.st_ino != lock.get("inode"):
+        raise ValueError(f"supervisor lifetime lock inode changed: {path}")
+
+
 def scan_selected_session_members(
     selected_pids: Sequence[int],
     *,
@@ -306,6 +386,9 @@ def build_supervisor_migration_plan(
     session_scanner: Callable[[Sequence[int]], Sequence[Mapping[str, Any]]]
     | None = None,
     git_inspector: Callable[[Path], Mapping[str, Any]] = _git_state_with_porcelain,
+    lock_inspector: Callable[[int, Path], Mapping[str, Any]] = (
+        inspect_linux_lifetime_lock
+    ),
 ) -> dict[str, Any]:
     if set(selected_pids) != set(SUPERVISOR_NAMES):
         raise ValueError("migration must select exactly the six capacity supervisors")
@@ -338,6 +421,15 @@ def build_supervisor_migration_plan(
         entrypoint = _entrypoint(runtime, str(spec["entrypoint"]))
         status = _status_snapshot(spec, runtime=runtime)
         barriers = _barriers(spec, runtime=runtime)
+        lifetime_lock_path = _lock_path(
+            spec,
+            status_path=Path(status["path"]),
+        )
+        lifetime_lock = (
+            dict(lock_inspector(int(runtime["pid"]), lifetime_lock_path))
+            if lifetime_lock_path is not None
+            else None
+        )
         old_project = Path(runtime["cwd"]).resolve()
         old_git = dict(git_inspector(old_project))
         if old_git["tracked_dirty"] is not False:
@@ -359,6 +451,7 @@ def build_supervisor_migration_plan(
                     "stderr_open_mode": "append",
                 },
                 "entrypoint": entrypoint,
+                "lifetime_lock": lifetime_lock,
                 "checkout_git": old_git,
             }
         )
@@ -397,6 +490,7 @@ def build_supervisor_migration_plan(
                     "argument": spec["entrypoint"],
                     "identity": file_identity(target_source),
                 },
+                "lifetime_lock": lifetime_lock,
             }
         )
 
@@ -488,6 +582,7 @@ def _validate_plan_sources(plan: Mapping[str, Any]) -> None:
             "identity"
         ]:
             raise ValueError(f"supervisor entrypoint changed after planning: {row['name']}")
+        _validate_lock_identity(row.get("lifetime_lock"))
     for row in plan["old_processes"]:
         if _git_state_with_porcelain(Path(row["checkout_git"]["path"])) != row[
             "checkout_git"
@@ -509,16 +604,22 @@ def _validate_old_processes(
     *,
     inspect_process: Callable[[int], Mapping[str, Any]],
     session_scanner: Callable[[Sequence[int]], Sequence[Mapping[str, Any]]],
+    lock_inspector: Callable[[int, Path], Mapping[str, Any]],
 ) -> None:
     pids = []
     for row in plan["old_processes"]:
         expected = row["runtime"]
-        observed = dict(inspect_process(int(expected["pid"])))
+        pid = int(expected["pid"])
+        observed = dict(inspect_process(pid))
         if observed != expected:
             raise ValueError(f"old supervisor process identity changed: {row['name']}")
         spec = _SPEC_BY_NAME[row["name"]]
         _status_snapshot(spec, runtime=observed)
-        pids.append(int(expected["pid"]))
+        lock = row.get("lifetime_lock")
+        if lock is not None:
+            if dict(lock_inspector(pid, Path(lock["path"]))) != lock:
+                raise ValueError(f"old supervisor lifetime lock changed: {row['name']}")
+        pids.append(pid)
     _validate_barriers(plan["old_processes"])
     if list(session_scanner(pids)):
         raise ValueError("selected supervisors gained child or session-member processes")
@@ -545,6 +646,21 @@ def _launch_process(row: Mapping[str, Any]) -> subprocess.Popen[bytes]:
     environment.update(runtime["environment"])
     nice_delta = target_nice - current_nice
     target_umask = runtime.get("umask")
+    lifetime_lock = row.get("lifetime_lock")
+    lock_descriptor: int | None = None
+    if lifetime_lock is not None:
+        if fcntl is None:
+            raise RuntimeError("lifetime-lock launch requires POSIX fcntl")
+        _validate_lock_identity(lifetime_lock)
+        lock_descriptor = os.open(Path(lifetime_lock["path"]), os.O_WRONLY)
+        try:
+            fcntl.flock(
+                lock_descriptor,
+                fcntl.LOCK_EX | fcntl.LOCK_NB,
+            )
+        except BaseException:
+            os.close(lock_descriptor)
+            raise
 
     def prepare() -> None:
         if target_umask is not None:
@@ -562,8 +678,11 @@ def _launch_process(row: Mapping[str, Any]) -> subprocess.Popen[bytes]:
             stderr=stderr_value,
             start_new_session=True,
             preexec_fn=prepare,
+            pass_fds=(() if lock_descriptor is None else (lock_descriptor,)),
         )
     finally:
+        if lock_descriptor is not None:
+            os.close(lock_descriptor)
         stdout_handle.close()
         if stderr_handle is not None:
             stderr_handle.close()
@@ -591,6 +710,13 @@ def _wait_for_waiting_status(
                 and payload.get("child_pid") is None
                 and code is None
             ):
+                lifetime_lock = row.get("lifetime_lock")
+                lock_evidence = None
+                if lifetime_lock is not None:
+                    lock_evidence = inspect_linux_lifetime_lock(
+                        process.pid,
+                        Path(lifetime_lock["path"]),
+                    )
                 return {
                     "name": row["name"],
                     "role": row["role"],
@@ -598,6 +724,7 @@ def _wait_for_waiting_status(
                     "status": "waiting",
                     "detail": row["waiting_detail"],
                     "status_identity": file_identity(path),
+                    "lifetime_lock": lock_evidence,
                 }
         if code is not None:
             raise RuntimeError(
@@ -615,6 +742,9 @@ def _stop_old_process(
     session_scanner: Callable[
         [Sequence[int]], Sequence[Mapping[str, Any]]
     ] = scan_selected_session_members,
+    lock_inspector: Callable[[int, Path], Mapping[str, Any]] = (
+        inspect_linux_lifetime_lock
+    ),
 ) -> dict[str, Any]:
     runtime = row["runtime"]
     pid = int(runtime["pid"])
@@ -624,6 +754,9 @@ def _stop_old_process(
     spec = _SPEC_BY_NAME[row["name"]]
     _validate_runtime_barrier(spec, observed)
     _status_snapshot(spec, runtime=observed)
+    lock = row.get("lifetime_lock")
+    if lock is not None and dict(lock_inspector(pid, Path(lock["path"]))) != lock:
+        raise ValueError(f"old supervisor lifetime lock changed: {row['name']}")
     _validate_barriers((row,))
     if list(session_scanner((pid,))):
         raise ValueError(
@@ -724,6 +857,9 @@ def execute_supervisor_migration(
     launcher: Callable[[Mapping[str, Any]], ProcessHandle] = _launch_process,
     status_waiter: Callable[..., Mapping[str, Any]] = _wait_for_waiting_status,
     terminator: Callable[..., Mapping[str, Any]] = _terminate_handle,
+    lock_inspector: Callable[[int, Path], Mapping[str, Any]] = (
+        inspect_linux_lifetime_lock
+    ),
 ) -> dict[str, Any]:
     if stop_grace_seconds <= 0 or status_timeout_seconds <= 0:
         raise ValueError("migration timeouts must be positive")
@@ -766,6 +902,7 @@ def execute_supervisor_migration(
         plan,
         inspect_process=inspect_process,
         session_scanner=scanner,
+        lock_inspector=lock_inspector,
     )
     warnings: list[str] = []
     base = {
@@ -808,6 +945,7 @@ def execute_supervisor_migration(
                     grace_seconds=stop_grace_seconds,
                     inspect_process=inspect_process,
                     session_scanner=scanner,
+                    lock_inspector=lock_inspector,
                 )
             )
             stopped.append(result)
