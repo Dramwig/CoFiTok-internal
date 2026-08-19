@@ -1,0 +1,170 @@
+{
+  "active_pair_snapshot": {
+    "cofitok_health_issues": [],
+    "cofitok_step": 51650,
+    "dense_identity_health_issues": [],
+    "dense_identity_step": 50000,
+    "free_bytes": 312150384640,
+    "gpu_processes": [
+      {
+        "pid": 543758,
+        "role": "active_cofitok_trainer",
+        "used_memory_mib": 89398
+      }
+    ],
+    "monitor_status": "running",
+    "monitor_updated_at": "2026-08-19T23:00:22.282102+00:00",
+    "stage": "cofitok_training",
+    "unrelated_gpu_processes": []
+  },
+  "authorization_boundary": {
+    "automatic_supersession_of_v1_allowed": false,
+    "decision_build_allowed": true,
+    "evaluation_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "gpu_use_allowed": false,
+    "process_signals_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "sampling_launch_allowed": false,
+    "source_observation_allowed": true,
+    "training_launch_allowed": false,
+    "upstream_decisions_modified": false
+  },
+  "bundle": {
+    "advertised_head": "85e3ece1196fd318cd6823439824e19fca4275a3",
+    "bytes": 43656415,
+    "local_path": "C:/Users/17194/AppData/Local/Temp/cofitok-exposure-route-85e3ece.bundle",
+    "prerequisites": [
+      "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+      "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+    ],
+    "remote_path": "/tmp/cofitok-exposure-route-85e3ece.bundle",
+    "sha256": "0f3520380ec8a8b2d93cdfdc7b5d95575377a42d1e91df491a1f3fa9a602c82a",
+    "verified_locally": true,
+    "verified_remotely": true
+  },
+  "code": {
+    "branch": "analysis/generation-quality-bridge-exposure-routing-v1",
+    "revision": "85e3ece1196fd318cd6823439824e19fca4275a3",
+    "tracked_dirty": false,
+    "tree": "1bf21fa0c44cec90011287b78f6f2ec14ed5eb17"
+  },
+  "deployment": {
+    "checkout": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-exposure-routing-85e3ece/CoFiTok-internal",
+    "cmdline_sha256": "a1d67f8eefae4dbba73f35a259362fd859b32e90aa85cb6b12559c52acf356cd",
+    "cwd": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-exposure-routing-85e3ece/CoFiTok-internal",
+    "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+    "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+    "lock": {
+      "exclusive_probe_exit_code": 1,
+      "fd_9_resolves_to_lock": true,
+      "matching_process_count": 1,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/exposure_aware_followup_waiter.lock"
+    },
+    "log": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/exposure_aware_followup_waiter.log",
+    "parent_pid": 1,
+    "pid": 587876,
+    "pid_file": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/exposure_aware_followup_waiter.pid",
+    "poll_seconds": 60,
+    "start_ticks": 1682981478,
+    "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/exposure_aware_followup_waiter_status.json"
+  },
+  "formal_checkout": {
+    "branch": "scale/generative-system",
+    "full_worktree_clean": false,
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tracked_index_clean": true,
+    "tracked_worktree_clean": true,
+    "tree": "659fa94726c4aec0afef49904f82b828bb62872b",
+    "unchanged_by_deployment": true,
+    "untracked_path_count": 301,
+    "untracked_paths_preserved": true
+  },
+  "observed_at": "2026-08-20T07:03:31+08:00",
+  "process_contract": {
+    "CUDA_VISIBLE_DEVICES": "-1",
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-exposure-routing-85e3ece/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-exposure-routing-85e3ece/CoFiTok-internal/src",
+    "io_priority": "none: prio 0",
+    "nice": 0
+  },
+  "role": "generation_quality_bridge_exposure_aware_followup_waiter_deployment",
+  "schema_version": 1,
+  "scientific_scope": {
+    "generation_advantage_proven_by_deployment": false,
+    "insufficient_exposure_recorded_as_live_hypothesis": true,
+    "output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/followup_experiment_decision_exposure_aware_v2.json",
+    "purpose": "Bind terminal matched training exposure before selecting a follow-up experiment.",
+    "terminal_quality_result_present_at_deployment": false
+  },
+  "source_files": {
+    "decision_builder": {
+      "bytes": 10709,
+      "path": "scripts/build_generation_quality_bridge_followup_decision.py",
+      "sha256": "2b6d79b1fd023e46865e36c338aed9703bb96c75001296d0994fe4d75e0ccb51"
+    },
+    "decision_runbook": {
+      "bytes": 2462,
+      "path": "artifacts/runbooks/generation_quality_bridge_followup_decision_after_result.sh",
+      "sha256": "c00a6abb30d3741f5cd4debd05534ff93790a29cc9db3faa475d536d65bf0b57"
+    },
+    "decision_verifier": {
+      "bytes": 2545,
+      "path": "scripts/verify_generation_quality_bridge_followup_decision.py",
+      "sha256": "024eae98b7cbce1a1c87f87df0e02555ac9b05f72b406054b0e3668b4863e116"
+    },
+    "followup_library": {
+      "bytes": 36694,
+      "path": "src/cofitok/generation/quality_bridge_followup.py",
+      "sha256": "b7cebb2c3d0012e47792351f5b0c38ee7a4e0d18329b5de5b7ab660b41308e03"
+    },
+    "waiter": {
+      "bytes": 12217,
+      "path": "scripts/wait_for_generation_quality_bridge_exposure_followup.py",
+      "sha256": "e99a3bb80bbf8d1ebc11e9253d8519c21cda1896760367b8df968f91100b43fe"
+    },
+    "waiter_runbook": {
+      "bytes": 1691,
+      "path": "artifacts/runbooks/generation_quality_bridge_exposure_followup_waiter.sh",
+      "sha256": "8420582bfd7ab41464dd70051c78601fbf19124cb7e5d41c7323bcfbe45cbb61"
+    }
+  },
+  "status": "pass",
+  "status_snapshot": {
+    "decision_exists": false,
+    "detail": "waiting_for_quality_bridge_result",
+    "exposure_exists": false,
+    "polls": 16,
+    "result_exists": false,
+    "status": "waiting",
+    "updated_at": "2026-08-19T23:02:56.597827+00:00"
+  },
+  "validation": {
+    "linux_focused_suite": {
+      "bytes": 10628,
+      "errors": 0,
+      "failures": 0,
+      "junit_path": "/tmp/cofitok-exposure-route-85e3ece-rehearsal/focused.junit.xml",
+      "sha256": "2aebcdf6f2a2c0c85805fca516a977cf9355aacac542cb9fef00718a5b990478",
+      "skipped": 0,
+      "tests": 66
+    },
+    "local_full_code_suite": {
+      "bytes": 182585,
+      "errors": 0,
+      "excluded_external_paper_path_tests": 4,
+      "failures": 0,
+      "junit_path": "C:/Users/17194/AppData/Local/Temp/cofitok-exposure-route-local-full.junit.xml",
+      "sha256": "7d5a23a9cfc6227726dfb23a62dde9cd742fd82e554d4e0aff4c56070eb88234",
+      "skipped": 6,
+      "tests": 1239
+    },
+    "runbook_bash_syntax": {
+      "decision_runbook": "pass",
+      "waiter_runbook": "pass"
+    }
+  }
+}
