@@ -457,6 +457,45 @@ def test_metrics_prefix_identity_is_stable_after_later_rows(tmp_path) -> None:
     assert before["observed_file"]["sha256"] != after["observed_file"]["sha256"]
 
 
+def test_builder_identity_binds_clean_git_provenance(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    script = tmp_path / "scripts" / "builder.py"
+    script.parent.mkdir()
+    script.write_text("print('builder')\n", encoding="utf-8")
+    expected_git = {
+        "revision": "a" * 40,
+        "branch": "analysis/test-builder",
+        "tracked_dirty": False,
+    }
+    monkeypatch.setattr(trajectory, "git_provenance", lambda _: expected_git)
+
+    identity = trajectory._builder_identity(script)
+
+    assert identity["path"] == "scripts/builder.py"
+    assert identity["bytes"] == script.stat().st_size
+    assert identity["git"] == expected_git
+
+
+def test_builder_identity_rejects_dirty_checkout(tmp_path, monkeypatch) -> None:
+    script = tmp_path / "scripts" / "builder.py"
+    script.parent.mkdir()
+    script.write_text("print('builder')\n", encoding="utf-8")
+    monkeypatch.setattr(
+        trajectory,
+        "git_provenance",
+        lambda _: {
+            "revision": "a" * 40,
+            "branch": "analysis/test-builder",
+            "tracked_dirty": True,
+        },
+    )
+
+    with pytest.raises(ValueError, match="Git provenance is invalid or dirty"):
+        trajectory._builder_identity(script)
+
+
 def test_report_rejects_nonfinite_shared_metrics() -> None:
     dense = _metrics(dense=True)
     dense["rows"][-1]["epsilon"] = float("nan")

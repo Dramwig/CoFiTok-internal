@@ -10,7 +10,7 @@ from statistics import mean, median
 from typing import Any
 
 from cofitok.generation_pair import generation_pair_contract
-from cofitok.reporting import file_sha256, write_json_report
+from cofitok.reporting import file_sha256, git_provenance, write_json_report
 
 
 _SHARED_SCHEDULES = (
@@ -67,6 +67,27 @@ def _source(path: Path) -> dict[str, Any]:
         "path": path.as_posix(),
         "bytes": resolved.stat().st_size,
         "sha256": file_sha256(resolved),
+    }
+
+
+def _builder_identity(path: Path) -> dict[str, Any]:
+    resolved = path.resolve()
+    project = resolved.parents[1]
+    git = git_provenance(project)
+    revision = git.get("revision")
+    branch = git.get("branch")
+    if (
+        git.get("tracked_dirty") is not False
+        or not _is_hex_digest(revision, length=40)
+        or not isinstance(branch, str)
+        or not branch
+    ):
+        raise ValueError("trajectory builder Git provenance is invalid or dirty")
+    return {
+        "path": resolved.relative_to(project).as_posix(),
+        "bytes": resolved.stat().st_size,
+        "sha256": file_sha256(resolved),
+        "git": git,
     }
 
 
@@ -761,11 +782,7 @@ def main() -> None:
         expected_branch=args.expected_branch,
     )
     builder_path = Path(__file__).resolve()
-    report["builder"] = {
-        "path": "scripts/build_generation_matched_training_trajectory.py",
-        "bytes": builder_path.stat().st_size,
-        "sha256": file_sha256(builder_path),
-    }
+    report["builder"] = _builder_identity(builder_path)
     report["sources"] = {
         "cofitok_metrics": {
             "origin": args.cofitok_origin,
