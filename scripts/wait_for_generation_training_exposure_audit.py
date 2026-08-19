@@ -12,6 +12,7 @@ import tempfile
 import time
 from typing import Any
 
+from cofitok.generation.quality_bridge import QUALITY_BRIDGE_STEPS
 from cofitok.reporting import (
     file_sha256,
     git_provenance,
@@ -89,6 +90,8 @@ def parse_args() -> argparse.Namespace:
         choices=("full", "stability_full", "quality_bridge"),
         required=True,
     )
+    parser.add_argument("--quality-bridge-terminal-result", type=Path)
+    parser.add_argument("--quality-bridge-execution-status", type=Path)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--status", type=Path, required=True)
     parser.add_argument("--expected-self-revision", required=True)
@@ -102,7 +105,23 @@ def parse_args() -> argparse.Namespace:
         parser.error("--poll-seconds must be positive")
     if len(args.expected_preparation_sha256) != 64:
         parser.error("--expected-preparation-sha256 must be a SHA256 digest")
+    if (args.quality_bridge_terminal_result is None) != (
+        args.quality_bridge_execution_status is None
+    ):
+        parser.error(
+            "--quality-bridge-terminal-result and "
+            "--quality-bridge-execution-status must be paired"
+        )
+    if (
+        args.quality_bridge_terminal_result is not None
+        and args.expected_milestone_step != QUALITY_BRIDGE_STEPS
+    ):
+        parser.error("quality bridge terminal binding requires the exact 100K step")
     return args
+
+
+def _terminal_binding_requested(args: argparse.Namespace) -> bool:
+    return getattr(args, "quality_bridge_terminal_result", None) is not None
 
 
 def _status(
@@ -115,6 +134,25 @@ def _status(
     audit_identity: dict[str, Any] | None = None,
     manifest_identity: dict[str, Any] | None = None,
 ) -> None:
+    sources = {
+        "cofitok_training": args.cofitok_training.resolve().as_posix(),
+        "dense_training": args.dense_training.resolve().as_posix(),
+        "quality_bridge_preparation": (
+            args.quality_bridge_preparation.resolve().as_posix()
+        ),
+        "milestone_report": args.milestone_report.resolve().as_posix(),
+    }
+    if _terminal_binding_requested(args):
+        sources.update(
+            {
+                "quality_bridge_terminal_result": (
+                    args.quality_bridge_terminal_result.resolve().as_posix()
+                ),
+                "quality_bridge_execution_status": (
+                    args.quality_bridge_execution_status.resolve().as_posix()
+                ),
+            }
+        )
     write_json_report(
         args.status,
         {
@@ -130,17 +168,15 @@ def _status(
             "self_git": self_git,
             "expected_milestone_step": args.expected_milestone_step,
             "milestone_source_profile": args.milestone_source_profile,
-            "sources": {
-                "cofitok_training": args.cofitok_training.resolve().as_posix(),
-                "dense_training": args.dense_training.resolve().as_posix(),
-                "quality_bridge_preparation": (
-                    args.quality_bridge_preparation.resolve().as_posix()
-                ),
-                "milestone_report": args.milestone_report.resolve().as_posix(),
-            },
+            "sources": sources,
             "output_root": args.output_root.resolve().as_posix(),
             "audit_report": audit_identity,
             "snapshot_manifest": manifest_identity,
+            "binding_mode": (
+                "quality_bridge_terminal"
+                if _terminal_binding_requested(args)
+                else "matched_milestone"
+            ),
             "authorization_boundary": {
                 "read_only_source_observation": True,
                 "gpu_use_allowed": False,
@@ -166,14 +202,30 @@ def _training_ready(path: Path, *, expected_step: int, label: str) -> bool:
     return True
 
 
-def _snapshot_paths(output_root: Path) -> dict[str, Path]:
+def _snapshot_paths(
+    output_root: Path,
+    *,
+    include_terminal_binding: bool = False,
+) -> dict[str, Path]:
     source = output_root / "source"
-    return {
+    paths = {
         "cofitok": source / "cofitok_training_report.json",
         "dense_identity": source / "dense_training_report.json",
         "quality_bridge_preparation": source / "quality_bridge_preparation.json",
         "milestone_report": source / "milestone_report.json",
     }
+    if include_terminal_binding:
+        paths.update(
+            {
+                "quality_bridge_terminal_result": (
+                    source / "quality_bridge_terminal_result.json"
+                ),
+                "quality_bridge_execution_status": (
+                    source / "quality_bridge_execution_status.json"
+                ),
+            }
+        )
+    return paths
 
 
 def _build_from_snapshots(
@@ -182,8 +234,15 @@ def _build_from_snapshots(
     snapshot_root: Path,
     reported_root: Path,
 ) -> dict[str, Any]:
-    observed = _snapshot_paths(snapshot_root)
-    reported = _snapshot_paths(reported_root)
+    include_terminal = _terminal_binding_requested(args)
+    observed = _snapshot_paths(
+        snapshot_root,
+        include_terminal_binding=include_terminal,
+    )
+    reported = _snapshot_paths(
+        reported_root,
+        include_terminal_binding=include_terminal,
+    )
     training_reports = {
         "cofitok": (
             _read_json(observed["cofitok"], label="snapshotted CoFiTok training"),
@@ -220,13 +279,43 @@ def _build_from_snapshots(
             reported_path=reported["milestone_report"],
         ),
     )
-    return build_report(
-        training_reports,
-        quality_bridge_preparation=preparation,
-        milestone_report=milestone,
-        expected_milestone_step=args.expected_milestone_step,
-        milestone_source_profile=args.milestone_source_profile,
-    )
+    terminal_result = None
+    execution_status = None
+    if include_terminal:
+        terminal_result = (
+            _read_json(
+                observed["quality_bridge_terminal_result"],
+                label="snapshotted quality bridge terminal result",
+            ),
+            _identity(
+                observed["quality_bridge_terminal_result"],
+                reported_path=reported["quality_bridge_terminal_result"],
+            ),
+        )
+        execution_status = (
+            _read_json(
+                observed["quality_bridge_execution_status"],
+                label="snapshotted quality bridge execution status",
+            ),
+            _identity(
+                observed["quality_bridge_execution_status"],
+                reported_path=reported["quality_bridge_execution_status"],
+            ),
+        )
+    build_kwargs = {
+        "quality_bridge_preparation": preparation,
+        "milestone_report": milestone,
+        "expected_milestone_step": args.expected_milestone_step,
+        "milestone_source_profile": args.milestone_source_profile,
+    }
+    if include_terminal:
+        build_kwargs.update(
+            {
+                "quality_bridge_terminal_result": terminal_result,
+                "quality_bridge_execution_status": execution_status,
+            }
+        )
+    return build_report(training_reports, **build_kwargs)
 
 
 def _verify_existing(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -241,8 +330,13 @@ def _verify_existing(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str
         or manifest.get("status") != "completed"
         or int(manifest.get("expected_milestone_step", -1))
         != args.expected_milestone_step
-        or manifest.get("milestone_source_profile")
-        != args.milestone_source_profile
+        or manifest.get("milestone_source_profile") != args.milestone_source_profile
+        or manifest.get("binding_mode", "matched_milestone")
+        != (
+            "quality_bridge_terminal"
+            if _terminal_binding_requested(args)
+            else "matched_milestone"
+        )
     ):
         raise ValueError("training exposure snapshot manifest contract differs")
     expected_self_git = {
@@ -260,7 +354,10 @@ def _verify_existing(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str
         "gpu_use_allowed": False,
     }:
         raise ValueError("training exposure snapshot claim boundary differs")
-    paths = _snapshot_paths(args.output_root)
+    paths = _snapshot_paths(
+        args.output_root,
+        include_terminal_binding=_terminal_binding_requested(args),
+    )
     actual_sources = {name: _identity(path) for name, path in paths.items()}
     if manifest.get("sources") != actual_sources:
         raise ValueError("training exposure snapshot source identity differs")
@@ -287,13 +384,28 @@ def _create_snapshot(args: argparse.Namespace, self_git: dict[str, Any]) -> None
         )
     )
     try:
-        temporary_paths = _snapshot_paths(temporary)
+        include_terminal = _terminal_binding_requested(args)
+        temporary_paths = _snapshot_paths(
+            temporary,
+            include_terminal_binding=include_terminal,
+        )
         source_paths = {
             "cofitok": args.cofitok_training,
             "dense_identity": args.dense_training,
             "quality_bridge_preparation": args.quality_bridge_preparation,
             "milestone_report": args.milestone_report,
         }
+        if include_terminal:
+            source_paths.update(
+                {
+                    "quality_bridge_terminal_result": (
+                        args.quality_bridge_terminal_result
+                    ),
+                    "quality_bridge_execution_status": (
+                        args.quality_bridge_execution_status
+                    ),
+                }
+            )
         for name, source in source_paths.items():
             target = temporary_paths[name]
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -309,7 +421,13 @@ def _create_snapshot(args: argparse.Namespace, self_git: dict[str, Any]) -> None
         write_json_report(audit_path, report)
         final_audit_path = args.output_root / AUDIT_FILENAME
         source_identities = {
-            name: _identity(path, reported_path=_snapshot_paths(args.output_root)[name])
+            name: _identity(
+                path,
+                reported_path=_snapshot_paths(
+                    args.output_root,
+                    include_terminal_binding=include_terminal,
+                )[name],
+            )
             for name, path in temporary_paths.items()
         }
         write_json_report(
@@ -322,6 +440,11 @@ def _create_snapshot(args: argparse.Namespace, self_git: dict[str, Any]) -> None
                 "self_git": self_git,
                 "expected_milestone_step": args.expected_milestone_step,
                 "milestone_source_profile": args.milestone_source_profile,
+                "binding_mode": (
+                    "quality_bridge_terminal"
+                    if include_terminal
+                    else "matched_milestone"
+                ),
                 "sources": source_identities,
                 "audit_report": _identity(
                     audit_path,
@@ -351,7 +474,16 @@ def poll_once(
 ) -> tuple[str, str, dict[str, Any] | None, dict[str, Any] | None]:
     if args.output_root.exists():
         audit, manifest = _verify_existing(args)
-        return "completed", "matched_milestone_training_exposure_frozen", audit, manifest
+        return (
+            "completed",
+            (
+                "matched_terminal_training_exposure_frozen"
+                if _terminal_binding_requested(args)
+                else "matched_milestone_training_exposure_frozen"
+            ),
+            audit,
+            manifest,
+        )
     if not args.quality_bridge_preparation.is_file():
         return "waiting", "waiting_for_quality_bridge_preparation", None, None
     preparation_sha256 = file_sha256(args.quality_bridge_preparation)
@@ -371,9 +503,37 @@ def poll_once(
         return "waiting", "waiting_for_dense_training_milestone", None, None
     if not args.milestone_report.is_file():
         return "waiting", "waiting_for_matched_milestone_report", None, None
+    if _terminal_binding_requested(args):
+        if not args.quality_bridge_terminal_result.is_file():
+            return "waiting", "waiting_for_quality_bridge_terminal_result", None, None
+        if not args.quality_bridge_execution_status.is_file():
+            return "waiting", "waiting_for_quality_bridge_execution_status", None, None
+        execution = _read_json(
+            args.quality_bridge_execution_status,
+            label="quality bridge execution status",
+        )
+        execution_state = execution.get("status")
+        if execution_state == "failed":
+            raise ValueError("quality bridge execution failed before terminal binding")
+        if execution_state != "completed":
+            return (
+                "waiting",
+                "waiting_for_quality_bridge_verified_completion",
+                None,
+                None,
+            )
     _create_snapshot(args, self_git)
     audit, manifest = _verify_existing(args)
-    return "completed", "matched_milestone_training_exposure_frozen", audit, manifest
+    return (
+        "completed",
+        (
+            "matched_terminal_training_exposure_frozen"
+            if _terminal_binding_requested(args)
+            else "matched_milestone_training_exposure_frozen"
+        ),
+        audit,
+        manifest,
+    )
 
 
 def main() -> None:
