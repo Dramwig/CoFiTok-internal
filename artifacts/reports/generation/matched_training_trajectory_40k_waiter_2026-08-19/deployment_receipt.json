@@ -1,0 +1,90 @@
+{
+  "bundle": {
+    "advertised_head": "fbda904ac97b6049f0efa1e96b66ea16526fdc8f",
+    "bytes": 10148,
+    "prerequisite": "40ee55202545ea01e48fb6642d1b5a51b5264663",
+    "remote_path": "/tmp/cofitok-matched-trajectory-waiter-fbda904.bundle",
+    "sha256": "776861751a4be7c6a52eb06ae862432755d514ceab7b7803044be53356930b86",
+    "verified_locally": true,
+    "verified_remotely": true
+  },
+  "control": {
+    "branch": "analysis/generation-full-data-40k-trajectory-waiter-v1",
+    "checkout": "/root/autodl-tmp/CoFiTok/checkouts/matched-trajectory-waiter-fbda904",
+    "revision": "fbda904ac97b6049f0efa1e96b66ea16526fdc8f",
+    "source_bytes": 33925,
+    "source_sha256": "826663a67c8de2ad20e304b36f2622858bf8ac539df75562abb4a3d2c2795e66",
+    "tracked_dirty": false,
+    "tree": "94f40df8c451af9496cd464aa73a42f3f2fbdbba"
+  },
+  "deployed_at": "2026-08-19T11:36:27.279475+00:00",
+  "execution": {
+    "cutoff_step": 40000,
+    "dense_step_at_first_postlaunch_check": 36700,
+    "detail": "dense_schedule_report_missing",
+    "gpu_processes": [
+      {
+        "pid": 79894,
+        "role": "active_dense_identity_trainer",
+        "used_memory_mib": 77970
+      }
+    ],
+    "heartbeat_interval_seconds": 30,
+    "heartbeat_observed_across_60_seconds": true,
+    "lock_competing_exit_code": 1,
+    "lock_competing_result": "matched trajectory waiter lock is held",
+    "output_created_before_schedule_gate": false,
+    "output_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/matched_training_trajectory_step_00040000_v1",
+    "pid": 691651,
+    "status": "waiting",
+    "status_output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/matched_training_trajectory_step_00040000_waiter_status.json"
+  },
+  "matched_training": {
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "training_checkout": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+    "tree": "6cef27723196fd363379bca2e7b85b1678ebd777"
+  },
+  "resume_aware_builder": {
+    "branch": "analysis/generation-resume-aware-matched-trajectory-v1",
+    "checkout": "/root/autodl-tmp/CoFiTok/checkouts/resume-trajectory-audit-7e5856b/CoFiTok-internal",
+    "revision": "40ee55202545ea01e48fb6642d1b5a51b5264663",
+    "source_bytes": 31844,
+    "source_sha256": "2477345f81a99895f73b5c9a93844c8005ca959a2ed74ab3fa5a077c4753c21a",
+    "tracked_dirty": false,
+    "tree": "2ae2599a7dddb000a6042132b3d1065046ed3944"
+  },
+  "role": "generation_matched_training_trajectory_waiter_deployment_receipt",
+  "schema_version": 1,
+  "scope": {
+    "diagnostic_artifact_writes_only": true,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "gpu_required": false,
+    "promotion_authorization_allowed": false,
+    "read_only_training_sources": true,
+    "release_authorization_allowed": false,
+    "training_process_signals_allowed": false,
+    "unrelated_process_signals_allowed": false
+  },
+  "status": "pass",
+  "validation": {
+    "linux_selected_tests": {
+      "passed": 42,
+      "status": "pass"
+    },
+    "local_selected_tests": {
+      "passed": 32,
+      "status": "pass"
+    },
+    "python_compile": "pass",
+    "real_path_once_rehearsal": {
+      "cuda_visible_devices": "-1",
+      "detail": "dense_schedule_report_missing",
+      "exit_code": 0,
+      "output_created": false,
+      "residual_process": false,
+      "status": "waiting"
+    }
+  }
+}
