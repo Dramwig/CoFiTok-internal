@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "role": "capacity_probe_supervisor_child_heartbeat_audit",
+  "observed_at": "2026-08-19T09:54:13.521064+00:00",
+  "status": "pass_with_deployment_pending",
+  "audit_scope": {
+    "active_pipeline_modified": false,
+    "active_training_modified": false,
+    "gpu_work_launched": false,
+    "formal_checkout_modified": false
+  },
+  "deployed_supervisor_audit": [
+    {
+      "stage": "capacity_probe_10k_execution",
+      "revision": "3a7dc9db6950055829db00c8ffdd6e906501fbb4",
+      "tree": "2b187e1bc6a36342ef2d803b26b4ae6f92b1a9f1",
+      "child_wait": "blocking_child_wait_without_periodic_supervisor_status",
+      "gap_confirmed": true
+    },
+    {
+      "stage": "capacity_scaling_50k_execution",
+      "revision": "9c5848e6a3e2f7ba10e9527b4ffc5e30bb4d56dc",
+      "tree": "979fe91f2eef90a315c0a1426161ad7e818d4778",
+      "child_wait": "poll_and_publish_each_interval",
+      "gap_confirmed": false
+    },
+    {
+      "stage": "capacity_completion_100k_execution",
+      "revision": "892c1d63db872f1135d41adaf0a25ee7388999c7",
+      "tree": "a8ffccf87ff78e091e3829dca72e20d35b74b033",
+      "child_wait": "poll_and_publish_each_interval",
+      "gap_confirmed": false
+    },
+    {
+      "stage": "capacity_full_300k_readiness",
+      "revision": "87b043339df073437e8130e20a032d367a2e1649",
+      "tree": "53d034ffd597efa4cff3ea5564f3748d28c19fe9",
+      "child_wait": "poll_and_publish_at_most_every_60_seconds",
+      "gap_confirmed": false
+    },
+    {
+      "stage": "capacity_full_300k_training",
+      "revision": "d75dfea37ddcb504cfe8ecba25774ee36f522480",
+      "tree": "e96059ab0e77942e716c23a69364fc6c8ad9048d",
+      "child_wait": "poll_and_publish_at_most_every_60_seconds",
+      "gap_confirmed": false
+    },
+    {
+      "stage": "capacity_full_300k_posteval",
+      "revision": "5e04dbe488ee166d2756bc99c71ee5fffbe0bd83",
+      "tree": "29d4e24f5ae9c294401902d554a1f2388a61ef64",
+      "child_wait": "poll_and_publish_at_most_every_60_seconds",
+      "gap_confirmed": false
+    },
+    {
+      "stage": "capacity_full_300k_finalization",
+      "revision": "5e04dbe488ee166d2756bc99c71ee5fffbe0bd83",
+      "tree": "29d4e24f5ae9c294401902d554a1f2388a61ef64",
+      "child_wait": "poll_and_publish_at_most_every_60_seconds",
+      "gap_confirmed": false
+    }
+  ],
+  "fix": {
+    "behavior": [
+      "publish running child PID, execution stage, related processes, and GPU rows at most every 60 seconds",
+      "continue supervising the exact child when heartbeat publication raises",
+      "preserve the child exit code and all existing retry and authorization behavior"
+    ],
+    "integration_candidate": {
+      "branch": "fix/generation-capacity-probe-child-heartbeat-v1",
+      "revision": "3d2bca465fe3f775b36fe48341a5fe47fa8d1abc",
+      "tree": "b8224074be4ccfefa6d9b05b5df3907b98f7c77d",
+      "parent": "85c5dbdba40bb31ec0af1c311f1780fa34714d57"
+    },
+    "exact_deployment_candidate": {
+      "branch": "fix/generation-capacity-probe-child-heartbeat-deploy-v1",
+      "revision": "6bbfa806353bb2095890b5b883ea380f08e43116",
+      "tree": "3033960bf34fc50a2502ea7bd91cf5710b119bcf",
+      "parent": "3a7dc9db6950055829db00c8ffdd6e906501fbb4"
+    },
+    "bundle": {
+      "bytes": 5551,
+      "sha256": "f8e23f44851168ed56b6a5d3a17fdb76b0f371497623b752467f966c49f85241",
+      "advertised_ref": "refs/heads/fix/generation-capacity-probe-child-heartbeat-deploy-v1",
+      "required_revision": "3a7dc9db6950055829db00c8ffdd6e906501fbb4",
+      "remote_path": "/tmp/cofitok-capacity-probe-heartbeat-6bbfa80.bundle"
+    }
+  },
+  "verification": {
+    "local_integration_focused": "14 passed",
+    "local_integration_capacity_and_control_chain": "248 passed",
+    "local_integration_full_suite": "1639 passed, 9 skipped",
+    "local_exact_parent_capacity_suite": "58 passed",
+    "linux_exact_parent_capacity_suite": "58 passed",
+    "linux_runbook_bash_syntax": "pass",
+    "linux_cuda_visible_devices": "empty",
+    "linux_cpu_io_priority": "nice 10 and ionice idle",
+    "remote_bundle_prerequisite_verify": "pass",
+    "isolated_checkout_tracked_clean_after_tests": true,
+    "deployed_checkout_tracked_clean_after_tests": true
+  },
+  "live_boundary": {
+    "deployed_supervisor_pid": 11853,
+    "deployed_supervisor_revision": "3a7dc9db6950055829db00c8ffdd6e906501fbb4",
+    "deployed_supervisor_status": "waiting",
+    "deployed_supervisor_detail": "waiting_for_source_bound_capacity_preparation",
+    "deployed_supervisor_child_pid": null,
+    "replacement_deployed": false,
+    "reason": "The already-running supervisor cannot consume patched Python code without a controlled, source-bound replacement. This audit did not signal or modify it."
+  },
+  "authorization_boundary": {
+    "capacity_probe_launch_authorized_by_this_audit": false,
+    "full_300k_launch_authorized_by_this_audit": false,
+    "promotion_or_release_authorized_by_this_audit": false,
+    "active_process_signaling_allowed_by_this_audit": false
+  }
+}
