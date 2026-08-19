@@ -20,6 +20,7 @@ from cofitok.generation.capacity_scaling_decision import (
     validate_capacity_scaling_decision,
 )
 from cofitok.inference_replay import file_identity, read_json_object
+from cofitok.process_monitoring import publish_child_heartbeat
 from cofitok.reporting import file_sha256, write_json_report
 
 
@@ -649,6 +650,7 @@ def main() -> int:
         forced_reason: str | None = None
         forced_stage: str | None = None
         termination: dict[str, Any] | None = None
+        heartbeat_error_reported = False
         while child.poll() is None:
             activity = _child_activity(
                 output_root,
@@ -667,10 +669,32 @@ def main() -> int:
                 forced_reason = "capacity_scaling_child_stalled"
             if forced_reason is not None:
                 forced_stage = str(current_stage) if current_stage else None
-                _status(
+                heartbeat_error_reported = publish_child_heartbeat(
+                    lambda: _status(
+                        args,
+                        state="recovering",
+                        detail=f"{forced_reason}_at_{forced_stage or 'unknown'}",
+                        attempts=attempts,
+                        idle_polls=idle_polls,
+                        execution_git=execution_git,
+                        decision_observation=decision_observation,
+                        active_processes=_active_processes(output_root),
+                        gpu_rows=_gpu_rows(),
+                        child_activity=activity,
+                        child_pid=child.pid,
+                    ),
+                    error_reported=heartbeat_error_reported,
+                )
+                termination = _terminate_owned_child(
+                    child,
+                    grace_seconds=args.termination_grace_seconds,
+                )
+                break
+            heartbeat_error_reported = publish_child_heartbeat(
+                lambda: _status(
                     args,
-                    state="recovering",
-                    detail=f"{forced_reason}_at_{forced_stage or 'unknown'}",
+                    state="running",
+                    detail="capacity_scaling_child_running",
                     attempts=attempts,
                     idle_polls=idle_polls,
                     execution_git=execution_git,
@@ -679,24 +703,8 @@ def main() -> int:
                     gpu_rows=_gpu_rows(),
                     child_activity=activity,
                     child_pid=child.pid,
-                )
-                termination = _terminate_owned_child(
-                    child,
-                    grace_seconds=args.termination_grace_seconds,
-                )
-                break
-            _status(
-                args,
-                state="running",
-                detail="capacity_scaling_child_running",
-                attempts=attempts,
-                idle_polls=idle_polls,
-                execution_git=execution_git,
-                decision_observation=decision_observation,
-                active_processes=_active_processes(output_root),
-                gpu_rows=_gpu_rows(),
-                child_activity=activity,
-                child_pid=child.pid,
+                ),
+                error_reported=heartbeat_error_reported,
             )
             time.sleep(args.poll_seconds)
         code = int(child.returncode)

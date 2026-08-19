@@ -23,6 +23,7 @@ from cofitok.generation.capacity_probe_execution import (
     validate_standing_experiment_authorization,
 )
 from cofitok.inference_replay import file_identity, read_json_object
+from cofitok.process_monitoring import publish_child_heartbeat
 from cofitok.reporting import file_sha256, write_json_report
 
 
@@ -828,12 +829,16 @@ def main() -> int:
             cwd=project,
             env=environment,
         )
+        heartbeat_error_reported = False
         while child.poll() is None:
-            publish(
-                status="running",
-                detail="capacity_full_readiness_benchmark_running",
-                child_pid=child.pid,
-                gpu_rows=_gpu_compute_rows(),
+            heartbeat_error_reported = publish_child_heartbeat(
+                lambda: publish(
+                    status="running",
+                    detail="capacity_full_readiness_benchmark_running",
+                    child_pid=child.pid,
+                    gpu_rows=_gpu_compute_rows(),
+                ),
+                error_reported=heartbeat_error_reported,
             )
             time.sleep(min(args.poll_seconds, 60.0))
         exit_code = int(child.returncode)

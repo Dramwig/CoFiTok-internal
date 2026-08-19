@@ -4,7 +4,10 @@ import subprocess
 
 import pytest
 
-from cofitok.process_monitoring import wait_for_child_with_heartbeat
+from cofitok.process_monitoring import (
+    publish_child_heartbeat,
+    wait_for_child_with_heartbeat,
+)
 
 
 def test_wait_for_child_refreshes_heartbeat_until_completion() -> None:
@@ -72,4 +75,34 @@ def test_wait_for_child_does_not_detach_when_heartbeat_fails(
     assert result == 7
     assert child.wait_calls == 3
     assert heartbeat_calls == 2
+    assert capsys.readouterr().err.count("status disk is full") == 1
+
+
+def test_publish_child_heartbeat_suppresses_repeated_write_errors_and_recovers(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    calls = 0
+
+    def flaky_heartbeat() -> None:
+        nonlocal calls
+        calls += 1
+        if calls < 3:
+            raise OSError("status disk is full")
+
+    error_reported = publish_child_heartbeat(
+        flaky_heartbeat,
+        error_reported=False,
+    )
+    assert error_reported is True
+    error_reported = publish_child_heartbeat(
+        flaky_heartbeat,
+        error_reported=error_reported,
+    )
+    assert error_reported is True
+    error_reported = publish_child_heartbeat(
+        flaky_heartbeat,
+        error_reported=error_reported,
+    )
+    assert error_reported is False
+    assert calls == 3
     assert capsys.readouterr().err.count("status disk is full") == 1

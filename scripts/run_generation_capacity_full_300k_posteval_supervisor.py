@@ -15,6 +15,7 @@ from typing import Any, Mapping
 from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.generation_gate_sources import verify_generation_gate_source_reports
 from cofitok.inference_replay import file_identity, read_json_object
+from cofitok.process_monitoring import publish_child_heartbeat
 from cofitok.reporting import write_json_report
 from cofitok.training.authorization import capture_generation_training_authorization
 
@@ -651,13 +652,17 @@ def main() -> int:
                 start_new_session=True,
             )
             group_id = child.pid
+            heartbeat_error_reported = False
             while child.poll() is None:
-                publish(
-                    status="running",
-                    detail="capacity_full_formal_50k_posteval_running",
-                    child_pid=child.pid,
-                    child_process_group_id=group_id,
-                    gpu_rows=_gpu_rows(),
+                heartbeat_error_reported = publish_child_heartbeat(
+                    lambda: publish(
+                        status="running",
+                        detail="capacity_full_formal_50k_posteval_running",
+                        child_pid=child.pid,
+                        child_process_group_id=group_id,
+                        gpu_rows=_gpu_rows(),
+                    ),
+                    error_reported=heartbeat_error_reported,
                 )
                 time.sleep(min(args.poll_seconds, 60.0))
         exit_code = int(child.returncode)
