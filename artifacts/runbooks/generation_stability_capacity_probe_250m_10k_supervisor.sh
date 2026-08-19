@@ -30,13 +30,9 @@ mkdir -p "$REPORT_ROOT" "$RUNTIME_TMP"
 export TMPDIR="$RUNTIME_TMP"
 export TEMP="$RUNTIME_TMP"
 export TMP="$RUNTIME_TMP"
-exec 8>"$LOCK"
-flock -n 8 || {
-  printf 'capacity-probe execution supervisor already owns the lock\n' >&2
-  exit 75
-}
-
-exec "$PYTHON" scripts/run_generation_capacity_probe_execution_supervisor.py \
+exec flock --exclusive --nonblock --conflict-exit-code 75 --no-fork \
+  "$LOCK" \
+  "$PYTHON" scripts/run_generation_capacity_probe_execution_supervisor.py \
   --project "$PROJECT" \
   --preparation-project "$PREPARATION_PROJECT" \
   --preparation "$PREPARATION" \
