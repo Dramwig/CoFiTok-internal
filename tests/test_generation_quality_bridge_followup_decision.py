@@ -19,7 +19,6 @@ from cofitok.generation.quality_bridge_followup import (
 from cofitok.reporting import file_sha256
 from scripts import build_generation_quality_bridge_followup_decision as builder
 
-
 ROOT = Path(__file__).resolve().parents[1]
 DECISION_GIT = {
     "revision": "d" * 40,
@@ -99,6 +98,123 @@ def _result(*failed: str) -> dict[str, object]:
             "class_fidelity": {"status": "pass", "valid": True},
         },
         "authorization_boundary": copy.deepcopy(RESULT_AUTHORIZATION_BOUNDARY),
+    }
+
+
+def _training_exposure(result: dict[str, object]) -> dict[str, object]:
+    train_images = 1_281_167
+    epochs = 6_400_000 / train_images
+    reference_epochs = 3_200_000 / 128_161
+
+    def row() -> dict[str, object]:
+        return {
+            "schema_version": 1,
+            "status": "complete",
+            "dataset": "imagenet_256",
+            "dataset_identity_sha256": "7" * 64,
+            "train_image_count": train_images,
+            "target_steps": 100_000,
+            "completed_steps": 100_000,
+            "training_complete": True,
+            "micro_batch_size": 64,
+            "gradient_accumulation_steps": 1,
+            "effective_batch_size": 64,
+            "samples_seen": 6_400_000,
+            "expected_samples_seen_at_completed_step": 6_400_000,
+            "target_samples_seen": 6_400_000,
+            "completed_fraction": 1.0,
+            "completed_equivalent_epochs": epochs,
+            "target_equivalent_epochs": epochs,
+            "git": {
+                "revision": QUALITY_BRIDGE_EXECUTION_REVISION,
+                "branch": QUALITY_BRIDGE_EXECUTION_BRANCH,
+                "dirty": False,
+            },
+        }
+
+    matched_comparison = {
+        "same_dataset": True,
+        "same_dataset_identity": True,
+        "same_effective_batch_size": True,
+        "same_completed_steps": True,
+        "same_images_seen": True,
+        "same_equivalent_epochs": True,
+        "same_dataset_normalized_exposure": True,
+        "step_budget_directly_comparable": True,
+        "image_budget_directly_comparable": True,
+        "dataset_normalized_budget_directly_comparable": True,
+        "quality_metric_comparison_allowed": False,
+    }
+    terminal_methods = result["terminal"]["methods"]
+    return {
+        "schema_version": 1,
+        "exposure_schema_version": 1,
+        "status": "pass",
+        "role": "generation_training_exposure_audit",
+        "sources": {
+            "cofitok": _identity("exposure_cofitok_training", "1"),
+            "dense_identity": _identity("exposure_dense_training", "2"),
+        },
+        "rows": {"cofitok": row(), "dense_identity": row()},
+        "comparison": matched_comparison,
+        "quality_bridge_plan": {
+            "source": _identity("exposure_preparation", "3"),
+            "training_exposure": {
+                "bridge": {
+                    "dataset": "imagenet_256",
+                    "effective_batch_size": 64,
+                    "equivalent_epochs": epochs,
+                    "images_seen_per_method": 6_400_000,
+                    "steps": 100_000,
+                    "train_image_count": train_images,
+                },
+                "source": {
+                    "dataset": "imagenet_256_10pct",
+                    "effective_batch_size": 64,
+                    "equivalent_epochs": reference_epochs,
+                    "images_seen_per_method": 3_200_000,
+                    "steps": 50_000,
+                    "train_image_count": 128_161,
+                },
+                "comparison": {
+                    "bridge_to_source_equivalent_epochs_ratio": (
+                        epochs / reference_epochs
+                    ),
+                    "same_step_count_means_same_exposure": False,
+                    "cross_dataset_quality_comparison_requires_explicit_protocol_binding": True,
+                },
+            },
+        },
+        "milestone_binding": {
+            "source": _identity("exposure_milestone", "4"),
+            "expected_step": 100_000,
+            "source_profile": "quality_bridge",
+            "matched_training_exposure_verified": True,
+        },
+        "terminal_binding": {
+            "terminal_result": _identity("exposure_terminal_result", "e"),
+            "verified_execution_status": _identity("exposure_execution", "5"),
+            "checkpoint_binding": {
+                method: {
+                    "step": 100_000,
+                    "checkpoint_sha256": terminal_methods[method]["checkpoint_sha256"],
+                }
+                for method in ("cofitok", "dense_identity")
+            },
+            "quality_screen": copy.deepcopy(result["quality_screen"]),
+            "terminal_result_binding_verified": True,
+            "active_runbook_verification_completed": True,
+        },
+        "claim_boundary": {
+            "training_scale_claim_allowed": True,
+            "sample_quality_claim_allowed": False,
+            "method_quality_ranking_allowed": False,
+            "formal_gate_substitute": False,
+            "milestone_quality_diagnostic_allowed": True,
+            "formal_generation_claim_allowed": False,
+            "terminal_training_exposure_binding_allowed": True,
+            "terminal_quality_result_context_allowed": True,
+        },
     }
 
 
@@ -201,6 +317,8 @@ def _decision(
         milestones={50_000: milestone_50, 100_000: milestone_100},
         milestone_identities=identities,
         milestone_verifications=verifications,
+        training_exposure_report=_training_exposure(result),
+        training_exposure_report_identity=_identity("exposure", "8"),
         decision_git=DECISION_GIT,
     )
 
@@ -221,6 +339,16 @@ def test_absolute_hold_with_shared_improvement_routes_to_capacity_probe() -> Non
         "prepare_matched_250m_capacity_qualification_probe"
     )
     assert report["recommended_next_stage"]["execution_ready"] is False
+    assert report["training_exposure"]["full_data_equivalent_epochs"] == pytest.approx(
+        4.995445558619602
+    )
+    assert (
+        report["training_exposure"]["insufficient_exposure_is_live_hypothesis"] is True
+    )
+    assert (
+        report["recommended_next_stage"]["fallback_if_capacity_not_supported"]["id"]
+        == "prepare_matched_training_exposure_qualification"
+    )
 
 
 @pytest.mark.parametrize(
@@ -250,9 +378,10 @@ def test_inception_noise_does_not_veto_shared_fid_capacity_signal() -> None:
         inception_improving=False,
     )
     assert report["milestone_trend"]["shared_quality_trend_strictly_improved"] is True
-    assert report["milestone_trend"][
-        "shared_inception_score_corroborates_fid_trend"
-    ] is False
+    assert (
+        report["milestone_trend"]["shared_inception_score_corroborates_fid_trend"]
+        is False
+    )
     assert report["recommended_next_stage"]["id"] == (
         "prepare_matched_250m_capacity_qualification_probe"
     )
@@ -282,9 +411,7 @@ def test_scientific_failures_route_before_capacity(
 
 
 def test_terminal_milestone_conflict_fails_over_to_reconciliation() -> None:
-    report = _decision(
-        alerts=["cofitok_fid_more_than_25pct_above_dense"]
-    )
+    report = _decision(alerts=["cofitok_fid_more_than_25pct_above_dense"])
     assert report["recommended_next_stage"]["id"] == (
         "reconcile_100k_cross_protocol_evidence"
     )
@@ -320,6 +447,45 @@ def test_100k_milestone_must_use_terminal_checkpoint() -> None:
                 step: {"status": "verified", "source_profile": "quality_bridge"}
                 for step in (50_000, 100_000)
             },
+            training_exposure_report=_training_exposure(result),
+            training_exposure_report_identity=_identity("exposure", "8"),
+            decision_git=DECISION_GIT,
+        )
+
+
+def test_terminal_training_exposure_must_match_both_methods() -> None:
+    result = _result("cofitok_absolute_fid")
+    exposure = _training_exposure(result)
+    exposure["rows"]["dense_identity"]["samples_seen"] -= 64
+    milestone_50 = _milestone(
+        50_000,
+        cofitok_fid=100.0,
+        dense_fid=105.0,
+        cofitok_is=4.0,
+        dense_is=3.8,
+    )
+    milestone_100 = _milestone(
+        100_000,
+        cofitok_fid=90.0,
+        dense_fid=95.0,
+        cofitok_is=4.5,
+        dense_is=4.2,
+    )
+    with pytest.raises(ValueError, match="dense_identity differs"):
+        build_quality_bridge_followup_decision(
+            quality_bridge_result=result,
+            quality_bridge_result_identity=_identity("result", "e"),
+            milestones={50_000: milestone_50, 100_000: milestone_100},
+            milestone_identities={
+                50_000: result["source_reports"]["milestone_50000"],
+                100_000: result["source_reports"]["milestone_100000"],
+            },
+            milestone_verifications={
+                step: {"status": "verified", "source_profile": "quality_bridge"}
+                for step in (50_000, 100_000)
+            },
+            training_exposure_report=exposure,
+            training_exposure_report_identity=_identity("exposure", "8"),
             decision_git=DECISION_GIT,
         )
 
@@ -350,6 +516,55 @@ def test_result_replay_rejects_nonreproducible_terminal_result(
         builder.replay_quality_bridge_result(
             path,
             expected_sha256=file_sha256(path),
+        )
+
+
+def test_training_exposure_replay_reopens_every_bound_source(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    exposure = _training_exposure(_result("cofitok_absolute_fid"))
+
+    def bind(name: str, payload: dict[str, object]) -> dict[str, object]:
+        path = tmp_path / f"{name}.json"
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        return builder.file_identity(path)
+
+    exposure["sources"] = {
+        "cofitok": bind("cofitok_training", {"method": "cofitok"}),
+        "dense_identity": bind("dense_training", {"method": "dense_identity"}),
+    }
+    exposure["quality_bridge_plan"]["source"] = bind(
+        "preparation", {"role": "preparation"}
+    )
+    exposure["milestone_binding"]["source"] = bind("milestone", {"step": 100_000})
+    exposure["terminal_binding"]["terminal_result"] = bind(
+        "terminal_result", {"role": "quality_result"}
+    )
+    exposure["terminal_binding"]["verified_execution_status"] = bind(
+        "execution_status", {"status": "completed"}
+    )
+    exposure_path = tmp_path / "training_exposure_report.json"
+    exposure_path.write_text(json.dumps(exposure), encoding="utf-8")
+    monkeypatch.setattr(
+        builder,
+        "build_training_exposure_report",
+        lambda *args, **kwargs: copy.deepcopy(exposure),
+    )
+
+    actual, identity = builder.replay_training_exposure_report(
+        exposure_path,
+        expected_sha256=file_sha256(exposure_path),
+    )
+    assert actual == exposure
+    assert identity["sha256"] == file_sha256(exposure_path)
+
+    bound_training = Path(exposure["sources"]["cofitok"]["path"])
+    bound_training.write_text('{"tampered": true}', encoding="utf-8")
+    with pytest.raises(ValueError, match="identity differs"):
+        builder.replay_training_exposure_report(
+            exposure_path,
+            expected_sha256=file_sha256(exposure_path),
         )
 
 
@@ -385,3 +600,5 @@ def test_followup_runbook_is_non_authorizing() -> None:
     assert "verify_generation_quality_bridge_followup_decision.py" in runbook
     assert "train_generation.py" not in runbook
     assert "full_matched_300k" not in runbook
+    assert "training_exposure_terminal_100k/training_exposure_report.json" in runbook
+    assert "followup_experiment_decision_exposure_aware_v2.json" in runbook

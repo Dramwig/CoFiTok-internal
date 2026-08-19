@@ -12,18 +12,25 @@ from cofitok.generation.quality_bridge_followup import (
 )
 from cofitok.inference_replay import file_identity, read_json_object
 from cofitok.reporting import git_provenance, write_json_report
+
 try:
     from scripts.build_generation_milestone_report import (
         validate_milestone_report,
         verify_milestone_source_reports,
     )
     from scripts.build_generation_quality_bridge_result import build_from_args
+    from scripts.build_generation_training_exposure_audit import (
+        build_report as build_training_exposure_report,
+    )
 except ModuleNotFoundError:
     from build_generation_milestone_report import (
         validate_milestone_report,
         verify_milestone_source_reports,
     )
     from build_generation_quality_bridge_result import build_from_args
+    from build_generation_training_exposure_audit import (
+        build_report as build_training_exposure_report,
+    )
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -52,6 +59,8 @@ _RESULT_SOURCE_ARGUMENTS = {
 def _common_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--quality-bridge-result", type=Path, required=True)
     parser.add_argument("--expected-quality-bridge-result-sha256", required=True)
+    parser.add_argument("--training-exposure-report", type=Path, required=True)
+    parser.add_argument("--expected-training-exposure-report-sha256", required=True)
     parser.add_argument("--expected-decision-revision", required=True)
     parser.add_argument("--expected-decision-branch", required=True)
 
@@ -86,6 +95,81 @@ def replay_quality_bridge_result(
     recomputed = build_from_args(_result_replay_args(actual))
     if actual != recomputed:
         raise ValueError("quality bridge terminal result is not reproducible")
+    return actual, identity
+
+
+def _bound_json_source(
+    value: object,
+    *,
+    label: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if not isinstance(value, dict):
+        raise TypeError(f"{label} identity is missing")
+    path = Path(str(value.get("path", "")))
+    identity = file_identity(path)
+    if identity != value:
+        raise ValueError(f"{label} identity differs")
+    return read_json_object(path, name=label), identity
+
+
+def replay_training_exposure_report(
+    path: Path,
+    *,
+    expected_sha256: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    identity = file_identity(path)
+    if identity["sha256"] != expected_sha256:
+        raise ValueError("terminal training exposure report SHA256 differs")
+    actual = read_json_object(path, name="terminal training exposure report")
+    sources = actual.get("sources")
+    if not isinstance(sources, dict) or set(sources) != {
+        "cofitok",
+        "dense_identity",
+    }:
+        raise ValueError("terminal training exposure source set differs")
+    training_reports = {
+        method: _bound_json_source(
+            sources[method],
+            label=f"terminal training exposure {method} training report",
+        )
+        for method in ("cofitok", "dense_identity")
+    }
+    quality_bridge_plan = actual.get("quality_bridge_plan")
+    if not isinstance(quality_bridge_plan, dict):
+        raise TypeError("terminal training exposure quality bridge plan is missing")
+    preparation = _bound_json_source(
+        quality_bridge_plan.get("source"),
+        label="terminal training exposure quality bridge preparation",
+    )
+    milestone_binding = actual.get("milestone_binding")
+    if not isinstance(milestone_binding, dict):
+        raise TypeError("terminal training exposure milestone binding is missing")
+    milestone = _bound_json_source(
+        milestone_binding.get("source"),
+        label="terminal training exposure 100K milestone",
+    )
+    terminal_binding = actual.get("terminal_binding")
+    if not isinstance(terminal_binding, dict):
+        raise TypeError("terminal training exposure terminal binding is missing")
+    terminal_result = _bound_json_source(
+        terminal_binding.get("terminal_result"),
+        label="terminal training exposure quality bridge result",
+    )
+    execution_status = _bound_json_source(
+        terminal_binding.get("verified_execution_status"),
+        label="terminal training exposure execution status",
+    )
+    recomputed = build_training_exposure_report(
+        training_reports,
+        quality_bridge_preparation=preparation,
+        milestone_report=milestone,
+        expected_milestone_step=int(milestone_binding.get("expected_step", -1)),
+        milestone_source_profile=str(milestone_binding.get("source_profile", "")),
+        quality_bridge_terminal_result=terminal_result,
+        quality_bridge_execution_status=execution_status,
+    )
+    if actual != recomputed:
+        raise ValueError("terminal training exposure report is not reproducible")
     return actual, identity
 
 
@@ -131,11 +215,17 @@ def build_from_sources(
     *,
     quality_bridge_result_path: Path,
     expected_quality_bridge_result_sha256: str,
+    training_exposure_report_path: Path,
+    expected_training_exposure_report_sha256: str,
     decision_git: dict[str, Any],
 ) -> dict[str, Any]:
     result, result_identity = replay_quality_bridge_result(
         quality_bridge_result_path,
         expected_sha256=expected_quality_bridge_result_sha256,
+    )
+    exposure, exposure_identity = replay_training_exposure_report(
+        training_exposure_report_path,
+        expected_sha256=expected_training_exposure_report_sha256,
     )
     milestones: dict[int, dict[str, Any]] = {}
     identities: dict[int, dict[str, Any]] = {}
@@ -151,6 +241,8 @@ def build_from_sources(
         milestones=milestones,
         milestone_identities=identities,
         milestone_verifications=verifications,
+        training_exposure_report=exposure,
+        training_exposure_report_identity=exposure_identity,
         decision_git=decision_git,
     )
 
@@ -170,7 +262,9 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     if args.output.exists():
-        raise FileExistsError(f"quality bridge follow-up decision exists: {args.output}")
+        raise FileExistsError(
+            f"quality bridge follow-up decision exists: {args.output}"
+        )
     decision_git = git_provenance(PROJECT_ROOT)
     expected_git = {
         "revision": args.expected_decision_revision,
@@ -183,6 +277,10 @@ def main() -> None:
         quality_bridge_result_path=args.quality_bridge_result,
         expected_quality_bridge_result_sha256=(
             args.expected_quality_bridge_result_sha256
+        ),
+        training_exposure_report_path=args.training_exposure_report,
+        expected_training_exposure_report_sha256=(
+            args.expected_training_exposure_report_sha256
         ),
         decision_git=decision_git,
     )

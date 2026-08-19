@@ -6,6 +6,7 @@ from pathlib import Path
 
 from cofitok.inference_replay import file_identity, read_json_object
 from cofitok.reporting import git_provenance
+
 try:
     from scripts.build_generation_quality_bridge_followup_decision import (
         PROJECT_ROOT,
@@ -51,6 +52,10 @@ def main() -> None:
         quality_bridge_result_path=args.quality_bridge_result,
         expected_quality_bridge_result_sha256=(
             args.expected_quality_bridge_result_sha256
+        ),
+        training_exposure_report_path=args.training_exposure_report,
+        expected_training_exposure_report_sha256=(
+            args.expected_training_exposure_report_sha256
         ),
         decision_git=decision_git,
     )
