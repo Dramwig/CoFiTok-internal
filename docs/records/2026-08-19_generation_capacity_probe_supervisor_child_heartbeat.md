@@ -90,3 +90,73 @@ has no child, and acquire the corrected lifetime lock before it can proceed.
 
 This audit does not authorize the 10K capacity probe, full-300K training,
 promotion, or release.
+
+## Source-decoupled deployment
+
+The first exact-parent fix could not be deployed directly: using its checkout
+for both control and execution would have changed the eventual 10K training
+revision from the already-bound `3a7dc9d` to the supervisor fix revision. The
+deployed replacement therefore separates the two identities:
+
+| role | revision | tree | checkout |
+|---|---|---|---|
+| supervisor control | `acedc6d32b4f77875f83948d8cb0a2024bd69a84` | `7afcf46846f2d079a026c6aeccd2850a5ee7e2de` | `/root/autodl-tmp/CoFiTok/checkouts/capacity-supervisor-acedc6d` |
+| capacity execution | `3a7dc9db6950055829db00c8ffdd6e906501fbb4` | `2b187e1bc6a36342ef2d803b26b4ae6f92b1a9f1` | `/root/autodl-tmp/CoFiTok/checkouts/capacity-execution-3a7dc9d` |
+
+The child runbook, working directory, sanitized `PYTHONPATH`, and target
+revision/tree/branch environment all remain execution-checkout bound. The
+supervisor status exposes the control identity separately as `supervisor_git`
+while retaining `expected.execution_git=3a7dc9d`.
+
+The final incremental bundle is 10,029 bytes with SHA256
+`438f13cfd1a234debceece57f950dca929047ed24601e344e9c70e24782bed44`.
+It requires `3a7dc9d` and advertises only `acedc6d`. Linux verification with
+CUDA hidden passed `64/64` selected capacity and runbook-contract tests;
+`bash -n` passed. A real isolated process rehearsal refreshed its heartbeat
+after 60 seconds, retained the lock on fd 3, and made a competing nonblocking
+lock request return exactly `75` while keeping `child_pid=null`.
+
+Immediately before replacement, PID `11853` was revalidated by PID, start
+time, cwd, command-line SHA256, fresh status, absent preparation, null child,
+and attempt zero. Its pre-replacement status was frozen with SHA256
+`3c9e49c2679f06e59ec9a663baf7a37321228c81dcfa20132beaab77164210c8`.
+Only that PID was terminated. Replacement PID `667226` started at
+`2026-08-19T18:59:55+08:00`, remained waiting with no child, and published a
+source-decoupled status snapshot with SHA256
+`0037a4b064556a4356be47a76b13f9225035da5bbd5971646c66aabea09bac68`.
+
+The recovery-aware lineage observer accepted PID `667226`, reported the stage
+healthy and waiting, and retained zero issues. The sole GPU compute process
+remained the active quality-bridge dense trainer PID `79894`; the replacement
+started no GPU child. The immutable remote deployment receipt is:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_supervisor_acedc6d_deployment_receipt.json
+bytes: 5094
+SHA256: a2ccc1448a508e9988dcba3ba7326778a9ad58e6fedd393d63e3369eeb2fe611
+```
+
+The local receipt copy is:
+
+```text
+artifacts/reports/generation/generative_system_gap_audit_2026-08-19/capacity_supervisor_acedc6d_deployment_receipt.json
+```
+
+This replacement preserves the existing source-bound 10K capacity-probe
+scope. It does not authorize 100K continuation, full-300K training, promotion,
+release, or any unrelated process modification.
+
+## Scientific state after deployment
+
+At `2026-08-19T11:08:28+00:00`, the active quality bridge remained healthy at
+`dense_identity_training` with no issues. CoFiTok was at its intentional 50K
+stop, while dense identity's source log had reached step 36,000 and 2,304,000
+images. Its fixed-validation epsilon MSE at that step was
+`0.027402421459555626`, and the shared EMA-teacher consistency scale was `0.6`.
+The source-bound 40K full-warmup waiter remained healthy and waiting for the
+target step.
+
+These are single-run progress values, not a matched quality result. The next
+scientific evidence remains, in order: the exact dense 40K warmup report, the
+healthy matched 50K completion, and the paired EMA sampling/uncertainty gate.
+The supervisor deployment itself provides no generation-advantage evidence.
