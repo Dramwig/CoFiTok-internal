@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 from statistics import mean, median
 from typing import Any
@@ -86,6 +87,91 @@ def _is_hex_digest(value: Any, *, length: int) -> bool:
     except ValueError:
         return False
     return True
+
+
+def _validate_metrics_resume(
+    manifest: dict[str, Any],
+    *,
+    label: str,
+) -> dict[str, Any]:
+    resume = manifest.get("resume")
+    reconciliation = manifest.get("metrics_resume_reconciliation")
+    if resume is None:
+        if reconciliation is not None:
+            raise ValueError(
+                f"{label} manifest has metrics resume evidence without a resume checkpoint"
+            )
+        return {
+            "resumed": False,
+            "checkpoint": None,
+            "resume_step": None,
+            "first_post_resume_step": None,
+            "reconciliation_status": None,
+            "retained_rows": None,
+            "orphaned_rows": None,
+            "orphan_archive": None,
+            "orphan_sha256": None,
+        }
+    if not isinstance(resume, str) or not resume:
+        raise ValueError(f"{label} manifest has an invalid resume checkpoint")
+    checkpoint_name = resume.replace("\\", "/").rsplit("/", 1)[-1]
+    checkpoint_match = re.fullmatch(r"checkpoint_step_(\d{8})\.pt", checkpoint_name)
+    if checkpoint_match is None:
+        raise ValueError(f"{label} manifest resume checkpoint name is invalid")
+    checkpoint_step = int(checkpoint_match.group(1))
+    if not isinstance(reconciliation, dict):
+        raise ValueError(f"{label} manifest lacks metrics resume reconciliation")
+    if int(reconciliation.get("schema_version", 0)) != 1:
+        raise ValueError(f"{label} metrics resume reconciliation schema is invalid")
+    status = reconciliation.get("status")
+    if status not in {"unchanged", "reconciled"}:
+        raise ValueError(f"{label} metrics resume reconciliation status is invalid")
+    try:
+        resume_step = int(reconciliation["resume_step"])
+        retained_rows = int(reconciliation["retained_rows"])
+        orphaned_rows = int(reconciliation["orphaned_rows"])
+    except (KeyError, TypeError, ValueError) as error:
+        raise ValueError(
+            f"{label} metrics resume reconciliation counts are invalid"
+        ) from error
+    if resume_step != checkpoint_step:
+        raise ValueError(
+            f"{label} resume checkpoint and metrics reconciliation steps differ"
+        )
+    if retained_rows < 0 or orphaned_rows < 0:
+        raise ValueError(f"{label} metrics resume reconciliation counts are negative")
+    orphan_archive = reconciliation.get("orphan_archive")
+    orphan_sha256 = reconciliation.get("orphan_sha256")
+    if status == "unchanged":
+        if (
+            orphaned_rows != 0
+            or orphan_archive is not None
+            or orphan_sha256 is not None
+        ):
+            raise ValueError(
+                f"{label} unchanged metrics reconciliation contains orphan evidence"
+            )
+    else:
+        if (
+            orphaned_rows < 1
+            or not isinstance(orphan_archive, str)
+            or not orphan_archive
+            or not _is_hex_digest(orphan_sha256, length=64)
+        ):
+            raise ValueError(
+                f"{label} reconciled metrics resume lacks bound orphan evidence"
+            )
+    return {
+        "resumed": True,
+        "checkpoint": resume,
+        "resume_step": resume_step,
+        "first_post_resume_step": resume_step + 1,
+        "reconciliation_status": status,
+        "retained_rows": retained_rows,
+        "orphaned_rows": orphaned_rows,
+        "orphan_archive": orphan_archive,
+        "orphan_sha256": orphan_sha256,
+    }
 
 
 def _read_metrics_prefix(path: Path, *, cutoff_step: int) -> dict[str, Any]:
@@ -179,15 +265,27 @@ def _validate_manifest(
         "runtime_environment_sha256": runtime_identity,
         "parameter_count": parameters,
         "config": config,
+        "metrics_resume": _validate_metrics_resume(manifest, label=label),
     }
 
 
-def _expected_steps(*, cutoff_step: int, log_interval: int) -> list[int]:
+def _expected_steps(
+    *,
+    cutoff_step: int,
+    log_interval: int,
+    metrics_resume: dict[str, Any],
+) -> list[int]:
     if log_interval < 1:
         raise ValueError("log_interval must be positive")
     if cutoff_step % log_interval:
         raise ValueError("cutoff_step must be divisible by the matched log interval")
-    return [1, *range(log_interval, cutoff_step + 1, log_interval)]
+    expected = {1, *range(log_interval, cutoff_step + 1, log_interval)}
+    first_post_resume_step = metrics_resume.get("first_post_resume_step")
+    if first_post_resume_step is not None:
+        step = int(first_post_resume_step)
+        if step <= cutoff_step:
+            expected.add(step)
+    return sorted(expected)
 
 
 def _validate_rows(
@@ -198,11 +296,29 @@ def _validate_rows(
     log_interval: int,
     evaluation_interval: int,
     effective_batch: int,
+    metrics_resume: dict[str, Any],
 ) -> dict[str, Any]:
     steps = [int(row["step"]) for row in rows]
-    expected = _expected_steps(cutoff_step=cutoff_step, log_interval=log_interval)
+    expected = _expected_steps(
+        cutoff_step=cutoff_step,
+        log_interval=log_interval,
+        metrics_resume=metrics_resume,
+    )
     if steps != expected:
         raise ValueError(f"{label} metrics do not follow the exact logging schedule")
+    resume_step = metrics_resume.get("resume_step")
+    retained_rows = metrics_resume.get("retained_rows")
+    if resume_step is not None:
+        observed_retained_rows = sum(step <= int(resume_step) for step in steps)
+        if int(resume_step) <= cutoff_step:
+            if observed_retained_rows != int(retained_rows):
+                raise ValueError(
+                    f"{label} metrics resume retained-row count does not match the prefix"
+                )
+        elif int(retained_rows) < observed_retained_rows:
+            raise ValueError(
+                f"{label} metrics resume retained-row count is smaller than the prefix"
+            )
     for row in rows:
         step = int(row["step"])
         if int(row.get("samples_seen", -1)) != step * effective_batch:
@@ -251,6 +367,13 @@ def _validate_rows(
         "samples_seen": int(endpoint["samples_seen"]),
         "all_numeric_metrics_finite": True,
         "steps_exact": True,
+        "metrics_resume": metrics_resume,
+        "metrics_resume_retained_rows_verified": True,
+        "resume_boundary_steps": [
+            step
+            for step in expected
+            if step not in {1, *range(log_interval, cutoff_step + 1, log_interval)}
+        ],
         "samples_seen_exact": True,
         "validation_event_count": len(validation_rows),
         "validation_steps": expected_validation_steps,
@@ -525,6 +648,7 @@ def build_report(
         log_interval=log_interval,
         evaluation_interval=evaluation_interval,
         effective_batch=effective_batch,
+        metrics_resume=validated_cofitok["metrics_resume"],
     )
     dense_trajectory = _validate_rows(
         dense_metrics["rows"],
@@ -533,6 +657,7 @@ def build_report(
         log_interval=log_interval,
         evaluation_interval=evaluation_interval,
         effective_batch=effective_batch,
+        metrics_resume=validated_dense["metrics_resume"],
     )
     paired = _paired_validation(
         cofitok_trajectory.pop("validation_rows"),
@@ -546,7 +671,7 @@ def build_report(
     if abs(parameter_gap) > 0.02:
         raise ValueError("matched parameter gap exceeds 2%")
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "status": "pass",
         "role": "matched_training_trajectory_diagnostic",
         "cutoff_step": cutoff_step,

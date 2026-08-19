@@ -111,6 +111,7 @@ def test_report_binds_matched_validation_without_claiming_quality() -> None:
     )
 
     assert report["status"] == "pass"
+    assert report["schema_version"] == 3
     assert report["images_seen_per_method"] == 1_600
     assert report["contract"]["generation_pair_contract"]["valid"] is True
     paired = report["paired_fixed_validation"]
@@ -132,6 +133,207 @@ def test_report_binds_matched_validation_without_claiming_quality() -> None:
     assert report["claim_boundary"]["formal_50k_gate_substitute"] is False
     assert report["claim_boundary"]["full_training_launch_allowed"] is False
     assert report["claim_boundary"]["schedule_regime_quality_claim_allowed"] is False
+
+
+def test_report_accepts_only_manifest_bound_first_post_resume_step() -> None:
+    cofitok_manifest = _manifest(dense=False)
+    cofitok_manifest["resume"] = "/runs/checkpoint_step_00000125.pt"
+    cofitok_manifest["metrics_resume_reconciliation"] = {
+        "schema_version": 1,
+        "status": "unchanged",
+        "resume_step": 125,
+        "retained_rows": 3,
+        "orphaned_rows": 0,
+        "orphan_archive": None,
+        "orphan_sha256": None,
+    }
+    cofitok = _metrics(dense=False)
+    cofitok["rows"].insert(
+        3,
+        {
+            "step": 126,
+            "samples_seen": 1_008,
+            "epsilon": 0.01,
+            "rollout_consistency": 0.1,
+            "rollout_consistency_scale": 0.63,
+            "ema_teacher_consistency": 0.05,
+            "ema_teacher_consistency_scale": 0.26,
+        },
+    )
+
+    report = trajectory.build_report(
+        cofitok_metrics=cofitok,
+        dense_metrics=_metrics(dense=True),
+        cofitok_manifest=cofitok_manifest,
+        dense_manifest=_manifest(dense=True),
+        cutoff_step=200,
+        expected_revision=REVISION,
+        expected_branch=BRANCH,
+    )
+
+    cofitok_result = report["trajectories"]["cofitok"]
+    assert cofitok_result["row_count"] == 6
+    assert cofitok_result["resume_boundary_steps"] == [126]
+    assert cofitok_result["metrics_resume"]["resume_step"] == 125
+    assert cofitok_result["metrics_resume_retained_rows_verified"] is True
+    assert report["trajectories"]["dense_identity"]["resume_boundary_steps"] == []
+
+
+def test_report_accepts_reconciled_resume_with_bound_orphan_evidence() -> None:
+    cofitok_manifest = _manifest(dense=False)
+    cofitok_manifest["resume"] = "/runs/checkpoint_step_00000125.pt"
+    cofitok_manifest["metrics_resume_reconciliation"] = {
+        "schema_version": 1,
+        "status": "reconciled",
+        "resume_step": 125,
+        "retained_rows": 3,
+        "orphaned_rows": 2,
+        "orphan_archive": "/runs/train_metrics_orphaned_at_resume_00000125.jsonl",
+        "orphan_sha256": "a" * 64,
+    }
+    cofitok = _metrics(dense=False)
+    cofitok["rows"].insert(
+        3,
+        {
+            "step": 126,
+            "samples_seen": 1_008,
+            "epsilon": 0.01,
+            "rollout_consistency": 0.1,
+            "rollout_consistency_scale": 0.63,
+            "ema_teacher_consistency": 0.05,
+            "ema_teacher_consistency_scale": 0.26,
+        },
+    )
+
+    report = trajectory.build_report(
+        cofitok_metrics=cofitok,
+        dense_metrics=_metrics(dense=True),
+        cofitok_manifest=cofitok_manifest,
+        dense_manifest=_manifest(dense=True),
+        cutoff_step=200,
+        expected_revision=REVISION,
+        expected_branch=BRANCH,
+    )
+
+    resume = report["trajectories"]["cofitok"]["metrics_resume"]
+    assert resume["reconciliation_status"] == "reconciled"
+    assert resume["orphaned_rows"] == 2
+    assert resume["orphan_sha256"] == "a" * 64
+
+
+def test_report_rejects_reconciled_resume_without_bound_orphan_hash() -> None:
+    cofitok_manifest = _manifest(dense=False)
+    cofitok_manifest["resume"] = "/runs/checkpoint_step_00000125.pt"
+    cofitok_manifest["metrics_resume_reconciliation"] = {
+        "schema_version": 1,
+        "status": "reconciled",
+        "resume_step": 125,
+        "retained_rows": 3,
+        "orphaned_rows": 2,
+        "orphan_archive": "/runs/train_metrics_orphaned_at_resume_00000125.jsonl",
+        "orphan_sha256": "not-a-sha256",
+    }
+
+    with pytest.raises(ValueError, match="lacks bound orphan evidence"):
+        trajectory.build_report(
+            cofitok_metrics=_metrics(dense=False),
+            dense_metrics=_metrics(dense=True),
+            cofitok_manifest=cofitok_manifest,
+            dense_manifest=_manifest(dense=True),
+            cutoff_step=200,
+            expected_revision=REVISION,
+            expected_branch=BRANCH,
+        )
+
+
+def test_report_rejects_unbound_irregular_logging_step() -> None:
+    cofitok = _metrics(dense=False)
+    cofitok["rows"].insert(
+        3,
+        {
+            "step": 126,
+            "samples_seen": 1_008,
+            "epsilon": 0.01,
+            "rollout_consistency": 0.1,
+            "rollout_consistency_scale": 0.63,
+            "ema_teacher_consistency": 0.05,
+            "ema_teacher_consistency_scale": 0.26,
+        },
+    )
+
+    with pytest.raises(ValueError, match="exact logging schedule"):
+        trajectory.build_report(
+            cofitok_metrics=cofitok,
+            dense_metrics=_metrics(dense=True),
+            cofitok_manifest=_manifest(dense=False),
+            dense_manifest=_manifest(dense=True),
+            cutoff_step=200,
+            expected_revision=REVISION,
+            expected_branch=BRANCH,
+        )
+
+
+def test_report_rejects_resume_checkpoint_reconciliation_step_drift() -> None:
+    cofitok_manifest = _manifest(dense=False)
+    cofitok_manifest["resume"] = "/runs/checkpoint_step_00000125.pt"
+    cofitok_manifest["metrics_resume_reconciliation"] = {
+        "schema_version": 1,
+        "status": "unchanged",
+        "resume_step": 124,
+        "retained_rows": 3,
+        "orphaned_rows": 0,
+        "orphan_archive": None,
+        "orphan_sha256": None,
+    }
+
+    with pytest.raises(ValueError, match="reconciliation steps differ"):
+        trajectory.build_report(
+            cofitok_metrics=_metrics(dense=False),
+            dense_metrics=_metrics(dense=True),
+            cofitok_manifest=cofitok_manifest,
+            dense_manifest=_manifest(dense=True),
+            cutoff_step=200,
+            expected_revision=REVISION,
+            expected_branch=BRANCH,
+        )
+
+
+def test_report_rejects_resume_retained_row_count_drift() -> None:
+    cofitok_manifest = _manifest(dense=False)
+    cofitok_manifest["resume"] = "/runs/checkpoint_step_00000125.pt"
+    cofitok_manifest["metrics_resume_reconciliation"] = {
+        "schema_version": 1,
+        "status": "unchanged",
+        "resume_step": 125,
+        "retained_rows": 2,
+        "orphaned_rows": 0,
+        "orphan_archive": None,
+        "orphan_sha256": None,
+    }
+    cofitok = _metrics(dense=False)
+    cofitok["rows"].insert(
+        3,
+        {
+            "step": 126,
+            "samples_seen": 1_008,
+            "epsilon": 0.01,
+            "rollout_consistency": 0.1,
+            "rollout_consistency_scale": 0.63,
+            "ema_teacher_consistency": 0.05,
+            "ema_teacher_consistency_scale": 0.26,
+        },
+    )
+
+    with pytest.raises(ValueError, match="retained-row count"):
+        trajectory.build_report(
+            cofitok_metrics=cofitok,
+            dense_metrics=_metrics(dense=True),
+            cofitok_manifest=cofitok_manifest,
+            dense_manifest=_manifest(dense=True),
+            cutoff_step=200,
+            expected_revision=REVISION,
+            expected_branch=BRANCH,
+        )
 
 
 def test_report_rejects_sample_accounting_drift() -> None:
