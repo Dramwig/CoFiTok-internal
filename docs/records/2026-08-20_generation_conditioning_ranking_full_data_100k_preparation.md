@@ -112,13 +112,51 @@ output binding without asking for per-stage approval again.
 
 - `src/cofitok/generation/conditioning_ranking_full_data_bridge.py`
 - `scripts/prepare_generation_conditioning_ranking_full_data_bridge.py`
+- `scripts/run_generation_conditioning_ranking_full_data_bridge_preparation_supervisor.py`
 - two ranked full-data 100K configs under `configs/generation/`
 - `tests/test_generation_conditioning_ranking_full_data_bridge.py`
+- `tests/test_generation_conditioning_ranking_full_data_bridge_supervisor.py`
 
 The builder rejects non-ranking recipe drift, asymmetric posttraining results,
 wrong quality-bridge routing, parameter changes between base and ranked arms,
 a direct parameter gap above 2%, malformed evidence identities, altered claim
 boundaries, and any report that claims GPU authorization.
+
+## Source-gated preparation supervisor
+
+Commit `d93f509` adds the missing CPU-only link from the active terminal
+decision chain to this preparation builder. The supervisor is pinned to an
+exact fully clean revision and branch, validates and byte-binds the standing
+authorization, and waits for the source-replayed quality-bridge follow-up
+decision.
+
+The follow-up validator requires the exact decision-builder Git identity, all
+12 terminal gate rows, consistent failed-check ordering and status, both
+50K/100K milestone identities, the non-authorizing decision boundary, and one
+of the frozen follow-up route IDs. A valid route other than
+class-conditioning recovery terminates as `not_selected` without creating a
+preparation. A malformed route fails closed.
+
+If class-conditioning recovery is selected, the supervisor waits for the
+physical posttraining 5K confirmation and calls
+`replay_posttraining_sampling_confirmation`. An asymmetric or double-failed
+generated-sample result terminates as `not_selected`; only the exact CoFiTok
+and dense double-pass is eligible. The eligible path rebuilds the preparation
+from the four tracked configs and actual CPU-instantiated parameter counts,
+then atomically writes it once. A restarted supervisor must rebuild the same
+payload and replay the existing preparation exactly.
+
+The PID, mutable status, persistent preparation, and any failure status are
+required to live outside both the clean Git checkout and the future ranked
+training output root. The supervisor never queries `nvidia-smi`, launches an
+experiment child, trains, samples, signals a process, creates the future
+training root, promotes a checkpoint, or authorizes 300K/release.
+
+At the post-implementation live check, dense was still healthy at step
+`48,750/50,000` with `3,120,000` images seen. Its protected 50K checkpoint,
+paired milestone report, and terminal bridge result were still absent, so the
+new supervisor remained preparation-only and no downstream eligibility was
+claimed.
 
 ## Verification
 
@@ -126,6 +164,10 @@ boundaries, and any report that claims GPU authorization.
 - Focused new/config/pair/training suite: 24 passed.
 - Expanded conditioning-ranking, pair-contract, exact-resume, conditioning,
   and loss regression selection: 160 passed, 1,057 deselected.
+- Supervisor plus full-data preparation focused suite: 17 passed.
+- Expanded conditioning-ranking, pair-contract, exact-resume, and
+  class-conditioning regression selection after the supervisor change:
+  144 passed, 1,083 deselected.
 - Real config model instantiation: counts reproduced exactly as listed above.
 - No GPU process was launched, signaled, paused, or modified by this work.
 
