@@ -29,6 +29,7 @@ from cofitok.generation.quality_bridge import (
     build_quality_bridge_launch_receipt,
     build_quality_bridge_preparation,
     build_quality_bridge_result,
+    validate_quality_bridge_preparation,
     validate_quality_bridge_execution_approval,
     validate_quality_bridge_launch_receipt_contract,
 )
@@ -263,6 +264,16 @@ def test_quality_bridge_preparation_selects_100k_without_authorizing_300k() -> N
     assert report["source_quality_hold"]["source_equivalent_epochs"] == pytest.approx(
         24.96859419012024
     )
+    validated = validate_quality_bridge_preparation(report)
+    assert validated["training_exposure"]["source"]["dataset"] == (
+        "imagenet_256_10pct"
+    )
+    assert validated["training_exposure"]["bridge"][
+        "milestone_equivalent_epochs"
+    ]["50000"] == pytest.approx(3_200_000 / 1_281_167)
+    assert validated["training_exposure"]["comparison"][
+        "same_step_count_means_same_exposure"
+    ] is False
     assert report["evaluation_contract"]["terminal"]["samples_per_method"] == 10_000
     assert report["evaluation_contract"]["terminal"]["skip_precision_recall_allowed"] is False
     assert report["authorization_boundary"] == {
@@ -273,6 +284,42 @@ def test_quality_bridge_preparation_selects_100k_without_authorizing_300k() -> N
         "new_gate_required": True,
         "explicit_execution_approval_required": True,
     }
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        (
+            lambda report: report["selection"].update(equivalent_epochs=99.0),
+            "selection differs",
+        ),
+        (
+            lambda report: report["selection"]["milestone_equivalent_epochs"].update(
+                {"50000": 99.0}
+            ),
+            "selection differs",
+        ),
+        (
+            lambda report: report["source_quality_hold"].update(
+                source_train_images=1
+            ),
+            "source hold differs",
+        ),
+        (
+            lambda report: report["source_quality_hold"].update(
+                source_equivalent_epochs=99.0
+            ),
+            "source hold differs",
+        ),
+    ],
+)
+def test_quality_bridge_preparation_rejects_mutated_exposure(
+    mutation, message: str
+) -> None:
+    report = _preparation()
+    mutation(report)
+    with pytest.raises(ValueError, match=message):
+        validate_quality_bridge_preparation(report)
 
 
 def test_completed_quality_bridge_pair_is_valid_without_a_scaling_authorization() -> None:
@@ -1121,6 +1168,12 @@ def test_terminal_result_is_source_bound_complete_and_non_authorizing(
     assert report["authorization_boundary"] == RESULT_AUTHORIZATION_BOUNDARY
     assert report["authorization_boundary"]["full_training_launch_allowed"] is False
     assert report["authorization_boundary"]["full_300k_launch_allowed"] is False
+    assert report["training_exposure"]["source"]["equivalent_epochs"] == pytest.approx(
+        3_200_000 / 128_161
+    )
+    assert report["training_exposure"]["bridge"]["equivalent_epochs"] == pytest.approx(
+        6_400_000 / 1_281_167
+    )
 
     authorized_pair = copy.deepcopy(pair_validation)
     authorized_pair["authorization_gate_identity_sha256"] = "f" * 64

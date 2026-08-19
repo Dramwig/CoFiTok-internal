@@ -1,0 +1,156 @@
+{
+  "claim_boundary": {
+    "formal_gate_substitute": false,
+    "method_quality_ranking_allowed": false,
+    "sample_quality_claim_allowed": false,
+    "training_scale_claim_allowed": true
+  },
+  "comparison": {
+    "dataset_normalized_budget_directly_comparable": false,
+    "image_budget_directly_comparable": false,
+    "quality_metric_comparison_allowed": false,
+    "quality_metric_comparison_reason": "Training exposure alone never establishes matched sampling, evaluator, checkpoint, random-stream, or generated-sample provenance.",
+    "same_completed_steps": true,
+    "same_dataset": false,
+    "same_dataset_identity": false,
+    "same_dataset_normalized_exposure": false,
+    "same_effective_batch_size": true,
+    "same_equivalent_epochs": false,
+    "same_images_seen": true,
+    "step_budget_directly_comparable": false
+  },
+  "exposure_schema_version": 1,
+  "quality_bridge_plan": {
+    "source": {
+      "bytes": 23398,
+      "path": "D:/cofitok-label-ranking-posttraining5k-sampling/artifacts/reports/generation/training_exposure_audit_2026-08-19/source/full_data_quality_bridge_preparation.json",
+      "sha256": "7398d9a6f096ea9c178295c9016bb56fd38e28dff30f26662ae4225aded208ea"
+    },
+    "training_exposure": {
+      "bridge": {
+        "dataset": "imagenet_256",
+        "effective_batch_size": 64,
+        "equivalent_epochs": 4.995445558619602,
+        "images_seen_per_method": 6400000,
+        "milestone_equivalent_epochs": {
+          "100000": 4.995445558619602,
+          "50000": 2.497722779309801
+        },
+        "steps": 100000,
+        "train_image_count": 1281167
+      },
+      "comparison": {
+        "bridge_to_source_equivalent_epochs_ratio": 0.20006915569945213,
+        "bridge_to_source_images_seen_ratio": 2.0,
+        "cross_dataset_quality_comparison_requires_explicit_protocol_binding": true,
+        "milestone_to_source_equivalent_epochs_ratio": {
+          "100000": 0.20006915569945213,
+          "50000": 0.10003457784972607
+        },
+        "same_step_count_means_same_exposure": false
+      },
+      "source": {
+        "dataset": "imagenet_256_10pct",
+        "effective_batch_size": 64,
+        "equivalent_epochs": 24.96859419012024,
+        "images_seen_per_method": 3200000,
+        "steps": 50000,
+        "train_image_count": 128161
+      }
+    }
+  },
+  "role": "generation_training_exposure_audit",
+  "rows": {
+    "frozen_10pct_cofitok_50k": {
+      "completed_equivalent_epochs": 24.96859419012024,
+      "completed_fraction": 1.0,
+      "completed_steps": 50000,
+      "dataset": "imagenet_256_10pct",
+      "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+      "effective_batch_size": 64,
+      "expected_samples_seen_at_completed_step": 3200000,
+      "git": {
+        "branch": "scale/generation-stability-50k-preflight",
+        "dirty": false,
+        "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+      },
+      "gradient_accumulation_steps": 1,
+      "micro_batch_size": 64,
+      "samples_seen": 3200000,
+      "schema_version": 1,
+      "status": "complete",
+      "target_equivalent_epochs": 24.96859419012024,
+      "target_samples_seen": 3200000,
+      "target_steps": 50000,
+      "train_image_count": 128161,
+      "training_complete": true
+    },
+    "frozen_10pct_dense_50k": {
+      "completed_equivalent_epochs": 24.96859419012024,
+      "completed_fraction": 1.0,
+      "completed_steps": 50000,
+      "dataset": "imagenet_256_10pct",
+      "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+      "effective_batch_size": 64,
+      "expected_samples_seen_at_completed_step": 3200000,
+      "git": {
+        "branch": "scale/generation-stability-50k-preflight",
+        "dirty": false,
+        "revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836"
+      },
+      "gradient_accumulation_steps": 1,
+      "micro_batch_size": 64,
+      "samples_seen": 3200000,
+      "schema_version": 1,
+      "status": "complete",
+      "target_equivalent_epochs": 24.96859419012024,
+      "target_samples_seen": 3200000,
+      "target_steps": 50000,
+      "train_image_count": 128161,
+      "training_complete": true
+    },
+    "full_data_cofitok_50k": {
+      "completed_equivalent_epochs": 2.497722779309801,
+      "completed_fraction": 0.5,
+      "completed_steps": 50000,
+      "dataset": "imagenet_256",
+      "dataset_identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+      "effective_batch_size": 64,
+      "expected_samples_seen_at_completed_step": 3200000,
+      "git": {
+        "branch": "scale/generation-stability-quality-bridge-100k",
+        "dirty": false,
+        "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a"
+      },
+      "gradient_accumulation_steps": 1,
+      "micro_batch_size": 64,
+      "samples_seen": 3200000,
+      "schema_version": 1,
+      "status": "partial",
+      "target_equivalent_epochs": 4.995445558619602,
+      "target_samples_seen": 6400000,
+      "target_steps": 100000,
+      "train_image_count": 1281167,
+      "training_complete": false
+    }
+  },
+  "schema_version": 1,
+  "sources": {
+    "frozen_10pct_cofitok_50k": {
+      "bytes": 10628,
+      "path": "D:/cofitok-label-ranking-posttraining5k-sampling/artifacts/reports/generation/training_exposure_audit_2026-08-19/source/frozen_10pct_cofitok_training_report.json",
+      "sha256": "8eeeb5e1cac3a3fe38d20fbc26be7af88788910f4dc86c5d34548be50a1b77fd"
+    },
+    "frozen_10pct_dense_50k": {
+      "bytes": 9832,
+      "path": "D:/cofitok-label-ranking-posttraining5k-sampling/artifacts/reports/generation/training_exposure_audit_2026-08-19/source/frozen_10pct_dense_training_report.json",
+      "sha256": "68374ce7a33f2fe3979f53d255785250ac6aeb60db80934f1bf25e319216bb6c"
+    },
+    "full_data_cofitok_50k": {
+      "bytes": 11245,
+      "path": "D:/cofitok-label-ranking-posttraining5k-sampling/artifacts/reports/generation/full_data_quality_bridge_cofitok_step_00050000_2026-08-19/source/training_report.json",
+      "sha256": "6ac71cc89e5f5769fe5d4b4e9e6789f1ea377ccd9179f435e23ce4e27ea81cd7"
+    }
+  },
+  "status": "pass"
+}

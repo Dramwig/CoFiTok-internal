@@ -109,6 +109,54 @@ def _finite_float(value: Any, *, label: str) -> float:
     return number
 
 
+def quality_bridge_training_exposure_contract() -> dict[str, Any]:
+    source_spec = FORMAL_GENERATION_DATASETS[QUALITY_BRIDGE_SOURCE_DATASET]
+    bridge_spec = FORMAL_GENERATION_DATASETS[QUALITY_BRIDGE_DATASET]
+    source_images = QUALITY_BRIDGE_SOURCE_STEPS * QUALITY_BRIDGE_EFFECTIVE_BATCH
+    bridge_images = QUALITY_BRIDGE_STEPS * QUALITY_BRIDGE_EFFECTIVE_BATCH
+    source_epochs = source_images / source_spec.train_images
+    bridge_epochs = bridge_images / bridge_spec.train_images
+    milestone_epochs = {
+        str(step): step * QUALITY_BRIDGE_EFFECTIVE_BATCH / bridge_spec.train_images
+        for step in QUALITY_BRIDGE_MILESTONES
+    }
+    return {
+        "source": {
+            "dataset": QUALITY_BRIDGE_SOURCE_DATASET,
+            "train_image_count": source_spec.train_images,
+            "steps": QUALITY_BRIDGE_SOURCE_STEPS,
+            "effective_batch_size": QUALITY_BRIDGE_EFFECTIVE_BATCH,
+            "images_seen_per_method": source_images,
+            "equivalent_epochs": source_epochs,
+        },
+        "bridge": {
+            "dataset": QUALITY_BRIDGE_DATASET,
+            "train_image_count": bridge_spec.train_images,
+            "steps": QUALITY_BRIDGE_STEPS,
+            "effective_batch_size": QUALITY_BRIDGE_EFFECTIVE_BATCH,
+            "images_seen_per_method": bridge_images,
+            "equivalent_epochs": bridge_epochs,
+            "milestone_equivalent_epochs": milestone_epochs,
+        },
+        "comparison": {
+            "bridge_to_source_images_seen_ratio": bridge_images / source_images,
+            "bridge_to_source_equivalent_epochs_ratio": bridge_epochs
+            / source_epochs,
+            "milestone_to_source_equivalent_epochs_ratio": {
+                step: epochs / source_epochs
+                for step, epochs in milestone_epochs.items()
+            },
+            "same_step_count_means_same_exposure": False,
+            "cross_dataset_quality_comparison_requires_explicit_protocol_binding": True,
+        },
+    }
+
+
+def _same_float(value: Any, expected: float, *, label: str) -> bool:
+    observed = _finite_float(value, label=label)
+    return math.isclose(observed, expected, rel_tol=0.0, abs_tol=1e-12)
+
+
 def _valid_hex_digest(value: Any, *, length: int = 64) -> bool:
     text = str(value)
     return len(text) == length and all(
@@ -176,11 +224,36 @@ def validate_quality_bridge_preparation(
         for value in (selection, evaluation, matched, hold)
     ):
         raise ValueError("quality bridge preparation evidence is incomplete")
+    exposure = quality_bridge_training_exposure_contract()
+    source_exposure = exposure["source"]
+    bridge_exposure = exposure["bridge"]
+    milestone_epochs = selection.get("milestone_equivalent_epochs")
     if (
         selection.get("dataset") != QUALITY_BRIDGE_DATASET
+        or int(selection.get("train_images", -1))
+        != bridge_exposure["train_image_count"]
         or int(selection.get("steps", -1)) != QUALITY_BRIDGE_STEPS
         or int(selection.get("effective_batch_size", -1))
         != QUALITY_BRIDGE_EFFECTIVE_BATCH
+        or int(selection.get("images_seen_per_method", -1))
+        != bridge_exposure["images_seen_per_method"]
+        or not _same_float(
+            selection.get("equivalent_epochs"),
+            bridge_exposure["equivalent_epochs"],
+            label="quality bridge equivalent epochs",
+        )
+        or not isinstance(milestone_epochs, Mapping)
+        or set(milestone_epochs) != set(bridge_exposure["milestone_equivalent_epochs"])
+        or any(
+            not _same_float(
+                milestone_epochs[step],
+                expected,
+                label=f"quality bridge milestone {step} equivalent epochs",
+            )
+            for step, expected in bridge_exposure[
+                "milestone_equivalent_epochs"
+            ].items()
+        )
         or int(selection.get("base_channels", -1)) != 128
         or selection.get("milestone_steps") != list(QUALITY_BRIDGE_MILESTONES)
         or selection.get("capacity_change_allowed") is not False
@@ -212,7 +285,18 @@ def validate_quality_bridge_preparation(
         hold.get("status") != "validated_hold"
         or hold.get("failed_gates") != ["absolute_fid_quality"]
         or hold.get("source_dataset") != QUALITY_BRIDGE_SOURCE_DATASET
+        or int(hold.get("source_train_images", -1))
+        != source_exposure["train_image_count"]
         or int(hold.get("source_steps", -1)) != QUALITY_BRIDGE_SOURCE_STEPS
+        or int(hold.get("source_effective_batch_size", -1))
+        != source_exposure["effective_batch_size"]
+        or int(hold.get("source_images_seen_per_method", -1))
+        != source_exposure["images_seen_per_method"]
+        or not _same_float(
+            hold.get("source_equivalent_epochs"),
+            source_exposure["equivalent_epochs"],
+            label="quality bridge source equivalent epochs",
+        )
     ):
         raise ValueError("quality bridge source hold differs")
     recipe = matched.get("config_validation", {}).get("training_recipe", {})
@@ -231,6 +315,7 @@ def validate_quality_bridge_preparation(
         "milestone_steps": list(QUALITY_BRIDGE_MILESTONES),
         "terminal_samples": QUALITY_BRIDGE_TERMINAL_SAMPLES,
         "source_hold": copy.deepcopy(dict(hold)),
+        "training_exposure": exposure,
     }
 
 
@@ -1358,6 +1443,9 @@ def build_quality_bridge_result(
             "pair_validation": copy.deepcopy(dict(training_pair_validation)),
             "audits": audits,
         },
+        "training_exposure": copy.deepcopy(
+            preparation_evidence["training_exposure"]
+        ),
         "milestones": milestones,
         "terminal": {
             "sampling_preflights": preflights,

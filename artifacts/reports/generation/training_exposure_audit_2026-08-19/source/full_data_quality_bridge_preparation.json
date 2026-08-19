@@ -1,0 +1,672 @@
+{
+  "authorization_boundary": {
+    "explicit_execution_approval_required": true,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "new_gate_required": true,
+    "quality_bridge_launch_allowed": false,
+    "report_is_promotion_gate": false
+  },
+  "evaluation_contract": {
+    "milestones": {
+      "guidance_rescale": 0.0,
+      "guidance_scale": 1.5,
+      "mechanism_images": 256,
+      "role": "non_claim_trend_diagnostic",
+      "sample_steps": 50,
+      "sampler": "ddim",
+      "samples_per_method": 2048,
+      "steps": [
+        50000,
+        100000
+      ],
+      "weights": "ema"
+    },
+    "terminal": {
+      "guidance_rescale": 0.0,
+      "guidance_scale": 1.5,
+      "matched_fixed_random_stream_required": true,
+      "metrics": [
+        "fid",
+        "inception_score",
+        "precision",
+        "recall"
+      ],
+      "role": "quality_bridge_decision_evidence",
+      "sample_steps": 100,
+      "sampler": "ddim",
+      "samples_per_method": 10000,
+      "skip_precision_recall_allowed": false,
+      "step": 100000,
+      "weights": "ema"
+    }
+  },
+  "matched_training_contract": {
+    "cofitok_config": {
+      "bytes": 3019,
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/configs/generation/imagenet256_stability_quality_bridge_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k.json",
+      "sha256": "40b5815c1aa92c1a22c585ddbe57d5232e57a031ece238bd27d1a0a1422fa14e"
+    },
+    "config_validation": {
+      "cofitok": {
+        "name": "imagenet256_stability_quality_bridge_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k",
+        "parameter_count": 62834083,
+        "synthesis_mode": "fixed_basis",
+        "token_count": 8
+      },
+      "dense": {
+        "name": "imagenet256_stability_quality_bridge_rollout_x0_u2_ema_teacher_dense_100k",
+        "parameter_count": 62824707,
+        "synthesis_mode": "dense_identity",
+        "token_count": 1
+      },
+      "matched_backbone": {
+        "base_channels": 128,
+        "class_dropout_prob": 0.1,
+        "image_channels": 3,
+        "image_size": 256,
+        "num_classes": 1000,
+        "predictor_attention_resolutions": [
+          32,
+          16
+        ],
+        "predictor_channel_multipliers": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "predictor_dropout": 0.0,
+        "predictor_gradient_checkpointing": true,
+        "predictor_num_heads": 8,
+        "predictor_num_res_blocks": 2,
+        "predictor_type": "scalable_unet"
+      },
+      "matched_data": {
+        "batch_size": 16,
+        "channels": 3,
+        "class_conditional": true,
+        "dataset": "imagenet_256",
+        "image_size": 256,
+        "num_workers": 8,
+        "persistent_workers": true,
+        "prefetch_factor": 2,
+        "random_horizontal_flip_prob": 0.5,
+        "root": "/root/autodl-tmp/CoFiTok/datasets"
+      },
+      "matched_diffusion": {
+        "beta_end": 0.02,
+        "beta_start": 0.0001,
+        "num_train_timesteps": 1000,
+        "prediction_target": "epsilon",
+        "schedule_type": "cosine"
+      },
+      "matched_optimization": {
+        "betas": [
+          0.9,
+          0.99
+        ],
+        "ema_decay": 0.9999,
+        "ema_warmup_steps": 2000,
+        "grad_clip_norm": 1.0,
+        "gradient_accumulation_steps": 4,
+        "learning_rate": 0.0001,
+        "log_interval": 50,
+        "min_learning_rate": 1e-05,
+        "visualization_count": 8,
+        "warmup_steps": 1000,
+        "weight_decay": 0.01
+      },
+      "matched_runtime": {
+        "allow_tf32": true,
+        "checkpoint_interval": 5000,
+        "compile_model": false,
+        "cudnn_benchmark": false,
+        "device": "cuda",
+        "evaluation_interval": 1000,
+        "keep_last_checkpoints": 3,
+        "precision": "bf16",
+        "protected_checkpoint_steps": [
+          50000,
+          100000
+        ],
+        "seed": 2027,
+        "steps": 100000
+      },
+      "max_parameter_gap": 0.02,
+      "mismatches": [],
+      "relative_parameter_gap": 0.00014924064826915946,
+      "status": "pass",
+      "training_recipe": {
+        "allowed_runtime_batches": [
+          [
+            1,
+            64
+          ],
+          [
+            2,
+            32
+          ],
+          [
+            4,
+            16
+          ],
+          [
+            8,
+            8
+          ],
+          [
+            16,
+            4
+          ],
+          [
+            32,
+            2
+          ],
+          [
+            64,
+            1
+          ]
+        ],
+        "effective_batches": {
+          "cofitok": {
+            "effective_batch_size": 64,
+            "gradient_accumulation_steps": 4,
+            "micro_batch_size": 16
+          },
+          "dense_identity": {
+            "effective_batch_size": 64,
+            "gradient_accumulation_steps": 4,
+            "micro_batch_size": 16
+          }
+        },
+        "expected_shared": {
+          "data.channels": 3,
+          "data.class_conditional": true,
+          "data.dataset": "imagenet_256",
+          "data.image_size": 256,
+          "data.random_horizontal_flip_prob": 0.5,
+          "diffusion.num_train_timesteps": 1000,
+          "diffusion.prediction_target": "epsilon",
+          "diffusion.schedule_type": "cosine",
+          "loss.ema_teacher_consistency_batch_fraction": 0.0625,
+          "loss.ema_teacher_consistency_start_step": 30000,
+          "loss.ema_teacher_consistency_warmup_steps": 10000,
+          "loss.ema_teacher_consistency_weight": 0.25,
+          "loss.rollout_consistency_batch_fraction": 0.125,
+          "loss.rollout_consistency_clip_x0": true,
+          "loss.rollout_consistency_mode": "clipped_x0",
+          "loss.rollout_consistency_start_step": 0,
+          "loss.rollout_consistency_timestep_delta": 10,
+          "loss.rollout_consistency_unroll_steps": 2,
+          "loss.rollout_consistency_warmup_steps": 10000,
+          "loss.rollout_consistency_weight": 0.1,
+          "model.base_channels": 128,
+          "model.class_dropout_prob": 0.1,
+          "model.image_channels": 3,
+          "model.image_size": 256,
+          "model.num_classes": 1000,
+          "model.predictor_attention_resolutions": [
+            32,
+            16
+          ],
+          "model.predictor_channel_multipliers": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "model.predictor_dropout": 0.0,
+          "model.predictor_gradient_checkpointing": true,
+          "model.predictor_num_heads": 8,
+          "model.predictor_num_res_blocks": 2,
+          "model.predictor_type": "scalable_unet",
+          "optimization.betas": [
+            0.9,
+            0.99
+          ],
+          "optimization.ema_decay": 0.9999,
+          "optimization.ema_warmup_steps": 2000,
+          "optimization.grad_clip_norm": 1.0,
+          "optimization.learning_rate": 0.0001,
+          "optimization.min_learning_rate": 1e-05,
+          "optimization.warmup_steps": 1000,
+          "optimization.weight_decay": 0.01,
+          "runtime.allow_tf32": true,
+          "runtime.checkpoint_interval": 5000,
+          "runtime.device": "cuda",
+          "runtime.evaluation_interval": 1000,
+          "runtime.keep_last_checkpoints": 3,
+          "runtime.precision": "bf16",
+          "runtime.protected_checkpoint_steps": [
+            50000,
+            100000
+          ],
+          "runtime.seed": 2027,
+          "runtime.steps": 100000
+        },
+        "issues": [],
+        "observed": {
+          "cofitok": {
+            "data.channels": 3,
+            "data.class_conditional": true,
+            "data.dataset": "imagenet_256",
+            "data.image_size": 256,
+            "data.random_horizontal_flip_prob": 0.5,
+            "diffusion.num_train_timesteps": 1000,
+            "diffusion.prediction_target": "epsilon",
+            "diffusion.schedule_type": "cosine",
+            "loss.denoise_path_component_weight": 0.1,
+            "loss.denoise_path_energy_capacity_power": 0.5,
+            "loss.denoise_path_energy_capacity_weight": 0.75,
+            "loss.denoise_path_energy_mode": "hellinger_stable",
+            "loss.denoise_path_energy_weight": 0.15,
+            "loss.denoise_path_prefix_weight": 0.05,
+            "loss.denoise_path_progress_mode": "token_capacity",
+            "loss.denoise_path_progress_power": 1.0,
+            "loss.ema_teacher_consistency_batch_fraction": 0.0625,
+            "loss.ema_teacher_consistency_start_step": 30000,
+            "loss.ema_teacher_consistency_warmup_steps": 10000,
+            "loss.ema_teacher_consistency_weight": 0.25,
+            "loss.epsilon_weight": 1.0,
+            "loss.low_snr_high_frequency_power": 0.5,
+            "loss.low_snr_high_frequency_weight": 0.5,
+            "loss.rollout_consistency_batch_fraction": 0.125,
+            "loss.rollout_consistency_clip_x0": true,
+            "loss.rollout_consistency_mode": "clipped_x0",
+            "loss.rollout_consistency_start_step": 0,
+            "loss.rollout_consistency_timestep_delta": 10,
+            "loss.rollout_consistency_unroll_steps": 2,
+            "loss.rollout_consistency_warmup_steps": 10000,
+            "loss.rollout_consistency_weight": 0.1,
+            "model.base_channels": 128,
+            "model.class_dropout_prob": 0.1,
+            "model.gamma_mode": "fixed_one",
+            "model.image_channels": 3,
+            "model.image_size": 256,
+            "model.num_classes": 1000,
+            "model.predictor_attention_resolutions": [
+              32,
+              16
+            ],
+            "model.predictor_channel_multipliers": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "model.predictor_dropout": 0.0,
+            "model.predictor_gradient_checkpointing": true,
+            "model.predictor_num_heads": 8,
+            "model.predictor_num_res_blocks": 2,
+            "model.predictor_type": "scalable_unet",
+            "model.predictor_use_feedback": true,
+            "model.synthesis_active_token_channels": [],
+            "model.synthesis_kernel_size": 1,
+            "model.synthesis_mode": "fixed_basis",
+            "model.synthesis_token_strides": [],
+            "model.token_channel_schedule": [
+              4,
+              4,
+              8,
+              8,
+              8,
+              1,
+              1,
+              1
+            ],
+            "model.token_channels": 8,
+            "model.token_count": 8,
+            "model.token_spatial_strides": [
+              16,
+              16,
+              8,
+              8,
+              4,
+              1,
+              1,
+              1
+            ],
+            "optimization.betas": [
+              0.9,
+              0.99
+            ],
+            "optimization.ema_decay": 0.9999,
+            "optimization.ema_warmup_steps": 2000,
+            "optimization.grad_clip_norm": 1.0,
+            "optimization.learning_rate": 0.0001,
+            "optimization.min_learning_rate": 1e-05,
+            "optimization.warmup_steps": 1000,
+            "optimization.weight_decay": 0.01,
+            "runtime.allow_tf32": true,
+            "runtime.checkpoint_interval": 5000,
+            "runtime.device": "cuda",
+            "runtime.evaluation_interval": 1000,
+            "runtime.keep_last_checkpoints": 3,
+            "runtime.precision": "bf16",
+            "runtime.protected_checkpoint_steps": [
+              50000,
+              100000
+            ],
+            "runtime.seed": 2027,
+            "runtime.steps": 100000
+          },
+          "dense_identity": {
+            "data.channels": 3,
+            "data.class_conditional": true,
+            "data.dataset": "imagenet_256",
+            "data.image_size": 256,
+            "data.random_horizontal_flip_prob": 0.5,
+            "diffusion.num_train_timesteps": 1000,
+            "diffusion.prediction_target": "epsilon",
+            "diffusion.schedule_type": "cosine",
+            "loss.ema_teacher_consistency_batch_fraction": 0.0625,
+            "loss.ema_teacher_consistency_start_step": 30000,
+            "loss.ema_teacher_consistency_warmup_steps": 10000,
+            "loss.ema_teacher_consistency_weight": 0.25,
+            "loss.epsilon_weight": 1.0,
+            "loss.rollout_consistency_batch_fraction": 0.125,
+            "loss.rollout_consistency_clip_x0": true,
+            "loss.rollout_consistency_mode": "clipped_x0",
+            "loss.rollout_consistency_start_step": 0,
+            "loss.rollout_consistency_timestep_delta": 10,
+            "loss.rollout_consistency_unroll_steps": 2,
+            "loss.rollout_consistency_warmup_steps": 10000,
+            "loss.rollout_consistency_weight": 0.1,
+            "model.base_channels": 128,
+            "model.class_dropout_prob": 0.1,
+            "model.image_channels": 3,
+            "model.image_size": 256,
+            "model.num_classes": 1000,
+            "model.predictor_attention_resolutions": [
+              32,
+              16
+            ],
+            "model.predictor_channel_multipliers": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "model.predictor_dropout": 0.0,
+            "model.predictor_gradient_checkpointing": true,
+            "model.predictor_num_heads": 8,
+            "model.predictor_num_res_blocks": 2,
+            "model.predictor_type": "scalable_unet",
+            "model.predictor_use_feedback": false,
+            "model.synthesis_mode": "dense_identity",
+            "model.token_channel_schedule": [],
+            "model.token_channels": 3,
+            "model.token_count": 1,
+            "model.token_spatial_strides": [],
+            "optimization.betas": [
+              0.9,
+              0.99
+            ],
+            "optimization.ema_decay": 0.9999,
+            "optimization.ema_warmup_steps": 2000,
+            "optimization.grad_clip_norm": 1.0,
+            "optimization.learning_rate": 0.0001,
+            "optimization.min_learning_rate": 1e-05,
+            "optimization.warmup_steps": 1000,
+            "optimization.weight_decay": 0.01,
+            "runtime.allow_tf32": true,
+            "runtime.checkpoint_interval": 5000,
+            "runtime.device": "cuda",
+            "runtime.evaluation_interval": 1000,
+            "runtime.keep_last_checkpoints": 3,
+            "runtime.precision": "bf16",
+            "runtime.protected_checkpoint_steps": [
+              50000,
+              100000
+            ],
+            "runtime.seed": 2027,
+            "runtime.steps": 100000
+          }
+        },
+        "pair_contract": {
+          "dense_nonzero_auxiliary_losses": [],
+          "factorization_model_fields": [
+            "deep_synthesis_depth",
+            "deep_synthesis_hidden_channels",
+            "gamma_mode",
+            "predictor_use_feedback",
+            "synthesis_active_token_channels",
+            "synthesis_kernel_size",
+            "synthesis_mode",
+            "synthesis_token_strides",
+            "token_channel_schedule",
+            "token_channels",
+            "token_count",
+            "token_spatial_strides"
+          ],
+          "identities": {
+            "cofitok_feedback": true,
+            "cofitok_synthesis": "fixed_basis",
+            "cofitok_token_count": 8,
+            "dense_feedback": false,
+            "dense_synthesis": "dense_identity",
+            "dense_token_count": 1
+          },
+          "issues": [],
+          "matched_config_sections": [
+            "data",
+            "diffusion",
+            "runtime",
+            "optimization"
+          ],
+          "mismatched_config_sections": [],
+          "mismatched_shared_model_fields": [],
+          "mismatched_shared_training_loss_fields": [],
+          "primary_epsilon_weight": 1.0,
+          "shared_model_fields": [
+            "base_channels",
+            "class_dropout_prob",
+            "image_channels",
+            "image_size",
+            "num_classes",
+            "predictor_attention_resolutions",
+            "predictor_channel_multipliers",
+            "predictor_depth",
+            "predictor_dropout",
+            "predictor_gradient_checkpointing",
+            "predictor_multiscale_levels",
+            "predictor_num_heads",
+            "predictor_num_res_blocks",
+            "predictor_type"
+          ],
+          "shared_training_loss_fields": [
+            "ema_teacher_consistency_batch_fraction",
+            "ema_teacher_consistency_start_step",
+            "ema_teacher_consistency_warmup_steps",
+            "ema_teacher_consistency_weight",
+            "epsilon_weight",
+            "rollout_consistency_batch_fraction",
+            "rollout_consistency_clip_x0",
+            "rollout_consistency_mode",
+            "rollout_consistency_start_step",
+            "rollout_consistency_timestep_delta",
+            "rollout_consistency_unroll_steps",
+            "rollout_consistency_warmup_steps",
+            "rollout_consistency_weight"
+          ],
+          "valid": true
+        },
+        "schema": "cofitok_generation_training_recipe_v4",
+        "stage": "stability_quality_bridge",
+        "token_layout": {
+          "aggregate_compression": 0.7933884297520661,
+          "aggregate_token_to_dense_ratio": 1.2604166666666667,
+          "channels": [
+            4,
+            4,
+            8,
+            8,
+            8,
+            1,
+            1,
+            1
+          ],
+          "dense_scalar_count": 196608,
+          "full_resolution_channels": 3,
+          "issues": [],
+          "per_token_compression": [
+            192.0,
+            192.0,
+            24.0,
+            24.0,
+            6.0,
+            3.0,
+            3.0,
+            3.0
+          ],
+          "required_full_resolution_channels": 3,
+          "scalar_counts": [
+            1024,
+            1024,
+            8192,
+            8192,
+            32768,
+            65536,
+            65536,
+            65536
+          ],
+          "spatial_sizes": [
+            16,
+            16,
+            32,
+            32,
+            64,
+            256,
+            256,
+            256
+          ],
+          "spatial_strides": [
+            16,
+            16,
+            8,
+            8,
+            4,
+            1,
+            1,
+            1
+          ],
+          "total_scalar_count": 247808
+        },
+        "valid": true
+      }
+    },
+    "dense_config": {
+      "bytes": 2459,
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/configs/generation/imagenet256_stability_quality_bridge_rollout_x0_u2_ema_teacher_dense_100k.json",
+      "sha256": "f8f1c1967468bef4db1e9a00e8f80c3da5af22e417d8ab4864afcb4fb68f884c"
+    },
+    "recipe_stage": "stability_quality_bridge",
+    "source_parameter_counts": {
+      "cofitok": 62834083,
+      "dense_identity": 62824707
+    }
+  },
+  "role": "stability_full_data_quality_bridge_preparation",
+  "schema_version": 1,
+  "selection": {
+    "base_channels": 128,
+    "budget_analysis": {
+      "100000": {
+        "decision": "selected_terminal_budget",
+        "equivalent_epochs": 4.995445558619602,
+        "reason": "brackets the approximately four-epoch repetition inflection while retaining a matched 50K slope point"
+      },
+      "150000": {
+        "decision": "rejected",
+        "equivalent_epochs": 7.493168337929403,
+        "reason": "adds fifty percent training cost after the main unique-data coverage window and weakens diagnostic efficiency"
+      },
+      "50000": {
+        "decision": "retain_as_intermediate_milestone",
+        "equivalent_epochs": 2.497722779309801,
+        "reason": "clean early full-data quality point, but insufficient as the only terminal decision for continued optimization"
+      }
+    },
+    "capacity_change_allowed": false,
+    "dataset": "imagenet_256",
+    "effective_batch_size": 64,
+    "equivalent_epochs": 4.995445558619602,
+    "images_seen_per_method": 6400000,
+    "milestone_equivalent_epochs": {
+      "100000": 4.995445558619602,
+      "50000": 2.497722779309801
+    },
+    "milestone_steps": [
+      50000,
+      100000
+    ],
+    "qualified_model_and_loss_recipe_preserved": true,
+    "steps": 100000,
+    "train_images": 1281167
+  },
+  "source_quality_hold": {
+    "cofitok_fid": 138.29702495267782,
+    "cofitok_fid_relative_to_dense": 0.9131670249145621,
+    "cofitok_recall": 0.008679999969899654,
+    "dense_fid": 151.4476773464495,
+    "dense_recall": 0.00977999996393919,
+    "failed_gates": [
+      "absolute_fid_quality"
+    ],
+    "max_absolute_fid": 100.0,
+    "max_endpoint_regression": 0.05,
+    "max_fid_regression": 0.05,
+    "max_precision_regression": 0.05,
+    "max_recall_regression": 0.05,
+    "min_coarse_token_energy_ratio": 0.05,
+    "min_precision": 0.3,
+    "min_recall": 0.3,
+    "min_samples": 10000,
+    "promotion_gate": {
+      "bytes": 31870,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/promotion_gate.json",
+      "sha256": "2f763913d5a07ba5563f5bc75548780678fcdf9da4e119e03262f10daf84dd90"
+    },
+    "source_dataset": "imagenet_256_10pct",
+    "source_effective_batch_size": 64,
+    "source_equivalent_epochs": 24.96859419012024,
+    "source_images_seen_per_method": 3200000,
+    "source_steps": 50000,
+    "source_train_images": 128161,
+    "status": "validated_hold",
+    "verified_source_reports": {
+      "cofitok_checkpoint_eval": {
+        "bytes": 30345,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json",
+        "sha256": "3c9e28595326d4ee30fb85fd74bc64e546541369e69aaba053d2c4bed2678df2"
+      },
+      "cofitok_generation": {
+        "bytes": 12087,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/samples_gate10k_ddim100_cfg15/metrics/generation_metrics_report.json",
+        "sha256": "123f51f303a8fe112433bb3541376a8c88aa7abf64f7829b6b699c164a6259b9"
+      },
+      "cofitok_training": {
+        "bytes": 10628,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json",
+        "sha256": "8eeeb5e1cac3a3fe38d20fbc26be7af88788910f4dc86c5d34548be50a1b77fd"
+      },
+      "dense_checkpoint_eval": {
+        "bytes": 6846,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_rollout_x0_u2_ema_teacher/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json",
+        "sha256": "ec98b06e88c74495f4f8389d1e66816d51d1e5686cc1dc440a86f6b13e04e5ad"
+      },
+      "dense_generation": {
+        "bytes": 12025,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_rollout_x0_u2_ema_teacher/samples_gate10k_ddim100_cfg15/metrics/generation_metrics_report.json",
+        "sha256": "957ffa636c9d3b80a40e8a1078c818674c9119ee3cb825291b09e806ea0b0afc"
+      },
+      "dense_training": {
+        "bytes": 9832,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/dense_rollout_x0_u2_ema_teacher/training_report.json",
+        "sha256": "68374ce7a33f2fe3979f53d255785250ac6aeb60db80934f1bf25e319216bb6c"
+      }
+    }
+  },
+  "status": "prepared"
+}

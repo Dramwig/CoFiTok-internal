@@ -28,6 +28,8 @@ Training identity:
   `6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659`
 - step: `50,000 / 100,000`
 - images seen: `3,200,000`
+- dataset-normalized exposure: `2.4977228` epochs completed and `4.9954456`
+  epochs at the planned 100K horizon
 - parameter count: `62,834,083`
 
 Checkpoint identity:
@@ -123,5 +125,7 @@ The milestone supports two simultaneous conclusions:
 No direct CoFiTok-vs-dense quality comparison is allowed until dense reaches
 the exact same milestone and protocol. The FID must not be directly compared
 with the frozen 10% DDIM-100 result because training data, sample count and
-sampling protocol differ. The required evidence remains matched step-50K,
+sampling protocol differ. The frozen 10% 50K pair represents `24.9685942`
+dataset-equivalent epochs, so an equal step count is not an equal exposure
+budget. The required evidence remains matched step-50K,
 then exact 100K completion and the terminal matched 10K DDIM-100 evaluation.

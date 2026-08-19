@@ -15,6 +15,8 @@ sidecar and `latest.json` binding are included here.
   `6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659`
 - Step: `50,000 / 100,000`
 - Images seen: `3,200,000`
+- Dataset-normalized exposure: `2.4977` epochs completed; `4.9954` epochs at
+  the planned 100K terminal point
 - Parameters: `62,834,083`
 - Checkpoint SHA256:
   `d7100a6e8f67adb2b1630d36c17d0f2bc94fb93ed99d3e270a0867979c3343b4`
@@ -64,7 +66,9 @@ quality result. Dense identity had not reached step 50K when this archive was
 created. It cannot establish a CoFiTok-vs-dense FID advantage, cannot replace
 the terminal 100K gate, and cannot be directly compared with the frozen 10%
 10K-sample DDIM-100 gate because the training data, sample count, and sampler
-protocol differ.
+protocol differ. Equal 50K step counts are especially misleading here: the
+frozen 10% pair saw `24.9686` dataset-equivalent epochs, almost exactly ten
+times this full-data 50K milestone.
 
 The authoritative machine-readable interpretation and all source identities
 are in `milestone_summary.json`.
