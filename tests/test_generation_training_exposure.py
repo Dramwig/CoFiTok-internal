@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 from pathlib import Path
 
 import pytest
@@ -47,7 +48,7 @@ def _training(
     target_steps: int = 100_000,
 ) -> dict:
     effective_batch = 64
-    return {
+    report = {
         "target_steps": target_steps,
         "completed_steps": completed_steps,
         "training_complete": completed_steps == target_steps,
@@ -68,10 +69,44 @@ def _training(
             "samples_seen": completed_steps * effective_batch,
         },
     }
+    report["latest_checkpoint"] = {
+        "step": completed_steps,
+        "checkpoint_sha256": "e" * 64,
+    }
+    return report
 
 
 def _identity(name: str) -> dict:
     return {"path": f"/evidence/{name}.json", "bytes": 123, "sha256": "c" * 64}
+
+
+def _milestone_sources(tmp_path: Path) -> dict[str, dict]:
+    sources = {}
+    for name in (
+        "cofitok_generation",
+        "dense_generation",
+        "cofitok_checkpoint_eval",
+        "dense_checkpoint_eval",
+    ):
+        path = tmp_path / f"{name}.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "git": {
+                        "revision": "b" * 40,
+                        "branch": "scale/test",
+                        "tracked_dirty": False,
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        sources[name] = {
+            "path": path.resolve().as_posix(),
+            "bytes": path.stat().st_size,
+            "sha256": "c" * 64,
+        }
+    return sources
 
 
 def test_partial_full_data_exposure_is_dataset_normalized() -> None:
@@ -234,6 +269,104 @@ def test_source_bound_report_surfaces_validated_quality_bridge_plan(
     assert exposure["bridge"]["equivalent_epochs"] == pytest.approx(
         6_400_000 / 1_281_167
     )
+
+
+def test_source_bound_report_binds_exact_matched_milestone(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cofitok = _training()
+    dense = copy.deepcopy(cofitok)
+    milestone = {
+        "methods": {
+            "cofitok": {
+                "checkpoint_step": 50_000,
+                "checkpoint_sha256": "e" * 64,
+            },
+            "dense_identity": {
+                "checkpoint_step": 50_000,
+                "checkpoint_sha256": "e" * 64,
+            },
+        }
+    }
+    monkeypatch.setattr(
+        exposure_audit,
+        "verify_milestone_source_reports",
+        lambda report, source_profile: {
+            "status": "verified",
+            "source_profile": source_profile,
+            "source_reports": _milestone_sources(tmp_path),
+        },
+    )
+    monkeypatch.setattr(
+        exposure_audit,
+        "validate_milestone_report",
+        lambda report, **kwargs: (
+            {"status": "verified", "cofitok_fid": 100.0, "dense_fid": 110.0},
+            [],
+        ),
+    )
+
+    report = build_report(
+        {
+            "cofitok": (cofitok, _identity("cofitok")),
+            "dense_identity": (dense, _identity("dense")),
+        },
+        milestone_report=(milestone, _identity("milestone")),
+        expected_milestone_step=50_000,
+        milestone_source_profile="quality_bridge",
+    )
+
+    assert report["milestone_binding"]["matched_training_exposure_verified"] is True
+    assert report["milestone_binding"]["training_checkpoint_binding"]["cofitok"][
+        "checkpoint_sha256"
+    ] == "e" * 64
+    assert report["claim_boundary"]["milestone_quality_diagnostic_allowed"] is True
+    assert report["claim_boundary"]["formal_generation_claim_allowed"] is False
+
+
+def test_milestone_binding_rejects_training_checkpoint_mismatch(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    cofitok = _training()
+    dense = copy.deepcopy(cofitok)
+    milestone = {
+        "methods": {
+            "cofitok": {
+                "checkpoint_step": 50_000,
+                "checkpoint_sha256": "f" * 64,
+            },
+            "dense_identity": {
+                "checkpoint_step": 50_000,
+                "checkpoint_sha256": "e" * 64,
+            },
+        }
+    }
+    monkeypatch.setattr(
+        exposure_audit,
+        "verify_milestone_source_reports",
+        lambda report, source_profile: {
+            "status": "verified",
+            "source_reports": _milestone_sources(tmp_path),
+        },
+    )
+    monkeypatch.setattr(
+        exposure_audit,
+        "validate_milestone_report",
+        lambda report, **kwargs: ({"status": "verified"}, []),
+    )
+
+    with pytest.raises(ValueError, match="training and milestone checkpoints differ"):
+        build_report(
+            {
+                "cofitok": (cofitok, _identity("cofitok")),
+                "dense_identity": (dense, _identity("dense")),
+            },
+            milestone_report=(milestone, _identity("milestone")),
+            expected_milestone_step=50_000,
+            milestone_source_profile="quality_bridge",
+        )
 
 
 def test_training_spec_requires_label_and_path() -> None:
