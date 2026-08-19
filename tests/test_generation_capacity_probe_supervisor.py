@@ -3,7 +3,10 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
+import shutil
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
@@ -254,7 +257,10 @@ def test_capacity_probe_supervisor_runbook_is_locked_and_non_preemptive() -> Non
         root
         / "artifacts/runbooks/generation_stability_capacity_probe_250m_10k_supervisor.sh"
     ).read_text(encoding="utf-8")
-    assert "flock -n" in source
+    assert (
+        "exec flock --exclusive --nonblock --conflict-exit-code 75 --no-fork"
+        in source
+    )
     assert "--required-idle-polls 5" in source
     assert "run_generation_capacity_probe_execution_supervisor.py" in source
     assert 'RUNTIME_TMP="$OUTPUT_ROOT/runtime_tmp"' in source
@@ -263,6 +269,84 @@ def test_capacity_probe_supervisor_runbook_is_locked_and_non_preemptive() -> Non
     assert 'export TMP="$RUNTIME_TMP"' in source
     assert "kill " not in source
     assert "pkill" not in source
+
+
+@pytest.mark.skipif(
+    os.name == "nt" or shutil.which("flock") is None,
+    reason="requires Linux flock",
+)
+def test_capacity_probe_supervisor_holds_lock_for_process_lifetime(
+    tmp_path: Path,
+) -> None:
+    root = Path(__file__).resolve().parents[1]
+    runbook = (
+        root
+        / "artifacts/runbooks/generation_stability_capacity_probe_250m_10k_supervisor.sh"
+    )
+    fake_python = tmp_path / "fake-python"
+    fake_python.write_text("#!/usr/bin/env bash\nexec sleep 30\n", encoding="utf-8")
+    fake_python.chmod(0o755)
+    standing_authorization = tmp_path / "standing_authorization.json"
+    standing_authorization.write_text("{}\n", encoding="utf-8")
+    checkpoint_root = tmp_path / "checkpoints"
+    lock_path = (
+        checkpoint_root
+        / "stability_full_data_100k_capacity_probe_250m_10k_v1"
+        / "capacity_probe_execution_supervisor.lock"
+    )
+    environment = dict(os.environ)
+    environment.update(
+        {
+            "PROJECT": root.as_posix(),
+            "PREPARATION_PROJECT": root.as_posix(),
+            "PYTHON": fake_python.as_posix(),
+            "CHECKPOINT_ROOT": checkpoint_root.as_posix(),
+            "STANDING_AUTHORIZATION": standing_authorization.as_posix(),
+            "EXPECTED_STANDING_AUTHORIZATION_SHA256": "a" * 64,
+            "EXPECTED_TARGET_REVISION": "b" * 40,
+            "EXPECTED_TARGET_TREE": "c" * 40,
+            "EXPECTED_TARGET_BRANCH": "test-branch",
+            "EXPECTED_PREPARATION_REVISION": "d" * 40,
+            "EXPECTED_PREPARATION_TREE": "e" * 40,
+            "EXPECTED_PREPARATION_BRANCH": "test-preparation-branch",
+        }
+    )
+    child = subprocess.Popen(
+        ["bash", str(runbook)],
+        env=environment,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    try:
+        deadline = time.monotonic() + 5.0
+        while not lock_path.is_file() and child.poll() is None:
+            if time.monotonic() >= deadline:
+                pytest.fail("capacity supervisor lock was not created")
+            time.sleep(0.05)
+        assert child.poll() is None
+        competing = subprocess.run(
+            [
+                "flock",
+                "--exclusive",
+                "--nonblock",
+                "--conflict-exit-code",
+                "75",
+                str(lock_path),
+                "/bin/true",
+            ],
+            check=False,
+        )
+        assert competing.returncode == 75
+    finally:
+        if child.poll() is None:
+            child.terminate()
+            try:
+                child.wait(timeout=5.0)
+            except subprocess.TimeoutExpired:
+                child.kill()
+                child.wait(timeout=5.0)
 
 
 def test_capacity_process_scan_ignores_supervisor_runbook_argument(
