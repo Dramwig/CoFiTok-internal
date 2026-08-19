@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "role": "conditioning_generation_pipeline_lineage_observer_v1_deployment",
+  "status": "active",
+  "verified_at": "2026-08-19T04:58:51.6440533+00:00",
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "checkout": {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal",
+    "revision": "a58f2e28abdd671550d7c70b0303184bbdb029e4",
+    "tree": "0c41f230d572f4524406b5679335775bbe2b23ac",
+    "branch": "analysis/generation-conditioning-pipeline-lineage-observer-v1",
+    "tracked_dirty": false
+  },
+  "incremental_bundle": {
+    "path": "/tmp/conditioning-lineage-a58f2e2.bundle",
+    "bytes": 20217,
+    "sha256": "014ffd4510b978293d678a988f86d72c20d992af11b224545528eabcfe046c89",
+    "prerequisite_revision": "1ff6bb3db932ef9e43ddfafc067db779dab797d9",
+    "advertised_revision": "a58f2e28abdd671550d7c70b0303184bbdb029e4",
+    "advertised_ref": "refs/heads/analysis/generation-conditioning-pipeline-lineage-observer-v1",
+    "verification": "git_bundle_verify_pass",
+    "verification_repository": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal",
+    "formal_repository_has_prerequisite": false
+  },
+  "sources": {
+    "lineage_module": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal/src/cofitok/generation_conditioning_lineage.py",
+      "bytes": 24164,
+      "sha256": "645fa19ad8b87a7d95f87b4f092238051073ce62ee4e19c0d50c6cb9f085bcc3"
+    },
+    "observer_cli": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal/scripts/observe_generation_conditioning_pipeline_lineage.py",
+      "bytes": 9652,
+      "sha256": "9f6117b2161b0430c333d93a62c92bc0673396e2e1be3b2d61d2e52de8cc0dde"
+    },
+    "lineage_plan": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal/configs/generation/diagnostics/conditioning_generation_pipeline_lineage_v1.json",
+      "bytes": 12462,
+      "sha256": "9cbae4a436fe23ce4f1022c7a20654f9d4192b03a4ecf05af0538da95617c7af"
+    },
+    "lineage_tests": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal/tests/test_generation_conditioning_pipeline_lineage.py",
+      "bytes": 12804,
+      "sha256": "a7eef69770207492c24ce97b055c8745aea4ec97dc0e4518440ab008e300d063"
+    },
+    "observer_runbook": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal/artifacts/runbooks/generation_conditioning_pipeline_lineage_observer.sh",
+      "bytes": 1744,
+      "sha256": "ca81a69c01bed6c82ea0109dbeab9d9c87ca677cc36639b98569e569b269a409"
+    }
+  },
+  "observer": {
+    "pid": 427175,
+    "process_start": "Wed Aug 19 12:41:59 2026",
+    "process_start_ticks": 1676465875,
+    "nice": 19,
+    "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+    "cwd": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal",
+    "cmdline_sha256": "a1d017081d186effea7a3daa3daf970c541505d8ad40071ac880c4b70ef24ad5",
+    "command": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/observe_generation_conditioning_pipeline_lineage.py --project /root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal --plan /root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal/configs/generation/diagnostics/conditioning_generation_pipeline_lineage_v1.json --expected-plan-sha256 9cbae4a436fe23ce4f1022c7a20654f9d4192b03a4ecf05af0538da95617c7af --checkpoint-root /root/autodl-tmp/CoFiTok/checkpoints/generation --output /root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_pipeline_lineage_observer_v1/lineage_report.json --expected-revision a58f2e28abdd671550d7c70b0303184bbdb029e4 --expected-tree 0c41f230d572f4524406b5679335775bbe2b23ac --expected-branch analysis/generation-conditioning-pipeline-lineage-observer-v1 --poll-seconds 10 --stale-seconds 300 --timeout-seconds 31536000",
+    "poll_seconds": 10,
+    "stale_seconds": 300,
+    "timeout_seconds": 31536000,
+    "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_pipeline_lineage_observer_v1/lineage_report.json",
+    "log_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_pipeline_lineage_observer_v1/lineage_observer.log",
+    "lock_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_pipeline_lineage_observer_v1/lineage_observer.lock"
+  },
+  "immutable_snapshots": {
+    "lineage_report": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_pipeline_lineage_observer_v1/deployment_evidence_v1/lineage_report_snapshot.json",
+      "bytes": 24448,
+      "mode": "0444",
+      "sha256": "b084ab9fa7d2759f33743b76d53f9a96aad41bf8f29f90d73bac7396c673d9f2",
+      "observed_at": "2026-08-19T04:57:08.379020+00:00",
+      "status": "waiting",
+      "issues": [],
+      "minimum_stage_observation_count": 90,
+      "maximum_stage_observation_count": 90
+    },
+    "observer_log": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_pipeline_lineage_observer_v1/deployment_evidence_v1/lineage_observer_log_snapshot.log",
+      "bytes": 15210,
+      "mode": "0444",
+      "line_count": 90,
+      "sha256": "2964518e2ba7c92d70e69a1aec447f09a0da53583c2daec6c4f5ae1be978f319"
+    },
+    "pair_monitor": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_pipeline_lineage_observer_v1/deployment_evidence_v1/pair_monitor_snapshot.json",
+      "bytes": 40419,
+      "mode": "0444",
+      "sha256": "b39cdf761d25aaa057951fd6aa11a1b8a36f67ab2f986b45801f1a9577e97fb6",
+      "updated_at": "2026-08-19T04:54:16.780982+00:00",
+      "status": "running",
+      "stage": "dense_identity_training",
+      "issues": []
+    },
+    "live_lock": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_pipeline_lineage_observer_v1/lineage_observer.lock",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "standing_authorization": {
+    "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/standing_authorization.json",
+    "bytes": 865,
+    "sha256": "5fe64a0941acb55a21cb6479a726987c6259e93a772c47290f2d6883752de4df",
+    "valid": true,
+    "modified": false
+  },
+  "validation": {
+    "linux_targeted_tests": {
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "status": "passed"
+    },
+    "linux_python_compile": "passed",
+    "linux_bash_n": "passed",
+    "git_diff_check": "passed",
+    "remote_ruff": "not_available_in_pinned_environment",
+    "persistent_poll_history": [
+      {
+        "sequence": 1,
+        "captured_at": "2026-08-19T04:51:39.5008627+00:00",
+        "report_sha256": "59322757789e6a904eb71c33461f87520cc15547618398e6460f5ed4dc6209f6",
+        "report_bytes": 24450,
+        "observed_at": "2026-08-19T04:51:31.755775+00:00",
+        "stage_observation_count": 57,
+        "issues_count": 0,
+        "child_pid_count": 0,
+        "launch_count_sum": 0,
+        "dense_step": 27150,
+        "dense_samples_seen": 1737600,
+        "dense_metrics_bytes": 473994
+      },
+      {
+        "sequence": 2,
+        "captured_at": "2026-08-19T04:51:55.7859104+00:00",
+        "report_sha256": "824e3ea5b4d508323fde62390d6059449cd40158331ba76e37280fa627b6f539",
+        "report_bytes": 24450,
+        "observed_at": "2026-08-19T04:51:52.135901+00:00",
+        "stage_observation_count": 59,
+        "issues_count": 0,
+        "child_pid_count": 0,
+        "launch_count_sum": 0,
+        "dense_step": 27150,
+        "dense_samples_seen": 1737600,
+        "dense_metrics_bytes": 474852
+      },
+      {
+        "sequence": 3,
+        "captured_at": "2026-08-19T04:52:16.7493790+00:00",
+        "report_sha256": "463cb5dfc33d77aff4827c0b3920796ee7f57fdfab81c905f55a80c293e26885",
+        "report_bytes": 24444,
+        "observed_at": "2026-08-19T04:52:12.598340+00:00",
+        "stage_observation_count": 61,
+        "issues_count": 0,
+        "child_pid_count": 0,
+        "launch_count_sum": 0,
+        "dense_step": 27200,
+        "dense_samples_seen": 1740800,
+        "dense_metrics_bytes": 474852
+      },
+      {
+        "sequence": 4,
+        "captured_at": "2026-08-19T04:52:32.9336126+00:00",
+        "report_sha256": "ff1712913ddbb244a9267c258426c30c8099fddf8bb4c37cf6084ef88be9c404",
+        "report_bytes": 24448,
+        "observed_at": "2026-08-19T04:52:22.770789+00:00",
+        "stage_observation_count": 62,
+        "issues_count": 0,
+        "child_pid_count": 0,
+        "launch_count_sum": 0,
+        "dense_step": 27200,
+        "dense_samples_seen": 1740800,
+        "dense_metrics_bytes": 474852
+      },
+      {
+        "sequence": 5,
+        "captured_at": "2026-08-19T04:52:47.0939646+00:00",
+        "report_sha256": "11bcb824638f772459367255102fd960f9d810dda262df0f5f91daf2eb946190",
+        "report_bytes": 24448,
+        "observed_at": "2026-08-19T04:52:43.204295+00:00",
+        "stage_observation_count": 64,
+        "issues_count": 0,
+        "child_pid_count": 0,
+        "launch_count_sum": 0,
+        "dense_step": 27200,
+        "dense_samples_seen": 1740800,
+        "dense_metrics_bytes": 474852
+      },
+      {
+        "sequence": 6,
+        "captured_at": "2026-08-19T04:53:02.7951844+00:00",
+        "report_sha256": "8c60161859943e8320beb344eb2871e335ec7d23385f404ae8c620bc33c355d5",
+        "report_bytes": 24450,
+        "observed_at": "2026-08-19T04:52:53.383779+00:00",
+        "stage_observation_count": 65,
+        "issues_count": 0,
+        "child_pid_count": 0,
+        "launch_count_sum": 0,
+        "dense_step": 27200,
+        "dense_samples_seen": 1740800,
+        "dense_metrics_bytes": 474852
+      }
+    ]
+  },
+  "conditioning_pipeline_snapshot": {
+    "stage_count": 5,
+    "successful_stage_count": 0,
+    "current_stage": "conditioning_probe_1k",
+    "current_detail": "waiting_for_quality_bridge_followup_decision",
+    "all_supervisors_alive": true,
+    "all_source_bindings_valid": true,
+    "issues": [],
+    "child_pid_count": 0,
+    "launch_count_sum": 0,
+    "maximum_launches_per_stage": 1,
+    "stages": [
+      {
+        "name": "conditioning_probe_1k",
+        "pid": 210203,
+        "status": "waiting",
+        "child_pid": null,
+        "launch_count": 0
+      },
+      {
+        "name": "conditioning_sampling_5k",
+        "pid": 245918,
+        "status": "waiting",
+        "child_pid": null,
+        "launch_count": 0
+      },
+      {
+        "name": "conditioning_training_5k",
+        "pid": 280369,
+        "status": "waiting",
+        "child_pid": null,
+        "launch_count": 0
+      },
+      {
+        "name": "conditioning_heldout_5k",
+        "pid": 305233,
+        "status": "waiting",
+        "child_pid": null,
+        "launch_count": 0
+      },
+      {
+        "name": "conditioning_posttraining_sampling_5k",
+        "pid": 333312,
+        "status": "waiting",
+        "child_pid": null,
+        "launch_count": 0
+      }
+    ]
+  },
+  "training_snapshot": {
+    "quality_bridge_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "pair_status": "running",
+    "pair_stage": "dense_identity_training",
+    "cofitok_step": 50000,
+    "cofitok_target_step": 100000,
+    "dense_step": 27250,
+    "dense_target_step": 100000,
+    "dense_metric_rows": 546,
+    "dense_training_pid": 79894,
+    "dense_training_gpu_memory_mib": 77970,
+    "unrelated_gpu_process_count": 0,
+    "free_bytes": 315231490048
+  },
+  "formal_checkout_snapshot": {
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tree": "659fa94726c4aec0afef49904f82b828bb62872b",
+    "branch": "scale/generative-system",
+    "tracked_dirty": false,
+    "porcelain_count": 89,
+    "porcelain_sha256": "18e5981f22a2ac255c7f60343429daa6ceea86412b1d7bd09bc474f2faf74004",
+    "porcelain_uall_count": 301,
+    "modified": false
+  },
+  "authorization_boundary": {
+    "read_only_source_observation_allowed": true,
+    "atomic_observer_report_write_allowed": true,
+    "gpu_allocation_allowed": false,
+    "process_signaling_allowed": false,
+    "training_launch_allowed": false,
+    "sampling_or_evaluation_launch_allowed": false,
+    "promotion_or_release_allowed": false,
+    "standing_authorization_modified": false,
+    "supervisor_or_child_process_modified": false
+  },
+  "claim_boundary": {
+    "observer_is_read_only": true,
+    "observer_is_non_authorizing": true,
+    "conditioning_experiment_completed": false,
+    "full_data_100k_completed": false,
+    "generation_quality_advantage_claim_allowed": false,
+    "promotion_or_release_allowed": false
+  }
+}
