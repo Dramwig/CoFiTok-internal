@@ -1,0 +1,98 @@
+{
+  "authorization_boundary": {
+    "evaluation_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "gpu_use_allowed": false,
+    "read_only_source_observation": true,
+    "release_allowed": false,
+    "sampling_launch_allowed": false,
+    "training_launch_allowed": false
+  },
+  "bundle": {
+    "bytes": 43616182,
+    "local_path": "D:/cofitok-bundles/training-exposure-snapshot-d8749a6-from-1ebcc15.bundle",
+    "prerequisites": [
+      "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+      "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+    ],
+    "remote_path": "/tmp/training-exposure-snapshot-d8749a6-from-1ebcc15.bundle",
+    "sha256": "15efd876804e617d988513d33533235f534ce76d9abd0772c6f4792c62e7bb71",
+    "verify_status": "pass"
+  },
+  "code": {
+    "branch": "analysis/generation-training-exposure-snapshot-v1",
+    "revision": "d8749a6aea927545eb194f290a3b46017d7d99dd",
+    "tracked_dirty": false,
+    "tree": "d4a6adc4655f9954afabfcf56f4a4086ad7815c7"
+  },
+  "formal_checkout": {
+    "branch": "scale/generative-system",
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tracked_dirty": false,
+    "unchanged_by_deployment": true
+  },
+  "host": {
+    "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+    "observed_at": "2026-08-19T11:16:25+08:00",
+    "storage_free_bytes": 316861313024
+  },
+  "live_pair_at_verification": {
+    "dense_health_issues": [],
+    "dense_step": 24850,
+    "monitor_stage": "dense_identity_training",
+    "monitor_status": "running",
+    "monitor_updated_at": "2026-08-19T03:14:10.578144+00:00",
+    "snapshot_output_exists": false
+  },
+  "preparation": {
+    "bytes": 23398,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/preparation.json",
+    "sha256": "7398d9a6f096ea9c178295c9016bb56fd38e28dff30f26662ae4225aded208ea"
+  },
+  "remote_checkout": {
+    "branch": "analysis/generation-training-exposure-snapshot-v1",
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/training-exposure-waiter-d8749a6",
+    "revision": "d8749a6aea927545eb194f290a3b46017d7d99dd",
+    "tracked_dirty": false,
+    "tree": "d4a6adc4655f9954afabfcf56f4a4086ad7815c7"
+  },
+  "role": "generation_training_exposure_snapshot_waiter_deployment",
+  "runbook": {
+    "bytes": 1935,
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/training-exposure-waiter-d8749a6/artifacts/runbooks/generation_quality_bridge_training_exposure_50k_waiter.sh",
+    "sha256": "fe2d363b02d24888f81d2ddd146bf86a3e6be68e56c928dd732d288a4eecb8ad",
+    "syntax_status": "pass"
+  },
+  "schema_version": 1,
+  "status": "pass",
+  "verification": {
+    "linux_focused_tests": {
+      "passed": 41,
+      "status": "pass"
+    },
+    "local_focused_tests": {
+      "passed": 41,
+      "status": "pass"
+    },
+    "python_compile": "pass"
+  },
+  "waiter": {
+    "cmdline_sha256": "7d61900f37e6ed8c24f910aca239314ac8ff831b8bf50c7f49cbb561904c0462",
+    "cwd": "/root/autodl-tmp/CoFiTok/checkouts/training-exposure-waiter-d8749a6",
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "-1",
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/training-exposure-waiter-d8749a6:/root/autodl-tmp/CoFiTok/checkouts/training-exposure-waiter-d8749a6/src"
+    },
+    "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+    "initial_detail": "waiting_for_dense_training_milestone",
+    "initial_status": "waiting",
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/training_exposure_step_00050000",
+    "parent_pid": 1,
+    "pid": 400399,
+    "start_ticks": 1675924575,
+    "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/training_exposure_step_00050000_waiter_status.json"
+  }
+}
