@@ -158,6 +158,42 @@ paired milestone report, and terminal bridge result were still absent, so the
 new supervisor remained preparation-only and no downstream eligibility was
 claimed.
 
+## Remote supervisor deployment
+
+The source-gated supervisor was deployed after the code and record commits to
+an independent checkout:
+
+```text
+checkout: /root/autodl-tmp/CoFiTok/checkouts/conditioning-ranking-full-data-prep-8a2840e
+branch:   scale/generation-conditioning-ranking-full-data-100k-v1
+revision: 8a2840e200c7adcdddac458cba8c84b4a771f0f2
+tree:     4019157413019f4804f2b801bc74fc8b7573878a
+```
+
+The incremental bundle was `43,638,231` bytes with SHA256
+`f47d1d33276a4fcc46d7f7c4fc9378497f2be1d25aadba01cd76661c723c87b2`.
+Both local and remote `git bundle verify` passed against the exact required
+prerequisites. The formal remote checkout remained unchanged at revision
+`1ebcc15210e63a776a2ba448481cbd8bb94a4066` on
+`scale/generative-system`.
+
+Linux validation in the deployed checkout passed `17` focused tests with
+CUDA hidden. The waiting supervisor is PID `485351`; its control directory is:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/
+conditioning_ranking_full_data_100k_bridge_v1/
+8a2840e200c7adcdddac458cba8c84b4a771f0f2/
+```
+
+Its first verified status is `waiting` with detail
+`waiting_for_quality_bridge_followup_decision`. The process environment binds
+`CUDA_VISIBLE_DEVICES=` and two CPU threads. The status binds the standing
+authorization SHA256
+`5fe64a0941acb55a21cb6479a726987c6259e93a772c47290f2d6883752de4df`.
+The preparation file, future ranked output root, and future ranked lock remain
+absent. The only GPU process remains the active dense quality-bridge trainer.
+
 ## Verification
 
 - Python compile: passed for the new module, CLI, and tests.
