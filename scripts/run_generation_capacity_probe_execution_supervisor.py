@@ -36,6 +36,7 @@ EXECUTION_ROLE = "stability_full_data_capacity_probe_execution"
 EXECUTION_RUNBOOK_NAME = (
     "generation_stability_capacity_probe_250m_10k_execute.sh"
 )
+SUPERVISOR_SCRIPT_NAME = "run_generation_capacity_probe_execution_supervisor.py"
 RETRYABLE_STAGES = {
     "cofitok_training",
     "dense_identity_training",
@@ -96,6 +97,30 @@ def verify_execution_checkout(
     expected_tree: str,
     expected_branch: str,
 ) -> dict[str, Any]:
+    expected = {
+        "revision": expected_revision,
+        "tree": expected_tree,
+        "branch": expected_branch,
+        "tracked_dirty": False,
+    }
+    actual = _git_identity(project)
+    if actual != expected:
+        raise ValueError("capacity-probe supervisor checkout identity differs")
+    return actual
+
+
+def verify_supervisor_checkout(
+    project: Path,
+    *,
+    expected_revision: str,
+    expected_tree: str,
+    expected_branch: str,
+    supervisor_script: Path | None = None,
+) -> dict[str, Any]:
+    expected_script = (project / "scripts" / SUPERVISOR_SCRIPT_NAME).resolve()
+    actual_script = Path(supervisor_script or __file__).resolve()
+    if actual_script != expected_script:
+        raise ValueError("capacity-probe supervisor script is not checkout-bound")
     expected = {
         "revision": expected_revision,
         "tree": expected_tree,
@@ -284,6 +309,38 @@ def _wait_for_capacity_probe_child(
     )
 
 
+def _execution_child_environment(
+    *,
+    base_environment: Mapping[str, str],
+    execution_project: Path,
+    python_executable: str,
+    values: Mapping[str, str],
+) -> dict[str, str]:
+    environment = dict(base_environment)
+    environment.update(values)
+    environment["PYTHON"] = python_executable
+    environment["PYTHONPATH"] = os.pathsep.join(
+        [
+            execution_project.as_posix(),
+            (execution_project / "src").as_posix(),
+        ]
+    )
+    return environment
+
+
+def _launch_capacity_probe_child(
+    *,
+    runbook: Path,
+    execution_project: Path,
+    environment: Mapping[str, str],
+) -> subprocess.Popen[Any]:
+    return subprocess.Popen(
+        ["bash", str(runbook)],
+        cwd=execution_project,
+        env=dict(environment),
+    )
+
+
 def classify_execution_exit(
     *,
     exit_code: int,
@@ -358,6 +415,7 @@ def _status(
     status: str,
     detail: str,
     expected: Mapping[str, Any],
+    supervisor_git: Mapping[str, Any] | None = None,
     preparation_waiter: Mapping[str, Any] | None = None,
     preparation: Mapping[str, Any] | None = None,
     gpu_rows: list[dict[str, Any]] | None = None,
@@ -376,6 +434,9 @@ def _status(
         "detail": detail,
         "hostname": socket.gethostname(),
         "pid": os.getpid(),
+        "supervisor_git": (
+            dict(supervisor_git) if supervisor_git is not None else None
+        ),
         "expected": dict(expected),
         "preparation_waiter": (
             dict(preparation_waiter) if preparation_waiter is not None else None
@@ -410,7 +471,8 @@ def _parse_args() -> argparse.Namespace:
             "polls, then supervise only the bounded matched 250M/10K probe."
         )
     )
-    parser.add_argument("--project", type=Path, required=True)
+    parser.add_argument("--supervisor-project", type=Path, required=True)
+    parser.add_argument("--execution-project", type=Path, required=True)
     parser.add_argument("--preparation-project", type=Path, required=True)
     parser.add_argument("--preparation", type=Path, required=True)
     parser.add_argument("--preparation-waiter-status", type=Path, required=True)
@@ -423,6 +485,9 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-revision", required=True)
     parser.add_argument("--expected-tree", required=True)
     parser.add_argument("--expected-branch", required=True)
+    parser.add_argument("--expected-supervisor-revision", required=True)
+    parser.add_argument("--expected-supervisor-tree", required=True)
+    parser.add_argument("--expected-supervisor-branch", required=True)
     parser.add_argument("--expected-preparation-revision", required=True)
     parser.add_argument("--expected-preparation-tree", required=True)
     parser.add_argument("--expected-preparation-branch", required=True)
@@ -445,7 +510,10 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = _parse_args()
-    project = args.project.resolve()
+    supervisor_project = args.supervisor_project.resolve()
+    execution_project = args.execution_project.resolve()
+    if supervisor_project == execution_project:
+        raise ValueError("capacity supervisor and execution checkouts must differ")
     preparation_project = args.preparation_project.resolve()
     preparation_path = args.preparation.resolve()
     output_root = args.output_root.resolve()
@@ -453,12 +521,20 @@ def main() -> int:
     execution_status_path = report_root / "execution_status.json"
     result_path = report_root / "capacity_probe_result.json"
     runbook = args.runbook.resolve()
-    if runbook != (project / "artifacts/runbooks" / EXECUTION_RUNBOOK_NAME).resolve():
+    if runbook != (
+        execution_project / "artifacts/runbooks" / EXECUTION_RUNBOOK_NAME
+    ).resolve():
         raise ValueError("capacity supervisor runbook is not checkout-bound")
     if not runbook.is_file():
         raise FileNotFoundError(runbook)
-    checkout = verify_execution_checkout(
-        project,
+    supervisor_checkout = verify_supervisor_checkout(
+        supervisor_project,
+        expected_revision=args.expected_supervisor_revision,
+        expected_tree=args.expected_supervisor_tree,
+        expected_branch=args.expected_supervisor_branch,
+    )
+    execution_checkout = verify_execution_checkout(
+        execution_project,
         expected_revision=args.expected_revision,
         expected_tree=args.expected_tree,
         expected_branch=args.expected_branch,
@@ -493,7 +569,7 @@ def main() -> int:
     ):
         raise ValueError("standing authorization safety boundary differs")
     expected = {
-        "execution_git": checkout,
+        "execution_git": execution_checkout,
         "preparation_git": preparation_checkout,
         "output_root": output_root.as_posix(),
         "standing_authorization": file_identity(args.standing_authorization),
@@ -514,6 +590,7 @@ def main() -> int:
             args.status_output,
             _status(
                 expected=expected,
+                supervisor_git=supervisor_checkout,
                 preparation_waiter=waiter_observation,
                 preparation=preparation_observation,
                 idle_polls=idle_polls,
@@ -523,6 +600,18 @@ def main() -> int:
         )
 
     while True:
+        verify_supervisor_checkout(
+            supervisor_project,
+            expected_revision=args.expected_supervisor_revision,
+            expected_tree=args.expected_supervisor_tree,
+            expected_branch=args.expected_supervisor_branch,
+        )
+        verify_execution_checkout(
+            execution_project,
+            expected_revision=args.expected_revision,
+            expected_tree=args.expected_tree,
+            expected_branch=args.expected_branch,
+        )
         if execution_status_path.is_file():
             execution_status = read_json_object(
                 execution_status_path,
@@ -617,21 +706,23 @@ def main() -> int:
                                 )
                                 return 1
                             attempts += 1
-                            environment = os.environ.copy()
-                            environment.update(
-                                {
-                                    "PYTHON": sys.executable,
+                            environment = _execution_child_environment(
+                                base_environment=os.environ,
+                                execution_project=execution_project,
+                                python_executable=sys.executable,
+                                values={
                                     "CHECKPOINT_ROOT": args.checkpoint_root.resolve().as_posix(),
                                     "STANDING_AUTHORIZATION": args.standing_authorization.resolve().as_posix(),
                                     "EXPECTED_STANDING_AUTHORIZATION_SHA256": args.expected_standing_authorization_sha256,
                                     "EXPECTED_TARGET_REVISION": args.expected_revision,
+                                    "EXPECTED_TARGET_TREE": args.expected_tree,
                                     "EXPECTED_TARGET_BRANCH": args.expected_branch,
                                     "EXPECTED_PREPARATION_SHA256": preparation_observation["identity"]["sha256"],
                                     "CAPACITY_PROBE_EXECUTION_ALLOWED": "true",
                                     "PREPARATION_PROJECT": preparation_project.as_posix(),
                                     "EXPECTED_PREPARATION_REVISION": args.expected_preparation_revision,
                                     "EXPECTED_PREPARATION_BRANCH": args.expected_preparation_branch,
-                                }
+                                },
                             )
                             optional = {
                                 "EXPECTED_EXECUTION_AUTHORIZATION_SHA256": report_root / "execution_authorization.json",
@@ -646,10 +737,16 @@ def main() -> int:
                                 if execution_status_path.is_file()
                                 else None
                             )
-                            child = subprocess.Popen(
-                                ["bash", str(runbook)],
-                                cwd=project,
-                                env=environment,
+                            verify_execution_checkout(
+                                execution_project,
+                                expected_revision=args.expected_revision,
+                                expected_tree=args.expected_tree,
+                                expected_branch=args.expected_branch,
+                            )
+                            child = _launch_capacity_probe_child(
+                                runbook=runbook,
+                                execution_project=execution_project,
+                                environment=environment,
                             )
                             exit_code = _wait_for_capacity_probe_child(
                                 child,

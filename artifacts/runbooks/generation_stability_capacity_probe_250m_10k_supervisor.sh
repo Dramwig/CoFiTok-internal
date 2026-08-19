@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT=${PROJECT:?set exact capacity-probe execution checkout}
+SUPERVISOR_PROJECT=${SUPERVISOR_PROJECT:?set exact capacity-probe supervisor checkout}
+EXECUTION_PROJECT=${EXECUTION_PROJECT:?set exact capacity-probe execution checkout}
 PREPARATION_PROJECT=${PREPARATION_PROJECT:?set exact capacity-probe preparation checkout}
 PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python}
 CHECKPOINT_ROOT=${CHECKPOINT_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/generation}
@@ -10,6 +11,9 @@ EXPECTED_STANDING_AUTHORIZATION_SHA256=${EXPECTED_STANDING_AUTHORIZATION_SHA256:
 EXPECTED_TARGET_REVISION=${EXPECTED_TARGET_REVISION:?set exact execution revision}
 EXPECTED_TARGET_TREE=${EXPECTED_TARGET_TREE:?set exact execution tree}
 EXPECTED_TARGET_BRANCH=${EXPECTED_TARGET_BRANCH:?set exact execution branch}
+EXPECTED_SUPERVISOR_REVISION=${EXPECTED_SUPERVISOR_REVISION:?set exact supervisor revision}
+EXPECTED_SUPERVISOR_TREE=${EXPECTED_SUPERVISOR_TREE:?set exact supervisor tree}
+EXPECTED_SUPERVISOR_BRANCH=${EXPECTED_SUPERVISOR_BRANCH:?set exact supervisor branch}
 EXPECTED_PREPARATION_REVISION=${EXPECTED_PREPARATION_REVISION:?set exact preparation revision}
 EXPECTED_PREPARATION_TREE=${EXPECTED_PREPARATION_TREE:?set exact preparation tree}
 EXPECTED_PREPARATION_BRANCH=${EXPECTED_PREPARATION_BRANCH:?set exact preparation branch}
@@ -21,10 +25,10 @@ PREPARATION_STATUS="$REPORT_ROOT/preparation_waiter_status.json"
 STATUS="$REPORT_ROOT/execution_supervisor_status.json"
 LOCK="$OUTPUT_ROOT/capacity_probe_execution_supervisor.lock"
 RUNTIME_TMP="$OUTPUT_ROOT/runtime_tmp"
-RUNBOOK="$PROJECT/artifacts/runbooks/generation_stability_capacity_probe_250m_10k_execute.sh"
+RUNBOOK="$EXECUTION_PROJECT/artifacts/runbooks/generation_stability_capacity_probe_250m_10k_execute.sh"
 
-cd "$PROJECT"
-export PYTHONPATH="$PROJECT:$PROJECT/src${PYTHONPATH:+:$PYTHONPATH}"
+cd "$SUPERVISOR_PROJECT"
+export PYTHONPATH="$SUPERVISOR_PROJECT:$SUPERVISOR_PROJECT/src"
 [[ -x "$PYTHON" ]]
 mkdir -p "$REPORT_ROOT" "$RUNTIME_TMP"
 export TMPDIR="$RUNTIME_TMP"
@@ -33,7 +37,8 @@ export TMP="$RUNTIME_TMP"
 exec flock --exclusive --nonblock --conflict-exit-code 75 --no-fork \
   "$LOCK" \
   "$PYTHON" scripts/run_generation_capacity_probe_execution_supervisor.py \
-  --project "$PROJECT" \
+  --supervisor-project "$SUPERVISOR_PROJECT" \
+  --execution-project "$EXECUTION_PROJECT" \
   --preparation-project "$PREPARATION_PROJECT" \
   --preparation "$PREPARATION" \
   --preparation-waiter-status "$PREPARATION_STATUS" \
@@ -46,6 +51,9 @@ exec flock --exclusive --nonblock --conflict-exit-code 75 --no-fork \
   --expected-revision "$EXPECTED_TARGET_REVISION" \
   --expected-tree "$EXPECTED_TARGET_TREE" \
   --expected-branch "$EXPECTED_TARGET_BRANCH" \
+  --expected-supervisor-revision "$EXPECTED_SUPERVISOR_REVISION" \
+  --expected-supervisor-tree "$EXPECTED_SUPERVISOR_TREE" \
+  --expected-supervisor-branch "$EXPECTED_SUPERVISOR_BRANCH" \
   --expected-preparation-revision "$EXPECTED_PREPARATION_REVISION" \
   --expected-preparation-tree "$EXPECTED_PREPARATION_TREE" \
   --expected-preparation-branch "$EXPECTED_PREPARATION_BRANCH" \
