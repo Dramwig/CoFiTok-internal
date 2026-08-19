@@ -15,6 +15,7 @@
       "revision": "3a7dc9db6950055829db00c8ffdd6e906501fbb4",
       "tree": "2b187e1bc6a36342ef2d803b26b4ae6f92b1a9f1",
       "child_wait": "blocking_child_wait_without_periodic_supervisor_status",
+      "lock_lifetime": "lock_descriptor_not_retained_after_exec_python",
       "gap_confirmed": true
     },
     {
@@ -64,34 +65,36 @@
     "behavior": [
       "publish running child PID, execution stage, related processes, and GPU rows at most every 60 seconds",
       "continue supervising the exact child when heartbeat publication raises",
-      "preserve the child exit code and all existing retry and authorization behavior"
+      "preserve the child exit code and all existing retry and authorization behavior",
+      "hold the one-supervisor lock for the complete Python process lifetime with flock --no-fork"
     ],
     "integration_candidate": {
       "branch": "fix/generation-capacity-probe-child-heartbeat-v1",
-      "revision": "3d2bca465fe3f775b36fe48341a5fe47fa8d1abc",
-      "tree": "b8224074be4ccfefa6d9b05b5df3907b98f7c77d",
+      "revision": "88d2c445a18610893bfbf6f0578f89b06001ef06",
+      "tree": "5ccbd82c3ea7b8acd7c568d8c6258aa95d29efc0",
       "parent": "85c5dbdba40bb31ec0af1c311f1780fa34714d57"
     },
     "exact_deployment_candidate": {
       "branch": "fix/generation-capacity-probe-child-heartbeat-deploy-v1",
-      "revision": "6bbfa806353bb2095890b5b883ea380f08e43116",
-      "tree": "3033960bf34fc50a2502ea7bd91cf5710b119bcf",
+      "revision": "23a1c054f40940a9d14778671e2dbae4820ad3a6",
+      "tree": "a7b71675a14d68aa033ea379251e22d3ae3c7c9e",
       "parent": "3a7dc9db6950055829db00c8ffdd6e906501fbb4"
     },
     "bundle": {
-      "bytes": 5551,
-      "sha256": "f8e23f44851168ed56b6a5d3a17fdb76b0f371497623b752467f966c49f85241",
+      "bytes": 6951,
+      "sha256": "b902679ea59918c2ba39ae5095f0bb2ad40cf1cf881af7b92acc12bb739b6eb1",
       "advertised_ref": "refs/heads/fix/generation-capacity-probe-child-heartbeat-deploy-v1",
       "required_revision": "3a7dc9db6950055829db00c8ffdd6e906501fbb4",
-      "remote_path": "/tmp/cofitok-capacity-probe-heartbeat-6bbfa80.bundle"
+      "remote_path": "/tmp/cofitok-capacity-supervisor-hardening-23a1c05.bundle"
     }
   },
   "verification": {
     "local_integration_focused": "14 passed",
-    "local_integration_capacity_and_control_chain": "248 passed",
-    "local_integration_full_suite": "1639 passed, 9 skipped",
-    "local_exact_parent_capacity_suite": "58 passed",
-    "linux_exact_parent_capacity_suite": "58 passed",
+    "local_integration_capacity_and_control_chain": "248 passed, 1 Linux-only skipped",
+    "local_integration_full_suite_before_lock_test_addition": "1639 passed, 9 skipped",
+    "local_exact_parent_capacity_suite": "58 passed, 1 Linux-only skipped",
+    "linux_exact_parent_capacity_suite": "59 passed",
+    "linux_lock_lifetime_competitor_exit_code": 75,
     "linux_runbook_bash_syntax": "pass",
     "linux_cuda_visible_devices": "empty",
     "linux_cpu_io_priority": "nice 10 and ionice idle",
@@ -105,8 +108,9 @@
     "deployed_supervisor_status": "waiting",
     "deployed_supervisor_detail": "waiting_for_source_bound_capacity_preparation",
     "deployed_supervisor_child_pid": null,
+    "deployed_supervisor_lock_probe": "same lock acquired nonblocking while PID 11853 was alive",
     "replacement_deployed": false,
-    "reason": "The already-running supervisor cannot consume patched Python code without a controlled, source-bound replacement. This audit did not signal or modify it."
+    "reason": "The already-running supervisor cannot consume patched Python code without a controlled, source-bound replacement. Its current lock is not retained, so a second supervisor could race it. This audit did not signal or modify it."
   },
   "authorization_boundary": {
     "capacity_probe_launch_authorized_by_this_audit": false,
