@@ -37,6 +37,11 @@ from cofitok.generation_gate_sources import (
     GATE_SOURCE_SUFFIXES,
     build_generation_gate_source_reports,
 )
+import cofitok.generation.release as generation_release
+from cofitok.generation.release import (
+    _COMPLETION_PROFILES,
+    _COMPLETION_REQUIRED_CHECKS,
+)
 from cofitok.environment import runtime_environment_sha256
 from cofitok.models import CoFiTokTiny
 from cofitok.output_lock import exclusive_output_lock
@@ -341,8 +346,15 @@ def _completion_audit_path(
             "smoke_output_sha256": ["9" * 64] * smoke_count,
         }
 
+    profile = "large_scale_generation_v1"
+    inference_evidence = {
+        "cofitok": evidence(cofitok_export, smoke_count=4),
+        "dense_identity": evidence(dense_export, smoke_count=2),
+    }
+    contract = _COMPLETION_PROFILES[profile]
     audit = {
         "schema_version": 1,
+        "profile": profile,
         "status": "complete",
         "complete": True,
         "expected_revisions": {
@@ -352,13 +364,15 @@ def _completion_audit_path(
         },
         "checks": [
             {
-                "name": "deployable_ema_inference_artifacts",
+                "name": name,
                 "status": "pass",
-                "evidence": {
-                    "cofitok": evidence(cofitok_export, smoke_count=4),
-                    "dense_identity": evidence(dense_export, smoke_count=2),
-                },
+                "evidence": (
+                    inference_evidence
+                    if name == contract["check"]
+                    else {"verified": True}
+                ),
             }
+            for name in _COMPLETION_REQUIRED_CHECKS[profile]
         ],
         "failed_checks": [],
         "missing_checks": [],
@@ -878,7 +892,26 @@ def test_stability_completion_profile_publishes_release_receipt(tmp_path) -> Non
         "export_revision": "5" * 40,
     }
     payload.pop("expected_revisions")
-    payload["checks"][0]["name"] = "stability_release_authorized_inference"
+    inference_evidence = payload["checks"][
+        _COMPLETION_REQUIRED_CHECKS["large_scale_generation_v1"].index(
+            "deployable_ema_inference_artifacts"
+        )
+    ]["evidence"]
+    contract = _COMPLETION_PROFILES["stability_generation_system_v1"]
+    payload["checks"] = [
+        {
+            "name": name,
+            "status": "pass",
+            "evidence": (
+                inference_evidence
+                if name == contract["check"]
+                else {"verified": True}
+            ),
+        }
+        for name in _COMPLETION_REQUIRED_CHECKS[
+            "stability_generation_system_v1"
+        ]
+    ]
     write_json_report(audit, payload)
 
     written = write_generation_release_receipt(audit, receipt)
@@ -888,6 +921,52 @@ def test_stability_completion_profile_publishes_release_receipt(tmp_path) -> Non
     assert written["completion_expectations"] == payload["expectations"]
     assert authorization["completion_profile"] == (
         "stability_generation_system_v1"
+    )
+
+
+def test_capacity_full_completion_profile_publishes_release_receipt(tmp_path) -> None:
+    artifact, audit, receipt = _release_receipt_fixture(tmp_path)
+    receipt.unlink()
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    payload["profile"] = "capacity_full_generation_system_v1"
+    payload["status"] = "pass"
+    payload["expectations"] = {
+        "training_revision": "6" * 40,
+        "evaluation_revision": "7" * 40,
+        "export_revision": "7" * 40,
+    }
+    payload.pop("expected_revisions")
+    inference_evidence = payload["checks"][
+        _COMPLETION_REQUIRED_CHECKS["large_scale_generation_v1"].index(
+            "deployable_ema_inference_artifacts"
+        )
+    ]["evidence"]
+    contract = _COMPLETION_PROFILES["capacity_full_generation_system_v1"]
+    payload["checks"] = [
+        {
+            "name": name,
+            "status": "pass",
+            "evidence": (
+                inference_evidence
+                if name == contract["check"]
+                else {"verified": True}
+            ),
+        }
+        for name in _COMPLETION_REQUIRED_CHECKS[
+            "capacity_full_generation_system_v1"
+        ]
+    ]
+    write_json_report(audit, payload)
+
+    written = write_generation_release_receipt(audit, receipt)
+    authorization = verify_generation_release_receipt(receipt, artifact)
+
+    assert written["completion_profile"] == (
+        "capacity_full_generation_system_v1"
+    )
+    assert written["completion_expectations"] == payload["expectations"]
+    assert authorization["completion_profile"] == (
+        "capacity_full_generation_system_v1"
     )
 
 
@@ -948,6 +1027,148 @@ def test_release_receipt_rejects_incomplete_completion_audit(tmp_path) -> None:
         verify_generation_release_receipt(
             _release_receipt_fixture(other)[2],
             artifact,
+        )
+
+
+def test_release_receipt_rejects_forged_minimal_completion_audit(tmp_path) -> None:
+    _, audit, _ = _release_receipt_fixture(tmp_path)
+    changed = json.loads(audit.read_text(encoding="utf-8"))
+    changed["checks"] = [
+        row
+        for row in changed["checks"]
+        if row["name"] == "deployable_ema_inference_artifacts"
+    ]
+    write_json_report(audit, changed)
+
+    with pytest.raises(ValueError, match="missing required checks"):
+        write_generation_release_receipt(
+            audit,
+            tmp_path / "forged_minimal_release_receipt.json",
+        )
+
+
+def test_release_receipt_rejects_duplicate_completion_check(tmp_path) -> None:
+    _, audit, _ = _release_receipt_fixture(tmp_path)
+    changed = json.loads(audit.read_text(encoding="utf-8"))
+    changed["checks"].append(dict(changed["checks"][0]))
+    write_json_report(audit, changed)
+
+    with pytest.raises(ValueError, match="duplicate check"):
+        write_generation_release_receipt(
+            audit,
+            tmp_path / "duplicate_check_release_receipt.json",
+        )
+
+
+def test_release_receipt_rejects_non_passing_check_hidden_by_summary(tmp_path) -> None:
+    _, audit, _ = _release_receipt_fixture(tmp_path)
+    changed = json.loads(audit.read_text(encoding="utf-8"))
+    changed["checks"][0]["status"] = "fail"
+    write_json_report(audit, changed)
+
+    with pytest.raises(ValueError, match="requires every check to pass"):
+        write_generation_release_receipt(
+            audit,
+            tmp_path / "hidden_failed_check_release_receipt.json",
+        )
+
+
+def test_release_receipt_rejects_passing_check_without_evidence(tmp_path) -> None:
+    _, audit, _ = _release_receipt_fixture(tmp_path)
+    changed = json.loads(audit.read_text(encoding="utf-8"))
+    changed["checks"][0]["evidence"] = None
+    write_json_report(audit, changed)
+
+    with pytest.raises(ValueError, match="lacks structured check evidence"):
+        write_generation_release_receipt(
+            audit,
+            tmp_path / "missing_check_evidence_release_receipt.json",
+        )
+
+
+def test_release_receipt_rejects_unknown_completion_check(tmp_path) -> None:
+    _, audit, _ = _release_receipt_fixture(tmp_path)
+    changed = json.loads(audit.read_text(encoding="utf-8"))
+    changed["checks"].append(
+        {
+            "name": "forged_terminal_check",
+            "status": "pass",
+            "evidence": {"verified": True},
+        }
+    )
+    write_json_report(audit, changed)
+
+    with pytest.raises(ValueError, match="unknown checks"):
+        write_generation_release_receipt(
+            audit,
+            tmp_path / "unknown_check_release_receipt.json",
+        )
+
+
+def test_release_receipt_rejects_reordered_completion_contract(tmp_path) -> None:
+    _, audit, _ = _release_receipt_fixture(tmp_path)
+    changed = json.loads(audit.read_text(encoding="utf-8"))
+    changed["checks"][0], changed["checks"][1] = (
+        changed["checks"][1],
+        changed["checks"][0],
+    )
+    write_json_report(audit, changed)
+
+    with pytest.raises(ValueError, match="check order differs"):
+        write_generation_release_receipt(
+            audit,
+            tmp_path / "reordered_check_release_receipt.json",
+        )
+
+
+def test_invalid_completion_contract_is_rejected_before_artifact_verification(
+    tmp_path, monkeypatch
+) -> None:
+    _, audit, _ = _release_receipt_fixture(tmp_path)
+    changed = json.loads(audit.read_text(encoding="utf-8"))
+    changed["checks"].pop(0)
+    write_json_report(audit, changed)
+
+    def fail_if_artifact_verified(*args, **kwargs):
+        raise AssertionError("artifact was verified before completion rejection")
+
+    monkeypatch.setattr(
+        generation_release,
+        "verify_inference_artifact",
+        fail_if_artifact_verified,
+    )
+    with pytest.raises(ValueError, match="missing required checks"):
+        write_generation_release_receipt(
+            audit,
+            tmp_path / "preverification_rejection_receipt.json",
+        )
+
+
+def test_invalid_completion_contract_is_rejected_before_deserialization(
+    tmp_path, monkeypatch
+) -> None:
+    artifact, audit, receipt = _release_receipt_fixture(tmp_path)
+    changed = json.loads(audit.read_text(encoding="utf-8"))
+    changed["checks"].pop(0)
+    write_json_report(audit, changed)
+    receipt_payload = json.loads(receipt.read_text(encoding="utf-8"))
+    receipt_payload["completion_audit"] = {
+        "path": audit.resolve().as_posix(),
+        "bytes": audit.stat().st_size,
+        "sha256": file_sha256(audit),
+    }
+    write_json_report(receipt, receipt_payload)
+
+    def fail_if_deserialized(*args, **kwargs):
+        raise AssertionError("artifact was deserialized before completion rejection")
+
+    monkeypatch.setattr(torch, "load", fail_if_deserialized)
+    with pytest.raises(ValueError, match="missing required checks"):
+        GenerationSession.from_checkpoint(
+            artifact,
+            weights="ema",
+            completion_receipt=receipt,
+            require_completion_authorization=True,
         )
 
 

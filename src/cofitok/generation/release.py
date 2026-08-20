@@ -15,6 +15,60 @@ from cofitok.reporting import file_sha256, write_json_report
 
 GENERATION_RELEASE_RECEIPT_SCHEMA_VERSION = 1
 GENERATION_RELEASE_RECEIPT_TYPE = "cofitok_generation_release_receipt"
+_LARGE_SCALE_REQUIRED_CHECKS = (
+    "ten_percent_matched_training",
+    "controlled_revision_transition",
+    "generation_storage_capacity",
+    "full_training_operational_monitor",
+    "scaling_promotion_gate",
+    "full_matched_training",
+    "full_training_runtime_environment",
+    "full_training_checkpoint_code_provenance",
+    "reproducible_full_checkpoint_files",
+    "full_runtime_selection",
+    "full_training_audits",
+    "full_milestone_evaluations",
+    "formal_50k_generation",
+    "formal_sampling_runtime_selection",
+    "deterministic_visual_quality_audit",
+    "deployable_ema_inference_artifacts",
+    "final_generation_gate",
+    "final_comparison_report",
+)
+_STABILITY_REQUIRED_CHECKS = (
+    "stability_5k_authorization",
+    "stability_50k_monitor",
+    "stability_50k_pair_summary",
+    "stability_50k_checkpoint_integrity",
+    "stability_scaling_gate",
+    "stability_full_training_readiness",
+    "stability_full_readiness_revision_bridge",
+    "stability_full_launch_receipt",
+    "stability_full_monitor",
+    "stability_full_training_pair",
+    "stability_full_runtime_selection",
+    "stability_full_storage_capacity",
+    "stability_full_milestones",
+    "stability_full_formal_generation",
+    "stability_full_runtime_and_visual",
+    "stability_final_gate",
+    "stability_strong_baseline_comparison",
+    "stability_release_authorized_inference",
+)
+_CAPACITY_FULL_REQUIRED_CHECKS = (
+    "capacity_full_training_supervisor_deployment",
+    "capacity_full_training_completion",
+    "capacity_full_training_integrity",
+    "capacity_full_milestones",
+    "capacity_full_posteval_supervisor_deployment",
+    "capacity_full_posteval_result",
+    "capacity_full_posteval_supervisor_status",
+    "capacity_full_formal_generation",
+    "capacity_full_runtime_and_visual",
+    "capacity_full_final_gate",
+    "capacity_full_strong_comparison",
+    "capacity_full_release_authorized_inference",
+)
 _COMPLETION_PROFILES = {
     "large_scale_generation_v1": {
         "status": "complete",
@@ -28,6 +82,11 @@ _COMPLETION_PROFILES = {
         "status": "pass",
         "check": "capacity_full_release_authorized_inference",
     },
+}
+_COMPLETION_REQUIRED_CHECKS = {
+    "large_scale_generation_v1": _LARGE_SCALE_REQUIRED_CHECKS,
+    "stability_generation_system_v1": _STABILITY_REQUIRED_CHECKS,
+    "capacity_full_generation_system_v1": _CAPACITY_FULL_REQUIRED_CHECKS,
 }
 _METHODS = ("cofitok", "dense_identity")
 
@@ -54,7 +113,73 @@ def _file_identity(path: str | Path) -> dict[str, Any]:
     }
 
 
-def _completion_profile(audit: Mapping[str, Any]) -> tuple[str, dict[str, str]]:
+def _validated_completion_checks(
+    audit: Mapping[str, Any],
+    *,
+    profile: str,
+    contract: Mapping[str, Any],
+) -> dict[str, Mapping[str, Any]]:
+    checks = audit.get("checks")
+    if not isinstance(checks, list):
+        raise ValueError("generation completion audit check list is missing")
+    expected = _COMPLETION_REQUIRED_CHECKS[profile]
+    rows: dict[str, Mapping[str, Any]] = {}
+    names: list[str] = []
+    for index, row in enumerate(checks):
+        if not isinstance(row, Mapping):
+            raise ValueError(
+                f"generation completion audit check row {index} is malformed"
+            )
+        name = row.get("name")
+        if not isinstance(name, str) or not name:
+            raise ValueError(
+                f"generation completion audit check row {index} lacks a name"
+            )
+        if name in rows:
+            raise ValueError(
+                f"generation completion audit contains duplicate check: {name}"
+            )
+        names.append(name)
+        rows[name] = row
+
+    missing = [name for name in expected if name not in rows]
+    if missing:
+        raise ValueError(
+            "generation completion audit is missing required checks: "
+            + ", ".join(missing)
+        )
+    unknown = [name for name in names if name not in expected]
+    if unknown:
+        raise ValueError(
+            "generation completion audit contains unknown checks: "
+            + ", ".join(unknown)
+        )
+    if tuple(names) != expected:
+        raise ValueError(
+            f"generation completion audit check order differs from {profile} contract"
+        )
+    non_passing = [name for name in expected if rows[name].get("status") != "pass"]
+    if non_passing:
+        raise ValueError(
+            "generation completion audit requires every check to pass: "
+            + ", ".join(non_passing)
+        )
+    missing_evidence = [
+        name
+        for name in expected
+        if not isinstance(rows[name].get("evidence"), Mapping)
+    ]
+    if missing_evidence:
+        raise ValueError(
+            "generation completion audit lacks structured check evidence: "
+            + ", ".join(missing_evidence)
+        )
+    return rows
+
+
+def _completion_profile(
+    audit: Mapping[str, Any],
+) -> tuple[str, dict[str, Any], dict[str, Mapping[str, Any]]]:
     raw_profile = audit.get("profile")
     profile = (
         "large_scale_generation_v1"
@@ -73,24 +198,19 @@ def _completion_profile(audit: Mapping[str, Any]) -> tuple[str, dict[str, str]]:
         or audit.get("missing_checks") != []
     ):
         raise ValueError("generation completion audit did not pass")
-    return profile, contract
+    checks = _validated_completion_checks(
+        audit,
+        profile=profile,
+        contract=contract,
+    )
+    return profile, contract, checks
 
 
 def _completion_inference_evidence(
     audit: Mapping[str, Any],
 ) -> tuple[str, dict[str, Any]]:
-    profile, contract = _completion_profile(audit)
-    checks = audit.get("checks")
-    if not isinstance(checks, list):
-        raise ValueError("generation completion audit check list is missing")
-    matches = [
-        row
-        for row in checks
-        if isinstance(row, Mapping) and row.get("name") == contract["check"]
-    ]
-    if len(matches) != 1 or matches[0].get("status") != "pass":
-        raise ValueError("generation completion audit lacks passing inference evidence")
-    evidence = matches[0].get("evidence")
+    profile, contract, checks = _completion_profile(audit)
+    evidence = checks[contract["check"]].get("evidence")
     if not isinstance(evidence, Mapping) or set(evidence) != set(_METHODS):
         raise ValueError("generation completion inference evidence is incomplete")
     return profile, dict(evidence)

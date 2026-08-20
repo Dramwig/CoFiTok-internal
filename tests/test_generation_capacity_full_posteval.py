@@ -17,7 +17,10 @@ from scripts import build_large_scale_generation_comparison as comparison
 from scripts import audit_generation_capacity_full_completion as completion
 from scripts import run_generation_capacity_full_300k_posteval_supervisor as posteval
 from scripts import run_generation_capacity_full_300k_finalization_supervisor as finalizer
-from cofitok.generation.release import _COMPLETION_PROFILES
+from cofitok.generation.release import (
+    _COMPLETION_PROFILES,
+    _COMPLETION_REQUIRED_CHECKS,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -309,6 +312,20 @@ def test_capacity_full_export_and_completion_are_final_gate_bound() -> None:
         "status": "pass",
         "check": completion.RELEASE_CHECK,
     }
+    assert _COMPLETION_REQUIRED_CHECKS[completion.PROFILE] == (
+        "capacity_full_training_supervisor_deployment",
+        "capacity_full_training_completion",
+        "capacity_full_training_integrity",
+        "capacity_full_milestones",
+        "capacity_full_posteval_supervisor_deployment",
+        "capacity_full_posteval_result",
+        "capacity_full_posteval_supervisor_status",
+        "capacity_full_formal_generation",
+        "capacity_full_runtime_and_visual",
+        "capacity_full_final_gate",
+        "capacity_full_strong_comparison",
+        "capacity_full_release_authorized_inference",
+    )
 
 
 def test_capacity_full_finalization_supervisor_is_gate_bound_and_non_signaling() -> None:
