@@ -89,6 +89,50 @@ Structured evidence is stored at:
 artifacts/reports/generation/terminal_distribution_support_preparation_2026-08-20/rehearsal_report.json
 ```
 
+## Conditional waiter deployment
+
+After the rehearsal evidence commit, the final target was packaged and
+verified locally and remotely:
+
+```text
+revision: 37cb1fe474197b8ec8c2f94c6cc97cfd11fc29f0
+tree: 5a214941de008cf2782d568d749097134d9364bc
+bundle bytes: 43,713,791
+bundle SHA256: 9885c50235dbb9b9334b030116d26cdd53aad26750e9bc79b52228f2e678a66f
+```
+
+The final bundle advertised only that HEAD and retained the two exact
+prerequisites recorded above. It was fetched into a new isolated checkout,
+without fetching into or moving the formal repository:
+
+```text
+/root/autodl-tmp/CoFiTok/checkouts/terminal-distribution-support-37cb1fe/CoFiTok-internal
+```
+
+The final checkout was clean, exact, and passed the focused 18-test suite. The
+conditional waiter was then launched with CUDA hidden, `nice=10`, idle IO
+priority, and one-thread BLAS/OpenMP limits. Its deployed identity is:
+
+```text
+PID: 720592
+start ticks: 1684120835
+parent PID: 1
+cmdline SHA256: 17bc23ce0b01534e438ed3f9713fb96f523c655c4a13cd27656e1d26dafe58be
+status: waiting
+detail: waiting_for_quality_bridge_followup_decision
+decision exists: false
+diagnostic output exists: false
+```
+
+File descriptor 9 resolves to the exact waiter lock, and an independent
+nonblocking lock attempt returned exit code 1. After two polls, the status
+still bound the expected revision, tree, branch, runbook, diagnostic script,
+and waiter SHA256. The deployment receipt is:
+
+```text
+artifacts/reports/generation/terminal_distribution_support_waiter_deployment_2026-08-20/deployment_receipt.json
+```
+
 ## Concurrent training safety
 
 The formal checkout remained at
@@ -97,8 +141,9 @@ same 89-row full porcelain identity SHA256
 `18e5981f22a2ac255c7f60343429daa6ceea86412b1d7bd09bc474f2faf74004`.
 
 The only GPU process remained quality-bridge trainer PID `543758`, using
-89,398 MiB. Its metric step advanced from 54,700 to 55,150 during rehearsal.
-No GPU process was started, stopped, signaled, or modified.
+89,398 MiB. Its metric step advanced from 54,700 to 55,150 during rehearsal
+and to 55,450 after waiter deployment. No GPU process was started, stopped,
+signaled, or modified.
 
 ## Authorization boundary
 
