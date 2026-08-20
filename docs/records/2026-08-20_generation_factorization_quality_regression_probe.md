@@ -128,3 +128,19 @@ evidence: three control-plane tests rejected the uncommitted tracked checkout,
 and one CLI subprocess imported the separate main-worktree editable install.
 Final Windows and Linux full-suite results must be obtained from clean checkouts
 using worktree-local/runtime-correct Python environments before deployment.
+
+## GPU visibility boundary hardening
+
+Pre-deployment review found that a supervisor launched with
+`CUDA_VISIBLE_DEVICES=-1` would pass that value unchanged to the diagnostic
+runbook. The parent process would remain correctly CPU-only, but the eventual
+GPU diagnostic would be unable to see the device.
+
+The supervisor now fails closed unless its own environment is exactly
+`CUDA_VISIBLE_DEVICES=-1`. Only after the terminal route and source bindings are
+valid and five consecutive `nvidia-smi` compute-process polls are idle does it
+construct a child environment with exactly `CUDA_VISIBLE_DEVICES=0`. The runbook
+independently rejects any other child value before loading a checkpoint. The
+deployment receipt and every status snapshot record both visibility values and
+the idle-poll transition condition. This change does not broaden the diagnostic
+authorization boundary or permit training, promotion, full 300K, or release.

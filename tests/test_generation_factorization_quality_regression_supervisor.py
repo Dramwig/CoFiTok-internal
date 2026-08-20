@@ -35,6 +35,27 @@ def test_supervisor_authorization_boundary_is_diagnostic_only() -> None:
     assert boundary["release_authorization_allowed"] is False
 
 
+def test_supervisor_requires_hidden_parent_and_grants_only_gpu_zero_to_child() -> None:
+    parent = {"CUDA_VISIBLE_DEVICES": "-1", "PRESERVED": "yes"}
+
+    assert supervisor.validate_supervisor_gpu_visibility(parent) == "-1"
+    child = supervisor.build_diagnostic_child_environment(parent)
+    assert child["CUDA_VISIBLE_DEVICES"] == "0"
+    assert child["PRESERVED"] == "yes"
+    assert parent["CUDA_VISIBLE_DEVICES"] == "-1"
+
+    with pytest.raises(ValueError, match="CUDA_VISIBLE_DEVICES=-1"):
+        supervisor.validate_supervisor_gpu_visibility({})
+    with pytest.raises(ValueError, match="CUDA_VISIBLE_DEVICES=-1"):
+        supervisor.validate_supervisor_gpu_visibility(
+            {"CUDA_VISIBLE_DEVICES": "0"}
+        )
+    with pytest.raises(ValueError, match="CUDA_VISIBLE_DEVICES=-1"):
+        supervisor.build_diagnostic_child_environment(
+            {"CUDA_VISIBLE_DEVICES": ""}
+        )
+
+
 def test_runbook_uses_exact_bounded_rollout_protocol() -> None:
     source = RUNBOOK.read_text(encoding="utf-8")
 
@@ -51,6 +72,7 @@ def test_runbook_uses_exact_bounded_rollout_protocol() -> None:
     assert "scripts/train_generation.py" not in source
     assert "scripts/generate_samples.py" not in source
     assert "full_300k" not in source
+    assert '[[ "${CUDA_VISIBLE_DEVICES:-}" != "0" ]]' in source
 
 
 def test_supervisor_source_requires_exact_route_guard_and_five_idle_polls() -> None:
@@ -65,6 +87,8 @@ def test_supervisor_source_requires_exact_route_guard_and_five_idle_polls() -> N
     assert "fcntl.LOCK_EX | fcntl.LOCK_NB" in source
     assert "deployment_receipt_output" in source
     assert "build_deployment_receipt" in source
+    assert "validate_supervisor_gpu_visibility()" in source
+    assert "build_diagnostic_child_environment()" in source
     assert "os.kill" not in source
     assert "terminate()" not in source
     assert "kill()" not in source
@@ -107,6 +131,7 @@ def test_supervisor_deployment_receipt_binds_exact_control_plane(tmp_path: Path)
             "bytes": 5,
             "sha256": "5" * 64,
         },
+        supervisor_cuda_visible_devices="-1",
     )
 
     assert receipt["role"] == supervisor.DEPLOYMENT_ROLE
@@ -116,8 +141,54 @@ def test_supervisor_deployment_receipt_binds_exact_control_plane(tmp_path: Path)
         args.output_root.resolve().as_posix()
     )
     assert receipt["timing"]["required_idle_gpu_polls"] == 5
+    assert receipt["gpu_visibility"] == {
+        "environment_variable": "CUDA_VISIBLE_DEVICES",
+        "supervisor": {
+            "value": "-1",
+            "gpu_runtime_access_allowed": False,
+        },
+        "diagnostic_child": {
+            "value": "0",
+            "gpu_runtime_access_allowed": True,
+            "launch_condition": "after_five_consecutive_idle_gpu_polls",
+        },
+    }
     assert receipt["authorization_boundary"] == supervisor.AUTHORIZATION_BOUNDARY
     assert receipt["authorization_boundary"]["training_launch_allowed"] is False
+
+    status = supervisor._status_payload(
+        status="waiting",
+        detail="waiting_for_quality_bridge_followup_decision",
+        args=args,
+        idle_polls=0,
+    )
+    assert status["gpu_visibility"] == receipt["gpu_visibility"]
+    assert status["gpu_visibility"]["supervisor"]["value"] == "-1"
+    assert status["gpu_visibility"]["diagnostic_child"]["value"] == "0"
+
+    with pytest.raises(ValueError, match="supervisor CUDA_VISIBLE_DEVICES=-1"):
+        supervisor.build_deployment_receipt(
+            args,
+            control_git=git,
+            supervisor_source={
+                "path": "/source.py",
+                "bytes": 1,
+                "sha256": "1" * 64,
+            },
+            runbook={"path": "/runbook.sh", "bytes": 2, "sha256": "2" * 64},
+            python_runtime={"path": "/python", "bytes": 3, "sha256": "3" * 64},
+            preparation={
+                "path": "/preparation.json",
+                "bytes": 4,
+                "sha256": "4" * 64,
+            },
+            standing_authorization={
+                "path": "/standing.json",
+                "bytes": 5,
+                "sha256": "5" * 64,
+            },
+            supervisor_cuda_visible_devices="0",
+        )
 
 
 def test_supervisor_requires_exposure_aware_v2_followup_path() -> None:

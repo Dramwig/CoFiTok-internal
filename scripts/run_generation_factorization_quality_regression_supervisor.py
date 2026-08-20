@@ -52,6 +52,9 @@ except ModuleNotFoundError:  # Imported as scripts.<module> by tests.
 
 ROLE = "generation_factorization_quality_regression_supervisor"
 DEPLOYMENT_ROLE = "generation_factorization_quality_regression_supervisor_deployment"
+CUDA_VISIBLE_DEVICES_ENV = "CUDA_VISIBLE_DEVICES"
+SUPERVISOR_CUDA_VISIBLE_DEVICES = "-1"
+DIAGNOSTIC_CHILD_CUDA_VISIBLE_DEVICES = "0"
 AUTHORIZATION_BOUNDARY = {
     "standing_authorization_required": True,
     "exact_matched_quality_regression_route_required": True,
@@ -66,6 +69,52 @@ AUTHORIZATION_BOUNDARY = {
     "full_300k_launch_allowed": False,
     "release_authorization_allowed": False,
 }
+
+
+def gpu_visibility_policy(
+    *, supervisor_cuda_visible_devices: str = SUPERVISOR_CUDA_VISIBLE_DEVICES
+) -> dict[str, Any]:
+    if supervisor_cuda_visible_devices != SUPERVISOR_CUDA_VISIBLE_DEVICES:
+        raise ValueError(
+            "factorization-regression deployment requires "
+            "supervisor CUDA_VISIBLE_DEVICES=-1"
+        )
+    return {
+        "environment_variable": CUDA_VISIBLE_DEVICES_ENV,
+        "supervisor": {
+            "value": supervisor_cuda_visible_devices,
+            "gpu_runtime_access_allowed": False,
+        },
+        "diagnostic_child": {
+            "value": DIAGNOSTIC_CHILD_CUDA_VISIBLE_DEVICES,
+            "gpu_runtime_access_allowed": True,
+            "launch_condition": "after_five_consecutive_idle_gpu_polls",
+        },
+    }
+
+
+def validate_supervisor_gpu_visibility(
+    environment: Mapping[str, str] | None = None,
+) -> str:
+    source = os.environ if environment is None else environment
+    observed = source.get(CUDA_VISIBLE_DEVICES_ENV)
+    if observed != SUPERVISOR_CUDA_VISIBLE_DEVICES:
+        raise ValueError(
+            "factorization-regression supervisor requires "
+            "CUDA_VISIBLE_DEVICES=-1"
+        )
+    return observed
+
+
+def build_diagnostic_child_environment(
+    environment: Mapping[str, str] | None = None,
+) -> dict[str, str]:
+    child_environment = dict(os.environ if environment is None else environment)
+    validate_supervisor_gpu_visibility(child_environment)
+    child_environment[CUDA_VISIBLE_DEVICES_ENV] = (
+        DIAGNOSTIC_CHILD_CUDA_VISIBLE_DEVICES
+    )
+    return child_environment
 
 
 def _is_within(path: Path, root: Path) -> bool:
@@ -141,6 +190,7 @@ def build_deployment_receipt(
     python_runtime: Mapping[str, Any],
     preparation: Mapping[str, Any],
     standing_authorization: Mapping[str, Any],
+    supervisor_cuda_visible_devices: str,
 ) -> dict[str, Any]:
     return {
         "schema_version": 1,
@@ -184,6 +234,9 @@ def build_deployment_receipt(
             "required_idle_gpu_polls": args.required_idle_polls,
             "timeout_seconds": args.timeout_seconds,
         },
+        "gpu_visibility": gpu_visibility_policy(
+            supervisor_cuda_visible_devices=supervisor_cuda_visible_devices
+        ),
         "authorization_boundary": dict(AUTHORIZATION_BOUNDARY),
     }
 
@@ -211,6 +264,7 @@ def _status_payload(
         "output_root": args.output_root.resolve().as_posix(),
         "idle_gpu_polls": idle_polls,
         "required_idle_gpu_polls": args.required_idle_polls,
+        "gpu_visibility": gpu_visibility_policy(),
         "sources": dict(sources or {}),
         "authorization_boundary": AUTHORIZATION_BOUNDARY,
     }
@@ -282,6 +336,7 @@ def run(args: argparse.Namespace) -> int:
         or args.required_idle_polls != 5
     ):
         raise ValueError("factorization-regression supervisor timing contract differs")
+    supervisor_cuda_visible_devices = validate_supervisor_gpu_visibility()
     project = reject_symlink_chain(args.project, name="diagnostic project").resolve()
     args.project = project
     followup_decision = reject_symlink_chain(
@@ -379,6 +434,7 @@ def run(args: argparse.Namespace) -> int:
         python_runtime=file_identity(python_runtime),
         preparation=preparation_identity,
         standing_authorization=standing_identity,
+        supervisor_cuda_visible_devices=supervisor_cuda_visible_devices,
     )
     deployment_identity = prepare_manifest(
         args.deployment_receipt_output,
@@ -534,7 +590,7 @@ def run(args: argparse.Namespace) -> int:
             expected_tree=args.expected_tree,
             expected_branch=args.expected_branch,
         )
-        environment = os.environ.copy()
+        environment = build_diagnostic_child_environment()
         environment.update(
             {
                 "PROJECT": project.as_posix(),

@@ -18,6 +18,11 @@ set -euo pipefail
 : "${TERMINAL_SYSTEM_GUARD:?set TERMINAL_SYSTEM_GUARD}"
 : "${OUTPUT_ROOT:?set OUTPUT_ROOT}"
 
+if [[ "${CUDA_VISIBLE_DEVICES:-}" != "0" ]]; then
+  printf 'factorization-regression diagnostic requires CUDA_VISIBLE_DEVICES=0\n' >&2
+  exit 5
+fi
+
 EXPECTED_OUTPUT_ROOT="/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_factorization_quality_regression_v1"
 QUALITY_ROOT="/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1"
 COFITOK_RUN="$QUALITY_ROOT/cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
