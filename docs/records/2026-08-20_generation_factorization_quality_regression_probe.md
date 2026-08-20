@@ -144,3 +144,93 @@ independently rejects any other child value before loading a checkpoint. The
 deployment receipt and every status snapshot record both visibility values and
 the idle-poll transition condition. This change does not broaden the diagnostic
 authorization boundary or permit training, promotion, full 300K, or release.
+
+## Clean validation and waiting-supervisor deployment
+
+The GPU-visibility hardening code was committed and deployed from:
+
+```text
+branch: scale/generation-factorization-quality-regression-v1
+revision: 8749138f4b8e144ccbcae0f897e3237dc5aacada
+tree: 994c0837c7c3e6f3a2f389cb0a6a351f06d89757
+```
+
+Validation on the exact clean revision completed as follows:
+
+```text
+Windows full pytest: 100%, exit 0
+Windows focused factorization tests: 15 passed
+Windows compileall: pass
+Windows git diff --check: pass
+Linux full pytest with CUDA_VISIBLE_DEVICES=-1: 100%, exit 0
+Linux compileall: pass
+Linux tracked runbooks: 143/143 bash -n
+Linux git status --porcelain: empty
+```
+
+The first Linux invocation used the conda `bin/python` symlink and correctly
+failed six path-trust tests. Re-running with the regular-file interpreter
+`/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10` passed those tests and the
+complete suite. The deployment binds that regular-file interpreter.
+
+The verified bundle chain is:
+
+```text
+complete bootstrap:
+  /tmp/cofitok-factorization-bootstrap-full-5ca7bc6.bundle
+  bytes: 146,350,057
+  SHA256: 60b9830d6c1f619d641020a8cc25e74080d336b25f31150516bfe61aad779129
+  advertised ref: 5ca7bc66231e0d1c66b740b7e0be32cf59a771fa
+
+incremental diagnostic bundle:
+  /tmp/cofitok-factorization-quality-regression-8749138-from-5ca7bc6.bundle
+  bytes: 66,495
+  SHA256: 6076a404e635c261e1727b08c399f2e9f12afe45e0d4c1d80fd194b25c3891c6
+  advertised ref: 8749138f4b8e144ccbcae0f897e3237dc5aacada
+```
+
+Both bundles were verified and fetched in order into a new empty repository
+before persistent deployment. The superseded `1df4279` incremental bundle was
+not deployed.
+
+The persistent waiting supervisor is bound to:
+
+```text
+checkout:
+  /root/autodl-tmp/CoFiTok/checkouts/
+  factorization-quality-regression-8749138/CoFiTok-internal
+
+control root:
+  /root/autodl-tmp/CoFiTok/checkpoints/generation/
+  stability_full_data_100k_base128_quality_bridge_v1/reports/
+  factorization_quality_regression_supervisor_v1
+
+diagnostic output root:
+  /root/autodl-tmp/CoFiTok/checkpoints/generation/
+  stability_full_data_100k_factorization_quality_regression_v1
+```
+
+Deployment evidence:
+
+```text
+preparation SHA256:
+  1b5696a30a3a13da5cb3e3552951531798d7711e324d9a262196b08f269bc724
+deployment receipt bytes: 4,804
+deployment receipt SHA256:
+  f72197539ab6bab1470aa84e2cd3565a5020ce52e920c4a0be01ed5f2e7d436f
+supervisor PID: 374206
+supervisor CUDA_VISIBLE_DEVICES: -1
+future diagnostic child CUDA_VISIBLE_DEVICES: 0
+required idle polls before child launch: 5
+status: waiting
+detail: waiting_for_quality_bridge_followup_decision
+```
+
+At the post-deployment audit, the diagnostic output root and adjacent lock were
+both absent. The only GPU compute process remained the active quality-bridge
+trainer PID `543758`; the waiting supervisor did not appear in the GPU process
+list. The formal checkout remained
+`scale/generative-system@1ebcc15210e63a776a2ba448481cbd8bb94a4066`, with
+tracked status clean and the pre-existing full porcelain identity unchanged at
+89 entries / SHA256
+`18e5981f22a2ac255c7f60343429daa6ceea86412b1d7bd09bc474f2faf74004`.
