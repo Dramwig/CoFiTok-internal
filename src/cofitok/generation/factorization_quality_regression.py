@@ -12,10 +12,15 @@ from cofitok.generation.capacity_probe_execution import (
 from cofitok.generation.quality_bridge_followup import (
     AUTHORIZATION_BOUNDARY as FOLLOWUP_AUTHORIZATION_BOUNDARY,
     EXPECTED_CHECKS,
+    FOLLOWUP_DECISION_SCHEMA_VERSION,
     FOLLOWUP_DECISION_ROLE,
     MATCHED_QUALITY_CHECKS,
+    QUALITY_BRIDGE_DATASET,
+    QUALITY_BRIDGE_EFFECTIVE_BATCH,
     QUALITY_BRIDGE_EXECUTION_BRANCH,
     QUALITY_BRIDGE_EXECUTION_REVISION,
+    QUALITY_BRIDGE_IMAGES_SEEN,
+    QUALITY_BRIDGE_TARGET_STEPS,
 )
 from cofitok.generation.stability_qualification import (
     DEFAULT_HIGH_FREQUENCY_TIMESTEPS,
@@ -33,8 +38,8 @@ SCOPE = "imagenet256_full_100k_matched_factorization_rollout_diagnostic_v1"
 FOLLOWUP_DECISION_ID = "run_matched_factorization_quality_regression_probe"
 FOLLOWUP_DECISION_CATEGORY = "matched_quality_regression"
 FOLLOWUP_DECISION_BUILDER_GIT = {
-    "revision": "9b02fa83d20b1459a2706d6d82371caf5c023f54",
-    "branch": "scale/generation-quality-bridge-followup-decision-v1",
+    "revision": "85e3ece1196fd318cd6823439824e19fca4275a3",
+    "branch": "analysis/generation-quality-bridge-exposure-routing-v1",
     "tracked_dirty": False,
 }
 QUALITY_BRIDGE_GIT = {
@@ -47,6 +52,10 @@ QUALITY_BRIDGE_RESULT_ROLE = "stability_full_data_quality_bridge_result"
 QUALITY_BRIDGE_ROOT = (
     "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
     "stability_full_data_100k_base128_quality_bridge_v1"
+)
+FOLLOWUP_DECISION_PATH = (
+    f"{QUALITY_BRIDGE_ROOT}/reports/"
+    "followup_experiment_decision_exposure_aware_v2.json"
 )
 OUTPUT_ROOT = (
     "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
@@ -230,6 +239,93 @@ def validate_preparation(
     return copy.deepcopy(expected)
 
 
+def _validate_followup_training_exposure(
+    value: Any,
+    *,
+    expected_source: Mapping[str, Any],
+) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise ValueError("quality-bridge follow-up training exposure is missing")
+    expected_keys = {
+        "source_report",
+        "dataset",
+        "dataset_identity_sha256",
+        "train_image_count",
+        "steps_per_method",
+        "effective_batch_size",
+        "images_seen_per_method",
+        "full_data_equivalent_epochs",
+        "historical_10pct_reference_equivalent_epochs",
+        "full_to_reference_equivalent_epoch_ratio",
+        "below_historical_reference_exposure",
+        "insufficient_exposure_is_live_hypothesis",
+        "causal_status",
+        "quality_metric_comparison_allowed",
+        "terminal_result_content_bound",
+        "terminal_checkpoint_binding_verified",
+    }
+    if set(value) != expected_keys:
+        raise ValueError("quality-bridge follow-up training exposure field set differs")
+    source = _identity(value.get("source_report", {}), label="terminal training exposure")
+    if source != _identity(expected_source, label="expected terminal training exposure"):
+        raise ValueError("quality-bridge follow-up training exposure source differs")
+    train_image_count = value.get("train_image_count")
+    steps = value.get("steps_per_method")
+    effective_batch = value.get("effective_batch_size")
+    images_seen = value.get("images_seen_per_method")
+    if (
+        type(train_image_count) is not int
+        or train_image_count < 1
+        or type(steps) is not int
+        or type(effective_batch) is not int
+        or type(images_seen) is not int
+    ):
+        raise ValueError("quality-bridge follow-up training exposure counts differ")
+    full_epochs = _finite(
+        value.get("full_data_equivalent_epochs"),
+        label="full-data equivalent epochs",
+        positive=True,
+    )
+    reference_epochs = _finite(
+        value.get("historical_10pct_reference_equivalent_epochs"),
+        label="historical 10pct equivalent epochs",
+        positive=True,
+    )
+    ratio = _finite(
+        value.get("full_to_reference_equivalent_epoch_ratio"),
+        label="full-to-reference equivalent epoch ratio",
+        positive=True,
+    )
+    below_reference = full_epochs < reference_epochs
+    if (
+        value.get("dataset") != QUALITY_BRIDGE_DATASET
+        or not _is_hex(value.get("dataset_identity_sha256"), length=64)
+        or steps != QUALITY_BRIDGE_TARGET_STEPS
+        or effective_batch != QUALITY_BRIDGE_EFFECTIVE_BATCH
+        or images_seen != QUALITY_BRIDGE_IMAGES_SEEN
+        or not math.isclose(
+            full_epochs,
+            QUALITY_BRIDGE_IMAGES_SEEN / train_image_count,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+        or not math.isclose(
+            ratio,
+            full_epochs / reference_epochs,
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+        or value.get("below_historical_reference_exposure") is not below_reference
+        or value.get("insufficient_exposure_is_live_hypothesis") is not below_reference
+        or value.get("causal_status") != "not_identified_by_exposure_alone"
+        or value.get("quality_metric_comparison_allowed") is not False
+        or value.get("terminal_result_content_bound") is not True
+        or value.get("terminal_checkpoint_binding_verified") is not True
+    ):
+        raise ValueError("quality-bridge follow-up training exposure differs")
+    return copy.deepcopy(dict(value))
+
+
 def classify_followup_decision(report: Mapping[str, Any]) -> str:
     recommendation = report.get("recommended_next_stage")
     terminal = report.get("terminal_quality")
@@ -237,7 +333,7 @@ def classify_followup_decision(report: Mapping[str, Any]) -> str:
     checks = terminal.get("checks") if isinstance(terminal, Mapping) else None
     failed = terminal.get("failed_checks") if isinstance(terminal, Mapping) else None
     if (
-        report.get("schema_version") != SCHEMA_VERSION
+        report.get("schema_version") != FOLLOWUP_DECISION_SCHEMA_VERSION
         or report.get("role") != FOLLOWUP_DECISION_ROLE
         or report.get("status") != "completed"
         or report.get("decision_builder_git") != FOLLOWUP_DECISION_BUILDER_GIT
@@ -252,6 +348,8 @@ def classify_followup_decision(report: Mapping[str, Any]) -> str:
         or not isinstance(checks, list)
         or not isinstance(failed, list)
         or not isinstance(sources, Mapping)
+        or set(sources)
+        != {"quality_bridge_result", "milestones", "terminal_training_exposure"}
     ):
         raise ValueError("quality-bridge follow-up decision is malformed")
     indexed: dict[str, bool] = {}
@@ -270,6 +368,15 @@ def classify_followup_decision(report: Mapping[str, Any]) -> str:
     if set(indexed) != EXPECTED_CHECKS or observed_failed != failed:
         raise ValueError("quality-bridge follow-up check set differs")
     _identity(sources.get("quality_bridge_result", {}), label="quality bridge result")
+    milestones = sources.get("milestones")
+    if not isinstance(milestones, Mapping) or set(milestones) != {"50000", "100000"}:
+        raise ValueError("quality-bridge follow-up milestone source set differs")
+    for step, identity in milestones.items():
+        _identity(identity, label=f"quality bridge milestone {step}")
+    _validate_followup_training_exposure(
+        report.get("training_exposure"),
+        expected_source=sources.get("terminal_training_exposure", {}),
+    )
     route = recommendation.get("id")
     if route != FOLLOWUP_DECISION_ID:
         return "not_selected"
@@ -413,6 +520,10 @@ def build_source_binding(
         followup_decision["source_reports"]["quality_bridge_result"],
         label="follow-up quality result",
     )
+    decision_exposure = _identity(
+        followup_decision["source_reports"]["terminal_training_exposure"],
+        label="follow-up terminal training exposure",
+    )
     result_identity = _identity(quality_result_identity, label="quality result")
     if decision_result != result_identity:
         raise ValueError("follow-up decision and physical quality result differ")
@@ -433,6 +544,7 @@ def build_source_binding(
     expected_source_keys = {
         "quality_result",
         "followup_decision",
+        "terminal_training_exposure",
         "terminal_system_guard",
         "cofitok_training",
         "dense_training",
@@ -453,6 +565,7 @@ def build_source_binding(
             followup_decision_identity,
             label="follow-up decision",
         ),
+        "terminal_training_exposure": decision_exposure,
         "terminal_system_guard": _identity(
             terminal_system_guard_identity,
             label="terminal-system guard",

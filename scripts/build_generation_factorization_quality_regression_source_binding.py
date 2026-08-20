@@ -155,11 +155,20 @@ def build_from_paths(
     result_source = decision.get("source_reports", {}).get("quality_bridge_result")
     if not isinstance(result_source, Mapping):
         raise ValueError("follow-up decision does not bind a quality result")
+    exposure_source = decision.get("source_reports", {}).get(
+        "terminal_training_exposure"
+    )
+    if not isinstance(exposure_source, Mapping):
+        raise ValueError("follow-up decision does not bind terminal training exposure")
     result_path = Path(str(result_source.get("path", "")))
     result_sha = str(result_source.get("sha256", ""))
+    exposure_path = Path(str(exposure_source.get("path", "")))
+    exposure_sha = str(exposure_source.get("sha256", ""))
     rebuilt_decision = followup_builder.build_from_sources(
         quality_bridge_result_path=result_path,
         expected_quality_bridge_result_sha256=result_sha,
+        training_exposure_report_path=exposure_path,
+        expected_training_exposure_report_sha256=exposure_sha,
         decision_git=dict(decision.get("decision_builder_git", {})),
     )
     if decision != rebuilt_decision:
@@ -170,6 +179,15 @@ def build_from_paths(
     )
     if quality_identity != dict(result_source):
         raise ValueError("physical quality result identity differs from follow-up decision")
+    _, exposure_identity = _bound_json(
+        exposure_path,
+        label="terminal training exposure report",
+        expected_sha256=exposure_sha,
+    )
+    if exposure_identity != dict(exposure_source):
+        raise ValueError(
+            "physical terminal training exposure identity differs from follow-up decision"
+        )
     terminal_guard, terminal_identity = _bound_json(
         terminal_system_guard_path,
         label="terminal-system claim guard",
@@ -208,6 +226,7 @@ def build_from_paths(
     sources = {
         "quality_result": quality_identity,
         "followup_decision": decision_identity,
+        "terminal_training_exposure": exposure_identity,
         "terminal_system_guard": terminal_identity,
         "cofitok_training": cofitok_training_identity,
         "dense_training": dense_training_identity,

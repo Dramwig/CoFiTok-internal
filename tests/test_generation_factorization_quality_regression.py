@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import copy
+import json
+from pathlib import Path
 
 import pytest
 
@@ -36,8 +38,13 @@ from cofitok.generation.factorization_quality_regression import (
 from cofitok.generation.quality_bridge_followup import (
     AUTHORIZATION_BOUNDARY as FOLLOWUP_AUTHORIZATION_BOUNDARY,
     EXPECTED_CHECKS,
+    FOLLOWUP_DECISION_SCHEMA_VERSION,
 )
 from cofitok.generation.stability_qualification import build_stability_qualification
+from cofitok.inference_replay import file_identity
+from scripts import (
+    build_generation_factorization_quality_regression_source_binding as source_binding_builder,
+)
 
 
 REVISION = "a" * 40
@@ -69,9 +76,44 @@ def _standing() -> dict[str, object]:
     }
 
 
-def _decision(*, route: str = FOLLOWUP_DECISION_ID) -> dict[str, object]:
+def _training_exposure_context(
+    source: dict[str, object] | None = None,
+) -> dict[str, object]:
+    train_image_count = 1_281_167
+    full_epochs = 6_400_000 / train_image_count
+    reference_epochs = 3_200_000 / 128_161
+    return {
+        "source_report": copy.deepcopy(
+            source or _identity("/evidence/training_exposure.json", "8")
+        ),
+        "dataset": "imagenet_256",
+        "dataset_identity_sha256": "7" * 64,
+        "train_image_count": train_image_count,
+        "steps_per_method": 100_000,
+        "effective_batch_size": 64,
+        "images_seen_per_method": 6_400_000,
+        "full_data_equivalent_epochs": full_epochs,
+        "historical_10pct_reference_equivalent_epochs": reference_epochs,
+        "full_to_reference_equivalent_epoch_ratio": full_epochs / reference_epochs,
+        "below_historical_reference_exposure": True,
+        "insufficient_exposure_is_live_hypothesis": True,
+        "causal_status": "not_identified_by_exposure_alone",
+        "quality_metric_comparison_allowed": False,
+        "terminal_result_content_bound": True,
+        "terminal_checkpoint_binding_verified": True,
+    }
+
+
+def _decision(
+    *,
+    route: str = FOLLOWUP_DECISION_ID,
+    exposure_identity: dict[str, object] | None = None,
+) -> dict[str, object]:
     ordered_checks = sorted(EXPECTED_CHECKS)
     failed = ["matched_fid_tolerance"]
+    exposure_source = exposure_identity or _identity(
+        "/evidence/training_exposure.json", "8"
+    )
     recommendation = {
         "id": route,
         "category": (
@@ -84,7 +126,7 @@ def _decision(*, route: str = FOLLOWUP_DECISION_ID) -> dict[str, object]:
         "trigger": {"failed_checks": failed},
     }
     return {
-        "schema_version": 1,
+        "schema_version": FOLLOWUP_DECISION_SCHEMA_VERSION,
         "role": "stability_quality_bridge_followup_experiment_decision",
         "status": "completed",
         "decision_builder_git": copy.deepcopy(FOLLOWUP_DECISION_BUILDER_GIT),
@@ -98,7 +140,15 @@ def _decision(*, route: str = FOLLOWUP_DECISION_ID) -> dict[str, object]:
             ],
             "failed_checks": failed,
         },
-        "source_reports": {"quality_bridge_result": _identity("/evidence/result.json")},
+        "source_reports": {
+            "quality_bridge_result": _identity("/evidence/result.json"),
+            "milestones": {
+                "50000": _identity("/evidence/milestone_50000.json", "5"),
+                "100000": _identity("/evidence/milestone_100000.json", "6"),
+            },
+            "terminal_training_exposure": copy.deepcopy(exposure_source),
+        },
+        "training_exposure": _training_exposure_context(exposure_source),
     }
 
 
@@ -210,10 +260,14 @@ def _checkpoint_eval(
     }
 
 
-def _source_fixture() -> dict[str, object]:
+def _source_fixture(
+    *,
+    physical_exposure_identity: dict[str, object] | None = None,
+    decision_exposure_identity: dict[str, object] | None = None,
+) -> dict[str, object]:
     preparation = build_preparation(execution_git=_git())
     preparation_identity = _identity("/control/preparation.json", "1")
-    decision = _decision()
+    decision = _decision(exposure_identity=decision_exposure_identity)
     terminal = _terminal_guard()
     cofitok_training = _training(cofitok=True)
     dense_training = _training(cofitok=False)
@@ -222,6 +276,8 @@ def _source_fixture() -> dict[str, object]:
     identities = {
         "quality_result": _identity("/evidence/result.json"),
         "followup_decision": _identity("/evidence/decision.json", "2"),
+        "terminal_training_exposure": physical_exposure_identity
+        or _identity("/evidence/training_exposure.json", "8"),
         "terminal_system_guard": _identity("/evidence/terminal.json", "3"),
         "cofitok_training": _identity("/evidence/cofitok_training.json", "4"),
         "dense_training": _identity("/evidence/dense_training.json", "5"),
@@ -436,6 +492,85 @@ def test_followup_route_requires_exact_matched_failure() -> None:
     drifted["recommended_next_stage"]["trigger"]["failed_checks"] = []
     with pytest.raises(ValueError, match="trigger differs"):
         classify_followup_decision(drifted)
+
+    exposure_drift = _decision()
+    exposure_drift["training_exposure"]["images_seen_per_method"] = 6_399_999
+    with pytest.raises(ValueError, match="training exposure differs"):
+        classify_followup_decision(exposure_drift)
+
+    exposure_source_drift = _decision()
+    exposure_source_drift["training_exposure"]["source_report"]["sha256"] = "9" * 64
+    with pytest.raises(ValueError, match="training exposure source differs"):
+        classify_followup_decision(exposure_source_drift)
+
+    boundary_drift = _decision()
+    boundary_drift["authorization_boundary"]["recommended_stage_execution_allowed"] = True
+    with pytest.raises(ValueError, match="decision is malformed"):
+        classify_followup_decision(boundary_drift)
+
+
+def test_source_binding_rejects_terminal_training_exposure_identity_drift() -> None:
+    with pytest.raises(
+        ValueError,
+        match="terminal_training_exposure source identity differs",
+    ):
+        _source_fixture(
+            physical_exposure_identity=_identity(
+                "/evidence/training_exposure.json", "9"
+            )
+        )
+
+
+def test_source_binding_builder_passes_terminal_exposure_to_v2_replay(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    preparation_path = tmp_path / "preparation.json"
+    preparation_path.write_text(
+        json.dumps(build_preparation(execution_git=_git())),
+        encoding="utf-8",
+    )
+    result_path = tmp_path / "quality_result.json"
+    exposure_path = tmp_path / "training_exposure.json"
+    decision = _decision(
+        exposure_identity={
+            "path": exposure_path.as_posix(),
+            "bytes": 321,
+            "sha256": "8" * 64,
+        }
+    )
+    decision["source_reports"]["quality_bridge_result"] = {
+        "path": result_path.as_posix(),
+        "bytes": 123,
+        "sha256": "b" * 64,
+    }
+    decision_path = tmp_path / "decision.json"
+    decision_path.write_text(json.dumps(decision), encoding="utf-8")
+    captured: dict[str, object] = {}
+
+    def stop_after_capture(**kwargs: object) -> dict[str, object]:
+        captured.update(kwargs)
+        raise RuntimeError("captured v2 replay arguments")
+
+    monkeypatch.setattr(
+        source_binding_builder.followup_builder,
+        "build_from_sources",
+        stop_after_capture,
+    )
+    with pytest.raises(RuntimeError, match="captured v2 replay arguments"):
+        source_binding_builder.build_from_paths(
+            preparation_path=preparation_path,
+            expected_preparation_sha256=file_identity(preparation_path)["sha256"],
+            followup_decision_path=decision_path,
+            terminal_system_guard_path=tmp_path / "terminal.json",
+            expected_revision=REVISION,
+            expected_branch=BRANCH,
+        )
+
+    assert captured["quality_bridge_result_path"] == result_path
+    assert captured["expected_quality_bridge_result_sha256"] == "b" * 64
+    assert captured["training_exposure_report_path"] == exposure_path
+    assert captured["expected_training_exposure_report_sha256"] == "8" * 64
 
 
 def test_source_binding_and_standing_authorization_do_not_authorize_training() -> None:

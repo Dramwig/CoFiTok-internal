@@ -25,6 +25,7 @@ def test_supervisor_authorization_boundary_is_diagnostic_only() -> None:
     boundary = supervisor.AUTHORIZATION_BOUNDARY
 
     assert boundary["standing_authorization_required"] is True
+    assert boundary["terminal_training_exposure_required"] is True
     assert boundary["terminal_system_guard_required"] is True
     assert boundary["five_consecutive_idle_gpu_polls_required"] is True
     assert boundary["unrelated_process_signaling_allowed"] is False
@@ -75,7 +76,7 @@ def test_supervisor_deployment_receipt_binds_exact_control_plane(tmp_path: Path)
         project=PROJECT_ROOT,
         preparation=control_root / "preparation.json",
         standing_authorization=tmp_path / "standing.json",
-        followup_decision=tmp_path / "followup.json",
+        followup_decision=Path(supervisor.FOLLOWUP_DECISION_PATH),
         terminal_system_guard=tmp_path / "terminal.json",
         source_binding=control_root / "source_binding.json",
         execution_authorization=control_root / "execution_authorization.json",
@@ -117,3 +118,10 @@ def test_supervisor_deployment_receipt_binds_exact_control_plane(tmp_path: Path)
     assert receipt["timing"]["required_idle_gpu_polls"] == 5
     assert receipt["authorization_boundary"] == supervisor.AUTHORIZATION_BOUNDARY
     assert receipt["authorization_boundary"]["training_launch_allowed"] is False
+
+
+def test_supervisor_requires_exposure_aware_v2_followup_path() -> None:
+    source = Path(supervisor.__file__).read_text(encoding="utf-8")
+
+    assert "FOLLOWUP_DECISION_PATH" in source
+    assert "exposure-aware v2 follow-up decision" in source

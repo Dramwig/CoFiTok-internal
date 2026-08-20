@@ -58,11 +58,16 @@ scripts/run_generation_factorization_quality_regression_supervisor.py
 artifacts/runbooks/generation_factorization_quality_regression_probe_v1.sh
 ```
 
-The source binding replays the terminal follow-up decision and terminal-system
-guard, then binds the physical quality result, both training reports, both
-terminal checkpoint evaluations, checkpoint bytes/SHA256, and adjacent integrity
-sidecars. Checkpoint payload hashing remains inside the existing trusted loader;
-the supervisor never hashes a live checkpoint while training is active.
+The source binding replays the exposure-aware schema-v2 terminal follow-up
+decision and terminal-system guard. It additionally reopens and reproduces the
+terminal training-exposure report selected by that decision, then binds the
+physical quality result, both training reports, both terminal checkpoint
+evaluations, checkpoint bytes/SHA256, and adjacent integrity sidecars. The
+supervisor accepts only
+`reports/followup_experiment_decision_exposure_aware_v2.json`; the superseded
+non-exposure-aware decision path is rejected. Checkpoint payload hashing remains
+inside the existing trusted loader; the supervisor never hashes a live
+checkpoint while training is active.
 
 The execution authorization must reproduce from the exact preparation, source
 binding, clean execution Git identity, and the existing standing authorization.

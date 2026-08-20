@@ -19,6 +19,7 @@ from cofitok.generation.capacity_probe_execution import (
 from cofitok.generation.factorization_quality_regression import (
     DIAGNOSTIC_REPORT_ROLE,
     EXECUTION_BOUNDARY,
+    FOLLOWUP_DECISION_PATH,
     OUTPUT_ROOT,
     PREPARATION_ROLE,
     SCOPE,
@@ -54,6 +55,7 @@ DEPLOYMENT_ROLE = "generation_factorization_quality_regression_supervisor_deploy
 AUTHORIZATION_BOUNDARY = {
     "standing_authorization_required": True,
     "exact_matched_quality_regression_route_required": True,
+    "terminal_training_exposure_required": True,
     "terminal_system_guard_required": True,
     "exact_100k_ema_checkpoints_required": True,
     "five_consecutive_idle_gpu_polls_required": True,
@@ -282,6 +284,15 @@ def run(args: argparse.Namespace) -> int:
         raise ValueError("factorization-regression supervisor timing contract differs")
     project = reject_symlink_chain(args.project, name="diagnostic project").resolve()
     args.project = project
+    followup_decision = reject_symlink_chain(
+        args.followup_decision,
+        name="exposure-aware quality-bridge follow-up decision",
+    ).resolve()
+    args.followup_decision = followup_decision
+    if followup_decision.as_posix() != FOLLOWUP_DECISION_PATH:
+        raise ValueError(
+            "factorization-regression requires the exposure-aware v2 follow-up decision"
+        )
     output_root = reject_symlink_chain(
         args.output_root,
         name="factorization-regression output root",
