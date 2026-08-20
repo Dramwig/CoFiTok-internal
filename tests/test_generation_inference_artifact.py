@@ -60,6 +60,47 @@ SOURCE_GIT = {
     "branch": "scale/generative-system",
     "dirty": False,
 }
+EXPORT_GIT = {
+    "revision": "d" * 40,
+    "branch": "analysis/generation-inference-export-v1",
+    "tracked_dirty": False,
+}
+EXPORT_ENVIRONMENT = {
+    "schema_version": 1,
+    "python": {"implementation": "CPython", "version": "3.10"},
+}
+EXPORT_EXECUTION = {
+    "git": EXPORT_GIT,
+    "runtime_environment": EXPORT_ENVIRONMENT,
+    "runtime_environment_sha256": runtime_environment_sha256(
+        EXPORT_ENVIRONMENT
+    ),
+}
+
+
+def _capacity_training_authorization(tmp_path) -> dict:
+    return {
+        "schema_version": 1,
+        "status": "pass",
+        "stage": "capacity_full_experimental",
+        "decision": "authorize_fresh_matched_300k_training",
+        "gate_path": (
+            tmp_path / "capacity_full_training_launch_receipt.json"
+        ).resolve().as_posix(),
+        "gate_bytes": 23_456,
+        "gate_sha256": "6" * 64,
+        "gate_identity_sha256": "7" * 64,
+        "validated_thresholds": {
+            "target_start_step": 0,
+            "target_steps": 300_000,
+            "effective_batch_size": 64,
+            "capacity_100k_checkpoint_resume_allowed": False,
+            "formal_generation_claim_allowed": False,
+            "release_authorization_allowed": False,
+            "micro_batch_size": 64,
+            "gradient_accumulation_steps": 1,
+        },
+    }
 
 
 def _training_authorization(tmp_path) -> dict:
@@ -240,6 +281,8 @@ def _training_checkpoint(
     include_provenance: bool = True,
     include_authorization: bool = False,
     step: int = 31,
+    authorization_root: Path | None = None,
+    training_authorization: dict | None = None,
 ):
     config = ExperimentConfig(
         name="inference_export_cpu",
@@ -276,15 +319,18 @@ def _training_checkpoint(
         "ema": ema.state_dict(),
         "step": step,
     }
+    authorization = (
+        training_authorization
+        if training_authorization is not None
+        else _training_authorization(authorization_root or tmp_path)
+    )
     if include_provenance:
         payload["extra_state"] = {
             "runtime_environment_sha256": SOURCE_ENVIRONMENT_SHA,
             "git": SOURCE_GIT,
         }
         if include_authorization:
-            payload["extra_state"]["training_authorization"] = (
-                _training_authorization(tmp_path)
-            )
+            payload["extra_state"]["training_authorization"] = authorization
     torch.save(payload, path)
     integrity = {
         "schema_version": 1,
@@ -302,7 +348,6 @@ def _training_checkpoint(
             git_dirty=SOURCE_GIT["dirty"],
         )
         if include_authorization:
-            authorization = _training_authorization(tmp_path)
             integrity.update(
                 authorization_stage=authorization["stage"],
                 authorization_decision=authorization["decision"],
@@ -326,6 +371,15 @@ def _completion_audit_path(
     dense_export: dict,
 ) -> Path:
     def evidence(report: dict, *, smoke_count: int) -> dict:
+        execution = report.get("execution")
+        execution_git = (
+            None if not isinstance(execution, dict) else execution["git"]
+        )
+        execution_environment_sha = (
+            None
+            if not isinstance(execution, dict)
+            else execution["runtime_environment_sha256"]
+        )
         return {
             "artifact_path": report["artifact"],
             "artifact_sha256": report["artifact_sha256"],
@@ -337,9 +391,9 @@ def _completion_audit_path(
                 "source_runtime_environment_sha256"
             ],
             "source_git": report["source_git"],
-            "execution_git": None,
-            "export_runtime_environment_sha256": None,
-            "execution_runtime_environment_sha256": None,
+            "execution_git": execution_git,
+            "export_runtime_environment_sha256": execution_environment_sha,
+            "execution_runtime_environment_sha256": execution_environment_sha,
             "training_authorization": report["source_training_authorization"],
             "release_authorization": report["release_authorization"],
             "smoke_output_count": smoke_count,
@@ -352,6 +406,23 @@ def _completion_audit_path(
         "dense_identity": evidence(dense_export, smoke_count=2),
     }
     contract = _COMPLETION_PROFILES[profile]
+    special_evidence = {
+        "ten_percent_matched_training": {"expected_revision": "2" * 40},
+        "controlled_revision_transition": {
+            "training_revision": "1" * 40,
+            "target_revision": SOURCE_GIT["revision"],
+        },
+        "full_matched_training": {
+            "expected_revision": SOURCE_GIT["revision"],
+            "expected_branch": "scale/generative-system",
+        },
+        "formal_50k_generation": {
+            method: {
+                "checkpoint_sha256": row["source_checkpoint_sha256"],
+            }
+            for method, row in inference_evidence.items()
+        },
+    }
     audit = {
         "schema_version": 1,
         "profile": profile,
@@ -360,7 +431,7 @@ def _completion_audit_path(
         "expected_revisions": {
             "deployment_source": "1" * 40,
             "ten_percent_training": "2" * 40,
-            "full_training": "3" * 40,
+            "full_training": SOURCE_GIT["revision"],
         },
         "checks": [
             {
@@ -369,7 +440,7 @@ def _completion_audit_path(
                 "evidence": (
                     inference_evidence
                     if name == contract["check"]
-                    else {"verified": True}
+                    else special_evidence.get(name, {"verified": True})
                 ),
             }
             for name in _COMPLETION_REQUIRED_CHECKS[profile]
@@ -383,33 +454,279 @@ def _completion_audit_path(
     return path
 
 
-def _release_receipt_fixture(tmp_path: Path) -> tuple[Path, Path, Path]:
-    source = _training_checkpoint(
-        tmp_path,
+def _release_receipt_fixture(
+    tmp_path: Path,
+    *,
+    completion_profile: str = "large_scale_generation_v1",
+) -> tuple[Path, Path, Path]:
+    cofitok_source_root = tmp_path / "cofitok_source"
+    dense_source_root = tmp_path / "dense_source"
+    cofitok_source_root.mkdir()
+    dense_source_root.mkdir()
+    training_authorization = (
+        _capacity_training_authorization(tmp_path)
+        if completion_profile == "capacity_full_generation_system_v1"
+        else _training_authorization(tmp_path)
+    )
+    cofitok_source = _training_checkpoint(
+        cofitok_source_root,
         include_authorization=True,
         step=300_000,
+        authorization_root=tmp_path,
+        training_authorization=training_authorization,
+    )
+    dense_source = _training_checkpoint(
+        dense_source_root,
+        include_authorization=True,
+        step=300_000,
+        authorization_root=tmp_path,
+        training_authorization=training_authorization,
     )
     release_gate = _release_gate_path(tmp_path)
     cofitok_artifact = tmp_path / "cofitok_ema_inference.pt"
     dense_artifact = tmp_path / "dense_ema_inference.pt"
     cofitok_export = export_ema_inference_artifact(
-        source,
+        cofitok_source,
         cofitok_artifact,
         release_gate=release_gate,
+        execution=EXPORT_EXECUTION,
     )
     dense_export = export_ema_inference_artifact(
-        source,
+        dense_source,
         dense_artifact,
         release_gate=release_gate,
+        execution=EXPORT_EXECUTION,
     )
     audit = _completion_audit_path(
         tmp_path,
         cofitok_export=cofitok_export,
         dense_export=dense_export,
     )
+    if completion_profile != "large_scale_generation_v1":
+        write_json_report(
+            audit,
+            _completion_profile_payload(audit, completion_profile),
+        )
     receipt = tmp_path / "release_receipt.json"
     write_generation_release_receipt(audit, receipt)
     return cofitok_artifact, audit, receipt
+
+
+def _completion_profile_payload(audit: Path, profile: str) -> dict:
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    if profile == "large_scale_generation_v1":
+        return payload
+    payload["profile"] = profile
+    payload["status"] = "pass"
+    payload.pop("expected_revisions")
+    inference_evidence = payload["checks"][
+        _COMPLETION_REQUIRED_CHECKS["large_scale_generation_v1"].index(
+            "deployable_ema_inference_artifacts"
+        )
+    ]["evidence"]
+    contract = _COMPLETION_PROFILES[profile]
+    final_gate_sha256 = inference_evidence["cofitok"][
+        "release_authorization"
+    ]["gate_sha256"]
+    if profile == "stability_generation_system_v1":
+        payload["expectations"] = {
+            "decision_source_revision": "1" * 40,
+            "scaling_training_revision": "2" * 40,
+            "scaling_evaluation_revision": "3" * 40,
+            "full_training_revision": SOURCE_GIT["revision"],
+            "full_evaluation_revision": "5" * 40,
+            "export_revision": EXPORT_GIT["revision"],
+            "decision_sha256": "1" * 64,
+            "scaling_gate_sha256": "b" * 64,
+            "full_readiness_sha256": "3" * 64,
+            "full_launch_receipt_sha256": "4" * 64,
+            "final_gate_sha256": final_gate_sha256,
+            "scaling_training_branch": "scale/generation-stability-50k",
+            "scaling_evaluation_branch": "analysis/generation-stability-eval",
+            "full_training_branch": SOURCE_GIT["branch"],
+            "full_evaluation_branch": "analysis/generation-full-eval",
+            "export_branch": EXPORT_GIT["branch"],
+        }
+        special_evidence = {
+            "stability_5k_authorization": {
+                "source_revision": payload["expectations"][
+                    "decision_source_revision"
+                ],
+                "decision_sha256": payload["expectations"]["decision_sha256"],
+            },
+            "stability_scaling_gate": {
+                "gate_sha256": payload["expectations"]["scaling_gate_sha256"],
+                "provenance": {
+                    "training_revision": "2" * 40,
+                    "training_branch": "scale/generation-stability-50k",
+                    "evaluation_revision": "3" * 40,
+                    "evaluation_branch": "analysis/generation-stability-eval",
+                },
+            },
+            "stability_full_training_readiness": {
+                "readiness_sha256": payload["expectations"][
+                    "full_readiness_sha256"
+                ],
+            },
+            "stability_full_launch_receipt": {
+                "launch_receipt_sha256": payload["expectations"][
+                    "full_launch_receipt_sha256"
+                ],
+                "readiness_sha256": payload["expectations"][
+                    "full_readiness_sha256"
+                ],
+            },
+            "stability_full_formal_generation": {
+                "methods": {
+                    method: {
+                        "checkpoint_sha256": row["source_checkpoint_sha256"],
+                    }
+                    for method, row in inference_evidence.items()
+                },
+            },
+            "stability_final_gate": {
+                "gate_sha256": final_gate_sha256,
+                "provenance": {
+                    "training_revision": SOURCE_GIT["revision"],
+                    "training_branch": SOURCE_GIT["branch"],
+                    "evaluation_revision": "5" * 40,
+                    "evaluation_branch": "analysis/generation-full-eval",
+                },
+            },
+        }
+    elif profile == "capacity_full_generation_system_v1":
+        payload["expectations"] = {
+            "training_revision": SOURCE_GIT["revision"],
+            "training_tree": "6" * 40,
+            "training_branch": SOURCE_GIT["branch"],
+            "evaluation_revision": "7" * 40,
+            "evaluation_tree": "8" * 40,
+            "evaluation_branch": "analysis/generation-capacity-eval",
+            "export_revision": EXPORT_GIT["revision"],
+            "export_branch": EXPORT_GIT["branch"],
+            "training_supervisor_deployment_sha256": "1" * 64,
+            "posteval_supervisor_deployment_sha256": "2" * 64,
+            "training_launch_receipt_sha256": inference_evidence["cofitok"][
+                "training_authorization"
+            ]["gate_sha256"],
+            "final_gate_sha256": final_gate_sha256,
+        }
+        training_git = {
+            "revision": payload["expectations"]["training_revision"],
+            "tree": payload["expectations"]["training_tree"],
+            "branch": payload["expectations"]["training_branch"],
+            "tracked_dirty": False,
+        }
+        evaluation_git = {
+            "revision": payload["expectations"]["evaluation_revision"],
+            "tree": payload["expectations"]["evaluation_tree"],
+            "branch": payload["expectations"]["evaluation_branch"],
+            "tracked_dirty": False,
+        }
+        training_authorization = inference_evidence["cofitok"][
+            "training_authorization"
+        ]
+        special_evidence = {
+            "capacity_full_training_supervisor_deployment": {
+                "identity": {
+                    "path": audit.parent.joinpath(
+                        "training_supervisor_deployment.json"
+                    )
+                    .resolve()
+                    .as_posix(),
+                    "bytes": 12_345,
+                    "sha256": payload["expectations"][
+                        "training_supervisor_deployment_sha256"
+                    ],
+                },
+                "git": training_git,
+            },
+            "capacity_full_training_completion": {
+                "training_launch_receipt": {
+                    "path": audit.parent.joinpath(
+                        "capacity_full_training_launch_receipt.json"
+                    )
+                    .resolve()
+                    .as_posix(),
+                    "bytes": training_authorization["gate_bytes"],
+                    "sha256": payload["expectations"][
+                        "training_launch_receipt_sha256"
+                    ],
+                },
+                "authorization": training_authorization,
+            },
+            "capacity_full_posteval_supervisor_deployment": {
+                "identity": {
+                    "path": audit.parent.joinpath(
+                        "posteval_supervisor_deployment.json"
+                    )
+                    .resolve()
+                    .as_posix(),
+                    "bytes": 23_456,
+                    "sha256": payload["expectations"][
+                        "posteval_supervisor_deployment_sha256"
+                    ],
+                },
+                "git": evaluation_git,
+            },
+            "capacity_full_formal_generation": {
+                "methods": {
+                    method: {
+                        "checkpoint_sha256": row["source_checkpoint_sha256"],
+                    }
+                    for method, row in inference_evidence.items()
+                },
+            },
+            "capacity_full_final_gate": {
+                "gate_sha256": final_gate_sha256,
+                "provenance": {
+                    "training_revision": SOURCE_GIT["revision"],
+                    "training_branch": SOURCE_GIT["branch"],
+                    "evaluation_revision": "7" * 40,
+                    "evaluation_branch": "analysis/generation-capacity-eval",
+                },
+            }
+        }
+    else:
+        raise AssertionError(f"unsupported test completion profile: {profile}")
+    payload["checks"] = [
+        {
+            "name": name,
+            "status": "pass",
+            "evidence": (
+                inference_evidence
+                if name == contract["check"]
+                else special_evidence.get(name, {"verified": True})
+            ),
+        }
+        for name in _COMPLETION_REQUIRED_CHECKS[profile]
+    ]
+    return payload
+
+
+def _assert_receipt_rejected_before_artifact_verification(
+    tmp_path: Path,
+    monkeypatch,
+    audit: Path,
+    payload: dict,
+    *,
+    match: str,
+) -> None:
+    write_json_report(audit, payload)
+
+    def fail_if_artifact_verified(*args, **kwargs):
+        raise AssertionError("artifact was verified before provenance rejection")
+
+    monkeypatch.setattr(
+        generation_release,
+        "verify_inference_artifact",
+        fail_if_artifact_verified,
+    )
+    with pytest.raises(ValueError, match=match):
+        write_generation_release_receipt(
+            audit,
+            tmp_path / "invalid_provenance_release_receipt.json",
+        )
 
 
 def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
@@ -881,38 +1198,11 @@ def test_release_artifact_remains_portable_after_source_checkpoint_archival(
 
 
 def test_stability_completion_profile_publishes_release_receipt(tmp_path) -> None:
-    artifact, audit, receipt = _release_receipt_fixture(tmp_path)
-    receipt.unlink()
+    artifact, audit, receipt = _release_receipt_fixture(
+        tmp_path,
+        completion_profile="stability_generation_system_v1",
+    )
     payload = json.loads(audit.read_text(encoding="utf-8"))
-    payload["profile"] = "stability_generation_system_v1"
-    payload["status"] = "pass"
-    payload["expectations"] = {
-        "full_training_revision": "4" * 40,
-        "full_evaluation_revision": "5" * 40,
-        "export_revision": "5" * 40,
-    }
-    payload.pop("expected_revisions")
-    inference_evidence = payload["checks"][
-        _COMPLETION_REQUIRED_CHECKS["large_scale_generation_v1"].index(
-            "deployable_ema_inference_artifacts"
-        )
-    ]["evidence"]
-    contract = _COMPLETION_PROFILES["stability_generation_system_v1"]
-    payload["checks"] = [
-        {
-            "name": name,
-            "status": "pass",
-            "evidence": (
-                inference_evidence
-                if name == contract["check"]
-                else {"verified": True}
-            ),
-        }
-        for name in _COMPLETION_REQUIRED_CHECKS[
-            "stability_generation_system_v1"
-        ]
-    ]
-    write_json_report(audit, payload)
 
     written = write_generation_release_receipt(audit, receipt)
     authorization = verify_generation_release_receipt(receipt, artifact)
@@ -925,38 +1215,11 @@ def test_stability_completion_profile_publishes_release_receipt(tmp_path) -> Non
 
 
 def test_capacity_full_completion_profile_publishes_release_receipt(tmp_path) -> None:
-    artifact, audit, receipt = _release_receipt_fixture(tmp_path)
-    receipt.unlink()
+    artifact, audit, receipt = _release_receipt_fixture(
+        tmp_path,
+        completion_profile="capacity_full_generation_system_v1",
+    )
     payload = json.loads(audit.read_text(encoding="utf-8"))
-    payload["profile"] = "capacity_full_generation_system_v1"
-    payload["status"] = "pass"
-    payload["expectations"] = {
-        "training_revision": "6" * 40,
-        "evaluation_revision": "7" * 40,
-        "export_revision": "7" * 40,
-    }
-    payload.pop("expected_revisions")
-    inference_evidence = payload["checks"][
-        _COMPLETION_REQUIRED_CHECKS["large_scale_generation_v1"].index(
-            "deployable_ema_inference_artifacts"
-        )
-    ]["evidence"]
-    contract = _COMPLETION_PROFILES["capacity_full_generation_system_v1"]
-    payload["checks"] = [
-        {
-            "name": name,
-            "status": "pass",
-            "evidence": (
-                inference_evidence
-                if name == contract["check"]
-                else {"verified": True}
-            ),
-        }
-        for name in _COMPLETION_REQUIRED_CHECKS[
-            "capacity_full_generation_system_v1"
-        ]
-    ]
-    write_json_report(audit, payload)
 
     written = write_generation_release_receipt(audit, receipt)
     authorization = verify_generation_release_receipt(receipt, artifact)
@@ -967,6 +1230,460 @@ def test_capacity_full_completion_profile_publishes_release_receipt(tmp_path) ->
     assert written["completion_expectations"] == payload["expectations"]
     assert authorization["completion_profile"] == (
         "capacity_full_generation_system_v1"
+    )
+
+
+@pytest.mark.parametrize(
+    ("profile", "field", "replacement", "message"),
+    (
+        (
+            "large_scale_generation_v1",
+            "full_training",
+            "f" * 40,
+            "deployment revision differs",
+        ),
+        (
+            "stability_generation_system_v1",
+            "full_training_revision",
+            "f" * 40,
+            "artifact source Git differs",
+        ),
+        (
+            "stability_generation_system_v1",
+            "export_revision",
+            "e" * 40,
+            "artifact execution Git differs",
+        ),
+        (
+            "stability_generation_system_v1",
+            "scaling_gate_sha256",
+            "c" * 64,
+            "training gate differs",
+        ),
+        (
+            "capacity_full_generation_system_v1",
+            "training_branch",
+            "scale/another-training-branch",
+            "capacity training deployment differs",
+        ),
+        (
+            "capacity_full_generation_system_v1",
+            "export_branch",
+            "analysis/another-export-branch",
+            "artifact execution Git differs",
+        ),
+        (
+            "capacity_full_generation_system_v1",
+            "final_gate_sha256",
+            "f" * 64,
+            "release gate differs",
+        ),
+    ),
+)
+def test_completion_expectations_cross_bind_artifact_provenance(
+    tmp_path,
+    monkeypatch,
+    profile,
+    field,
+    replacement,
+    message,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(
+        tmp_path,
+        completion_profile=profile,
+    )
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    expectation_key = (
+        "expected_revisions"
+        if profile == "large_scale_generation_v1"
+        else "expectations"
+    )
+    payload[expectation_key][field] = replacement
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match=message,
+    )
+
+
+def test_completion_expectations_reject_unknown_fields_before_artifact_verification(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(
+        tmp_path,
+        completion_profile="stability_generation_system_v1",
+    )
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    payload["expectations"]["unbound_revision"] = "f" * 40
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match="expectations differ",
+    )
+
+
+@pytest.mark.parametrize(
+    ("profile", "field"),
+    (
+        ("large_scale_generation_v1", "full_training"),
+        ("stability_generation_system_v1", "final_gate_sha256"),
+        ("capacity_full_generation_system_v1", "training_revision"),
+    ),
+)
+def test_completion_expectation_digests_require_string_types_before_artifact_verification(
+    tmp_path,
+    monkeypatch,
+    profile,
+    field,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(
+        tmp_path,
+        completion_profile=profile,
+    )
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    expectation_key = (
+        "expected_revisions"
+        if profile == "large_scale_generation_v1"
+        else "expectations"
+    )
+    payload[expectation_key][field] = int(
+        payload[expectation_key][field],
+        16,
+    )
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match=f"expectation {field} is invalid",
+    )
+
+
+@pytest.mark.parametrize(
+    ("profile", "check", "path", "replacement", "message"),
+    (
+        (
+            "stability_generation_system_v1",
+            "stability_5k_authorization",
+            ("decision_sha256",),
+            "f" * 64,
+            "stability decision differs",
+        ),
+        (
+            "stability_generation_system_v1",
+            "stability_full_training_readiness",
+            ("readiness_sha256",),
+            "f" * 64,
+            "stability readiness differs",
+        ),
+        (
+            "stability_generation_system_v1",
+            "stability_full_launch_receipt",
+            ("launch_receipt_sha256",),
+            "f" * 64,
+            "stability launch receipt differs",
+        ),
+        (
+            "capacity_full_generation_system_v1",
+            "capacity_full_training_supervisor_deployment",
+            ("identity", "sha256"),
+            "f" * 64,
+            "capacity training deployment differs",
+        ),
+        (
+            "capacity_full_generation_system_v1",
+            "capacity_full_posteval_supervisor_deployment",
+            ("identity", "sha256"),
+            "f" * 64,
+            "capacity post-eval deployment differs",
+        ),
+        (
+            "capacity_full_generation_system_v1",
+            "capacity_full_training_completion",
+            ("training_launch_receipt", "sha256"),
+            "f" * 64,
+            "capacity training authorization differs",
+        ),
+    ),
+)
+def test_completion_expectations_cross_bind_supporting_check_evidence(
+    tmp_path,
+    monkeypatch,
+    profile,
+    check,
+    path,
+    replacement,
+    message,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(
+        tmp_path,
+        completion_profile=profile,
+    )
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    check_row = next(row for row in payload["checks"] if row["name"] == check)
+    target = check_row["evidence"]
+    for key in path[:-1]:
+        target = target[key]
+    target[path[-1]] = replacement
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match=message,
+    )
+
+
+def test_large_scale_completion_rejects_source_branch_drift_before_artifact_verification(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(tmp_path)
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    inference = next(
+        row
+        for row in payload["checks"]
+        if row["name"] == "deployable_ema_inference_artifacts"
+    )["evidence"]
+    for method in ("cofitok", "dense_identity"):
+        inference[method]["source_git"]["branch"] = "scale/forged-branch"
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match="artifact source branch differs",
+    )
+
+
+def test_capacity_completion_cross_binds_artifact_training_authorization_to_completion_evidence(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(
+        tmp_path,
+        completion_profile="capacity_full_generation_system_v1",
+    )
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    completion = next(
+        row
+        for row in payload["checks"]
+        if row["name"] == "capacity_full_training_completion"
+    )["evidence"]
+    completion["authorization"]["gate_identity_sha256"] = "f" * 64
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match="capacity training authorization evidence differs",
+    )
+
+
+@pytest.mark.parametrize(
+    ("profile", "check", "methods_field"),
+    (
+        ("large_scale_generation_v1", "formal_50k_generation", None),
+        (
+            "stability_generation_system_v1",
+            "stability_full_formal_generation",
+            "methods",
+        ),
+        (
+            "capacity_full_generation_system_v1",
+            "capacity_full_formal_generation",
+            "methods",
+        ),
+    ),
+)
+def test_completion_receipt_cross_binds_evaluated_and_exported_checkpoints(
+    tmp_path,
+    monkeypatch,
+    profile,
+    check,
+    methods_field,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(
+        tmp_path,
+        completion_profile=profile,
+    )
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    formal = next(row for row in payload["checks"] if row["name"] == check)[
+        "evidence"
+    ]
+    methods = formal if methods_field is None else formal[methods_field]
+    methods["cofitok"]["checkpoint_sha256"] = "f" * 64
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match="cofitok evaluated checkpoint differs",
+    )
+
+
+def test_capacity_completion_cross_binds_training_receipt_identity(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(
+        tmp_path,
+        completion_profile="capacity_full_generation_system_v1",
+    )
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    completion = next(
+        row
+        for row in payload["checks"]
+        if row["name"] == "capacity_full_training_completion"
+    )["evidence"]
+    completion["training_launch_receipt"]["bytes"] += 1
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match="capacity training receipt identity differs",
+    )
+
+
+@pytest.mark.parametrize(
+    ("authorization_field", "message"),
+    (
+        ("training_authorization", "training authorization is invalid"),
+        ("release_authorization", "release authorization is invalid"),
+    ),
+)
+def test_completion_receipt_validates_authorization_schemas_before_artifact_verification(
+    tmp_path,
+    monkeypatch,
+    authorization_field,
+    message,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(tmp_path)
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    inference = next(
+        row
+        for row in payload["checks"]
+        if row["name"] == "deployable_ema_inference_artifacts"
+    )["evidence"]
+    for method in ("cofitok", "dense_identity"):
+        inference[method][authorization_field].pop("gate_identity_sha256")
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match=message,
+    )
+
+
+def test_completion_receipt_rejects_non_string_artifact_digest_before_artifact_verification(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(tmp_path)
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    inference = next(
+        row
+        for row in payload["checks"]
+        if row["name"] == "deployable_ema_inference_artifacts"
+    )["evidence"]
+    inference["cofitok"]["artifact_sha256"] = int(
+        inference["cofitok"]["artifact_sha256"],
+        16,
+    )
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match="cofitok completion artifact evidence is malformed",
+    )
+
+
+def test_completion_receipt_rejects_final_gate_evidence_drift_before_artifact_verification(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(
+        tmp_path,
+        completion_profile="capacity_full_generation_system_v1",
+    )
+    payload = json.loads(audit.read_text(encoding="utf-8"))
+    final_gate = next(
+        row
+        for row in payload["checks"]
+        if row["name"] == "capacity_full_final_gate"
+    )
+    final_gate["evidence"]["gate_sha256"] = "f" * 64
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match="final-gate evidence differs",
+    )
+
+
+def test_completion_receipt_rejects_cross_method_provenance_drift_before_artifact_verification(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(tmp_path)
+    payload = _completion_profile_payload(audit, "large_scale_generation_v1")
+    inference = next(
+        row
+        for row in payload["checks"]
+        if row["name"] == "deployable_ema_inference_artifacts"
+    )["evidence"]
+    inference["dense_identity"]["source_runtime_environment_sha256"] = "f" * 64
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match="different source_runtime_environment_sha256",
+    )
+
+
+def test_completion_receipt_rejects_reused_source_checkpoint_before_artifact_verification(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    _, audit, _ = _release_receipt_fixture(tmp_path)
+    payload = _completion_profile_payload(audit, "large_scale_generation_v1")
+    inference = next(
+        row
+        for row in payload["checks"]
+        if row["name"] == "deployable_ema_inference_artifacts"
+    )["evidence"]
+    inference["dense_identity"]["source_checkpoint_sha256"] = inference[
+        "cofitok"
+    ]["source_checkpoint_sha256"]
+
+    _assert_receipt_rejected_before_artifact_verification(
+        tmp_path,
+        monkeypatch,
+        audit,
+        payload,
+        match="distinct source checkpoints",
     )
 
 
