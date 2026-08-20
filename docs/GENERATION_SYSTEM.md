@@ -1070,6 +1070,17 @@ exports needed *by* the terminal audit from artifacts proven to have passed the
 entire completion chain. See
 `docs/records/2026-08-03_generation_terminal_release_receipt.md`.
 
+Release receipt schema v2 additionally freezes the consumer source policy.
+Routine consumption live-verifies the receipt reconstruction, terminal audit,
+EMA artifact bytes, artifact integrity sidecar, and export manifest. Historical
+training checkpoints, their sidecars, authorization gates, and the terminal
+audit's upstream supporting reports are attested by the content-addressed
+terminal snapshot and are deliberately not reopened. Archiving those historical
+sources therefore does not invalidate an already published receipt, while any
+attempt to weaken or change this policy changes the receipt and fails before
+model deserialization. See
+`docs/records/2026-08-20_generation_release_consumer_source_policy.md`.
+
 The stability completion runbook takes the 50K training and evaluation
 revisions/branches as explicit required inputs. It contains no historical
 post-evaluation revision constant, so a later v4 source-bound gate cannot be

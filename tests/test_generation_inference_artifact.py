@@ -1137,6 +1137,7 @@ def test_completion_receipt_authorizes_consumer_load_and_preflight(tmp_path) -> 
     artifact, audit, receipt = _release_receipt_fixture(tmp_path)
 
     authorization = verify_generation_release_receipt(receipt, artifact)
+    receipt_payload = json.loads(receipt.read_text(encoding="utf-8"))
     session = GenerationSession.from_checkpoint(
         artifact,
         weights="ema",
@@ -1163,7 +1164,14 @@ def test_completion_receipt_authorizes_consumer_load_and_preflight(tmp_path) -> 
     )
 
     assert authorization["method"] == "cofitok"
+    assert receipt_payload["schema_version"] == 2
+    assert receipt_payload["consumer_source_policy"] == (
+        generation_release._consumer_source_policy()
+    )
     assert authorization["completion_audit"]["path"] == audit.resolve().as_posix()
+    assert authorization["consumer_source_policy"] == (
+        generation_release._consumer_source_policy()
+    )
     assert result.metadata["completion_authorization"] == authorization
     assert result.metadata["completion_authorization_required"] is True
     assert result.metadata["release_authorization_required"] is True
@@ -1189,12 +1197,44 @@ def test_release_artifact_remains_portable_after_source_checkpoint_archival(
         inference_export_manifest_path(artifact).read_text(encoding="utf-8")
     )
     source = Path(manifest["source"]["path"])
+    release_gate = Path(manifest["release_authorization"]["gate_path"])
+    release_gate_payload = json.loads(release_gate.read_text(encoding="utf-8"))
     checkpoint_integrity_path(source).unlink()
     source.unlink()
+    for descriptor in release_gate_payload["source_reports"].values():
+        Path(descriptor["path"]).unlink()
+    release_gate.unlink()
 
     authorization = verify_generation_release_receipt(receipt, artifact)
 
     assert authorization["method"] == "cofitok"
+    assert authorization["consumer_source_policy"] == (
+        generation_release._consumer_source_policy()
+    )
+
+
+def test_release_receipt_rejects_consumer_source_policy_drift_before_deserialization(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    artifact, _, receipt = _release_receipt_fixture(tmp_path)
+    payload = json.loads(receipt.read_text(encoding="utf-8"))
+    payload["consumer_source_policy"][
+        "historical_source_archival_preserves_receipt_validity"
+    ] = False
+    write_json_report(receipt, payload)
+
+    def fail_if_deserialized(*args, **kwargs):
+        raise AssertionError("artifact was deserialized before policy rejection")
+
+    monkeypatch.setattr(torch, "load", fail_if_deserialized)
+    with pytest.raises(ValueError, match="differs from completion audit"):
+        GenerationSession.from_checkpoint(
+            artifact,
+            weights="ema",
+            completion_receipt=receipt,
+            require_completion_authorization=True,
+        )
 
 
 def test_stability_completion_profile_publishes_release_receipt(tmp_path) -> None:

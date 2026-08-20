@@ -16,8 +16,12 @@ from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training.authorization import validate_generation_training_authorization
 
 
-GENERATION_RELEASE_RECEIPT_SCHEMA_VERSION = 1
+GENERATION_RELEASE_RECEIPT_SCHEMA_VERSION = 2
 GENERATION_RELEASE_RECEIPT_TYPE = "cofitok_generation_release_receipt"
+GENERATION_RELEASE_CONSUMER_SOURCE_POLICY_SCHEMA_VERSION = 1
+GENERATION_RELEASE_CONSUMER_TRUST_MODEL = (
+    "content_addressed_terminal_snapshot_v1"
+)
 _LARGE_SCALE_REQUIRED_CHECKS = (
     "ten_percent_matched_training",
     "controlled_revision_transition",
@@ -236,6 +240,29 @@ _COMPLETION_FORMAL_GENERATION_BINDINGS = {
 _SHA1 = re.compile(r"[0-9a-f]{40}")
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _METHODS = ("cofitok", "dense_identity")
+
+
+def _consumer_source_policy() -> dict[str, Any]:
+    return {
+        "schema_version": (
+            GENERATION_RELEASE_CONSUMER_SOURCE_POLICY_SCHEMA_VERSION
+        ),
+        "trust_model": GENERATION_RELEASE_CONSUMER_TRUST_MODEL,
+        "live_verified_at_consumption": [
+            "completion_audit",
+            "inference_artifact",
+            "inference_artifact_integrity",
+            "inference_export_manifest",
+        ],
+        "historical_sources_not_reopened_at_consumption": [
+            "source_training_checkpoint",
+            "source_training_checkpoint_integrity",
+            "training_authorization_source",
+            "release_gate_and_sources",
+            "completion_audit_supporting_sources",
+        ],
+        "historical_source_archival_preserves_receipt_validity": True,
+    }
 
 
 def _read_object(path: str | Path, *, name: str) -> dict[str, Any]:
@@ -821,6 +848,7 @@ def _receipt_payload(
         "completion_profile": profile,
         "completion_audit": _file_identity(completion_audit_path),
         "completion_expectations": dict(expectations),
+        "consumer_source_policy": _consumer_source_policy(),
         "artifacts": artifacts,
     }
 
@@ -992,5 +1020,6 @@ def verify_generation_release_receipt(
         "completion_audit": actual_audit_identity,
         "completion_profile": receipt["completion_profile"],
         "completion_expectations": receipt["completion_expectations"],
+        "consumer_source_policy": receipt["consumer_source_policy"],
         "method": method,
     }
