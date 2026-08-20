@@ -2,14 +2,20 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-
 CONTRACT_SCHEMA_VERSION = 1
+CONTRACT_SCHEMA_VERSION_V2 = 2
+SUPPORTED_CONTRACT_SCHEMA_VERSIONS = {
+    CONTRACT_SCHEMA_VERSION,
+    CONTRACT_SCHEMA_VERSION_V2,
+}
 CONTRACT_ROLE = "quality_bridge_recovery_supersession_contract"
+MUTABLE_SEMANTIC_POLICY = "mutable_semantic"
 SUCCESSOR_ROLE = "cofitok_quality_bridge_100k_bounded_recovery_supervisor_v2"
 DEPLOYMENT_RECEIPT_ROLE = (
     "cofitok_quality_bridge_ipc_recovery_v2_deployment_receipt"
@@ -54,6 +60,16 @@ def _identity(path: Path, payload: bytes) -> dict[str, Any]:
     }
 
 
+def _mapping_sha256(value: Mapping[str, Any]) -> str:
+    payload = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("ascii")
+    return hashlib.sha256(payload).hexdigest()
+
+
 def _read_json_source(
     path: str | Path,
     *,
@@ -91,6 +107,34 @@ def _file_reference(value: Any, *, label: str) -> dict[str, str]:
     return {"path": path, "sha256": digest}
 
 
+def _mutable_semantic_reference(value: Any, *, label: str) -> dict[str, str]:
+    if not isinstance(value, dict) or set(value) != {"path", "policy"}:
+        raise ValueError(f"{label} mutable-semantic reference differs")
+    path = _absolute_path(value["path"], label=label)
+    if value["policy"] != MUTABLE_SEMANTIC_POLICY:
+        raise ValueError(f"{label} mutable-semantic policy differs")
+    return {"path": path, "policy": MUTABLE_SEMANTIC_POLICY}
+
+
+def _resolved_path(value: Any, *, label: str) -> Path:
+    return Path(_absolute_path(value, label=label)).resolve()
+
+
+def _direct_run_child(
+    value: Any,
+    *,
+    run_dir: Path,
+    label: str,
+    expected_name: str | None = None,
+) -> Path:
+    path = _resolved_path(value, label=label)
+    if path.parent != run_dir:
+        raise ValueError(f"{label} escapes the recovery run directory")
+    if expected_name is not None and path.name != expected_name:
+        raise ValueError(f"{label} filename differs")
+    return path
+
+
 def load_recovery_supersession_contract(path: str | Path) -> dict[str, Any]:
     payload, identity = _read_json_source(path)
     if set(payload) != {
@@ -103,8 +147,10 @@ def load_recovery_supersession_contract(path: str | Path) -> dict[str, Any]:
         "superseded_failure",
     }:
         raise ValueError("recovery supersession contract schema differs")
+    schema_version = payload.get("schema_version")
     if (
-        payload.get("schema_version") != CONTRACT_SCHEMA_VERSION
+        type(schema_version) is not int
+        or schema_version not in SUPPORTED_CONTRACT_SCHEMA_VERSIONS
         or payload.get("role") != CONTRACT_ROLE
     ):
         raise ValueError("recovery supersession contract identity differs")
@@ -180,9 +226,14 @@ def load_recovery_supersession_contract(path: str | Path) -> dict[str, Any]:
         "run_manifest",
     }:
         raise ValueError("recovery exact-resume contract differs")
-    exact["run_manifest"] = _file_reference(
-        exact["run_manifest"], label="recovery run manifest"
-    )
+    if schema_version == CONTRACT_SCHEMA_VERSION:
+        exact["run_manifest"] = _file_reference(
+            exact["run_manifest"], label="recovery run manifest"
+        )
+    else:
+        exact["run_manifest"] = _mutable_semantic_reference(
+            exact["run_manifest"], label="recovery run manifest"
+        )
     exact["reconciliation"] = _file_reference(
         exact["reconciliation"], label="recovery metrics reconciliation"
     )
@@ -283,6 +334,220 @@ def _validate_scope(scope: Any, *, exact_resume: bool = False) -> None:
             raise ValueError(f"recovery scope {key} differs")
     if exact_resume and scope.get("quality_bridge_exact_resume_allowed") is not True:
         raise ValueError("recovery exact-resume scope differs")
+
+
+def _validate_manifest_stable_fields(
+    run_manifest: Mapping[str, Any],
+    *,
+    training: Mapping[str, Any],
+) -> tuple[Path, Path, int]:
+    _validate_training_git(run_manifest.get("git"), expected=training, include_tree=False)
+    run_dir = Path(training["run_dir"]).resolve()
+    output_root = Path(training["output_root"]).resolve()
+    if run_dir.parent != output_root:
+        raise ValueError("recovery expected run directory escapes the output root")
+    if _resolved_path(run_manifest.get("output_dir"), label="run manifest output") != run_dir:
+        raise ValueError("quality-bridge run-manifest output directory differs")
+    if (
+        run_manifest.get("dataset_provenance", {}).get("identity_sha256")
+        != training["dataset_identity_sha256"]
+    ):
+        raise ValueError("quality-bridge run-manifest dataset identity differs")
+    environment = run_manifest.get("runtime_environment")
+    if (
+        not isinstance(environment, Mapping)
+        or _mapping_sha256(environment)
+        != training["runtime_environment_sha256"]
+        or run_manifest.get("runtime_environment_sha256")
+        != training["runtime_environment_sha256"]
+    ):
+        raise ValueError("quality-bridge run-manifest runtime identity differs")
+    config = run_manifest.get("config")
+    data = config.get("data") if isinstance(config, Mapping) else None
+    optimization = config.get("optimization") if isinstance(config, Mapping) else None
+    micro_batch = data.get("batch_size") if isinstance(data, Mapping) else None
+    accumulation = (
+        optimization.get("gradient_accumulation_steps")
+        if isinstance(optimization, Mapping)
+        else None
+    )
+    if (
+        type(micro_batch) is not int
+        or micro_batch < 1
+        or type(accumulation) is not int
+        or accumulation < 1
+        or micro_batch * accumulation != training["effective_batch"]
+    ):
+        raise ValueError("quality-bridge run-manifest effective batch differs")
+    if run_manifest.get("resume_revision_transition") is not None:
+        raise ValueError("quality-bridge run-manifest revision transition differs")
+
+    resume_path = _direct_run_child(
+        run_manifest.get("resume"),
+        run_dir=run_dir,
+        label="run manifest resume checkpoint",
+    )
+    match = re.fullmatch(r"checkpoint_step_(\d{8})\.pt", resume_path.name)
+    if match is None:
+        raise ValueError("quality-bridge run-manifest resume checkpoint differs")
+    return run_dir, resume_path, int(match.group(1))
+
+
+def _validate_original_reconciliation_v2(
+    exact: Mapping[str, Any],
+    *,
+    training: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    run_dir = Path(training["run_dir"]).resolve()
+    report_path = _direct_run_child(
+        exact["reconciliation"]["path"],
+        run_dir=run_dir,
+        label="original metrics reconciliation report",
+    )
+    reconciliation, reconciliation_identity = _read_json_source(
+        report_path,
+        expected_sha256=exact["reconciliation"]["sha256"],
+    )
+    required = {
+        "metrics",
+        "orphan_archive",
+        "orphan_sha256",
+        "orphaned_rows",
+        "resume_step",
+        "retained_rows",
+        "schema_version",
+        "status",
+    }
+    orphan_sha = reconciliation.get("orphan_sha256")
+    if (
+        set(reconciliation) != required
+        or reconciliation.get("schema_version") != 1
+        or reconciliation.get("status") != "reconciled"
+        or reconciliation.get("resume_step") != exact["resume_step"]
+        or type(reconciliation.get("retained_rows")) is not int
+        or reconciliation.get("retained_rows", 0) < 1
+        or type(reconciliation.get("orphaned_rows")) is not int
+        or reconciliation.get("orphaned_rows", 0) < 1
+        or not _is_sha256(orphan_sha)
+    ):
+        raise ValueError("quality-bridge original metrics reconciliation differs")
+    metrics_path = _direct_run_child(
+        reconciliation["metrics"],
+        run_dir=run_dir,
+        label="original reconciliation metrics",
+        expected_name="train_metrics.jsonl",
+    )
+    orphan_path = _direct_run_child(
+        reconciliation["orphan_archive"],
+        run_dir=run_dir,
+        label="original reconciliation orphan archive",
+        expected_name=(
+            f"train_metrics_orphaned_at_resume_{exact['resume_step']:08d}_"
+            f"{orphan_sha[:12]}.jsonl"
+        ),
+    )
+    if metrics_path != run_dir / "train_metrics.jsonl" or not orphan_path.is_file():
+        raise ValueError("quality-bridge original reconciliation paths differ")
+    orphan_payload = orphan_path.read_bytes()
+    orphan_identity = _identity(orphan_path, orphan_payload)
+    if orphan_identity["sha256"] != orphan_sha:
+        raise ValueError("quality-bridge original orphan archive SHA256 differs")
+    expected_report_name = (
+        f"metrics_resume_reconciliation_{exact['resume_step']:08d}_{orphan_sha[:12]}.json"
+    )
+    if report_path.name != expected_report_name:
+        raise ValueError("quality-bridge original reconciliation filename differs")
+    return reconciliation_identity, orphan_identity
+
+
+def _validate_current_reconciliation_v2(
+    value: Any,
+    *,
+    run_dir: Path,
+    resume_step: int,
+) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise ValueError("quality-bridge current metrics reconciliation is missing")
+    base_keys = {
+        "metrics",
+        "orphan_archive",
+        "orphan_sha256",
+        "orphaned_rows",
+        "resume_step",
+        "retained_rows",
+        "schema_version",
+        "status",
+    }
+    status = value.get("status")
+    expected_keys = base_keys if status == "unchanged" else base_keys | {"report"}
+    metrics_path = _direct_run_child(
+        value.get("metrics"),
+        run_dir=run_dir,
+        label="current reconciliation metrics",
+        expected_name="train_metrics.jsonl",
+    )
+    if (
+        set(value) != expected_keys
+        or value.get("schema_version") != 1
+        or status not in {"unchanged", "reconciled"}
+        or value.get("resume_step") != resume_step
+        or metrics_path != run_dir / "train_metrics.jsonl"
+        or type(value.get("retained_rows")) is not int
+        or value.get("retained_rows", 0) < 1
+        or type(value.get("orphaned_rows")) is not int
+        or value.get("orphaned_rows", -1) < 0
+    ):
+        raise ValueError("quality-bridge current metrics reconciliation differs")
+
+    if status == "unchanged":
+        if (
+            value.get("orphaned_rows") != 0
+            or value.get("orphan_archive") is not None
+            or value.get("orphan_sha256") is not None
+        ):
+            raise ValueError("quality-bridge unchanged reconciliation differs")
+        return {
+            "status": "unchanged",
+            "resume_step": resume_step,
+            "report": None,
+            "orphan_archive": None,
+        }
+
+    orphan_sha = value.get("orphan_sha256")
+    if value.get("orphaned_rows", 0) < 1 or not _is_sha256(orphan_sha):
+        raise ValueError("quality-bridge reconciled orphan identity differs")
+    orphan_path = _direct_run_child(
+        value.get("orphan_archive"),
+        run_dir=run_dir,
+        label="current reconciliation orphan archive",
+        expected_name=(
+            f"train_metrics_orphaned_at_resume_{resume_step:08d}_"
+            f"{orphan_sha[:12]}.jsonl"
+        ),
+    )
+    report_path = _direct_run_child(
+        value.get("report"),
+        run_dir=run_dir,
+        label="current metrics reconciliation report",
+        expected_name=(
+            f"metrics_resume_reconciliation_{resume_step:08d}_{orphan_sha[:12]}.json"
+        ),
+    )
+    if not orphan_path.is_file() or not report_path.is_file():
+        raise ValueError("quality-bridge reconciled evidence is missing")
+    orphan_identity = _identity(orphan_path, orphan_path.read_bytes())
+    if orphan_identity["sha256"] != orphan_sha:
+        raise ValueError("quality-bridge current orphan archive SHA256 differs")
+    report, report_identity = _read_json_source(report_path)
+    expected_report = {key: item for key, item in value.items() if key != "report"}
+    if report != expected_report:
+        raise ValueError("quality-bridge current reconciliation report differs")
+    return {
+        "status": "reconciled",
+        "resume_step": resume_step,
+        "report": report_identity,
+        "orphan_archive": orphan_identity,
+    }
 
 
 def inspect_recovery_supersession(
@@ -426,46 +691,80 @@ def inspect_recovery_supersession(
         raise ValueError("quality-bridge CoFiTok run is unhealthy")
 
     exact = contract["exact_resume"]
-    run_manifest, run_manifest_identity = _read_json_source(
+    run_dir = Path(training["run_dir"]).resolve()
+    manifest_path = _direct_run_child(
         exact["run_manifest"]["path"],
-        expected_sha256=exact["run_manifest"]["sha256"],
+        run_dir=run_dir,
+        label="recovery run manifest",
+        expected_name="run_manifest.json",
     )
-    manifest_git = run_manifest.get("git")
-    _validate_training_git(manifest_git, expected=training, include_tree=False)
-    if (
-        run_manifest.get("output_dir") != training["run_dir"]
-        or run_manifest.get("resume")
-        != f"{training['run_dir']}/checkpoint_step_{exact['resume_step']:08d}.pt"
-        or run_manifest.get("dataset_provenance", {}).get("identity_sha256")
-        != training["dataset_identity_sha256"]
-        or run_manifest.get("runtime_environment_sha256")
-        != training["runtime_environment_sha256"]
-    ):
-        raise ValueError("quality-bridge exact-resume manifest differs")
+    run_manifest, run_manifest_identity = _read_json_source(
+        manifest_path,
+        expected_sha256=exact["run_manifest"].get("sha256"),
+    )
     manifest_reconciliation = run_manifest.get("metrics_resume_reconciliation")
-    if (
-        not isinstance(manifest_reconciliation, dict)
-        or manifest_reconciliation.get("status") != "reconciled"
-        or manifest_reconciliation.get("resume_step") != exact["resume_step"]
-        or manifest_reconciliation.get("report")
-        != exact["reconciliation"]["path"]
-    ):
-        raise ValueError("quality-bridge manifest reconciliation differs")
+    original_orphan_identity: dict[str, Any] | None = None
+    if contract["schema_version"] == CONTRACT_SCHEMA_VERSION:
+        manifest_git = run_manifest.get("git")
+        _validate_training_git(manifest_git, expected=training, include_tree=False)
+        if (
+            run_manifest.get("output_dir") != training["run_dir"]
+            or run_manifest.get("resume")
+            != f"{training['run_dir']}/checkpoint_step_{exact['resume_step']:08d}.pt"
+            or run_manifest.get("dataset_provenance", {}).get("identity_sha256")
+            != training["dataset_identity_sha256"]
+            or run_manifest.get("runtime_environment_sha256")
+            != training["runtime_environment_sha256"]
+        ):
+            raise ValueError("quality-bridge exact-resume manifest differs")
+        if (
+            not isinstance(manifest_reconciliation, dict)
+            or manifest_reconciliation.get("status") != "reconciled"
+            or manifest_reconciliation.get("resume_step") != exact["resume_step"]
+            or manifest_reconciliation.get("report")
+            != exact["reconciliation"]["path"]
+        ):
+            raise ValueError("quality-bridge manifest reconciliation differs")
 
-    reconciliation, reconciliation_identity = _read_json_source(
-        exact["reconciliation"]["path"],
-        expected_sha256=exact["reconciliation"]["sha256"],
-    )
-    if (
-        reconciliation.get("schema_version") != 1
-        or reconciliation.get("status") != "reconciled"
-        or reconciliation.get("resume_step") != exact["resume_step"]
-        or type(reconciliation.get("orphaned_rows")) is not int
-        or reconciliation.get("orphaned_rows", 0) < 1
-        or reconciliation.get("orphan_sha256")
-        != manifest_reconciliation.get("orphan_sha256")
-    ):
-        raise ValueError("quality-bridge metrics reconciliation differs")
+        reconciliation, reconciliation_identity = _read_json_source(
+            exact["reconciliation"]["path"],
+            expected_sha256=exact["reconciliation"]["sha256"],
+        )
+        if (
+            reconciliation.get("schema_version") != 1
+            or reconciliation.get("status") != "reconciled"
+            or reconciliation.get("resume_step") != exact["resume_step"]
+            or type(reconciliation.get("orphaned_rows")) is not int
+            or reconciliation.get("orphaned_rows", 0) < 1
+            or reconciliation.get("orphan_sha256")
+            != manifest_reconciliation.get("orphan_sha256")
+        ):
+            raise ValueError("quality-bridge metrics reconciliation differs")
+        current_resume_step = exact["resume_step"]
+        current_resume_path = Path(str(run_manifest["resume"])).resolve()
+        current_reconciliation_evidence = {
+            "status": "reconciled",
+            "resume_step": current_resume_step,
+            "report": reconciliation_identity,
+            "orphan_archive": None,
+        }
+        manifest_policy = "immutable_sha256"
+    else:
+        _, current_resume_path, current_resume_step = _validate_manifest_stable_fields(
+            run_manifest,
+            training=training,
+        )
+        if current_resume_step < exact["resume_step"]:
+            raise ValueError("quality-bridge current resume predates original recovery")
+        current_reconciliation_evidence = _validate_current_reconciliation_v2(
+            manifest_reconciliation,
+            run_dir=run_dir,
+            resume_step=current_resume_step,
+        )
+        reconciliation_identity, original_orphan_identity = (
+            _validate_original_reconciliation_v2(exact, training=training)
+        )
+        manifest_policy = MUTABLE_SEMANTIC_POLICY
 
     checkpoint, checkpoint_identity = _read_json_source(
         exact["checkpoint_audit"]["path"],
@@ -507,7 +806,11 @@ def inspect_recovery_supersession(
     )
 
     last_step = cofitok.get("last_step")
-    if type(last_step) is not int or last_step < exact["checkpoint_step"]:
+    if (
+        type(last_step) is not int
+        or last_step < exact["checkpoint_step"]
+        or last_step < current_resume_step
+    ):
         raise ValueError("quality-bridge pair monitor predates trusted checkpoint")
     run_manifest_status = cofitok.get("run_manifest")
     if (
@@ -637,10 +940,19 @@ def inspect_recovery_supersession(
             "execution_status": execution_identity,
             "pair_monitor": pair_identity,
             "watchdog_status": watchdog_identity,
-            "run_manifest": run_manifest_identity,
+            "run_manifest": {
+                **run_manifest_identity,
+                "policy": manifest_policy,
+            },
             "metrics_reconciliation": reconciliation_identity,
+            "original_metrics_reconciliation": reconciliation_identity,
+            "original_orphan_archive": original_orphan_identity,
+            "current_metrics_reconciliation": current_reconciliation_evidence,
             "trusted_checkpoint_audit": checkpoint_identity,
             "resume_step": exact["resume_step"],
+            "original_resume_step": exact["resume_step"],
+            "current_resume_step": current_resume_step,
+            "current_resume_checkpoint": current_resume_path.as_posix(),
             "trusted_checkpoint_step": exact["checkpoint_step"],
             "live_cofitok_step": last_step,
             "watchdog_target_step": watchdog_target_step,
