@@ -71,6 +71,11 @@ The runbook replays that authorization before either checkpoint is loaded.
 The supervisor fails closed on route drift, source drift, Git drift, an existing
 output or lock, malformed GPU process rows, missing standing authorization, or
 fewer than five consecutive idle polls. It contains no process-signal path.
+Before entering the wait loop it also writes an immutable deployment receipt
+binding the exact clean checkout, supervisor source, runbook, regular-file Python
+runtime, preparation, standing authorization, waiting sources, control targets,
+timing contract, and non-authorizing safety boundary. Status snapshots bind that
+receipt by bytes and SHA256.
 
 ## Claim boundary
 

@@ -50,6 +50,7 @@ except ModuleNotFoundError:  # Imported as scripts.<module> by tests.
 
 
 ROLE = "generation_factorization_quality_regression_supervisor"
+DEPLOYMENT_ROLE = "generation_factorization_quality_regression_supervisor_deployment"
 AUTHORIZATION_BOUNDARY = {
     "standing_authorization_required": True,
     "exact_matched_quality_regression_route_required": True,
@@ -63,6 +64,10 @@ AUTHORIZATION_BOUNDARY = {
     "full_300k_launch_allowed": False,
     "release_authorization_allowed": False,
 }
+
+
+def _is_within(path: Path, root: Path) -> bool:
+    return path == root or root in path.parents
 
 
 def parse_gpu_process_pids(output: str) -> list[int]:
@@ -123,6 +128,62 @@ def validate_self_git(
     if observed != expected or _full_status(project):
         raise ValueError("factorization-regression supervisor requires an exact clean checkout")
     return observed
+
+
+def build_deployment_receipt(
+    args: argparse.Namespace,
+    *,
+    control_git: Mapping[str, Any],
+    supervisor_source: Mapping[str, Any],
+    runbook: Mapping[str, Any],
+    python_runtime: Mapping[str, Any],
+    preparation: Mapping[str, Any],
+    standing_authorization: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "role": DEPLOYMENT_ROLE,
+        "status": "pass",
+        "hostname": socket.gethostname(),
+        "control": {
+            "checkout": {
+                "path": args.project.resolve().as_posix(),
+                **dict(control_git),
+            },
+            "supervisor_source": dict(supervisor_source),
+            "runbook": dict(runbook),
+            "python_runtime": dict(python_runtime),
+        },
+        "authorization_inputs": {
+            "preparation": dict(preparation),
+            "standing_authorization": dict(standing_authorization),
+        },
+        "waiting_sources": {
+            "quality_bridge_followup_decision": (
+                args.followup_decision.resolve().as_posix()
+            ),
+            "terminal_system_guard": args.terminal_system_guard.resolve().as_posix(),
+        },
+        "targets": {
+            "control_root": args.status_output.resolve().parent.as_posix(),
+            "source_binding": args.source_binding.resolve().as_posix(),
+            "execution_authorization": (
+                args.execution_authorization.resolve().as_posix()
+            ),
+            "diagnostic_output_root": args.output_root.resolve().as_posix(),
+            "status_output": args.status_output.resolve().as_posix(),
+            "pid_file": args.pid_file.resolve().as_posix(),
+            "deployment_receipt": (
+                args.deployment_receipt_output.resolve().as_posix()
+            ),
+        },
+        "timing": {
+            "poll_seconds": args.poll_seconds,
+            "required_idle_gpu_polls": args.required_idle_polls,
+            "timeout_seconds": args.timeout_seconds,
+        },
+        "authorization_boundary": dict(AUTHORIZATION_BOUNDARY),
+    }
 
 
 def _status_payload(
@@ -205,6 +266,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--python", type=Path, required=True)
     parser.add_argument("--status-output", type=Path, required=True)
     parser.add_argument("--pid-file", type=Path, required=True)
+    parser.add_argument("--deployment-receipt-output", type=Path, required=True)
     parser.add_argument("--poll-seconds", type=float, default=60.0)
     parser.add_argument("--required-idle-polls", type=int, default=5)
     parser.add_argument("--timeout-seconds", type=float, default=2_592_000.0)
@@ -227,14 +289,53 @@ def run(args: argparse.Namespace) -> int:
     args.output_root = output_root
     if output_root.as_posix() != OUTPUT_ROOT:
         raise ValueError("factorization-regression output root differs")
-    validate_self_git(
+    control_git = validate_self_git(
         project,
         expected_revision=args.expected_revision,
         expected_tree=args.expected_tree,
         expected_branch=args.expected_branch,
     )
-    if not args.python.is_file() or not args.runbook.is_file():
+    supervisor_source = reject_symlink_chain(
+        project / "scripts/run_generation_factorization_quality_regression_supervisor.py",
+        name="factorization-regression supervisor source",
+    ).resolve()
+    runbook = reject_symlink_chain(
+        args.runbook,
+        name="factorization-regression runbook",
+    ).resolve()
+    python_runtime = reject_symlink_chain(
+        args.python,
+        name="factorization-regression Python runtime",
+    ).resolve()
+    args.runbook = runbook
+    args.python = python_runtime
+    if (
+        not supervisor_source.is_file()
+        or not python_runtime.is_file()
+        or not runbook.is_file()
+        or runbook
+        != project
+        / "artifacts/runbooks/generation_factorization_quality_regression_probe_v1.sh"
+    ):
         raise FileNotFoundError("factorization-regression runtime or runbook is missing")
+    control_paths = {
+        "preparation": args.preparation.resolve(),
+        "source_binding": args.source_binding.resolve(),
+        "execution_authorization": args.execution_authorization.resolve(),
+        "status_output": args.status_output.resolve(),
+        "pid_file": args.pid_file.resolve(),
+        "deployment_receipt": args.deployment_receipt_output.resolve(),
+    }
+    control_root = control_paths["status_output"].parent
+    if (
+        any(path.parent != control_root for path in control_paths.values())
+        or len(set(control_paths.values())) != len(control_paths)
+        or _is_within(control_root, output_root)
+        or _is_within(output_root, control_root)
+    ):
+        raise ValueError("factorization-regression control path scope differs")
+    for name, path in control_paths.items():
+        setattr(args, name if name != "deployment_receipt" else "deployment_receipt_output", path)
     preparation = read_json_object(
         reject_symlink_chain(args.preparation, name="diagnostic preparation"),
         name="factorization-regression preparation",
@@ -258,6 +359,22 @@ def run(args: argparse.Namespace) -> int:
     if standing_identity["sha256"] != args.expected_standing_authorization_sha256:
         raise ValueError("standing experiment authorization SHA256 differs")
     validate_standing_experiment_authorization(standing)
+    control_root.mkdir(parents=True, exist_ok=True)
+    deployment = build_deployment_receipt(
+        args,
+        control_git=control_git,
+        supervisor_source=file_identity(supervisor_source),
+        runbook=file_identity(runbook),
+        python_runtime=file_identity(python_runtime),
+        preparation=preparation_identity,
+        standing_authorization=standing_identity,
+    )
+    deployment_identity = prepare_manifest(
+        args.deployment_receipt_output,
+        deployment,
+        resume=args.deployment_receipt_output.is_file(),
+        overwrite=False,
+    )
     supervisor_lock = args.pid_file.with_suffix(".lock")
     supervisor_lock.parent.mkdir(parents=True, exist_ok=True)
     lock_handle = supervisor_lock.open("a+", encoding="utf-8")
@@ -285,6 +402,7 @@ def run(args: argparse.Namespace) -> int:
     sources: dict[str, Any] = {
         "preparation": preparation_identity,
         "standing_authorization": standing_identity,
+        "deployment_receipt": deployment_identity,
     }
     while True:
         if time.monotonic() - started > args.timeout_seconds:
