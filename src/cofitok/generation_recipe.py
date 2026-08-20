@@ -13,6 +13,7 @@ RECIPE_STAGES = {
     "full",
     "stability_scaling",
     "stability_quality_bridge",
+    "stability_exposure",
     "stability_full",
 }
 ALLOWED_RUNTIME_BATCHES = {
@@ -71,6 +72,12 @@ def infer_generation_training_stage(
             return "legacy_scaling"
         return "stability_scaling" if stability_recipe else "scaling"
     if identities == {("imagenet_256", 300_000)}:
+        base_channels = {
+            int(config.get("model", {}).get("base_channels", -1))
+            for config in (cofitok_config, dense_config)
+        }
+        if stability_recipe and base_channels == {128}:
+            return "stability_exposure"
         return "stability_full" if stability_recipe else "full"
     if identities == {("imagenet_256", 100_000)} and stability_recipe:
         return "stability_quality_bridge"
@@ -80,10 +87,12 @@ def infer_generation_training_stage(
 def _expected_shared(stage: str) -> dict[str, Any]:
     full = stage in {"full", "stability_full"}
     quality_bridge = stage == "stability_quality_bridge"
-    full_data = full or quality_bridge
+    exposure = stage == "stability_exposure"
+    full_data = full or quality_bridge or exposure
     stability = stage in {
         "stability_scaling",
         "stability_quality_bridge",
+        "stability_exposure",
         "stability_full",
     }
     if full:
@@ -96,6 +105,12 @@ def _expected_shared(stage: str) -> dict[str, Any]:
         runtime_steps = 100_000
         evaluation_interval = 1_000
         protected_checkpoint_steps = [50_000, 100_000]
+        min_learning_rate = 1e-5
+        warmup_steps = 1_000
+    elif exposure:
+        runtime_steps = 300_000
+        evaluation_interval = 1_000
+        protected_checkpoint_steps = [50_000, 100_000, 150_000, 200_000, 300_000]
         min_learning_rate = 1e-5
         warmup_steps = 1_000
     else:
@@ -189,6 +204,7 @@ def _expected_method(method: str, stage: str) -> dict[str, Any]:
         if stage in {
             "stability_scaling",
             "stability_quality_bridge",
+            "stability_exposure",
             "stability_full",
         }:
             return {
@@ -316,6 +332,7 @@ def generation_training_recipe_contract(
     stability = stage in {
         "stability_scaling",
         "stability_quality_bridge",
+        "stability_exposure",
         "stability_full",
     }
     shared_stability_losses = (

@@ -124,6 +124,47 @@ def test_stability_full_recipe_scales_the_qualified_mechanism_to_300k() -> None:
     ]
 
 
+def test_stability_exposure_recipe_extends_base128_without_recipe_drift() -> None:
+    cofitok = _config(
+        "imagenet256_stability_exposure_"
+        "rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json"
+    )
+    dense = _config(
+        "imagenet256_stability_exposure_"
+        "rollout_x0_u2_ema_teacher_dense_300k.json"
+    )
+
+    assert infer_generation_training_stage(cofitok, dense) == "stability_exposure"
+    contract = generation_training_recipe_contract(
+        cofitok,
+        dense,
+        stage="stability_exposure",
+    )
+
+    assert contract["valid"] is True, contract["issues"]
+    assert contract["issues"] == []
+    assert contract["expected_shared"]["model.base_channels"] == 128
+    assert contract["observed"]["cofitok"]["model.base_channels"] == 128
+    assert contract["observed"]["dense_identity"]["model.base_channels"] == 128
+    assert contract["effective_batches"]["cofitok"]["effective_batch_size"] == 64
+    assert contract["expected_shared"][
+        "loss.rollout_consistency_warmup_steps"
+    ] == 10_000
+    assert contract["expected_shared"][
+        "loss.ema_teacher_consistency_start_step"
+    ] == 30_000
+    assert contract["expected_shared"][
+        "loss.ema_teacher_consistency_warmup_steps"
+    ] == 10_000
+    assert contract["expected_shared"]["runtime.protected_checkpoint_steps"] == [
+        50_000,
+        100_000,
+        150_000,
+        200_000,
+        300_000,
+    ]
+
+
 def test_stability_recipe_rejects_identically_shifted_teacher_window() -> None:
     cofitok = _config(
         "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json"
