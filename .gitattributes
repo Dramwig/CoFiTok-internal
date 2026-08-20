@@ -1,3 +1,4 @@
 artifacts/reports/generation/matched_training_trajectory_step_00034000_2026-08-19/** -text
 artifacts/reports/generation/generative_system_gap_audit_2026-08-19/capacity_supervisor_acedc6d_deployment_receipt.json -text
 artifacts/reports/generation/capacity_recovery_supersession_v2_2026-08-20/*.json -text
+configs/generation/diagnostics/quality_bridge_recovery_supersession_20260820_v2.json -text
