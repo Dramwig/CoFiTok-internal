@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "role": "capacity_recovery_supersession_v2_rehearsal",
+  "status": "pass",
+  "recorded_at": "2026-08-20T11:43:11+08:00",
+  "implementation": {
+    "branch": "fix/generation-recovery-supersession-v2",
+    "revision": "f9ed9b5b1958887ef490a9251f5e64eadf26ef6b",
+    "tree": "5acc8b9ccfe9e65c2483ab738d908fb920aa5ef8",
+    "parent": "a963ff4bb91fd837f67856be996810ff45958712",
+    "tracked_dirty": false
+  },
+  "contract": {
+    "path": "configs/generation/diagnostics/quality_bridge_recovery_supersession_20260820_v2.json",
+    "bytes": 3520,
+    "sha256": "d42b3bca92087062eb8e2999ac9f1cd3be729bf72b9e3e4cb823d5544c67e379",
+    "schema_version": 2,
+    "run_manifest_policy": "mutable_semantic",
+    "original_reconciliation_sha256": "dfe268c1defbaaa424cb93df108deb1421080f9568c47b02f1607568d6f57aca",
+    "original_checkpoint_audit_sha256": "3b89622a286d5ef6b7244daa47a1866f272da447b564887ad477c53138a6d1f9"
+  },
+  "source_files": {
+    "supersession_module": {
+      "path": "src/cofitok/generation_recovery_supersession.py",
+      "bytes": 39461,
+      "sha256": "373e100e0d1eeb0308a22a043240eea9086e56da1a36ef8dd462701322b06abb"
+    },
+    "observer_cli": {
+      "path": "scripts/observe_generation_capacity_pipeline_lineage.py",
+      "bytes": 11497,
+      "sha256": "398dded9dfb478915ade010cdd7c2746ee03d9bafd9e7a244402d4b0f0119ab4"
+    },
+    "observer_runbook": {
+      "path": "artifacts/runbooks/generation_capacity_pipeline_lineage_observer.sh",
+      "bytes": 3333,
+      "sha256": "382745ca5b3458e87020f6b4dbfeba090e183ba2b668457dddfc20a1aa79947f"
+    },
+    "lineage_plan": {
+      "path": "configs/generation/diagnostics/capacity_generation_pipeline_lineage_v1.json",
+      "bytes": 4107,
+      "sha256": "f6e194873f8c526b79aa2380ede271a4319d985e8935aab2dc21ae2067e28c04"
+    },
+    "supersession_tests": {
+      "path": "tests/test_generation_capacity_recovery_supersession.py",
+      "bytes": 31787,
+      "sha256": "fdf84e850101aea56e358c75b5e2af26010251231dae3e39c6fb697ba08252d7"
+    },
+    "lineage_tests": {
+      "path": "tests/test_generation_capacity_pipeline_lineage.py",
+      "bytes": 8448,
+      "sha256": "6014e491543132fc7cc008a2b1e3642576ba2cca105fbd2cb2675400665b1423"
+    }
+  },
+  "validation": {
+    "windows_focused": {
+      "passed": 31,
+      "failed": 0,
+      "status": "pass"
+    },
+    "windows_full_clean_commit": {
+      "passed": 1669,
+      "skipped": 11,
+      "failed": 0,
+      "duration_seconds": 923.99,
+      "status": "pass"
+    },
+    "linux_focused": {
+      "passed": 31,
+      "failed": 0,
+      "status": "pass"
+    },
+    "linux_full": {
+      "passed": 1678,
+      "skipped": 2,
+      "failed": 0,
+      "duration_seconds": 355.37,
+      "python_executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+      "cuda_visible_devices": "-1",
+      "status": "pass"
+    },
+    "tracked_runbooks": {
+      "count": 141,
+      "bash_n_passed": 141,
+      "failed": 0,
+      "status": "pass"
+    },
+    "python_compile": "pass",
+    "git_diff_check": "pass",
+    "expected_fail_closed_checks": [
+      {
+        "condition": "uncommitted implementation checkout",
+        "result": "three Git-identity tests rejected tracked_dirty=true before the implementation commit"
+      },
+      {
+        "condition": "symlinked server Python launcher",
+        "result": "six inference waiter tests rejected /root/autodl-tmp/conda/envs/pf-vlm/bin/python; all six and the full suite passed with its resolved regular-file target python3.10"
+      }
+    ]
+  },
+  "incremental_bundle": {
+    "local_path": "C:/qbrecoverysupersessionv2/.codex-bundles/cofitok-recovery-supersession-f9ed9b5-from-a963ff4.bundle",
+    "remote_path": "/tmp/cofitok-recovery-supersession-f9ed9b5-from-a963ff4.bundle",
+    "bytes": 10909,
+    "sha256": "49d548bc33c844756d49079ce18443473a29987ae6bc129cb59610827b26da2d",
+    "prerequisite": "a963ff4bb91fd837f67856be996810ff45958712",
+    "advertised_revision": "f9ed9b5b1958887ef490a9251f5e64eadf26ef6b",
+    "advertised_ref": "refs/heads/fix/generation-recovery-supersession-v2",
+    "verified_locally": true,
+    "verified_remotely": true
+  },
+  "linux_rehearsal": {
+    "checkout": "/tmp/cofitok-recovery-supersession-f9ed9b5.Rq2Ymk/CoFiTok-internal",
+    "sibling_paper_copied_for_structure_tests": true,
+    "one_shot": {
+      "path": "/tmp/cofitok-recovery-supersession-f9ed9b5.Rq2Ymk/live_rehearsal_observer.json",
+      "bytes": 25842,
+      "sha256": "266ecefb6285c7a2f03bac6b419894b92dbc5a697ece1af9f9a457f13e22afa8",
+      "observed_at": "2026-08-20T03:32:44.935432+00:00",
+      "status": "running",
+      "issues": [],
+      "stage_status": "running",
+      "stage_health": "running",
+      "stage_issues": [],
+      "manifest_policy": "mutable_semantic",
+      "original_resume_step": 20000,
+      "current_resume_step": 50000,
+      "current_reconciliation_status": "unchanged",
+      "trusted_checkpoint_step": 25000,
+      "live_cofitok_step": 57350,
+      "watchdog_target_step": 100000
+    }
+  },
+  "formal_checkout_snapshot": {
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "branch": "scale/generative-system",
+    "tracked_dirty": false,
+    "porcelain_count": 89,
+    "porcelain_sha256": "18e5981f22a2ac255c7f60343429daa6ceea86412b1d7bd09bc474f2faf74004",
+    "modified_by_rehearsal": false
+  },
+  "preservation": {
+    "active_training_pid": 543758,
+    "failed_v2_observer_pid": 765120,
+    "active_training_signaled_or_modified": false,
+    "failed_v2_observer_signaled_or_modified": false,
+    "gpu_stage_launched": false,
+    "formal_checkout_modified": false
+  },
+  "claim_boundary": {
+    "read_only_observation_only": true,
+    "training_launch_allowed": false,
+    "sampling_or_evaluation_launch_allowed": false,
+    "gpu_allocation_allowed": false,
+    "process_signaling_allowed": false,
+    "promotion_or_release_allowed": false,
+    "generation_quality_claim_allowed": false
+  }
+}
