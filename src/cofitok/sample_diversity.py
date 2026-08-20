@@ -18,6 +18,13 @@ DHASH_BITS = (DHASH_WIDTH - 1) * DHASH_HEIGHT
 DHASH_THRESHOLDS = (0, 4, 8)
 REAL_SELECTION_SALT = "cofitok_sample_diversity_real_reference_v1"
 SUPPORTED_IMAGE_SUFFIXES = {".jpeg", ".jpg", ".png", ".webp"}
+IMAGE_STATISTIC_FIELDS = (
+    "rgb_mean",
+    "rgb_std",
+    "saturation_mean",
+    "local_neighbor_difference_mean",
+    "grayscale_laplacian_rms",
+)
 
 
 @dataclass(frozen=True)
@@ -35,6 +42,11 @@ class ImageFingerprint:
     encoded_sha256: str
     pixel_sha256: str
     dhash64: int
+    rgb_mean: float
+    rgb_std: float
+    saturation_mean: float
+    local_neighbor_difference_mean: float
+    grayscale_laplacian_rms: float
 
 
 def _exact_nonnegative_int(value: Any, *, label: str) -> int:
@@ -193,6 +205,39 @@ def _pixel_sha256(image: Image.Image) -> str:
     return digest.hexdigest()
 
 
+def _image_statistics(image: Image.Image) -> dict[str, float]:
+    rgb = np.asarray(image.convert("RGB"), dtype=np.float32) / 255.0
+    grayscale = (
+        0.2989 * rgb[:, :, 0]
+        + 0.5870 * rgb[:, :, 1]
+        + 0.1140 * rgb[:, :, 2]
+    )
+    horizontal = np.abs(rgb[:, 1:, :] - rgb[:, :-1, :])
+    vertical = np.abs(rgb[1:, :, :] - rgb[:-1, :, :])
+    neighbor_difference = (
+        float(horizontal.sum(dtype=np.float64))
+        + float(vertical.sum(dtype=np.float64))
+    ) / (horizontal.size + vertical.size)
+    laplacian = (
+        4.0 * grayscale[1:-1, 1:-1]
+        - grayscale[:-2, 1:-1]
+        - grayscale[2:, 1:-1]
+        - grayscale[1:-1, :-2]
+        - grayscale[1:-1, 2:]
+    )
+    return {
+        "rgb_mean": float(rgb.mean(dtype=np.float64)),
+        "rgb_std": float(rgb.std(dtype=np.float64)),
+        "saturation_mean": float(
+            (rgb.max(axis=2) - rgb.min(axis=2)).mean(dtype=np.float64)
+        ),
+        "local_neighbor_difference_mean": neighbor_difference,
+        "grayscale_laplacian_rms": float(
+            np.sqrt(np.square(laplacian, dtype=np.float64).mean())
+        ),
+    }
+
+
 def _read_fingerprint(
     record: SampleRecord,
     *,
@@ -220,6 +265,7 @@ def _read_fingerprint(
             rgb = opened.convert("RGB")
     except (OSError, SyntaxError) as error:
         raise ValueError(f"sample is not a decodable image: {path}") from error
+    statistics = _image_statistics(rgb)
     return (
         ImageFingerprint(
             identifier=record.identifier,
@@ -227,6 +273,7 @@ def _read_fingerprint(
             encoded_sha256=hashlib.sha256(raw).hexdigest(),
             pixel_sha256=_pixel_sha256(rgb),
             dhash64=dhash64(rgb),
+            **statistics,
         ),
         raw,
     )
@@ -260,6 +307,25 @@ def _distribution(values: Sequence[int]) -> dict[str, float | int]:
         "p75": float(np.percentile(array, 75)),
         "p90": float(np.percentile(array, 90)),
         "max": int(array.max()),
+    }
+
+
+def _float_distribution(values: Sequence[float]) -> dict[str, float | int]:
+    if not values:
+        raise ValueError("image-statistic distribution must not be empty")
+    array = np.asarray(values, dtype=np.float64)
+    if not np.isfinite(array).all():
+        raise ValueError("image-statistic distribution must be finite")
+    return {
+        "count": int(array.size),
+        "min": float(array.min()),
+        "p10": float(np.percentile(array, 10)),
+        "p25": float(np.percentile(array, 25)),
+        "median": float(np.median(array)),
+        "mean": float(array.mean()),
+        "p75": float(np.percentile(array, 75)),
+        "p90": float(np.percentile(array, 90)),
+        "max": float(array.max()),
     }
 
 
@@ -421,6 +487,12 @@ def analyze_cohort(
         expected_class_count=expected_class_count,
         expected_samples_per_class=expected_samples_per_class,
     )
+    image_statistics = {
+        field: _float_distribution(
+            [float(getattr(fingerprint, field)) for fingerprint in fingerprints]
+        )
+        for field in IMAGE_STATISTIC_FIELDS
+    }
     return {
         "cohort_id": cohort_id,
         "cohort_kind": cohort_kind,
@@ -446,6 +518,16 @@ def analyze_cohort(
                 global_nearest, denominator=len(global_nearest)
             ),
             "within_class": within_class,
+        },
+        "image_statistics": {
+            "normalization": "decoded_rgb_float_in_unit_interval",
+            "local_neighbor_difference": (
+                "mean_absolute_RGB_difference_over_horizontal_and_vertical_neighbors"
+            ),
+            "grayscale_laplacian": (
+                "RMS_of_four_neighbor_discrete_laplacian_on_BT601_grayscale"
+            ),
+            "metrics": image_statistics,
         },
         "per_class": class_rows,
     }

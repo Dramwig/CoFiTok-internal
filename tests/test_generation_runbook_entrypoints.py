@@ -31,6 +31,7 @@ RUNBOOKS = (
     "generation_stability_frozen_50k_class_fidelity_after_supplemental.sh",
     "generation_quality_bridge_followup_decision_after_result.sh",
     "generation_quality_bridge_exposure_followup_waiter.sh",
+    "generation_quality_bridge_terminal_distribution_support_waiter.sh",
     "generation_training_exposure_qualification_prepare.sh",
     "generation_stability_ema_teacher_full_readiness_after_gate.sh",
     "generation_stability_ema_teacher_full_readiness_bridge.sh",
@@ -81,6 +82,7 @@ ENTRYPOINTS = {
     "run_generation_stage_once.py",
     "run_generation_training_watchdog.py",
     "wait_for_generation_quality_bridge_exposure_followup.py",
+    "wait_for_generation_terminal_distribution_support.py",
     "select_generation_sampling_batch.py",
     "select_generation_training_runtime.py",
     "train_generation.py",
@@ -100,6 +102,14 @@ ENTRYPOINTS = {
     "verify_generation_stability_frozen_supplemental.py",
     "write_generation_pipeline_status.py",
     "write_generation_deployment_receipt.py",
+}
+AUXILIARY_ENTRYPOINTS = {
+    "diagnose_generation_terminal_distribution_support.py": {
+        "--followup-decision",
+        "--quality-bridge-result",
+        "--expected-diagnostic-revision",
+        "--output",
+    },
 }
 def _run_help(script: str) -> str:
     original_argv = sys.argv
@@ -154,3 +164,10 @@ def test_formal_generation_runbook_entrypoints_have_live_cli_contracts() -> None
         help_text = _run_help(script)
         missing = sorted(option for option in required_options if option not in help_text)
         assert missing == [], f"{script} help is missing runbook options: {missing}"
+
+
+def test_terminal_diagnostic_auxiliary_entrypoints_have_live_cli_contracts() -> None:
+    for script, required_options in AUXILIARY_ENTRYPOINTS.items():
+        help_text = _run_help(script)
+        missing = sorted(option for option in required_options if option not in help_text)
+        assert missing == [], f"{script} help is missing options: {missing}"

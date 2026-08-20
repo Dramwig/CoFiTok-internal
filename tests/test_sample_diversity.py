@@ -63,6 +63,10 @@ def test_generated_records_and_cohort_exact_duplicates(tmp_path: Path) -> None:
     assert report["cohort_digest"]["matches_declared_sample_set_sha256"] is True
     assert report["exact_duplicates"]["decoded_rgb_pixels"]["duplicate_image_count"] == 1
     assert report["dhash64"]["within_class"]["pixel_exact_duplicate_pair_count"] == 1
+    statistics = report["image_statistics"]["metrics"]
+    assert statistics["rgb_mean"]["count"] == 4
+    assert statistics["local_neighbor_difference_mean"]["mean"] > 0.0
+    assert statistics["grayscale_laplacian_rms"]["mean"] > 0.0
 
 
 def test_balanced_real_selection_is_deterministic(tmp_path: Path) -> None:
