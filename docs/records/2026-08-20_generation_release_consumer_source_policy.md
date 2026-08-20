@@ -59,6 +59,12 @@ receipt differ from the completion audit reconstruction and is rejected before
 authorization metadata used by sessions, preflight, inference manifests,
 progress, and reports.
 
+Implementation commit:
+
+```text
+830223300630db0879bd5cf20f3cb337175c3138
+```
+
 ## Regression coverage
 
 The inference artifact regression now deletes the source training checkpoint,
@@ -79,6 +85,19 @@ tests/test_large_scale_generation_completion_audit.py
 tests/test_generation_capacity_full_training_launch.py
 tests/test_generation_full_launch_receipt.py
 ```
+
+The final clean-HEAD CPU suite used `CUDA_VISIBLE_DEVICES=''` and
+`PYTHONPATH=.;src`. It collected 1,758 tests and completed with exit code zero:
+
+```text
+1,747 passed, 11 skipped
+```
+
+An earlier full invocation was intentionally run before committing the change.
+Its four failures were execution-boundary checks: three correctly rejected the
+dirty checkout and one isolated CLI process lacked the explicit current-worktree
+`PYTHONPATH`. After the implementation was committed and those formal execution
+conditions were supplied, all four passed in the clean-HEAD suite above.
 
 ## Operational boundary
 
