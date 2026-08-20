@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "role": "generation_terminal_distribution_support_linux_rehearsal",
+  "observed_at": "2026-08-20T09:46:34+08:00",
+  "implementation_git": {
+    "branch": "analysis/generation-terminal-distribution-support-v1",
+    "revision": "4119ce4817795c7465ab9eacf448a44405c752d8",
+    "tracked_dirty": false,
+    "tree": "db57efdd7c6c7cb438d2c780fd31c2cd80259fb9"
+  },
+  "implementation_bundle": {
+    "advertised_revision": "4119ce4817795c7465ab9eacf448a44405c752d8",
+    "bytes": 43709405,
+    "prerequisite_revisions": [
+      "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+      "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+    ],
+    "remote_path": "/tmp/cofitok-terminal-distribution-support-4119ce4.bundle",
+    "sha256": "d53fe614fcd486cb113908821b5f51b0e924a49f67935f63b6db429dfbf70467",
+    "verified_locally": true,
+    "verified_on_server": true
+  },
+  "source_files": {
+    "diagnostic": {
+      "path": "scripts/diagnose_generation_terminal_distribution_support.py",
+      "sha256": "65ff9518a5f18857c42db3cf23dcf680a77137ce3f2a1670938dfe3883551ce7"
+    },
+    "diagnostic_library": {
+      "path": "src/cofitok/generation/terminal_distribution_support.py",
+      "sha256": "ad0b0093c27e6126750c9df01bf40b4e44e04da9659ea28f6c114df7682c5b29"
+    },
+    "waiter": {
+      "path": "scripts/wait_for_generation_terminal_distribution_support.py",
+      "sha256": "bd5ffa24071d16c44c032c0c6ae339d8a9109bea81c5aed8ad0ee117b47500f6"
+    },
+    "waiter_runbook": {
+      "path": "artifacts/runbooks/generation_quality_bridge_terminal_distribution_support_waiter.sh",
+      "sha256": "6bdd582c4b3597b4c921b9699fece2a03f1f6e5aff56f3ecb46e965d9c9a3914"
+    }
+  },
+  "selection_contract": {
+    "canonical_followup_branch": "analysis/generation-quality-bridge-exposure-routing-v1",
+    "canonical_followup_revision": "85e3ece1196fd318cd6823439824e19fca4275a3",
+    "exact_route": "diagnose_terminal_distribution_support_then_recipe_probe",
+    "route_must_be_selected": true,
+    "terminal_sample_count_per_method": 10000,
+    "terminal_sample_steps": 100,
+    "terminal_sampler": "ddim"
+  },
+  "verification": {
+    "focused_linux_pytest": {
+      "failed": 0,
+      "passed": 18,
+      "status": "pass"
+    },
+    "full_linux_pytest": {
+      "collected": 1268,
+      "failed": 0,
+      "passed": 1266,
+      "skipped": 2,
+      "status": "pass"
+    },
+    "python_compile": {
+      "files": 4,
+      "status": "pass"
+    },
+    "runbook_bash_syntax": {
+      "failed": 0,
+      "passed": 119,
+      "status": "pass"
+    },
+    "synthetic_waiter_routes": {
+      "bounded_non_authorizing_wait": "pass",
+      "selected_cpu_route": "pass",
+      "selected_source_drift_rejection": "pass",
+      "tests": 4,
+      "unselected_route_no_child": "pass"
+    }
+  },
+  "detached_head_fail_closed_observation": {
+    "first_full_suite_failures": 2,
+    "reason": "The inference-export provenance guard rejects a detached checkout with no branch identity.",
+    "resolution": "Attach the isolated checkout to the exact diagnostic branch without changing the revision or tree.",
+    "resolved_targeted_tests_passed": 2,
+    "subsequent_full_suite_status": "pass"
+  },
+  "server_safety": {
+    "active_gpu_process_after": {
+      "pid": 543758,
+      "role": "active_cofitok_quality_bridge_trainer",
+      "used_memory_mib": 89398
+    },
+    "active_gpu_process_before": {
+      "pid": 543758,
+      "role": "active_cofitok_quality_bridge_trainer",
+      "used_memory_mib": 89398
+    },
+    "active_training_step_after": 55150,
+    "active_training_step_before": 54700,
+    "cuda_visible_devices": "-1",
+    "formal_checkout_full_porcelain_rows_after": 89,
+    "formal_checkout_full_porcelain_sha256_after": "18e5981f22a2ac255c7f60343429daa6ceea86412b1d7bd09bc474f2faf74004",
+    "formal_checkout_head_after": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "formal_checkout_head_before": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "formal_checkout_tracked_dirty_after": false,
+    "free_bytes_after": 312148602880,
+    "gpu_execution_performed": false,
+    "process_signals_sent": false,
+    "rehearsal_checkout": "/tmp/cofitok-terminal-support-rehearsal-4119ce4-20260820a/CoFiTok-internal",
+    "rehearsal_checkout_tracked_dirty_after": false,
+    "sibling_paper_layout_present": true
+  },
+  "authorization_boundary": {
+    "diagnostic_only": true,
+    "evaluation_launch_allowed": false,
+    "formal_generation_claim_allowed": false,
+    "full_300k_launch_allowed": false,
+    "gpu_execution_allowed": false,
+    "process_signals_allowed": false,
+    "promotion_allowed": false,
+    "recipe_probe_launch_allowed": false,
+    "release_allowed": false,
+    "sampling_launch_allowed": false,
+    "training_launch_allowed": false
+  }
+}
