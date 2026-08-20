@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "role": "capacity_generation_pipeline_lineage_observer_v3_authority_transition_receipt",
+  "status": "pass",
+  "recorded_at": "2026-08-20T12:08:17+08:00",
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "authority_decision": {
+    "operationally_authoritative_observer": "v3",
+    "operationally_authoritative_pid": 812832,
+    "v3_is_authoritative_for_current_lineage": true,
+    "v2_is_authoritative_for_current_lineage": false,
+    "v2_is_preserved_historical_false_failure_evidence": true,
+    "reason": "Schema-v1 byte identity for the current run_manifest.json was invalidated by a legitimate exact resume. Schema v2 semantically validates the mutable current manifest while preserving the original reconciliation, orphan archive, and trusted checkpoint audit as immutable anchors."
+  },
+  "scope": {
+    "cpu_only_observer_deployed": true,
+    "atomic_observer_report_writes_allowed": true,
+    "read_only_training_source_observation": true,
+    "experiment_training_launched": false,
+    "sampling_or_evaluation_launched": false,
+    "gpu_allocated": false,
+    "process_signaled": false,
+    "active_training_process_modified": false,
+    "historical_v2_observer_modified": false,
+    "formal_checkout_modified": false,
+    "promotion_or_release_authorized": false,
+    "generation_quality_claim_allowed": false
+  },
+  "deployment": {
+    "bundle": {
+      "local_path": "C:/qbrecoverysupersessionv2/.codex-bundles/cofitok-recovery-supersession-3338f6c-from-a963ff4.bundle",
+      "remote_path": "/tmp/cofitok-recovery-supersession-3338f6c-from-a963ff4.bundle",
+      "bytes": 16079,
+      "sha256": "f32140154f2d0a78c65647c04aa3517534151c6b836ee11efd97c25502f77eca",
+      "prerequisite": "a963ff4bb91fd837f67856be996810ff45958712",
+      "advertised_revision": "3338f6c9474cae800df92fa6465039ccc578a424"
+    },
+    "checkout": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-3338f6c/CoFiTok-internal",
+      "branch": "fix/generation-recovery-supersession-v2",
+      "revision": "3338f6c9474cae800df92fa6465039ccc578a424",
+      "tree": "1a5498312264c923ca4a4db2f58d5d82b5cf0388",
+      "tracked_dirty": false
+    },
+    "rehearsal_evidence": {
+      "path": "artifacts/reports/generation/capacity_recovery_supersession_v2_2026-08-20/rehearsal_report.json",
+      "bytes": 5996,
+      "sha256": "3d6b03edb40bf7fb018c7367938dfa5ca6af1f87ab652662a827711ff1ba3747"
+    }
+  },
+  "v3_process_identity": {
+    "pid": 812832,
+    "parent_pid": 1,
+    "process_alive": true,
+    "start_time_local": "2026-08-20T11:51:53+08:00",
+    "start_ticks": 1684805252,
+    "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+    "cwd": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-3338f6c/CoFiTok-internal",
+    "cmdline_sha256": "69ac93e3483c97099b8508ee44aff742ac8884836691345469d1a0992f11798a",
+    "nice": 19,
+    "scheduler_class": "TS",
+    "io_class": "idle",
+    "thread_count": 1,
+    "cuda_visible_devices": "-1",
+    "pythonpath": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-3338f6c/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-3338f6c/CoFiTok-internal/src",
+    "pid_file": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_generation_pipeline_lineage_observer_v3.pid",
+      "bytes": 7,
+      "sha256": "fca5be84896cd576b5ee7daec94025796b959c64b62518b930b2acaeb78c755f",
+      "mode": "0644"
+    },
+    "lock": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/capacity_generation_pipeline_lineage_observer_v3.lock",
+      "fd": 9,
+      "device_inode": "2304:8595729046",
+      "bytes": 0,
+      "mode": "0644",
+      "fd_resolves_to_exact_lock": true
+    }
+  },
+  "observer_sources": {
+    "observer_cli": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-3338f6c/CoFiTok-internal/scripts/observe_generation_capacity_pipeline_lineage.py",
+      "sha256": "398dded9dfb478915ade010cdd7c2746ee03d9bafd9e7a244402d4b0f0119ab4"
+    },
+    "lineage_plan": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-3338f6c/CoFiTok-internal/configs/generation/diagnostics/capacity_generation_pipeline_lineage_v1.json",
+      "bytes": 4107,
+      "sha256": "f6e194873f8c526b79aa2380ede271a4319d985e8935aab2dc21ae2067e28c04"
+    },
+    "recovery_supersession_contract": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-3338f6c/CoFiTok-internal/configs/generation/diagnostics/quality_bridge_recovery_supersession_20260820_v2.json",
+      "bytes": 3520,
+      "sha256": "d42b3bca92087062eb8e2999ac9f1cd3be729bf72b9e3e4cb823d5544c67e379",
+      "schema_version": 2,
+      "current_run_manifest_policy": "mutable_semantic"
+    }
+  },
+  "frozen_poll_evidence": [
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/authority_transition_2026-08-20/capacity_generation_pipeline_lineage_observer_v3_poll_01.json",
+      "local_mirror": "artifacts/reports/generation/capacity_recovery_supersession_v2_2026-08-20/capacity_generation_pipeline_lineage_observer_v3_poll_01.json",
+      "bytes": 26002,
+      "sha256": "62e68acda9d85af4c278073f30b5f1aa1323dff5ac5ae26b1878ff907c5d8ea2",
+      "mode": "0444",
+      "observed_at": "2026-08-20T04:02:56.870164+00:00",
+      "status": "running",
+      "issues": [],
+      "recovery_stage_health": "running",
+      "recovery_stage_issues": [],
+      "original_resume_step": 20000,
+      "current_resume_step": 50000,
+      "current_metrics_reconciliation": "unchanged",
+      "trusted_checkpoint_step": 25000,
+      "live_cofitok_step": 58000,
+      "watchdog_target_step": 100000
+    },
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/authority_transition_2026-08-20/capacity_generation_pipeline_lineage_observer_v3_poll_02.json",
+      "local_mirror": "artifacts/reports/generation/capacity_recovery_supersession_v2_2026-08-20/capacity_generation_pipeline_lineage_observer_v3_poll_02.json",
+      "bytes": 26003,
+      "sha256": "9090ac41dd366875ba8f1ca02c1d539946401395ecaf53dede435c37acf26f69",
+      "mode": "0444",
+      "observed_at": "2026-08-20T04:03:57.079769+00:00",
+      "status": "running",
+      "issues": [],
+      "recovery_stage_health": "running",
+      "recovery_stage_issues": [],
+      "original_resume_step": 20000,
+      "current_resume_step": 50000,
+      "current_metrics_reconciliation": "unchanged",
+      "trusted_checkpoint_step": 25000,
+      "live_cofitok_step": 58000,
+      "watchdog_target_step": 100000
+    },
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/authority_transition_2026-08-20/capacity_generation_pipeline_lineage_observer_v3_poll_03.json",
+      "local_mirror": "artifacts/reports/generation/capacity_recovery_supersession_v2_2026-08-20/capacity_generation_pipeline_lineage_observer_v3_poll_03.json",
+      "bytes": 26004,
+      "sha256": "8bbffcc995859f39032a455043e43ace0b230338b7c878ca4a5b131db41fbaae",
+      "mode": "0444",
+      "observed_at": "2026-08-20T04:05:57.511662+00:00",
+      "status": "running",
+      "issues": [],
+      "recovery_stage_health": "running",
+      "recovery_stage_issues": [],
+      "original_resume_step": 20000,
+      "current_resume_step": 50000,
+      "current_metrics_reconciliation": "unchanged",
+      "trusted_checkpoint_step": 25000,
+      "live_cofitok_step": 58100,
+      "watchdog_target_step": 100000
+    },
+    {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/authority_transition_2026-08-20/capacity_generation_pipeline_lineage_observer_v3_poll_04.json",
+      "local_mirror": "artifacts/reports/generation/capacity_recovery_supersession_v2_2026-08-20/capacity_generation_pipeline_lineage_observer_v3_poll_04.json",
+      "bytes": 26003,
+      "sha256": "4903d4bd52b45a30e3b5204bf4ad3dbb8ec72bb1886427713c5103decb767009",
+      "mode": "0444",
+      "observed_at": "2026-08-20T04:06:57.720566+00:00",
+      "status": "running",
+      "issues": [],
+      "recovery_stage_health": "running",
+      "recovery_stage_issues": [],
+      "original_resume_step": 20000,
+      "current_resume_step": 50000,
+      "current_metrics_reconciliation": "unchanged",
+      "trusted_checkpoint_step": 25000,
+      "live_cofitok_step": 58100,
+      "watchdog_target_step": 100000
+    }
+  ],
+  "recovery_lineage": {
+    "original_resume_step": 20000,
+    "original_metrics_reconciliation": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/metrics_resume_reconciliation_00020000_6b3c4bca8ffa.json",
+      "bytes": 613,
+      "sha256": "dfe268c1defbaaa424cb93df108deb1421080f9568c47b02f1607568d6f57aca"
+    },
+    "original_orphan_archive": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/train_metrics_orphaned_at_resume_00020000_6b3c4bca8ffa.jsonl",
+      "bytes": 3692,
+      "sha256": "6b3c4bca8ffa99e814ee77559d140f3a0db6cf7b78a8d78e58ef1b716e2f1cec"
+    },
+    "trusted_checkpoint_step": 25000,
+    "trusted_checkpoint_audit": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/checkpoint_audits/cofitok_checkpoint_step_00025000_physical_integrity_audit.json",
+      "bytes": 5222,
+      "sha256": "3b89622a286d5ef6b7244daa47a1866f272da447b564887ad477c53138a6d1f9"
+    },
+    "current_resume_step": 50000,
+    "current_metrics_reconciliation": "unchanged",
+    "current_run_manifest": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/run_manifest.json",
+      "policy": "mutable_semantic",
+      "snapshot_bytes": 8519,
+      "snapshot_sha256": "32b0999246926f703b130daac11356259e0b8877cb7b05e7c2fd6c7596166a23"
+    }
+  },
+  "preserved_v2_false_failure": {
+    "pid": 765120,
+    "parent_pid": 1,
+    "process_alive": true,
+    "start_ticks": 1662539144,
+    "cmdline_sha256": "da587df4220c3c3597fc5d7d532fe1293b4ff7362d318ad5bd43811b1b97540e",
+    "frozen_report": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/authority_transition_2026-08-20/capacity_generation_pipeline_lineage_observer_v2_false_failure.json",
+      "bytes": 20928,
+      "sha256": "ee905d9254739f470543122bd9197417176d5c2d4e68816a1544bdd841f17ed7",
+      "mode": "0444"
+    },
+    "signaled_or_modified_by_v3_deployment": false,
+    "interpretation": "The v2 report is retained as historical evidence of a schema-v1 false failure. It is not the operational verdict for the current exact-resume lineage."
+  },
+  "formal_checkout_snapshot": {
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "branch": "scale/generative-system",
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tree": "659fa94726c4aec0afef49904f82b828bb62872b",
+    "tracked_dirty": false,
+    "porcelain_mode": "git status --porcelain=v1",
+    "porcelain_count": 89,
+    "porcelain_sha256": "18e5981f22a2ac255c7f60343429daa6ceea86412b1d7bd09bc474f2faf74004",
+    "modified_by_transition": false
+  },
+  "active_training_snapshot": {
+    "quality_bridge_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "pair_status": "running",
+    "pair_stage": "cofitok_training",
+    "trainer_pid": 543758,
+    "trainer_parent_pid": 543637,
+    "trainer_start_ticks": 1682584133,
+    "trainer_cmdline_sha256": "40b4fa20dbbf9b289aefe88d4052d713c3d9f7629ef2c21b5fc33d3ea42b9e29",
+    "sole_gpu_compute_process": true,
+    "gpu_memory_mib": 89398,
+    "live_cofitok_step_in_last_frozen_poll": 58100,
+    "dense_completed_step": 50000,
+    "target_step_per_method": 100000,
+    "trainer_signaled_or_modified": false
+  },
+  "claim_boundary": {
+    "v3_operational_authority_established": true,
+    "recovery_false_failure_repaired": true,
+    "active_quality_bridge_complete": false,
+    "terminal_100k_evaluation_complete": false,
+    "generation_advantage_established": false,
+    "capacity_probe_authorized_by_this_receipt": false,
+    "full_300k_authorized_by_this_receipt": false,
+    "promotion_or_release_authorized_by_this_receipt": false
+  }
+}

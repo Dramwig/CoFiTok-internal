@@ -1,0 +1,552 @@
+{
+  "authorization_boundary": {
+    "atomic_observer_report_write_allowed": true,
+    "gpu_allocation_allowed": false,
+    "process_signaling_allowed": false,
+    "promotion_or_release_allowed": false,
+    "read_only_status_observation_allowed": true,
+    "sampling_or_evaluation_launch_allowed": false,
+    "training_launch_allowed": false,
+    "unrelated_gpu_process_modification_allowed": false
+  },
+  "complete": false,
+  "detail": "waiting_at:quality_bridge_100k_recovery:superseded_by_source_bound_exact_resume:existing_quality_bridge_execution_is_active",
+  "disk": {
+    "free_bytes": 311476002816,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
+    "total_bytes": 1073741824000,
+    "used_bytes": 762265821184
+  },
+  "formal_checkout": {
+    "branch": "scale/generative-system",
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "porcelain_count": 89,
+    "porcelain_sha256": "18e5981f22a2ac255c7f60343429daa6ceea86412b1d7bd09bc474f2faf74004",
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tracked_dirty": false,
+    "tree": "659fa94726c4aec0afef49904f82b828bb62872b"
+  },
+  "gpu": {
+    "compute_processes": [
+      {
+        "command": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_generation.py --config configs/generation/imagenet256_stability_quality_bridge_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000 --resume auto",
+        "cwd": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+        "pid": 543758,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "start_ticks": 1682584133,
+        "used_memory_mib": 89398
+      }
+    ],
+    "query_complete": true
+  },
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "issues": [],
+  "observed_at": "2026-08-20T04:03:57.079769+00:00",
+  "observer": {
+    "output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_generation_pipeline_lineage_observer_v3.json",
+    "pid": 812832,
+    "poll_seconds": 60.0,
+    "recovery_supersession_contract": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-3338f6c/CoFiTok-internal/configs/generation/diagnostics/quality_bridge_recovery_supersession_20260820_v2.json",
+    "timeout_seconds": 31536000.0
+  },
+  "observer_git": {
+    "branch": "fix/generation-recovery-supersession-v2",
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-3338f6c/CoFiTok-internal",
+    "revision": "3338f6c9474cae800df92fa6465039ccc578a424",
+    "tracked_dirty": false,
+    "tree": "1a5498312264c923ca4a4db2f58d5d82b5cf0388"
+  },
+  "plan": {
+    "bytes": 4107,
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-3338f6c/CoFiTok-internal/configs/generation/diagnostics/capacity_generation_pipeline_lineage_v1.json",
+    "sha256": "f6e194873f8c526b79aa2380ede271a4319d985e8935aab2dc21ae2067e28c04"
+  },
+  "progress": {
+    "blocking_stage_count": 14,
+    "current_stage": "quality_bridge_100k_recovery",
+    "current_stage_detail": "superseded_by_source_bound_exact_resume:existing_quality_bridge_execution_is_active",
+    "current_stage_index": 0,
+    "current_stage_status": "running",
+    "fraction": 0.0,
+    "successful_blocking_stage_count": 0
+  },
+  "role": "capacity_generation_pipeline_lineage_observer",
+  "schema_version": 1,
+  "stages": [
+    {
+      "age_seconds": 28.413373,
+      "attempt": 0,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "superseded_by_source_bound_exact_resume:existing_quality_bridge_execution_is_active",
+      "expected_role": "cofitok_quality_bridge_100k_bounded_recovery_supervisor",
+      "health": "running",
+      "identity": {
+        "bytes": 19947,
+        "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor_v2_status.json",
+        "sha256": "e47ad69e9cd3cdbe690f560615e0538e52254f46ad86104de840df0ee4129326"
+      },
+      "index": 0,
+      "issues": [],
+      "name": "quality_bridge_100k_recovery",
+      "pid": 630988,
+      "process_alive": true,
+      "role": "cofitok_quality_bridge_100k_bounded_recovery_supervisor_v2",
+      "status": "running",
+      "status_path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor_status.json",
+      "supersession": {
+        "claim_boundary": {
+          "gpu_allocation_allowed": false,
+          "process_signaling_allowed": false,
+          "promotion_or_release_allowed": false,
+          "read_only_observation_only": true,
+          "sampling_or_evaluation_launch_allowed": false,
+          "training_launch_allowed": false
+        },
+        "contract": {
+          "bytes": 3520,
+          "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-3338f6c/CoFiTok-internal/configs/generation/diagnostics/quality_bridge_recovery_supersession_20260820_v2.json",
+          "sha256": "d42b3bca92087062eb8e2999ac9f1cd3be729bf72b9e3e4cb823d5544c67e379"
+        },
+        "current_metrics_reconciliation": {
+          "orphan_archive": null,
+          "report": null,
+          "resume_step": 50000,
+          "status": "unchanged"
+        },
+        "current_resume_checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00050000.pt",
+        "current_resume_step": 50000,
+        "execution_status": {
+          "bytes": 644,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/execution_status.json",
+          "sha256": "19dfcd2aa31c3fa5ab513122003d15cbe6df249ef318e07104d7001e1db3be48"
+        },
+        "live_cofitok_step": 58000,
+        "metrics_reconciliation": {
+          "bytes": 613,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/metrics_resume_reconciliation_00020000_6b3c4bca8ffa.json",
+          "sha256": "dfe268c1defbaaa424cb93df108deb1421080f9568c47b02f1607568d6f57aca"
+        },
+        "original_metrics_reconciliation": {
+          "bytes": 613,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/metrics_resume_reconciliation_00020000_6b3c4bca8ffa.json",
+          "sha256": "dfe268c1defbaaa424cb93df108deb1421080f9568c47b02f1607568d6f57aca"
+        },
+        "original_orphan_archive": {
+          "bytes": 3692,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/train_metrics_orphaned_at_resume_00020000_6b3c4bca8ffa.jsonl",
+          "sha256": "6b3c4bca8ffa99e814ee77559d140f3a0db6cf7b78a8d78e58ef1b716e2f1cec"
+        },
+        "original_resume_step": 20000,
+        "pair_monitor": {
+          "bytes": 54133,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/pair_monitor.json",
+          "sha256": "0ec24d6b75d4ff88396b955f2eeefc47aca8fd69cef953f1cfb8d77d37a3f02c"
+        },
+        "resume_step": 20000,
+        "run_manifest": {
+          "bytes": 8519,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/run_manifest.json",
+          "policy": "mutable_semantic",
+          "sha256": "32b0999246926f703b130daac11356259e0b8877cb7b05e7c2fd6c7596166a23"
+        },
+        "status": "pass",
+        "successor_deployment_receipt": {
+          "bytes": 3714,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/recovery_incident_2026-08-17_pin_memory/recovery_supervisor_v2_deployment_receipt.json",
+          "sha256": "c20cf6193db929adbecd2dbe2822deb907f6aedfb29095175317524b1a6cc075"
+        },
+        "successor_status": {
+          "bytes": 19947,
+          "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor_v2_status.json",
+          "sha256": "e47ad69e9cd3cdbe690f560615e0538e52254f46ad86104de840df0ee4129326"
+        },
+        "superseded_failure": {
+          "bytes": 4118,
+          "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor_status.json",
+          "sha256": "035037c1e1c4cca78ebd0429c85218dce5ecf08435523ae3d89b6ee22e9e9a88"
+        },
+        "trusted_checkpoint_audit": {
+          "bytes": 5222,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/checkpoint_audits/cofitok_checkpoint_step_00025000_physical_integrity_audit.json",
+          "sha256": "3b89622a286d5ef6b7244daa47a1866f272da447b564887ad477c53138a6d1f9"
+        },
+        "trusted_checkpoint_step": 25000,
+        "verified_at": "2026-08-20T04:03:57.079769+00:00",
+        "watchdog_pid": 543637,
+        "watchdog_status": {
+          "bytes": 2066,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_watchdog_step_00100000.json",
+          "sha256": "2ca70ec648e5d27ac8a7ad3b7cab1c90016c072849d566f53b4025f5ba45cafc"
+        },
+        "watchdog_target_step": 100000
+      },
+      "updated_at": "2026-08-20T04:03:28.666396+00:00"
+    },
+    {
+      "age_seconds": 31.194818,
+      "attempt": null,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_quality_bridge_result",
+      "expected_role": "cofitok_quality_bridge_followup_decision_waiter",
+      "health": "waiting",
+      "identity": {
+        "bytes": 1406,
+        "path": "/tmp/cofitok-quality-bridge-followup-decision-9b02fa8/wait_for_quality_bridge_result_status.json",
+        "sha256": "91ec8c5d940e7df95965795c6049e48eac6a63cd3c788017c842570155fe7304"
+      },
+      "index": 1,
+      "issues": [],
+      "name": "quality_bridge_followup_decision",
+      "pid": 11777,
+      "process_alive": true,
+      "role": "cofitok_quality_bridge_followup_decision_waiter",
+      "status": "waiting",
+      "status_path": "/tmp/cofitok-quality-bridge-followup-decision-9b02fa8/wait_for_quality_bridge_result_status.json",
+      "updated_at": "2026-08-20T04:03:25.884951+00:00"
+    },
+    {
+      "age_seconds": 41.238487,
+      "attempt": null,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_quality_bridge_followup_decision",
+      "expected_role": "generation_capacity_probe_preparation_waiter",
+      "health": "waiting",
+      "identity": {
+        "bytes": 1210,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/preparation_waiter_status.json",
+        "sha256": "246df7dc63723a69d43f0c5598f9e9bbf507982069bc261cbd28acbdabde297d"
+      },
+      "index": 2,
+      "issues": [],
+      "name": "capacity_probe_preparation",
+      "pid": 11787,
+      "process_alive": true,
+      "role": "generation_capacity_probe_preparation_waiter",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/preparation_waiter_status.json",
+      "updated_at": "2026-08-20T04:03:15.841282+00:00"
+    },
+    {
+      "age_seconds": 23.354312,
+      "attempt": 0,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_source_bound_capacity_preparation",
+      "expected_role": "generation_capacity_probe_execution_supervisor",
+      "health": "waiting",
+      "identity": {
+        "bytes": 2390,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/execution_supervisor_status.json",
+        "sha256": "6a66ae8f67cc6821eb36bc70ee6dadc6de444e248873966ba9f28f8b059dfeea"
+      },
+      "index": 3,
+      "issues": [],
+      "name": "capacity_probe_10k_execution",
+      "pid": 667226,
+      "process_alive": true,
+      "role": "generation_capacity_probe_execution_supervisor",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/execution_supervisor_status.json",
+      "updated_at": "2026-08-20T04:03:33.725457+00:00"
+    },
+    {
+      "age_seconds": 15.17196,
+      "attempt": null,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_exact_capacity_probe_result",
+      "expected_role": "generation_capacity_scaling_decision_waiter",
+      "health": "waiting",
+      "identity": {
+        "bytes": 1252,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_scaling_decision_waiter_status.json",
+        "sha256": "8fe1d0a5aff37524d221be5679536a89cfbe4c2ccf75805a79df813accb14ec0"
+      },
+      "index": 4,
+      "issues": [],
+      "name": "capacity_scaling_decision",
+      "pid": 11945,
+      "process_alive": true,
+      "role": "generation_capacity_scaling_decision_waiter",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_scaling_decision_waiter_status.json",
+      "updated_at": "2026-08-20T04:03:41.907809+00:00"
+    },
+    {
+      "age_seconds": 46.556677,
+      "attempt": 0,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_source_replayed_capacity_scaling_decision",
+      "expected_role": "generation_capacity_scaling_50k_supervisor",
+      "health": "waiting",
+      "identity": {
+        "bytes": 1416,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_scaling_50k_supervisor_status.json",
+        "sha256": "5505b499731420b1b1142660cb84a26d0f0db3408131cc5de96182bab1b252b4"
+      },
+      "index": 5,
+      "issues": [],
+      "name": "capacity_scaling_50k_execution",
+      "pid": 351049,
+      "process_alive": true,
+      "role": "generation_capacity_scaling_50k_supervisor",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_scaling_50k_supervisor_status.json",
+      "updated_at": "2026-08-20T04:03:10.523092+00:00"
+    },
+    {
+      "age_seconds": 8.932925,
+      "attempt": null,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_completed_capacity_scaling_50k_execution",
+      "expected_role": "capacity_completion_100k_source_replay_waiter",
+      "health": "waiting",
+      "identity": {
+        "bytes": 1183,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_completion_100k_decision_waiter_status.json",
+        "sha256": "9562b5f18ecf82d8cfd797d20fa6615b939e6136b8fb456a69c1bb427e3f637b"
+      },
+      "index": 6,
+      "issues": [],
+      "name": "capacity_completion_100k_decision",
+      "pid": 12114,
+      "process_alive": true,
+      "role": "capacity_completion_100k_source_replay_waiter",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_completion_100k_decision_waiter_status.json",
+      "updated_at": "2026-08-20T04:03:48.146844+00:00"
+    },
+    {
+      "age_seconds": 42.493607,
+      "attempt": 0,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_source_replayed_capacity_completion_decision",
+      "expected_role": "generation_capacity_completion_100k_supervisor",
+      "health": "waiting",
+      "identity": {
+        "bytes": 1521,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_completion_100k_supervisor_status.json",
+        "sha256": "e87d953d8fcc8862f045b3505a55b404dd97c41a2d66ce34ca5519707281ae7b"
+      },
+      "index": 7,
+      "issues": [],
+      "name": "capacity_completion_100k_execution",
+      "pid": 351145,
+      "process_alive": true,
+      "role": "generation_capacity_completion_100k_supervisor",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_completion_100k_supervisor_status.json",
+      "updated_at": "2026-08-20T04:03:14.586162+00:00"
+    },
+    {
+      "age_seconds": 9.903758,
+      "attempt": null,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_completed_capacity_completion_100k_execution",
+      "expected_role": "capacity_completion_100k_result_source_replay_waiter",
+      "health": "waiting",
+      "identity": {
+        "bytes": 2531,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_completion_100k_result_waiter_status.json",
+        "sha256": "0c7be42e8aaada3e8131248d33e30360a8ac10cfd25b49b75a6465a68674fa13"
+      },
+      "index": 8,
+      "issues": [],
+      "name": "capacity_completion_100k_result",
+      "pid": 12221,
+      "process_alive": true,
+      "role": "capacity_completion_100k_result_source_replay_waiter",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_completion_100k_result_waiter_status.json",
+      "updated_at": "2026-08-20T04:03:47.176011+00:00"
+    },
+    {
+      "age_seconds": 8.070208,
+      "attempt": null,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_source_replayed_capacity_completion_result",
+      "expected_role": "capacity_full_300k_readiness_decision_waiter",
+      "health": "waiting",
+      "identity": {
+        "bytes": 1372,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_readiness_decision_waiter_status.json",
+        "sha256": "46c0cf0d4e5cab801168013cfcfa78cc227644ea736d70328d87b1efed052ef6"
+      },
+      "index": 9,
+      "issues": [],
+      "name": "capacity_full_300k_readiness_decision",
+      "pid": 12233,
+      "process_alive": true,
+      "role": "capacity_full_300k_readiness_decision_waiter",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_readiness_decision_waiter_status.json",
+      "updated_at": "2026-08-20T04:03:49.009561+00:00"
+    },
+    {
+      "age_seconds": 32.492378,
+      "attempt": 0,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_source_bound_capacity_full_readiness_decision",
+      "expected_role": "capacity_full_300k_readiness_supervisor",
+      "health": "waiting",
+      "identity": {
+        "bytes": 4261,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_readiness_supervisor_status.json",
+        "sha256": "a2663ec10fa04fcac314939a26a6d8f8162d0a4242214946117bac4201928a82"
+      },
+      "index": 10,
+      "issues": [],
+      "name": "capacity_full_300k_readiness",
+      "pid": 351248,
+      "process_alive": true,
+      "role": "capacity_full_300k_readiness_supervisor",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_readiness_supervisor_status.json",
+      "updated_at": "2026-08-20T04:03:24.587391+00:00"
+    },
+    {
+      "age_seconds": 28.198252,
+      "attempt": 0,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_passed_capacity_full_readiness",
+      "expected_role": "capacity_full_300k_training_supervisor",
+      "health": "waiting",
+      "identity": {
+        "bytes": 7605,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_training_supervisor_status.json",
+        "sha256": "4f71fb0f61de141d6794627b6fd121a469d530577035032da3e8e55e49c6efbb"
+      },
+      "index": 11,
+      "issues": [],
+      "name": "capacity_full_300k_training",
+      "pid": 351260,
+      "process_alive": true,
+      "role": "capacity_full_300k_training_supervisor",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_training_supervisor_status.json",
+      "updated_at": "2026-08-20T04:03:28.881517+00:00"
+    },
+    {
+      "age_seconds": 33.750125,
+      "attempt": 0,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_passed_capacity_full_training",
+      "expected_role": "capacity_full_300k_posteval_supervisor",
+      "health": "waiting",
+      "identity": {
+        "bytes": 2474,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_posteval_supervisor_status.json",
+        "sha256": "16afb6e29906f96970e44855aefca24828be70c471ef5bc5021d531037bb0b6e"
+      },
+      "index": 12,
+      "issues": [],
+      "name": "capacity_full_300k_posteval",
+      "pid": 409865,
+      "process_alive": true,
+      "role": "capacity_full_300k_posteval_supervisor",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_posteval_supervisor_status.json",
+      "updated_at": "2026-08-20T04:03:23.329644+00:00"
+    },
+    {
+      "age_seconds": 30.825948,
+      "attempt": 0,
+      "blocking": true,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_capacity_full_final_gate",
+      "expected_role": "capacity_full_300k_finalization_supervisor",
+      "health": "waiting",
+      "identity": {
+        "bytes": 3131,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_finalization_supervisor_status.json",
+        "sha256": "844dcc8767cd004c00ef88bffc1077343f364e43b2897c92e607a1ac057edddb"
+      },
+      "index": 13,
+      "issues": [],
+      "name": "capacity_full_300k_finalization",
+      "pid": 409956,
+      "process_alive": true,
+      "role": "capacity_full_300k_finalization_supervisor",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_finalization_supervisor_status.json",
+      "updated_at": "2026-08-20T04:03:26.253821+00:00"
+    },
+    {
+      "age_seconds": 127123.622953,
+      "attempt": null,
+      "blocking": false,
+      "classification": "success",
+      "decision": null,
+      "detail": "matched_checkpoint_references_preserved",
+      "expected_role": "generation_checkpoint_reference_waiter",
+      "health": "pass",
+      "identity": {
+        "bytes": 2716,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/capacity_probe_references/waiter_status.json",
+        "sha256": "65aff89b10bd8336f6cb9fff339c547805801eab0288d57adc8ba45d2f65b76e"
+      },
+      "index": 14,
+      "issues": [],
+      "name": "quality_bridge_step10k_reference_preservation",
+      "pid": 12536,
+      "process_alive": false,
+      "role": "generation_checkpoint_reference_waiter",
+      "status": "completed",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/capacity_probe_references/waiter_status.json",
+      "updated_at": "2026-08-18T16:45:13.456816+00:00"
+    },
+    {
+      "age_seconds": 28.125725,
+      "attempt": null,
+      "blocking": false,
+      "classification": "active",
+      "decision": null,
+      "detail": "waiting_for_exact_quality_bridge_terminal_result",
+      "expected_role": "quality_bridge_terminal_requested_class_visual_audit_waiter",
+      "health": "waiting",
+      "identity": {
+        "bytes": 1676,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/requested_class_visual_audit_waiter_status.json",
+        "sha256": "3360d9e07014c12e9888c2e55ad30f14bb8e2187d21f7aab1db439c682cc34aa"
+      },
+      "index": 15,
+      "issues": [],
+      "name": "quality_bridge_requested_class_visual_audit",
+      "pid": 12601,
+      "process_alive": true,
+      "role": "quality_bridge_terminal_requested_class_visual_audit_waiter",
+      "status": "waiting",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/requested_class_visual_audit_waiter_status.json",
+      "updated_at": "2026-08-20T04:03:28.954044+00:00"
+    }
+  ],
+  "status": "running",
+  "thresholds": {
+    "active_status_stale_seconds": 600.0
+  }
+}
