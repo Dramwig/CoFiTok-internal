@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "role": "generation_training_exposure_qualification_linux_rehearsal",
+  "implementation_git": {
+    "branch": "analysis/generation-training-exposure-qualification-v1",
+    "revision": "9f6b2f2e8b871d627a4ad93944cd0ff832a971ed",
+    "tracked_dirty": false,
+    "tree": "15e59dcfd89b7c346d88b4050e9ffded7a84a7b9"
+  },
+  "bundle": {
+    "advertised_revision": "9f6b2f2e8b871d627a4ad93944cd0ff832a971ed",
+    "bytes": 22178,
+    "prerequisite_revision": "85e3ece1196fd318cd6823439824e19fca4275a3",
+    "sha256": "2fec1685e8a92a4d7e5181c80129ccf64f47f775491ab1b1f177696ba536d8b6",
+    "verified_locally": true,
+    "verified_on_server": true
+  },
+  "selection": {
+    "dataset": "imagenet_256",
+    "effective_batch_size": 64,
+    "historical_10pct_reference_equivalent_epochs": 24.96859419012024,
+    "historical_exposure_match_steps": 499828,
+    "model_base_channels": 128,
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_300k_base128_exposure_qualification_v1",
+    "residual_underexposure_hypothesis_after_300k": true,
+    "target_full_data_equivalent_epochs": 14.986336675858807,
+    "target_images_seen_per_method": 19200000,
+    "target_steps": 300000
+  },
+  "verification": {
+    "git_diff_check": "pass",
+    "linux_bash_syntax": "pass",
+    "linux_full_pytest": {
+      "passed": 1249,
+      "seconds": 159.1,
+      "skipped": 2,
+      "status": "pass"
+    },
+    "linux_focused_pytest": {
+      "passed": 25,
+      "status": "pass"
+    },
+    "local_compileall": "pass",
+    "local_focused_pytest": {
+      "passed": 25,
+      "status": "pass"
+    },
+    "local_full_pytest": {
+      "failed": 4,
+      "failure_scope": "pre-existing paper sibling-layout tests cannot resolve C:/paper from the standalone C:/qbexposurequalification worktree",
+      "passed": 1241,
+      "skipped": 6,
+      "status": "environment_layout_only_failure"
+    }
+  },
+  "server_safety": {
+    "cuda_visible_devices": "-1",
+    "formal_checkout_head_after": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "formal_checkout_head_before": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "formal_checkout_modified": false,
+    "gpu_execution_performed": false,
+    "gpu_training_pid_after": 543758,
+    "gpu_training_pid_before": 543758,
+    "rehearsal_checkout": "/tmp/cofitok-exposure-rehearsal-9f6b2f2/CoFiTok-internal",
+    "rehearsal_tracked_dirty_after": false
+  },
+  "authorization_boundary": {
+    "capacity_result_required": true,
+    "exact_execution_authorization_required": true,
+    "formal_generation_claim_allowed": false,
+    "full_300k_launch_allowed": false,
+    "gpu_execution_allowed": false,
+    "preparation_only": true,
+    "release_authorization_allowed": false,
+    "sampling_launch_allowed": false,
+    "training_launch_allowed": false
+  }
+}
