@@ -71,6 +71,18 @@ artifacts/reports/generation/
 quality_bridge_90k_95k_100k_checkpoint_waiters_deployment_2026-08-21.json
 ```
 
+An immutable copy was transferred into the authoritative remote output tree
+after first proving that the destination did not exist:
+
+```text
+path:
+  /root/autodl-tmp/CoFiTok/checkpoints/generation/
+  stability_full_data_100k_base128_quality_bridge_v1/reports/
+  checkpoint_audits/deployment_receipt_90k_95k_100k_2026-08-21.json
+bytes: 6,432
+SHA256: 47611e7f21d6f04e24148ec4a8ee55ba7d538cecd80793f28f20aa413de06a70
+```
+
 ## Resource and authorization boundary
 
 All six waiters were verified after launch with:
