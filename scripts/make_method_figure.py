@@ -12,6 +12,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 CANVAS_WIDTH = 1760
 CANVAS_HEIGHT = 1080
+METHOD_SUBTITLE = (
+    "Dense pixel-space noise prediction is factorized into ordered restricted "
+    "denoising components."
+)
 
 
 @dataclass(frozen=True)
@@ -106,7 +110,7 @@ def build_method_scene() -> tuple[list[Box], list[Arrow]]:
                 120,
                 110,
                 token_titles[index],
-                ("compressed", "negative-noise token") if token_titles[index] != "..." else ("ordered", "sequence"),
+                ("ordered", "denoising token") if token_titles[index] != "..." else ("ordered", "sequence"),
                 "#fff7ed",
                 "#f97316",
             )
@@ -308,7 +312,7 @@ def render_method_png(output_path: Path, boxes: list[Box], arrows: list[Arrow]) 
     draw.text((60, 34), "CoFiTok method overview", fill="#111827", font=title_font)
     draw.text(
         (60, 82),
-        "Dense pixel-space noise prediction is factorized into ordered compressed denoising components.",
+        METHOD_SUBTITLE,
         fill="#4b5563",
         font=subtitle_font,
     )
@@ -361,7 +365,7 @@ def render_method_svg(output_path: Path, boxes: list[Box], arrows: list[Arrow]) 
         '<text x="60" y="64" font-family="Arial, DejaVu Sans, sans-serif" font-size="38" '
         'font-weight="700" fill="#111827">CoFiTok method overview</text>',
         '<text x="60" y="102" font-family="Arial, DejaVu Sans, sans-serif" font-size="20" '
-        'fill="#4b5563">Dense pixel-space noise prediction is factorized into ordered compressed denoising components.</text>',
+        f'fill="#4b5563">{escape(METHOD_SUBTITLE)}</text>',
     ]
     for arrow in arrows:
         dash = ' stroke-dasharray="12 8"' if arrow.dashed else ""
@@ -398,6 +402,7 @@ def make_method_figure(output_dir: Path) -> dict[str, Any]:
     manifest = {
         "artifact_count": 2,
         "canvas": {"width": CANVAS_WIDTH, "height": CANVAS_HEIGHT},
+        "subtitle": METHOD_SUBTITLE,
         "figures": [
             {"path": png_path.as_posix(), "format": "png", "role": "raster draft"},
             {"path": svg_path.as_posix(), "format": "svg", "role": "vector draft"},

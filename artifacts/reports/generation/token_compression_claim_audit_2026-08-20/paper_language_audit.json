@@ -1,0 +1,159 @@
+{
+  "decision": {
+    "aggregate_sequence_compression_claim_allowed": false,
+    "compatible": false,
+    "required_locked_evidence_wording": "ordered restricted denoising components",
+    "source_count": 3
+  },
+  "layout_evidence": {
+    "aggregate_sequence_compression_supported": false,
+    "per_token_compression_supported": false
+  },
+  "policy": {
+    "layout_evidence_controls_compression_wording": true,
+    "locked_metric_artifacts_must_not_be_rewritten": true,
+    "mechanism_metrics_are_not_invalidated_by_layout_wording_changes": true
+  },
+  "role": "cofitok_paper_token_compression_language_audit",
+  "schema_version": 1,
+  "sources": [
+    {
+      "compatible": false,
+      "source": {
+        "bytes": 26647,
+        "path": "C:\\Users\\17194\\Desktop\\PaperFiled\\CoFiTok\\paper\\latex\\main.tex",
+        "sha256": "d73e829739db55dee86047357c98c439bf25941e385a033a7beb058cf2b1d27b"
+      },
+      "unsupported_aggregate_sequence_compression_wording": [],
+      "unsupported_per_token_compression_wording": [
+        {
+          "column": 1,
+          "line": 43,
+          "match": "compressed negative-noise components",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "compressed negative-noise components. Each token is expanded by a restricted,"
+        },
+        {
+          "column": 27,
+          "line": 75,
+          "match": "compressed negative-noise token",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "where each $z^{(k)}$ is a compressed negative-noise token and $S_k$ expands only"
+        },
+        {
+          "column": 10,
+          "line": 105,
+          "match": "compressed denoising-token components",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "sum of compressed denoising-token components."
+        },
+        {
+          "column": 1,
+          "line": 126,
+          "match": "compressed negative-noise component",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "compressed negative-noise component that directly contributes to the pixel-space"
+        },
+        {
+          "column": 44,
+          "line": 150,
+          "match": "compressed negative-noise components",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "mechanism. \\method{} tokens are continuous compressed negative-noise components,"
+        },
+        {
+          "column": 3,
+          "line": 180,
+          "match": "compressed denoising tokens",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "compressed denoising tokens. The predictor may be expressive, but each"
+        },
+        {
+          "column": 13,
+          "line": 561,
+          "match": "compressed denoising tokens",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "sequence of compressed denoising tokens. Each token is expanded by a restricted,"
+        }
+      ]
+    },
+    {
+      "compatible": false,
+      "source": {
+        "bytes": 27183,
+        "path": "C:\\Users\\17194\\Desktop\\PaperFiled\\CoFiTok\\paper\\venues\\aaai27\\main.tex",
+        "sha256": "d63ae7b2509166ba222f6fa63b3c1667794ab80b3a2424eae67116bd0107646a"
+      },
+      "unsupported_aggregate_sequence_compression_wording": [],
+      "unsupported_per_token_compression_wording": [
+        {
+          "column": 1,
+          "line": 44,
+          "match": "compressed negative-noise components",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "compressed negative-noise components. Each token is expanded by a restricted,"
+        },
+        {
+          "column": 27,
+          "line": 76,
+          "match": "compressed negative-noise token",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "where each $z^{(k)}$ is a compressed negative-noise token and $S_k$ expands only"
+        },
+        {
+          "column": 10,
+          "line": 105,
+          "match": "compressed denoising-token components",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "sum of compressed denoising-token components."
+        },
+        {
+          "column": 1,
+          "line": 127,
+          "match": "compressed negative-noise component",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "compressed negative-noise component that directly contributes to the pixel-space"
+        },
+        {
+          "column": 44,
+          "line": 151,
+          "match": "compressed negative-noise components",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "mechanism. \\method{} tokens are continuous compressed negative-noise components,"
+        },
+        {
+          "column": 3,
+          "line": 181,
+          "match": "compressed denoising tokens",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "compressed denoising tokens. The predictor may be expressive, but each"
+        },
+        {
+          "column": 13,
+          "line": 541,
+          "match": "compressed denoising tokens",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "sequence of compressed denoising tokens. Each token is expanded by a restricted,"
+        }
+      ]
+    },
+    {
+      "compatible": false,
+      "source": {
+        "bytes": 2975,
+        "path": "C:\\Users\\17194\\Desktop\\PaperFiled\\CoFiTok\\paper\\citation_audit.md",
+        "sha256": "167a2fa7eb53183b6e2c630c4f906da737124192039c86722b2ae2dbcb39a7d9"
+      },
+      "unsupported_aggregate_sequence_compression_wording": [],
+      "unsupported_per_token_compression_wording": [
+        {
+          "column": 3,
+          "line": 28,
+          "match": "compressed negative-noise components",
+          "pattern": "\\bcompressed\\s+(?:negative-noise|denoising)(?:-token)?\\s+(?:component|components|token|tokens)\\b",
+          "text": "compressed negative-noise components."
+        }
+      ]
+    }
+  ]
+}

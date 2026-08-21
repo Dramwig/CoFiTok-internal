@@ -1,0 +1,77 @@
+{
+  "decision": {
+    "aggregate_sequence_compression_claim_allowed": false,
+    "compatible": true,
+    "required_locked_evidence_wording": "ordered restricted denoising components",
+    "source_count": 5
+  },
+  "layout_evidence": {
+    "aggregate_sequence_compression_supported": false,
+    "per_token_compression_supported": false
+  },
+  "policy": {
+    "layout_evidence_controls_compression_wording": true,
+    "locked_metric_artifacts_must_not_be_rewritten": true,
+    "mechanism_metrics_are_not_invalidated_by_layout_wording_changes": true,
+    "text_bearing_method_figure_sources_are_guarded": true
+  },
+  "role": "cofitok_paper_token_compression_language_audit",
+  "schema_version": 2,
+  "sources": [
+    {
+      "compatible": true,
+      "source": {
+        "bytes": 26567,
+        "path": "C:\\Users\\17194\\Desktop\\PaperFiled\\CoFiTok\\paper\\latex\\main.tex",
+        "sha256": "0dbf8864289a641c23fb3a971214a1e7b6d4403123407aab0cb52ea7bfd085fb"
+      },
+      "unsupported_aggregate_sequence_compression_wording": [],
+      "unsupported_figure_compression_wording": [],
+      "unsupported_per_token_compression_wording": []
+    },
+    {
+      "compatible": true,
+      "source": {
+        "bytes": 27103,
+        "path": "C:\\Users\\17194\\Desktop\\PaperFiled\\CoFiTok\\paper\\venues\\aaai27\\main.tex",
+        "sha256": "ad40988008661737657b6b7a9da3670318746a9f33ef9388c6748b1e041f6694"
+      },
+      "unsupported_aggregate_sequence_compression_wording": [],
+      "unsupported_figure_compression_wording": [],
+      "unsupported_per_token_compression_wording": []
+    },
+    {
+      "compatible": true,
+      "source": {
+        "bytes": 3150,
+        "path": "C:\\Users\\17194\\Desktop\\PaperFiled\\CoFiTok\\paper\\citation_audit.md",
+        "sha256": "d628d4f577ac234621b80a3dcad59744b99b7385428a27339c50d4fe4b48775c"
+      },
+      "unsupported_aggregate_sequence_compression_wording": [],
+      "unsupported_figure_compression_wording": [],
+      "unsupported_per_token_compression_wording": []
+    },
+    {
+      "compatible": true,
+      "source": {
+        "bytes": 14939,
+        "path": "C:\\qbcompressionaudit\\scripts\\make_method_figure.py",
+        "sha256": "e92a291a9a3ace77520aee7ab164128c4fb70f2e05abde7cac1de02c7e5e81bb"
+      },
+      "unsupported_aggregate_sequence_compression_wording": [],
+      "unsupported_figure_compression_wording": [],
+      "unsupported_per_token_compression_wording": []
+    },
+    {
+      "compatible": true,
+      "source": {
+        "bytes": 16244,
+        "path": "C:\\qbcompressionaudit\\artifacts\\figures\\method_overview_2026-07-08\\method_overview.svg",
+        "sha256": "1b0a1539faa7014b4a1fe16a18a7dbfe57c651a9e1b388974e9cf8d92a8a8c65"
+      },
+      "unsupported_aggregate_sequence_compression_wording": [],
+      "unsupported_figure_compression_wording": [],
+      "unsupported_per_token_compression_wording": []
+    }
+  ]
+}

@@ -1,0 +1,884 @@
+{
+  "claim_boundary": {
+    "aggregate_sequence_compression_must_not_be_inferred_from_per_token_compression": true,
+    "layout_audit_only": true,
+    "quality_ordering_prefix_and_zero_shuffle_metrics_recomputed": false
+  },
+  "decision": {
+    "aggregate_sequence_compression_supported_by_all_reports": false,
+    "allowed_paper_wording": "ordered restricted denoising components",
+    "compressed_token_wording_requires_separate_evidence": true,
+    "per_token_compression_supported_by_all_reports": false,
+    "report_count": 14
+  },
+  "policy": {
+    "compression_is_evaluated_on_actual_emitted_token_shapes": true,
+    "per_token_and_aggregate_compression_are_separate_claims": true,
+    "synthesis_only_channel_masks_count_as_token_compression": false,
+    "synthesis_only_resampling_counts_as_token_compression": false
+  },
+  "reports": [
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 42.666666666666664,
+        "channels": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 3072,
+        "scalar_counts": [
+          16384,
+          16384,
+          16384,
+          16384,
+          16384,
+          16384,
+          16384,
+          16384
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 131072
+      },
+      "model_identity": {},
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 10563,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_cifar10_k8_denoisepath_p150_light_3k_2026-07-08/report.json",
+        "sha256": "447b8e884795f68243e0684dbf2b7eff84f1708c68eada016bd3c1a500e74b59"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 42.666666666666664,
+        "channels": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 12288,
+        "scalar_counts": [
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 524288
+      },
+      "model_identity": {},
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 9989,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_5k_2026-07-08/report.json",
+        "sha256": "539352315dfe66f2b8eb4577d3b48561df9340fafb66100b64bfbb57530f01cd"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 42.666666666666664,
+        "channels": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 12288,
+        "scalar_counts": [
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 524288
+      },
+      "model_identity": {},
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 10034,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_2026-07-08/report.json",
+        "sha256": "d66a0e1bffee8f8ed176ce80aadd54aef1f0caeee4a9a98d35b9cbbe63f635e0"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 42.666666666666664,
+        "channels": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 12288,
+        "scalar_counts": [
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 524288
+      },
+      "model_identity": {
+        "predictor_type": "tiny_conv",
+        "predictor_use_feedback": true,
+        "synthesis_mode": "restricted"
+      },
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 11077,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_downsampled_imagenet64_k8_denoisepath_p150_light_5k_cuda_2026-07-09/report.json",
+        "sha256": "b983477f381272c3c9796d5e79cdc364a9a5ab235c6b03c81236d221bb2c9a3f"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 42.666666666666664,
+        "channels": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 12288,
+        "scalar_counts": [
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 524288
+      },
+      "model_identity": {
+        "predictor_type": "tiny_conv",
+        "predictor_use_feedback": true,
+        "synthesis_mode": "restricted"
+      },
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 10993,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_ffhq64_k8_denoisepath_p150_light_5k_cuda_2026-07-09/report.json",
+        "sha256": "1de70913971101217b67e9a605a29734a5f5c74abd0a6e84914b8dd0f12cbe2d"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 42.666666666666664,
+        "channels": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 12288,
+        "scalar_counts": [
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 524288
+      },
+      "model_identity": {
+        "predictor_type": "tiny_conv",
+        "predictor_use_feedback": true,
+        "synthesis_mode": "restricted"
+      },
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 10986,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_afhqv2_64_k8_denoisepath_p150_light_5k_cuda_2026-07-09/report.json",
+        "sha256": "21af20009ab0246e42d0ebf2aaacc17aa627e26a29a4fa082dcb660249ed05ea"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 21.333333333333332,
+        "channels": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 196608,
+        "scalar_counts": [
+          1048576,
+          1048576,
+          1048576,
+          1048576
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 4194304
+      },
+      "model_identity": {
+        "predictor_type": "tiny_conv",
+        "predictor_use_feedback": true,
+        "synthesis_mode": "restricted"
+      },
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 10451,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_10pct_k4_denoisepath_p150_light_5k_cuda_2026-07-10_imagenet256_10pct_p0/report.json",
+        "sha256": "503a9eed021a47785c8315cdd0beb78f9c1b12a86e3063a86dc525ea18ade496"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        8,
+        12,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 21.333333333333332,
+        "channels": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 196608,
+        "scalar_counts": [
+          1048576,
+          1048576,
+          1048576,
+          1048576
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 4194304
+      },
+      "model_identity": {
+        "predictor_type": "tiny_conv",
+        "predictor_use_feedback": true,
+        "synthesis_mode": "restricted"
+      },
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 10391,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet256_k4_denoisepath_p150_light_5k_cuda_2026-07-10_imagenet256_p0/report.json",
+        "sha256": "83d63d3242e4697cf7beca9092b107f9ad4243c806eaa4eb1a426f280232337b"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        8,
+        12,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 42.666666666666664,
+        "channels": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 12288,
+        "scalar_counts": [
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 524288
+      },
+      "model_identity": {
+        "predictor_use_feedback": true,
+        "synthesis_mode": "restricted"
+      },
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 13219,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_2026-07-08/report.json",
+        "sha256": "910598df9da921608e5291e32069d27ae376acd67fe81d1b58ef2d05caeff87f"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 42.666666666666664,
+        "channels": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 12288,
+        "scalar_counts": [
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 524288
+      },
+      "model_identity": {
+        "predictor_type": "tiny_conv",
+        "predictor_use_feedback": true,
+        "synthesis_mode": "restricted"
+      },
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 13339,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+        "sha256": "0c650379454e91b3e07dd8cfe0732b271ff24f0e5b9b938bec93d59320bbc1c0"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 42.666666666666664,
+        "channels": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 12288,
+        "scalar_counts": [
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 524288
+      },
+      "model_identity": {
+        "predictor_use_feedback": true,
+        "synthesis_mode": "restricted"
+      },
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 13252,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_2026-07-08/report.json",
+        "sha256": "b9df26c68add5427d55eb02af030e357b7abeaf6f679b696804e52774d7328c7"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 42.666666666666664,
+        "channels": [
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 12288,
+        "scalar_counts": [
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536,
+          65536
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 524288
+      },
+      "model_identity": {
+        "predictor_type": "tiny_conv",
+        "predictor_use_feedback": true,
+        "synthesis_mode": "restricted"
+      },
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 13378,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+        "sha256": "20d2315826de5a5866240b21a4ce91fb0ffdda9db1d72b6395463b1a2e12b285"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        4,
+        8,
+        8,
+        12,
+        12,
+        16,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 21.333333333333332,
+        "channels": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 196608,
+        "scalar_counts": [
+          1048576,
+          1048576,
+          1048576,
+          1048576
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 4194304
+      },
+      "model_identity": {
+        "predictor_type": "tiny_conv",
+        "predictor_use_feedback": true,
+        "synthesis_mode": "restricted"
+      },
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 6048,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet256_cofitok_20k_seed103_ordered_1024_t500_2026-07-11_imagenet256_20k_repeat/quality_report.json",
+        "sha256": "296aba8fd0462ca4259ce5f13c6a80df87dfc93b878453373ba91d22ce2c30fa"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        8,
+        12,
+        16
+      ],
+      "synthesis_token_strides": []
+    },
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": false
+      },
+      "emitted_token_layout": "full_resolution_token_fields",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 21.333333333333332,
+        "channels": [
+          16,
+          16,
+          16,
+          16
+        ],
+        "dense_scalar_count": 196608,
+        "scalar_counts": [
+          1048576,
+          1048576,
+          1048576,
+          1048576
+        ],
+        "spatial_strides": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 4194304
+      },
+      "model_identity": {
+        "predictor_type": "tiny_conv",
+        "predictor_use_feedback": true,
+        "synthesis_mode": "restricted"
+      },
+      "notes": [
+        "The predictor emits token_channels at full image resolution for every token.",
+        "synthesis_active_token_channels masks S_k inputs but does not reduce the emitted token field or predictor-feedback storage."
+      ],
+      "source": {
+        "bytes": 6042,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet256_cofitok_20k_seed139_ordered_1024_t500_2026-07-11_imagenet256_20k_repeat/quality_report.json",
+        "sha256": "2eb8fd8d5fa0554b2f3e5c62acb5fd8808e54d8e6096ddcf96b1114557546630"
+      },
+      "synthesis_active_token_channels": [
+        4,
+        8,
+        12,
+        16
+      ],
+      "synthesis_token_strides": []
+    }
+  ],
+  "role": "cofitok_token_compression_claim_audit",
+  "schema_version": 1
+}

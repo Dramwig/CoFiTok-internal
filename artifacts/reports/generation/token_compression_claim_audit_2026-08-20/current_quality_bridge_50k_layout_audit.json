@@ -1,0 +1,81 @@
+{
+  "claim_boundary": {
+    "aggregate_sequence_compression_must_not_be_inferred_from_per_token_compression": true,
+    "layout_audit_only": true,
+    "quality_ordering_prefix_and_zero_shuffle_metrics_recomputed": false
+  },
+  "decision": {
+    "aggregate_sequence_compression_supported_by_all_reports": false,
+    "allowed_paper_wording": "individually compressed denoising tokens",
+    "compressed_token_wording_requires_separate_evidence": false,
+    "per_token_compression_supported_by_all_reports": true,
+    "report_count": 1
+  },
+  "policy": {
+    "compression_is_evaluated_on_actual_emitted_token_shapes": true,
+    "per_token_and_aggregate_compression_are_separate_claims": true,
+    "synthesis_only_channel_masks_count_as_token_compression": false,
+    "synthesis_only_resampling_counts_as_token_compression": false
+  },
+  "reports": [
+    {
+      "claims": {
+        "aggregate_sequence_compression_supported": false,
+        "per_token_compression_supported": true
+      },
+      "emitted_token_layout": "explicit_variable_channel_spatial_layout",
+      "layout": {
+        "aggregate_token_to_dense_ratio": 1.2604166666666667,
+        "channels": [
+          4,
+          4,
+          8,
+          8,
+          8,
+          1,
+          1,
+          1
+        ],
+        "dense_scalar_count": 196608,
+        "scalar_counts": [
+          1024,
+          1024,
+          8192,
+          8192,
+          32768,
+          65536,
+          65536,
+          65536
+        ],
+        "spatial_strides": [
+          16,
+          16,
+          8,
+          8,
+          4,
+          1,
+          1,
+          1
+        ],
+        "total_scalar_count": 247808
+      },
+      "model_identity": {
+        "predictor_type": "scalable_unet",
+        "predictor_use_feedback": true,
+        "synthesis_mode": "fixed_basis"
+      },
+      "notes": [
+        "Every individual token is smaller than the dense field, but the concatenated token sequence is not aggregate-compressed."
+      ],
+      "source": {
+        "bytes": 16238,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00050000/checkpoint_eval/checkpoint_evaluation_report.json",
+        "sha256": "0b7f4a6320243b25a425eae1430ce63471b34f57410ca1aa94be64ed4fa37016"
+      },
+      "synthesis_active_token_channels": [],
+      "synthesis_token_strides": []
+    }
+  ],
+  "role": "cofitok_token_compression_claim_audit",
+  "schema_version": 1
+}
