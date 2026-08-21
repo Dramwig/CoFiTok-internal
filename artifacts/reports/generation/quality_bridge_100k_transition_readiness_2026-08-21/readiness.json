@@ -1,0 +1,270 @@
+{
+  "schema_version": 1,
+  "role": "generation_quality_bridge_100k_transition_readiness_audit",
+  "status": "pass",
+  "decision": "ready_for_existing_runbook_100k_transition",
+  "audited_at": "2026-08-21T19:58:02+08:00",
+  "scope": {
+    "remote_audit_read_only": true,
+    "active_training_modified": false,
+    "active_checkout_modified": false,
+    "process_signals_sent": false,
+    "gpu_processes_started": false,
+    "controller_replacement_allowed": false,
+    "promotion_or_release_authorization": false,
+    "full_300k_launch_allowed": false,
+    "formal_generation_quality_claim_allowed": false,
+    "generation_advantage_proven": false
+  },
+  "training_identity": {
+    "checkout": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "tracked_status": "",
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1"
+  },
+  "active_sources": {
+    "runbook": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/artifacts/runbooks/generation_stability_full_data_quality_bridge_100k_execute.sh",
+      "bytes": 27943,
+      "sha256": "f0531763b4b888964a75923a8d59cb8cf8d1c79bd7782f845006c39e1a57fe73"
+    },
+    "milestone_runner": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/artifacts/runbooks/generation_full_milestone_eval.sh",
+      "bytes": 1889,
+      "sha256": "cf0f53c5c6bcfd7ca861e5f583b2d503213d633275b5751c7ba5964bd3a0cb56"
+    },
+    "cofitok_config": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/configs/generation/imagenet256_stability_quality_bridge_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k.json",
+      "bytes": 3019,
+      "sha256": "40b5815c1aa92c1a22c585ddbe57d5232e57a031ece238bd27d1a0a1422fa14e"
+    },
+    "dense_config": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/configs/generation/imagenet256_stability_quality_bridge_rollout_x0_u2_ema_teacher_dense_100k.json",
+      "bytes": 2459,
+      "sha256": "f8f1c1967468bef4db1e9a00e8f80c3da5af22e417d8ab4864afcb4fb68f884c"
+    }
+  },
+  "live_snapshot": {
+    "pair_monitor": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/pair_monitor.json",
+      "bytes": 54549,
+      "sha256": "518d140cff8bf3de6173f50edc3ae3824a2866692115c55a9b5d7dc26c1aaaa5",
+      "updated_at": "2026-08-21T11:56:50.606447+00:00",
+      "status": "running",
+      "stage": "cofitok_training",
+      "issues": []
+    },
+    "cofitok": {
+      "last_step": 90600,
+      "expected_steps": 100000,
+      "samples_seen": 5798400,
+      "metric_rows": 1816,
+      "validation_event_count": 90,
+      "strictly_increasing_metrics": true,
+      "samples_seen_binding_verified": true,
+      "health_issues": []
+    },
+    "dense_identity": {
+      "last_step": 50000,
+      "expected_steps": 100000,
+      "samples_seen": 3200000,
+      "metric_rows": 1001,
+      "validation_event_count": 50,
+      "strictly_increasing_metrics": true,
+      "samples_seen_binding_verified": true,
+      "health_issues": []
+    },
+    "process_chain": [
+      {
+        "pid": 2737,
+        "ppid": 1,
+        "role": "quality_bridge_controller",
+        "started_at": "2026-08-21T11:36:06+08:00"
+      },
+      {
+        "pid": 3422,
+        "ppid": 2737,
+        "role": "pair_monitor",
+        "started_at": "2026-08-21T11:36:20+08:00"
+      },
+      {
+        "pid": 3707,
+        "ppid": 2737,
+        "role": "training_watchdog",
+        "started_at": "2026-08-21T11:36:34+08:00"
+      },
+      {
+        "pid": 3773,
+        "ppid": 3707,
+        "role": "cofitok_trainer",
+        "started_at": "2026-08-21T11:36:36+08:00"
+      }
+    ],
+    "gpu_compute_processes": [
+      {
+        "pid": 3773,
+        "process": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 89398,
+        "role": "authorized_cofitok_trainer"
+      }
+    ],
+    "unrelated_gpu_compute_processes": [],
+    "filesystem_free_bytes": 309922099200
+  },
+  "checkpoint_state": {
+    "cofitok_retained_steps": [50000, 80000, 85000, 90000],
+    "dense_retained_steps": [40000, 45000, 50000],
+    "retention_contract": {
+      "keep_last_checkpoints": 3,
+      "protected_checkpoint_steps": [50000, 100000]
+    },
+    "cofitok_90000_physical_audit": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/checkpoint_audits/cofitok_checkpoint_step_00090000_physical_integrity_audit.json",
+      "bytes": 5242,
+      "sha256": "771ca1974530d5a653e78fd43fed95aec2e55af4cc862b9474f9735515219907",
+      "status": "pass",
+      "payload_bytes": 1010937514,
+      "payload_sha256": "81a919859df79bf7fdef6750602b877512ba683d32c1b3e8586d7f2ca7361954"
+    },
+    "waiter_deployment": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/checkpoint_audits/deployment_receipt_90k_95k_100k_2026-08-21.json",
+      "bytes": 6432,
+      "sha256": "47611e7f21d6f04e24148ec4a8ee55ba7d538cecd80793f28f20aa413de06a70",
+      "implementation_revision": "172388fc4d873bb1001313f979442516ea7b5069",
+      "implementation_source_sha256": "eafc4e1f7b33f8b890883ac4878944a1d57f41aca02dc0483b9e82d1259fca8b"
+    },
+    "pending_waiters": {
+      "cofitok_95000": "waiting/checkpoint_missing",
+      "cofitok_100000": "waiting/checkpoint_missing",
+      "dense_90000": "waiting/checkpoint_missing",
+      "dense_95000": "waiting/checkpoint_missing",
+      "dense_100000": "waiting/checkpoint_missing"
+    }
+  },
+  "completed_50k_milestone": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/milestones/step_00050000.json",
+    "bytes": 8122,
+    "sha256": "14992df2cc5aad1576dc10d147a8f1caa4f196f066339cbce7c7a55fc85bac42",
+    "status": "completed",
+    "source_profile": "quality_bridge",
+    "role": "training_quality_trend_only",
+    "formal_generation_claim_allowed": false,
+    "exact_validator_replay": "verified",
+    "validator_warnings": [],
+    "quality_alert": false,
+    "cofitok_fid": 221.05073384081678,
+    "dense_fid": 192.1684452482233,
+    "fid_relative_change": 0.1502967282442564,
+    "endpoint_clean_mse_relative_change": 0.006698191738199582
+  },
+  "storage": {
+    "execution": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/storage_capacity_current.json",
+      "bytes": 1099,
+      "sha256": "9b21c1adf6d44780d379526ec584e82122bd08df03b3d3e1a9e31cbdac78de24",
+      "status": "pass",
+      "checked_at": "2026-08-21T03:36:20.216329+00:00",
+      "free_bytes": 310112944128,
+      "required_free_bytes": 103826920100,
+      "headroom_bytes": 206286024028
+    },
+    "terminal_10k": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/storage_capacity_terminal_100k_preflight_2026-08-20.json",
+      "bytes": 1094,
+      "sha256": "e67ac09e2a335ade474dbf5f4f47f105f5d1b13ce1287e016e5db460e769b129",
+      "status": "pass",
+      "checked_at": "2026-08-20T10:01:23.645024+00:00",
+      "free_bytes": 310111760384,
+      "required_free_bytes": 168353577776,
+      "headroom_bytes": 141758182608
+    }
+  },
+  "transition_contract": {
+    "existing_50000_report_skipped_only_after_exact_validation": true,
+    "ordered_foreground_stages": [
+      "cofitok_exact_resume_to_100000",
+      "synchronous_monitor_snapshot",
+      "cofitok_2048_sample_ddim50_milestone_evaluation",
+      "dense_exact_resume_50000_to_100000",
+      "synchronous_monitor_snapshot",
+      "dense_2048_sample_ddim50_milestone_evaluation",
+      "paired_100000_report",
+      "matched_terminal_10000_sample_ddim100_and_class_fidelity"
+    ],
+    "training_and_evaluation_commands_backgrounded": false,
+    "watchdog_waits_for_trainer_process_group_exit": true,
+    "dense_can_start_before_cofitok_milestone_completion": false,
+    "invalid_existing_paired_report_can_be_overwritten": false,
+    "exact_resume_required_for_nonzero_current_step": true,
+    "100000_checkpoint_is_protected": true
+  },
+  "expected_outputs_absent_at_snapshot": [
+    "reports/milestones/step_00100000.json",
+    "cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00100000",
+    "dense_rollout_x0_u2_ema_teacher/milestones/step_00100000",
+    "cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k",
+    "dense_rollout_x0_u2_ema_teacher/terminal_100k",
+    "reports/quality_bridge_result.json"
+  ],
+  "validation": {
+    "remote": {
+      "quality_bridge_runbook_bash_n": "pass",
+      "milestone_runner_bash_n": "pass",
+      "paired_50000_exact_validator": "verified",
+      "paired_50000_validator_warnings": []
+    },
+    "local_cpu_only": {
+      "checkout": "C:/qbcheckpointtransition",
+      "branch": "analysis/generation-quality-bridge-50k-transition-readiness-v1",
+      "cuda_visible_devices": "-1",
+      "omp_num_threads": 1,
+      "mkl_num_threads": 1,
+      "pytest_passed": 74,
+      "pytest_skipped": 1,
+      "pytest_failed": 0,
+      "python_files_compiled": 137,
+      "focused_test_files": [
+        "tests/test_generation_quality_bridge_transition_runbook.py",
+        "tests/test_generation_milestone_report.py",
+        "tests/test_generation_checkpoint_evaluation.py",
+        "tests/test_generation_sampling.py",
+        "tests/test_generation_sampling_preflight.py",
+        "tests/test_generation_metrics.py",
+        "tests/test_generation_metrics_resume.py",
+        "tests/test_generation_training_watchdog.py",
+        "tests/test_wait_generation_checkpoint_integrity_audit.py"
+      ]
+    }
+  },
+  "future_only_hardening": {
+    "deployed_to_active_training": false,
+    "revision": "32fe2f0e7c1e03337788bfd2adaf656f6549a5e2",
+    "tree": "7bdd7ac5c7325382e16ad5c3b853c1eedbf2bee2",
+    "branch": "analysis/generation-quality-bridge-50k-transition-readiness-v1",
+    "changes": [
+      "checkpoint evaluation elapsed time uses monotonic perf_counter_ns and remains strictly positive for sub-clock-tick CPU runs",
+      "generation metrics elapsed time uses monotonic perf_counter_ns and remains strictly positive for sub-clock-tick CPU runs",
+      "historical checkpoint-waiter deployment receipt tests validate the exact declared implementation Git blob instead of the evolving worktree file"
+    ]
+  },
+  "conclusion": {
+    "current_100k_transition_blocker_found": false,
+    "active_hotfix_required": false,
+    "active_controller_replacement_allowed": false,
+    "new_trainer_launch_allowed": false,
+    "formal_generation_quality_claim_allowed": false,
+    "generation_advantage_proven": false,
+    "remaining_runtime_verification": [
+      "cofitok_95000_physical_checkpoint_waiter_pass",
+      "cofitok_100000_physical_checkpoint_waiter_pass",
+      "cofitok_100000_milestone_evaluation_complete",
+      "dense_exact_resume_from_50000_under_the_same_controller",
+      "dense_90000_95000_100000_physical_checkpoint_waiter_pass",
+      "paired_100000_report_verified",
+      "matched_terminal_10000_sample_quality_and_class_fidelity_complete",
+      "runtime_statistical_visual_distribution_and_terminal_system_guards_complete"
+    ]
+  }
+}
