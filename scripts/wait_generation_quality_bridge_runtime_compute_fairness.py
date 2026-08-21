@@ -49,6 +49,10 @@ def file_identity(path: Path) -> dict[str, Any]:
     }
 
 
+def _normalized_path(value: Any) -> str:
+    return str(value or "").replace("\\", "/").rstrip("/")
+
+
 def read_object(path: Path, *, label: str) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as handle:
         payload = json.load(handle)
@@ -372,6 +376,108 @@ def _orphan_metrics(run_dir: Path) -> list[Path]:
     )
 
 
+def inspect_existing_adjustment_coverage(
+    *,
+    method: str,
+    run_dir: Path,
+    adjustment_path: Path,
+) -> dict[str, Any]:
+    discovered_identities = [file_identity(path) for path in _orphan_metrics(run_dir)]
+    discovered = {
+        _normalized_path(identity["path"]): identity
+        for identity in discovered_identities
+    }
+    if not adjustment_path.is_file():
+        return {
+            "status": "absent",
+            "valid": True,
+            "method": method,
+            "provided": False,
+            "terminal_adjustment_required": bool(discovered),
+            "adjustment": None,
+            "discovered_orphan_archive_count": len(discovered),
+            "covered_orphan_archive_count": 0,
+            "discovered_orphan_archives": discovered_identities,
+            "issues": [],
+        }
+
+    adjustment_identity = resume_compute_adjustment_source_identity(adjustment_path)
+    adjustment = read_object(
+        adjustment_path,
+        label=f"{method} resume-compute adjustment",
+    )
+    events = adjustment.get("recovery_events")
+    issues: list[str] = []
+    covered: dict[str, dict[str, Any]] = {}
+    observed_paths: set[str] = set()
+    if not isinstance(events, list):
+        issues.append("existing adjustment recovery events are malformed")
+        events = []
+    for event in events:
+        if not isinstance(event, dict):
+            issues.append("existing adjustment recovery event is malformed")
+            continue
+        identity = event.get("orphan_metrics")
+        if not isinstance(identity, dict):
+            issues.append("existing adjustment orphan identity is malformed")
+            continue
+        normalized = _normalized_path(identity.get("path"))
+        if not normalized:
+            issues.append("existing adjustment orphan path is missing")
+            continue
+        if normalized in observed_paths:
+            issues.append("existing adjustment repeats an orphan metrics source")
+            continue
+        observed_paths.add(normalized)
+        expected = discovered.get(normalized)
+        if expected is None:
+            continue
+        try:
+            bytes_match = int(identity.get("bytes", -1)) == int(expected["bytes"])
+        except (TypeError, ValueError):
+            bytes_match = False
+        if not bytes_match or identity.get("sha256") != expected["sha256"]:
+            issues.append("existing adjustment orphan identity differs from disk")
+            continue
+        covered[normalized] = identity
+
+    missing = sorted(set(discovered) - set(covered))
+    extra = sorted(observed_paths - set(discovered))
+    if missing or extra:
+        issues.append(
+            "existing adjustment does not cover the current physical orphan archive set"
+        )
+    return {
+        "status": "verified" if not issues else "stale",
+        "valid": not issues,
+        "method": method,
+        "provided": True,
+        "terminal_adjustment_required": bool(discovered),
+        "adjustment": adjustment_identity,
+        "discovered_orphan_archive_count": len(discovered),
+        "covered_orphan_archive_count": len(covered),
+        "discovered_orphan_archives": discovered_identities,
+        "missing_orphan_archives": missing,
+        "extra_orphan_archives": extra,
+        "issues": issues,
+    }
+
+
+def require_current_adjustment_coverage(
+    adjustment_states: dict[str, dict[str, Any]],
+) -> None:
+    stale_adjustments = sorted(
+        method
+        for method, state in adjustment_states.items()
+        if state.get("valid") is not True
+    )
+    if stale_adjustments:
+        raise ValueError(
+            "existing resume-compute adjustment is stale for: "
+            + ", ".join(stale_adjustments)
+        )
+
+
 def resolve_training_cost(
     *,
     method: str,
@@ -663,6 +769,7 @@ def waiter_status(
     deployment_receipt: Path,
     audit_output: Path,
     training_states: dict[str, Any],
+    adjustment_states: dict[str, Any],
     error: str | None = None,
 ) -> dict[str, Any]:
     return {
@@ -683,6 +790,7 @@ def waiter_status(
             file_identity(audit_output) if audit_output.is_file() else None
         ),
         "training": training_states,
+        "resume_compute_adjustments": adjustment_states,
         "scope": {
             "cpu_only": True,
             "gpu_execution_allowed": False,
@@ -818,6 +926,7 @@ def main() -> None:
     started_at = utc_now()
     deadline = time.monotonic() + args.timeout_seconds
     states: dict[str, Any] = {}
+    adjustment_states: dict[str, Any] = {}
     try:
         while True:
             static_contract = validate_static_contract(**static_arguments)
@@ -829,6 +938,19 @@ def main() -> None:
                     args.dense_run_dir, expected_steps=args.expected_steps
                 ),
             }
+            adjustment_states = {
+                "cofitok": inspect_existing_adjustment_coverage(
+                    method="cofitok",
+                    run_dir=args.cofitok_run_dir,
+                    adjustment_path=args.cofitok_resume_compute_adjustment,
+                ),
+                "dense_identity": inspect_existing_adjustment_coverage(
+                    method="dense_identity",
+                    run_dir=args.dense_run_dir,
+                    adjustment_path=args.dense_resume_compute_adjustment,
+                ),
+            }
+            require_current_adjustment_coverage(adjustment_states)
             if all(state["ready"] for state in states.values()):
                 audit = build_terminal_audit(
                     static_contract=static_contract,
@@ -860,6 +982,7 @@ def main() -> None:
                         deployment_receipt=args.deployment_receipt_output,
                         audit_output=args.audit_output,
                         training_states=states,
+                        adjustment_states=adjustment_states,
                     ),
                 )
                 print(args.audit_output)
@@ -874,6 +997,7 @@ def main() -> None:
                     deployment_receipt=args.deployment_receipt_output,
                     audit_output=args.audit_output,
                     training_states=states,
+                    adjustment_states=adjustment_states,
                 ),
             )
             if args.once:
@@ -892,6 +1016,7 @@ def main() -> None:
                 deployment_receipt=args.deployment_receipt_output,
                 audit_output=args.audit_output,
                 training_states=states,
+                adjustment_states=adjustment_states,
             ),
         )
         raise

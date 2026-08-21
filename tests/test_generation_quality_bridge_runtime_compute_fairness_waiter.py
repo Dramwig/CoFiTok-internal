@@ -18,6 +18,8 @@ from scripts.build_generation_resume_compute_adjustment import (
 from scripts.wait_generation_quality_bridge_runtime_compute_fairness import (
     build_terminal_audit,
     file_identity,
+    inspect_existing_adjustment_coverage,
+    require_current_adjustment_coverage,
     resolve_training_cost,
     validate_static_contract,
     write_json_atomic,
@@ -436,6 +438,121 @@ def test_resolve_training_cost_builds_missing_dense_adjustment(
     assert evidence["resume_compute_adjustment"]["sha256"] == file_identity(
         adjustment
     )["sha256"]
+
+
+def test_pending_adjustment_coverage_allows_absence_until_terminal(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "cofitok"
+    report = _training_report(
+        run_dir,
+        config_path=COFITOK_CONFIG,
+        parameter_count=62_834_083,
+        elapsed_seconds=10_000.0,
+        peak_vram_bytes=80_000,
+    )
+    _add_recovery(run_dir, report)
+
+    state = inspect_existing_adjustment_coverage(
+        method="cofitok",
+        run_dir=run_dir,
+        adjustment_path=tmp_path / "reports/resume_compute_adjustment.json",
+    )
+
+    assert state["status"] == "absent"
+    assert state["valid"] is True
+    assert state["terminal_adjustment_required"] is True
+    assert state["discovered_orphan_archive_count"] == 1
+    assert state["covered_orphan_archive_count"] == 0
+
+
+def test_pending_adjustment_coverage_accepts_exact_physical_orphan_set(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "cofitok"
+    report = _training_report(
+        run_dir,
+        config_path=COFITOK_CONFIG,
+        parameter_count=62_834_083,
+        elapsed_seconds=10_000.0,
+        peak_vram_bytes=80_000,
+    )
+    orphan = _add_recovery(run_dir, report)
+    adjustment_path = tmp_path / "reports/resume_compute_adjustment.json"
+    write_json_atomic(
+        adjustment_path,
+        build_adjustment_report(
+            canonical_metrics=run_dir / "train_metrics.jsonl",
+            orphan_metrics=[orphan],
+            effective_batch=64,
+            continuity_end_step=130,
+        ),
+    )
+
+    state = inspect_existing_adjustment_coverage(
+        method="cofitok",
+        run_dir=run_dir,
+        adjustment_path=adjustment_path,
+    )
+
+    assert state["status"] == "verified"
+    assert state["valid"] is True
+    assert state["discovered_orphan_archive_count"] == 1
+    assert state["covered_orphan_archive_count"] == 1
+    assert state["issues"] == []
+
+
+def test_pending_adjustment_coverage_detects_new_orphan_before_terminal(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "cofitok"
+    report = _training_report(
+        run_dir,
+        config_path=COFITOK_CONFIG,
+        parameter_count=62_834_083,
+        elapsed_seconds=10_000.0,
+        peak_vram_bytes=80_000,
+    )
+    orphan = _add_recovery(run_dir, report)
+    adjustment_path = tmp_path / "reports/resume_compute_adjustment.json"
+    write_json_atomic(
+        adjustment_path,
+        build_adjustment_report(
+            canonical_metrics=run_dir / "train_metrics.jsonl",
+            orphan_metrics=[orphan],
+            effective_batch=64,
+            continuity_end_step=130,
+        ),
+    )
+    second_payload = b'{"step": 210, "samples_seen": 13440}\n'
+    second_sha = hashlib.sha256(second_payload).hexdigest()
+    second_orphan = run_dir / (
+        "train_metrics_orphaned_at_resume_00000200_"
+        f"{second_sha[:12]}.jsonl"
+    )
+    second_orphan.write_bytes(second_payload)
+
+    state = inspect_existing_adjustment_coverage(
+        method="cofitok",
+        run_dir=run_dir,
+        adjustment_path=adjustment_path,
+    )
+
+    assert state["status"] == "stale"
+    assert state["valid"] is False
+    assert state["discovered_orphan_archive_count"] == 2
+    assert state["covered_orphan_archive_count"] == 1
+    assert state["missing_orphan_archives"] == [
+        second_orphan.resolve().as_posix()
+    ]
+    assert state["issues"] == [
+        "existing adjustment does not cover the current physical orphan archive set"
+    ]
+    with pytest.raises(
+        ValueError,
+        match="existing resume-compute adjustment is stale for: cofitok",
+    ):
+        require_current_adjustment_coverage({"cofitok": state})
 
 
 def test_terminal_audit_rejects_observed_dense_runtime_drift(
