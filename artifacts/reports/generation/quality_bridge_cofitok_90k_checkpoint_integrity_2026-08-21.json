@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "role": "quality_bridge_cofitok_90k_physical_checkpoint_evidence",
+  "status": "pass",
+  "observed_at": "2026-08-21T19:30:17+08:00",
+  "quality_bridge": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "run": "cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+    "training_checkout": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "dataset_identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+    "effective_batch": 64
+  },
+  "checkpoint": {
+    "step": 90000,
+    "samples_seen": 5760000,
+    "payload": {
+      "path": "cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00090000.pt",
+      "bytes": 1010937514,
+      "sha256": "81a919859df79bf7fdef6750602b877512ba683d32c1b3e8586d7f2ca7361954"
+    },
+    "integrity_manifest": {
+      "path": "cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00090000.pt.integrity.json",
+      "bytes": 596,
+      "sha256": "62a46ed7895c793ab4bfeb0e65df6007b9033a50076f809de65322bf411fabb7"
+    },
+    "latest_pointer": {
+      "path": "cofitok_rgbtail3_rollout_x0_u2_ema_teacher/latest.json",
+      "bytes": 666,
+      "sha256": "03f78b2b479fce6cfe2fb66c26c64620569a68b2b0b6c2ebceccc7fc7fb4f02e",
+      "exact_target_binding": true
+    }
+  },
+  "independent_waiter": {
+    "pid": 71602,
+    "status": "pass",
+    "detail": "checkpoint_physical_integrity_verified",
+    "audited_at": "2026-08-21T11:28:25.750056+00:00",
+    "physical_sha256_verified": true,
+    "status_report": {
+      "path": "reports/checkpoint_audits/cofitok_checkpoint_step_00090000_waiter_status.json",
+      "bytes": 1523,
+      "sha256": "2db06c7b86ba4db7c690c6b73fe33d67237bab4baa7aa7554405147d2b7e18ab"
+    },
+    "audit_report": {
+      "path": "reports/checkpoint_audits/cofitok_checkpoint_step_00090000_physical_integrity_audit.json",
+      "bytes": 5242,
+      "sha256": "771ca1974530d5a653e78fd43fed95aec2e55af4cc862b9474f9735515219907"
+    },
+    "source_sha256": "eafc4e1f7b33f8b890883ac4878944a1d57f41aca02dc0483b9e82d1259fca8b"
+  },
+  "metrics_snapshot": {
+    "path": "cofitok_rgbtail3_rollout_x0_u2_ema_teacher/train_metrics.jsonl",
+    "bytes": 1710465,
+    "sha256": "1cc05f2c39f088073d0b6b7b4f9907ebd22428114efc783d7a28a4e504d14ef0",
+    "row_count": 1804,
+    "first_step": 1,
+    "last_step": 90000,
+    "strictly_increasing": true,
+    "samples_seen_binding_verified": true,
+    "validation_event_count": 90,
+    "validation_event_index": 89,
+    "validation_batch_index": 89,
+    "validation_epsilon_mse": 0.02978353761136532
+  },
+  "resume_reconciliation": {
+    "coverage": "2/2",
+    "strict_canonical_steps": true,
+    "samples_seen_exact_all_rows": true,
+    "validation_indexes_contiguous": true,
+    "events": [
+      {
+        "resume_step": 20000,
+        "retained_rows": 401,
+        "orphaned_rows": 4,
+        "orphan_sha256": "6b3c4bca8ffa99e814ee77559d140f3a0db6cf7b78a8d78e58ef1b716e2f1cec",
+        "physical_archive_verified": true
+      },
+      {
+        "resume_step": 80000,
+        "retained_rows": 1603,
+        "orphaned_rows": 69,
+        "orphan_sha256": "ea0f91f8fde6a2c04fbf3578d9184709503c5833645cb9ee7f3ecb4cd26e89c1",
+        "physical_archive_verified": true
+      }
+    ]
+  },
+  "resource_snapshot": {
+    "gpu_compute_processes": [
+      {
+        "pid": 3773,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "used_memory_mib": 89398,
+        "role": "quality_bridge_cofitok_trainer"
+      }
+    ],
+    "unrelated_gpu_compute_processes": []
+  },
+  "scope": {
+    "checkpoint_evidence_only": true,
+    "training_launch_allowed": false,
+    "sampling_launch_allowed": false,
+    "promotion_authorization_allowed": false,
+    "release_authorization_allowed": false,
+    "full_300k_launch_allowed": false,
+    "generation_advantage_proven": false
+  }
+}

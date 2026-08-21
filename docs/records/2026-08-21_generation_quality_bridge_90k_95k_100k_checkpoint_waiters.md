@@ -104,3 +104,42 @@ The waiters cannot launch or signal training, cannot use GPU work, cannot
 authorize promotion or release, and explicitly leave
 `full_300k_launch_allowed=false`. They do not alter the pinned training
 revision, runbook, checkpoints, or locked paper evidence.
+
+## CoFiTok 90K result
+
+The CoFiTok 90K waiter reached a terminal passing state at
+`2026-08-21T11:28:26.873968+00:00`.
+
+```text
+checkpoint bytes:  1,010,937,514
+checkpoint SHA256: 81a919859df79bf7fdef6750602b877512ba683d32c1b3e8586d7f2ca7361954
+sidecar SHA256:    62a46ed7895c793ab4bfeb0e65df6007b9033a50076f809de65322bf411fabb7
+latest SHA256:     03f78b2b479fce6cfe2fb66c26c64620569a68b2b0b6c2ebceccc7fc7fb4f02e
+audit status:      pass
+audit bytes:       5,242
+audit SHA256:      771ca1974530d5a653e78fd43fed95aec2e55af4cc862b9474f9735515219907
+```
+
+The audit physically hashed the payload and proved exact sidecar and
+`latest.json` binding. It also bound the checkpoint to step 90,000,
+5,760,000 images seen, the locked Git/data/runtime identities, 1,804 strictly
+increasing canonical metric rows, and validation event/batch index 89.
+
+A separate read-only reconciliation check proved both physical resume archives
+(`20K` and `80K`) against their claimed row counts and SHA256 values. Canonical
+metrics remained strictly increasing, every row satisfied
+`samples_seen == step * 64`, and validation indexes were contiguous through
+the 90K event. The only GPU compute process remained trainer PID 3773.
+
+The compact evidence record is:
+
+```text
+artifacts/reports/generation/
+quality_bridge_cofitok_90k_checkpoint_integrity_2026-08-21.json
+bytes: 4,206
+SHA256: c9aa92ddfb648583f060005eca7b271370e0b3db5d04f53b9f22a8baba612caa
+```
+
+This result proves checkpoint integrity and restart-safe accounting only. It
+does not prove generation-quality advantage and does not authorize sampling,
+promotion, release, or full 300K training.
