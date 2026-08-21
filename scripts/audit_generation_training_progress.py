@@ -463,8 +463,11 @@ def audit_progress(
             candidates = [
                 artifact
                 for artifact in resume_reconciliation_artifacts
-                if artifact["resume_step"] == latest_checkpoint_step
-                and artifact["resume_step"] > report_step
+                # The newest checkpoint is normally newer than the exact
+                # resume checkpoint once the resumed segment has progressed.
+                # Bind the stale report to a verified resume boundary while
+                # allowing later atomic checkpoints from the same segment.
+                if report_step < artifact["resume_step"] <= latest_checkpoint_step
             ]
             if candidates:
                 stale_segment_report = True
