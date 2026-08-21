@@ -71,3 +71,31 @@ against the live bridge then reported `healthy`, no issues, canonical step
 86,050, verified latest checkpoint step 85,000, and accepted reconciliation
 step 80,000. The snapshot SHA256 is
 `c1df033c329f475a9302d1c89ba81b6ea18398cd8f4e201402406c5d82652879`.
+
+## Final integration validation
+
+The post-85K boundary change was committed independently as:
+
+```text
+revision: ce067978a801e87a8772405d404f4b1971275f43
+tree:     00d64af7f24a1d47287ef55454594bf0a21ac292
+subject:  Accept later checkpoints after bound segment resume
+```
+
+From that clean commit, the complete local CPU-only suite collected `1,762`
+tests, reached 100%, and exited with code 0 with no failures (only expected
+skips). CUDA was hidden and OMP, MKL, and OpenBLAS were limited to one thread.
+
+The exact active remote execution revision was also tested without changing
+its checkout or loading the GPU:
+
+```text
+GenerationSession / sampling preflight / checkpoint evaluation /
+inference artifact / exact resume:                          80 passed
+quality bridge / gate provenance / metrics / pair contract: 76 passed
+```
+
+These results establish implementation and audit-path readiness only. They do
+not replace the exact 100K checkpoints, matched terminal sampling, distribution
+support, class fidelity, or scientific quality result. The active execution
+remains pinned to `cf0e5faa94bf4ab38d947b921935b3b765b5537a`.
