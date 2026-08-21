@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -176,14 +177,25 @@ def test_audit_rejects_samples_seen_drift(tmp_path: Path, monkeypatch: object) -
 def test_deployment_receipt_binds_source_and_non_authorizing_scope() -> None:
     receipt = json.loads(DEPLOYMENT_RECEIPT.read_text(encoding="utf-8"))
     source = receipt["deployment"]["source"]
+    implementation_commit = receipt["git"]["implementation_commit"]
+    deployed_source = subprocess.run(
+        [
+            "git",
+            "show",
+            f"{implementation_commit}:{source['path']}",
+        ],
+        cwd=SCRIPT.parents[1],
+        check=True,
+        capture_output=True,
+    ).stdout
 
     assert receipt["schema_version"] == 1
     assert receipt["status"] == "pass"
     assert receipt["role"] == (
         "cofitok_quality_bridge_checkpoint_25k_waiter_deployment_receipt"
     )
-    assert source["bytes"] == SCRIPT.stat().st_size
-    assert source["sha256"] == hashlib.sha256(SCRIPT.read_bytes()).hexdigest()
+    assert source["bytes"] == len(deployed_source)
+    assert source["sha256"] == hashlib.sha256(deployed_source).hexdigest()
     assert receipt["bundle"]["advertised_head"] == receipt["git"][
         "implementation_commit"
     ]

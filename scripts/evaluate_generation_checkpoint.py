@@ -668,7 +668,7 @@ def _run_checkpoint_evaluation(args: argparse.Namespace) -> None:
     schedule = DiffusionSchedule(config.diffusion, device=device)
     loader = build_dataloader(config.data, split="val", drop_last=False)
     orders = component_orders(config.model.token_count, args.random_orders, args.seed)
-    start = time.time()
+    start_ns = time.perf_counter_ns()
     metrics = evaluate(
         model=model,
         schedule=schedule,
@@ -701,7 +701,7 @@ def _run_checkpoint_evaluation(args: argparse.Namespace) -> None:
         "config": config_to_dict(config),
         "metrics": metrics,
         "runtime": {
-            "elapsed_seconds": time.time() - start,
+            "elapsed_seconds": max(time.perf_counter_ns() - start_ns, 1) / 1e9,
             "device": str(device),
             "torch_version": torch.__version__,
         },

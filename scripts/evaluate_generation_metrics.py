@@ -438,9 +438,9 @@ def _run_generation_metrics(args: argparse.Namespace) -> None:
         project_root=PROJECT_ROOT,
     )
     evaluator_environment_sha = runtime_environment_sha256(evaluator_environment)
-    start = time.time()
+    start_ns = time.perf_counter_ns()
     real_set_sha = image_tree_sha256(real_images, root=real_dir)
-    real_digest_elapsed_seconds = time.time() - start
+    real_digest_elapsed_seconds = max(time.perf_counter_ns() - start_ns, 0) / 1e9
     effective_real_cache_name = content_addressed_real_cache_name(
         args.real_cache_name,
         real_set_sha,
@@ -524,7 +524,7 @@ def _run_generation_metrics(args: argparse.Namespace) -> None:
         **expected,
         "metrics": metrics,
         "runtime": {
-            "elapsed_seconds": time.time() - start,
+            "elapsed_seconds": max(time.perf_counter_ns() - start_ns, 1) / 1e9,
             "real_set_digest_elapsed_seconds": real_digest_elapsed_seconds,
             "torch_version": torch.__version__,
             "cuda_available": torch.cuda.is_available(),
