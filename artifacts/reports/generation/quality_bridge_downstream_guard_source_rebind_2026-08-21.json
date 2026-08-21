@@ -1,0 +1,57 @@
+{
+  "claim_boundary": {
+    "full_300k_launch_allowed": false,
+    "generation_advantage_proven": false,
+    "gpu_execution_allowed": false,
+    "old_failed_status_overwrite_allowed": false,
+    "promotion_or_release_allowed": false,
+    "training_or_sampling_launch_allowed": false
+  },
+  "incident": {
+    "cause": "runtime fairness waiter PID and deployment receipt changed after the 80K restart orphan was added to physical compute accounting",
+    "old_runtime_claim_status": "reports/runtime_compute_claim_guard_v1/waiter_status.json",
+    "old_terminal_system_status": "reports/terminal_system_claim_guard_v1/waiter_status.json",
+    "old_statuses_preserved": true
+  },
+  "live_snapshot": {
+    "cofitok_samples_seen": 5712000,
+    "cofitok_step": 89250,
+    "dense_step": 50000,
+    "observed_at": "2026-08-21T18:53:58+08:00",
+    "only_gpu_compute_pid": 3773
+  },
+  "role": "quality_bridge_downstream_guard_source_rebind_v2_evidence",
+  "runtime_claim_guard": {
+    "branch": "analysis/generation-quality-bridge-runtime-claim-guard-rebind-v2",
+    "bundle": {
+      "bytes": 12242,
+      "sha256": "74504e0c02531421c0309581bd05d4aa822873225fca1cc0104a20dabf65de91"
+    },
+    "canonical_output": "reports/runtime_compute_claim_guard_v1/runtime_compute_claim_guard.json",
+    "deployment_receipt_sha256": "0579e9c91bc36d797eb3f1d71178b9a9e657d918c39dc6a0a2791c15d373af43",
+    "pid": 80962,
+    "revision": "0d1fa8db971c9b33b16f943f511efaf5e51b0ace",
+    "status": "waiting",
+    "status_path": "reports/runtime_compute_claim_guard_v1/waiter_status.2026-08-21_source_rebind_v2.json",
+    "tree": "02bed3345634098b598f534721bd3c336eb41058"
+  },
+  "schema_version": 1,
+  "status": "pass",
+  "terminal_system_guard": {
+    "branch": "analysis/generation-terminal-system-claim-guard-v1",
+    "canonical_output": "reports/terminal_system_claim_guard_v1/terminal_system_claim_guard.json",
+    "deployment_receipt_bytes": 14310,
+    "deployment_receipt_sha256": "e5f7eca693cf1156b5b1fbc5373c7f454fc14243709c077075232ddb9121337a",
+    "pid": 81499,
+    "revision": "8ec9a09ddcd981c1ffbd06b6bda81386b33321de",
+    "status": "waiting",
+    "status_path": "reports/terminal_system_claim_guard_v1/waiter_status.2026-08-21_runtime_rebind_v2.json",
+    "tree": "344f6365d2e962e350b73f5ce4bc18c005f6dff9"
+  },
+  "validation": {
+    "linux_runtime_claim_tests_passed": 19,
+    "python_compile_passed": true,
+    "terminal_guard_tests_passed": 7,
+    "windows_runtime_claim_tests_passed": 19
+  }
+}
