@@ -257,6 +257,60 @@ def test_audit_accepts_a_bound_stale_segment_report_after_exact_resume(
     assert resumed["resume_reconciliation"]["accepted_segment_resume"]["resume_step"] == 800
 
 
+def test_audit_accepts_bound_resume_when_newer_checkpoint_follows_resume(
+    tmp_path,
+) -> None:
+    _write_metrics(tmp_path, [1, 500, 800, 850])
+    # The exact resume boundary is 800, but the live run has already written
+    # the next protected/recovery checkpoint at 850. The stale segment report
+    # must remain auditable without requiring a new reconciliation artifact at
+    # every subsequent checkpoint.
+    _write_checkpoint_with_integrity(tmp_path, 850)
+    (tmp_path / "training_report.json").write_text(
+        json.dumps(
+            {
+                "completed_steps": 500,
+                "target_steps": 1_000,
+                "training_complete": False,
+                "stop_requested": False,
+                "latest_checkpoint": {"step": 500},
+            }
+        ),
+        encoding="utf-8",
+    )
+    orphan = tmp_path / "train_metrics_orphaned_at_resume_00000800_deadbeef.jsonl"
+    orphan.write_text(json.dumps({"step": 801}) + "\n", encoding="utf-8")
+    (tmp_path / "metrics_resume_reconciliation_00000800_deadbeef.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "status": "reconciled",
+                "resume_step": 800,
+                "retained_rows": 3,
+                "orphaned_rows": 1,
+                "orphan_sha256": hashlib.sha256(orphan.read_bytes()).hexdigest(),
+                "metrics": str(tmp_path / "train_metrics.jsonl"),
+                "orphan_archive": str(orphan),
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=1_000,
+        checkpoint_interval=500,
+        integrity_policy="required",
+        allow_stale_segment_resume_report=True,
+    )
+
+    assert report["status"] == "healthy"
+    assert report["issues"] == []
+    assert report["training_report"]["status"] == "stale_segment_resume_report"
+    assert report["resume_reconciliation"]["status"] == "accepted"
+    assert report["resume_reconciliation"]["accepted_segment_resume"]["resume_step"] == 800
+
+
 def test_audit_does_not_accept_segment_report_without_reconciliation_binding(
     tmp_path,
 ) -> None:
@@ -287,6 +341,54 @@ def test_audit_does_not_accept_segment_report_without_reconciliation_binding(
     assert report["training_report"]["status"] == "mismatched"
     assert report["resume_reconciliation"]["status"] == "not_used"
     assert "training report completed_steps does not match metrics" in report["issues"]
+
+
+def test_audit_does_not_accept_reconciliation_after_latest_checkpoint(
+    tmp_path,
+) -> None:
+    _write_metrics(tmp_path, [1, 500, 800, 850])
+    _write_checkpoint_with_integrity(tmp_path, 800)
+    (tmp_path / "training_report.json").write_text(
+        json.dumps(
+            {
+                "completed_steps": 500,
+                "target_steps": 1_000,
+                "training_complete": False,
+                "stop_requested": False,
+                "latest_checkpoint": {"step": 500},
+            }
+        ),
+        encoding="utf-8",
+    )
+    orphan = tmp_path / "train_metrics_orphaned_at_resume_00000850_deadbeef.jsonl"
+    orphan.write_text(json.dumps({"step": 851}) + "\n", encoding="utf-8")
+    (tmp_path / "metrics_resume_reconciliation_00000850_deadbeef.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "status": "reconciled",
+                "resume_step": 850,
+                "retained_rows": 4,
+                "orphaned_rows": 1,
+                "orphan_sha256": hashlib.sha256(orphan.read_bytes()).hexdigest(),
+                "metrics": str(tmp_path / "train_metrics.jsonl"),
+                "orphan_archive": str(orphan),
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=1_000,
+        checkpoint_interval=500,
+        integrity_policy="required",
+        allow_stale_segment_resume_report=True,
+    )
+
+    assert report["status"] == "invalid"
+    assert report["training_report"]["status"] == "mismatched"
+    assert report["resume_reconciliation"]["status"] == "not_used"
 
 
 @pytest.mark.parametrize(
