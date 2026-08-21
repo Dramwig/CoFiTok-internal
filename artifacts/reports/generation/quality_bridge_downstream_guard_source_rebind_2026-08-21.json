@@ -50,6 +50,7 @@
   },
   "validation": {
     "linux_runtime_claim_tests_passed": 19,
+    "linux_terminal_guard_tests_passed": 7,
     "python_compile_passed": true,
     "terminal_guard_tests_passed": 7,
     "windows_runtime_claim_tests_passed": 19

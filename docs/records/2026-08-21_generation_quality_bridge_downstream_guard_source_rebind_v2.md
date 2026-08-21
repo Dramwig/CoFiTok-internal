@@ -87,8 +87,9 @@ tree: 344f6365d2e962e350b73f5ce4bc18c005f6dff9
 branch: analysis/generation-terminal-system-claim-guard-v1
 ```
 
-The exact terminal guard suite passed `7 passed` on Windows and Python compile
-validation passed. The replacement waiter reads the versioned runtime-claim
+The exact terminal guard suite passed `7 passed` on Windows and `7 passed` on
+the Linux server with CUDA hidden; Python compile validation also passed. The
+replacement waiter reads the versioned runtime-claim
 status above while preserving the canonical terminal output expected by the
 already-running downstream factorization supervisor.
 
@@ -131,4 +132,3 @@ dense: 50,000 / 100,000
 This repair restores the terminal evidence path only. It does not establish a
 generation-quality advantage, authorize sampling beyond the locked pipeline,
 authorize promotion or release, or permit full 300K training.
-
