@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "role": "generation_terminal_evidence_chain_restart_rebind_audit",
+  "status": "pass",
+  "observed_at": "2026-08-21T19:35:33+08:00",
+  "meaning": "The active terminal evidence chain is correctly rebound after restart; this is not a generation-quality pass.",
+  "quality_bridge": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "pair_status": "running",
+    "pair_stage": "cofitok_training",
+    "pair_issues": [],
+    "cofitok_step": 90100,
+    "cofitok_samples_seen": 5766400,
+    "dense_step": 50000,
+    "cofitok_90k_checkpoint_audit": {
+      "status": "pass",
+      "path": "reports/checkpoint_audits/cofitok_checkpoint_step_00090000_physical_integrity_audit.json",
+      "bytes": 5242,
+      "sha256": "771ca1974530d5a653e78fd43fed95aec2e55af4cc862b9474f9735515219907",
+      "checkpoint_sha256": "81a919859df79bf7fdef6750602b877512ba683d32c1b3e8586d7f2ca7361954"
+    }
+  },
+  "quality_and_statistical_chain": [
+    {
+      "role": "preceding_matched_uncertainty",
+      "pid": 7817,
+      "revision": "f161fe31453231b7c126d10cfbe78344f10ff463",
+      "tree": "187ead45f9418f8a93f28da6dc229ea78c24a425",
+      "status": "waiting",
+      "detail": "waiting_for_quality_bridge_terminal_result",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_matched_uncertainty_v1/reports/waiter_status.json",
+      "status_snapshot_sha256": "a1f9b15d0bbd4f404e79337238a746f6dc31d0ac0c6cdeadc99b2b75ff8cbba6"
+    },
+    {
+      "role": "terminal_100k_matched_uncertainty",
+      "pid": 7878,
+      "revision": "e9a424b36bc5b951a9a27d7e1dc7f7afc650f706",
+      "tree": "4f4cf5015ceb4be426e314bbd224778860e98d00",
+      "status": "waiting",
+      "detail": "waiting_for_quality_bridge_terminal_result",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_terminal_matched_uncertainty_v1/reports/waiter_status.json",
+      "status_snapshot_sha256": "4cd1588eb97560b1244e1b6b397ea15814d2b9d92519523180caa09f0731be0e"
+    },
+    {
+      "role": "statistical_claim_qualification",
+      "pid": 7937,
+      "revision": "c42ac96c6628ff71f7c67c8957c86ea0523aea0b",
+      "tree": "f94f2deb974b0a347b3a647e68dc3dcba22a0d63",
+      "status": "waiting",
+      "detail": "waiting_for_terminal_quality_and_uncertainty_sources",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_terminal_claim_qualification_v1/reports/waiter_status.json",
+      "status_snapshot_sha256": "3557683cbdc8942aa85f3347592862383993407f7136bc95a5b520c5df3e800e"
+    },
+    {
+      "role": "statistical_claim_language_guard",
+      "pid": 7960,
+      "revision": "5fab079a7b48024b05e2a306b95040baf839e276",
+      "tree": "3f5ae4b7f79a26bb17183caa04394070c5e9dcd8",
+      "status": "waiting",
+      "detail": "waiting_for_quality_claim_source",
+      "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_terminal_claim_language_guard_v1/reports/waiter_status.json",
+      "status_snapshot_sha256": "404ed8d71a7f4bb4088a423933641df08c6153d86e98c640bed3e0fe7321e8e3"
+    }
+  ],
+  "supporting_terminal_chain": [
+    {
+      "role": "requested_class_visual_audit",
+      "pid": 7767,
+      "revision": "c1abf65fdafb8e198a8f1ac59c83b3038a9702b5",
+      "status": "waiting",
+      "detail": "waiting_for_exact_quality_bridge_terminal_result",
+      "status_snapshot_sha256": "fdd9377065b1bcb9ac84c3170bdb2cfdc6577bdbc4b3809f9d4459f9b4150c83"
+    },
+    {
+      "role": "terminal_training_exposure",
+      "pid": 7777,
+      "revision": "e6f083d01062d594c32b1d595a77f0feb81a0ac4",
+      "status": "waiting",
+      "detail": "waiting_for_cofitok_training_milestone",
+      "status_snapshot_sha256": "68ead3f31a3f23d2be38d0fd0384b35821dd9272a31e1617cdb65272269eae4f"
+    },
+    {
+      "role": "exposure_aware_followup",
+      "pid": 7791,
+      "revision": "85e3ece1196fd318cd6823439824e19fca4275a3",
+      "status": "waiting",
+      "detail": "waiting_for_quality_bridge_result",
+      "status_snapshot_sha256": "2f01dde10041096acef81a2abedcedd62b9f657717d38c53f21122c724cbc4dc"
+    },
+    {
+      "role": "terminal_distribution_support",
+      "pid": 7804,
+      "revision": "37cb1fe474197b8ec8c2f94c6cc97cfd11fc29f0",
+      "status": "waiting",
+      "detail": "waiting_for_quality_bridge_followup_decision",
+      "status_snapshot_sha256": "384c56b982a9fed3e10c0fbd8a3208a2a1f66000949157e7d5145b4eebcd59b6"
+    }
+  ],
+  "runtime_and_terminal_system_rebind": {
+    "runtime_fairness": {
+      "pid": 75555,
+      "revision": "85bf1d6ae5b44f401153d0d1e390fc3973ff4bed",
+      "tree": "7900c5617c28c18e328c93aba4c547a3889f1aa7",
+      "status": "waiting",
+      "detail": "waiting_for_both_exact_100k_training_reports",
+      "status_snapshot_sha256": "c1988e4f754b3f4501dde1a68cd330e9c6e8c4229fbebbc2a51d5d0411b0b17d",
+      "deployment_receipt": {
+        "bytes": 4396,
+        "sha256": "032e15155c8d1309b622692ee7ec105bbae3045b29fa0d43810232f28fa0bb3d"
+      },
+      "resume_orphan_coverage_required": "2/2"
+    },
+    "runtime_claim_guard": {
+      "pid": 80962,
+      "revision": "0d1fa8db971c9b33b16f943f511efaf5e51b0ace",
+      "tree": "02bed3345634098b598f534721bd3c336eb41058",
+      "status": "waiting",
+      "detail": "waiting_for_runtime_fairness_source",
+      "status_path": "reports/runtime_compute_claim_guard_v1/waiter_status.2026-08-21_source_rebind_v2.json",
+      "status_snapshot_sha256": "5f2d00ace7f490187a47d40bf7ff10650a7d6477ce4b636f9a99f3961ee5fbbe",
+      "deployment_receipt": {
+        "bytes": 3237,
+        "sha256": "0579e9c91bc36d797eb3f1d71178b9a9e657d918c39dc6a0a2791c15d373af43"
+      }
+    },
+    "terminal_system_guard": {
+      "pid": 81499,
+      "revision": "8ec9a09ddcd981c1ffbd06b6bda81386b33321de",
+      "tree": "344f6365d2e962e350b73f5ce4bc18c005f6dff9",
+      "status": "waiting",
+      "detail": "waiting_for_exact_terminal_system_sources",
+      "status_path": "reports/terminal_system_claim_guard_v1/waiter_status.2026-08-21_runtime_rebind_v2.json",
+      "status_snapshot_sha256": "cbf9aecd8e6c88603a46bdbfeefbaca30d51be23173be09aa63dbe2fe9107dd0",
+      "deployment_receipt": {
+        "bytes": 14310,
+        "sha256": "e5f7eca693cf1156b5b1fbc5373c7f454fc14243709c077075232ddb9121337a"
+      }
+    },
+    "factorization_followup_supervisor": {
+      "pid": 7992,
+      "revision": "8749138f4b8e144ccbcae0f897e3237dc5aacada",
+      "status": "waiting",
+      "detail": "waiting_for_quality_bridge_followup_decision",
+      "terminal_system_source": "reports/terminal_system_claim_guard_v1/terminal_system_claim_guard.json"
+    }
+  },
+  "deprecated_failed_statuses": [
+    {
+      "path": "reports/runtime_compute_claim_guard_v1/waiter_status.json",
+      "status": "failed",
+      "detail": "ValueError: runtime fairness source waiter contract differs",
+      "sha256": "bb3a016b4e837bd28a6cb5b91a20e23a395df53b356a05da2d49dd43cf01b773",
+      "active_process_reference_count": 0
+    },
+    {
+      "path": "reports/terminal_system_claim_guard_v1/waiter_status.json",
+      "status": "failed",
+      "detail": "upstream_terminal_evidence_failed",
+      "sha256": "fe58da8a339738776543bd0dfb8669aeb787bac48ca80472383f037c0517011e",
+      "active_process_reference_count": 0
+    }
+  ],
+  "active_reference_audit": {
+    "old_runtime_claim_status_references": 0,
+    "old_terminal_system_status_references": 0,
+    "old_enospc_followup_status_references": 0,
+    "old_enospc_recovery_status_references": 0,
+    "old_runtime_receipt_v1_references": 0
+  },
+  "resource_isolation": {
+    "gpu_compute_processes": [
+      {
+        "pid": 3773,
+        "role": "quality_bridge_cofitok_trainer",
+        "used_memory_mib": 89398
+      }
+    ],
+    "unrelated_gpu_compute_processes": [],
+    "statistical_waiter_pids_cuda_hidden": [7817, 7878, 7937, 7960, 7992],
+    "low_priority_idle_io_pids": [75555, 80962, 81499],
+    "omp_num_threads": 1,
+    "mkl_num_threads": 1
+  },
+  "missing_terminal_outputs": [
+    "reports/quality_bridge_result.json",
+    "stability_full_data_100k_terminal_matched_uncertainty_v1/terminal_100k/matched_uncertainty.json",
+    "stability_full_data_100k_terminal_claim_qualification_v1/reports/statistical_claim_qualification.json",
+    "stability_full_data_100k_terminal_claim_language_guard_v1/reports/statistical_claim_language_guard.json",
+    "reports/runtime_compute_fairness/final_report.json",
+    "reports/runtime_compute_claim_guard_v1/runtime_compute_claim_guard.json",
+    "reports/terminal_system_claim_guard_v1/terminal_system_claim_guard.json"
+  ],
+  "claim_boundary": {
+    "generation_advantage_proven": false,
+    "formal_generation_quality_claim_allowed": false,
+    "runtime_efficiency_ranking_allowed": false,
+    "broad_generation_superiority_claim_allowed": false,
+    "cross_tier_numeric_ranking_allowed": false,
+    "sampling_launch_allowed": false,
+    "promotion_authorization_allowed": false,
+    "release_authorization_allowed": false,
+    "full_300k_launch_allowed": false
+  }
+}
