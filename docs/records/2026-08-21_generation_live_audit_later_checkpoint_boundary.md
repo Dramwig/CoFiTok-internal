@@ -52,3 +52,17 @@ training report status:    stale_segment_resume_report
 
 The live snapshot SHA256 is
 `68263a9ca1ab3366ae885007b8892fabe26344cbea5b9e6c5cdf13abcccaa23f`.
+
+## Minimal-branch full regression
+
+The minimal branch's full CPU-only suite collected `1,081` tests. Four legacy
+AAAI structure tests derive the paper root from the worktree's physical parent;
+because this isolated worktree is at `C:/qblive`, they look for the unrelated
+path `C:/paper`. Their source is byte-identical after newline normalization to
+the normal-layout test file.
+
+The remaining `1,077` tests ran in this exact minimal worktree to 100% and
+exited with code 0. The four layout-sensitive tests were then run from the
+normal project layout against the same test source and returned `4 passed`.
+CUDA remained hidden throughout. No active remote checkout or process was
+modified.
