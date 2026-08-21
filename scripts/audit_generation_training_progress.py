@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import re
@@ -18,6 +19,9 @@ from cofitok.training.checkpointing import (
 
 
 CHECKPOINT_PATTERN = re.compile(r"checkpoint_step_(\d+)\.pt$")
+RECONCILIATION_PATTERN = re.compile(
+    r"metrics_resume_reconciliation_(\d{8})_[0-9a-f]+\.json$"
+)
 REQUIRED_FINITE_FIELDS = (
     "total",
     "epsilon",
@@ -61,6 +65,86 @@ def _latest_pointer(run_dir: Path) -> dict[str, Any] | None:
         return None
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
+
+
+def _audit_resume_reconciliation_artifacts(
+    run_dir: Path,
+    rows: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Validate content-addressed metrics reconciliation artifacts.
+
+    A segmented run can legitimately retain a report from the previous
+    segment while canonical metrics have advanced after an exact resume.  The
+    reconciliation artifact is the evidence that makes that temporary report
+    mismatch safe to interpret.  This helper is deliberately strict: an
+    unexpected, malformed, or content-mismatched artifact is an audit error,
+    rather than a reason to silently accept the stale report.
+    """
+
+    metrics_path = (run_dir / "train_metrics.jsonl").resolve()
+    canonical_steps = [int(row.get("step", -1)) for row in rows]
+    artifacts: list[dict[str, Any]] = []
+    issues: list[str] = []
+    for path in sorted(run_dir.glob("metrics_resume_reconciliation_*.json")):
+        match = RECONCILIATION_PATTERN.match(path.name)
+        if match is None:
+            issues.append(f"invalid metrics reconciliation filename: {path.name}")
+            continue
+        try:
+            with path.open("r", encoding="utf-8") as handle:
+                report = json.load(handle)
+            if report.get("schema_version") != 1:
+                raise ValueError("schema_version must be 1")
+            if report.get("status") != "reconciled":
+                raise ValueError("status must be reconciled")
+            resume_step = int(report["resume_step"])
+            filename_step = int(match.group(1))
+            if resume_step != filename_step:
+                raise ValueError("filename resume step differs from report")
+            if resume_step < 0 or resume_step not in canonical_steps:
+                raise ValueError("resume step is absent from canonical metrics")
+            retained_rows = int(report["retained_rows"])
+            orphaned_rows = int(report["orphaned_rows"])
+            if retained_rows != sum(step <= resume_step for step in canonical_steps):
+                raise ValueError("retained_rows differs from canonical prefix")
+            if orphaned_rows < 0:
+                raise ValueError("orphaned_rows must be non-negative")
+            report_metrics = Path(str(report["metrics"]))
+            if not report_metrics.is_absolute():
+                report_metrics = run_dir / report_metrics
+            if report_metrics.resolve() != metrics_path:
+                raise ValueError("metrics path is not the canonical train_metrics.jsonl")
+            archive = Path(str(report["orphan_archive"]))
+            if not archive.is_absolute():
+                archive = run_dir / archive
+            if not archive.is_file():
+                raise ValueError("orphan archive is missing")
+            archive_bytes = archive.read_bytes()
+            if hashlib.sha256(archive_bytes).hexdigest() != str(
+                report["orphan_sha256"]
+            ):
+                raise ValueError("orphan archive SHA256 mismatch")
+            archived_rows = [
+                line
+                for line in archive_bytes.decode("utf-8").splitlines()
+                if line.strip()
+            ]
+            if len(archived_rows) != orphaned_rows:
+                raise ValueError("orphaned_rows differs from orphan archive")
+            artifacts.append(
+                {
+                    "path": path.resolve().as_posix(),
+                    "resume_step": resume_step,
+                    "retained_rows": retained_rows,
+                    "orphaned_rows": orphaned_rows,
+                    "orphan_sha256": str(report["orphan_sha256"]),
+                    "orphan_archive": archive.resolve().as_posix(),
+                    "status": "verified",
+                }
+            )
+        except (OSError, TypeError, ValueError, KeyError, json.JSONDecodeError) as error:
+            issues.append(f"metrics reconciliation {path.name} is invalid: {error}")
+    return artifacts, issues
 
 
 def _audit_latest_checkpoint_integrity(
@@ -239,6 +323,7 @@ def audit_progress(
     integrity_policy: str = "legacy_compute",
     config_path: str | Path | None = None,
     allow_stale_incomplete_training_report: bool = False,
+    allow_stale_segment_resume_report: bool = False,
 ) -> dict[str, Any]:
     if expected_steps < 1 or checkpoint_interval < 1 or grad_clip_norm <= 0.0:
         raise ValueError("expected_steps, checkpoint_interval, and grad_clip_norm must be positive")
@@ -338,8 +423,14 @@ def audit_progress(
     issues.extend(integrity_issues)
     warnings.extend(integrity_warnings)
 
+    resume_reconciliation_artifacts, reconciliation_issues = (
+        _audit_resume_reconciliation_artifacts(root, rows)
+    )
+    issues.extend(reconciliation_issues)
+
     training_report = None
     training_report_status = "absent"
+    accepted_segment_resume = None
     training_report_path = root / "training_report.json"
     if training_report_path.is_file():
         with training_report_path.open("r", encoding="utf-8") as handle:
@@ -356,10 +447,36 @@ def audit_progress(
             )
             == report_step
         )
+        stale_segment_report = False
+        if (
+            allow_stale_segment_resume_report
+            and report_step < last_step
+            and training_report.get("training_complete") is False
+            and int(training_report.get("target_steps", -1)) == expected_steps
+            and int(
+                (training_report.get("latest_checkpoint") or {}).get("step", -1)
+            )
+            == report_step
+            and latest_integrity.get("status") == "verified"
+        ):
+            latest_checkpoint_step = int(latest_integrity.get("step", -1))
+            candidates = [
+                artifact
+                for artifact in resume_reconciliation_artifacts
+                if artifact["resume_step"] == latest_checkpoint_step
+                and artifact["resume_step"] > report_step
+            ]
+            if candidates:
+                stale_segment_report = True
+                accepted_segment_resume = max(
+                    candidates, key=lambda artifact: artifact["resume_step"]
+                )
         if report_step == last_step:
             training_report_status = "current"
         elif stale_incomplete_report:
             training_report_status = "stale_incomplete_resume_report"
+        elif stale_segment_report:
+            training_report_status = "stale_segment_resume_report"
         else:
             training_report_status = "mismatched"
             issues.append("training report completed_steps does not match metrics")
@@ -471,6 +588,15 @@ def audit_progress(
                 else None
             ),
         },
+        "resume_reconciliation": {
+            "artifacts": resume_reconciliation_artifacts,
+            "accepted_segment_resume": accepted_segment_resume,
+            "status": (
+                "accepted"
+                if accepted_segment_resume is not None
+                else ("invalid" if reconciliation_issues else "not_used")
+            ),
+        },
         "checkpoint": {
             "interval": checkpoint_interval,
             "status": checkpoint_status,
@@ -517,6 +643,15 @@ def main() -> None:
             "canonical metrics; all other report/metrics mismatches remain invalid"
         ),
     )
+    parser.add_argument(
+        "--allow-stale-segment-resume-report",
+        action="store_true",
+        help=(
+            "accept a prior incomplete segment report only when a newer latest "
+            "checkpoint verifies and a content-addressed metrics reconciliation "
+            "artifact binds that exact resume step"
+        ),
+    )
     args = parser.parse_args()
     required_checkpoint_steps = [
         int(value.strip())
@@ -536,6 +671,7 @@ def main() -> None:
         allow_stale_incomplete_training_report=(
             args.allow_stale_incomplete_training_report
         ),
+        allow_stale_segment_resume_report=args.allow_stale_segment_resume_report,
     )
     write_json_report(args.output, report)
     print(args.output)
