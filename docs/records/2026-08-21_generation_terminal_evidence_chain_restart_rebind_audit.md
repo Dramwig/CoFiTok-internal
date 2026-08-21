@@ -83,6 +83,22 @@ The factorization follow-up supervisor waits on the canonical future
 `terminal_system_claim_guard.json`, so it cannot mistake either preserved old
 failure for a current terminal decision.
 
+## CPU-only regression validation
+
+With `CUDA_VISIBLE_DEVICES=-1`, `OMP_NUM_THREADS=1`, and
+`MKL_NUM_THREADS=1`, the terminal uncertainty, claim qualification/language,
+quality-bridge, completion-audit, checkpoint-retention, and live-audit test
+group returned:
+
+```text
+73 passed in 41.31s
+```
+
+The interpreter came from the existing project environment at
+`C:/qbfd5/.venv/Scripts/python.exe`, while `PYTHONPATH` was explicitly bound to
+the audited `C:/qbevidenceaudit` worktree. No remote process or output was
+modified by this validation.
+
 ## Remaining evidence
 
 The following outputs do not yet exist and remain mandatory:
@@ -103,4 +119,6 @@ Machine-readable snapshot:
 ```text
 artifacts/reports/generation/
 terminal_evidence_chain_restart_rebind_audit_2026-08-21.json
+bytes: 10,117
+SHA256: 5e869355a0666b8175c3452e8d5362377f029f8e632bc6eb6af3b06ba867b632
 ```

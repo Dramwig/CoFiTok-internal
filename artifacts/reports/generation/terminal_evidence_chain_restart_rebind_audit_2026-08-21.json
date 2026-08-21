@@ -193,6 +193,26 @@
     "reports/runtime_compute_claim_guard_v1/runtime_compute_claim_guard.json",
     "reports/terminal_system_claim_guard_v1/terminal_system_claim_guard.json"
   ],
+  "local_cpu_validation": {
+    "status": "pass",
+    "test_count": 73,
+    "elapsed_seconds": 41.31,
+    "cuda_visible_devices": "-1",
+    "omp_num_threads": 1,
+    "mkl_num_threads": 1,
+    "python_environment": "C:/qbfd5/.venv/Scripts/python.exe",
+    "source_worktree": "C:/qbevidenceaudit",
+    "test_files": [
+      "tests/test_generation_stability_live_audit.py",
+      "tests/test_generation_quality_bridge_terminal_uncertainty_waiter.py",
+      "tests/test_generation_quality_bridge_claim_qualification_waiter.py",
+      "tests/test_generation_quality_bridge_claim_language_guard_waiter.py",
+      "tests/test_generation_matched_uncertainty_waiter.py",
+      "tests/test_generation_quality_bridge.py",
+      "tests/test_generation_stability_completion_audit.py",
+      "tests/test_generation_checkpoint_retention.py"
+    ]
+  },
   "claim_boundary": {
     "generation_advantage_proven": false,
     "formal_generation_quality_claim_allowed": false,
