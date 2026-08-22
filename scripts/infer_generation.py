@@ -79,9 +79,13 @@ def _resolve_budgets(raw: str, *, token_count: int) -> list[int]:
     return budgets
 
 
-def parse_args() -> argparse.Namespace:
+def build_parser(*, released: bool = False) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Generate class/seed/prefix-controlled images from a CoFiTok checkpoint."
+        description=(
+            "Generate from a terminal-completion-authorized CoFiTok EMA artifact."
+            if released
+            else "Generate class/seed/prefix-controlled images from a CoFiTok checkpoint."
+        )
     )
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--output-dir", required=True)
@@ -97,22 +101,40 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--guidance-rescale", type=float, default=0.0)
     parser.add_argument("--cfg-batch-mode", choices=["batched", "sequential"], default="batched")
     parser.add_argument("--eta", type=float, default=0.0)
-    parser.add_argument("--weights", choices=["ema", "model"], default="ema")
+    parser.add_argument(
+        "--weights",
+        choices=["ema"] if released else ["ema", "model"],
+        default="ema",
+    )
     parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
-    parser.add_argument("--require-release-authorization", action="store_true")
     parser.add_argument(
         "--completion-receipt",
-        default="",
+        required=released,
+        default=None if released else "",
         help="Terminal generation release receipt for consumer-verifiable inference.",
     )
-    parser.add_argument(
-        "--require-completion-authorization",
-        action="store_true",
-        help="Reject inference unless the terminal completion receipt authorizes this artifact.",
-    )
+    if released:
+        parser.set_defaults(
+            require_release_authorization=True,
+            require_completion_authorization=True,
+        )
+    else:
+        parser.add_argument("--require-release-authorization", action="store_true")
+        parser.add_argument(
+            "--require-completion-authorization",
+            action="store_true",
+            help=(
+                "Reject inference unless the terminal completion receipt "
+                "authorizes this artifact."
+            ),
+        )
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
-    return parser.parse_args()
+    return parser
+
+
+def parse_args() -> argparse.Namespace:
+    return build_parser().parse_args()
 
 
 def _now() -> str:

@@ -67,15 +67,21 @@ After the stability final gate, inference export, and completion audit pass,
 use the smaller release-authorized artifact for routine inference:
 
 ```bash
-python scripts/infer_generation.py \
+python scripts/infer_released_generation.py \
   --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/generation/exports/stability_full_300k_ema_teacher/cofitok_k8_ema_inference.pt \
   --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/inference/deployed \
   --class-ids 207 --seeds 101,102 --prefix-budgets 8 \
   --sample-steps 250 --guidance-scale 1.5 --weights ema --precision bf16 \
-  --require-release-authorization \
-  --completion-receipt /root/autodl-tmp/CoFiTok/checkpoints/generation/exports/stability_full_300k_ema_teacher/release_receipt.json \
-  --require-completion-authorization
+  --completion-receipt /root/autodl-tmp/CoFiTok/checkpoints/generation/exports/stability_full_300k_ema_teacher/release_receipt.json
 ```
+
+The released entrypoint requires the completion receipt, permits only EMA
+artifacts, and always enforces both final-gate and terminal-completion
+authorization before checkpoint deserialization. It does not expose flags that
+can disable either boundary. Keep `infer_generation.py` for scientific
+inspection, formal export smoke tests, and other explicitly non-released
+workflows; do not use that permissive research entrypoint as a production
+launcher.
 
 The artifact contains EMA-applied weights only. Keep `--weights ema`; requesting
 `model` is rejected. The original full training checkpoint remains mandatory for
@@ -101,13 +107,13 @@ bytes and mtimes.
 
 The matched dense control is exported separately as
 `dense_identity_ema_inference.pt` in the same directory. Neither artifact path
-is considered deployable merely because a file exists: production loading must
-keep `--require-release-authorization`, which verifies the embedded final-gate
-identity before model deserialization.
+is considered deployable merely because a file exists: the released entrypoint
+always verifies the embedded final-gate identity before model deserialization.
 
 The completion runbook publishes `release_receipt.json` only after the terminal
-generation-system audit passes. For routine production use, also pass
-`--completion-receipt` and `--require-completion-authorization`. Before
+generation-system audit passes. For routine production use, call
+`infer_released_generation.py` and pass its required `--completion-receipt`.
+Before
 deserialization, the loader rehashes the receipt and its bound completion audit,
 requires the unique passing inference-artifact check, and matches the selected
 artifact's physical SHA/bytes, source-checkpoint SHA, export-manifest identity,

@@ -1037,12 +1037,15 @@ prove that the release gate was enforced before deserialization.
 After that terminal audit passes, the completion runbook publishes a
 deterministic `release_receipt.json` that binds the audit bytes and its unique
 passing inference-artifact evidence to both physical EMA exports. Routine
-production inference can require this stronger consumer boundary with
-`--completion-receipt` and `--require-completion-authorization`; audit or
-artifact drift is rejected before `torch.load`, and the receipt identity is
-frozen into resumable inference metadata. This separates the quality-gated
-exports needed *by* the terminal audit from artifacts proven to have passed the
-entire completion chain. See
+production inference uses `scripts/infer_released_generation.py`, whose required
+`--completion-receipt` and fixed EMA-only policy enforce both final-gate and
+terminal-completion authorization before `torch.load`. The generic
+`infer_generation.py` remains available for scientific inspection and formal
+pre-completion smoke tests, but is not the released launcher. Audit or artifact
+drift is rejected before deserialization, and the receipt identity is frozen
+into resumable inference metadata. This separates the quality-gated exports
+needed *by* the terminal audit from artifacts proven to have passed the entire
+completion chain. See
 `docs/records/2026-08-03_generation_terminal_release_receipt.md`.
 
 The stability completion runbook takes the 50K training and evaluation

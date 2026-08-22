@@ -58,7 +58,9 @@ def test_inference_documentation_uses_release_authorized_stability_paths() -> No
         "cofitok_k8_ema_inference.pt"
     ) in documentation
     assert "dense_identity_ema_inference.pt" in documentation
-    assert "--require-release-authorization" in documentation
+    assert "python scripts/infer_released_generation.py" in documentation
+    assert "--completion-receipt" in documentation
+    assert "always enforces both final-gate and terminal-completion" in documentation
     assert "imagenet256_full_cofitok_k8_300k" not in documentation
     assert "exports/imagenet256_full_300k" not in documentation
 
