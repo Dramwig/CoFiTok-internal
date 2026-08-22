@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "role": "generation_metric_cache_integrity_deployment_evidence",
+  "status": "pass",
+  "detail": "terminal_metrics_trust_receipt_created_and_completion_waiter_rebound",
+  "scientific_state": {
+    "generation_advantage_proven": false,
+    "reason": "matched terminal 100K quality evidence and downstream claim guards are not complete"
+  },
+  "implementation": {
+    "branch": "analysis/generation-metric-cache-integrity-v1-20260822",
+    "revision": "15ccd94f3ecc07e2714b2726e43b55a13d2a1589",
+    "tree": "1d5f62c47be4c186e74bab336409addac7b1c8a2",
+    "remote_checkout": "/root/autodl-tmp/CoFiTok/checkouts/metric-cache-integrity-15ccd94/CoFiTok-internal",
+    "bundle": {
+      "path": "D:/cofitok-bundles/generation-metric-cache-integrity-15ccd94.bundle",
+      "bytes": 31385,
+      "sha256": "bd2cc187475866206ee76da6b8218f8fa42295885ae300ab5e248f5b68204f66",
+      "prerequisite": "c3bfc3dcb4ae732d555191d9d813248b6c0c4941"
+    },
+    "sources": {
+      "audit_generation_metrics_trust_boundary.py": "c3a3cba7b6aa3704b2c6515f46d905a0b136665cb5b83e63250d8e849e986c47",
+      "wait_generation_quality_bridge_terminal_completion_audit.py": "931f910987a478af6029bd1045ae3ddb4f6bde227b53ee1825e598d0757a4f1b",
+      "build_generation_quality_bridge_terminal_completion_audit.py": "c09cafcf1e48ff8d344cc6cd9c7af42c877993b79fb1adf51233914bbe7cd827"
+    }
+  },
+  "validation": {
+    "local_targeted": "44 passed, 1 skipped",
+    "remote_cuda_hidden": "45 passed",
+    "ruff": "pass",
+    "python_compile": "pass"
+  },
+  "metrics_trust_receipt": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/metrics_trust_boundary_v1/metrics_trust_receipt.json",
+    "bytes": 16024,
+    "sha256": "e0fb49e79092c595ade7f3c0a6bc483d37ab46cf0fc4440af143edf7b265a5b1",
+    "status": "pass",
+    "real_set_sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f",
+    "cache_sha256": {
+      "inception_features_2048": "20103588dca9ce47bfceef6b68b473fdf4be720f149d1b8bdd96341d27c10dcd",
+      "inception_logits_unbiased": "21ca9ecf04436f2aefff793fecc87c7bea5d0d3af252a9f8194a1d8f26e540e3",
+      "inception_fid_statistics": "8a7cb9bc4e9f2e637cabb7b3972f3de1b2a16f5acadbd5e67b147b004d200975",
+      "vgg_features_fc2_relu": "2a7d0ecb26ef1bb51f8e2b1e2c5fe447a0564d8199ef836ef3da47591e43c5ef"
+    },
+    "extractor_weight_sha256": {
+      "inception_v3_compat": "6726825d0af5f729cebd5821db510b11b1cfad8faad88a03f1befd49fb9129b2",
+      "vgg16": "397923af8e79cdbb6a7127f12361acd7a2f83e06b05044ddf496e83de57a5bf0"
+    },
+    "torch_fidelity": {
+      "version": "0.4.0",
+      "package_tree_sha256": "18d63b993ad20b24ecdb8b104ad3a6e9ead3e2398beda6587ff932e249fe3216",
+      "dist_info_tree_sha256": "30ae2435a2b333560bcb3b0a8fe43ebcd04f306621db9263d81862fc97183aaf"
+    }
+  },
+  "waiter_rebind": {
+    "launcher": {
+      "path": "D:/cofitok-bundles/launch-terminal-completion-metrics-rebind-v2.py",
+      "bytes": 8890,
+      "sha256": "c896af668f958c670ccde4b1d13a0bd0a108c377d83095db771d6b7c84e3a0e5",
+      "remote_path": "/tmp/launch-terminal-completion-metrics-rebind-v2.py"
+    },
+    "old_process": {
+      "pid": 707023,
+      "start_ticks": 1705025753,
+      "status": "waiting",
+      "historical_status_sha256": "e582e4288527fcd5c4df5f5e4e5111042e62f1a1ccee3878e2b31c46a6355b46",
+      "historical_deployment_sha256": "a175c2f3de7acca1f1b7ddcd66fdaae7ed7689a77b1c1ee7b2a25320183a5994"
+    },
+    "first_replacement_attempt": {
+      "pid": 734766,
+      "status": "failed_closed",
+      "reason": "parent PID was not yet 1",
+      "historical_status_sha256": "1beec92da278c3ac925a9e566e7a13aff365f586dda4ffd1de8cad3d10a5691b"
+    },
+    "active_process": {
+      "pid": 735419,
+      "parent_pid": 1,
+      "start_ticks": 1705694861,
+      "cuda_visible_devices": "",
+      "omp_num_threads": "1",
+      "mkl_num_threads": "1",
+      "nice": 10,
+      "ionice": "idle",
+      "status": "waiting",
+      "status_sha256_at_verification": "8c64672924f0cf12f943e7bffd2625b5f1330fea1416ddf2cea6024b684732d9",
+      "deployment_sha256": "452ff75950488dbcd69bfab6d6fb2f0daa47ecc6fbd51e08ee1ab2147d9c6a02",
+      "canonical_lock_held": true,
+      "duplicate_waiter_count": 0
+    }
+  },
+  "live_chain_snapshot": {
+    "cofitok_step": 100000,
+    "cofitok_samples_seen": 6400000,
+    "dense_step": 73950,
+    "dense_samples_seen": 4732800,
+    "pair_monitor_status": "running",
+    "pair_monitor_issues": [],
+    "sole_gpu_owner_pid": 219593,
+    "terminal_completion_output_exists": false
+  },
+  "authorization_boundary": {
+    "diagnostic_non_authorizing": true,
+    "gpu_execution_allowed": false,
+    "training_launch_allowed": false,
+    "sampling_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "promotion_authorization_allowed": false,
+    "release_authorization_allowed": false,
+    "process_signals_allowed": false
+  }
+}

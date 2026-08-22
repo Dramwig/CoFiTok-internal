@@ -75,3 +75,52 @@ with CUDA hidden before deployment.
 The live GPU chain was not modified while developing or testing this change.
 `generation_advantage_proven` remains `false` until the matched terminal
 quality evidence and downstream claim guards complete.
+
+## Deployment
+
+The implementation execution revision is:
+
+```text
+revision: 15ccd94f3ecc07e2714b2726e43b55a13d2a1589
+tree:     1d5f62c47be4c186e74bab336409addac7b1c8a2
+checkout: /root/autodl-tmp/CoFiTok/checkouts/metric-cache-integrity-15ccd94/CoFiTok-internal
+```
+
+Remote CUDA-hidden validation passed `45` tests. The canonical physical receipt
+was generated and replayed successfully:
+
+```text
+path:   /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/metrics_trust_boundary_v1/metrics_trust_receipt.json
+bytes:  16024
+sha256: e0fb49e79092c595ade7f3c0a6bc483d37ab46cf0fc4440af143edf7b265a5b1
+status: pass
+```
+
+The old terminal-completion waiter was verified by PID, start ticks, command
+line, cwd, sources, runtime limits, and lock ownership before receiving one
+exact `SIGTERM`. Its status and deployment receipt remain under versioned
+historical names. The first replacement attempt correctly failed closed because
+its parent had not yet become PID 1; that status and log were also preserved.
+The active double-forked replacement was then verified as:
+
+```text
+pid:         735419
+parent_pid:  1
+start_ticks: 1705694861
+CUDA:        hidden
+OMP/MKL:     1/1
+nice:        10
+ionice:      idle
+status:      waiting
+duplicates:  0
+```
+
+The exact double-fork launcher used for that recovery is archived on D: and in
+remote `/tmp` with SHA256
+`c896af668f958c670ccde4b1d13a0bd0a108c377d83095db771d6b7c84e3a0e5`.
+
+The exact deployment snapshot is recorded at:
+
+```text
+artifacts/reports/generation/metric_cache_integrity_deployment_2026-08-22.json
+```
