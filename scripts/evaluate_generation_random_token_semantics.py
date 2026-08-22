@@ -397,12 +397,22 @@ def terminal_system_guard_identity(
         name="random-token terminal system guard",
     )
     policy = guard.get("claim_policy")
+    evidence = guard.get("evidence")
+    classifier_integrity = (
+        evidence.get("class_fidelity_classifier_integrity")
+        if isinstance(evidence, dict)
+        else None
+    )
     if (
         guard.get("schema_version") != 1
         or guard.get("role") != "generation_terminal_system_claim_guard"
         or guard.get("status") not in {"pass", "hold"}
         or not isinstance(policy, dict)
         or policy.get("terminal_system_evidence_complete") is not True
+        or policy.get("class_fidelity_classifier_physical_integrity_verified")
+        is not True
+        or not isinstance(classifier_integrity, dict)
+        or classifier_integrity.get("status") != "verified"
         or policy.get("larger_training_launch_allowed") is not False
         or policy.get("inference_export_authorization_allowed") is not False
         or policy.get("release_authorization_allowed") is not False

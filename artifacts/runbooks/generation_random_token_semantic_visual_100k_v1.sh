@@ -101,6 +101,13 @@ if (
     or policy.get("terminal_system_evidence_complete") is not True
 ):
     raise SystemExit(75)
+evidence = guard.get("evidence", {})
+classifier_integrity = evidence.get("class_fidelity_classifier_integrity", {})
+if (
+    policy.get("class_fidelity_classifier_physical_integrity_verified") is not True
+    or classifier_integrity.get("status") != "verified"
+):
+    raise SystemExit("terminal classifier physical-integrity evidence differs")
 guard_false = (
     "larger_training_launch_allowed",
     "inference_export_authorization_allowed",

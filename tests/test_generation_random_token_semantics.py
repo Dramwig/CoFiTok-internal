@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -194,8 +195,12 @@ def test_terminal_system_sources_must_be_complete_and_non_authorizing(tmp_path) 
         "role": "generation_terminal_system_claim_guard",
         "status": "hold",
         "sources": {"quality_bridge_result": quality_identity},
+        "evidence": {
+            "class_fidelity_classifier_integrity": {"status": "verified"},
+        },
         "claim_policy": {
             "terminal_system_evidence_complete": True,
+            "class_fidelity_classifier_physical_integrity_verified": True,
             "larger_training_launch_allowed": False,
             "inference_export_authorization_allowed": False,
             "release_authorization_allowed": False,
@@ -208,6 +213,30 @@ def test_terminal_system_sources_must_be_complete_and_non_authorizing(tmp_path) 
         guard_path,
         terminal_quality_result=quality_identity,
     )["path"] == guard_path.resolve().as_posix()
+
+    missing_policy = copy.deepcopy(guard)
+    missing_policy["claim_policy"].pop(
+        "class_fidelity_classifier_physical_integrity_verified"
+    )
+    write_json_report(guard_path, missing_policy)
+    with pytest.raises(ValueError, match="terminal system guard contract differs"):
+        terminal_system_guard_identity(
+            guard_path,
+            terminal_quality_result=quality_identity,
+        )
+
+    unverified_evidence = copy.deepcopy(guard)
+    unverified_evidence["evidence"]["class_fidelity_classifier_integrity"][
+        "status"
+    ] = "unverified"
+    write_json_report(guard_path, unverified_evidence)
+    with pytest.raises(ValueError, match="terminal system guard contract differs"):
+        terminal_system_guard_identity(
+            guard_path,
+            terminal_quality_result=quality_identity,
+        )
+
+    write_json_report(guard_path, guard)
 
     followup_path = tmp_path / "followup.json"
     write_json_report(followup_path, {"status": "selected"})
@@ -437,6 +466,8 @@ def test_runbook_is_terminal_idle_and_non_authorizing() -> None:
     assert 'result.get("status") != "completed"' in source
     assert 'boundary.get(key) is not False' in source
     assert 'guard.get("status") not in {"pass", "hold"}' in source
+    assert "class_fidelity_classifier_physical_integrity_verified" in source
+    assert "class_fidelity_classifier_integrity" in source
     assert 'supervisor.get("status") != "completed"' in source
     assert 'supervisor.get("detail") != (' in source
     assert "matched_factorization_quality_regression_diagnostic_completed" in source
