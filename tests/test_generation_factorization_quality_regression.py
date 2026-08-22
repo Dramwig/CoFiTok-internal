@@ -34,6 +34,7 @@ from cofitok.generation.factorization_quality_regression import (
     build_source_binding,
     classify_followup_decision,
     validate_execution_authorization,
+    validate_terminal_system_guard,
 )
 from cofitok.generation.quality_bridge_followup import (
     AUTHORIZATION_BOUNDARY as FOLLOWUP_AUTHORIZATION_BOUNDARY,
@@ -160,10 +161,12 @@ def _terminal_guard() -> dict[str, object]:
         "status": "hold",
         "sources": {"quality_bridge_result": _identity("/evidence/result.json")},
         "evidence": {
-            "quality_screen": {"failed_checks": ["matched_fid_tolerance"]}
+            "quality_screen": {"failed_checks": ["matched_fid_tolerance"]},
+            "class_fidelity_classifier_integrity": {"status": "verified"},
         },
         "claim_policy": {
             "terminal_system_evidence_complete": True,
+            "class_fidelity_classifier_physical_integrity_verified": True,
             "larger_training_launch_allowed": False,
             "release_authorization_allowed": False,
             "broad_generation_superiority_claim_allowed": False,
@@ -516,6 +519,37 @@ def test_followup_route_requires_exact_matched_failure() -> None:
     boundary_drift["authorization_boundary"]["recommended_stage_execution_allowed"] = True
     with pytest.raises(ValueError, match="decision is malformed"):
         classify_followup_decision(boundary_drift)
+
+
+def test_terminal_guard_requires_physical_classifier_integrity() -> None:
+    guard = _terminal_guard()
+    validate_terminal_system_guard(
+        guard,
+        expected_quality_result=_identity("/evidence/result.json"),
+        expected_failed_checks=["matched_fid_tolerance"],
+    )
+
+    missing_policy = copy.deepcopy(guard)
+    missing_policy["claim_policy"].pop(
+        "class_fidelity_classifier_physical_integrity_verified"
+    )
+    with pytest.raises(ValueError, match="completed non-authorizing evidence"):
+        validate_terminal_system_guard(
+            missing_policy,
+            expected_quality_result=_identity("/evidence/result.json"),
+            expected_failed_checks=["matched_fid_tolerance"],
+        )
+
+    unverified_evidence = copy.deepcopy(guard)
+    unverified_evidence["evidence"]["class_fidelity_classifier_integrity"][
+        "status"
+    ] = "unverified"
+    with pytest.raises(ValueError, match="completed non-authorizing evidence"):
+        validate_terminal_system_guard(
+            unverified_evidence,
+            expected_quality_result=_identity("/evidence/result.json"),
+            expected_failed_checks=["matched_fid_tolerance"],
+        )
 
 
 def test_source_binding_rejects_terminal_training_exposure_identity_drift() -> None:

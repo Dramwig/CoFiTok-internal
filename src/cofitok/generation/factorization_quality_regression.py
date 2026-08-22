@@ -404,6 +404,11 @@ def validate_terminal_system_guard(
     policy = report.get("claim_policy")
     boundary = report.get("claim_boundary")
     quality_screen = evidence.get("quality_screen") if isinstance(evidence, Mapping) else None
+    classifier_integrity = (
+        evidence.get("class_fidelity_classifier_integrity")
+        if isinstance(evidence, Mapping)
+        else None
+    )
     if (
         report.get("schema_version") != SCHEMA_VERSION
         or report.get("role") != TERMINAL_SYSTEM_GUARD_ROLE
@@ -419,6 +424,10 @@ def validate_terminal_system_guard(
         or quality_screen.get("failed_checks") != expected_failed_checks
         or not isinstance(policy, Mapping)
         or policy.get("terminal_system_evidence_complete") is not True
+        or policy.get("class_fidelity_classifier_physical_integrity_verified")
+        is not True
+        or not isinstance(classifier_integrity, Mapping)
+        or classifier_integrity.get("status") != "verified"
         or policy.get("larger_training_launch_allowed") is not False
         or policy.get("release_authorization_allowed") is not False
         or policy.get("broad_generation_superiority_claim_allowed") is not False
