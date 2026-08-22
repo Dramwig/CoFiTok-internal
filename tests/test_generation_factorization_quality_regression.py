@@ -107,10 +107,11 @@ def _training_exposure_context(
 def _decision(
     *,
     route: str = FOLLOWUP_DECISION_ID,
+    failed_checks: tuple[str, ...] = ("matched_fid_tolerance",),
     exposure_identity: dict[str, object] | None = None,
 ) -> dict[str, object]:
     ordered_checks = sorted(EXPECTED_CHECKS)
-    failed = ["matched_fid_tolerance"]
+    failed = sorted(failed_checks)
     exposure_source = exposure_identity or _identity(
         "/evidence/training_exposure.json", "8"
     )
@@ -487,6 +488,14 @@ def test_preparation_is_permanently_non_authorizing() -> None:
 def test_followup_route_requires_exact_matched_failure() -> None:
     assert classify_followup_decision(_decision()) == "selected"
     assert classify_followup_decision(_decision(route="another_route")) == "not_selected"
+
+    for mixed_failures in (
+        ("matched_fid_tolerance", "class_fidelity"),
+        ("matched_fid_tolerance", "cofitok_absolute_fid"),
+        ("matched_fid_tolerance", "ordered_prefix_rank"),
+    ):
+        with pytest.raises(ValueError, match="trigger differs"):
+            classify_followup_decision(_decision(failed_checks=mixed_failures))
 
     drifted = _decision()
     drifted["recommended_next_stage"]["trigger"]["failed_checks"] = []

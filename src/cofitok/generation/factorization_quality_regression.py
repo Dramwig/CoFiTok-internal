@@ -38,8 +38,8 @@ SCOPE = "imagenet256_full_100k_matched_factorization_rollout_diagnostic_v1"
 FOLLOWUP_DECISION_ID = "run_matched_factorization_quality_regression_probe"
 FOLLOWUP_DECISION_CATEGORY = "matched_quality_regression"
 FOLLOWUP_DECISION_BUILDER_GIT = {
-    "revision": "85e3ece1196fd318cd6823439824e19fca4275a3",
-    "branch": "analysis/generation-quality-bridge-exposure-routing-v1",
+    "revision": "cd78a348769f0efad0d42de063e5b0943444a29b",
+    "branch": "analysis/generation-quality-bridge-class-only-route-v2-20260822",
     "tracked_dirty": False,
 }
 QUALITY_BRIDGE_GIT = {
@@ -385,6 +385,7 @@ def classify_followup_decision(report: Mapping[str, Any]) -> str:
     if (
         recommendation.get("category") != FOLLOWUP_DECISION_CATEGORY
         or not matched_failures
+        or set(observed_failed) != set(matched_failures)
         or not isinstance(trigger, Mapping)
         or trigger.get("failed_checks") != matched_failures
     ):
