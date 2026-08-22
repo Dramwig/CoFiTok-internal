@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import importlib.util
 import json
 import subprocess
 from argparse import Namespace
@@ -12,15 +13,26 @@ from cofitok.inference_replay import file_identity
 from scripts.build_generation_runtime_compute_claim_guard import build_guard
 from scripts.build_generation_runtime_claim_guard_comparison import build_comparison
 from scripts.wait_generation_runtime_claim_guard_comparison import run_waiter
-from tests.test_generation_runtime_compute_claim_guard import (
-    BRANCH,
-    MONITOR,
-    REVISION,
-    _cost,
-    _fairness_report,
-    _pair_report,
-    _write,
+
+
+_FIXTURE_PATH = Path(__file__).with_name(
+    "test_generation_runtime_compute_claim_guard.py"
 )
+_FIXTURE_SPEC = importlib.util.spec_from_file_location(
+    "cofitok_runtime_claim_guard_test_fixtures",
+    _FIXTURE_PATH,
+)
+if _FIXTURE_SPEC is None or _FIXTURE_SPEC.loader is None:
+    raise RuntimeError("runtime claim guard test fixtures could not be loaded")
+_FIXTURES = importlib.util.module_from_spec(_FIXTURE_SPEC)
+_FIXTURE_SPEC.loader.exec_module(_FIXTURES)
+BRANCH = _FIXTURES.BRANCH
+MONITOR = _FIXTURES.MONITOR
+REVISION = _FIXTURES.REVISION
+_cost = _FIXTURES._cost
+_fairness_report = _FIXTURES._fairness_report
+_pair_report = _FIXTURES._pair_report
+_write = _FIXTURES._write
 
 
 CANONICAL_CONTROL = "6" * 40
