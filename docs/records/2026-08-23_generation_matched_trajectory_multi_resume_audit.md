@@ -97,6 +97,12 @@ bytes: 81504
 sha256: 2997d14cf9b78829dd81f0bb70521c6258d78ef01b58365b70a2aec91911cdb5
 ```
 
+Small local evidence copy:
+
+```text
+artifacts/reports/generation/matched_training_trajectory_78k_multi_resume_2026-08-23.json
+```
+
 The exact command was run twice against frozen 78K prefix snapshots and produced the
 same report SHA256 both times.
 
