@@ -43,6 +43,41 @@ GPU_QUERY_COMMAND = [
     "--query-compute-apps=pid,process_name,used_memory,gpu_uuid",
     "--format=csv,noheader,nounits",
 ]
+MATCHED_FACTORIZATION_TERMINAL_DETAIL = (
+    "matched_factorization_quality_regression_diagnostic_completed"
+)
+MATCHED_FACTORIZATION_SCOPE = (
+    "imagenet256_full_100k_matched_factorization_rollout_diagnostic_v1"
+)
+MATCHED_FACTORIZATION_ROUTE = {
+    "id": "run_matched_factorization_quality_regression_probe",
+    "category": "matched_quality_regression",
+}
+MATCHED_FACTORIZATION_FAILED_CHECKS = {
+    "matched_fid_tolerance",
+    "matched_precision_tolerance",
+    "matched_recall_tolerance",
+}
+EXPECTED_FACTORIZATION_SUPERVISOR_CHECKOUT = {
+    "path": (
+        "/root/autodl-tmp/CoFiTok/checkouts/"
+        "factorization-decision-rebind-v3-06154f4/CoFiTok-internal"
+    ),
+    "revision": "06154f41b159c8848000b6aa84f267493c51e3bf",
+    "tree": "a4ee6f6543660bb41e9d3a21b87093dfff154131",
+    "branch": (
+        "analysis/generation-factorization-quality-regression-"
+        "decision-rebind-v3-20260822"
+    ),
+    "tracked_dirty": False,
+}
+MATCHED_FACTORIZATION_SOURCE_KEYS = {
+    "deployment_receipt",
+    "quality_bridge_followup_decision",
+    "source_binding",
+    "execution_authorization",
+    "diagnostic_report",
+}
 
 
 def _read_stable_json(path: Path, *, name: str) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -52,6 +87,16 @@ def _read_stable_json(path: Path, *, name: str) -> tuple[dict[str, Any], dict[st
     if before != after:
         raise ValueError(f"{name} changed while it was being validated")
     return payload, after
+
+
+def _current_bound_identity(value: Any, *, name: str) -> dict[str, Any]:
+    if not isinstance(value, dict) or set(value) != {"path", "bytes", "sha256"}:
+        raise ValueError(f"{name} identity is malformed")
+    path = reject_symlink_chain(value["path"], name=name)
+    current = file_identity(path)
+    if current != value:
+        raise ValueError(f"{name} identity differs from the current file")
+    return current
 
 
 def parse_args() -> argparse.Namespace:
@@ -382,16 +427,18 @@ def factorization_supervisor_status_identity(path: str | Path) -> dict[str, Any]
         name="random-token factorization supervisor status",
     )
     boundary = status.get("authorization_boundary")
+    child_pid = status.get("child_pid")
+    sources = status.get("sources")
     if (
         status.get("schema_version") != 1
         or status.get("role") != "generation_factorization_quality_regression_supervisor"
         or status.get("status") != "completed"
-        or status.get("detail")
-        not in {
-            "factorization_quality_regression_diagnostic_not_selected",
-            "matched_factorization_quality_regression_diagnostic_completed",
-        }
-        or status.get("child_pid") is not None
+        or status.get("detail") != MATCHED_FACTORIZATION_TERMINAL_DETAIL
+        or isinstance(child_pid, bool)
+        or not isinstance(child_pid, int)
+        or child_pid < 1
+        or not isinstance(sources, dict)
+        or not MATCHED_FACTORIZATION_SOURCE_KEYS.issubset(sources)
         or not isinstance(boundary, dict)
         or boundary.get("training_launch_allowed") is not False
         or boundary.get("checkpoint_promotion_allowed") is not False
@@ -400,6 +447,106 @@ def factorization_supervisor_status_identity(path: str | Path) -> dict[str, Any]
         or boundary.get("release_authorization_allowed") is not False
     ):
         raise ValueError("factorization supervisor terminal contract differs")
+
+    bound = {
+        name: _current_bound_identity(sources[name], name=f"factorization {name}")
+        for name in MATCHED_FACTORIZATION_SOURCE_KEYS
+    }
+    deployment, deployment_identity = _read_stable_json(
+        Path(bound["deployment_receipt"]["path"]),
+        name="factorization supervisor deployment receipt",
+    )
+    if (
+        deployment_identity != bound["deployment_receipt"]
+        or deployment.get("schema_version") != 1
+        or deployment.get("role")
+        != "generation_factorization_quality_regression_supervisor_deployment"
+        or deployment.get("status") != "pass"
+        or deployment.get("control", {}).get("checkout")
+        != EXPECTED_FACTORIZATION_SUPERVISOR_CHECKOUT
+        or deployment.get("targets", {}).get("status_output")
+        != source.resolve().as_posix()
+    ):
+        raise ValueError("factorization supervisor deployment binding differs")
+    if status.get("project") != EXPECTED_FACTORIZATION_SUPERVISOR_CHECKOUT["path"]:
+        raise ValueError("factorization supervisor project binding differs")
+
+    source_binding, source_binding_identity = _read_stable_json(
+        Path(bound["source_binding"]["path"]),
+        name="factorization source binding",
+    )
+    selected_route = source_binding.get("selected_route")
+    if (
+        source_binding_identity != bound["source_binding"]
+        or source_binding.get("schema_version") != 1
+        or source_binding.get("role")
+        != "generation_factorization_quality_regression_source_binding"
+        or source_binding.get("status") != "verified"
+        or source_binding.get("scope") != MATCHED_FACTORIZATION_SCOPE
+        or not isinstance(selected_route, dict)
+        or selected_route.get("id") != MATCHED_FACTORIZATION_ROUTE["id"]
+        or selected_route.get("category")
+        != MATCHED_FACTORIZATION_ROUTE["category"]
+        or not isinstance(selected_route.get("failed_checks"), list)
+        or not selected_route["failed_checks"]
+        or not set(selected_route["failed_checks"]).issubset(
+            MATCHED_FACTORIZATION_FAILED_CHECKS
+        )
+        or source_binding.get("sources", {}).get("followup_decision")
+        != bound["quality_bridge_followup_decision"]
+    ):
+        raise ValueError("factorization matched-route source binding differs")
+
+    authorization, authorization_identity = _read_stable_json(
+        Path(bound["execution_authorization"]["path"]),
+        name="factorization execution authorization",
+    )
+    if (
+        authorization_identity != bound["execution_authorization"]
+        or authorization.get("schema_version") != 1
+        or authorization.get("role")
+        != "generation_factorization_quality_regression_execution_authorization"
+        or authorization.get("status") != "authorized"
+        or authorization.get("scope") != MATCHED_FACTORIZATION_SCOPE
+        or authorization.get("source_binding") != bound["source_binding"]
+        or authorization.get("git")
+        != {
+            "revision": EXPECTED_FACTORIZATION_SUPERVISOR_CHECKOUT["revision"],
+            "branch": EXPECTED_FACTORIZATION_SUPERVISOR_CHECKOUT["branch"],
+            "tracked_dirty": False,
+        }
+        or authorization.get("authorization_boundary", {}).get(
+            "training_launch_allowed"
+        )
+        is not False
+        or authorization.get("authorization_boundary", {}).get(
+            "full_300k_launch_allowed"
+        )
+        is not False
+    ):
+        raise ValueError("factorization execution authorization binding differs")
+
+    diagnostic, diagnostic_identity = _read_stable_json(
+        Path(bound["diagnostic_report"]["path"]),
+        name="factorization diagnostic report",
+    )
+    if (
+        diagnostic_identity != bound["diagnostic_report"]
+        or diagnostic.get("schema_version") != 1
+        or diagnostic.get("role")
+        != "generation_factorization_quality_regression_diagnostic"
+        or diagnostic.get("status") != "completed"
+        or diagnostic.get("scope") != MATCHED_FACTORIZATION_SCOPE
+        or diagnostic.get("sources", {}).get("execution_authorization")
+        != bound["execution_authorization"]
+        or diagnostic.get("claim_boundary", {}).get("training_launch_allowed")
+        is not False
+        or diagnostic.get("claim_boundary", {}).get(
+            "quality_advantage_claim_allowed"
+        )
+        is not False
+    ):
+        raise ValueError("factorization diagnostic binding differs")
     return identity
 
 

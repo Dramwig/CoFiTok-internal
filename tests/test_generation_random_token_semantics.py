@@ -7,10 +7,13 @@ import pytest
 import torch
 
 from cofitok.configs import ModelConfig
+from cofitok.inference_replay import file_identity
 from cofitok.models.synthesis import build_synthesis_bank
 from cofitok.reporting import write_json_report
 from scripts.evaluate_generation_random_token_semantics import (
     COMPONENT_PANEL_FILENAME,
+    EXPECTED_FACTORIZATION_SUPERVISOR_CHECKOUT,
+    MATCHED_FACTORIZATION_SCOPE,
     PREFIX_PANEL_FILENAME,
     REPORT_ROLE,
     REPORT_SCHEMA_VERSION,
@@ -206,13 +209,84 @@ def test_terminal_system_sources_must_be_complete_and_non_authorizing(tmp_path) 
         terminal_quality_result=quality_identity,
     )["path"] == guard_path.resolve().as_posix()
 
+    followup_path = tmp_path / "followup.json"
+    write_json_report(followup_path, {"status": "selected"})
+    followup_identity = file_identity(followup_path)
+
+    source_binding_path = tmp_path / "source_binding.json"
+    source_binding = {
+        "schema_version": 1,
+        "role": "generation_factorization_quality_regression_source_binding",
+        "status": "verified",
+        "scope": MATCHED_FACTORIZATION_SCOPE,
+        "sources": {"followup_decision": followup_identity},
+        "selected_route": {
+            "id": "run_matched_factorization_quality_regression_probe",
+            "category": "matched_quality_regression",
+            "failed_checks": ["matched_fid_tolerance"],
+        },
+    }
+    write_json_report(source_binding_path, source_binding)
+    source_binding_identity = file_identity(source_binding_path)
+
+    authorization_path = tmp_path / "execution_authorization.json"
+    authorization = {
+        "schema_version": 1,
+        "role": "generation_factorization_quality_regression_execution_authorization",
+        "status": "authorized",
+        "scope": MATCHED_FACTORIZATION_SCOPE,
+        "source_binding": source_binding_identity,
+        "git": {
+            "revision": EXPECTED_FACTORIZATION_SUPERVISOR_CHECKOUT["revision"],
+            "branch": EXPECTED_FACTORIZATION_SUPERVISOR_CHECKOUT["branch"],
+            "tracked_dirty": False,
+        },
+        "authorization_boundary": {
+            "training_launch_allowed": False,
+            "full_300k_launch_allowed": False,
+        },
+    }
+    write_json_report(authorization_path, authorization)
+    authorization_identity = file_identity(authorization_path)
+
+    diagnostic_path = tmp_path / "diagnostic.json"
+    diagnostic = {
+        "schema_version": 1,
+        "role": "generation_factorization_quality_regression_diagnostic",
+        "status": "completed",
+        "scope": MATCHED_FACTORIZATION_SCOPE,
+        "sources": {"execution_authorization": authorization_identity},
+        "claim_boundary": {
+            "training_launch_allowed": False,
+            "quality_advantage_claim_allowed": False,
+        },
+    }
+    write_json_report(diagnostic_path, diagnostic)
+
     supervisor_path = tmp_path / "supervisor.json"
+    deployment_path = tmp_path / "deployment.json"
+    deployment = {
+        "schema_version": 1,
+        "role": "generation_factorization_quality_regression_supervisor_deployment",
+        "status": "pass",
+        "control": {"checkout": EXPECTED_FACTORIZATION_SUPERVISOR_CHECKOUT},
+        "targets": {"status_output": supervisor_path.resolve().as_posix()},
+    }
+    write_json_report(deployment_path, deployment)
     supervisor = {
         "schema_version": 1,
         "role": "generation_factorization_quality_regression_supervisor",
         "status": "completed",
-        "detail": "factorization_quality_regression_diagnostic_not_selected",
-        "child_pid": None,
+        "detail": "matched_factorization_quality_regression_diagnostic_completed",
+        "child_pid": 12345,
+        "project": EXPECTED_FACTORIZATION_SUPERVISOR_CHECKOUT["path"],
+        "sources": {
+            "deployment_receipt": file_identity(deployment_path),
+            "quality_bridge_followup_decision": followup_identity,
+            "source_binding": source_binding_identity,
+            "execution_authorization": authorization_identity,
+            "diagnostic_report": file_identity(diagnostic_path),
+        },
         "authorization_boundary": {
             "training_launch_allowed": False,
             "checkpoint_promotion_allowed": False,
@@ -225,9 +299,18 @@ def test_terminal_system_sources_must_be_complete_and_non_authorizing(tmp_path) 
     assert factorization_supervisor_status_identity(supervisor_path)["path"] == (
         supervisor_path.resolve().as_posix()
     )
-    supervisor["status"] = "running"
+    supervisor["detail"] = "factorization_quality_regression_diagnostic_not_selected"
+    supervisor["child_pid"] = None
     write_json_report(supervisor_path, supervisor)
     with pytest.raises(ValueError, match="terminal contract"):
+        factorization_supervisor_status_identity(supervisor_path)
+
+    supervisor["detail"] = "matched_factorization_quality_regression_diagnostic_completed"
+    supervisor["child_pid"] = 12345
+    write_json_report(supervisor_path, supervisor)
+    diagnostic["claim_boundary"]["quality_advantage_claim_allowed"] = True
+    write_json_report(diagnostic_path, diagnostic)
+    with pytest.raises(ValueError, match="identity differs"):
         factorization_supervisor_status_identity(supervisor_path)
 
 
@@ -355,9 +438,15 @@ def test_runbook_is_terminal_idle_and_non_authorizing() -> None:
     assert 'boundary.get(key) is not False' in source
     assert 'guard.get("status") not in {"pass", "hold"}' in source
     assert 'supervisor.get("status") != "completed"' in source
+    assert 'supervisor.get("detail") != (' in source
+    assert "matched_factorization_quality_regression_diagnostic_completed" in source
+    assert "factorization_quality_regression_diagnostic_not_selected" not in source
+    assert 'required_sources.issubset(supervisor.get("sources", {}))' in source
     assert "raise SystemExit(75)" in source
     assert "nvidia-smi --query-compute-apps=pid" in source
     assert "GPU is not idle" in source
+    assert 'REQUIRED_IDLE_GPU_POLLS="5"' in source
+    assert "idle_poll <= REQUIRED_IDLE_GPU_POLLS" in source
     assert "command -v flock" in source
     assert 'exec 8>"${RUNBOOK_LOCK}"' in source
     assert "flock -n 8" in source

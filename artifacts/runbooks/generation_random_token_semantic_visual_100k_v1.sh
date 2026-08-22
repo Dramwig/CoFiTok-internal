@@ -12,6 +12,8 @@ OUTPUT_DIR="/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_
 RUNBOOK_LOCK="${OUTPUT_DIR}.runbook.lock"
 EXPECTED_CHECKPOINT_SHA256="b36a92229ba2dd021db9c7585970ddda1d17d1919ca6b0eec0362b06d4bd462e"
 EXPECTED_CHECKPOINT_STEP="100000"
+REQUIRED_IDLE_GPU_POLLS="5"
+IDLE_GPU_POLL_SECONDS="60"
 
 : "${EXPECTED_EVALUATOR_REVISION:?set exact evaluator revision}"
 : "${EXPECTED_EVALUATOR_TREE:?set exact evaluator tree}"
@@ -110,13 +112,24 @@ if any(policy.get(key) is not False for key in guard_false):
     raise SystemExit("terminal system guard claim boundary differs")
 
 supervisor = read_object(sys.argv[3])
-if supervisor.get("status") != "completed" or supervisor.get("child_pid") is not None:
+if supervisor.get("status") != "completed":
     raise SystemExit(75)
-if supervisor.get("detail") not in {
-    "factorization_quality_regression_diagnostic_not_selected",
-    "matched_factorization_quality_regression_diagnostic_completed",
-}:
+if supervisor.get("detail") != (
+    "matched_factorization_quality_regression_diagnostic_completed"
+):
     raise SystemExit("factorization supervisor terminal detail differs")
+child_pid = supervisor.get("child_pid")
+if isinstance(child_pid, bool) or not isinstance(child_pid, int) or child_pid < 1:
+    raise SystemExit("factorization supervisor child identity differs")
+required_sources = {
+    "deployment_receipt",
+    "quality_bridge_followup_decision",
+    "source_binding",
+    "execution_authorization",
+    "diagnostic_report",
+}
+if not required_sources.issubset(supervisor.get("sources", {})):
+    raise SystemExit("factorization supervisor source set differs")
 supervisor_boundary = supervisor.get("authorization_boundary", {})
 supervisor_false = (
     "training_launch_allowed",
@@ -129,14 +142,19 @@ if any(supervisor_boundary.get(key) is not False for key in supervisor_false):
     raise SystemExit("factorization supervisor authorization boundary differs")
 PY
 
-mapfile -t GPU_PIDS < <(
-  nvidia-smi --query-compute-apps=pid --format=csv,noheader,nounits 2>/dev/null \
-    | sed '/^[[:space:]]*$/d'
-)
-if (( ${#GPU_PIDS[@]} != 0 )); then
-  echo "GPU is not idle; refusing random-token visual diagnostic: ${GPU_PIDS[*]}" >&2
-  exit 75
-fi
+for ((idle_poll = 1; idle_poll <= REQUIRED_IDLE_GPU_POLLS; idle_poll++)); do
+  mapfile -t GPU_PIDS < <(
+    nvidia-smi --query-compute-apps=pid --format=csv,noheader,nounits 2>/dev/null \
+      | sed '/^[[:space:]]*$/d'
+  )
+  if (( ${#GPU_PIDS[@]} != 0 )); then
+    echo "GPU is not idle; refusing random-token visual diagnostic: ${GPU_PIDS[*]}" >&2
+    exit 75
+  fi
+  if (( idle_poll < REQUIRED_IDLE_GPU_POLLS )); then
+    sleep "${IDLE_GPU_POLL_SECONDS}"
+  fi
+done
 RESUME_ARGS=()
 if [[ -e "${OUTPUT_DIR}" && ! -d "${OUTPUT_DIR}" ]]; then
   echo "random-token output root exists but is not a directory" >&2
