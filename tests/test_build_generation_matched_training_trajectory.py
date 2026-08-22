@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from copy import deepcopy
 
@@ -22,7 +23,11 @@ def _config(*, dense: bool) -> dict:
             "gradient_accumulation_steps": 2,
             "log_interval": 50,
         },
-        "runtime": {"evaluation_interval": 100, "steps": 500},
+        "runtime": {
+            "evaluation_interval": 100,
+            "steps": 500,
+            "protected_checkpoint_steps": [],
+        },
         "model": {
             "base_channels": 32,
             "token_count": 1 if dense else 8,
@@ -111,7 +116,7 @@ def test_report_binds_matched_validation_without_claiming_quality() -> None:
     )
 
     assert report["status"] == "pass"
-    assert report["schema_version"] == 3
+    assert report["schema_version"] == 4
     assert report["images_seen_per_method"] == 1_600
     assert report["contract"]["generation_pair_contract"]["valid"] is True
     paired = report["paired_fixed_validation"]
@@ -221,6 +226,218 @@ def test_report_accepts_reconciled_resume_with_bound_orphan_evidence() -> None:
     assert resume["orphan_sha256"] == "a" * 64
 
 
+def test_report_accepts_multiple_manifest_bound_resume_events() -> None:
+    first = {
+        "schema_version": 1,
+        "status": "reconciled",
+        "resume_step": 125,
+        "retained_rows": 3,
+        "orphaned_rows": 2,
+        "orphan_archive": "/runs/orphan-125.jsonl",
+        "orphan_sha256": "a" * 64,
+    }
+    latest = {
+        "schema_version": 1,
+        "status": "unchanged",
+        "resume_step": 175,
+        "retained_rows": 5,
+        "orphaned_rows": 0,
+        "orphan_archive": None,
+        "orphan_sha256": None,
+    }
+    cofitok_manifest = _manifest(dense=False)
+    cofitok_manifest["resume"] = "/runs/checkpoint_step_00000175.pt"
+    cofitok_manifest["metrics_resume_reconciliation"] = latest
+    cofitok = _metrics(dense=False)
+    for step in (126, 176):
+        cofitok["rows"].append(
+            {
+                "step": step,
+                "samples_seen": step * 8,
+                "epsilon": 0.01,
+                "rollout_consistency": 0.1,
+                "rollout_consistency_scale": step / 200,
+                "ema_teacher_consistency": 0.05,
+                "ema_teacher_consistency_scale": (step - 100) / 100,
+            }
+        )
+    cofitok["rows"].sort(key=lambda row: row["step"])
+
+    report = trajectory.build_report(
+        cofitok_metrics=cofitok,
+        dense_metrics=_metrics(dense=True),
+        cofitok_manifest=cofitok_manifest,
+        dense_manifest=_manifest(dense=True),
+        cutoff_step=200,
+        expected_revision=REVISION,
+        expected_branch=BRANCH,
+        cofitok_reconciliation_history=[first, latest],
+    )
+
+    result = report["trajectories"]["cofitok"]
+    assert result["resume_boundary_steps"] == [126, 176]
+    assert result["metrics_resume"]["event_count"] == 2
+    assert [event["resume_step"] for event in result["metrics_resume"]["events"]] == [
+        125,
+        175,
+    ]
+
+
+def test_report_accepts_protected_milestone_segment_boundary() -> None:
+    cofitok_manifest = _manifest(dense=False)
+    dense_manifest = _manifest(dense=True)
+    for manifest in (cofitok_manifest, dense_manifest):
+        manifest["config"]["runtime"]["protected_checkpoint_steps"] = [125]
+    cofitok = _metrics(dense=False)
+    cofitok["rows"].append(
+        {
+            "step": 126,
+            "samples_seen": 1_008,
+            "epsilon": 0.01,
+            "rollout_consistency": 0.1,
+            "rollout_consistency_scale": 0.63,
+            "ema_teacher_consistency": 0.05,
+            "ema_teacher_consistency_scale": 0.26,
+        }
+    )
+    cofitok["rows"].sort(key=lambda row: row["step"])
+
+    report = trajectory.build_report(
+        cofitok_metrics=cofitok,
+        dense_metrics=_metrics(dense=True),
+        cofitok_manifest=cofitok_manifest,
+        dense_manifest=dense_manifest,
+        cutoff_step=200,
+        expected_revision=REVISION,
+        expected_branch=BRANCH,
+    )
+
+    boundary = report["trajectories"]["cofitok"]["resume_boundary_evidence"]
+    assert boundary == [
+        {
+            "resume_step": 125,
+            "first_post_resume_step": 126,
+            "metrics_reconciliation": None,
+            "protected_checkpoint_schedule": True,
+        }
+    ]
+
+
+def test_report_rejects_reconciliation_history_not_ending_at_manifest() -> None:
+    cofitok_manifest = _manifest(dense=False)
+    cofitok_manifest["resume"] = "/runs/checkpoint_step_00000175.pt"
+    cofitok_manifest["metrics_resume_reconciliation"] = {
+        "schema_version": 1,
+        "status": "unchanged",
+        "resume_step": 175,
+        "retained_rows": 4,
+        "orphaned_rows": 0,
+        "orphan_archive": None,
+        "orphan_sha256": None,
+    }
+
+    with pytest.raises(ValueError, match="does not end at the manifest resume"):
+        trajectory.build_report(
+            cofitok_metrics=_metrics(dense=False),
+            dense_metrics=_metrics(dense=True),
+            cofitok_manifest=cofitok_manifest,
+            dense_manifest=_manifest(dense=True),
+            cutoff_step=200,
+            expected_revision=REVISION,
+            expected_branch=BRANCH,
+            cofitok_reconciliation_history=[
+                {
+                    "schema_version": 1,
+                    "status": "unchanged",
+                    "resume_step": 125,
+                    "retained_rows": 3,
+                    "orphaned_rows": 0,
+                    "orphan_archive": None,
+                    "orphan_sha256": None,
+                }
+            ],
+        )
+
+
+def test_reconciliation_loader_physically_binds_full_history(tmp_path) -> None:
+    metrics = tmp_path / "train_metrics.jsonl"
+    metrics.write_text("{}\n", encoding="utf-8")
+    reports = []
+    events = []
+    for step, content in ((125, b"first orphan\n"), (175, b"second orphan\n")):
+        orphan_sha = hashlib.sha256(content).hexdigest()
+        orphan = tmp_path / (
+            f"train_metrics_orphaned_at_resume_{step:08d}_{orphan_sha[:12]}.jsonl"
+        )
+        orphan.write_bytes(content)
+        event = {
+            "schema_version": 1,
+            "status": "reconciled",
+            "resume_step": step,
+            "metrics": metrics.resolve().as_posix(),
+            "retained_rows": 3 if step == 125 else 5,
+            "orphaned_rows": 1,
+            "orphan_archive": orphan.resolve().as_posix(),
+            "orphan_sha256": orphan_sha,
+        }
+        report = tmp_path / (
+            f"metrics_resume_reconciliation_{step:08d}_{orphan_sha[:12]}.json"
+        )
+        report.write_text(json.dumps(event), encoding="utf-8")
+        reports.append(report)
+        events.append(event)
+    manifest = {
+        "metrics_resume_reconciliation": {
+            **events[-1],
+            "report": reports[-1].resolve().as_posix(),
+        }
+    }
+
+    loaded, sources = trajectory._load_reconciliation_history(
+        reports,
+        metrics_path=metrics,
+        manifest=manifest,
+        label="cofitok",
+    )
+
+    assert loaded == events
+    assert [source["resume_step"] for source in sources] == [125, 175]
+    assert all(source["orphan_archive"]["sha256"] for source in sources)
+
+
+def test_reconciliation_loader_rejects_orphan_payload_drift(tmp_path) -> None:
+    metrics = tmp_path / "train_metrics.jsonl"
+    metrics.write_text("{}\n", encoding="utf-8")
+    orphan = tmp_path / "orphan.jsonl"
+    orphan.write_text("tampered\n", encoding="utf-8")
+    event = {
+        "schema_version": 1,
+        "status": "reconciled",
+        "resume_step": 125,
+        "metrics": metrics.resolve().as_posix(),
+        "retained_rows": 3,
+        "orphaned_rows": 1,
+        "orphan_archive": orphan.resolve().as_posix(),
+        "orphan_sha256": "a" * 64,
+    }
+    report = tmp_path / "reconciliation.json"
+    report.write_text(json.dumps(event), encoding="utf-8")
+    manifest = {
+        "metrics_resume_reconciliation": {
+            **event,
+            "report": report.resolve().as_posix(),
+        }
+    }
+
+    with pytest.raises(ValueError, match="orphan SHA256 differs"):
+        trajectory._load_reconciliation_history(
+            [report],
+            metrics_path=metrics,
+            manifest=manifest,
+            label="cofitok",
+        )
+
+
 def test_report_rejects_reconciled_resume_without_bound_orphan_hash() -> None:
     cofitok_manifest = _manifest(dense=False)
     cofitok_manifest["resume"] = "/runs/checkpoint_step_00000125.pt"
@@ -261,7 +478,7 @@ def test_report_rejects_unbound_irregular_logging_step() -> None:
         },
     )
 
-    with pytest.raises(ValueError, match="exact logging schedule"):
+    with pytest.raises(ValueError, match="irregular logging step|exact logging schedule"):
         trajectory.build_report(
             cofitok_metrics=cofitok,
             dense_metrics=_metrics(dense=True),

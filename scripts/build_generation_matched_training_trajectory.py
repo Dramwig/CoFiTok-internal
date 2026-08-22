@@ -36,6 +36,24 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--dense-metrics", type=Path, required=True)
     parser.add_argument("--cofitok-manifest", type=Path, required=True)
     parser.add_argument("--dense-manifest", type=Path, required=True)
+    parser.add_argument(
+        "--cofitok-reconciliation",
+        type=Path,
+        action="append",
+        help=(
+            "Historical CoFiTok metrics-resume reconciliation report. Repeat in "
+            "strictly increasing resume-step order when the run resumed more than once."
+        ),
+    )
+    parser.add_argument(
+        "--dense-reconciliation",
+        type=Path,
+        action="append",
+        help=(
+            "Historical dense metrics-resume reconciliation report. Repeat in "
+            "strictly increasing resume-step order when the run resumed more than once."
+        ),
+    )
     parser.add_argument("--cutoff-step", type=int, required=True)
     parser.add_argument("--expected-revision", required=True)
     parser.add_argument("--expected-branch", required=True)
@@ -110,38 +128,13 @@ def _is_hex_digest(value: Any, *, length: int) -> bool:
     return True
 
 
-def _validate_metrics_resume(
-    manifest: dict[str, Any],
+def _normalize_reconciliation(
+    reconciliation: Any,
     *,
     label: str,
 ) -> dict[str, Any]:
-    resume = manifest.get("resume")
-    reconciliation = manifest.get("metrics_resume_reconciliation")
-    if resume is None:
-        if reconciliation is not None:
-            raise ValueError(
-                f"{label} manifest has metrics resume evidence without a resume checkpoint"
-            )
-        return {
-            "resumed": False,
-            "checkpoint": None,
-            "resume_step": None,
-            "first_post_resume_step": None,
-            "reconciliation_status": None,
-            "retained_rows": None,
-            "orphaned_rows": None,
-            "orphan_archive": None,
-            "orphan_sha256": None,
-        }
-    if not isinstance(resume, str) or not resume:
-        raise ValueError(f"{label} manifest has an invalid resume checkpoint")
-    checkpoint_name = resume.replace("\\", "/").rsplit("/", 1)[-1]
-    checkpoint_match = re.fullmatch(r"checkpoint_step_(\d{8})\.pt", checkpoint_name)
-    if checkpoint_match is None:
-        raise ValueError(f"{label} manifest resume checkpoint name is invalid")
-    checkpoint_step = int(checkpoint_match.group(1))
     if not isinstance(reconciliation, dict):
-        raise ValueError(f"{label} manifest lacks metrics resume reconciliation")
+        raise ValueError(f"{label} metrics resume reconciliation is not an object")
     if int(reconciliation.get("schema_version", 0)) != 1:
         raise ValueError(f"{label} metrics resume reconciliation schema is invalid")
     status = reconciliation.get("status")
@@ -155,10 +148,6 @@ def _validate_metrics_resume(
         raise ValueError(
             f"{label} metrics resume reconciliation counts are invalid"
         ) from error
-    if resume_step != checkpoint_step:
-        raise ValueError(
-            f"{label} resume checkpoint and metrics reconciliation steps differ"
-        )
     if retained_rows < 0 or orphaned_rows < 0:
         raise ValueError(f"{label} metrics resume reconciliation counts are negative")
     orphan_archive = reconciliation.get("orphan_archive")
@@ -183,8 +172,6 @@ def _validate_metrics_resume(
                 f"{label} reconciled metrics resume lacks bound orphan evidence"
             )
     return {
-        "resumed": True,
-        "checkpoint": resume,
         "resume_step": resume_step,
         "first_post_resume_step": resume_step + 1,
         "reconciliation_status": status,
@@ -193,6 +180,162 @@ def _validate_metrics_resume(
         "orphan_archive": orphan_archive,
         "orphan_sha256": orphan_sha256,
     }
+
+
+def _validate_metrics_resume(
+    manifest: dict[str, Any],
+    *,
+    label: str,
+    reconciliation_history: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    resume = manifest.get("resume")
+    reconciliation = manifest.get("metrics_resume_reconciliation")
+    if resume is None:
+        if reconciliation is not None:
+            raise ValueError(
+                f"{label} manifest has metrics resume evidence without a resume checkpoint"
+            )
+        if reconciliation_history:
+            raise ValueError(
+                f"{label} reconciliation history exists without a resume checkpoint"
+            )
+        return {
+            "resumed": False,
+            "checkpoint": None,
+            "resume_step": None,
+            "first_post_resume_step": None,
+            "reconciliation_status": None,
+            "retained_rows": None,
+            "orphaned_rows": None,
+            "orphan_archive": None,
+            "orphan_sha256": None,
+            "event_count": 0,
+            "events": [],
+        }
+    if not isinstance(resume, str) or not resume:
+        raise ValueError(f"{label} manifest has an invalid resume checkpoint")
+    checkpoint_name = resume.replace("\\", "/").rsplit("/", 1)[-1]
+    checkpoint_match = re.fullmatch(r"checkpoint_step_(\d{8})\.pt", checkpoint_name)
+    if checkpoint_match is None:
+        raise ValueError(f"{label} manifest resume checkpoint name is invalid")
+    checkpoint_step = int(checkpoint_match.group(1))
+    current = _normalize_reconciliation(reconciliation, label=label)
+    if current["resume_step"] != checkpoint_step:
+        raise ValueError(
+            f"{label} resume checkpoint and metrics reconciliation steps differ"
+        )
+    if reconciliation_history is None:
+        events = [current]
+    else:
+        events = [
+            _normalize_reconciliation(
+                event,
+                label=f"{label} reconciliation history event {index}",
+            )
+            for index, event in enumerate(reconciliation_history)
+        ]
+        if not events or events[-1] != current:
+            raise ValueError(
+                f"{label} reconciliation history does not end at the manifest resume"
+            )
+    resume_steps = [int(event["resume_step"]) for event in events]
+    if resume_steps != sorted(set(resume_steps)):
+        raise ValueError(
+            f"{label} reconciliation history steps are not strictly increasing"
+        )
+    return {
+        "resumed": True,
+        "checkpoint": resume,
+        **current,
+        "event_count": len(events),
+        "events": events,
+    }
+
+
+def _load_reconciliation_history(
+    paths: list[Path] | None,
+    *,
+    metrics_path: Path,
+    manifest: dict[str, Any],
+    label: str,
+) -> tuple[list[dict[str, Any]] | None, list[dict[str, Any]]]:
+    if paths is None:
+        return None, []
+    if not paths:
+        raise ValueError(f"{label} reconciliation path list is empty")
+    resolved_metrics = metrics_path.resolve()
+    events: list[dict[str, Any]] = []
+    sources: list[dict[str, Any]] = []
+    resolved_paths: list[Path] = []
+    for index, path in enumerate(paths):
+        resolved = path.resolve()
+        if not resolved.is_file():
+            raise ValueError(f"{label} reconciliation report is absent: {resolved}")
+        payload = _read_object(resolved)
+        normalized = _normalize_reconciliation(
+            payload,
+            label=f"{label} reconciliation report {index}",
+        )
+        payload_metrics = payload.get("metrics")
+        if (
+            not isinstance(payload_metrics, str)
+            or Path(payload_metrics).resolve() != resolved_metrics
+        ):
+            raise ValueError(
+                f"{label} reconciliation report {index} binds another metrics file"
+            )
+        orphan_source = None
+        if normalized["reconciliation_status"] == "reconciled":
+            archive = Path(str(normalized["orphan_archive"])).resolve()
+            if not archive.is_file():
+                raise ValueError(
+                    f"{label} reconciliation report {index} orphan archive is absent"
+                )
+            orphan_source = _source(archive)
+            if orphan_source["sha256"] != normalized["orphan_sha256"]:
+                raise ValueError(
+                    f"{label} reconciliation report {index} orphan SHA256 differs"
+                )
+        events.append(payload)
+        resolved_paths.append(resolved)
+        sources.append(
+            {
+                "report": _source(resolved),
+                "orphan_archive": orphan_source,
+                "resume_step": normalized["resume_step"],
+            }
+        )
+    current = manifest.get("metrics_resume_reconciliation")
+    if not isinstance(current, dict):
+        raise ValueError(f"{label} manifest lacks metrics resume reconciliation")
+    current_report = current.get("report")
+    if isinstance(current_report, str):
+        if Path(current_report).resolve() != resolved_paths[-1]:
+            raise ValueError(
+                f"{label} latest reconciliation source does not match the manifest report"
+            )
+    elif current_report is None and current.get("status") == "unchanged":
+        if _normalize_reconciliation(
+            events[-1],
+            label=f"{label} latest persisted reconciliation",
+        ) != _normalize_reconciliation(
+            current,
+            label=f"{label} manifest reconciliation",
+        ):
+            events.append(current)
+            sources.append(
+                {
+                    "report": None,
+                    "orphan_archive": None,
+                    "resume_step": int(current["resume_step"]),
+                    "manifest_bound": True,
+                }
+            )
+    else:
+        raise ValueError(
+            f"{label} latest reconciliation source is not bound by the manifest"
+        )
+    return events, sources
 
 
 def _read_metrics_prefix(path: Path, *, cutoff_step: int) -> dict[str, Any]:
@@ -244,6 +387,7 @@ def _validate_manifest(
     label: str,
     expected_revision: str,
     expected_branch: str,
+    reconciliation_history: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     git = manifest.get("git")
     if not isinstance(git, dict):
@@ -286,7 +430,11 @@ def _validate_manifest(
         "runtime_environment_sha256": runtime_identity,
         "parameter_count": parameters,
         "config": config,
-        "metrics_resume": _validate_metrics_resume(manifest, label=label),
+        "metrics_resume": _validate_metrics_resume(
+            manifest,
+            label=label,
+            reconciliation_history=reconciliation_history,
+        ),
     }
 
 
@@ -301,12 +449,41 @@ def _expected_steps(
     if cutoff_step % log_interval:
         raise ValueError("cutoff_step must be divisible by the matched log interval")
     expected = {1, *range(log_interval, cutoff_step + 1, log_interval)}
-    first_post_resume_step = metrics_resume.get("first_post_resume_step")
-    if first_post_resume_step is not None:
-        step = int(first_post_resume_step)
+    events = metrics_resume.get("events")
+    if events is None:
+        first_post_resume_step = metrics_resume.get("first_post_resume_step")
+        events = (
+            []
+            if first_post_resume_step is None
+            else [{"first_post_resume_step": first_post_resume_step}]
+        )
+    for event in events:
+        step = int(event["first_post_resume_step"])
         if step <= cutoff_step:
             expected.add(step)
     return sorted(expected)
+
+
+def _protected_checkpoint_steps(
+    config: dict[str, Any],
+    *,
+    label: str,
+) -> list[int]:
+    runtime = config.get("runtime")
+    if not isinstance(runtime, dict):
+        raise ValueError(f"{label} config lacks runtime settings")
+    raw = runtime.get("protected_checkpoint_steps", [])
+    if not isinstance(raw, list):
+        raise ValueError(f"{label} protected checkpoint steps are invalid")
+    try:
+        result = [int(step) for step in raw]
+    except (TypeError, ValueError) as error:
+        raise ValueError(f"{label} protected checkpoint steps are invalid") from error
+    if any(step < 1 for step in result) or result != sorted(set(result)):
+        raise ValueError(
+            f"{label} protected checkpoint steps are not strictly increasing"
+        )
+    return result
 
 
 def _validate_rows(
@@ -318,27 +495,40 @@ def _validate_rows(
     evaluation_interval: int,
     effective_batch: int,
     metrics_resume: dict[str, Any],
+    protected_checkpoint_steps: list[int],
 ) -> dict[str, Any]:
     steps = [int(row["step"]) for row in rows]
-    expected = _expected_steps(
+    required = _expected_steps(
         cutoff_step=cutoff_step,
         log_interval=log_interval,
         metrics_resume=metrics_resume,
     )
+    base = {1, *range(log_interval, cutoff_step + 1, log_interval)}
+    required_set = set(required)
+    observed_set = set(steps)
+    protected_boundaries = {
+        step + 1
+        for step in protected_checkpoint_steps
+        if step + 1 <= cutoff_step
+    }
+    extra = observed_set - required_set
+    if extra - protected_boundaries:
+        raise ValueError(f"{label} metrics contain an unbound irregular logging step")
+    expected = sorted(required_set | extra)
     if steps != expected:
         raise ValueError(f"{label} metrics do not follow the exact logging schedule")
-    resume_step = metrics_resume.get("resume_step")
-    retained_rows = metrics_resume.get("retained_rows")
-    if resume_step is not None:
-        observed_retained_rows = sum(step <= int(resume_step) for step in steps)
+    for event in metrics_resume.get("events", []):
+        resume_step = int(event["resume_step"])
+        retained_rows = int(event["retained_rows"])
+        observed_retained_rows = sum(step <= resume_step for step in steps)
         if int(resume_step) <= cutoff_step:
             if observed_retained_rows != int(retained_rows):
                 raise ValueError(
-                    f"{label} metrics resume retained-row count does not match the prefix"
+                    f"{label} metrics resume retained-row count does not match the prefix at step {resume_step}"
                 )
         elif int(retained_rows) < observed_retained_rows:
             raise ValueError(
-                f"{label} metrics resume retained-row count is smaller than the prefix"
+                f"{label} metrics resume retained-row count is smaller than the prefix at step {resume_step}"
             )
     for row in rows:
         step = int(row["step"])
@@ -390,10 +580,23 @@ def _validate_rows(
         "steps_exact": True,
         "metrics_resume": metrics_resume,
         "metrics_resume_retained_rows_verified": True,
-        "resume_boundary_steps": [
-            step
-            for step in expected
-            if step not in {1, *range(log_interval, cutoff_step + 1, log_interval)}
+        "resume_boundary_steps": sorted(observed_set - base),
+        "resume_boundary_evidence": [
+            {
+                "resume_step": step - 1,
+                "first_post_resume_step": step,
+                "metrics_reconciliation": next(
+                    (
+                        event
+                        for event in metrics_resume.get("events", [])
+                        if int(event["first_post_resume_step"]) == step
+                    ),
+                    None,
+                ),
+                "protected_checkpoint_schedule": (step - 1)
+                in protected_checkpoint_steps,
+            }
+            for step in sorted(observed_set - base)
         ],
         "samples_seen_exact": True,
         "validation_event_count": len(validation_rows),
@@ -620,6 +823,8 @@ def build_report(
     cutoff_step: int,
     expected_revision: str,
     expected_branch: str,
+    cofitok_reconciliation_history: list[dict[str, Any]] | None = None,
+    dense_reconciliation_history: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     if not _is_hex_digest(expected_revision, length=40):
         raise ValueError("expected_revision must be a full 40-character revision")
@@ -628,12 +833,14 @@ def build_report(
         label="cofitok",
         expected_revision=expected_revision,
         expected_branch=expected_branch,
+        reconciliation_history=cofitok_reconciliation_history,
     )
     validated_dense = _validate_manifest(
         dense_manifest,
         label="dense_identity",
         expected_revision=expected_revision,
         expected_branch=expected_branch,
+        reconciliation_history=dense_reconciliation_history,
     )
     for field in ("dataset", "dataset_identity_sha256", "runtime_environment_sha256"):
         if validated_cofitok[field] != validated_dense[field]:
@@ -652,6 +859,16 @@ def build_report(
     )
     if schedule_contracts != dense_schedule_contracts:
         raise ValueError("matched manifests differ in shared loss schedules")
+    protected_checkpoint_steps = _protected_checkpoint_steps(
+        cofitok_config,
+        label="cofitok",
+    )
+    dense_protected_checkpoint_steps = _protected_checkpoint_steps(
+        dense_config,
+        label="dense_identity",
+    )
+    if protected_checkpoint_steps != dense_protected_checkpoint_steps:
+        raise ValueError("matched manifests differ in protected checkpoint steps")
     optimization = cofitok_config["optimization"]
     data = cofitok_config["data"]
     runtime = cofitok_config["runtime"]
@@ -670,6 +887,7 @@ def build_report(
         evaluation_interval=evaluation_interval,
         effective_batch=effective_batch,
         metrics_resume=validated_cofitok["metrics_resume"],
+        protected_checkpoint_steps=protected_checkpoint_steps,
     )
     dense_trajectory = _validate_rows(
         dense_metrics["rows"],
@@ -679,6 +897,7 @@ def build_report(
         evaluation_interval=evaluation_interval,
         effective_batch=effective_batch,
         metrics_resume=validated_dense["metrics_resume"],
+        protected_checkpoint_steps=protected_checkpoint_steps,
     )
     paired = _paired_validation(
         cofitok_trajectory.pop("validation_rows"),
@@ -692,7 +911,7 @@ def build_report(
     if abs(parameter_gap) > 0.02:
         raise ValueError("matched parameter gap exceeds 2%")
     return {
-        "schema_version": 3,
+        "schema_version": 4,
         "status": "pass",
         "role": "matched_training_trajectory_diagnostic",
         "cutoff_step": cutoff_step,
@@ -707,6 +926,7 @@ def build_report(
             "effective_batch_size": effective_batch,
             "log_interval": log_interval,
             "evaluation_interval": evaluation_interval,
+            "protected_checkpoint_steps": protected_checkpoint_steps,
             "cofitok_parameter_count": validated_cofitok["parameter_count"],
             "dense_parameter_count": dense_parameters,
             "relative_parameter_gap": parameter_gap,
@@ -740,7 +960,7 @@ def build_report(
             "full_training_launch_allowed": False,
             "sample_quality_metrics_present": False,
             "required_next_evidence": (
-                "exact healthy matched 50K completion followed by formal EMA post-eval"
+                "exact healthy matched target completion followed by terminal EMA post-eval"
             ),
         },
     }
@@ -772,6 +992,22 @@ def main() -> None:
         )
     cofitok_manifest = _read_object(args.cofitok_manifest)
     dense_manifest = _read_object(args.dense_manifest)
+    cofitok_reconciliation_history, cofitok_reconciliation_sources = (
+        _load_reconciliation_history(
+            args.cofitok_reconciliation,
+            metrics_path=args.cofitok_metrics,
+            manifest=cofitok_manifest,
+            label="cofitok",
+        )
+    )
+    dense_reconciliation_history, dense_reconciliation_sources = (
+        _load_reconciliation_history(
+            args.dense_reconciliation,
+            metrics_path=args.dense_metrics,
+            manifest=dense_manifest,
+            label="dense_identity",
+        )
+    )
     report = build_report(
         cofitok_metrics=cofitok_metrics,
         dense_metrics=dense_metrics,
@@ -780,6 +1016,8 @@ def main() -> None:
         cutoff_step=args.cutoff_step,
         expected_revision=args.expected_revision,
         expected_branch=args.expected_branch,
+        cofitok_reconciliation_history=cofitok_reconciliation_history,
+        dense_reconciliation_history=dense_reconciliation_history,
     )
     builder_path = Path(__file__).resolve()
     report["builder"] = _builder_identity(builder_path)
@@ -796,6 +1034,8 @@ def main() -> None:
         },
         "cofitok_manifest": _source(args.cofitok_manifest),
         "dense_manifest": _source(args.dense_manifest),
+        "cofitok_reconciliations": cofitok_reconciliation_sources,
+        "dense_reconciliations": dense_reconciliation_sources,
     }
     write_json_report(args.output, report)
     print(
