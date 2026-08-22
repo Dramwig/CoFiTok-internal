@@ -598,7 +598,7 @@ def _route(
         }
 
     mechanism = sorted(failed & MECHANISM_CHECKS)
-    if mechanism:
+    if failed == set(mechanism) and mechanism:
         return {
             **common,
             "id": "run_matched_factorization_mechanism_recovery_probe",
@@ -615,7 +615,7 @@ def _route(
         }
 
     matched = sorted(failed & MATCHED_QUALITY_CHECKS)
-    if matched:
+    if failed == set(matched) and matched:
         return {
             **common,
             "id": "run_matched_factorization_quality_regression_probe",

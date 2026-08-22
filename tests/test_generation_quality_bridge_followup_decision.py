@@ -424,6 +424,32 @@ def test_class_conditioning_route_requires_class_only_failure() -> None:
     assert report["recommended_next_stage"]["full_300k_launch_allowed"] is False
 
 
+@pytest.mark.parametrize(
+    "failed",
+    (
+        ("matched_fid_tolerance", "class_fidelity"),
+        ("matched_fid_tolerance", "cofitok_absolute_fid"),
+        ("ordered_prefix_rank", "matched_fid_tolerance"),
+        ("ordered_prefix_rank", "class_fidelity"),
+        ("ordered_prefix_rank", "cofitok_absolute_fid"),
+    ),
+)
+def test_cross_category_failure_sets_fail_closed(
+    failed: tuple[str, ...],
+) -> None:
+    report = _decision(*failed)
+
+    assert report["recommended_next_stage"]["id"] == (
+        "extend_followup_policy_before_execution"
+    )
+    assert report["recommended_next_stage"]["category"] == (
+        "unclassified_fail_closed"
+    )
+    assert report["recommended_next_stage"]["execution_ready"] is False
+    assert report["recommended_next_stage"]["gpu_execution_allowed"] is False
+    assert report["recommended_next_stage"]["full_300k_launch_allowed"] is False
+
+
 def test_terminal_milestone_conflict_fails_over_to_reconciliation() -> None:
     report = _decision(alerts=["cofitok_fid_more_than_25pct_above_dense"])
     assert report["recommended_next_stage"]["id"] == (
