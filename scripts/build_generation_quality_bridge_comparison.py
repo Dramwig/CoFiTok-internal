@@ -196,12 +196,22 @@ def _validate_terminal_guard(report: Mapping[str, Any]) -> dict[str, Any]:
     policy = report.get("claim_policy")
     boundary = report.get("claim_boundary")
     sources = report.get("sources")
+    evidence = report.get("evidence")
+    classifier_integrity = (
+        evidence.get("class_fidelity_classifier_integrity")
+        if isinstance(evidence, Mapping)
+        else None
+    )
     if (
         report.get("schema_version") != 1
         or report.get("role") != TERMINAL_GUARD_ROLE
         or report.get("status") not in {"pass", "hold"}
         or not isinstance(policy, Mapping)
         or policy.get("terminal_system_evidence_complete") is not True
+        or policy.get("class_fidelity_classifier_physical_integrity_verified")
+        is not True
+        or not isinstance(classifier_integrity, Mapping)
+        or classifier_integrity.get("status") != "verified"
         or not _critical_false(
             policy,
             "absolute_usability_claim_allowed",
