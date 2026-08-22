@@ -650,10 +650,12 @@ def _graph(tmp_path: Path, *, guard_status: str = "hold") -> dict:
                 "absolute_quality_passed": advantage,
                 "failed_checks": screen["failed_checks"],
                 "check_count": len(screen["checks"]),
-            }
+            },
+            "class_fidelity_classifier_integrity": {"status": "verified"},
         },
         "claim_policy": {
             "terminal_system_evidence_complete": True,
+            "class_fidelity_classifier_physical_integrity_verified": True,
             "matched_distribution_quality_claim_allowed": advantage,
             "lower_fid_point_estimate_statement_allowed": advantage,
             "paired_kid_statistical_support_statement_allowed": advantage,
@@ -759,6 +761,29 @@ def test_comparison_preserves_terminal_status_and_two_tier_policy(
         is False
     )
     assert comparison.verify_source_reports(report)["status"] == "verified"
+
+
+@pytest.mark.parametrize("mutation", ["missing_policy", "unverified_evidence"])
+def test_comparison_requires_terminal_classifier_physical_integrity(
+    tmp_path: Path,
+    mutation: str,
+) -> None:
+    graph = _graph(tmp_path)
+    if mutation == "missing_policy":
+        graph["guard"]["claim_policy"].pop(
+            "class_fidelity_classifier_physical_integrity_verified"
+        )
+    else:
+        graph["guard"]["evidence"]["class_fidelity_classifier_integrity"][
+            "status"
+        ] = "unverified"
+    graph["guard_identity"] = _write_json(
+        Path(graph["guard_identity"]["path"]),
+        graph["guard"],
+    )
+
+    with pytest.raises(ValueError, match="terminal system claim guard contract differs"):
+        _build(graph)
 
 
 def test_comparison_normalizes_training_git_without_weakening_identity(
