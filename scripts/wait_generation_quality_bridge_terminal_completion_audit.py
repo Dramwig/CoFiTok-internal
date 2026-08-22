@@ -153,6 +153,10 @@ def _canonical_context(args: argparse.Namespace) -> dict[str, Any]:
         / "reports"
         / "checkpoint_audits"
         / "dense_checkpoint_integrity_replay_waiter_status.json",
+        "metrics_trust_receipt": quality_root
+        / "reports"
+        / "metrics_trust_boundary_v1"
+        / "metrics_trust_receipt.json",
         "output": output_dir / "terminal_completion_audit.json",
         "status": output_dir / "waiter_status.json",
         "deployment": output_dir / "deployment_receipt.json",
@@ -165,6 +169,7 @@ def _canonical_context(args: argparse.Namespace) -> dict[str, Any]:
         "comparison_status": args.comparison_waiter_status.resolve(),
         "audit_dir": args.checkpoint_audit_dir.resolve(),
         "replay_status": args.checkpoint_replay_waiter_status.resolve(),
+        "metrics_trust_receipt": args.metrics_trust_receipt.resolve(),
         "output": args.output.resolve(),
         "status": args.status_output.resolve(),
         "deployment": args.deployment_receipt_output.resolve(),
@@ -236,6 +241,9 @@ def _canonical_context(args: argparse.Namespace) -> dict[str, Any]:
         != args.expected_checkpoint_replay_verifier_source_sha256
     ):
         raise ValueError("checkpoint replay verifier source SHA256 differs")
+    metrics_trust_identity = file_identity(actual["metrics_trust_receipt"])
+    if metrics_trust_identity["sha256"] != args.expected_metrics_trust_receipt_sha256:
+        raise ValueError("terminal metrics trust receipt SHA256 differs")
     return {
         "project": project,
         "cwd": cwd,
@@ -248,6 +256,7 @@ def _canonical_context(args: argparse.Namespace) -> dict[str, Any]:
         "replay_git": replay_git,
         "auditor_source": auditor_source,
         "replay_verifier_source": replay_verifier_source,
+        "metrics_trust_identity": metrics_trust_identity,
         **actual,
     }
 
@@ -282,6 +291,7 @@ def deployment_payload(
             "comparison_waiter_status": context["comparison_status"].as_posix(),
             "checkpoint_audit_dir": context["audit_dir"].as_posix(),
             "checkpoint_replay_waiter_status": context["replay_status"].as_posix(),
+            "metrics_trust_receipt": context["metrics_trust_receipt"].as_posix(),
             "training_checkout": args.training_checkout.resolve().as_posix(),
             "physical_auditor_checkout": (
                 args.physical_auditor_checkout.resolve().as_posix()
@@ -302,6 +312,7 @@ def deployment_payload(
             },
             "physical_auditor_source": context["auditor_source"],
             "checkpoint_replay_verifier_source": context["replay_verifier_source"],
+            "metrics_trust_receipt": context["metrics_trust_identity"],
             "dataset_sha256": args.expected_dataset_sha256,
             "runtime_sha256": args.expected_runtime_sha256,
             "effective_batch": args.effective_batch,
@@ -349,6 +360,7 @@ def observe_upstreams(context: dict[str, Any]) -> dict[str, Any]:
             _failure(context["terminal_status"], label="terminal system guard waiter"),
             _failure(context["comparison_status"], label="comparison waiter"),
             _failure(context["replay_status"], label="checkpoint replay waiter"),
+            _failure(context["metrics_trust_receipt"], label="metrics trust receipt"),
         )
         if failure is not None
     ]
@@ -381,10 +393,16 @@ def observe_upstreams(context: dict[str, Any]) -> dict[str, Any]:
         context["replay_status"],
         label="checkpoint replay waiter status",
     )
+    metrics_trust_receipt = _read_json_if_present(
+        context["metrics_trust_receipt"],
+        label="terminal metrics trust receipt",
+    )
     if terminal_status is None or terminal_status.get("status") != "completed":
         missing.append("terminal_system_guard_waiter")
     if not context["terminal_guard"].is_file():
         missing.append("terminal_system_guard")
+    if metrics_trust_receipt is None or metrics_trust_receipt.get("status") != "pass":
+        missing.append("metrics_trust_receipt")
     if comparison_status is None or comparison_status.get("status") != "pass":
         missing.append("quality_bridge_comparison_waiter")
     for path_name in ("comparison",):
@@ -440,6 +458,7 @@ def upstream_metadata_paths(context: dict[str, Any]) -> dict[str, Path]:
         / "quality_bridge_comparison.csv",
         "comparison_status": context["comparison_status"],
         "replay_status": context["replay_status"],
+        "metrics_trust_receipt": context["metrics_trust_receipt"],
     }
     for alias in ALIASES:
         for step in CHECKPOINT_STEPS:
@@ -556,6 +575,7 @@ def run_locked(
                 "replay_git",
                 "auditor_source",
                 "replay_verifier_source",
+                "metrics_trust_identity",
             )
         ):
             raise ValueError("terminal completion waiter static context changed")
