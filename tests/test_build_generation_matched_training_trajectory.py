@@ -3,9 +3,16 @@ from __future__ import annotations
 import hashlib
 import json
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 
+from cofitok.training.metrics import (
+    append_metrics_resume_event,
+    empty_metrics_resume_history,
+    persist_metrics_resume_history,
+    reconcile_metrics_for_resume,
+)
 from scripts import build_generation_matched_training_trajectory as trajectory
 
 
@@ -104,6 +111,124 @@ def _metrics(*, dense: bool) -> dict:
     return {"rows": _rows(dense=dense)}
 
 
+def _resume_boundary_row(step: int) -> dict:
+    return {
+        "step": step,
+        "samples_seen": step * 8,
+        "epsilon": 0.5 / step,
+        "rollout_consistency": 0.1,
+        "rollout_consistency_scale": min(step / 200, 1.0),
+        "ema_teacher_consistency": 0.05,
+        "ema_teacher_consistency_scale": (
+            0.0 if step < 100 else min((step - 100) / 100, 1.0)
+        ),
+    }
+
+
+def _write_checkpoint(root: Path, step: int) -> tuple[Path, dict]:
+    checkpoint = root / f"checkpoint_step_{step:08d}.pt"
+    payload = f"checkpoint:{step}".encode("utf-8")
+    checkpoint.write_bytes(payload)
+    integrity = {
+        "schema_version": 1,
+        "checkpoint": checkpoint.name,
+        "checkpoint_bytes": len(payload),
+        "checkpoint_sha256": hashlib.sha256(payload).hexdigest(),
+        "checkpoint_format_version": 1,
+        "step": step,
+    }
+    checkpoint.with_name(f"{checkpoint.name}.integrity.json").write_text(
+        json.dumps(integrity, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return checkpoint, integrity
+
+
+def _rehash_history(history: dict) -> None:
+    history["history_sha256"] = hashlib.sha256(
+        json.dumps(
+            {
+                "legacy_history_complete": history["legacy_history_complete"],
+                "legacy_reconciliations": history["legacy_reconciliations"],
+                "events": history["events"],
+            },
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def _history_backed_run(
+    tmp_path: Path,
+    *,
+    event_steps: tuple[int, ...] = (125, 175),
+) -> dict:
+    root = tmp_path / "cofitok_run"
+    root.mkdir()
+    metrics = root / "train_metrics.jsonl"
+    final_rows = _rows(dense=False) + [
+        _resume_boundary_row(step + 1) for step in event_steps
+    ]
+    final_rows.sort(key=lambda row: row["step"])
+
+    def write_rows(rows: list[dict]) -> None:
+        metrics.write_text(
+            "".join(
+                json.dumps(row, separators=(",", ":"), sort_keys=True) + "\n"
+                for row in rows
+            ),
+            encoding="utf-8",
+        )
+
+    write_rows(final_rows)
+    history = empty_metrics_resume_history()
+    reconciliations = []
+    for step in event_steps:
+        checkpoint, integrity = _write_checkpoint(root, step)
+        reconciliation = reconcile_metrics_for_resume(metrics, resume_step=step)
+        history = append_metrics_resume_event(
+            history,
+            output_dir=root,
+            resume_checkpoint=checkpoint,
+            checkpoint_integrity=integrity,
+            reconciliation=reconciliation,
+        )
+        reconciliations.append(reconciliation)
+        retained = [row for row in final_rows if row["step"] <= step]
+        future = [row for row in final_rows if row["step"] > step]
+        with metrics.open("a", encoding="utf-8") as handle:
+            for row in future:
+                handle.write(
+                    json.dumps(row, separators=(",", ":"), sort_keys=True) + "\n"
+                )
+        assert json.loads(metrics.read_text(encoding="utf-8").splitlines()[0]) == retained[0]
+    persist_metrics_resume_history(root, history)
+    manifest = _manifest(dense=False)
+    manifest.update(
+        {
+            "resume": (root / f"checkpoint_step_{event_steps[-1]:08d}.pt")
+            .resolve()
+            .as_posix(),
+            "metrics_resume_reconciliation": reconciliations[-1],
+            "metrics_resume_history": history,
+        }
+    )
+    manifest_path = root / "run_manifest.json"
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return {
+        "root": root,
+        "metrics": metrics,
+        "manifest": manifest,
+        "manifest_path": manifest_path,
+        "history": history,
+        "reconciliations": reconciliations,
+        "rows": final_rows,
+    }
+
+
 def test_report_binds_matched_validation_without_claiming_quality() -> None:
     report = trajectory.build_report(
         cofitok_metrics=_metrics(dense=False),
@@ -116,7 +241,7 @@ def test_report_binds_matched_validation_without_claiming_quality() -> None:
     )
 
     assert report["status"] == "pass"
-    assert report["schema_version"] == 4
+    assert report["schema_version"] == 5
     assert report["images_seen_per_method"] == 1_600
     assert report["contract"]["generation_pair_contract"]["valid"] is True
     paired = report["paired_fixed_validation"]
@@ -436,6 +561,275 @@ def test_reconciliation_loader_rejects_orphan_payload_drift(tmp_path) -> None:
             manifest=manifest,
             label="cofitok",
         )
+
+
+@pytest.mark.parametrize("event_steps", [(125, 175), (75, 125, 175)])
+def test_manifest_history_is_automatically_loaded_and_physically_verified(
+    tmp_path,
+    event_steps: tuple[int, ...],
+) -> None:
+    run = _history_backed_run(tmp_path, event_steps=event_steps)
+
+    events, sources, evidence = trajectory._select_reconciliation_history(
+        manifest_path=run["manifest_path"],
+        manifest=run["manifest"],
+        metrics_path=run["metrics"],
+        manual_paths=None,
+        label="cofitok",
+    )
+
+    assert [event["resume_step"] for event in events] == list(event_steps)
+    assert len(sources) == len(event_steps)
+    assert all(source["report"]["sha256"] for source in sources)
+    assert all(source["checkpoint_binding_available"] is True for source in sources)
+    assert evidence["history_sha256_verified"] is True
+    assert evidence["manifest_journal_equality_verified"] is True
+    assert evidence["metrics_prefix_bindings_verified"] is True
+    assert evidence["current_manifest_binding_verified"] is True
+    assert evidence["complete_recovery_chain_verified"] is True
+
+
+@pytest.mark.parametrize("drift", ["digest", "report", "orphan", "metrics_prefix"])
+def test_manifest_history_rejects_physical_or_digest_drift(tmp_path, drift: str) -> None:
+    run = _history_backed_run(tmp_path)
+    if drift == "digest":
+        run["manifest"]["metrics_resume_history"]["history_sha256"] = "0" * 64
+    elif drift == "report":
+        with Path(run["reconciliations"][0]["report"]).open(
+            "a", encoding="utf-8"
+        ) as handle:
+            handle.write(" ")
+    elif drift == "orphan":
+        with Path(run["reconciliations"][0]["orphan_archive"]).open(
+            "a", encoding="utf-8"
+        ) as handle:
+            handle.write("{}\n")
+    else:
+        payload = bytearray(run["metrics"].read_bytes())
+        payload[0] = ord("[")
+        run["metrics"].write_bytes(bytes(payload))
+
+    with pytest.raises((ValueError, FileNotFoundError)):
+        trajectory._select_reconciliation_history(
+            manifest_path=run["manifest_path"],
+            manifest=run["manifest"],
+            metrics_path=run["metrics"],
+            manual_paths=None,
+            label="cofitok",
+        )
+
+
+def test_manifest_history_rejects_bound_report_path_drift(tmp_path) -> None:
+    run = _history_backed_run(tmp_path)
+    history = run["manifest"]["metrics_resume_history"]
+    history["events"][0]["reconciliation"]["report"]["path"] = "missing.json"
+    _rehash_history(history)
+    (run["root"] / "metrics_resume_history.json").write_text(
+        json.dumps(history, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(FileNotFoundError, match="reconciliation report"):
+        trajectory._select_reconciliation_history(
+            manifest_path=run["manifest_path"],
+            manifest=run["manifest"],
+            metrics_path=run["metrics"],
+            manual_paths=None,
+            label="cofitok",
+        )
+
+
+def test_manifest_history_rejects_current_reconciliation_divergence(tmp_path) -> None:
+    run = _history_backed_run(tmp_path)
+    run["manifest"]["metrics_resume_reconciliation"]["retained_rows"] += 1
+
+    with pytest.raises(ValueError, match="latest history event"):
+        trajectory._select_reconciliation_history(
+            manifest_path=run["manifest_path"],
+            manifest=run["manifest"],
+            metrics_path=run["metrics"],
+            manual_paths=None,
+            label="cofitok",
+        )
+
+
+def test_cli_history_must_exactly_match_manifest_history(tmp_path) -> None:
+    run = _history_backed_run(tmp_path, event_steps=(75, 125, 175))
+
+    with pytest.raises(ValueError, match="diverges from manifest metrics resume history"):
+        trajectory._select_reconciliation_history(
+            manifest_path=run["manifest_path"],
+            manifest=run["manifest"],
+            metrics_path=run["metrics"],
+            manual_paths=[Path(run["reconciliations"][-1]["report"])],
+            label="cofitok",
+        )
+
+
+def test_matching_cli_history_corroborates_manifest_history(tmp_path) -> None:
+    run = _history_backed_run(tmp_path, event_steps=(75, 125, 175))
+
+    events, _, evidence = trajectory._select_reconciliation_history(
+        manifest_path=run["manifest_path"],
+        manifest=run["manifest"],
+        metrics_path=run["metrics"],
+        manual_paths=[
+            Path(reconciliation["report"])
+            for reconciliation in run["reconciliations"]
+        ],
+        label="cofitok",
+    )
+
+    assert len(events) == 3
+    assert evidence["manual_cli_corroborated"] is True
+    assert evidence["complete_recovery_chain_verified"] is True
+
+
+def test_manifest_history_accepts_checkpoint_bound_absent_reconciliation(
+    tmp_path,
+) -> None:
+    root = tmp_path / "absent_run"
+    root.mkdir()
+    metrics = root / "train_metrics.jsonl"
+    checkpoint, integrity = _write_checkpoint(root, 25)
+    reconciliation = reconcile_metrics_for_resume(metrics, resume_step=25)
+    history = append_metrics_resume_event(
+        empty_metrics_resume_history(),
+        output_dir=root,
+        resume_checkpoint=checkpoint,
+        checkpoint_integrity=integrity,
+        reconciliation=reconciliation,
+    )
+    persist_metrics_resume_history(root, history)
+    metrics.write_text(
+        json.dumps(_resume_boundary_row(26), separators=(",", ":")) + "\n",
+        encoding="utf-8",
+    )
+    manifest = _manifest(dense=False)
+    manifest.update(
+        {
+            "resume": checkpoint.resolve().as_posix(),
+            "metrics_resume_reconciliation": reconciliation,
+            "metrics_resume_history": history,
+        }
+    )
+    manifest_path = root / "run_manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    events, _, evidence = trajectory._select_reconciliation_history(
+        manifest_path=manifest_path,
+        manifest=manifest,
+        metrics_path=metrics,
+        manual_paths=None,
+        label="cofitok",
+    )
+
+    assert events[0]["status"] == "absent"
+    assert events[0]["retained_rows"] == 0
+    assert evidence["complete_recovery_chain_verified"] is True
+
+
+def test_main_automatically_consumes_manifest_resume_history(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    cofitok = _history_backed_run(tmp_path, event_steps=(125, 175))
+    dense_root = tmp_path / "dense_run"
+    dense_root.mkdir()
+    dense_metrics = dense_root / "train_metrics.jsonl"
+    dense_metrics.write_text(
+        "".join(
+            json.dumps(row, separators=(",", ":"), sort_keys=True) + "\n"
+            for row in _rows(dense=True)
+        ),
+        encoding="utf-8",
+    )
+    dense_manifest = dense_root / "run_manifest.json"
+    dense_manifest.write_text(
+        json.dumps(_manifest(dense=True), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "trajectory.json"
+    monkeypatch.setattr(
+        trajectory,
+        "_builder_identity",
+        lambda _: {
+            "path": "scripts/build_generation_matched_training_trajectory.py",
+            "bytes": 1,
+            "sha256": "d" * 64,
+            "git": {
+                "revision": "e" * 40,
+                "branch": "analysis/test",
+                "tracked_dirty": False,
+            },
+        },
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "build_generation_matched_training_trajectory.py",
+            "--cofitok-metrics",
+            str(cofitok["metrics"]),
+            "--dense-metrics",
+            str(dense_metrics),
+            "--cofitok-manifest",
+            str(cofitok["manifest_path"]),
+            "--dense-manifest",
+            str(dense_manifest),
+            "--cutoff-step",
+            "200",
+            "--expected-revision",
+            REVISION,
+            "--expected-branch",
+            BRANCH,
+            "--output",
+            str(output),
+        ],
+    )
+
+    trajectory.main()
+
+    report = json.loads(output.read_text(encoding="utf-8"))
+    evidence = report["sources"]["cofitok_metrics_resume_history"]
+    assert report["schema_version"] == 5
+    assert evidence["mode"] == "manifest_metrics_resume_history_v1"
+    assert evidence["checkpoint_bound_event_count"] == 2
+    assert evidence["complete_recovery_chain_verified"] is True
+
+
+def test_incomplete_legacy_history_downgrades_complete_recovery_claim(tmp_path) -> None:
+    run = _history_backed_run(tmp_path)
+    history = run["manifest"]["metrics_resume_history"]
+    history["legacy_history_complete"] = False
+    _rehash_history(history)
+    (run["root"] / "metrics_resume_history.json").write_text(
+        json.dumps(history, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    events, _, evidence = trajectory._select_reconciliation_history(
+        manifest_path=run["manifest_path"],
+        manifest=run["manifest"],
+        metrics_path=run["metrics"],
+        manual_paths=None,
+        label="cofitok",
+    )
+
+    report = trajectory.build_report(
+        cofitok_metrics={"rows": run["rows"]},
+        dense_metrics=_metrics(dense=True),
+        cofitok_manifest=run["manifest"],
+        dense_manifest=_manifest(dense=True),
+        cutoff_step=200,
+        expected_revision=REVISION,
+        expected_branch=BRANCH,
+        cofitok_reconciliation_history=events,
+        cofitok_resume_history_evidence=evidence,
+    )
+
+    assert evidence["complete_recovery_chain_verified"] is False
+    assert report["contract"]["complete_recovery_chain_verified"] is False
+    assert report["claim_boundary"]["complete_recovery_chain_claim_allowed"] is False
+    assert report["claim_boundary"]["resume_history_limitation"]
 
 
 def test_report_rejects_reconciled_resume_without_bound_orphan_hash() -> None:
