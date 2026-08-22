@@ -402,11 +402,13 @@ def _terminal_guard(
                 "waiter_status": visual_status_identity,
             },
             "runtime_compute": {"status": "verified"},
+            "class_fidelity_classifier_integrity": {"status": "verified"},
         },
         "claim_policy": {
             "terminal_system_evidence_complete": True,
             "requested_class_visual_evidence_available": True,
             "requested_class_visual_evidence_is_quantitative": False,
+            "class_fidelity_classifier_physical_integrity_verified": True,
             "larger_training_launch_allowed": False,
             "inference_export_authorization_allowed": False,
             "release_authorization_allowed": False,
@@ -548,6 +550,28 @@ def test_standing_authorization_rejects_wrong_terminal_guard_git() -> None:
     )
     kwargs["terminal_system_guard_status"]["git"]["revision"] = "0" * 40
     with pytest.raises(ValueError, match="guard waiter binding"):
+        build_conditioning_ranking_probe_execution_authorization(**kwargs)
+
+
+def test_standing_authorization_requires_classifier_physical_integrity() -> None:
+    kwargs = _authorization_kwargs()
+    kwargs["terminal_system_guard"] = copy.deepcopy(
+        kwargs["terminal_system_guard"]
+    )
+    kwargs["terminal_system_guard"]["claim_policy"].pop(
+        "class_fidelity_classifier_physical_integrity_verified"
+    )
+    with pytest.raises(ValueError, match="terminal requested-class evidence differs"):
+        build_conditioning_ranking_probe_execution_authorization(**kwargs)
+
+    kwargs = _authorization_kwargs()
+    kwargs["terminal_system_guard"] = copy.deepcopy(
+        kwargs["terminal_system_guard"]
+    )
+    kwargs["terminal_system_guard"]["evidence"][
+        "class_fidelity_classifier_integrity"
+    ]["status"] = "unverified"
+    with pytest.raises(ValueError, match="terminal requested-class evidence differs"):
         build_conditioning_ranking_probe_execution_authorization(**kwargs)
 
 

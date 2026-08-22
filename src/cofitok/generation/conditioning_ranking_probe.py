@@ -541,6 +541,7 @@ def validate_terminal_system_evidence_for_ranking_probe(
     quality_screen = evidence.get("quality_screen")
     guard_visual = evidence.get("requested_class_visual_audit")
     runtime = evidence.get("runtime_compute")
+    classifier_integrity = evidence.get("class_fidelity_classifier_integrity")
     if (
         not isinstance(quality_screen, Mapping)
         or quality_screen.get("failed_checks") != expected_failed_checks
@@ -550,6 +551,10 @@ def validate_terminal_system_evidence_for_ranking_probe(
         or guard_visual != visual
         or not isinstance(runtime, Mapping)
         or runtime.get("status") != "verified"
+        or policy.get("class_fidelity_classifier_physical_integrity_verified")
+        is not True
+        or not isinstance(classifier_integrity, Mapping)
+        or classifier_integrity.get("status") != "verified"
     ):
         raise ValueError("terminal requested-class evidence differs")
     status_expected = guard_status.get("expected")
