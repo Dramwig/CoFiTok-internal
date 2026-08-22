@@ -111,6 +111,18 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
     )
     assert resumed_checkpoint["extra_state"]["cumulative_elapsed_seconds"] > 0.0
     assert resumed_checkpoint["extra_state"]["cumulative_peak_vram_bytes"] == 0
+    first_segment_checkpoint = torch.load(
+        resumed / "checkpoint_step_00000001.pt",
+        map_location="cpu",
+        weights_only=False,
+    )
+    assert first_segment_checkpoint["extra_state"]["metrics_resume_history"]["events"] == []
+    resume_history = resumed_checkpoint["extra_state"]["metrics_resume_history"]
+    assert [event["resume_step"] for event in resume_history["events"]] == [1]
+    assert (
+        resumed_checkpoint["extra_state"]["metrics_resume_reconciliation"]["resume_step"]
+        == 1
+    )
     for key in (
         "total",
         "epsilon",
@@ -133,6 +145,36 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
     assert [row["validation_batch_index"] for row in rows] == [0, 1]
     assert {row["validation_noise_seed"] for row in rows} == {100_020}
     assert {row["validation_num_images"] for row in rows} == {2}
+    for name in ("run_manifest.json", "training_report.json", "metrics_resume_history.json"):
+        document = json.loads((resumed / name).read_text(encoding="utf-8"))
+        history = document.get("metrics_resume_history", document)
+        assert history == resume_history
+
+
+def test_three_segment_resume_history_is_preserved_in_reports_and_checkpoint(tmp_path) -> None:
+    config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    config["runtime"]["steps"] = 3
+    config["runtime"]["keep_last_checkpoints"] = 3
+    config_path = tmp_path / "smoke_random_cpu_three_segments.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    output = tmp_path / "three_segments"
+
+    _run(output, "--stop-after-steps", "1", config=config_path)
+    _run(output, "--resume", "auto", "--stop-after-steps", "1", config=config_path)
+    _run(output, "--resume", "auto", config=config_path)
+
+    checkpoint = torch.load(
+        output / "checkpoint_step_00000003.pt",
+        map_location="cpu",
+        weights_only=False,
+    )
+    history = checkpoint["extra_state"]["metrics_resume_history"]
+    assert [event["resume_step"] for event in history["events"]] == [1, 2]
+    assert [event["event_index"] for event in history["events"]] == [1, 2]
+    assert checkpoint["extra_state"]["metrics_resume_reconciliation"]["resume_step"] == 2
+    for name in ("run_manifest.json", "training_report.json", "metrics_resume_history.json"):
+        document = json.loads((output / name).read_text(encoding="utf-8"))
+        assert document.get("metrics_resume_history", document) == history
 
 
 def test_controlled_resume_accepts_only_a_clean_ancestor_revision() -> None:

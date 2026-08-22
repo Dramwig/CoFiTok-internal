@@ -34,12 +34,16 @@ from cofitok.models import CoFiTokTiny
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training import (
     ExponentialMovingAverage,
+    append_metrics_resume_event,
     capture_generation_training_authorization,
     compute_losses,
     consistency_weight_scale,
+    empty_metrics_resume_history,
     ema_teacher_consistency_loss,
     ensure_fresh_training_output,
+    persist_metrics_resume_history,
     reconcile_metrics_for_resume,
+    restore_metrics_resume_history,
     rollout_consistency_loss,
     rollout_consistency_weight_scale,
 )
@@ -588,6 +592,7 @@ def main() -> None:
     cumulative_elapsed_before_segment = 0.0
     cumulative_peak_vram_before_segment = 0
     metrics_resume_reconciliation = None
+    metrics_resume_history = empty_metrics_resume_history()
     resume_revision_transition = None
     if resume_path is not None:
         checkpoint = load_training_checkpoint(
@@ -636,10 +641,25 @@ def main() -> None:
                 existing_resume_transition,
                 git_provenance,
             )
+        metrics_resume_history = restore_metrics_resume_history(
+            output_dir,
+            checkpoint_extra_state=checkpoint_extra_state,
+        )
         metrics_resume_reconciliation = reconcile_metrics_for_resume(
             metrics_path,
             resume_step=start_step,
         )
+        with checkpoint_integrity_path(resume_path).open("r", encoding="utf-8") as handle:
+            resume_checkpoint_integrity = json.load(handle)
+        metrics_resume_history = append_metrics_resume_event(
+            metrics_resume_history,
+            output_dir=output_dir,
+            resume_checkpoint=resume_path,
+            checkpoint_integrity=resume_checkpoint_integrity,
+            reconciliation=metrics_resume_reconciliation,
+        )
+
+    persist_metrics_resume_history(output_dir, metrics_resume_history)
 
     train_iterator = iter(train_loader)
     eval_iterator = iter(eval_loader)
@@ -674,6 +694,7 @@ def main() -> None:
         "resume": str(resume_path) if resume_path is not None else None,
         "resume_revision_transition": resume_revision_transition,
         "metrics_resume_reconciliation": metrics_resume_reconciliation,
+        "metrics_resume_history": metrics_resume_history,
     }
     write_json_report(output_dir / "run_manifest.json", manifest)
 
@@ -877,6 +898,8 @@ def main() -> None:
                     "dataset_provenance": dataset_provenance,
                     "training_authorization": training_authorization,
                     "resume_revision_transition": resume_revision_transition,
+                    "metrics_resume_reconciliation": metrics_resume_reconciliation,
+                    "metrics_resume_history": metrics_resume_history,
                     "cumulative_elapsed_seconds": (
                         cumulative_elapsed_before_segment + segment_elapsed_seconds
                     ),

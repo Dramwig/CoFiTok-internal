@@ -13,8 +13,13 @@ from cofitok.training.authorization import (
     validate_generation_training_authorization,
 )
 from cofitok.training.metrics import (
+    append_metrics_resume_event,
+    empty_metrics_resume_history,
     ensure_fresh_training_output,
+    persist_metrics_resume_history,
     reconcile_metrics_for_resume,
+    restore_metrics_resume_history,
+    validate_metrics_resume_history,
 )
 from cofitok.training.rollout import (
     consistency_weight_scale,
@@ -31,17 +36,22 @@ __all__ = [
     "compute_losses",
     "build_generation_training_authorization",
     "capture_generation_training_authorization",
+    "append_metrics_resume_event",
+    "empty_metrics_resume_history",
     "ensure_fresh_training_output",
     "backfill_training_checkpoint_integrity",
     "load_training_checkpoint",
     "consistency_weight_scale",
     "ema_teacher_consistency_loss",
     "one_step_rollout_consistency_loss",
+    "persist_metrics_resume_history",
     "rollout_consistency_loss",
     "reconcile_metrics_for_resume",
+    "restore_metrics_resume_history",
     "rollout_consistency_weight_scale",
     "run_smoke_step",
     "save_training_checkpoint",
     "validate_generation_training_authorization",
     "validate_checkpoint_training_authorization",
+    "validate_metrics_resume_history",
 ]
