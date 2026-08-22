@@ -771,6 +771,96 @@ def test_formal_inference_export_requires_release_gate(tmp_path) -> None:
         )
 
 
+def test_nonformal_100k_quality_bridge_cannot_bind_full_release_gate(
+    tmp_path,
+) -> None:
+    source = _training_checkpoint(tmp_path, step=100_000)
+
+    with pytest.raises(
+        ValueError,
+        match="may only authorize a formal full-training checkpoint",
+    ):
+        export_ema_inference_artifact(
+            source,
+            tmp_path / "quality_bridge_release_attempt.pt",
+            release_gate=_release_gate_path(tmp_path),
+        )
+
+
+def test_unreleased_100k_quality_bridge_artifact_is_not_completion_authorized(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    source = _training_checkpoint(tmp_path, step=100_000)
+    artifact = tmp_path / "quality_bridge_ema_inference.pt"
+    export_ema_inference_artifact(source, artifact)
+
+    def fail_if_deserialized(*args, **kwargs):
+        raise AssertionError("artifact was deserialized before release policy rejection")
+
+    monkeypatch.setattr(torch, "load", fail_if_deserialized)
+    with pytest.raises(ValueError, match="release-authorized inference artifact"):
+        GenerationSession.from_checkpoint(
+            artifact,
+            weights="ema",
+            completion_receipt=tmp_path / "absent_release_receipt.json",
+            require_completion_authorization=True,
+        )
+
+
+def test_quality_bridge_terminal_audit_cannot_publish_release_receipt(
+    tmp_path,
+) -> None:
+    _, audit, receipt = _release_receipt_fixture(tmp_path)
+    receipt.unlink()
+    quality_bridge_audit = json.loads(audit.read_text(encoding="utf-8"))
+    quality_bridge_audit["role"] = (
+        "generation_quality_bridge_terminal_completion_audit"
+    )
+    write_json_report(audit, quality_bridge_audit)
+
+    with pytest.raises(ValueError, match="non-authorizing quality-bridge"):
+        write_generation_release_receipt(audit, receipt)
+
+
+@pytest.mark.parametrize(
+    ("section", "policy"),
+    [
+        (
+            "authorization_boundary",
+            {"release_authorization_allowed": False},
+        ),
+        (
+            "authorization_boundary",
+            {"inference_export_authorization_allowed": False},
+        ),
+        (
+            "claim_policy",
+            {"promotion_or_release_allowed": False},
+        ),
+    ],
+)
+def test_explicit_nonrelease_policy_cannot_publish_or_authorize_receipt(
+    tmp_path,
+    section,
+    policy,
+) -> None:
+    artifact, audit, receipt = _release_receipt_fixture(tmp_path)
+    nonrelease_audit = json.loads(audit.read_text(encoding="utf-8"))
+    nonrelease_audit[section] = policy
+    write_json_report(audit, nonrelease_audit)
+    forged_receipt = json.loads(receipt.read_text(encoding="utf-8"))
+    forged_receipt["completion_audit"] = {
+        "path": audit.resolve().as_posix(),
+        "bytes": audit.stat().st_size,
+        "sha256": file_sha256(audit),
+    }
+    write_json_report(receipt, forged_receipt)
+
+    with pytest.raises(ValueError, match="explicitly forbids"):
+        verify_generation_release_receipt(receipt, artifact)
+
+
 def test_completion_receipt_authorizes_consumer_load_and_preflight(tmp_path) -> None:
     artifact, audit, receipt = _release_receipt_fixture(tmp_path)
 

@@ -26,6 +26,9 @@ _COMPLETION_PROFILES = {
     },
 }
 _METHODS = ("cofitok", "dense_identity")
+_NON_AUTHORIZING_COMPLETION_ROLES = {
+    "generation_quality_bridge_terminal_completion_audit",
+}
 
 
 def _read_object(path: str | Path, *, name: str) -> dict[str, Any]:
@@ -51,6 +54,31 @@ def _file_identity(path: str | Path) -> dict[str, Any]:
 
 
 def _completion_profile(audit: Mapping[str, Any]) -> tuple[str, dict[str, str]]:
+    role = audit.get("role")
+    if role in _NON_AUTHORIZING_COMPLETION_ROLES:
+        raise ValueError(
+            "non-authorizing quality-bridge completion audit cannot publish a "
+            "generation release receipt"
+        )
+    authorization_boundary = audit.get("authorization_boundary")
+    if isinstance(authorization_boundary, Mapping) and any(
+        authorization_boundary.get(name) is False
+        for name in (
+            "release_authorization_allowed",
+            "inference_export_authorization_allowed",
+        )
+    ):
+        raise ValueError(
+            "generation completion audit explicitly forbids release authorization"
+        )
+    claim_policy = audit.get("claim_policy")
+    if (
+        isinstance(claim_policy, Mapping)
+        and claim_policy.get("promotion_or_release_allowed") is False
+    ):
+        raise ValueError(
+            "generation completion audit explicitly forbids promotion or release"
+        )
     raw_profile = audit.get("profile")
     profile = (
         "large_scale_generation_v1"
