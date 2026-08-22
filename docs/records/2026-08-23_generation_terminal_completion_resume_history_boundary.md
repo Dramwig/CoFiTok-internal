@@ -45,10 +45,36 @@ tests/test_generation_quality_bridge_terminal_completion_audit.py
 28 passed
 ```
 
+Broader local related suite:
+
+```text
+106 collected; all applicable tests passed (one Windows-only skip)
+```
+
 The added tests cover the explicit legacy limitation, reconciliation/orphan/
 metrics-prefix drift, manifest/training-report divergence, missing pruned resume
 payload tolerance, double source revalidation, preservation of terminal
 `pass`/`hold`, and the permanent 300K/promotion prohibition.
+
+## Linux CUDA-hidden rehearsal
+
+- Code commit: `df87d0419f964c228e24da7c0b5e837e120587de`
+- Tree: `4d89a42348acee7c8f0cfb60aec2cf1f7ba1f185`
+- Incremental bundle prerequisite:
+  `a253d56e49b78e1c8ddb10c3bd07af5aa22e5919`
+- Bundle:
+  `D:/cofitok-bundles/terminal-completion-resume-history-boundary-df87d04.bundle`
+- Bundle bytes: `14,449`
+- Bundle SHA256:
+  `d4f7adf7ee350bc2224817fcda8e4d45d41fd152e0568996060d7dc47f05442c`
+- Isolated remote checkout:
+  `/tmp/cofitok-terminal-completion-resume-history-boundary-df87d04/CoFiTok-internal`
+- Environment: `CUDA_VISIBLE_DEVICES=''`, `OMP_NUM_THREADS=1`,
+  `MKL_NUM_THREADS=1`, `nice=10`, `ionice=idle`
+- Result: `106 passed`
+- Git status after rehearsal: clean
+- GPU before and after rehearsal: only the pre-existing dense trainer PID `219593`
+  at `79,132 MiB`; the rehearsal created no GPU process.
 
 ## Deployment status
 
