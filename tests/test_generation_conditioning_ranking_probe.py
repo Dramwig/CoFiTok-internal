@@ -20,6 +20,7 @@ from cofitok.generation.conditioning_ranking_probe import (
     STANDING_AUTHORIZATION_TEXT,
     build_conditioning_ranking_probe_execution_authorization,
     conditioning_ranking_probe_contract,
+    validate_class_conditioning_followup_decision,
     validate_conditioning_ranking_probe_approval,
     validate_conditioning_ranking_probe_execution_authorization,
 )
@@ -181,12 +182,11 @@ def _preparation(*, revision: str, branch: str, output_root: str) -> dict:
     }
 
 
-def _followup(quality_identity: dict) -> dict:
-    failed_checks = [
-        "cofitok_absolute_fid",
-        "cofitok_recall_floor",
-        "class_fidelity",
-    ]
+def _followup(
+    quality_identity: dict,
+    *additional_failed_checks: str,
+) -> dict:
+    failed_checks = [*additional_failed_checks, "class_fidelity"]
     checks = [
         {"name": name, "passed": name not in failed_checks}
         for name in (
@@ -226,6 +226,17 @@ def _followup(quality_identity: dict) -> dict:
             "full_300k_launch_allowed": False,
         },
     }
+
+
+def test_class_conditioning_validator_rejects_mixed_quality_failure() -> None:
+    quality_identity = _identity("quality", "a")
+    class_only = _followup(quality_identity)
+
+    assert validate_class_conditioning_followup_decision(class_only)
+
+    mixed = _followup(quality_identity, "cofitok_absolute_fid")
+    with pytest.raises(ValueError, match="class-conditioning follow-up"):
+        validate_class_conditioning_followup_decision(mixed)
 
 
 def _terminal_guard(quality_identity: dict, failed_checks: list[str]) -> dict:

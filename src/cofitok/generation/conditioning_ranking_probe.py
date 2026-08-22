@@ -199,7 +199,7 @@ def validate_class_conditioning_followup_decision(
         or recommendation.get("gpu_execution_allowed") is not False
         or recommendation.get("full_300k_launch_allowed") is not False
         or not isinstance(terminal, Mapping)
-        or "class_fidelity" not in terminal.get("failed_checks", [])
+        or terminal.get("failed_checks") != ["class_fidelity"]
         or not isinstance(sources, Mapping)
     ):
         raise ValueError("quality-bridge class-conditioning follow-up differs")

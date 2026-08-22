@@ -631,7 +631,7 @@ def _route(
             ),
         }
 
-    if "class_fidelity" in failed:
+    if failed == {"class_fidelity"}:
         return {
             **common,
             "id": "run_class_conditioning_fidelity_diagnostic",
