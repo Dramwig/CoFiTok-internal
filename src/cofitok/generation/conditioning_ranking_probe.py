@@ -64,9 +64,9 @@ TERMINAL_SYSTEM_GUARD_WAITER_DETAIL = (
     "terminal_system_claim_guard_source_revalidated"
 )
 TERMINAL_SYSTEM_GUARD_WAITER_GIT = {
-    "revision": "8ec9a09ddcd981c1ffbd06b6bda81386b33321de",
-    "tree": "344f6365d2e962e350b73f5ce4bc18c005f6dff9",
-    "branch": "analysis/generation-terminal-system-claim-guard-v1",
+    "revision": "4087f4293e3fd197c81cbfa9029f3d6083654415",
+    "tree": "7d5acbe2542f5c0584a7fd847fdb806e6757ba86",
+    "branch": "analysis/generation-terminal-classifier-integrity-v1-20260822",
     "tracked_dirty": False,
 }
 TERMINAL_SYSTEM_GUARD_WAITER_AUTHORIZATION_BOUNDARY = {
@@ -541,6 +541,7 @@ def validate_terminal_system_evidence_for_ranking_probe(
     quality_screen = evidence.get("quality_screen")
     guard_visual = evidence.get("requested_class_visual_audit")
     runtime = evidence.get("runtime_compute")
+    classifier_integrity = evidence.get("class_fidelity_classifier_integrity")
     if (
         not isinstance(quality_screen, Mapping)
         or quality_screen.get("failed_checks") != expected_failed_checks
@@ -550,6 +551,10 @@ def validate_terminal_system_evidence_for_ranking_probe(
         or guard_visual != visual
         or not isinstance(runtime, Mapping)
         or runtime.get("status") != "verified"
+        or policy.get("class_fidelity_classifier_physical_integrity_verified")
+        is not True
+        or not isinstance(classifier_integrity, Mapping)
+        or classifier_integrity.get("status") != "verified"
     ):
         raise ValueError("terminal requested-class evidence differs")
     status_expected = guard_status.get("expected")
