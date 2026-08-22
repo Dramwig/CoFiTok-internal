@@ -4,6 +4,7 @@ set -euo pipefail
 PROJECT=${PROJECT:?set the isolated probe checkout}
 PYTHON=${PYTHON:-/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10}
 EXPECTED_REVISION=${EXPECTED_REVISION:?set the exact probe revision}
+EXPECTED_TREE=${EXPECTED_TREE:?set the exact probe tree}
 EXPECTED_BRANCH=${EXPECTED_BRANCH:-scale/generation-label-ranking-standing-authorization-v1}
 PREPARATION_REPORT=${PREPARATION_REPORT:?set the immutable preparation report}
 EXPECTED_PREPARATION_SHA256=${EXPECTED_PREPARATION_SHA256:?set its SHA256}
@@ -20,6 +21,7 @@ RANKED_DENSE=configs/generation/imagenet256_10pct_stability_rollout_x0_u2_ema_te
 
 cd "$PROJECT"
 [[ "$(git rev-parse HEAD)" == "$EXPECTED_REVISION" ]]
+[[ "$(git rev-parse 'HEAD^{tree}')" == "$EXPECTED_TREE" ]]
 [[ "$(git branch --show-current)" == "$EXPECTED_BRANCH" ]]
 [[ -z "$(git status --porcelain)" ]]
 [[ -x "$PYTHON" ]]
@@ -62,6 +64,7 @@ cmp -- "$PREPARATION_REPORT" "$recomputed_preparation"
   --expected-standing-authorization-sha256 "$EXPECTED_STANDING_AUTHORIZATION_SHA256" \
   --expected-preparation-sha256 "$EXPECTED_PREPARATION_SHA256" \
   --expected-revision "$EXPECTED_REVISION" \
+  --expected-tree "$EXPECTED_TREE" \
   --expected-branch "$EXPECTED_BRANCH" \
   --expected-output-root "$OUTPUT_ROOT"
 

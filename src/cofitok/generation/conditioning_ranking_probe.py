@@ -3,6 +3,12 @@ from __future__ import annotations
 import copy
 from typing import Any, Mapping
 
+from cofitok.generation.quality_bridge_followup import (
+    AUTHORIZATION_BOUNDARY as FOLLOWUP_AUTHORIZATION_BOUNDARY,
+    EXPECTED_CHECKS as FOLLOWUP_EXPECTED_CHECKS,
+    FOLLOWUP_DECISION_ROLE,
+    FOLLOWUP_DECISION_SCHEMA_VERSION,
+)
 from cofitok.generation_pair import generation_pair_contract
 
 
@@ -32,15 +38,96 @@ STANDING_AUTHORIZATION_SAFETY_BOUNDARIES = {
     "exact_revision_stage_and_output_binding_required": True,
     "stage_must_remain_non_authorizing_when_protocol_declares_non_authorizing": True,
 }
-FOLLOWUP_DECISION_ROLE = "stability_quality_bridge_followup_experiment_decision"
 FOLLOWUP_DECISION_ID = "run_class_conditioning_fidelity_diagnostic"
 FOLLOWUP_DECISION_CATEGORY = "class_conditioning_recovery"
+FOLLOWUP_DECISION_BUILDER_GIT = {
+    "revision": "cd78a348769f0efad0d42de063e5b0943444a29b",
+    "branch": "analysis/generation-quality-bridge-mixed-route-v3-20260822",
+    "tracked_dirty": False,
+}
 QUALITY_BRIDGE_EXECUTION_GIT = {
     "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
     "branch": "scale/generation-stability-quality-bridge-100k",
     "tracked_dirty": False,
 }
+QUALITY_BRIDGE_OUTPUT_ROOT = (
+    "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
+    "stability_full_data_100k_base128_quality_bridge_v1"
+)
+QUALITY_BRIDGE_RESULT_ROLE = "stability_full_data_quality_bridge_result"
+QUALITY_BRIDGE_RESULT_STAGE = "stability_quality_bridge"
 TERMINAL_SYSTEM_GUARD_ROLE = "generation_terminal_system_claim_guard"
+TERMINAL_SYSTEM_GUARD_WAITER_ROLE = (
+    "generation_terminal_system_claim_guard_waiter"
+)
+TERMINAL_SYSTEM_GUARD_WAITER_DETAIL = (
+    "terminal_system_claim_guard_source_revalidated"
+)
+TERMINAL_SYSTEM_GUARD_WAITER_GIT = {
+    "revision": "8ec9a09ddcd981c1ffbd06b6bda81386b33321de",
+    "tree": "344f6365d2e962e350b73f5ce4bc18c005f6dff9",
+    "branch": "analysis/generation-terminal-system-claim-guard-v1",
+    "tracked_dirty": False,
+}
+TERMINAL_SYSTEM_GUARD_WAITER_AUTHORIZATION_BOUNDARY = {
+    "cpu_only_evidence_binding_allowed": True,
+    "gpu_execution_allowed": False,
+    "training_launch_allowed": False,
+    "sampling_launch_allowed": False,
+    "full_300k_launch_allowed": False,
+    "inference_export_authorization_allowed": False,
+    "promotion_or_release_allowed": False,
+    "process_signals_allowed": False,
+    "upstream_decisions_modified": False,
+}
+TERMINAL_SYSTEM_GUARD_CLAIM_BOUNDARY = {
+    "diagnostic_non_authorizing": True,
+    "training_launch_allowed": False,
+    "gpu_execution_allowed": False,
+    "sampling_launch_allowed": False,
+    "full_training_launch_allowed": False,
+    "full_300k_launch_allowed": False,
+    "inference_export_authorization_allowed": False,
+    "release_authorization_allowed": False,
+    "process_signals_allowed": False,
+    "replaces_bound_source_reports": False,
+    "visual_audit_is_quantitative_quality_evidence": False,
+    "absolute_usability_claim_allowed": False,
+    "cross_tier_numeric_ranking_allowed": False,
+    "broad_generation_superiority_claim_allowed": False,
+    "sota_claim_allowed": False,
+}
+REQUESTED_CLASS_VISUAL_AUDIT_WAITER_ROLE = (
+    "quality_bridge_terminal_requested_class_visual_audit_waiter"
+)
+REQUESTED_CLASS_VISUAL_AUDIT_WAITER_DETAIL = (
+    "terminal_visual_audit_source_revalidated"
+)
+REQUESTED_CLASS_VISUAL_AUDIT_WAITER_GIT = {
+    "revision": "c1abf65fdafb8e198a8f1ac59c83b3038a9702b5",
+    "tree": "3362a6dc939ae5d907103211db41eaa88851f1d2",
+    "branch": "scale/generation-terminal-visual-audit-waiter-v1",
+    "tracked_dirty": False,
+}
+REQUESTED_CLASS_VISUAL_AUDIT_WAITER_AUTHORIZATION_BOUNDARY = {
+    "cpu_only_visual_diagnostic_allowed": True,
+    "gpu_use_allowed": False,
+    "training_launch_allowed": False,
+    "full_300k_launch_allowed": False,
+    "promotion_or_release_allowed": False,
+    "quality_bridge_or_followup_decision_modified": False,
+}
+REQUESTED_CLASS_VISUAL_AUDIT_ROLE = "generation_requested_class_visual_audit"
+REQUESTED_CLASS_VISUAL_AUDIT_CLAIM_BOUNDARY = {
+    "visual_diagnostic_only": True,
+    "quantitative_generation_metric": False,
+    "replaces_class_fidelity_evaluation": False,
+    "replaces_fid_or_distribution_metrics": False,
+    "replaces_frozen_promotion_gate": False,
+    "training_launch_allowed": False,
+    "full_300k_launch_allowed": False,
+    "promotion_or_release_allowed": False,
+}
 RANKING_FIELDS = (
     "class_conditioning_ranking_weight",
     "class_conditioning_ranking_start_step",
@@ -180,76 +267,260 @@ def validate_conditioning_ranking_probe_preparation(
     return copy.deepcopy(dict(preparation))
 
 
+def validate_quality_bridge_result_for_ranking_probe(
+    result: Mapping[str, Any],
+) -> dict[str, Any]:
+    screen = result.get("quality_screen")
+    if (
+        result.get("schema_version") != 1
+        or result.get("status") != "completed"
+        or result.get("role") != QUALITY_BRIDGE_RESULT_ROLE
+        or result.get("stage") != QUALITY_BRIDGE_RESULT_STAGE
+        or result.get("git") != QUALITY_BRIDGE_EXECUTION_GIT
+        or not isinstance(screen, Mapping)
+        or screen.get("status") != "hold"
+        or screen.get("failed_checks") != ["class_fidelity"]
+    ):
+        raise ValueError("quality-bridge class-only terminal result differs")
+    checks = screen.get("checks")
+    if not isinstance(checks, list):
+        raise ValueError("quality-bridge class-only terminal checks are missing")
+    rows: dict[str, Mapping[str, Any]] = {}
+    for row in checks:
+        if not isinstance(row, Mapping) or not isinstance(row.get("name"), str):
+            raise ValueError("quality-bridge class-only terminal check is malformed")
+        name = str(row["name"])
+        if name in rows or type(row.get("passed")) is not bool:
+            raise ValueError("quality-bridge class-only terminal checks differ")
+        rows[name] = row
+    if set(rows) != set(FOLLOWUP_EXPECTED_CHECKS) or any(
+        row["passed"] is (name == "class_fidelity")
+        for name, row in rows.items()
+    ):
+        raise ValueError("quality-bridge class-only terminal failure is not exact")
+    return copy.deepcopy(dict(result))
+
+
 def validate_class_conditioning_followup_decision(
     decision: Mapping[str, Any],
+    *,
+    expected_quality_bridge_result: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     recommendation = decision.get("recommended_next_stage")
     terminal = decision.get("terminal_quality")
     sources = decision.get("source_reports")
+    claim_policy = decision.get("claim_policy")
     if (
-        decision.get("schema_version") != 1
+        decision.get("schema_version") != FOLLOWUP_DECISION_SCHEMA_VERSION
         or decision.get("status") != "completed"
         or decision.get("role") != FOLLOWUP_DECISION_ROLE
+        or decision.get("decision_builder_git") != FOLLOWUP_DECISION_BUILDER_GIT
         or decision.get("quality_bridge_execution_git")
         != QUALITY_BRIDGE_EXECUTION_GIT
+        or decision.get("authorization_boundary") != FOLLOWUP_AUTHORIZATION_BOUNDARY
+        or not isinstance(claim_policy, Mapping)
+        or claim_policy.get("experiment_selection_only") is not True
+        or claim_policy.get("terminal_result_is_promotion_gate") is not False
         or not isinstance(recommendation, Mapping)
         or recommendation.get("id") != FOLLOWUP_DECISION_ID
         or recommendation.get("category") != FOLLOWUP_DECISION_CATEGORY
         or recommendation.get("execution_ready") is not False
         or recommendation.get("gpu_execution_allowed") is not False
         or recommendation.get("full_300k_launch_allowed") is not False
+        or recommendation.get("release_authorization_allowed") is not False
+        or recommendation.get("trigger")
+        != {"failed_checks": ["class_fidelity"]}
         or not isinstance(terminal, Mapping)
         or terminal.get("failed_checks") != ["class_fidelity"]
         or not isinstance(sources, Mapping)
+        or set(sources)
+        != {"quality_bridge_result", "milestones", "terminal_training_exposure"}
     ):
         raise ValueError("quality-bridge class-conditioning follow-up differs")
     quality_identity = _identity(
         sources.get("quality_bridge_result", {}),
         label="quality-bridge result",
     )
+    if expected_quality_bridge_result is not None and quality_identity != _identity(
+        expected_quality_bridge_result,
+        label="expected quality-bridge result",
+    ):
+        raise ValueError("quality-bridge class-conditioning result binding differs")
+    milestones = sources.get("milestones")
+    if not isinstance(milestones, Mapping) or set(milestones) != {"50000", "100000"}:
+        raise ValueError("quality-bridge class-conditioning milestones differ")
+    for step in ("50000", "100000"):
+        _identity(milestones[step], label=f"quality-bridge milestone {step}")
+    _identity(
+        sources.get("terminal_training_exposure", {}),
+        label="terminal training exposure",
+    )
     checks = terminal.get("checks")
     if not isinstance(checks, list):
         raise ValueError("quality-bridge terminal checks are missing")
-    class_rows = [
-        row
-        for row in checks
-        if isinstance(row, Mapping) and row.get("name") == "class_fidelity"
-    ]
-    if len(class_rows) != 1 or class_rows[0].get("passed") is not False:
+    rows: dict[str, Mapping[str, Any]] = {}
+    for row in checks:
+        if not isinstance(row, Mapping) or not isinstance(row.get("name"), str):
+            raise ValueError("quality-bridge terminal check is malformed")
+        name = str(row["name"])
+        if name in rows or type(row.get("passed")) is not bool:
+            raise ValueError("quality-bridge terminal checks are not unique and boolean")
+        rows[name] = row
+    if set(rows) != set(FOLLOWUP_EXPECTED_CHECKS) or any(
+        row["passed"] is (name == "class_fidelity")
+        for name, row in rows.items()
+    ):
         raise ValueError("quality-bridge class-fidelity failure is not exact")
     return {
         "report": copy.deepcopy(dict(decision)),
         "quality_bridge_result": quality_identity,
         "failed_checks": copy.deepcopy(list(terminal["failed_checks"])),
+        "decision_builder_git": copy.deepcopy(FOLLOWUP_DECISION_BUILDER_GIT),
+    }
+
+
+def validate_requested_class_visual_audit_evidence(
+    status: Mapping[str, Any],
+    *,
+    status_identity: Mapping[str, Any],
+    report: Mapping[str, Any],
+    report_identity: Mapping[str, Any],
+    expected_quality_bridge_result: Mapping[str, Any],
+) -> dict[str, Any]:
+    expected_quality = _identity(
+        expected_quality_bridge_result,
+        label="expected visual-audit quality result",
+    )
+    expected_status = _identity(
+        status_identity,
+        label="requested-class visual-audit waiter status",
+    )
+    expected_report = _identity(
+        report_identity,
+        label="requested-class visual-audit report",
+    )
+    expected = status.get("expected")
+    quality = status.get("quality_result")
+    if (
+        status.get("schema_version") != 1
+        or status.get("role") != REQUESTED_CLASS_VISUAL_AUDIT_WAITER_ROLE
+        or status.get("status") != "completed"
+        or status.get("detail") != REQUESTED_CLASS_VISUAL_AUDIT_WAITER_DETAIL
+        or status.get("authorization_boundary")
+        != REQUESTED_CLASS_VISUAL_AUDIT_WAITER_AUTHORIZATION_BOUNDARY
+        or status.get("git") != REQUESTED_CLASS_VISUAL_AUDIT_WAITER_GIT
+        or not isinstance(expected, Mapping)
+        or expected.get("git") != REQUESTED_CLASS_VISUAL_AUDIT_WAITER_GIT
+        or expected.get("quality_result") != expected_quality["path"]
+        or not isinstance(quality, Mapping)
+        or quality.get("identity") != expected_quality
+        or status.get("visual_audit") != expected_report
+    ):
+        raise ValueError("requested-class visual-audit waiter binding differs")
+    panels = report.get("panels")
+    sources = report.get("sources")
+    if (
+        report.get("schema_version") != 1
+        or report.get("role") != REQUESTED_CLASS_VISUAL_AUDIT_ROLE
+        or report.get("status") != "completed"
+        or report.get("claim_boundary") != REQUESTED_CLASS_VISUAL_AUDIT_CLAIM_BOUNDARY
+        or report.get("indices") != list(range(16))
+        or not isinstance(panels, list)
+        or len(panels) != 2
+        or not isinstance(sources, Mapping)
+        or set(sources) != {"cofitok", "dense_identity"}
+    ):
+        raise ValueError("requested-class visual-audit report differs")
+    for panel_index, panel in enumerate(panels):
+        if (
+            not isinstance(panel, Mapping)
+            or _identity(panel, label="requested-class visual panel")
+            != {key: panel[key] for key in ("path", "bytes", "sha256")}
+            or panel.get("indices")
+            != list(range(panel_index * 8, (panel_index + 1) * 8))
+            or panel.get("row_order")
+            != ["real_validation", "cofitok", "dense_identity"]
+            or panel.get("columns") != 8
+        ):
+            raise ValueError("requested-class visual-audit panel differs")
+    return {
+        "status": "completed",
+        "quantitative_quality_evidence": False,
+        "fixed_indices": list(range(16)),
+        "panel_count": 2,
+        "report": expected_report,
+        "waiter_status": expected_status,
     }
 
 
 def validate_terminal_system_evidence_for_ranking_probe(
     guard: Mapping[str, Any],
     *,
+    guard_identity: Mapping[str, Any],
+    guard_status: Mapping[str, Any],
+    guard_status_identity: Mapping[str, Any],
+    visual_audit_status: Mapping[str, Any],
+    visual_audit_status_identity: Mapping[str, Any],
+    visual_audit_report: Mapping[str, Any],
+    visual_audit_report_identity: Mapping[str, Any],
     expected_quality_bridge_result: Mapping[str, Any],
     expected_failed_checks: list[Any],
 ) -> dict[str, Any]:
+    guard_id = _identity(guard_identity, label="terminal-system claim guard")
+    guard_status_id = _identity(
+        guard_status_identity,
+        label="terminal-system claim guard waiter status",
+    )
+    quality_id = _identity(
+        expected_quality_bridge_result,
+        label="expected quality result",
+    )
+    visual_status_id = _identity(
+        visual_audit_status_identity,
+        label="requested-class visual-audit waiter status",
+    )
+    visual = validate_requested_class_visual_audit_evidence(
+        visual_audit_status,
+        status_identity=visual_status_id,
+        report=visual_audit_report,
+        report_identity=visual_audit_report_identity,
+        expected_quality_bridge_result=quality_id,
+    )
     sources = guard.get("sources")
     evidence = guard.get("evidence")
     policy = guard.get("claim_policy")
     boundary = guard.get("claim_boundary")
+    scope = guard.get("scope")
     if (
         guard.get("schema_version") != 1
         or guard.get("role") != TERMINAL_SYSTEM_GUARD_ROLE
         or guard.get("status") not in {"pass", "hold"}
         or not isinstance(sources, Mapping)
+        or set(sources)
+        != {
+            "quality_bridge_result",
+            "statistical_claim_language_guard",
+            "requested_class_visual_audit_waiter_status",
+            "runtime_compute_claim_guard",
+        }
         or _identity(
             sources.get("quality_bridge_result", {}),
             label="terminal-system quality result",
         )
-        != _identity(
-            expected_quality_bridge_result,
-            label="expected quality result",
+        != quality_id
+        or _identity(
+            sources.get("requested_class_visual_audit_waiter_status", {}),
+            label="terminal-system visual-audit waiter status",
         )
+        != visual_status_id
+        or not isinstance(scope, Mapping)
+        or scope.get("dataset") != "imagenet_256"
+        or scope.get("training_steps_per_method") != 100_000
+        or scope.get("quality_output_root") != QUALITY_BRIDGE_OUTPUT_ROOT
+        or scope.get("training_git") != QUALITY_BRIDGE_EXECUTION_GIT
         or not isinstance(evidence, Mapping)
         or not isinstance(policy, Mapping)
-        or not isinstance(boundary, Mapping)
+        or boundary != TERMINAL_SYSTEM_GUARD_CLAIM_BOUNDARY
         or policy.get("terminal_system_evidence_complete") is not True
         or policy.get("requested_class_visual_evidence_available") is not True
         or policy.get("requested_class_visual_evidence_is_quantitative") is not False
@@ -257,22 +528,54 @@ def validate_terminal_system_evidence_for_ranking_probe(
         or policy.get("inference_export_authorization_allowed") is not False
         or policy.get("release_authorization_allowed") is not False
         or policy.get("broad_generation_superiority_claim_allowed") is not False
-        or boundary.get("training_launch_allowed") is not False
-        or boundary.get("gpu_execution_allowed") is not False
-        or boundary.get("full_300k_launch_allowed") is not False
     ):
         raise ValueError("terminal-system evidence contract differs")
+    _identity(
+        sources.get("statistical_claim_language_guard", {}),
+        label="terminal statistical claim-language guard",
+    )
+    _identity(
+        sources.get("runtime_compute_claim_guard", {}),
+        label="terminal runtime-compute claim guard",
+    )
     quality_screen = evidence.get("quality_screen")
-    visual = evidence.get("requested_class_visual_audit")
+    guard_visual = evidence.get("requested_class_visual_audit")
+    runtime = evidence.get("runtime_compute")
     if (
         not isinstance(quality_screen, Mapping)
         or quality_screen.get("failed_checks") != expected_failed_checks
-        or not isinstance(visual, Mapping)
-        or visual.get("status") != "completed"
-        or visual.get("quantitative_quality_evidence") is not False
-        or int(visual.get("panel_count", -1)) != 2
+        or quality_screen.get("absolute_quality_passed") is not True
+        or int(quality_screen.get("check_count", -1))
+        != len(FOLLOWUP_EXPECTED_CHECKS)
+        or guard_visual != visual
+        or not isinstance(runtime, Mapping)
+        or runtime.get("status") != "verified"
     ):
         raise ValueError("terminal requested-class evidence differs")
+    status_expected = guard_status.get("expected")
+    status_sources = guard_status.get("sources")
+    if (
+        guard_status.get("schema_version") != 1
+        or guard_status.get("role") != TERMINAL_SYSTEM_GUARD_WAITER_ROLE
+        or guard_status.get("status") != "completed"
+        or guard_status.get("detail") != TERMINAL_SYSTEM_GUARD_WAITER_DETAIL
+        or guard_status.get("authorization_boundary")
+        != TERMINAL_SYSTEM_GUARD_WAITER_AUTHORIZATION_BOUNDARY
+        or guard_status.get("git") != TERMINAL_SYSTEM_GUARD_WAITER_GIT
+        or not isinstance(status_expected, Mapping)
+        or status_expected.get("git") != TERMINAL_SYSTEM_GUARD_WAITER_GIT
+        or status_expected.get("quality_output_root") != QUALITY_BRIDGE_OUTPUT_ROOT
+        or status_expected.get("output") != guard_id["path"]
+        or not isinstance(status_sources, Mapping)
+        or status_sources.get("quality_result") != quality_id
+        or status_sources.get("visual_audit_waiter_status") != visual_status_id
+        or guard_status.get("guard") != guard_id
+        or guard_status.get("guard_status") != guard.get("status")
+        or guard_status.get("guard_decision") != guard.get("decision")
+    ):
+        raise ValueError("terminal-system guard waiter binding differs")
+    if guard_status_id["path"] == guard_id["path"]:
+        raise ValueError("terminal-system guard and waiter status paths must differ")
     return copy.deepcopy(dict(guard))
 
 
@@ -390,10 +693,20 @@ def build_conditioning_ranking_probe_execution_authorization(
     standing_authorization_identity: Mapping[str, Any],
     followup_decision: Mapping[str, Any],
     followup_decision_identity: Mapping[str, Any],
+    quality_bridge_result: Mapping[str, Any],
+    quality_bridge_result_identity: Mapping[str, Any],
     terminal_system_guard: Mapping[str, Any],
     terminal_system_guard_identity: Mapping[str, Any],
+    terminal_system_guard_status: Mapping[str, Any],
+    terminal_system_guard_status_identity: Mapping[str, Any],
+    requested_class_visual_audit_status: Mapping[str, Any],
+    requested_class_visual_audit_status_identity: Mapping[str, Any],
+    requested_class_visual_audit_report: Mapping[str, Any],
+    requested_class_visual_audit_report_identity: Mapping[str, Any],
     authorization_git: Mapping[str, Any],
+    authorization_tree: str,
     expected_revision: str,
+    expected_tree: str,
     expected_branch: str,
     expected_output_root: str,
 ) -> dict[str, Any]:
@@ -409,9 +722,25 @@ def build_conditioning_ranking_probe_execution_authorization(
         followup_decision_identity,
         label="class-conditioning follow-up decision",
     )
+    quality_id = _identity(
+        quality_bridge_result_identity,
+        label="quality-bridge result",
+    )
     terminal_id = _identity(
         terminal_system_guard_identity,
         label="terminal-system claim guard",
+    )
+    terminal_status_id = _identity(
+        terminal_system_guard_status_identity,
+        label="terminal-system claim guard waiter status",
+    )
+    visual_status_id = _identity(
+        requested_class_visual_audit_status_identity,
+        label="requested-class visual-audit waiter status",
+    )
+    visual_report_id = _identity(
+        requested_class_visual_audit_report_identity,
+        label="requested-class visual-audit report",
     )
     builder_git = _clean_git(
         authorization_git,
@@ -423,6 +752,13 @@ def build_conditioning_ranking_probe_execution_authorization(
         "tracked_dirty": False,
     }:
         raise ValueError("conditioning-ranking authorization builder Git differs")
+    if (
+        not isinstance(authorization_tree, str)
+        or len(authorization_tree) != 40
+        or not all(character in "0123456789abcdef" for character in authorization_tree)
+        or authorization_tree != expected_tree
+    ):
+        raise ValueError("conditioning-ranking authorization builder tree differs")
     validated_preparation = validate_conditioning_ranking_probe_preparation(
         preparation,
         expected_revision=expected_revision,
@@ -432,9 +768,20 @@ def build_conditioning_ranking_probe_execution_authorization(
     validated_standing = validate_standing_experiment_authorization(
         standing_authorization
     )
-    followup = validate_class_conditioning_followup_decision(followup_decision)
+    validate_quality_bridge_result_for_ranking_probe(quality_bridge_result)
+    followup = validate_class_conditioning_followup_decision(
+        followup_decision,
+        expected_quality_bridge_result=quality_id,
+    )
     validated_terminal = validate_terminal_system_evidence_for_ranking_probe(
         terminal_system_guard,
+        guard_identity=terminal_id,
+        guard_status=terminal_system_guard_status,
+        guard_status_identity=terminal_status_id,
+        visual_audit_status=requested_class_visual_audit_status,
+        visual_audit_status_identity=visual_status_id,
+        visual_audit_report=requested_class_visual_audit_report,
+        visual_audit_report_identity=visual_report_id,
         expected_quality_bridge_result=followup["quality_bridge_result"],
         expected_failed_checks=followup["failed_checks"],
     )
@@ -446,15 +793,20 @@ def build_conditioning_ranking_probe_execution_authorization(
         "scope": PROBE_SCOPE,
         "stage": PROBE_STAGE,
         "authorized_revision": expected_revision,
+        "authorized_tree": expected_tree,
         "authorized_branch": expected_branch,
         "output_root": expected_output_root,
         "authorization_builder_git": builder_git,
+        "authorization_builder_tree": authorization_tree,
         "source_reports": {
             "preparation": preparation_id,
             "standing_authorization": standing_id,
             "quality_bridge_followup_decision": followup_id,
             "terminal_system_claim_guard": terminal_id,
-            "quality_bridge_result": followup["quality_bridge_result"],
+            "terminal_system_claim_guard_waiter_status": terminal_status_id,
+            "requested_class_visual_audit_waiter_status": visual_status_id,
+            "requested_class_visual_audit_report": visual_report_id,
+            "quality_bridge_result": quality_id,
         },
         "standing_authorization": {
             "source": standing_id,
@@ -464,8 +816,13 @@ def build_conditioning_ranking_probe_execution_authorization(
             "id": FOLLOWUP_DECISION_ID,
             "category": FOLLOWUP_DECISION_CATEGORY,
             "failed_checks": followup["failed_checks"],
+            "decision_builder_git": followup["decision_builder_git"],
             "terminal_system_status": validated_terminal["status"],
             "requested_class_visual_evidence_complete": True,
+            "requested_class_visual_audit": {
+                "waiter_status": visual_status_id,
+                "report": visual_report_id,
+            },
         },
         "preparation_contract": {
             "status": validated_preparation["status"],
@@ -495,10 +852,20 @@ def validate_conditioning_ranking_probe_execution_authorization(
     standing_authorization_identity: Mapping[str, Any],
     followup_decision: Mapping[str, Any],
     followup_decision_identity: Mapping[str, Any],
+    quality_bridge_result: Mapping[str, Any],
+    quality_bridge_result_identity: Mapping[str, Any],
     terminal_system_guard: Mapping[str, Any],
     terminal_system_guard_identity: Mapping[str, Any],
+    terminal_system_guard_status: Mapping[str, Any],
+    terminal_system_guard_status_identity: Mapping[str, Any],
+    requested_class_visual_audit_status: Mapping[str, Any],
+    requested_class_visual_audit_status_identity: Mapping[str, Any],
+    requested_class_visual_audit_report: Mapping[str, Any],
+    requested_class_visual_audit_report_identity: Mapping[str, Any],
     authorization_git: Mapping[str, Any],
+    authorization_tree: str,
     expected_revision: str,
+    expected_tree: str,
     expected_branch: str,
     expected_output_root: str,
 ) -> dict[str, Any]:
@@ -509,10 +876,24 @@ def validate_conditioning_ranking_probe_execution_authorization(
         standing_authorization_identity=standing_authorization_identity,
         followup_decision=followup_decision,
         followup_decision_identity=followup_decision_identity,
+        quality_bridge_result=quality_bridge_result,
+        quality_bridge_result_identity=quality_bridge_result_identity,
         terminal_system_guard=terminal_system_guard,
         terminal_system_guard_identity=terminal_system_guard_identity,
+        terminal_system_guard_status=terminal_system_guard_status,
+        terminal_system_guard_status_identity=terminal_system_guard_status_identity,
+        requested_class_visual_audit_status=requested_class_visual_audit_status,
+        requested_class_visual_audit_status_identity=(
+            requested_class_visual_audit_status_identity
+        ),
+        requested_class_visual_audit_report=requested_class_visual_audit_report,
+        requested_class_visual_audit_report_identity=(
+            requested_class_visual_audit_report_identity
+        ),
         authorization_git=authorization_git,
+        authorization_tree=authorization_tree,
         expected_revision=expected_revision,
+        expected_tree=expected_tree,
         expected_branch=expected_branch,
         expected_output_root=expected_output_root,
     )

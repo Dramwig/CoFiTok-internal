@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import subprocess
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -50,6 +51,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-standing-authorization-sha256", required=True)
     parser.add_argument("--expected-preparation-sha256", required=True)
     parser.add_argument("--expected-revision", required=True)
+    parser.add_argument("--expected-tree", required=True)
     parser.add_argument("--expected-branch", required=True)
     parser.add_argument("--expected-output-root", required=True)
     return parser.parse_args()
@@ -80,13 +82,25 @@ def main() -> None:
         authorization,
         name="quality_bridge_followup_decision",
     )
+    quality, quality_identity = _embedded_source(
+        authorization,
+        name="quality_bridge_result",
+    )
     terminal, terminal_identity = _embedded_source(
         authorization,
         name="terminal_system_claim_guard",
     )
-    _embedded_source(
+    terminal_status, terminal_status_identity = _embedded_source(
         authorization,
-        name="quality_bridge_result",
+        name="terminal_system_claim_guard_waiter_status",
+    )
+    visual_status, visual_status_identity = _embedded_source(
+        authorization,
+        name="requested_class_visual_audit_waiter_status",
+    )
+    visual_report, visual_report_identity = _embedded_source(
+        authorization,
+        name="requested_class_visual_audit_report",
     )
     if preparation_identity["sha256"] != args.expected_preparation_sha256:
         raise ValueError("conditioning-ranking preparation SHA256 differs")
@@ -100,10 +114,24 @@ def main() -> None:
         standing_authorization_identity=standing_identity,
         followup_decision=followup,
         followup_decision_identity=followup_identity,
+        quality_bridge_result=quality,
+        quality_bridge_result_identity=quality_identity,
         terminal_system_guard=terminal,
         terminal_system_guard_identity=terminal_identity,
+        terminal_system_guard_status=terminal_status,
+        terminal_system_guard_status_identity=terminal_status_identity,
+        requested_class_visual_audit_status=visual_status,
+        requested_class_visual_audit_status_identity=visual_status_identity,
+        requested_class_visual_audit_report=visual_report,
+        requested_class_visual_audit_report_identity=visual_report_identity,
         authorization_git=git_provenance(PROJECT_ROOT),
+        authorization_tree=subprocess.check_output(
+            ["git", "rev-parse", "HEAD^{tree}"],
+            cwd=PROJECT_ROOT,
+            text=True,
+        ).strip(),
         expected_revision=args.expected_revision,
+        expected_tree=args.expected_tree,
         expected_branch=args.expected_branch,
         expected_output_root=args.expected_output_root,
     )

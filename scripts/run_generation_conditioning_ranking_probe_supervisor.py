@@ -8,10 +8,14 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from cofitok.generation.conditioning_ranking_probe import (
+    FOLLOWUP_AUTHORIZATION_BOUNDARY,
     FOLLOWUP_DECISION_ID,
+    FOLLOWUP_DECISION_BUILDER_GIT,
     FOLLOWUP_DECISION_ROLE,
+    FOLLOWUP_DECISION_SCHEMA_VERSION,
     QUALITY_BRIDGE_EXECUTION_GIT,
     build_conditioning_ranking_probe_execution_authorization,
+    validate_class_conditioning_followup_decision,
 )
 from cofitok.inference_replay import (
     file_identity,
@@ -20,6 +24,11 @@ from cofitok.inference_replay import (
     reject_symlink_chain,
 )
 from cofitok.reporting import git_provenance, write_json_report
+
+try:
+    import fcntl
+except ModuleNotFoundError:  # pragma: no cover - exercised on Linux deployment.
+    fcntl = None
 
 
 ROLE = "generation_conditioning_ranking_probe_supervisor"
@@ -61,6 +70,31 @@ def _full_git_status(project: Path) -> str:
     ).stdout.strip()
 
 
+def _git_tree(project: Path) -> str:
+    return subprocess.check_output(
+        ["git", "rev-parse", "HEAD^{tree}"],
+        cwd=project,
+        text=True,
+    ).strip()
+
+
+def _embedded_json(
+    descriptor: object,
+    *,
+    label: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if not isinstance(descriptor, Mapping):
+        raise ValueError(f"{label} identity is missing")
+    source = reject_symlink_chain(
+        Path(str(descriptor.get("path", ""))),
+        name=label,
+    ).resolve()
+    identity = file_identity(source)
+    if identity != dict(descriptor):
+        raise ValueError(f"{label} identity differs")
+    return read_json_object(source, name=label), identity
+
+
 def parse_gpu_process_pids(output: str) -> list[int]:
     pids: list[int] = []
     for line in output.splitlines():
@@ -88,19 +122,34 @@ def gpu_compute_pids() -> list[int]:
     return parse_gpu_process_pids(result.stdout)
 
 
-def followup_route(report: Mapping[str, Any]) -> str:
+def followup_route(
+    report: Mapping[str, Any],
+    *,
+    expected_quality_bridge_result: Mapping[str, Any] | None = None,
+) -> str:
     recommendation = report.get("recommended_next_stage")
     if (
-        report.get("schema_version") != 1
+        report.get("schema_version") != FOLLOWUP_DECISION_SCHEMA_VERSION
         or report.get("status") != "completed"
         or report.get("role") != FOLLOWUP_DECISION_ROLE
+        or report.get("decision_builder_git") != FOLLOWUP_DECISION_BUILDER_GIT
         or report.get("quality_bridge_execution_git")
         != QUALITY_BRIDGE_EXECUTION_GIT
+        or report.get("authorization_boundary") != FOLLOWUP_AUTHORIZATION_BOUNDARY
         or not isinstance(recommendation, Mapping)
         or not isinstance(recommendation.get("id"), str)
     ):
         return "invalid"
-    return "selected" if recommendation.get("id") == FOLLOWUP_DECISION_ID else "not_selected"
+    if recommendation.get("id") != FOLLOWUP_DECISION_ID:
+        return "not_selected"
+    try:
+        validate_class_conditioning_followup_decision(
+            report,
+            expected_quality_bridge_result=expected_quality_bridge_result,
+        )
+    except (TypeError, ValueError):
+        return "invalid"
+    return "selected"
 
 
 def _status(
@@ -146,19 +195,28 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--project", type=Path, required=True)
     parser.add_argument("--expected-revision", required=True)
+    parser.add_argument("--expected-tree", required=True)
     parser.add_argument("--expected-branch", required=True)
     parser.add_argument("--preparation", type=Path, required=True)
     parser.add_argument("--expected-preparation-sha256", required=True)
     parser.add_argument("--standing-authorization", type=Path, required=True)
     parser.add_argument("--expected-standing-authorization-sha256", required=True)
+    parser.add_argument("--quality-bridge-result", type=Path, required=True)
     parser.add_argument("--followup-decision", type=Path, required=True)
     parser.add_argument("--terminal-system-guard", type=Path, required=True)
+    parser.add_argument("--terminal-system-guard-status", type=Path, required=True)
+    parser.add_argument(
+        "--requested-class-visual-audit-status",
+        type=Path,
+        required=True,
+    )
     parser.add_argument("--execution-authorization", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--runbook", type=Path, required=True)
     parser.add_argument("--python", type=Path, required=True)
     parser.add_argument("--status-output", type=Path, required=True)
     parser.add_argument("--pid-file", type=Path, required=True)
+    parser.add_argument("--lock", type=Path, required=True)
     parser.add_argument("--poll-seconds", type=float, default=60.0)
     parser.add_argument("--required-idle-polls", type=int, default=5)
     parser.add_argument("--timeout-seconds", type=float, default=2_592_000.0)
@@ -177,12 +235,28 @@ def main() -> int:
         name="ranking supervisor status",
     ).resolve()
     pid_file = reject_symlink_chain(args.pid_file, name="ranking supervisor pid").resolve()
+    lock_path = reject_symlink_chain(
+        args.lock,
+        name="ranking supervisor lock",
+    ).resolve()
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    if fcntl is None:
+        raise RuntimeError("ranking supervisor requires POSIX advisory locking")
+    lock_handle = lock_path.open("a+", encoding="utf-8")
+    try:
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError as error:
+        raise RuntimeError("another conditioning-ranking supervisor owns the lock") from error
     expected_git = {
         "revision": args.expected_revision,
         "branch": args.expected_branch,
         "tracked_dirty": False,
     }
-    if git_provenance(project) != expected_git or _full_git_status(project):
+    if (
+        git_provenance(project) != expected_git
+        or _git_tree(project) != args.expected_tree
+        or _full_git_status(project)
+    ):
         raise ValueError("ranking supervisor requires the exact fully clean checkout")
     if not args.python.is_file() or not args.runbook.is_file():
         raise FileNotFoundError("ranking supervisor runtime or runbook is missing")
@@ -204,6 +278,7 @@ def main() -> int:
             "pid": os.getpid(),
             "project": project.as_posix(),
             "expected_revision": args.expected_revision,
+            "expected_tree": args.expected_tree,
             "expected_branch": args.expected_branch,
         },
     )
@@ -237,13 +312,34 @@ def main() -> int:
             )
             time.sleep(args.poll_seconds)
             continue
+        if not args.quality_bridge_result.is_file():
+            _write_status(
+                status_output,
+                status="waiting",
+                detail="waiting_for_bound_quality_bridge_result",
+                project=project,
+                output_root=output_root,
+                idle_polls=0,
+                sources=sources,
+            )
+            time.sleep(args.poll_seconds)
+            continue
+        quality, quality_identity = _bound_json(
+            args.quality_bridge_result,
+            expected_sha256=None,
+            label="quality-bridge terminal result",
+        )
+        sources["quality_bridge_result"] = quality_identity
         followup, followup_identity = _bound_json(
             args.followup_decision,
             expected_sha256=None,
             label="quality-bridge follow-up decision",
         )
         sources["quality_bridge_followup_decision"] = followup_identity
-        route = followup_route(followup)
+        route = followup_route(
+            followup,
+            expected_quality_bridge_result=quality_identity,
+        )
         if route == "not_selected":
             _write_status(
                 status_output,
@@ -257,7 +353,14 @@ def main() -> int:
             return 0
         if route != "selected":
             raise ValueError("quality-bridge follow-up decision is malformed")
-        if not args.terminal_system_guard.is_file():
+        if not all(
+            path.is_file()
+            for path in (
+                args.terminal_system_guard,
+                args.terminal_system_guard_status,
+                args.requested_class_visual_audit_status,
+            )
+        ):
             _write_status(
                 status_output,
                 status="waiting",
@@ -275,6 +378,27 @@ def main() -> int:
             label="terminal-system claim guard",
         )
         sources["terminal_system_claim_guard"] = terminal_identity
+        terminal_status, terminal_status_identity = _bound_json(
+            args.terminal_system_guard_status,
+            expected_sha256=None,
+            label="terminal-system claim guard waiter status",
+        )
+        sources["terminal_system_claim_guard_waiter_status"] = (
+            terminal_status_identity
+        )
+        visual_status, visual_status_identity = _bound_json(
+            args.requested_class_visual_audit_status,
+            expected_sha256=None,
+            label="requested-class visual-audit waiter status",
+        )
+        sources["requested_class_visual_audit_waiter_status"] = (
+            visual_status_identity
+        )
+        visual_report, visual_report_identity = _embedded_json(
+            visual_status.get("visual_audit"),
+            label="requested-class visual-audit report",
+        )
+        sources["requested_class_visual_audit_report"] = visual_report_identity
         report = build_conditioning_ranking_probe_execution_authorization(
             preparation=preparation,
             preparation_identity=preparation_identity,
@@ -282,10 +406,20 @@ def main() -> int:
             standing_authorization_identity=standing_identity,
             followup_decision=followup,
             followup_decision_identity=followup_identity,
+            quality_bridge_result=quality,
+            quality_bridge_result_identity=quality_identity,
             terminal_system_guard=terminal,
             terminal_system_guard_identity=terminal_identity,
+            terminal_system_guard_status=terminal_status,
+            terminal_system_guard_status_identity=terminal_status_identity,
+            requested_class_visual_audit_status=visual_status,
+            requested_class_visual_audit_status_identity=visual_status_identity,
+            requested_class_visual_audit_report=visual_report,
+            requested_class_visual_audit_report_identity=visual_report_identity,
             authorization_git=git_provenance(project),
+            authorization_tree=_git_tree(project),
             expected_revision=args.expected_revision,
+            expected_tree=args.expected_tree,
             expected_branch=args.expected_branch,
             expected_output_root=output_root.as_posix(),
         )
@@ -312,7 +446,11 @@ def main() -> int:
             )
             time.sleep(args.poll_seconds)
             continue
-        if git_provenance(project) != expected_git or _full_git_status(project):
+        if (
+            git_provenance(project) != expected_git
+            or _git_tree(project) != args.expected_tree
+            or _full_git_status(project)
+        ):
             raise ValueError("ranking supervisor checkout changed before launch")
         environment = os.environ.copy()
         environment.update(
@@ -320,6 +458,7 @@ def main() -> int:
                 "PROJECT": project.as_posix(),
                 "PYTHON": args.python.resolve().as_posix(),
                 "EXPECTED_REVISION": args.expected_revision,
+                "EXPECTED_TREE": args.expected_tree,
                 "EXPECTED_BRANCH": args.expected_branch,
                 "PREPARATION_REPORT": args.preparation.resolve().as_posix(),
                 "EXPECTED_PREPARATION_SHA256": args.expected_preparation_sha256,
@@ -331,6 +470,7 @@ def main() -> int:
                     args.expected_standing_authorization_sha256
                 ),
                 "OUTPUT_ROOT": output_root.as_posix(),
+                "CUDA_VISIBLE_DEVICES": "0",
             }
         )
         child = subprocess.Popen(
