@@ -15,6 +15,13 @@ from cofitok.generation.quality_bridge import (
     QUALITY_BRIDGE_STEPS,
     RESULT_AUTHORIZATION_BOUNDARY,
 )
+from cofitok.generation_class_fidelity import (
+    CLASS_FIDELITY_CATEGORIES_SHA256,
+    CLASS_FIDELITY_CLASSIFIER_BYTES,
+    CLASS_FIDELITY_CLASSIFIER_NAME,
+    CLASS_FIDELITY_CLASSIFIER_SHA256,
+    CLASS_FIDELITY_PREPROCESSING,
+)
 from cofitok.inference_replay import (
     file_identity,
     prepare_manifest,
@@ -130,6 +137,90 @@ def _replay_embedded_identity(
     return actual, read_json_object(path, name=label)
 
 
+def _verify_class_fidelity_classifier_sources(
+    report: Mapping[str, Any],
+) -> dict[str, Any]:
+    sources = report.get("source_reports")
+    if not isinstance(sources, Mapping):
+        raise ValueError("terminal class-fidelity source reports are missing")
+    names = (
+        "class_fidelity_qualification",
+        "cofitok_class_fidelity",
+        "dense_class_fidelity",
+    )
+    identities: dict[str, dict[str, Any]] = {}
+    reports: dict[str, dict[str, Any]] = {}
+    classifiers: dict[str, dict[str, Any]] = {}
+    for name in names:
+        identity, source_report = _replay_embedded_identity(
+            sources.get(name),
+            label=f"terminal {name.replace('_', ' ')}",
+        )
+        classifier = source_report.get("classifier")
+        if not isinstance(classifier, Mapping):
+            raise ValueError(f"terminal {name} classifier identity is missing")
+        identities[name] = identity
+        reports[name] = source_report
+        classifiers[name] = copy.deepcopy(dict(classifier))
+
+    expected_qualification_sources = {
+        "cofitok": identities["cofitok_class_fidelity"],
+        "dense_identity": identities["dense_class_fidelity"],
+    }
+    if (
+        reports["class_fidelity_qualification"].get("sources")
+        != expected_qualification_sources
+    ):
+        raise ValueError("terminal class-fidelity qualification sources differ")
+
+    reference = classifiers["class_fidelity_qualification"]
+    if any(classifier != reference for classifier in classifiers.values()):
+        raise ValueError("terminal class-fidelity classifier identities differ")
+    if (
+        reference.get("name") != CLASS_FIDELITY_CLASSIFIER_NAME
+        or reference.get("weights_enum")
+        != "ResNet50_Weights.IMAGENET1K_V2"
+        or int(reference.get("weights_bytes", -1))
+        != CLASS_FIDELITY_CLASSIFIER_BYTES
+        or reference.get("weights_sha256")
+        != CLASS_FIDELITY_CLASSIFIER_SHA256
+        or int(reference.get("num_classes", -1)) != 1000
+        or reference.get("categories_sha256")
+        != CLASS_FIDELITY_CATEGORIES_SHA256
+        or reference.get("preprocessing") != CLASS_FIDELITY_PREPROCESSING
+    ):
+        raise ValueError("terminal class-fidelity classifier contract differs")
+    weights_path = reference.get("weights_path")
+    if (
+        not isinstance(weights_path, str)
+        or not weights_path
+        or not Path(weights_path).is_absolute()
+    ):
+        raise ValueError("terminal class-fidelity classifier path is malformed")
+    weights = file_identity(
+        reject_symlink_chain(
+            Path(weights_path),
+            name="terminal class-fidelity classifier weight",
+        ).resolve()
+    )
+    if (
+        weights["path"] != Path(weights_path).resolve().as_posix()
+        or int(weights["bytes"]) != CLASS_FIDELITY_CLASSIFIER_BYTES
+        or weights["sha256"] != CLASS_FIDELITY_CLASSIFIER_SHA256
+    ):
+        raise ValueError(
+            "terminal class-fidelity classifier physical identity differs"
+        )
+    return {
+        "status": "verified",
+        "classifier": reference,
+        "physical_weights": weights,
+        "source_reports": identities,
+        "matched_report_classifier_identity": True,
+        "physical_weight_sha256_replayed": True,
+    }
+
+
 def _validate_quality_result(
     identity: Mapping[str, Any],
     report: Mapping[str, Any],
@@ -166,10 +257,12 @@ def _validate_quality_result(
         or set(methods) != {"cofitok", "dense_identity"}
     ):
         raise ValueError("terminal system guard quality-result terminal evidence differs")
+    classifier_integrity = _verify_class_fidelity_classifier_sources(report)
     return {
         "git": copy.deepcopy(dict(git)),
         "quality_screen": evidence,
         "terminal": copy.deepcopy(dict(terminal)),
+        "class_fidelity_classifier_integrity": classifier_integrity,
     }
 
 
@@ -476,6 +569,16 @@ def build_guard(
         quality_output_root=quality_output_root,
         quality_git=quality["git"],
     )
+    final_classifier_integrity = _verify_class_fidelity_classifier_sources(
+        quality_report
+    )
+    if (
+        final_classifier_integrity
+        != quality["class_fidelity_classifier_integrity"]
+    ):
+        raise ValueError(
+            "terminal class-fidelity classifier evidence changed during replay"
+        )
 
     quality_pass = quality["quality_screen"]["absolute_quality_passed"] is True
     matched_advantage_allowed = statistical["allowed"] is True
@@ -515,6 +618,9 @@ def build_guard(
             "matched_statistical_advantage": statistical,
             "requested_class_visual_audit": visual,
             "runtime_compute": runtime,
+            "class_fidelity_classifier_integrity": quality[
+                "class_fidelity_classifier_integrity"
+            ],
         },
         "claim_policy": {
             "terminal_system_evidence_complete": True,
@@ -524,6 +630,7 @@ def build_guard(
             "absolute_quality_screen_pass_statement_allowed": quality_pass,
             "requested_class_visual_evidence_available": True,
             "requested_class_visual_evidence_is_quantitative": False,
+            "class_fidelity_classifier_physical_integrity_verified": True,
             "runtime_configuration_parity_claim_allowed": True,
             "runtime_direct_comparison_allowed": runtime[
                 "direct_runtime_comparison_allowed"

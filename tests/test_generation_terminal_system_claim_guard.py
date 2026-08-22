@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -27,6 +28,21 @@ REVISION = "a" * 40
 BRANCH = "scale/generation-stability-quality-bridge-100k"
 SAMPLE_COUNT = 10_000
 CHECKPOINT_STEP = 100_000
+TEST_CLASSIFIER_WEIGHTS = b"terminal classifier weights\n"
+
+
+@pytest.fixture(autouse=True)
+def _test_classifier_contract(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        guard,
+        "CLASS_FIDELITY_CLASSIFIER_BYTES",
+        len(TEST_CLASSIFIER_WEIGHTS),
+    )
+    monkeypatch.setattr(
+        guard,
+        "CLASS_FIDELITY_CLASSIFIER_SHA256",
+        hashlib.sha256(TEST_CLASSIFIER_WEIGHTS).hexdigest(),
+    )
 
 
 def _write(path: Path, payload: dict[str, Any]) -> dict[str, Any]:
@@ -227,6 +243,40 @@ def _case(
         "seed": 0,
     }
     screen = _quality_screen(passed=quality_passed)
+    classifier_weights = quality_root / "classifier" / "resnet50-11ad3fa6.pth"
+    classifier_weights.parent.mkdir(parents=True, exist_ok=True)
+    classifier_weights.write_bytes(TEST_CLASSIFIER_WEIGHTS)
+    classifier = {
+        "name": guard.CLASS_FIDELITY_CLASSIFIER_NAME,
+        "weights_enum": "ResNet50_Weights.IMAGENET1K_V2",
+        "weights_path": classifier_weights.resolve().as_posix(),
+        "weights_bytes": guard.CLASS_FIDELITY_CLASSIFIER_BYTES,
+        "weights_sha256": guard.CLASS_FIDELITY_CLASSIFIER_SHA256,
+        "num_classes": 1000,
+        "categories_sha256": guard.CLASS_FIDELITY_CATEGORIES_SHA256,
+        "preprocessing": guard.CLASS_FIDELITY_PREPROCESSING,
+    }
+    cofitok_class_path = quality_root / "cofitok" / "class_fidelity.json"
+    dense_class_path = quality_root / "dense" / "class_fidelity.json"
+    cofitok_class_identity = _write(
+        cofitok_class_path,
+        {"classifier": classifier},
+    )
+    dense_class_identity = _write(
+        dense_class_path,
+        {"classifier": classifier},
+    )
+    qualification_path = quality_root / "reports" / "class_fidelity.json"
+    qualification_identity = _write(
+        qualification_path,
+        {
+            "classifier": classifier,
+            "sources": {
+                "cofitok": cofitok_class_identity,
+                "dense_identity": dense_class_identity,
+            },
+        },
+    )
     quality_payload = {
         "schema_version": QUALITY_BRIDGE_RESULT_SCHEMA_VERSION,
         "role": QUALITY_BRIDGE_RESULT_ROLE,
@@ -239,6 +289,11 @@ def _case(
         },
         "quality_screen": screen,
         "authorization_boundary": RESULT_AUTHORIZATION_BOUNDARY,
+        "source_reports": {
+            "class_fidelity_qualification": qualification_identity,
+            "cofitok_class_fidelity": cofitok_class_identity,
+            "dense_class_fidelity": dense_class_identity,
+        },
         "terminal": {
             "methods": {
                 "cofitok": {
@@ -337,6 +392,7 @@ def _case(
         "visual_status_payload": visual_status_payload,
         "visual_status_identity": visual_status_identity,
         "runtime": runtime,
+        "classifier_weights": classifier_weights,
     }
 
 
@@ -366,6 +422,16 @@ def test_pass_binds_quality_statistics_visuals_and_runtime(tmp_path: Path) -> No
     assert report["claim_policy"]["absolute_quality_screen_pass_statement_allowed"] is True
     assert report["claim_policy"]["requested_class_visual_evidence_available"] is True
     assert report["claim_policy"]["requested_class_visual_evidence_is_quantitative"] is False
+    assert (
+        report["claim_policy"][
+            "class_fidelity_classifier_physical_integrity_verified"
+        ]
+        is True
+    )
+    assert (
+        report["evidence"]["class_fidelity_classifier_integrity"]["status"]
+        == "verified"
+    )
     assert report["claim_policy"]["runtime_direct_comparison_allowed"] is False
     assert report["claim_policy"]["absolute_usability_claim_allowed"] is False
     assert report["claim_policy"]["broad_generation_superiority_claim_allowed"] is False
@@ -402,6 +468,41 @@ def test_rejects_statistical_source_drift_after_guard_creation(tmp_path: Path) -
 
     with pytest.raises(ValueError, match="changed after its guard was written"):
         _build(case)
+
+
+def test_rejects_class_fidelity_classifier_weight_drift(tmp_path: Path) -> None:
+    case = _case(tmp_path)
+    case["classifier_weights"].write_bytes(b"drifted classifier weights\n")
+
+    with pytest.raises(ValueError, match="physical identity differs"):
+        _build(case)
+
+
+def test_rejects_classifier_evidence_drift_during_guard_replay(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    case = _case(tmp_path)
+    original = guard._verify_class_fidelity_classifier_sources
+    calls = 0
+
+    def drifting(report: dict[str, Any]) -> dict[str, Any]:
+        nonlocal calls
+        calls += 1
+        evidence = original(report)
+        if calls == 2:
+            evidence = copy.deepcopy(evidence)
+            evidence["physical_weights"]["sha256"] = "f" * 64
+        return evidence
+
+    monkeypatch.setattr(
+        guard,
+        "_verify_class_fidelity_classifier_sources",
+        drifting,
+    )
+    with pytest.raises(ValueError, match="changed during replay"):
+        _build(case)
+    assert calls == 2
 
 
 def test_rejects_runtime_direct_claim_without_matching_policy(tmp_path: Path) -> None:
