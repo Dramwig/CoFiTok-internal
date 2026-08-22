@@ -4,6 +4,7 @@ import argparse
 import copy
 import hashlib
 import json
+import re
 import subprocess
 from collections.abc import Mapping
 from pathlib import Path
@@ -53,6 +54,14 @@ LEGACY_RECONCILIATION_KEYS = {
     "orphan_sha256",
     "report",
 }
+LEGACY_RECONCILIATION_REPORT_KEYS = LEGACY_RECONCILIATION_KEYS - {"report"}
+LEGACY_RECONCILIATION_REPORT_RE = re.compile(
+    r"metrics_resume_reconciliation_(?P<step>\d{8})_(?P<digest>[0-9a-f]{12})\.json"
+)
+LEGACY_ORPHAN_ARCHIVE_RE = re.compile(
+    r"train_metrics_orphaned_at_resume_(?P<step>\d{8})_"
+    r"(?P<digest>[0-9a-f]{12})\.jsonl"
+)
 TERMINAL_DECISIONS = {
     "pass": "matched_quality_advantage_qualified_with_terminal_system_evidence",
     "hold": "terminal_system_evidence_complete_without_qualified_matched_advantage",
@@ -235,13 +244,14 @@ def verify_legacy_resume_history_boundary(
     dataset_sha256: str,
     runtime_sha256: str,
 ) -> dict[str, Any]:
-    """Verify the latest legacy reconciliation without overstating resume history.
+    """Verify every discoverable legacy reconciliation without claiming completeness.
 
-    The active 100K bridge predates append-only ``metrics_resume_history``.  Its
-    canonical manifest can therefore bind only the most recent reconciliation,
-    orphan archive, and retained metrics prefix.  This verifier physically binds
-    those artifacts while keeping the complete recovery-chain claim false.  It
-    deliberately does not require or hash the now-prunable resume checkpoint.
+    The active 100K bridge predates append-only ``metrics_resume_history``.  The
+    run directories nevertheless retain canonical reconciliation reports and
+    orphan archives for known resume events.  This verifier enumerates and binds
+    every such physical pair, while keeping the complete recovery-chain claim
+    false because directory discovery cannot prove that no older event is absent.
+    It deliberately does not require or hash now-prunable resume checkpoints.
     """
 
     root = reject_symlink_chain(
@@ -337,88 +347,34 @@ def verify_legacy_resume_history_boundary(
         ):
             raise ValueError(f"{method} legacy training report is not complete at 100K")
 
-        reconciliation = manifest.get("metrics_resume_reconciliation")
-        if not isinstance(reconciliation, Mapping):
+        embedded_reconciliation = manifest.get("metrics_resume_reconciliation")
+        if not isinstance(embedded_reconciliation, Mapping):
             raise TypeError(f"{method} legacy reconciliation is missing")
-        reconciliation = dict(reconciliation)
-        if set(reconciliation) != LEGACY_RECONCILIATION_KEYS:
+        embedded_reconciliation = dict(embedded_reconciliation)
+        if set(embedded_reconciliation) != LEGACY_RECONCILIATION_KEYS:
             raise ValueError(f"{method} legacy reconciliation fields differ")
         if (
-            reconciliation.get("schema_version") != 1
-            or reconciliation.get("status") != "reconciled"
+            embedded_reconciliation.get("schema_version") != 1
+            or embedded_reconciliation.get("status") != "reconciled"
         ):
             raise ValueError(f"{method} legacy reconciliation status differs")
-        resume_step = int(reconciliation.get("resume_step", -1))
-        retained_rows = int(reconciliation.get("retained_rows", -1))
-        orphaned_rows = int(reconciliation.get("orphaned_rows", -1))
-        orphan_sha256 = reconciliation.get("orphan_sha256")
-        if (
-            resume_step < 1
-            or retained_rows < 1
-            or orphaned_rows < 1
-            or not _is_sha256(orphan_sha256)
-        ):
-            raise ValueError(f"{method} legacy reconciliation counts or digest differ")
-        resume_checkpoint = _canonical_legacy_resume_checkpoint(
+        embedded_resume_step = int(embedded_reconciliation.get("resume_step", -1))
+        embedded_resume_checkpoint = _canonical_legacy_resume_checkpoint(
             manifest.get("resume"),
             run_dir=run_dir,
-            resume_step=resume_step,
+            resume_step=embedded_resume_step,
             label=f"{method} legacy resume checkpoint",
         )
         canonical_metrics = _canonical_run_file(
-            reconciliation.get("metrics"),
+            embedded_reconciliation.get("metrics"),
             run_dir=run_dir,
             expected_name="train_metrics.jsonl",
             label=f"{method} legacy metrics",
         )
-        report_name = (
-            f"metrics_resume_reconciliation_{resume_step:08d}_"
-            f"{orphan_sha256[:12]}.json"
-        )
-        report_path = _canonical_run_file(
-            reconciliation.get("report"),
-            run_dir=run_dir,
-            expected_name=report_name,
-            label=f"{method} legacy reconciliation report",
-        )
-        orphan_name = (
-            f"train_metrics_orphaned_at_resume_{resume_step:08d}_"
-            f"{orphan_sha256[:12]}.jsonl"
-        )
-        orphan_path = _canonical_run_file(
-            reconciliation.get("orphan_archive"),
-            run_dir=run_dir,
-            expected_name=orphan_name,
-            label=f"{method} legacy orphan archive",
-        )
-        report_identity, report = _replay_identity(
-            file_identity(report_path),
-            label=f"{method} legacy reconciliation report",
-        )
-        expected_report = {
-            key: copy.deepcopy(value)
-            for key, value in reconciliation.items()
-            if key != "report"
-        }
-        if report != expected_report:
-            raise ValueError(
-                f"{method} embedded and physical reconciliation reports diverge"
-            )
-        orphan_identity, orphan_rows_data, _ = _stable_jsonl(
-            orphan_path,
-            label=f"{method} legacy orphan archive",
-        )
-        if (
-            orphan_identity["sha256"] != orphan_sha256
-            or len(orphan_rows_data) != orphaned_rows
-        ):
-            raise ValueError(f"{method} legacy orphan archive differs")
         metrics_identity, metrics_rows, normalized_lines = _stable_jsonl(
             canonical_metrics,
             label=f"{method} canonical metrics",
         )
-        if len(metrics_rows) < retained_rows:
-            raise ValueError(f"{method} canonical metrics are shorter than the prefix")
         steps = [int(row.get("step", -1)) for row in metrics_rows]
         if (
             not steps
@@ -430,47 +386,248 @@ def verify_legacy_resume_history_boundary(
             )
         ):
             raise ValueError(f"{method} canonical metrics progression differs")
-        prefix_rows = metrics_rows[:retained_rows]
-        if int(prefix_rows[-1].get("step", -1)) != resume_step:
-            raise ValueError(f"{method} retained metrics prefix does not end at resume")
-        prefix = "".join(normalized_lines[:retained_rows]).encode("utf-8")
-        prefix_identity = {
-            "source": metrics_identity,
-            "bytes": len(prefix),
-            "sha256": hashlib.sha256(prefix).hexdigest(),
-            "row_count": retained_rows,
-            "first_step": int(prefix_rows[0]["step"]),
-            "last_step": resume_step,
-            "last_samples_seen": int(prefix_rows[-1]["samples_seen"]),
-            "strictly_increasing": True,
-            "samples_seen_binding_verified": True,
-        }
-        stable_identities.extend(
-            (
-                (f"{method} legacy reconciliation report", report_identity),
-                (f"{method} legacy orphan archive", orphan_identity),
-                (f"{method} canonical metrics", metrics_identity),
-            )
+
+        report_paths = sorted(run_dir.glob("metrics_resume_reconciliation_*.json"))
+        orphan_paths = sorted(
+            run_dir.glob("train_metrics_orphaned_at_resume_*.jsonl")
         )
+        report_names = [path.name for path in report_paths]
+        orphan_names = [path.name for path in orphan_paths]
+        if not report_paths:
+            raise ValueError(f"{method} has no discoverable legacy reconciliations")
+        malformed_reports = [
+            name
+            for name in report_names
+            if LEGACY_RECONCILIATION_REPORT_RE.fullmatch(name) is None
+        ]
+        malformed_orphans = [
+            name
+            for name in orphan_names
+            if LEGACY_ORPHAN_ARCHIVE_RE.fullmatch(name) is None
+        ]
+        if malformed_reports or malformed_orphans:
+            raise ValueError(
+                f"{method} legacy reconciliation filenames are malformed: "
+                f"reports={malformed_reports}, orphans={malformed_orphans}"
+            )
+
+        discovered: dict[int, dict[str, Any]] = {}
+        expected_orphan_names: set[str] = set()
+        for report_path in report_paths:
+            match = LEGACY_RECONCILIATION_REPORT_RE.fullmatch(report_path.name)
+            assert match is not None
+            filename_step = int(match.group("step"))
+            filename_digest = match.group("digest")
+            if filename_step in discovered:
+                raise ValueError(
+                    f"{method} has divergent duplicate reconciliation step "
+                    f"{filename_step}"
+                )
+            report_identity, report = _replay_identity(
+                file_identity(report_path),
+                label=f"{method} legacy reconciliation report {filename_step}",
+            )
+            if set(report) != LEGACY_RECONCILIATION_REPORT_KEYS:
+                raise ValueError(
+                    f"{method} legacy reconciliation report fields differ at "
+                    f"{filename_step}"
+                )
+            if (
+                report.get("schema_version") != 1
+                or report.get("status") != "reconciled"
+            ):
+                raise ValueError(
+                    f"{method} legacy reconciliation report status differs at "
+                    f"{filename_step}"
+                )
+            resume_step = int(report.get("resume_step", -1))
+            retained_rows = int(report.get("retained_rows", -1))
+            orphaned_rows = int(report.get("orphaned_rows", -1))
+            orphan_sha256 = report.get("orphan_sha256")
+            if (
+                resume_step != filename_step
+                or resume_step < 1
+                or resume_step > EXPECTED_TRAINING_STEPS
+                or retained_rows < 1
+                or orphaned_rows < 1
+                or not _is_sha256(orphan_sha256)
+                or orphan_sha256[:12] != filename_digest
+            ):
+                raise ValueError(
+                    f"{method} legacy reconciliation counts, step, or digest differ "
+                    f"at {filename_step}"
+                )
+            report_metrics = _canonical_run_file(
+                report.get("metrics"),
+                run_dir=run_dir,
+                expected_name="train_metrics.jsonl",
+                label=f"{method} legacy metrics at {resume_step}",
+            )
+            if report_metrics != canonical_metrics:
+                raise ValueError(
+                    f"{method} reconciliation metrics path differs at {resume_step}"
+                )
+            orphan_name = (
+                f"train_metrics_orphaned_at_resume_{resume_step:08d}_"
+                f"{orphan_sha256[:12]}.jsonl"
+            )
+            expected_orphan_names.add(orphan_name)
+            expected_orphan_path = run_dir / orphan_name
+            if not expected_orphan_path.exists():
+                raise ValueError(
+                    f"{method} reconciliation report is unpaired at {resume_step}"
+                )
+            orphan_path = _canonical_run_file(
+                report.get("orphan_archive"),
+                run_dir=run_dir,
+                expected_name=orphan_name,
+                label=f"{method} legacy orphan archive at {resume_step}",
+            )
+            orphan_identity, orphan_rows_data, _ = _stable_jsonl(
+                orphan_path,
+                label=f"{method} legacy orphan archive at {resume_step}",
+            )
+            orphan_steps = [int(row.get("step", -1)) for row in orphan_rows_data]
+            if (
+                orphan_identity["sha256"] != orphan_sha256
+                or len(orphan_rows_data) != orphaned_rows
+                or not orphan_steps
+                or orphan_steps[0] <= resume_step
+                or any(
+                    left >= right
+                    for left, right in zip(orphan_steps, orphan_steps[1:])
+                )
+                or any(
+                    int(row.get("samples_seen", -1)) != step * effective_batch
+                    for row, step in zip(orphan_rows_data, orphan_steps)
+                )
+            ):
+                raise ValueError(
+                    f"{method} legacy orphan archive differs at {resume_step}"
+                )
+            if len(metrics_rows) < retained_rows:
+                raise ValueError(
+                    f"{method} canonical metrics are shorter than the prefix at "
+                    f"{resume_step}"
+                )
+            prefix_rows = metrics_rows[:retained_rows]
+            if int(prefix_rows[-1].get("step", -1)) != resume_step:
+                raise ValueError(
+                    f"{method} retained metrics prefix does not end at resume "
+                    f"{resume_step}"
+                )
+            prefix = "".join(normalized_lines[:retained_rows]).encode("utf-8")
+            prefix_identity = {
+                "source": metrics_identity,
+                "bytes": len(prefix),
+                "sha256": hashlib.sha256(prefix).hexdigest(),
+                "row_count": retained_rows,
+                "first_step": int(prefix_rows[0]["step"]),
+                "last_step": resume_step,
+                "last_samples_seen": int(prefix_rows[-1]["samples_seen"]),
+                "strictly_increasing": True,
+                "samples_seen_binding_verified": True,
+            }
+            stable_identities.extend(
+                (
+                    (
+                        f"{method} legacy reconciliation report {resume_step}",
+                        report_identity,
+                    ),
+                    (
+                        f"{method} legacy orphan archive {resume_step}",
+                        orphan_identity,
+                    ),
+                )
+            )
+            discovered[resume_step] = {
+                "resume_step": resume_step,
+                "resume_checkpoint": {
+                    "path": (
+                        run_dir / f"checkpoint_step_{resume_step:08d}.pt"
+                    ).as_posix(),
+                    "payload_presence_required": False,
+                    "payload_sha256_recomputed": False,
+                },
+                "reconciliation_report": report_identity,
+                "orphan_archive": orphan_identity,
+                "orphan_rows_verified": orphaned_rows,
+                "orphan_steps_strictly_increasing": True,
+                "orphan_samples_seen_binding_verified": True,
+                "metrics_prefix": prefix_identity,
+            }
+
+        if set(orphan_names) != expected_orphan_names:
+            raise ValueError(
+                f"{method} has unpaired legacy reconciliation artifacts: "
+                f"expected_orphans={sorted(expected_orphan_names)}, "
+                f"actual_orphans={orphan_names}"
+            )
+        embedded_report_path = _canonical_run_file(
+            embedded_reconciliation.get("report"),
+            run_dir=run_dir,
+            expected_name=(
+                f"metrics_resume_reconciliation_{embedded_resume_step:08d}_"
+                f"{str(embedded_reconciliation.get('orphan_sha256', ''))[:12]}.json"
+            ),
+            label=f"{method} embedded legacy reconciliation report",
+        )
+        embedded_event = discovered.get(embedded_resume_step)
+        if embedded_event is None:
+            raise ValueError(
+                f"{method} manifest reconciliation is absent from the discovered set"
+            )
+        embedded_physical = read_json_object(
+            embedded_report_path,
+            name=f"{method} embedded legacy reconciliation report",
+        )
+        expected_embedded = {
+            **copy.deepcopy(embedded_physical),
+            "report": embedded_report_path.as_posix(),
+        }
+        if embedded_reconciliation != expected_embedded:
+            raise ValueError(
+                f"{method} embedded and discovered reconciliation reports diverge"
+            )
+        if embedded_resume_step != max(discovered):
+            raise ValueError(
+                f"{method} manifest does not bind the latest discovered reconciliation"
+            )
+        if (
+            embedded_event["resume_checkpoint"]["path"]
+            != embedded_resume_checkpoint.as_posix()
+        ):
+            raise ValueError(f"{method} embedded resume checkpoint path differs")
+
+        stable_identities.append((f"{method} canonical metrics", metrics_identity))
         methods[method] = {
-            "mode": "latest_manifest_reconciliation_only",
+            "mode": "all_discovered_reconciliation_files",
             "append_only_history_present": False,
             "complete_recovery_chain_verified": False,
+            "discovery_proves_no_missing_resume_events": False,
             "manifest": manifest_identity,
             "training_report": training_identity,
             "manifest_training_report_agreement_verified": True,
-            "resume_step": resume_step,
-            "resume_checkpoint": {
-                "path": resume_checkpoint.as_posix(),
-                "payload_presence_required": False,
-                "payload_sha256_recomputed": False,
+            "embedded_latest_resume_step": embedded_resume_step,
+            "embedded_latest_in_discovered_set": True,
+            "discovered_event_count": len(discovered),
+            "discovered_resume_steps": sorted(discovered),
+            "events": {
+                str(step): discovered[step] for step in sorted(discovered)
             },
-            "reconciliation_report": report_identity,
-            "orphan_archive": orphan_identity,
-            "orphan_rows_verified": orphaned_rows,
-            "metrics_prefix": prefix_identity,
+            "all_discovered_legacy_evidence_physically_verified": True,
             "known_latest_reconciliation_physically_verified": True,
         }
+
+        if [path.name for path in sorted(
+            run_dir.glob("metrics_resume_reconciliation_*.json")
+        )] != report_names or [path.name for path in sorted(
+            run_dir.glob("train_metrics_orphaned_at_resume_*.jsonl")
+        )] != orphan_names:
+            raise ValueError(
+                f"{method} legacy reconciliation artifact set changed during "
+                "verification"
+            )
 
     for label, identity in stable_identities:
         source = reject_symlink_chain(Path(identity["path"]), name=label).resolve()
@@ -479,12 +636,14 @@ def verify_legacy_resume_history_boundary(
     return {
         "schema_version": 1,
         "status": "verified_with_legacy_limitation",
-        "mode": "legacy_latest_reconciliation_boundary_v1",
+        "mode": "legacy_discovered_reconciliation_set_v2",
         "append_only_history_present": False,
         "complete_recovery_chain_verified": False,
+        "discovery_proves_no_missing_resume_events": False,
         "final_checkpoint_and_terminal_sample_reproducibility_claim_allowed": True,
         "complete_exact_resume_history_claim_allowed": False,
         "training_recovery_chain_reproducibility_claim_allowed": False,
+        "all_discovered_legacy_evidence_physically_verified": True,
         "known_latest_reconciliation_physically_verified": True,
         "training_git": copy.deepcopy(dict(training_git)),
         "dataset_identity_sha256": dataset_sha256,

@@ -61,46 +61,62 @@ def _legacy_run(
     *,
     method: str,
     resume_step: int,
+    earlier_resume_steps: list[int] | None = None,
     orphan_steps: list[int] | None = None,
 ) -> Path:
     run = root / builder.RUN_NAMES[method]
     metrics_path = run / "train_metrics.jsonl"
-    steps = [1, resume_step]
-    if resume_step != builder.EXPECTED_TRAINING_STEPS:
-        steps.append(builder.EXPECTED_TRAINING_STEPS)
+    resume_steps = sorted({*(earlier_resume_steps or []), resume_step})
+    assert resume_steps[-1] == resume_step
+    steps = sorted({1, *resume_steps, builder.EXPECTED_TRAINING_STEPS})
     rows = [
         {"step": step, "samples_seen": step * builder.EXPECTED_EFFECTIVE_BATCH}
         for step in steps
     ]
     _write(metrics_path, "".join(json.dumps(row) + "\n" for row in rows))
-    orphan_rows = [
-        {"step": step, "samples_seen": step * builder.EXPECTED_EFFECTIVE_BATCH}
-        for step in (orphan_steps or [resume_step + 1])
-    ]
-    orphan_content = "".join(json.dumps(row) + "\n" for row in orphan_rows)
-    orphan_sha256 = hashlib.sha256(orphan_content.encode()).hexdigest()
-    orphan_path = run / (
-        f"train_metrics_orphaned_at_resume_{resume_step:08d}_"
-        f"{orphan_sha256[:12]}.jsonl"
-    )
-    orphan_path.parent.mkdir(parents=True, exist_ok=True)
-    orphan_path.write_bytes(orphan_content.encode("utf-8"))
-    reconciliation = {
-        "schema_version": 1,
-        "status": "reconciled",
-        "resume_step": resume_step,
-        "metrics": metrics_path.resolve().as_posix(),
-        "retained_rows": 2,
-        "orphaned_rows": len(orphan_rows),
-        "orphan_archive": orphan_path.resolve().as_posix(),
-        "orphan_sha256": orphan_sha256,
-    }
-    report_path = run / (
-        f"metrics_resume_reconciliation_{resume_step:08d}_"
-        f"{orphan_sha256[:12]}.json"
-    )
-    _write(report_path, reconciliation)
-    embedded = {**reconciliation, "report": report_path.resolve().as_posix()}
+    embedded: dict[str, Any] | None = None
+    for event_step in resume_steps:
+        event_orphan_steps = (
+            orphan_steps
+            if event_step == resume_step and orphan_steps is not None
+            else [event_step + 1]
+        )
+        orphan_rows = [
+            {
+                "step": step,
+                "samples_seen": step * builder.EXPECTED_EFFECTIVE_BATCH,
+            }
+            for step in event_orphan_steps
+        ]
+        orphan_content = "".join(json.dumps(row) + "\n" for row in orphan_rows)
+        orphan_sha256 = hashlib.sha256(orphan_content.encode()).hexdigest()
+        orphan_path = run / (
+            f"train_metrics_orphaned_at_resume_{event_step:08d}_"
+            f"{orphan_sha256[:12]}.jsonl"
+        )
+        orphan_path.parent.mkdir(parents=True, exist_ok=True)
+        orphan_path.write_bytes(orphan_content.encode("utf-8"))
+        reconciliation = {
+            "schema_version": 1,
+            "status": "reconciled",
+            "resume_step": event_step,
+            "metrics": metrics_path.resolve().as_posix(),
+            "retained_rows": steps.index(event_step) + 1,
+            "orphaned_rows": len(orphan_rows),
+            "orphan_archive": orphan_path.resolve().as_posix(),
+            "orphan_sha256": orphan_sha256,
+        }
+        report_path = run / (
+            f"metrics_resume_reconciliation_{event_step:08d}_"
+            f"{orphan_sha256[:12]}.json"
+        )
+        _write(report_path, reconciliation)
+        if event_step == resume_step:
+            embedded = {
+                **reconciliation,
+                "report": report_path.resolve().as_posix(),
+            }
+    assert embedded is not None
     common = {
         "output_dir": run.resolve().as_posix(),
         "resume": (
@@ -133,6 +149,16 @@ def _legacy_run(
         },
     )
     return run
+
+
+def _legacy_event_paths(run: Path, step: int) -> tuple[Path, Path]:
+    reports = list(run.glob(f"metrics_resume_reconciliation_{step:08d}_*.json"))
+    orphans = list(
+        run.glob(f"train_metrics_orphaned_at_resume_{step:08d}_*.jsonl")
+    )
+    assert len(reports) == 1
+    assert len(orphans) == 1
+    return reports[0], orphans[0]
 
 
 @pytest.mark.parametrize(("status", "advantage"), [("pass", True), ("hold", False)])
@@ -498,7 +524,12 @@ def test_legacy_resume_boundary_is_explicit_and_non_authorizing(
     tmp_path: Path,
 ) -> None:
     root = tmp_path / "quality"
-    _legacy_run(root, method="cofitok", resume_step=80_000)
+    _legacy_run(
+        root,
+        method="cofitok",
+        resume_step=80_000,
+        earlier_resume_steps=[20_000],
+    )
     _legacy_run(root, method="dense_identity", resume_step=50_000)
 
     evidence = builder.verify_legacy_resume_history_boundary(
@@ -520,11 +551,133 @@ def test_legacy_resume_boundary_is_explicit_and_non_authorizing(
     assert (
         evidence["training_recovery_chain_reproducibility_claim_allowed"] is False
     )
+    assert evidence["all_discovered_legacy_evidence_physically_verified"] is True
+    assert evidence["discovery_proves_no_missing_resume_events"] is False
+    cofitok = evidence["methods"]["cofitok"]
+    assert cofitok["discovered_event_count"] == 2
+    assert cofitok["discovered_resume_steps"] == [20_000, 80_000]
+    assert set(cofitok["events"]) == {"20000", "80000"}
+    assert cofitok["embedded_latest_resume_step"] == 80_000
+    assert cofitok["embedded_latest_in_discovered_set"] is True
     assert not (
         root
         / builder.RUN_NAMES["cofitok"]
         / "checkpoint_step_00080000.pt"
     ).exists()
+
+
+@pytest.mark.parametrize("drift", ["report", "orphan", "metrics_prefix"])
+def test_legacy_resume_boundary_rejects_earlier_event_drift(
+    tmp_path: Path,
+    drift: str,
+) -> None:
+    root = tmp_path / "quality"
+    run = _legacy_run(
+        root,
+        method="cofitok",
+        resume_step=80_000,
+        earlier_resume_steps=[20_000],
+    )
+    _legacy_run(root, method="dense_identity", resume_step=50_000)
+    report, orphan = _legacy_event_paths(run, 20_000)
+    if drift == "report":
+        payload = json.loads(report.read_text(encoding="utf-8"))
+        payload["retained_rows"] += 1
+        _write(report, payload)
+    elif drift == "orphan":
+        with orphan.open("a", encoding="utf-8") as file:
+            file.write(
+                json.dumps({"step": 20_002, "samples_seen": 20_002 * 64}) + "\n"
+            )
+    else:
+        metrics = run / "train_metrics.jsonl"
+        rows = [json.loads(line) for line in metrics.read_text().splitlines()]
+        rows[1]["samples_seen"] = 1
+        _write(metrics, "".join(json.dumps(row) + "\n" for row in rows))
+
+    with pytest.raises(ValueError):
+        builder.verify_legacy_resume_history_boundary(
+            quality_root=root,
+            effective_batch=64,
+            training_git=TRAINING_GIT,
+            dataset_sha256=DATASET_SHA,
+            runtime_sha256=RUNTIME_SHA,
+        )
+
+
+@pytest.mark.parametrize("unpaired", ["report", "orphan"])
+def test_legacy_resume_boundary_rejects_unpaired_artifacts(
+    tmp_path: Path,
+    unpaired: str,
+) -> None:
+    root = tmp_path / "quality"
+    run = _legacy_run(
+        root,
+        method="cofitok",
+        resume_step=80_000,
+        earlier_resume_steps=[20_000],
+    )
+    _legacy_run(root, method="dense_identity", resume_step=50_000)
+    report, orphan = _legacy_event_paths(run, 20_000)
+    if unpaired == "report":
+        orphan.unlink()
+    else:
+        report.unlink()
+
+    with pytest.raises(ValueError, match="unpaired"):
+        builder.verify_legacy_resume_history_boundary(
+            quality_root=root,
+            effective_batch=64,
+            training_git=TRAINING_GIT,
+            dataset_sha256=DATASET_SHA,
+            runtime_sha256=RUNTIME_SHA,
+        )
+
+
+def test_legacy_resume_boundary_rejects_duplicate_step_divergence(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "quality"
+    run = _legacy_run(
+        root,
+        method="cofitok",
+        resume_step=80_000,
+        earlier_resume_steps=[20_000],
+    )
+    _legacy_run(root, method="dense_identity", resume_step=50_000)
+    original_report, _ = _legacy_event_paths(run, 20_000)
+    duplicate_orphan = "".join(
+        json.dumps({"step": step, "samples_seen": step * 64}) + "\n"
+        for step in (20_010, 20_020)
+    )
+    duplicate_sha = hashlib.sha256(duplicate_orphan.encode()).hexdigest()
+    duplicate_orphan_path = run / (
+        "train_metrics_orphaned_at_resume_00020000_"
+        f"{duplicate_sha[:12]}.jsonl"
+    )
+    _write(duplicate_orphan_path, duplicate_orphan)
+    duplicate_report = json.loads(original_report.read_text(encoding="utf-8"))
+    duplicate_report.update(
+        {
+            "orphan_archive": duplicate_orphan_path.resolve().as_posix(),
+            "orphan_sha256": duplicate_sha,
+            "orphaned_rows": 2,
+        }
+    )
+    duplicate_report_path = run / (
+        "metrics_resume_reconciliation_00020000_"
+        f"{duplicate_sha[:12]}.json"
+    )
+    _write(duplicate_report_path, duplicate_report)
+
+    with pytest.raises(ValueError, match="divergent duplicate reconciliation step"):
+        builder.verify_legacy_resume_history_boundary(
+            quality_root=root,
+            effective_batch=64,
+            training_git=TRAINING_GIT,
+            dataset_sha256=DATASET_SHA,
+            runtime_sha256=RUNTIME_SHA,
+        )
 
 
 @pytest.mark.parametrize("drift", ["report", "orphan", "metrics_prefix"])
