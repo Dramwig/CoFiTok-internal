@@ -39,7 +39,7 @@ FOLLOWUP_DECISION_ID = "run_matched_factorization_quality_regression_probe"
 FOLLOWUP_DECISION_CATEGORY = "matched_quality_regression"
 FOLLOWUP_DECISION_BUILDER_GIT = {
     "revision": "cd78a348769f0efad0d42de063e5b0943444a29b",
-    "branch": "analysis/generation-quality-bridge-class-only-route-v2-20260822",
+    "branch": "analysis/generation-quality-bridge-mixed-route-v3-20260822",
     "tracked_dirty": False,
 }
 QUALITY_BRIDGE_GIT = {
