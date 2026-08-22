@@ -31,6 +31,7 @@ from cofitok.image_integrity import image_tree_sha256, sample_set_sha256
 from cofitok.inference_replay import INFERENCE_REPORT_SCHEMA_VERSION
 from cofitok.reporting import file_sha256
 from cofitok.training.authorization import build_generation_training_authorization
+from cofitok.training.metrics import empty_metrics_resume_history
 from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
     _inference_export_evidence,
@@ -175,7 +176,14 @@ def _training(
                 ],
             }
         )
+    history = empty_metrics_resume_history()
+    method = "cofitok" if cofitok_method else "dense_identity"
+    output_dir = f"/outputs/training/{dataset}/{method}_{steps}"
     return {
+        "output_dir": output_dir,
+        "resume": None,
+        "metrics_resume_reconciliation": None,
+        "metrics_resume_history": history,
         "training_complete": True,
         "completed_steps": steps,
         "target_steps": steps,
@@ -196,6 +204,37 @@ def _training(
         ),
         "dataset_provenance": dataset_provenance,
         "training_authorization": training_authorization,
+    }
+
+
+def _resume_history_verification(training: dict) -> dict:
+    history = training["metrics_resume_history"]
+    return {
+        "reconciliations": [],
+        "sources": [],
+        "evidence": {
+            "schema_version": 1,
+            "status": "verified",
+            "mode": "manifest_metrics_resume_history_v1",
+            "run_dir": training["output_dir"],
+            "history_sha256": history["history_sha256"],
+            "history_sha256_verified": True,
+            "manifest_journal_equality_verified": True,
+            "training_report_history_equality_verified": True,
+            "legacy_history_complete": True,
+            "known_legacy_reconciliation_count": 0,
+            "checkpoint_bound_event_count": 0,
+            "reconciliation_event_count": 0,
+            "known_physical_report_bindings_verified": True,
+            "known_physical_orphan_bindings_verified": True,
+            "metrics_prefix_bindings_verified": True,
+            "current_manifest_binding_verified": True,
+            "current_training_report_binding_verified": True,
+            "checkpoint_payload_sha256_recomputed": False,
+            "complete_recovery_chain_verified": True,
+            "unresolved_legacy_reconciliations": [],
+            "limitation": None,
+        },
     }
 
 
@@ -1628,7 +1667,7 @@ def _kwargs() -> dict:
     deployment_receipt, deployment_verification_files = _deployment_transition()
     scaling_gate = _gate("scaling")
     final_gate = _gate("full")
-    return {
+    payload = {
         "expected_deployment_source_revision": TEN_REVISION,
         "expected_10pct_revision": FULL_REVISION,
         "expected_full_revision": FULL_REVISION,
@@ -1693,6 +1732,15 @@ def _kwargs() -> dict:
         "official_related": _official_related(),
         "official_related_sha256": "9" * 64,
     }
+    payload["full_resume_histories"] = {
+        "cofitok": _resume_history_verification(
+            payload["cofitok_full_training"]
+        ),
+        "dense_identity": _resume_history_verification(
+            payload["dense_full_training"]
+        ),
+    }
+    return payload
 
 
 def test_completion_audit_requires_every_large_scale_artifact() -> None:
@@ -2125,6 +2173,33 @@ def test_completion_audit_rejects_identically_weakened_full_recipe() -> None:
         "full_matched_training",
         "full_runtime_selection",
     ]
+
+
+def test_completion_audit_requires_complete_checkpoint_bound_resume_history() -> None:
+    kwargs = _kwargs()
+    kwargs["full_resume_histories"]["cofitok"]["evidence"][
+        "complete_recovery_chain_verified"
+    ] = False
+    kwargs["full_resume_histories"]["cofitok"]["evidence"]["limitation"] = (
+        "legacy history is incomplete"
+    )
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["full_matched_training"]
+
+
+def test_completion_audit_rejects_resume_history_digest_drift() -> None:
+    kwargs = _kwargs()
+    kwargs["full_resume_histories"]["dense_identity"]["evidence"][
+        "history_sha256"
+    ] = "0" * 64
+
+    report = build_completion_audit(**kwargs)
+
+    assert report["status"] == "failed"
+    assert report["failed_checks"] == ["full_matched_training"]
 
 
 def test_completion_audit_rejects_runtime_selection_lock_drift() -> None:

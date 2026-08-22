@@ -25,6 +25,7 @@ from cofitok.reporting import file_sha256, write_json_report
 try:
     from scripts.audit_large_scale_generation_completion import (
         _comparison_evidence,
+        _complete_resume_history_evidence,
         _inference_export_evidence,
         _runtime_selection_evidence,
         _verify_checkpoint_file,
@@ -32,6 +33,7 @@ try:
         _verify_formal_sample_files,
         _verify_inference_artifact_file,
         _verify_inference_smoke_outputs,
+        _verify_resume_history_file,
     )
     from scripts.build_generation_milestone_report import (
         validate_milestone_report,
@@ -56,6 +58,7 @@ try:
 except ModuleNotFoundError:
     from audit_large_scale_generation_completion import (
         _comparison_evidence,
+        _complete_resume_history_evidence,
         _inference_export_evidence,
         _runtime_selection_evidence,
         _verify_checkpoint_file,
@@ -63,6 +66,7 @@ except ModuleNotFoundError:
         _verify_formal_sample_files,
         _verify_inference_artifact_file,
         _verify_inference_smoke_outputs,
+        _verify_resume_history_file,
     )
     from build_generation_milestone_report import (
         validate_milestone_report,
@@ -481,23 +485,30 @@ def full_training_evidence(
     cofitok: dict[str, Any],
     dense: dict[str, Any],
     *,
+    resume_histories: dict[str, dict[str, Any]],
     promotion_gate: dict[str, Any],
     expected_revision: str,
     expected_branch: str,
 ) -> dict[str, Any]:
     _raise_load_error(cofitok)
     _raise_load_error(dense)
-    return validate_training_pair(
-        cofitok,
-        dense,
-        expected_steps=300_000,
-        expected_revision=expected_revision,
-        expected_branch=expected_branch,
-        expected_dataset="imagenet_256",
-        max_parameter_gap=0.02,
-        expected_recipe_stage="stability_full",
-        expected_authorization_gate=promotion_gate,
-    )
+    return {
+        "pair": validate_training_pair(
+            cofitok,
+            dense,
+            expected_steps=300_000,
+            expected_revision=expected_revision,
+            expected_branch=expected_branch,
+            expected_dataset="imagenet_256",
+            max_parameter_gap=0.02,
+            expected_recipe_stage="stability_full",
+            expected_authorization_gate=promotion_gate,
+        ),
+        "metrics_resume_history": _complete_resume_history_evidence(
+            resume_histories,
+            {"cofitok": cofitok, "dense_identity": dense},
+        ),
+    }
 
 
 def full_storage_capacity_evidence(
@@ -1094,6 +1105,18 @@ def main() -> None:
         "cofitok": _read_optional(full_cofitok / "training_report.json"),
         "dense_identity": _read_optional(full_dense / "training_report.json"),
     }
+    full_resume_histories = {
+        "cofitok": _verify_resume_history_file(
+            full_cofitok,
+            label="cofitok stability full training",
+            training_report=full_training["cofitok"],
+        ),
+        "dense_identity": _verify_resume_history_file(
+            full_dense,
+            label="dense stability full training",
+            training_report=full_training["dense_identity"],
+        ),
+    }
     full_audits = {
         "cofitok": _read_optional(full_reports / "cofitok_training_audit.json"),
         "dense_identity": _read_optional(
@@ -1482,11 +1505,17 @@ def main() -> None:
         ),
         _check(
             "stability_full_training_pair",
-            [*full_training_present, *full_audits.values(), scaling_gate],
+            [
+                *full_training_present,
+                *full_audits.values(),
+                scaling_gate,
+                *full_resume_histories.values(),
+            ],
             lambda: {
                 "pair": full_training_evidence(
                     full_training["cofitok"],
                     full_training["dense_identity"],
+                    resume_histories=full_resume_histories,
                     promotion_gate=scaling_gate,
                     expected_revision=expectations[
                         "full_training_revision"

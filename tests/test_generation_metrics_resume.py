@@ -14,6 +14,7 @@ from cofitok.training.metrics import (
     reconcile_metrics_for_resume,
     restore_metrics_resume_history,
     validate_metrics_resume_history,
+    verify_metrics_resume_history_evidence,
 )
 
 
@@ -409,3 +410,116 @@ def test_fresh_run_rejects_any_existing_training_state(tmp_path, name: str) -> N
 def test_fresh_run_accepts_empty_output_directory(tmp_path) -> None:
     ensure_fresh_training_output(tmp_path)
     assert empty_metrics_resume_history()["legacy_history_complete"] is True
+
+
+def _write_completed_resume_documents(
+    root: Path,
+    *,
+    legacy_history_complete: bool = True,
+) -> tuple[Path, Path, Path, dict[str, object]]:
+    metrics = root / "train_metrics.jsonl"
+    _write_rows(metrics, [1, 2])
+    checkpoint, integrity = _write_checkpoint(root, 1)
+    reconciliation = reconcile_metrics_for_resume(metrics, resume_step=1)
+    history = append_metrics_resume_event(
+        empty_metrics_resume_history(),
+        output_dir=root,
+        resume_checkpoint=checkpoint,
+        checkpoint_integrity=integrity,
+        reconciliation=reconciliation,
+    )
+    history["legacy_history_complete"] = legacy_history_complete
+    _rehash_history(history)
+    persist_metrics_resume_history(root, history)
+    document = {
+        "output_dir": root.resolve().as_posix(),
+        "resume": checkpoint.resolve().as_posix(),
+        "metrics_resume_reconciliation": reconciliation,
+        "metrics_resume_history": history,
+    }
+    manifest = root / "run_manifest.json"
+    training_report = root / "training_report.json"
+    manifest.write_text(json.dumps(document), encoding="utf-8")
+    training_report.write_text(json.dumps(document), encoding="utf-8")
+    return manifest, training_report, metrics, document
+
+
+def test_resume_history_evidence_binds_manifest_journal_and_training_report(
+    tmp_path,
+) -> None:
+    manifest, training_report, metrics, document = _write_completed_resume_documents(
+        tmp_path
+    )
+
+    verified = verify_metrics_resume_history_evidence(
+        manifest_path=manifest,
+        metrics_path=metrics,
+        manifest=document,
+        training_report_path=training_report,
+        training_report=document,
+        require_complete=True,
+        label="cofitok",
+    )
+
+    evidence = verified["evidence"]
+    assert evidence["status"] == "verified"
+    assert evidence["checkpoint_bound_event_count"] == 1
+    assert evidence["manifest_journal_equality_verified"] is True
+    assert evidence["training_report_history_equality_verified"] is True
+    assert evidence["current_training_report_binding_verified"] is True
+    assert evidence["complete_recovery_chain_verified"] is True
+    assert evidence["checkpoint_payload_sha256_recomputed"] is False
+
+
+def test_resume_history_evidence_rejects_training_report_current_binding_drift(
+    tmp_path,
+) -> None:
+    manifest, training_report, metrics, document = _write_completed_resume_documents(
+        tmp_path
+    )
+    drifted = json.loads(json.dumps(document))
+    drifted["metrics_resume_reconciliation"]["retained_rows"] += 1
+    training_report.write_text(json.dumps(drifted), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="latest history event"):
+        verify_metrics_resume_history_evidence(
+            manifest_path=manifest,
+            metrics_path=metrics,
+            manifest=document,
+            training_report_path=training_report,
+            training_report=drifted,
+            require_complete=True,
+            label="cofitok",
+        )
+
+
+def test_resume_history_evidence_explicitly_downgrades_legacy_history(
+    tmp_path,
+) -> None:
+    manifest, training_report, metrics, document = _write_completed_resume_documents(
+        tmp_path,
+        legacy_history_complete=False,
+    )
+
+    degraded = verify_metrics_resume_history_evidence(
+        manifest_path=manifest,
+        metrics_path=metrics,
+        manifest=document,
+        training_report_path=training_report,
+        training_report=document,
+        require_complete=False,
+        label="legacy",
+    )
+    assert degraded["evidence"]["complete_recovery_chain_verified"] is False
+    assert degraded["evidence"]["limitation"]
+
+    with pytest.raises(ValueError, match="complete checkpoint-bound"):
+        verify_metrics_resume_history_evidence(
+            manifest_path=manifest,
+            metrics_path=metrics,
+            manifest=document,
+            training_report_path=training_report,
+            training_report=document,
+            require_complete=True,
+            label="legacy",
+        )

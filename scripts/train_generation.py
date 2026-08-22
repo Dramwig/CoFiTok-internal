@@ -913,6 +913,10 @@ def main() -> None:
                 output_dir,
                 config.runtime.keep_last_checkpoints,
                 protected_steps=config.runtime.protected_checkpoint_steps,
+                preserve_integrity_steps=[
+                    int(event["resume_step"])
+                    for event in metrics_resume_history["events"]
+                ],
             )
         if stop.requested:
             break

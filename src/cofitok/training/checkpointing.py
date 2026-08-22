@@ -613,11 +613,14 @@ def prune_checkpoints(
     keep_last: int,
     *,
     protected_steps: list[int] | tuple[int, ...] = (),
+    preserve_integrity_steps: list[int] | tuple[int, ...] = (),
 ) -> list[Path]:
     if keep_last < 1:
         raise ValueError("keep_last must be positive")
     if any(step < 1 for step in protected_steps):
         raise ValueError("protected checkpoint steps must be positive")
+    if any(step < 1 for step in preserve_integrity_steps):
+        raise ValueError("preserved checkpoint integrity steps must be positive")
     paths = sorted(Path(directory).glob("checkpoint_step_*.pt"))
     protected = {int(step) for step in protected_steps}
     recent = set(paths[-keep_last:])
@@ -627,7 +630,10 @@ def prune_checkpoints(
         if int(path.stem.removeprefix("checkpoint_step_")) in protected
     }
     removed = [path for path in paths if path not in retained]
+    preserved_integrity = {int(step) for step in preserve_integrity_steps}
     for path in removed:
+        step = int(path.stem.removeprefix("checkpoint_step_"))
         path.unlink()
-        checkpoint_integrity_path(path).unlink(missing_ok=True)
+        if step not in preserved_integrity:
+            checkpoint_integrity_path(path).unlink(missing_ok=True)
     return removed

@@ -638,6 +638,435 @@ def validate_metrics_resume_history(
     return json.loads(json.dumps(history, sort_keys=True))
 
 
+def _read_json_object(path: Path, *, label: str) -> dict[str, Any]:
+    if not path.is_file():
+        raise FileNotFoundError(f"{label} is missing: {path}")
+    with path.open("r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    if not isinstance(payload, dict):
+        raise ValueError(f"{label} must contain a JSON object")
+    return payload
+
+
+def _source_identity(path: Path) -> dict[str, Any]:
+    resolved = path.resolve()
+    if not resolved.is_file():
+        raise FileNotFoundError(f"resume-history source is missing: {resolved}")
+    return {
+        "path": resolved.as_posix(),
+        "bytes": resolved.stat().st_size,
+        "sha256": file_sha256(resolved),
+    }
+
+
+def _resolve_document_path(root: Path, value: Any, *, label: str) -> Path:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{label} path is invalid")
+    path = Path(value)
+    resolved = (path if path.is_absolute() else root / path).resolve()
+    _relative_artifact_path(resolved, root)
+    return resolved
+
+
+def _canonical_reconciliation_document(
+    document: Any,
+    *,
+    root: Path,
+    label: str,
+) -> dict[str, Any]:
+    if not isinstance(document, Mapping):
+        raise ValueError(f"{label} is not an object")
+    result = json.loads(json.dumps(document, sort_keys=True))
+    for field in ("report", "metrics", "orphan_archive"):
+        value = result.get(field)
+        if value is not None:
+            result[field] = _resolve_document_path(
+                root,
+                value,
+                label=f"{label} {field}",
+            ).as_posix()
+    return result
+
+
+def _normalize_reconciliation_evidence(
+    reconciliation: Any,
+    *,
+    label: str,
+) -> dict[str, Any]:
+    if not isinstance(reconciliation, Mapping):
+        raise ValueError(f"{label} metrics resume reconciliation is not an object")
+    if int(reconciliation.get("schema_version", 0)) != 1:
+        raise ValueError(f"{label} metrics resume reconciliation schema is invalid")
+    status = reconciliation.get("status")
+    if status not in {"absent", "unchanged", "reconciled"}:
+        raise ValueError(f"{label} metrics resume reconciliation status is invalid")
+    try:
+        resume_step = int(reconciliation["resume_step"])
+        retained_rows = int(reconciliation["retained_rows"])
+        orphaned_rows = int(reconciliation["orphaned_rows"])
+    except (KeyError, TypeError, ValueError) as error:
+        raise ValueError(
+            f"{label} metrics resume reconciliation counts are invalid"
+        ) from error
+    if resume_step < 0 or retained_rows < 0 or orphaned_rows < 0:
+        raise ValueError(f"{label} metrics resume reconciliation counts are negative")
+    orphan_archive = reconciliation.get("orphan_archive")
+    orphan_sha256 = reconciliation.get("orphan_sha256")
+    if status in {"absent", "unchanged"}:
+        if orphaned_rows != 0 or orphan_archive is not None or orphan_sha256 is not None:
+            raise ValueError(
+                f"{label} zero-orphan metrics reconciliation contains orphan evidence"
+            )
+        if status == "absent" and retained_rows != 0:
+            raise ValueError(
+                f"{label} absent metrics reconciliation retained rows are nonzero"
+            )
+    elif (
+        orphaned_rows < 1
+        or not isinstance(orphan_archive, str)
+        or not orphan_archive
+        or not _is_sha256(orphan_sha256)
+    ):
+        raise ValueError(f"{label} reconciled metrics resume lacks bound orphan evidence")
+    return {
+        "resume_step": resume_step,
+        "first_post_resume_step": resume_step + 1,
+        "reconciliation_status": status,
+        "retained_rows": retained_rows,
+        "orphaned_rows": orphaned_rows,
+        "orphan_archive": orphan_archive,
+        "orphan_sha256": orphan_sha256,
+    }
+
+
+def verify_metrics_resume_history_evidence(
+    *,
+    manifest_path: str | Path,
+    metrics_path: str | Path,
+    manifest: Mapping[str, Any] | None = None,
+    training_report_path: str | Path | None = None,
+    training_report: Mapping[str, Any] | None = None,
+    require_complete: bool = False,
+    label: str = "training",
+) -> dict[str, Any]:
+    """Physically verify append-only exact-resume history for a training run.
+
+    The verifier binds the manifest, independent journal, immutable reconciliation
+    reports, orphan archives, canonical metrics prefixes, checkpoint integrity
+    sidecars, and (when supplied) the final training report. It intentionally does
+    not rehash large checkpoint payloads; checkpoint physical-integrity auditors
+    remain responsible for payload SHA256 verification.
+    """
+
+    manifest_file = Path(manifest_path).resolve()
+    root = manifest_file.parent
+    metrics_file = Path(metrics_path).resolve()
+    _relative_artifact_path(metrics_file, root)
+    if not metrics_file.is_file():
+        raise FileNotFoundError(f"{label} metrics file is missing: {metrics_file}")
+    manifest_document = (
+        dict(manifest)
+        if manifest is not None
+        else _read_json_object(manifest_file, label=f"{label} run manifest")
+    )
+    raw_history = manifest_document.get("metrics_resume_history")
+    if raw_history is None:
+        raise ValueError(f"{label} manifest lacks append-only metrics resume history")
+    validated = validate_metrics_resume_history(raw_history, output_dir=root)
+
+    journal_path = root / "metrics_resume_history.json"
+    journal = _read_json_object(
+        journal_path,
+        label=f"{label} metrics resume history journal",
+    )
+    if journal != validated:
+        raise ValueError(f"{label} manifest and journal metrics resume histories diverge")
+
+    training_document: dict[str, Any] | None = None
+    training_file: Path | None = None
+    if training_report_path is not None:
+        training_file = Path(training_report_path).resolve()
+        on_disk_training = _read_json_object(
+            training_file,
+            label=f"{label} training report",
+        )
+        if training_report is not None and dict(training_report) != on_disk_training:
+            raise ValueError(f"{label} supplied and on-disk training reports diverge")
+        training_document = on_disk_training
+    elif training_report is not None:
+        training_document = dict(training_report)
+    if training_document is not None:
+        if training_document.get("metrics_resume_history") != validated:
+            raise ValueError(
+                f"{label} training report and manifest metrics resume histories diverge"
+            )
+        output_dir = training_document.get("output_dir")
+        if output_dir is not None and _resolve_document_path(
+            root,
+            output_dir,
+            label=f"{label} training output",
+        ) != root:
+            raise ValueError(f"{label} training report names another output directory")
+
+    records: list[tuple[dict[str, Any], dict[str, Any], bool]] = []
+    unresolved_legacy: list[dict[str, Any]] = []
+    for index, legacy in enumerate(validated["legacy_reconciliations"]):
+        report_identity = legacy.get("report")
+        if report_identity is None:
+            unresolved_legacy.append(
+                {
+                    "resume_step": legacy["resume_step"],
+                    "status": legacy["status"],
+                    "reconciliation_sha256": legacy["reconciliation_sha256"],
+                    "checkpoint_binding_available": False,
+                    "report_binding_available": False,
+                }
+            )
+            continue
+        report_path = _validate_artifact_identity(
+            report_identity,
+            root=root,
+            label=f"{label} legacy reconciliation report {index}",
+        )
+        report = _read_json_object(
+            report_path,
+            label=f"{label} legacy reconciliation report {index}",
+        )
+        identity = _legacy_reconciliation_identity(
+            report,
+            root=root,
+            report_path=report_path,
+        )
+        if identity["reconciliation_sha256"] != legacy["reconciliation_sha256"]:
+            raise ValueError(f"{label} legacy reconciliation digest differs")
+        normalized = _normalize_reconciliation_evidence(
+            report,
+            label=f"{label} legacy reconciliation report {index}",
+        )
+        report_metrics = _resolve_document_path(
+            root,
+            report.get("metrics"),
+            label=f"{label} legacy reconciliation metrics {index}",
+        )
+        if report_metrics != metrics_file:
+            raise ValueError(f"{label} legacy reconciliation binds another metrics file")
+        orphan_source = None
+        if normalized["reconciliation_status"] == "reconciled":
+            orphan_source = _source_identity(
+                _resolve_document_path(
+                    root,
+                    normalized["orphan_archive"],
+                    label=f"{label} legacy reconciliation orphan {index}",
+                )
+            )
+            if orphan_source["sha256"] != normalized["orphan_sha256"]:
+                raise ValueError(f"{label} legacy reconciliation orphan SHA256 differs")
+        records.append(
+            (
+                report,
+                {
+                    "report": _source_identity(report_path),
+                    "orphan_archive": orphan_source,
+                    "resume_step": normalized["resume_step"],
+                    "history_kind": "legacy_unbound",
+                    "checkpoint_binding_available": False,
+                },
+                False,
+            )
+        )
+
+    event_reports: list[dict[str, Any]] = []
+    for index, event in enumerate(validated["events"]):
+        reconciliation = event["reconciliation"]
+        report_path = _validate_artifact_identity(
+            reconciliation["report"],
+            root=root,
+            label=f"{label} checkpoint-bound reconciliation report {index}",
+        )
+        report = _read_json_object(
+            report_path,
+            label=f"{label} checkpoint-bound reconciliation report {index}",
+        )
+        normalized = _normalize_reconciliation_evidence(
+            report,
+            label=f"{label} checkpoint-bound reconciliation report {index}",
+        )
+        if normalized["resume_step"] != int(event["resume_step"]):
+            raise ValueError(f"{label} history event and reconciliation step differ")
+        report_metrics = _resolve_document_path(
+            root,
+            report.get("metrics"),
+            label=f"{label} checkpoint-bound reconciliation metrics {index}",
+        )
+        if report_metrics != metrics_file:
+            raise ValueError(f"{label} checkpoint-bound history binds another metrics file")
+        orphan_source = None
+        if normalized["reconciliation_status"] == "reconciled":
+            orphan_source = _source_identity(
+                _resolve_document_path(
+                    root,
+                    normalized["orphan_archive"],
+                    label=f"{label} checkpoint-bound reconciliation orphan {index}",
+                )
+            )
+            if orphan_source["sha256"] != normalized["orphan_sha256"]:
+                raise ValueError(f"{label} checkpoint-bound orphan SHA256 differs")
+        checkpoint = event["checkpoint"]
+        checkpoint_path = _resolve_artifact_path(root, checkpoint["path"])
+        integrity_path = _resolve_artifact_path(
+            root,
+            checkpoint["integrity_manifest"]["path"],
+        )
+        records.append(
+            (
+                report,
+                {
+                    "report": _source_identity(report_path),
+                    "orphan_archive": orphan_source,
+                    "resume_step": normalized["resume_step"],
+                    "history_kind": "checkpoint_bound",
+                    "checkpoint_binding_available": True,
+                    "checkpoint": {
+                        "path": checkpoint_path.as_posix(),
+                        "bytes": checkpoint["bytes"],
+                        "sha256": checkpoint["sha256"],
+                        "payload_present": checkpoint_path.is_file(),
+                        "payload_bytes_verified": (
+                            checkpoint_path.is_file()
+                            and checkpoint_path.stat().st_size == checkpoint["bytes"]
+                        ),
+                        "payload_sha256_recomputed": False,
+                        "integrity_manifest": _source_identity(integrity_path),
+                    },
+                },
+                True,
+            )
+        )
+        event_reports.append(report)
+
+    selected: dict[int, tuple[dict[str, Any], dict[str, Any], bool]] = {}
+    for report, source, checkpoint_bound in records:
+        normalized = _normalize_reconciliation_evidence(report, label=label)
+        step = int(normalized["resume_step"])
+        previous = selected.get(step)
+        if previous is not None:
+            if _normalize_reconciliation_evidence(previous[0], label=label) != normalized:
+                raise ValueError(f"{label} resume history diverges at step {step}")
+            if checkpoint_bound and not previous[2]:
+                selected[step] = (report, source, checkpoint_bound)
+        else:
+            selected[step] = (report, source, checkpoint_bound)
+    ordered = [selected[step] for step in sorted(selected)]
+    reconciliations = [entry[0] for entry in ordered]
+    sources = [entry[1] for entry in ordered]
+
+    def assert_current_binding(document: Mapping[str, Any], *, document_label: str) -> None:
+        if validated["events"]:
+            latest_event = validated["events"][-1]
+            expected_checkpoint = _resolve_artifact_path(
+                root,
+                latest_event["checkpoint"]["path"],
+            )
+            actual_checkpoint = _resolve_document_path(
+                root,
+                document.get("resume"),
+                label=f"{document_label} resume checkpoint",
+            )
+            if actual_checkpoint != expected_checkpoint:
+                raise ValueError(
+                    f"{document_label} resume checkpoint differs from the latest history event"
+                )
+            latest_report = event_reports[-1]
+            report_identity = latest_event["reconciliation"]["report"]
+            report_path = _resolve_artifact_path(root, report_identity["path"])
+            expected_reconciliation = {
+                **latest_report,
+                "report": report_path.as_posix(),
+                "report_bytes": report_identity["bytes"],
+                "report_sha256": report_identity["sha256"],
+            }
+            if _canonical_reconciliation_document(
+                document.get("metrics_resume_reconciliation"),
+                root=root,
+                label=f"{document_label} reconciliation",
+            ) != _canonical_reconciliation_document(
+                expected_reconciliation,
+                root=root,
+                label=f"{label} latest history event reconciliation",
+            ):
+                raise ValueError(
+                    f"{document_label} reconciliation differs from the latest history event"
+                )
+        elif document.get("resume") is not None or document.get(
+            "metrics_resume_reconciliation"
+        ) is not None:
+            raise ValueError(
+                f"{document_label} resume is not represented by checkpoint-bound history"
+            )
+
+    assert_current_binding(manifest_document, document_label=f"{label} manifest")
+    if training_document is not None:
+        assert_current_binding(
+            training_document,
+            document_label=f"{label} training report",
+        )
+
+    legacy_complete = validated["legacy_history_complete"] is True
+    complete_recovery_chain_verified = (
+        legacy_complete
+        and not validated["legacy_reconciliations"]
+        and len(reconciliations) == len(validated["events"])
+    )
+    if require_complete and not complete_recovery_chain_verified:
+        raise ValueError(
+            f"{label} complete checkpoint-bound metrics resume history is not proven"
+        )
+    evidence = {
+        "schema_version": 1,
+        "status": "verified",
+        "mode": "manifest_metrics_resume_history_v1",
+        "run_dir": root.as_posix(),
+        "history_sha256": validated["history_sha256"],
+        "history_sha256_verified": True,
+        "manifest_journal_equality_verified": True,
+        "training_report_history_equality_verified": training_document is not None,
+        "manifest": _source_identity(manifest_file),
+        "training_report": (
+            _source_identity(training_file) if training_file is not None else None
+        ),
+        "journal": _source_identity(journal_path),
+        "metrics": _source_identity(metrics_file),
+        "legacy_history_complete": legacy_complete,
+        "known_legacy_reconciliation_count": len(
+            validated["legacy_reconciliations"]
+        ),
+        "checkpoint_bound_event_count": len(validated["events"]),
+        "reconciliation_event_count": len(reconciliations),
+        "known_physical_report_bindings_verified": True,
+        "known_physical_orphan_bindings_verified": True,
+        "metrics_prefix_bindings_verified": True,
+        "current_manifest_binding_verified": True,
+        "current_training_report_binding_verified": training_document is not None,
+        "checkpoint_payload_sha256_recomputed": False,
+        "manual_cli_corroborated": False,
+        "complete_recovery_chain_verified": complete_recovery_chain_verified,
+        "unresolved_legacy_reconciliations": unresolved_legacy,
+        "limitation": (
+            None
+            if complete_recovery_chain_verified
+            else (
+                "Legacy reconciliation evidence predates checkpoint-bound append-only "
+                "history, so the complete recovery chain is not proven."
+            )
+        ),
+    }
+    return {
+        "reconciliations": reconciliations,
+        "sources": sources,
+        "evidence": evidence,
+    }
+
+
 def restore_metrics_resume_history(
     output_dir: str | Path,
     *,

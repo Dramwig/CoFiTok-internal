@@ -49,6 +49,7 @@ from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
     verify_training_checkpoint,
 )
+from cofitok.training.metrics import verify_metrics_resume_history_evidence
 
 try:
     from scripts.validate_generation_training_pair import validate_training_pair
@@ -2547,6 +2548,82 @@ def _full_training_monitor_evidence(
     return evidence
 
 
+def _complete_resume_history_evidence(
+    histories: dict[str, dict[str, Any]],
+    training_reports: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    expected_methods = {"cofitok", "dense_identity"}
+    if set(histories) != expected_methods:
+        raise ValueError("matched full training resume-history method set differs")
+    evidence = {}
+    for method in sorted(expected_methods):
+        verified = histories[method]
+        if not isinstance(verified, dict):
+            raise ValueError(f"{method} resume-history verification is malformed")
+        row = verified.get("evidence", {})
+        if row.get("status") != "verified":
+            raise ValueError(
+                f"{method} resume-history verification failed: "
+                f"{verified.get('error', row.get('error', 'invalid evidence'))}"
+            )
+        if (
+            row.get("complete_recovery_chain_verified") is not True
+            or row.get("history_sha256_verified") is not True
+            or row.get("manifest_journal_equality_verified") is not True
+            or row.get("training_report_history_equality_verified") is not True
+            or row.get("known_physical_report_bindings_verified") is not True
+            or row.get("known_physical_orphan_bindings_verified") is not True
+            or row.get("metrics_prefix_bindings_verified") is not True
+            or row.get("current_manifest_binding_verified") is not True
+            or row.get("current_training_report_binding_verified") is not True
+            or row.get("checkpoint_payload_sha256_recomputed") is not False
+        ):
+            raise ValueError(f"{method} complete exact-resume history is not proven")
+        report = training_reports[method]
+        embedded = report.get("metrics_resume_history")
+        if not isinstance(embedded, dict):
+            raise ValueError(f"{method} training report lacks metrics resume history")
+        if embedded.get("history_sha256") != row.get("history_sha256"):
+            raise ValueError(f"{method} training report resume-history digest differs")
+        output_dir = str(report.get("output_dir", "")).replace("\\", "/").rstrip("/")
+        run_dir = str(row.get("run_dir", "")).replace("\\", "/").rstrip("/")
+        if not output_dir or output_dir != run_dir:
+            raise ValueError(f"{method} resume-history run directory differs")
+        evidence[method] = {
+            "run_dir": run_dir,
+            "history_sha256": row["history_sha256"],
+            "checkpoint_bound_event_count": int(
+                row.get("checkpoint_bound_event_count", -1)
+            ),
+            "complete_recovery_chain_verified": True,
+            "checkpoint_payload_sha256_recomputed": False,
+        }
+    return evidence
+
+
+def _verify_resume_history_file(
+    run_dir: Path,
+    *,
+    label: str,
+    training_report: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    try:
+        return verify_metrics_resume_history_evidence(
+            manifest_path=run_dir / "run_manifest.json",
+            metrics_path=run_dir / "train_metrics.jsonl",
+            training_report_path=run_dir / "training_report.json",
+            training_report=training_report,
+            require_complete=True,
+            label=label,
+        )
+    except (OSError, KeyError, TypeError, ValueError) as error:
+        return {
+            "status": "invalid",
+            "run_dir": run_dir.resolve().as_posix(),
+            "error": str(error),
+        }
+
+
 def build_completion_audit(
     *,
     expected_10pct_revision: str,
@@ -2585,6 +2662,7 @@ def build_completion_audit(
     official_related_sha256: str | None,
     class_fidelity_qualification: dict[str, Any] | None = None,
     expected_deployment_source_revision: str | None = None,
+    full_resume_histories: dict[str, dict[str, Any] | None] | None = None,
 ) -> dict[str, Any]:
     deployment_source_revision = (
         expected_deployment_source_revision or expected_10pct_revision
@@ -2660,16 +2738,33 @@ def build_completion_audit(
     checks.append(
         _check(
             "full_matched_training",
-            [cofitok_full_training, dense_full_training],
-            lambda: validate_training_pair(
+            [
                 cofitok_full_training,
                 dense_full_training,
-                expected_steps=300_000,
-                expected_revision=expected_full_revision,
-                expected_dataset="imagenet_256",
-                expected_recipe_stage="full",
-                expected_authorization_gate=scaling_gate,
-            ),
+                (full_resume_histories or {}).get("cofitok"),
+                (full_resume_histories or {}).get("dense_identity"),
+            ],
+            lambda: {
+                "pair": validate_training_pair(
+                    cofitok_full_training,
+                    dense_full_training,
+                    expected_steps=300_000,
+                    expected_revision=expected_full_revision,
+                    expected_dataset="imagenet_256",
+                    expected_recipe_stage="full",
+                    expected_authorization_gate=scaling_gate,
+                ),
+                "metrics_resume_history": _complete_resume_history_evidence(
+                    {
+                        "cofitok": full_resume_histories["cofitok"],
+                        "dense_identity": full_resume_histories["dense_identity"],
+                    },
+                    {
+                        "cofitok": cofitok_full_training,
+                        "dense_identity": dense_full_training,
+                    },
+                ),
+            },
         )
     )
     checks.append(
@@ -3148,6 +3243,8 @@ def main() -> None:
         dense_full
         / "samples_50k_ddim250_cfg15/metrics/generation_metrics_report.json"
     )
+    cofitok_full_training = _read_optional(cofitok_full / "training_report.json")
+    dense_full_training = _read_optional(dense_full / "training_report.json")
 
     audit = build_completion_audit(
         expected_deployment_source_revision=args.expected_deployment_source_revision,
@@ -3195,8 +3292,20 @@ def main() -> None:
         scaling_gate_source_verification=_verify_gate_sources_optional(
             scaling_gate
         ),
-        cofitok_full_training=_read_optional(cofitok_full / "training_report.json"),
-        dense_full_training=_read_optional(dense_full / "training_report.json"),
+        cofitok_full_training=cofitok_full_training,
+        dense_full_training=dense_full_training,
+        full_resume_histories={
+            "cofitok": _verify_resume_history_file(
+                cofitok_full,
+                label="cofitok full training",
+                training_report=cofitok_full_training,
+            ),
+            "dense_identity": _verify_resume_history_file(
+                dense_full,
+                label="dense full training",
+                training_report=dense_full_training,
+            ),
+        },
         cofitok_training_audit=_read_optional(full_root / "cofitok_training_audit.json"),
         dense_training_audit=_read_optional(full_root / "dense_training_audit.json"),
         runtime_selection=_read_optional(full_root / "runtime_selection.json"),

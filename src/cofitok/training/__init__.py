@@ -20,6 +20,7 @@ from cofitok.training.metrics import (
     reconcile_metrics_for_resume,
     restore_metrics_resume_history,
     validate_metrics_resume_history,
+    verify_metrics_resume_history_evidence,
 )
 from cofitok.training.rollout import (
     consistency_weight_scale,
@@ -54,4 +55,5 @@ __all__ = [
     "validate_generation_training_authorization",
     "validate_checkpoint_training_authorization",
     "validate_metrics_resume_history",
+    "verify_metrics_resume_history_evidence",
 ]

@@ -536,6 +536,28 @@ def test_prune_checkpoints_keeps_protected_milestones_and_recent_recovery_points
     assert not checkpoint_integrity_path(paths[2]).exists()
 
 
+def test_prune_checkpoints_preserves_resume_integrity_without_retaining_payload(
+    tmp_path,
+) -> None:
+    old = tmp_path / "checkpoint_step_00000001.pt"
+    latest = tmp_path / "checkpoint_step_00000002.pt"
+    for path in (old, latest):
+        path.write_bytes(b"checkpoint")
+        checkpoint_integrity_path(path).write_text("{}\n", encoding="utf-8")
+
+    removed = prune_checkpoints(
+        tmp_path,
+        keep_last=1,
+        preserve_integrity_steps=[1],
+    )
+
+    assert removed == [old]
+    assert not old.exists()
+    assert checkpoint_integrity_path(old).is_file()
+    assert latest.is_file()
+    assert checkpoint_integrity_path(latest).is_file()
+
+
 def test_legacy_checkpoint_integrity_backfill_preserves_checkpoint_bytes(tmp_path) -> None:
     path = tmp_path / "checkpoint_step_00000017.pt"
     torch.save(
