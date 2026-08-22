@@ -57,7 +57,7 @@ tests/test_generation_quality_bridge_terminal_completion_audit.py
 Broader local related suite:
 
 ```text
-106 collected; all applicable tests passed (one Windows-only skip)
+118 collected; 117 passed, one Windows-only skip
 ```
 
 The added tests cover inclusion of the earlier CoFiTok 20K event, earlier-event
@@ -86,6 +86,40 @@ revalidation, preservation of terminal `pass`/`hold`, and the permanent
 - Git status after rehearsal: clean
 - GPU before and after rehearsal: only the pre-existing dense trainer PID `219593`
   at `79,132 MiB`; the rehearsal created no GPU process.
+
+## Discovery-set Linux CUDA-hidden rehearsal
+
+- Code commit: `90514bf46edbb43a414dd55d4a3fd6f4ea5982b9`
+- Tree: `154f6f421d2fab6d0d5352ab069f469b88e89e4a`
+- Incremental bundle prerequisite:
+  `a253d56e49b78e1c8ddb10c3bd07af5aa22e5919`
+- Bundle:
+  `D:/cofitok-bundles/terminal-completion-resume-history-discovery-90514bf-from-a253d56.bundle`
+- Bundle bytes: `20,018`
+- Bundle SHA256:
+  `511c9ee8da8f754e381037d44c41e68e5f7521b22ec0f94fa74678813421680d`
+- Bundle advertised exactly one ref, `HEAD`, at the code commit above; remote
+  `git bundle verify` passed before checkout.
+- Isolated remote checkout:
+  `/tmp/cofitok-terminal-resume-discovery-90514bf/CoFiTok-internal`
+- Environment: `CUDA_VISIBLE_DEVICES=''`, `OMP_NUM_THREADS=1`,
+  `MKL_NUM_THREADS=1`, `nice=10`, `ionice=idle`
+- Result: `118 passed`
+- Git status after rehearsal: clean
+- GPU before and after rehearsal: only the pre-existing dense trainer PID
+  `219593` at `79,132 MiB`; the rehearsal created no GPU process.
+
+Live-source CPU-only replay during the active dense continuation behaved
+fail-closed as intended: the complete two-method verifier rejected dense because
+its final `training_report.json` still describes the completed 50K segment while
+the canonical manifest has already advanced to the active 80K resume. A scoped
+CoFiTok-only replay physically verified both discoverable events at 20K and 80K,
+including their reports, orphan archives, and retained prefixes. It reported
+`all_discovered_legacy_evidence_physically_verified=true` while preserving
+`complete_recovery_chain_verified=false` and
+`discovery_proves_no_missing_resume_events=false`. The full matched replay must
+remain pending until dense reaches 100K and writes its final report; no active
+waiter was replaced or modified.
 
 ## Deployment status
 
