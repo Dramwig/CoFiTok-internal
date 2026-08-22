@@ -344,6 +344,68 @@ def test_final_checkpoint_source_revalidation_detects_post_replay_drift(
         builder.revalidate_checkpoint_chain_sources(chain)
 
 
+def test_class_fidelity_classifier_sources_physically_rehash_weights(
+    tmp_path: Path,
+) -> None:
+    weights = tmp_path / "resnet50-11ad3fa6.pth"
+    _write(weights, "classifier weights\n")
+    physical = _identity(weights)
+    classifier = {
+        "name": "torchvision_resnet50_imagenet1k_v2",
+        "weights_enum": "ResNet50_Weights.IMAGENET1K_V2",
+        "weights_path": physical["path"],
+        "weights_bytes": physical["bytes"],
+        "weights_sha256": physical["sha256"],
+    }
+    source_reports = {}
+    for name in (
+        "class_fidelity_qualification",
+        "cofitok_class_fidelity",
+        "dense_class_fidelity",
+    ):
+        path = tmp_path / f"{name}.json"
+        _write(path, {"classifier": classifier})
+        source_reports[name] = _identity(path)
+
+    verified = builder.verify_class_fidelity_classifier_sources(source_reports)
+    assert verified["physical_weights"] == physical
+    assert verified["matched_report_classifier_identity"] is True
+    assert verified["physical_weight_sha256_replayed"] is True
+
+    _write(weights, "drifted classifier weights\n")
+    with pytest.raises(ValueError, match="physical identity differs"):
+        builder.verify_class_fidelity_classifier_sources(source_reports)
+
+
+def test_class_fidelity_classifier_sources_reject_report_mismatch(
+    tmp_path: Path,
+) -> None:
+    weights = tmp_path / "resnet50-11ad3fa6.pth"
+    _write(weights, "classifier weights\n")
+    physical = _identity(weights)
+    source_reports = {}
+    for index, name in enumerate(
+        (
+            "class_fidelity_qualification",
+            "cofitok_class_fidelity",
+            "dense_class_fidelity",
+        )
+    ):
+        classifier = {
+            "weights_path": physical["path"],
+            "weights_bytes": physical["bytes"],
+            "weights_sha256": (
+                physical["sha256"] if index < 2 else "f" * 64
+            ),
+        }
+        path = tmp_path / f"{name}.json"
+        _write(path, {"classifier": classifier})
+        source_reports[name] = _identity(path)
+
+    with pytest.raises(ValueError, match="classifier identities differ"):
+        builder.verify_class_fidelity_classifier_sources(source_reports)
+
+
 def _build_args(tmp_path: Path) -> Namespace:
     return Namespace(
         project=ROOT,
@@ -483,6 +545,11 @@ def test_build_audit_preserves_terminal_claim_and_never_authorizes_followup(
         },
     )
     monkeypatch.setattr(builder, "replay_quality_result", lambda *args: quality)
+    monkeypatch.setattr(
+        builder,
+        "verify_class_fidelity_classifier_sources",
+        lambda _sources: {"status": "verified"},
+    )
     monkeypatch.setattr(
         builder,
         "verify_metrics_trust_receipt",

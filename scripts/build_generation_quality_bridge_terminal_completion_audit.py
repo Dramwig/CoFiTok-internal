@@ -274,6 +274,62 @@ def replay_quality_result(
     }
 
 
+def verify_class_fidelity_classifier_sources(
+    source_reports: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    names = (
+        "class_fidelity_qualification",
+        "cofitok_class_fidelity",
+        "dense_class_fidelity",
+    )
+    identities: dict[str, dict[str, Any]] = {}
+    classifiers: dict[str, dict[str, Any]] = {}
+    for name in names:
+        descriptor = source_reports.get(name)
+        identity, report = _replay_identity(
+            descriptor,
+            label=f"terminal {name.replace('_', ' ')}",
+        )
+        classifier = report.get("classifier")
+        if not isinstance(classifier, Mapping):
+            raise TypeError(f"terminal {name} classifier identity is missing")
+        identities[name] = identity
+        classifiers[name] = copy.deepcopy(dict(classifier))
+
+    reference = classifiers["class_fidelity_qualification"]
+    if any(classifier != reference for classifier in classifiers.values()):
+        raise ValueError("terminal class-fidelity classifier identities differ")
+    weights_path = reference.get("weights_path")
+    if (
+        not isinstance(weights_path, str)
+        or not weights_path
+        or not Path(weights_path).is_absolute()
+    ):
+        raise ValueError("terminal class-fidelity classifier path is malformed")
+    weights = file_identity(
+        reject_symlink_chain(
+            Path(weights_path),
+            name="terminal class-fidelity classifier weight",
+        ).resolve()
+    )
+    if (
+        weights["path"] != Path(weights_path).resolve().as_posix()
+        or int(reference.get("weights_bytes", -1)) != int(weights["bytes"])
+        or reference.get("weights_sha256") != weights["sha256"]
+    ):
+        raise ValueError(
+            "terminal class-fidelity classifier physical identity differs"
+        )
+    return {
+        "status": "verified",
+        "classifier": reference,
+        "physical_weights": weights,
+        "source_reports": identities,
+        "matched_report_classifier_identity": True,
+        "physical_weight_sha256_replayed": True,
+    }
+
+
 def replay_comparison(
     *,
     terminal_guard_identity: Mapping[str, Any],
@@ -946,6 +1002,9 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
         label="terminal quality bridge result",
     )
     quality = replay_quality_result(quality_identity, quality_report)
+    class_fidelity_integrity = verify_class_fidelity_classifier_sources(
+        quality["source_reports"]
+    )
     metrics_report_binding = validate_generation_reports_against_metrics_trust(
         quality["generation_metric_reports"],
         verified_trust=metrics_trust,
@@ -991,6 +1050,13 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
     final_quality = replay_quality_result(quality_identity, quality_report)
     if final_quality != quality:
         raise ValueError("terminal quality result changed during completion replay")
+    final_class_fidelity_integrity = verify_class_fidelity_classifier_sources(
+        final_quality["source_reports"]
+    )
+    if final_class_fidelity_integrity != class_fidelity_integrity:
+        raise ValueError(
+            "terminal class-fidelity classifier evidence changed during replay"
+        )
     final_metrics_trust_identity, final_metrics_trust_receipt = _bound_json(
         paths["metrics_trust_receipt"],
         expected_sha256=args.expected_metrics_trust_receipt_sha256,
@@ -1187,6 +1253,8 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
                 "cofitok": quality["source_reports"]["cofitok_class_fidelity"],
                 "dense_identity": quality["source_reports"]["dense_class_fidelity"],
                 "sample_pair_binding_revalidated": True,
+                "classifier_integrity": class_fidelity_integrity,
+                "physical_classifier_weight_revalidated_before_and_after": True,
             },
         },
         "claim_policy": {
