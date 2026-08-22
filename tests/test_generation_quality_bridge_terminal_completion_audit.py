@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import subprocess
 from argparse import Namespace
@@ -19,6 +20,14 @@ from scripts import (
 
 ROOT = Path(__file__).resolve().parents[1]
 SHA = "a" * 64
+DATASET_SHA = "c" * 64
+RUNTIME_SHA = "d" * 64
+TRAINING_GIT = {
+    "revision": "a" * 40,
+    "tree": "b" * 40,
+    "branch": "training",
+    "tracked_dirty": False,
+}
 
 
 def _git(*arguments: str) -> str:
@@ -45,6 +54,85 @@ def _identity(path: Path) -> dict[str, Any]:
 
 def _terminal_decision(status: str) -> str:
     return builder.TERMINAL_DECISIONS[status]
+
+
+def _legacy_run(
+    root: Path,
+    *,
+    method: str,
+    resume_step: int,
+    orphan_steps: list[int] | None = None,
+) -> Path:
+    run = root / builder.RUN_NAMES[method]
+    metrics_path = run / "train_metrics.jsonl"
+    steps = [1, resume_step]
+    if resume_step != builder.EXPECTED_TRAINING_STEPS:
+        steps.append(builder.EXPECTED_TRAINING_STEPS)
+    rows = [
+        {"step": step, "samples_seen": step * builder.EXPECTED_EFFECTIVE_BATCH}
+        for step in steps
+    ]
+    _write(metrics_path, "".join(json.dumps(row) + "\n" for row in rows))
+    orphan_rows = [
+        {"step": step, "samples_seen": step * builder.EXPECTED_EFFECTIVE_BATCH}
+        for step in (orphan_steps or [resume_step + 1])
+    ]
+    orphan_content = "".join(json.dumps(row) + "\n" for row in orphan_rows)
+    orphan_sha256 = hashlib.sha256(orphan_content.encode()).hexdigest()
+    orphan_path = run / (
+        f"train_metrics_orphaned_at_resume_{resume_step:08d}_"
+        f"{orphan_sha256[:12]}.jsonl"
+    )
+    orphan_path.parent.mkdir(parents=True, exist_ok=True)
+    orphan_path.write_bytes(orphan_content.encode("utf-8"))
+    reconciliation = {
+        "schema_version": 1,
+        "status": "reconciled",
+        "resume_step": resume_step,
+        "metrics": metrics_path.resolve().as_posix(),
+        "retained_rows": 2,
+        "orphaned_rows": len(orphan_rows),
+        "orphan_archive": orphan_path.resolve().as_posix(),
+        "orphan_sha256": orphan_sha256,
+    }
+    report_path = run / (
+        f"metrics_resume_reconciliation_{resume_step:08d}_"
+        f"{orphan_sha256[:12]}.json"
+    )
+    _write(report_path, reconciliation)
+    embedded = {**reconciliation, "report": report_path.resolve().as_posix()}
+    common = {
+        "output_dir": run.resolve().as_posix(),
+        "resume": (
+            run / f"checkpoint_step_{resume_step:08d}.pt"
+        ).resolve().as_posix(),
+        "metrics_resume_reconciliation": embedded,
+        "git": {
+            "revision": TRAINING_GIT["revision"],
+            "branch": TRAINING_GIT["branch"],
+            "dirty": False,
+        },
+        "dataset_provenance": {
+            "status": "pass",
+            "identity_sha256": DATASET_SHA,
+        },
+        "runtime_environment_sha256": RUNTIME_SHA,
+        "config": {
+            "data": {"batch_size": 64},
+            "optimization": {"gradient_accumulation_steps": 1},
+            "runtime": {"steps": builder.EXPECTED_TRAINING_STEPS},
+        },
+    }
+    _write(run / "run_manifest.json", common)
+    _write(
+        run / "training_report.json",
+        {
+            **common,
+            "completed_steps": builder.EXPECTED_TRAINING_STEPS,
+            "training_complete": True,
+        },
+    )
+    return run
 
 
 @pytest.mark.parametrize(("status", "advantage"), [("pass", True), ("hold", False)])
@@ -406,6 +494,91 @@ def test_class_fidelity_classifier_sources_reject_report_mismatch(
         builder.verify_class_fidelity_classifier_sources(source_reports)
 
 
+def test_legacy_resume_boundary_is_explicit_and_non_authorizing(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "quality"
+    _legacy_run(root, method="cofitok", resume_step=80_000)
+    _legacy_run(root, method="dense_identity", resume_step=50_000)
+
+    evidence = builder.verify_legacy_resume_history_boundary(
+        quality_root=root,
+        effective_batch=64,
+        training_git=TRAINING_GIT,
+        dataset_sha256=DATASET_SHA,
+        runtime_sha256=RUNTIME_SHA,
+    )
+
+    assert evidence["status"] == "verified_with_legacy_limitation"
+    assert evidence["append_only_history_present"] is False
+    assert evidence["complete_recovery_chain_verified"] is False
+    assert (
+        evidence["final_checkpoint_and_terminal_sample_reproducibility_claim_allowed"]
+        is True
+    )
+    assert evidence["complete_exact_resume_history_claim_allowed"] is False
+    assert (
+        evidence["training_recovery_chain_reproducibility_claim_allowed"] is False
+    )
+    assert not (
+        root
+        / builder.RUN_NAMES["cofitok"]
+        / "checkpoint_step_00080000.pt"
+    ).exists()
+
+
+@pytest.mark.parametrize("drift", ["report", "orphan", "metrics_prefix"])
+def test_legacy_resume_boundary_rejects_physical_drift(
+    tmp_path: Path,
+    drift: str,
+) -> None:
+    root = tmp_path / "quality"
+    cofitok = _legacy_run(root, method="cofitok", resume_step=80_000)
+    _legacy_run(root, method="dense_identity", resume_step=50_000)
+    manifest = json.loads((cofitok / "run_manifest.json").read_text(encoding="utf-8"))
+    reconciliation = manifest["metrics_resume_reconciliation"]
+    if drift == "report":
+        _write(Path(reconciliation["report"]), {"status": "reconciled"})
+    elif drift == "orphan":
+        with Path(reconciliation["orphan_archive"]).open("a", encoding="utf-8") as file:
+            file.write(json.dumps({"step": 99_999, "samples_seen": 6_399_936}) + "\n")
+    else:
+        lines = (cofitok / "train_metrics.jsonl").read_text(
+            encoding="utf-8"
+        ).splitlines()
+        lines[1] = json.dumps({"step": 80_000, "samples_seen": 1})
+        _write(cofitok / "train_metrics.jsonl", "\n".join(lines) + "\n")
+
+    with pytest.raises(ValueError):
+        builder.verify_legacy_resume_history_boundary(
+            quality_root=root,
+            effective_batch=64,
+            training_git=TRAINING_GIT,
+            dataset_sha256=DATASET_SHA,
+            runtime_sha256=RUNTIME_SHA,
+        )
+
+
+def test_legacy_resume_boundary_rejects_manifest_training_report_divergence(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "quality"
+    run = _legacy_run(root, method="cofitok", resume_step=80_000)
+    _legacy_run(root, method="dense_identity", resume_step=50_000)
+    training = json.loads((run / "training_report.json").read_text(encoding="utf-8"))
+    training["resume"] = (run / "checkpoint_step_00070000.pt").resolve().as_posix()
+    _write(run / "training_report.json", training)
+
+    with pytest.raises(ValueError, match="manifest and training report diverge"):
+        builder.verify_legacy_resume_history_boundary(
+            quality_root=root,
+            effective_batch=64,
+            training_git=TRAINING_GIT,
+            dataset_sha256=DATASET_SHA,
+            runtime_sha256=RUNTIME_SHA,
+        )
+
+
 def _build_args(tmp_path: Path) -> Namespace:
     return Namespace(
         project=ROOT,
@@ -583,18 +756,49 @@ def test_build_audit_preserves_terminal_claim_and_never_authorizes_followup(
         "revalidate_checkpoint_chain_sources",
         lambda _checkpoint_chain: {},
     )
+    legacy_boundary_calls: list[dict[str, Any]] = []
+
+    def legacy_boundary(**kwargs: Any) -> dict[str, Any]:
+        legacy_boundary_calls.append(kwargs)
+        return {
+            "status": "verified_with_legacy_limitation",
+            "complete_recovery_chain_verified": False,
+        }
+
+    monkeypatch.setattr(
+        builder,
+        "verify_legacy_resume_history_boundary",
+        legacy_boundary,
+    )
 
     report = builder.build_audit(args)
 
     assert report["status"] == "pass"
     assert report["terminal_status"] == terminal_status
     assert report["generation_advantage_proven"] is advantage
+    assert len(legacy_boundary_calls) == 2
     assert (
         report["claim_policy"]["matched_distribution_quality_claim_allowed"]
         is advantage
     )
     assert report["claim_policy"]["full_300k_launch_allowed"] is False
     assert report["claim_policy"]["promotion_or_release_allowed"] is False
+    assert (
+        report["claim_policy"][
+            "final_checkpoint_and_terminal_sample_reproducibility_claim_allowed"
+        ]
+        is True
+    )
+    assert (
+        report["claim_policy"]["complete_exact_resume_history_claim_allowed"]
+        is False
+    )
+    assert (
+        report["claim_policy"][
+            "training_recovery_chain_reproducibility_claim_allowed"
+        ]
+        is False
+    )
 
 
 def _waiter_args(tmp_path: Path) -> Namespace:

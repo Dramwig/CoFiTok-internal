@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import subprocess
 from collections.abc import Mapping
@@ -41,6 +42,17 @@ AUDIT_ALIASES = {"cofitok": "cofitok", "dense_identity": "dense"}
 CHECKPOINT_STEPS = (90_000, 95_000, 100_000)
 EXPECTED_TRAINING_STEPS = 100_000
 EXPECTED_EFFECTIVE_BATCH = 64
+LEGACY_RECONCILIATION_KEYS = {
+    "schema_version",
+    "status",
+    "resume_step",
+    "metrics",
+    "retained_rows",
+    "orphaned_rows",
+    "orphan_archive",
+    "orphan_sha256",
+    "report",
+}
 TERMINAL_DECISIONS = {
     "pass": "matched_quality_advantage_qualified_with_terminal_system_evidence",
     "hold": "terminal_system_evidence_complete_without_qualified_matched_advantage",
@@ -148,6 +160,337 @@ def _replay_identity(
     if actual != expected:
         raise ValueError(f"{label} changed after binding")
     return actual, read_json_object(source, name=label)
+
+
+def _canonical_run_file(
+    value: Any,
+    *,
+    run_dir: Path,
+    expected_name: str,
+    label: str,
+) -> Path:
+    if not isinstance(value, str) or not value or not Path(value).is_absolute():
+        raise ValueError(f"{label} path is not absolute")
+    source = reject_symlink_chain(Path(value), name=label).resolve()
+    expected = (run_dir / expected_name).resolve()
+    if source != expected:
+        raise ValueError(f"{label} path differs")
+    return source
+
+
+def _canonical_legacy_resume_checkpoint(
+    value: Any,
+    *,
+    run_dir: Path,
+    resume_step: int,
+    label: str,
+) -> Path:
+    if not isinstance(value, str) or not value or not Path(value).is_absolute():
+        raise ValueError(f"{label} path is not absolute")
+    source = Path(value)
+    parent = reject_symlink_chain(source.parent, name=f"{label} parent").resolve()
+    expected_name = f"checkpoint_step_{resume_step:08d}.pt"
+    if parent != run_dir or source.name != expected_name:
+        raise ValueError(f"{label} path differs")
+    return parent / expected_name
+
+
+def _stable_jsonl(
+    path: Path,
+    *,
+    label: str,
+) -> tuple[dict[str, Any], list[dict[str, Any]], list[str]]:
+    source = reject_symlink_chain(path, name=label).resolve()
+    before = file_identity(source)
+    raw = source.read_bytes()
+    after = file_identity(source)
+    if before != after or hashlib.sha256(raw).hexdigest() != before["sha256"]:
+        raise ValueError(f"{label} changed while it was read")
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError(f"{label} is not UTF-8") from error
+    normalized = [
+        line if line.endswith("\n") else f"{line}\n"
+        for line in text.splitlines(keepends=True)
+        if line.strip()
+    ]
+    rows: list[dict[str, Any]] = []
+    for index, line in enumerate(normalized, start=1):
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as error:
+            raise ValueError(f"{label} line {index} is invalid JSON") from error
+        if not isinstance(row, Mapping):
+            raise TypeError(f"{label} line {index} is not an object")
+        rows.append(dict(row))
+    return before, rows, normalized
+
+
+def verify_legacy_resume_history_boundary(
+    *,
+    quality_root: Path,
+    effective_batch: int,
+    training_git: Mapping[str, Any],
+    dataset_sha256: str,
+    runtime_sha256: str,
+) -> dict[str, Any]:
+    """Verify the latest legacy reconciliation without overstating resume history.
+
+    The active 100K bridge predates append-only ``metrics_resume_history``.  Its
+    canonical manifest can therefore bind only the most recent reconciliation,
+    orphan archive, and retained metrics prefix.  This verifier physically binds
+    those artifacts while keeping the complete recovery-chain claim false.  It
+    deliberately does not require or hash the now-prunable resume checkpoint.
+    """
+
+    root = reject_symlink_chain(
+        quality_root,
+        name="legacy resume boundary quality root",
+    ).resolve()
+    if effective_batch != EXPECTED_EFFECTIVE_BATCH:
+        raise ValueError("legacy resume boundary effective batch must be 64")
+    if not _is_sha256(dataset_sha256) or not _is_sha256(runtime_sha256):
+        raise ValueError("legacy resume boundary data or runtime SHA256 is invalid")
+    expected_report_git = {
+        "revision": training_git.get("revision"),
+        "branch": training_git.get("branch"),
+        "dirty": False,
+    }
+    methods: dict[str, Any] = {}
+    stable_identities: list[tuple[str, dict[str, Any]]] = []
+    for method in EXPECTED_METHODS:
+        run_dir = reject_symlink_chain(
+            root / RUN_NAMES[method],
+            name=f"{method} legacy resume run",
+        ).resolve()
+        if run_dir != (root / RUN_NAMES[method]).resolve():
+            raise ValueError(f"{method} legacy resume run path differs")
+        manifest_path = run_dir / "run_manifest.json"
+        training_path = run_dir / "training_report.json"
+        metrics_path = run_dir / "train_metrics.jsonl"
+        manifest_identity, manifest = _replay_identity(
+            file_identity(manifest_path),
+            label=f"{method} legacy run manifest",
+        )
+        training_identity, training = _replay_identity(
+            file_identity(training_path),
+            label=f"{method} legacy training report",
+        )
+        stable_identities.extend(
+            (
+                (f"{method} legacy run manifest", manifest_identity),
+                (f"{method} legacy training report", training_identity),
+            )
+        )
+        if "metrics_resume_history" in manifest or "metrics_resume_history" in training:
+            raise ValueError(
+                f"{method} legacy source unexpectedly contains append-only "
+                "resume history"
+            )
+        journal = run_dir / "metrics_resume_history.json"
+        if journal.exists():
+            raise ValueError(
+                f"{method} legacy resume journal exists without canonical embedding"
+            )
+        missing = sorted(set(manifest) - set(training))
+        diverged = sorted(
+            key for key, value in manifest.items() if training.get(key) != value
+        )
+        if missing or diverged:
+            raise ValueError(
+                f"{method} manifest and training report diverge: "
+                f"missing={missing}, diverged={diverged}"
+            )
+        if manifest.get("output_dir") != run_dir.as_posix():
+            raise ValueError(f"{method} legacy manifest output directory differs")
+        if manifest.get("git") != expected_report_git:
+            raise ValueError(f"{method} legacy training Git identity differs")
+        dataset = manifest.get("dataset_provenance")
+        if (
+            not isinstance(dataset, Mapping)
+            or dataset.get("status") != "pass"
+            or dataset.get("identity_sha256") != dataset_sha256
+        ):
+            raise ValueError(f"{method} legacy dataset identity differs")
+        if manifest.get("runtime_environment_sha256") != runtime_sha256:
+            raise ValueError(f"{method} legacy runtime identity differs")
+        config = manifest.get("config")
+        if not isinstance(config, Mapping):
+            raise TypeError(f"{method} legacy training config is missing")
+        data = config.get("data")
+        optimization = config.get("optimization")
+        runtime = config.get("runtime")
+        if (
+            not isinstance(data, Mapping)
+            or not isinstance(optimization, Mapping)
+            or not isinstance(runtime, Mapping)
+            or int(data.get("batch_size", -1))
+            * int(optimization.get("gradient_accumulation_steps", -1))
+            != effective_batch
+            or int(runtime.get("steps", -1)) != EXPECTED_TRAINING_STEPS
+        ):
+            raise ValueError(f"{method} legacy training configuration differs")
+        if (
+            training.get("training_complete") is not True
+            or int(training.get("completed_steps", -1)) != EXPECTED_TRAINING_STEPS
+        ):
+            raise ValueError(f"{method} legacy training report is not complete at 100K")
+
+        reconciliation = manifest.get("metrics_resume_reconciliation")
+        if not isinstance(reconciliation, Mapping):
+            raise TypeError(f"{method} legacy reconciliation is missing")
+        reconciliation = dict(reconciliation)
+        if set(reconciliation) != LEGACY_RECONCILIATION_KEYS:
+            raise ValueError(f"{method} legacy reconciliation fields differ")
+        if (
+            reconciliation.get("schema_version") != 1
+            or reconciliation.get("status") != "reconciled"
+        ):
+            raise ValueError(f"{method} legacy reconciliation status differs")
+        resume_step = int(reconciliation.get("resume_step", -1))
+        retained_rows = int(reconciliation.get("retained_rows", -1))
+        orphaned_rows = int(reconciliation.get("orphaned_rows", -1))
+        orphan_sha256 = reconciliation.get("orphan_sha256")
+        if (
+            resume_step < 1
+            or retained_rows < 1
+            or orphaned_rows < 1
+            or not _is_sha256(orphan_sha256)
+        ):
+            raise ValueError(f"{method} legacy reconciliation counts or digest differ")
+        resume_checkpoint = _canonical_legacy_resume_checkpoint(
+            manifest.get("resume"),
+            run_dir=run_dir,
+            resume_step=resume_step,
+            label=f"{method} legacy resume checkpoint",
+        )
+        canonical_metrics = _canonical_run_file(
+            reconciliation.get("metrics"),
+            run_dir=run_dir,
+            expected_name="train_metrics.jsonl",
+            label=f"{method} legacy metrics",
+        )
+        report_name = (
+            f"metrics_resume_reconciliation_{resume_step:08d}_"
+            f"{orphan_sha256[:12]}.json"
+        )
+        report_path = _canonical_run_file(
+            reconciliation.get("report"),
+            run_dir=run_dir,
+            expected_name=report_name,
+            label=f"{method} legacy reconciliation report",
+        )
+        orphan_name = (
+            f"train_metrics_orphaned_at_resume_{resume_step:08d}_"
+            f"{orphan_sha256[:12]}.jsonl"
+        )
+        orphan_path = _canonical_run_file(
+            reconciliation.get("orphan_archive"),
+            run_dir=run_dir,
+            expected_name=orphan_name,
+            label=f"{method} legacy orphan archive",
+        )
+        report_identity, report = _replay_identity(
+            file_identity(report_path),
+            label=f"{method} legacy reconciliation report",
+        )
+        expected_report = {
+            key: copy.deepcopy(value)
+            for key, value in reconciliation.items()
+            if key != "report"
+        }
+        if report != expected_report:
+            raise ValueError(
+                f"{method} embedded and physical reconciliation reports diverge"
+            )
+        orphan_identity, orphan_rows_data, _ = _stable_jsonl(
+            orphan_path,
+            label=f"{method} legacy orphan archive",
+        )
+        if (
+            orphan_identity["sha256"] != orphan_sha256
+            or len(orphan_rows_data) != orphaned_rows
+        ):
+            raise ValueError(f"{method} legacy orphan archive differs")
+        metrics_identity, metrics_rows, normalized_lines = _stable_jsonl(
+            canonical_metrics,
+            label=f"{method} canonical metrics",
+        )
+        if len(metrics_rows) < retained_rows:
+            raise ValueError(f"{method} canonical metrics are shorter than the prefix")
+        steps = [int(row.get("step", -1)) for row in metrics_rows]
+        if (
+            not steps
+            or steps[-1] != EXPECTED_TRAINING_STEPS
+            or any(left >= right for left, right in zip(steps, steps[1:]))
+            or any(
+                int(row.get("samples_seen", -1)) != step * effective_batch
+                for row, step in zip(metrics_rows, steps)
+            )
+        ):
+            raise ValueError(f"{method} canonical metrics progression differs")
+        prefix_rows = metrics_rows[:retained_rows]
+        if int(prefix_rows[-1].get("step", -1)) != resume_step:
+            raise ValueError(f"{method} retained metrics prefix does not end at resume")
+        prefix = "".join(normalized_lines[:retained_rows]).encode("utf-8")
+        prefix_identity = {
+            "source": metrics_identity,
+            "bytes": len(prefix),
+            "sha256": hashlib.sha256(prefix).hexdigest(),
+            "row_count": retained_rows,
+            "first_step": int(prefix_rows[0]["step"]),
+            "last_step": resume_step,
+            "last_samples_seen": int(prefix_rows[-1]["samples_seen"]),
+            "strictly_increasing": True,
+            "samples_seen_binding_verified": True,
+        }
+        stable_identities.extend(
+            (
+                (f"{method} legacy reconciliation report", report_identity),
+                (f"{method} legacy orphan archive", orphan_identity),
+                (f"{method} canonical metrics", metrics_identity),
+            )
+        )
+        methods[method] = {
+            "mode": "latest_manifest_reconciliation_only",
+            "append_only_history_present": False,
+            "complete_recovery_chain_verified": False,
+            "manifest": manifest_identity,
+            "training_report": training_identity,
+            "manifest_training_report_agreement_verified": True,
+            "resume_step": resume_step,
+            "resume_checkpoint": {
+                "path": resume_checkpoint.as_posix(),
+                "payload_presence_required": False,
+                "payload_sha256_recomputed": False,
+            },
+            "reconciliation_report": report_identity,
+            "orphan_archive": orphan_identity,
+            "orphan_rows_verified": orphaned_rows,
+            "metrics_prefix": prefix_identity,
+            "known_latest_reconciliation_physically_verified": True,
+        }
+
+    for label, identity in stable_identities:
+        source = reject_symlink_chain(Path(identity["path"]), name=label).resolve()
+        if file_identity(source) != identity:
+            raise ValueError(f"{label} changed during legacy boundary verification")
+    return {
+        "schema_version": 1,
+        "status": "verified_with_legacy_limitation",
+        "mode": "legacy_latest_reconciliation_boundary_v1",
+        "append_only_history_present": False,
+        "complete_recovery_chain_verified": False,
+        "final_checkpoint_and_terminal_sample_reproducibility_claim_allowed": True,
+        "complete_exact_resume_history_claim_allowed": False,
+        "training_recovery_chain_reproducibility_claim_allowed": False,
+        "known_latest_reconciliation_physically_verified": True,
+        "training_git": copy.deepcopy(dict(training_git)),
+        "dataset_identity_sha256": dataset_sha256,
+        "runtime_environment_sha256": runtime_sha256,
+        "methods": methods,
+    }
 
 
 def _quality_result_args(report: Mapping[str, Any]) -> argparse.Namespace:
@@ -1045,6 +1388,13 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
         runtime_sha256=args.expected_runtime_sha256,
         effective_batch=args.effective_batch,
     )
+    legacy_resume_boundary = verify_legacy_resume_history_boundary(
+        quality_root=paths["root"],
+        effective_batch=args.effective_batch,
+        training_git=training_git,
+        dataset_sha256=args.expected_dataset_sha256,
+        runtime_sha256=args.expected_runtime_sha256,
+    )
 
     final_checkpoint_sources = revalidate_checkpoint_chain_sources(checkpoint_chain)
     final_quality = replay_quality_result(quality_identity, quality_report)
@@ -1169,6 +1519,17 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError(
             "terminal completion Git or auditor source changed during replay"
         )
+    final_legacy_resume_boundary = verify_legacy_resume_history_boundary(
+        quality_root=paths["root"],
+        effective_batch=args.effective_batch,
+        training_git=training_git,
+        dataset_sha256=args.expected_dataset_sha256,
+        runtime_sha256=args.expected_runtime_sha256,
+    )
+    if final_legacy_resume_boundary != legacy_resume_boundary:
+        raise ValueError(
+            "legacy resume-history boundary sources changed during completion replay"
+        )
 
     claim = terminal_claim_outcome(
         status=status_bindings["terminal_status"],
@@ -1224,6 +1585,7 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
             "strong_baseline_comparison": comparison,
             "checkpoint_integrity": checkpoint_chain,
             "final_checkpoint_source_revalidation": final_checkpoint_sources,
+            "legacy_resume_history_boundary": legacy_resume_boundary,
             "final_git_revalidation": final_git,
             "terminal_sampling": {
                 method: {
@@ -1259,6 +1621,9 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
         },
         "claim_policy": {
             "terminal_system_evidence_complete": True,
+            "final_checkpoint_and_terminal_sample_reproducibility_claim_allowed": True,
+            "complete_exact_resume_history_claim_allowed": False,
+            "training_recovery_chain_reproducibility_claim_allowed": False,
             "matched_distribution_quality_claim_allowed": advantage,
             "absolute_usability_claim_allowed": False,
             "broad_generation_superiority_claim_allowed": False,
@@ -1270,9 +1635,15 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
         "authorization_boundary": copy.deepcopy(AUTHORIZATION_BOUNDARY),
         "limitations": [
             (
-                "This audit proves physical and source-bound reproducibility only for "
-                "the exact ImageNet-256 matched 100K quality bridge and its terminal "
-                "10K sample pair."
+                "This audit proves physical and source-bound reproducibility for the "
+                "exact final ImageNet-256 matched 100K checkpoints and terminal 10K "
+                "sample pair."
+            ),
+            (
+                "The legacy trainers expose only their latest manifest-bound metrics "
+                "reconciliation, orphan archive, and retained prefix. They do not "
+                "provide append-only evidence for every exact-resume event, so "
+                "complete training recovery-chain reproducibility is not claimed."
             ),
             (
                 "An operational pass preserves the terminal guard's independent pass "
