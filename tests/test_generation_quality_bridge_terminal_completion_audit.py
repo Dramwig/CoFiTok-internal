@@ -356,6 +356,8 @@ def _build_args(tmp_path: Path) -> Namespace:
         comparison_waiter_status=tmp_path / "comparison-status.json",
         checkpoint_audit_dir=tmp_path / "audits",
         checkpoint_replay_waiter_status=tmp_path / "replay-status.json",
+        metrics_trust_receipt=tmp_path / "metrics-trust-receipt.json",
+        expected_metrics_trust_receipt_sha256="e" * 64,
         physical_auditor_checkout=ROOT,
         checkpoint_replay_checkout=ROOT,
         training_checkout=ROOT,
@@ -406,6 +408,7 @@ def test_build_audit_preserves_terminal_claim_and_never_authorizes_followup(
         "comparison_status": args.comparison_waiter_status.resolve(),
         "audit_dir": args.checkpoint_audit_dir.resolve(),
         "replay_status": args.checkpoint_replay_waiter_status.resolve(),
+        "metrics_trust_receipt": args.metrics_trust_receipt.resolve(),
     }
     git = {
         "revision": "1" * 40,
@@ -415,6 +418,8 @@ def test_build_audit_preserves_terminal_claim_and_never_authorizes_followup(
     }
     guard_identity = {"path": "/guard", "bytes": 1, "sha256": SHA}
     comparison_identity = {"path": "/comparison", "bytes": 1, "sha256": SHA}
+    metrics_trust_identity = {"path": "/metrics-trust", "bytes": 1, "sha256": "e" * 64}
+    metrics_trust_receipt = {"status": "pass"}
     quality_identity = {"path": "/quality", "bytes": 1, "sha256": SHA}
     terminal_guard = {
         "schema_version": 1,
@@ -439,6 +444,10 @@ def test_build_audit_preserves_terminal_claim_and_never_authorizes_followup(
             "cofitok_class_fidelity": {},
             "dense_class_fidelity": {},
         },
+        "generation_metric_reports": {
+            "cofitok": {},
+            "dense_identity": {},
+        },
     }
     _write(paths["terminal_status"], {"status": "completed"})
     _write(paths["comparison_status"], {"status": "pass"})
@@ -450,7 +459,11 @@ def test_build_audit_preserves_terminal_claim_and_never_authorizes_followup(
         lambda path, **kwargs: (
             (guard_identity, terminal_guard)
             if path == paths["terminal_guard"]
-            else (comparison_identity, {"status": terminal_status})
+            else (
+                (metrics_trust_identity, metrics_trust_receipt)
+                if path == paths["metrics_trust_receipt"]
+                else (comparison_identity, {"status": terminal_status})
+            )
         ),
     )
     monkeypatch.setattr(
@@ -470,6 +483,16 @@ def test_build_audit_preserves_terminal_claim_and_never_authorizes_followup(
         },
     )
     monkeypatch.setattr(builder, "replay_quality_result", lambda *args: quality)
+    monkeypatch.setattr(
+        builder,
+        "verify_metrics_trust_receipt",
+        lambda _receipt: {"status": "verified"},
+    )
+    monkeypatch.setattr(
+        builder,
+        "validate_generation_reports_against_metrics_trust",
+        lambda *args, **kwargs: {"status": "verified"},
+    )
     monkeypatch.setattr(
         builder,
         "replay_comparison",
@@ -510,6 +533,10 @@ def test_build_audit_preserves_terminal_claim_and_never_authorizes_followup(
 def _waiter_args(tmp_path: Path) -> Namespace:
     quality = tmp_path / "quality"
     output_dir = quality / "reports" / "terminal_completion_audit_v1"
+    metrics_trust_receipt = (
+        quality / "reports" / "metrics_trust_boundary_v1" / "metrics_trust_receipt.json"
+    )
+    _write(metrics_trust_receipt, {"status": "pass"})
     revision = _git("rev-parse", "HEAD")
     tree = _git("rev-parse", "HEAD^{tree}")
     branch = _git("branch", "--show-current")
@@ -541,6 +568,10 @@ def _waiter_args(tmp_path: Path) -> Namespace:
         / "reports"
         / "checkpoint_audits"
         / "dense_checkpoint_integrity_replay_waiter_status.json",
+        metrics_trust_receipt=metrics_trust_receipt,
+        expected_metrics_trust_receipt_sha256=_identity(metrics_trust_receipt)[
+            "sha256"
+        ],
         physical_auditor_checkout=ROOT,
         checkpoint_replay_checkout=ROOT,
         training_checkout=ROOT,
@@ -601,10 +632,27 @@ def _install_ready_upstreams(args: Namespace) -> None:
         )
 
 
+def _mock_waiter_clean_git(
+    monkeypatch: pytest.MonkeyPatch,
+    args: Namespace,
+) -> None:
+    def clean_git(_project: Path) -> dict[str, Any]:
+        return {
+            "revision": args.expected_revision,
+            "branch": args.expected_branch,
+            "tracked_dirty": False,
+        }
+
+    monkeypatch.setattr(waiter, "git_provenance", clean_git)
+    monkeypatch.setattr(waiter.builder, "git_provenance", clean_git)
+
+
 def test_waiter_static_context_binds_all_three_checkouts_and_sources(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     args = _waiter_args(tmp_path)
+    _mock_waiter_clean_git(monkeypatch, args)
 
     context = waiter._canonical_context(args)
 
@@ -615,14 +663,21 @@ def test_waiter_static_context_binds_all_three_checkouts_and_sources(
     assert context["replay_verifier_source"]["sha256"] == (
         args.expected_checkpoint_replay_verifier_source_sha256
     )
+    assert context["metrics_trust_identity"]["sha256"] == (
+        args.expected_metrics_trust_receipt_sha256
+    )
 
     args.expected_checkpoint_replay_verifier_source_sha256 = "0" * 64
     with pytest.raises(ValueError, match="verifier source SHA256 differs"):
         waiter._canonical_context(args)
 
 
-def test_waiter_observes_waiting_failure_and_ready_sources(tmp_path: Path) -> None:
+def test_waiter_observes_waiting_failure_and_ready_sources(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     args = _waiter_args(tmp_path)
+    _mock_waiter_clean_git(monkeypatch, args)
     context = waiter._canonical_context(args)
 
     waiting = waiter.observe_upstreams(context)
@@ -641,8 +696,12 @@ def test_waiter_observes_waiting_failure_and_ready_sources(tmp_path: Path) -> No
     assert "physical hash mismatch" in failed["failures"][0]
 
 
-def test_waiter_metadata_snapshot_detects_source_drift(tmp_path: Path) -> None:
+def test_waiter_metadata_snapshot_detects_source_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     args = _waiter_args(tmp_path)
+    _mock_waiter_clean_git(monkeypatch, args)
     _install_ready_upstreams(args)
     context = waiter._canonical_context(args)
     before = waiter.snapshot_upstream_metadata(context)
@@ -650,6 +709,24 @@ def test_waiter_metadata_snapshot_detects_source_drift(tmp_path: Path) -> None:
     _write(args.comparison.parent / "quality_bridge_comparison.csv", "drift\n")
 
     assert waiter.snapshot_upstream_metadata(context) != before
+
+
+def test_waiter_rejects_metrics_trust_receipt_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args = _waiter_args(tmp_path)
+    _mock_waiter_clean_git(monkeypatch, args)
+    _install_ready_upstreams(args)
+    context = waiter._canonical_context(args)
+
+    _write(args.metrics_trust_receipt, {"status": "failed"})
+
+    with pytest.raises(ValueError, match="metrics trust receipt SHA256 differs"):
+        waiter._canonical_context(args)
+    failed = waiter.observe_upstreams(context)
+    assert failed["state"] == "failed"
+    assert "metrics trust receipt:failed" in failed["failures"][0]
 
 
 def test_deployment_receipt_allows_exact_restart_pid_runtime_normalization(
@@ -685,8 +762,10 @@ def _fake_context(tmp_path: Path) -> dict[str, Any]:
     output_dir = tmp_path / "reports" / "terminal_completion_audit_v1"
     terminal_guard = tmp_path / "terminal_system_claim_guard.json"
     comparison = tmp_path / "quality_bridge_comparison.json"
+    metrics_trust_receipt = tmp_path / "metrics_trust_receipt.json"
     _write(terminal_guard, {"status": "hold"})
     _write(comparison, {"status": "hold"})
+    _write(metrics_trust_receipt, {"status": "pass"})
     return {
         "git": {"revision": "a" * 40},
         "waiter_source": {"path": "/waiter", "bytes": 1, "sha256": SHA},
@@ -700,6 +779,8 @@ def _fake_context(tmp_path: Path) -> dict[str, Any]:
             "bytes": 1,
             "sha256": SHA,
         },
+        "metrics_trust_identity": _identity(metrics_trust_receipt),
+        "metrics_trust_receipt": metrics_trust_receipt,
         "terminal_guard": terminal_guard,
         "comparison": comparison,
         "status": output_dir / "waiter_status.json",

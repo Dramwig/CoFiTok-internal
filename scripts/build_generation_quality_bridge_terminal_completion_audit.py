@@ -8,6 +8,10 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from cofitok.generation_metrics_integrity import (
+    validate_generation_reports_against_metrics_trust,
+    verify_metrics_trust_receipt,
+)
 from cofitok.inference_replay import (
     file_identity,
     read_json_object,
@@ -220,9 +224,29 @@ def replay_quality_result(
         raise ValueError("terminal quality result does not replay exactly")
     sources = report["source_reports"]
     verified_sources: dict[str, dict[str, Any]] = {}
+    generation_metric_reports: dict[str, dict[str, Any]] = {}
     for name, descriptor in sources.items():
-        actual, _ = _replay_identity(descriptor, label=f"quality result source {name}")
+        actual, source_report = _replay_identity(
+            descriptor,
+            label=f"quality result source {name}",
+        )
         verified_sources[name] = actual
+        if name in {"cofitok_generation", "dense_generation"}:
+            generation_metric_reports[
+                "cofitok" if name == "cofitok_generation" else "dense_identity"
+            ] = {
+                field: copy.deepcopy(source_report.get(field))
+                for field in (
+                    "schema_version",
+                    "role",
+                    "status",
+                    "protocol",
+                    "implementation",
+                    "runtime_environment_sha256",
+                    "real_set",
+                    "parameters",
+                )
+            }
     terminal = report.get("terminal")
     if not isinstance(terminal, Mapping):
         raise TypeError("terminal quality result lacks terminal evidence")
@@ -241,6 +265,7 @@ def replay_quality_result(
         "identity": dict(identity),
         "exact_replay": True,
         "source_reports": verified_sources,
+        "generation_metric_reports": generation_metric_reports,
         "git": copy.deepcopy(dict(report["git"])),
         "quality_screen": copy.deepcopy(dict(report["quality_screen"])),
         "physical_evidence": copy.deepcopy(dict(physical)),
@@ -780,6 +805,10 @@ def _canonical_paths(args: argparse.Namespace) -> dict[str, Path]:
             args.checkpoint_replay_waiter_status,
             name="checkpoint replay waiter status",
         ).resolve(),
+        "metrics_trust_receipt": reject_symlink_chain(
+            args.metrics_trust_receipt,
+            name="terminal metrics trust receipt",
+        ).resolve(),
     }
     expected = {
         "terminal_guard": root
@@ -803,6 +832,10 @@ def _canonical_paths(args: argparse.Namespace) -> dict[str, Path]:
         / "reports"
         / "checkpoint_audits"
         / "dense_checkpoint_integrity_replay_waiter_status.json",
+        "metrics_trust_receipt": root
+        / "reports"
+        / "metrics_trust_boundary_v1"
+        / "metrics_trust_receipt.json",
     }
     for name, expected_path in expected.items():
         if paths[name] != expected_path.resolve():
@@ -821,6 +854,7 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
             "checkpoint replay verifier source",
             args.expected_checkpoint_replay_verifier_source_sha256,
         ),
+        ("metrics trust receipt", args.expected_metrics_trust_receipt_sha256),
     ):
         if not _is_sha256(value):
             raise ValueError(f"terminal completion expected {label} SHA256 is invalid")
@@ -877,6 +911,12 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
         expected_sha256=args.expected_comparison_sha256,
         label="quality bridge terminal comparison",
     )
+    metrics_trust_identity, metrics_trust_receipt = _bound_json(
+        paths["metrics_trust_receipt"],
+        expected_sha256=args.expected_metrics_trust_receipt_sha256,
+        label="terminal metrics trust receipt",
+    )
+    metrics_trust = verify_metrics_trust_receipt(metrics_trust_receipt)
     terminal_status_identity, terminal_status = _replay_identity(
         file_identity(paths["terminal_status"]),
         label="terminal system guard waiter status",
@@ -906,6 +946,10 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
         label="terminal quality bridge result",
     )
     quality = replay_quality_result(quality_identity, quality_report)
+    metrics_report_binding = validate_generation_reports_against_metrics_trust(
+        quality["generation_metric_reports"],
+        verified_trust=metrics_trust,
+    )
     comparison = replay_comparison(
         terminal_guard_identity=terminal_guard_identity,
         terminal_guard=terminal_guard,
@@ -947,6 +991,23 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
     final_quality = replay_quality_result(quality_identity, quality_report)
     if final_quality != quality:
         raise ValueError("terminal quality result changed during completion replay")
+    final_metrics_trust_identity, final_metrics_trust_receipt = _bound_json(
+        paths["metrics_trust_receipt"],
+        expected_sha256=args.expected_metrics_trust_receipt_sha256,
+        label="terminal metrics trust receipt final replay",
+    )
+    final_metrics_trust = verify_metrics_trust_receipt(final_metrics_trust_receipt)
+    final_metrics_report_binding = validate_generation_reports_against_metrics_trust(
+        final_quality["generation_metric_reports"],
+        verified_trust=final_metrics_trust,
+    )
+    if (
+        final_metrics_trust_identity != metrics_trust_identity
+        or final_metrics_trust_receipt != metrics_trust_receipt
+        or final_metrics_trust != metrics_trust
+        or final_metrics_report_binding != metrics_report_binding
+    ):
+        raise ValueError("terminal metrics trust evidence changed during replay")
     final_comparison = replay_comparison(
         terminal_guard_identity=terminal_guard_identity,
         terminal_guard=terminal_guard,
@@ -1082,12 +1143,18 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
                 "comparison_waiter_status"
             ],
             "quality_bridge_result": quality_identity,
+            "metrics_trust_receipt": metrics_trust_identity,
             "dense_checkpoint_replay_waiter_status": checkpoint_chain[
                 "dense_replay_waiter"
             ]["identity"],
         },
         "replay": {
             "quality_bridge_result": quality,
+            "terminal_metrics_trust": {
+                "receipt": metrics_trust,
+                "generation_report_binding": metrics_report_binding,
+                "physical_cache_and_dependencies_revalidated": True,
+            },
             "strong_baseline_comparison": comparison,
             "checkpoint_integrity": checkpoint_chain,
             "final_checkpoint_source_revalidation": final_checkpoint_sources,
@@ -1169,6 +1236,8 @@ def add_common_arguments(
     parser.add_argument("--comparison-waiter-status", type=Path, required=True)
     parser.add_argument("--checkpoint-audit-dir", type=Path, required=True)
     parser.add_argument("--checkpoint-replay-waiter-status", type=Path, required=True)
+    parser.add_argument("--metrics-trust-receipt", type=Path, required=True)
+    parser.add_argument("--expected-metrics-trust-receipt-sha256", required=True)
     parser.add_argument("--physical-auditor-checkout", type=Path, required=True)
     parser.add_argument("--checkpoint-replay-checkout", type=Path, required=True)
     parser.add_argument("--training-checkout", type=Path, required=True)
