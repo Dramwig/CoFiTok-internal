@@ -1,0 +1,36 @@
+{
+  "claim_boundary": {
+    "export_authorization_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "generation_advantage_proven": false,
+    "gpu_execution_allowed": false,
+    "process_signals_allowed": false,
+    "promotion_authorization_allowed": false,
+    "quality_or_generation_advantage_claim_allowed": false,
+    "release_authorization_allowed": false,
+    "report_is_promotion_gate": false,
+    "sampling_launch_allowed": false,
+    "training_launch_allowed": false
+  },
+  "detail": "existing_report_physically_revalidated",
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "phase": "completed",
+  "pid": 230381,
+  "ppid": 230378,
+  "report": {
+    "bytes": 77960,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/100k_cross_protocol_reconciliation_v1_20260824/cross_protocol_reconciliation.json",
+    "sha256": "6fc639caec0320225c2e8d26316490cde2d765d49c6062a18e0e671f79384d19"
+  },
+  "role": "generation_100k_cross_protocol_reconciliation_status",
+  "runtime": {
+    "cuda_visible_devices": "",
+    "mkl_num_threads": "8",
+    "omp_num_threads": "8"
+  },
+  "schema_version": 1,
+  "started_at": "2026-08-23T22:18:44.848176+00:00",
+  "status": "completed",
+  "updated_at": "2026-08-23T22:18:57.515582+00:00"
+}

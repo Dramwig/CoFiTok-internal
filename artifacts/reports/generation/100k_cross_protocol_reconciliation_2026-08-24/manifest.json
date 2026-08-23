@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "role": "generation_100k_cross_protocol_reconciliation_evidence_manifest",
+  "status": "completed",
+  "code": {
+    "branch": "analysis/generation-100k-cross-protocol-reconciliation-v1",
+    "revision": "c1a27c557e81e89d4e015648e9c065924725ce6c",
+    "tree": "c97007957138ae890352672e82b33cfead0e88d4",
+    "bundle": {
+      "path": "D:/cofitok-bundles/generation-100k-cross-protocol-reconciliation-c1a27c5.bundle",
+      "bytes": 16809,
+      "sha256": "4d1f2129dfacdf2d7ef8c8866ba300ee45153e725cf3808ee086ed7e2abab587"
+    }
+  },
+  "remote": {
+    "checkout": "/root/autodl-tmp/CoFiTok/checkouts/100k-cross-protocol-reconciliation-c1a27c5/CoFiTok-internal",
+    "output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/100k_cross_protocol_reconciliation_v1_20260824",
+    "gpu_memory_mib_after_completion": 0,
+    "gpu_utilization_percent_after_completion": 0,
+    "free_bytes_after_completion": 294993481728
+  },
+  "tests": {
+    "local_relevant_passed": 41,
+    "linux_relevant_passed": 41,
+    "python_compile_passed": true,
+    "runbook_bash_syntax_passed": true,
+    "tracked_checkout_clean": true
+  },
+  "reports": {
+    "cross_protocol_reconciliation": {
+      "bytes": 77960,
+      "sha256": "6fc639caec0320225c2e8d26316490cde2d765d49c6062a18e0e671f79384d19"
+    },
+    "status_after_physical_resume_replay": {
+      "bytes": 1351,
+      "sha256": "2955ffd6f46c502efb0e67dd7c5c0bc73e9cd20d01778502ed73a14cccc9977c"
+    },
+    "cofitok_ddim100_first_2048_metrics": {
+      "bytes": 4188,
+      "sha256": "b8774b4f7984e056465c9a94936ec29a9448c00ced140749105f0f222e6550fd"
+    },
+    "dense_identity_ddim100_first_2048_metrics": {
+      "bytes": 4192,
+      "sha256": "d14965bac8228f4bc40f07657eee6544b23320d1f77a507ad9526206d0ac1360"
+    }
+  },
+  "result": {
+    "ranking_reversal_explanation": "sampler_step_effect_dominates_observed_ranking_reversal",
+    "sampler_step_changes_matched_ranking": true,
+    "sample_count_changes_matched_ranking": false,
+    "fid": {
+      "ddim50_2048": {
+        "cofitok": 219.8605344767381,
+        "dense_identity": 134.684114724896
+      },
+      "ddim100_2048": {
+        "cofitok": 128.53494595356705,
+        "dense_identity": 137.41277888472115
+      },
+      "ddim100_10000": {
+        "cofitok": 115.26217262363417,
+        "dense_identity": 123.02103114594166
+      }
+    }
+  },
+  "claim_boundary": {
+    "terminal_status": "hold",
+    "generation_advantage_proven": false,
+    "full_300k_launch_allowed": false,
+    "promotion_authorization_allowed": false,
+    "export_authorization_allowed": false,
+    "release_authorization_allowed": false
+  }
+}
