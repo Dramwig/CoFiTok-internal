@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import re
 import subprocess
 from collections.abc import Mapping
 from pathlib import Path
@@ -69,6 +70,16 @@ AUTHORIZATION_BOUNDARY = {
     "independent_replication_claim_allowed": False,
     "multiple_independent_terminal_streams_claim_allowed": False,
 }
+
+
+def validated_report_dir_name(value: str, *, prefix: str, label: str) -> str:
+    if (
+        not value.startswith(prefix)
+        or re.fullmatch(r"[a-z0-9][a-z0-9_.-]*", value) is None
+        or Path(value).name != value
+    ):
+        raise ValueError(f"{label} is invalid")
+    return value
 
 
 def _is_sha256(value: Any) -> bool:
@@ -932,22 +943,32 @@ def _canonical_paths(args: argparse.Namespace) -> dict[str, Path]:
             name="terminal metrics trust receipt",
         ).resolve(),
     }
+    terminal_dir_name = validated_report_dir_name(
+        args.expected_terminal_dir_name,
+        prefix="terminal_system_claim_guard_v",
+        label="terminal guard directory name",
+    )
+    comparison_dir_name = validated_report_dir_name(
+        args.expected_comparison_dir_name,
+        prefix="quality_bridge_comparison_v",
+        label="comparison directory name",
+    )
     expected = {
         "terminal_guard": root
         / "reports"
-        / "terminal_system_claim_guard_v1"
+        / terminal_dir_name
         / "terminal_system_claim_guard.json",
         "terminal_status": root
         / "reports"
-        / "terminal_system_claim_guard_v1"
+        / terminal_dir_name
         / "waiter_status.json",
         "comparison": root
         / "reports"
-        / "quality_bridge_comparison_v1"
+        / comparison_dir_name
         / "quality_bridge_comparison.json",
         "comparison_status": root
         / "reports"
-        / "quality_bridge_comparison_v1"
+        / comparison_dir_name
         / "waiter_status.json",
         "audit_dir": root / "reports" / "checkpoint_audits",
         "replay_status": root
@@ -1372,10 +1393,18 @@ def add_common_arguments(
     parser.add_argument("--project", type=Path, required=True)
     parser.add_argument("--quality-output-root", type=Path, required=True)
     parser.add_argument("--terminal-system-guard", type=Path, required=True)
+    parser.add_argument(
+        "--expected-terminal-dir-name",
+        default="terminal_system_claim_guard_v1",
+    )
     if include_dynamic_hashes:
         parser.add_argument("--expected-terminal-system-guard-sha256", required=True)
     parser.add_argument("--terminal-waiter-status", type=Path, required=True)
     parser.add_argument("--comparison", type=Path, required=True)
+    parser.add_argument(
+        "--expected-comparison-dir-name",
+        default="quality_bridge_comparison_v1",
+    )
     if include_dynamic_hashes:
         parser.add_argument("--expected-comparison-sha256", required=True)
     parser.add_argument("--comparison-waiter-status", type=Path, required=True)

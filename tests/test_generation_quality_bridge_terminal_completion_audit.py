@@ -522,9 +522,11 @@ def _build_args(tmp_path: Path) -> Namespace:
         project=ROOT,
         quality_output_root=tmp_path / "quality",
         terminal_system_guard=tmp_path / "guard.json",
+        expected_terminal_dir_name="terminal_system_claim_guard_v1",
         expected_terminal_system_guard_sha256=SHA,
         terminal_waiter_status=tmp_path / "terminal-status.json",
         comparison=tmp_path / "comparison.json",
+        expected_comparison_dir_name="quality_bridge_comparison_v1",
         expected_comparison_sha256=SHA,
         comparison_waiter_status=tmp_path / "comparison-status.json",
         checkpoint_audit_dir=tmp_path / "audits",
@@ -560,6 +562,45 @@ def test_build_audit_rejects_noncanonical_effective_batch(tmp_path: Path) -> Non
 
     with pytest.raises(ValueError, match="must be 64"):
         builder.build_audit(args)
+
+
+def test_builder_canonical_paths_accept_explicit_versioned_source_dirs(
+    tmp_path: Path,
+) -> None:
+    args = _build_args(tmp_path)
+    root = args.quality_output_root
+    reports = root / "reports"
+    terminal_dir = reports / "terminal_system_claim_guard_v2_runtime_strict"
+    comparison_dir = reports / "quality_bridge_comparison_v3_runtime_strict"
+    args.expected_terminal_dir_name = terminal_dir.name
+    args.expected_comparison_dir_name = comparison_dir.name
+    args.terminal_system_guard = terminal_dir / "terminal_system_claim_guard.json"
+    args.terminal_waiter_status = terminal_dir / "waiter_status.json"
+    args.comparison = comparison_dir / "quality_bridge_comparison.json"
+    args.comparison_waiter_status = comparison_dir / "waiter_status.json"
+    args.checkpoint_audit_dir = reports / "checkpoint_audits"
+    args.checkpoint_replay_waiter_status = (
+        args.checkpoint_audit_dir
+        / "dense_checkpoint_integrity_replay_waiter_status.json"
+    )
+    args.metrics_trust_receipt = (
+        reports / "metrics_trust_boundary_v1" / "metrics_trust_receipt.json"
+    )
+
+    paths = builder._canonical_paths(args)
+
+    assert paths["terminal_guard"] == args.terminal_system_guard.resolve()
+    assert paths["comparison"] == args.comparison.resolve()
+
+
+def test_builder_canonical_paths_reject_unsafe_explicit_source_dir(
+    tmp_path: Path,
+) -> None:
+    args = _build_args(tmp_path)
+    args.expected_terminal_dir_name = "../terminal_system_claim_guard_v2"
+
+    with pytest.raises(ValueError, match="directory name is invalid"):
+        builder._canonical_paths(args)
 
 
 @pytest.mark.parametrize(
@@ -736,6 +777,7 @@ def _waiter_args(tmp_path: Path) -> Namespace:
         / "reports"
         / "terminal_system_claim_guard_v1"
         / "terminal_system_claim_guard.json",
+        expected_terminal_dir_name="terminal_system_claim_guard_v1",
         terminal_waiter_status=quality
         / "reports"
         / "terminal_system_claim_guard_v1"
@@ -744,6 +786,7 @@ def _waiter_args(tmp_path: Path) -> Namespace:
         / "reports"
         / "quality_bridge_comparison_v1"
         / "quality_bridge_comparison.json",
+        expected_comparison_dir_name="quality_bridge_comparison_v1",
         comparison_waiter_status=quality
         / "reports"
         / "quality_bridge_comparison_v1"
@@ -779,6 +822,7 @@ def _waiter_args(tmp_path: Path) -> Namespace:
         expected_dataset_sha256="c" * 64,
         expected_runtime_sha256="d" * 64,
         effective_batch=64,
+        expected_output_dir_name="terminal_completion_audit_v1",
         output=output_dir / "terminal_completion_audit.json",
         status_output=output_dir / "waiter_status.json",
         deployment_receipt_output=output_dir / "deployment_receipt.json",
@@ -871,6 +915,52 @@ def test_waiter_static_context_binds_all_three_checkouts_and_sources(
 
     args.expected_checkpoint_replay_verifier_source_sha256 = "0" * 64
     with pytest.raises(ValueError, match="verifier source SHA256 differs"):
+        waiter._canonical_context(args)
+
+
+def test_waiter_static_context_accepts_explicit_versioned_source_and_output_dirs(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args = _waiter_args(tmp_path)
+    reports = args.quality_output_root / "reports"
+    terminal_dir = reports / "terminal_system_claim_guard_v2_runtime_strict"
+    comparison_dir = reports / "quality_bridge_comparison_v3_runtime_strict"
+    output_dir = reports / "terminal_completion_audit_v2_runtime_strict"
+    args.expected_terminal_dir_name = terminal_dir.name
+    args.expected_comparison_dir_name = comparison_dir.name
+    args.expected_output_dir_name = output_dir.name
+    args.terminal_system_guard = terminal_dir / "terminal_system_claim_guard.json"
+    args.terminal_waiter_status = terminal_dir / "waiter_status.json"
+    args.comparison = comparison_dir / "quality_bridge_comparison.json"
+    args.comparison_waiter_status = comparison_dir / "waiter_status.json"
+    args.output = output_dir / "terminal_completion_audit.json"
+    args.status_output = output_dir / "waiter_status.json"
+    args.deployment_receipt_output = output_dir / "deployment_receipt.json"
+    args.lock = output_dir / "waiter.lock"
+    _mock_waiter_clean_git(monkeypatch, args)
+
+    context = waiter._canonical_context(args)
+
+    assert context["terminal_guard"] == args.terminal_system_guard.resolve()
+    assert context["comparison"] == args.comparison.resolve()
+    assert context["output"] == args.output.resolve()
+
+
+@pytest.mark.parametrize(
+    "name",
+    ["../terminal_completion_audit_v2", "terminal_completion_audit_v2/child"],
+)
+def test_waiter_static_context_rejects_unsafe_explicit_output_dir_name(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    name: str,
+) -> None:
+    args = _waiter_args(tmp_path)
+    args.expected_output_dir_name = name
+    _mock_waiter_clean_git(monkeypatch, args)
+
+    with pytest.raises(ValueError, match="directory name is invalid"):
         waiter._canonical_context(args)
 
 
