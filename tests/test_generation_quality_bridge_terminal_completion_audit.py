@@ -47,6 +47,38 @@ def _terminal_decision(status: str) -> str:
     return builder.TERMINAL_DECISIONS[status]
 
 
+def _replication_scope() -> dict[str, Any]:
+    return {
+        "bound_stream_id": "quality_bridge_terminal_100k_00000000_00010000",
+        "start_index": 0,
+        "end_index_exclusive": 10_000,
+        "sample_count": 10_000,
+        "bound_terminal_stream_count": 1,
+        "independent_replication_count": 0,
+        "independent_replication_supported": False,
+        "interpretation": builder.REPLICATION_INTERPRETATION,
+    }
+
+
+def _terminal_guard(status: str) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "role": builder.TERMINAL_GUARD_ROLE,
+        "status": status,
+        "decision": _terminal_decision(status),
+        "claim_policy": {
+            "independent_replication_claim_allowed": False,
+            "multiple_independent_terminal_streams_claim_allowed": False,
+            "replication_language_requires_distinct_bound_streams": True,
+        },
+        "evidence": {
+            "matched_statistical_advantage": {
+                "replication_scope": _replication_scope(),
+            }
+        },
+    }
+
+
 @pytest.mark.parametrize(("status", "advantage"), [("pass", True), ("hold", False)])
 def test_terminal_claim_outcome_preserves_pass_or_hold(
     status: str,
@@ -72,6 +104,26 @@ def test_terminal_claim_outcome_cannot_upgrade_hold() -> None:
         )
 
 
+def test_replication_boundary_requires_one_bound_stream_and_zero_replications() -> None:
+    guard = _terminal_guard("pass")
+
+    assert builder.validate_replication_boundary(guard) == _replication_scope()
+
+    guard["evidence"]["matched_statistical_advantage"]["replication_scope"][
+        "independent_replication_count"
+    ] = 1
+    with pytest.raises(ValueError, match="terminal replication boundary differs"):
+        builder.validate_replication_boundary(guard)
+
+
+def test_replication_boundary_rejects_independent_replication_permission() -> None:
+    guard = _terminal_guard("hold")
+    guard["claim_policy"]["independent_replication_claim_allowed"] = True
+
+    with pytest.raises(ValueError, match="terminal replication boundary differs"):
+        builder.validate_replication_boundary(guard)
+
+
 def test_authorization_boundary_is_permanently_non_authorizing() -> None:
     assert builder.AUTHORIZATION_BOUNDARY["diagnostic_non_authorizing"] is True
     assert builder.AUTHORIZATION_BOUNDARY["cpu_only_evidence_replay_allowed"] is True
@@ -88,6 +140,8 @@ def test_authorization_boundary_is_permanently_non_authorizing() -> None:
             "inference_export_authorization_allowed",
             "process_signals_allowed",
             "upstream_decisions_modified",
+            "independent_replication_claim_allowed",
+            "multiple_independent_terminal_streams_claim_allowed",
         ):
             assert boundary[name] is False
 
@@ -113,10 +167,7 @@ def test_validate_status_bindings_accepts_exact_json_markdown_csv_outputs(
         "bytes": 1,
         "sha256": SHA,
     }
-    terminal_guard = {
-        "status": terminal_status,
-        "decision": _terminal_decision(terminal_status),
-    }
+    terminal_guard = _terminal_guard(terminal_status)
     terminal_waiter = {
         "schema_version": 1,
         "role": builder.TERMINAL_WAITER_ROLE,
@@ -131,6 +182,7 @@ def test_validate_status_bindings_accepts_exact_json_markdown_csv_outputs(
         "status": "pass",
         "detail": "terminal_quality_bridge_comparison_revalidated",
         "terminal_status": terminal_status,
+        "terminal": {"replication_scope": _replication_scope()},
         "comparison": {
             "json": comparison_identity,
             "markdown": _identity(markdown_path),
@@ -149,6 +201,7 @@ def test_validate_status_bindings_accepts_exact_json_markdown_csv_outputs(
     )
 
     assert result["terminal_status"] == terminal_status
+    assert result["replication_scope"] == _replication_scope()
     assert set(result["comparison_outputs"]) == {"json", "markdown", "csv"}
 
     comparison_waiter["comparison"]["unexpected"] = comparison_identity
@@ -196,6 +249,64 @@ def test_validate_comparison_renderings_rejects_drift(
     _write(csv, "drifted,csv\n")
     with pytest.raises(ValueError, match="does not replay exactly"):
         builder.validate_comparison_renderings({}, outputs)
+
+
+def test_replay_comparison_preserves_single_stream_replication_boundary(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    guard_identity = {"path": "/guard", "bytes": 1, "sha256": SHA}
+    official_identity = {"path": "/official", "bytes": 1, "sha256": "b" * 64}
+    comparison_identity = {"path": "/comparison", "bytes": 1, "sha256": "c" * 64}
+    report = {
+        "status": "hold",
+        "decision": _terminal_decision("hold"),
+        "source_reports": {
+            "terminal_system_claim_guard": guard_identity,
+            "official_related_methods": official_identity,
+        },
+        "comparison_policy": {
+            "independent_replication_claim_allowed": False,
+            "multiple_independent_terminal_streams_claim_allowed": False,
+            "replication_language_requires_distinct_bound_streams": True,
+        },
+        "replication_scope": _replication_scope(),
+    }
+    monkeypatch.setattr(
+        builder,
+        "_replay_identity",
+        lambda descriptor, **kwargs: (official_identity, {}),
+    )
+    monkeypatch.setattr(
+        builder.comparison_builder,
+        "build_report",
+        lambda **kwargs: copy.deepcopy(report),
+    )
+    monkeypatch.setattr(
+        builder.comparison_builder,
+        "verify_source_reports",
+        lambda _report: {"status": "verified"},
+    )
+
+    replayed = builder.replay_comparison(
+        terminal_guard_identity=guard_identity,
+        terminal_guard=_terminal_guard("hold"),
+        comparison_identity=comparison_identity,
+        comparison_report=report,
+    )
+
+    assert replayed["replication_scope"] == _replication_scope()
+
+    report["comparison_policy"]["independent_replication_claim_allowed"] = True
+    with pytest.raises(
+        ValueError,
+        match="terminal comparison replication boundary differs",
+    ):
+        builder.replay_comparison(
+            terminal_guard_identity=guard_identity,
+            terminal_guard=_terminal_guard("hold"),
+            comparison_identity=comparison_identity,
+            comparison_report=report,
+        )
 
 
 def _terminal_replay(*, step: int = 100_000, samples_seen: int = 6_400_000) -> dict:
@@ -483,13 +594,8 @@ def test_build_audit_preserves_terminal_claim_and_never_authorizes_followup(
     metrics_trust_identity = {"path": "/metrics-trust", "bytes": 1, "sha256": "e" * 64}
     metrics_trust_receipt = {"status": "pass"}
     quality_identity = {"path": "/quality", "bytes": 1, "sha256": SHA}
-    terminal_guard = {
-        "schema_version": 1,
-        "role": builder.TERMINAL_GUARD_ROLE,
-        "status": terminal_status,
-        "decision": _terminal_decision(terminal_status),
-        "sources": {"quality_bridge_result": quality_identity},
-    }
+    terminal_guard = _terminal_guard(terminal_status)
+    terminal_guard["sources"] = {"quality_bridge_result": quality_identity}
     quality = {
         "physical_evidence": {
             method: {
@@ -542,6 +648,7 @@ def test_build_audit_preserves_terminal_claim_and_never_authorizes_followup(
             "comparison_outputs": {"json": {}, "markdown": {}, "csv": {}},
             "terminal_status": terminal_status,
             "terminal_decision": _terminal_decision(terminal_status),
+            "replication_scope": _replication_scope(),
         },
     )
     monkeypatch.setattr(builder, "replay_quality_result", lambda *args: quality)
@@ -566,6 +673,7 @@ def test_build_audit_preserves_terminal_claim_and_never_authorizes_followup(
         lambda **kwargs: {
             "status": terminal_status,
             "decision": _terminal_decision(terminal_status),
+            "replication_scope": _replication_scope(),
         },
     )
     monkeypatch.setattr(
@@ -589,12 +697,22 @@ def test_build_audit_preserves_terminal_claim_and_never_authorizes_followup(
     assert report["status"] == "pass"
     assert report["terminal_status"] == terminal_status
     assert report["generation_advantage_proven"] is advantage
+    assert report["replication_scope"] == _replication_scope()
     assert (
         report["claim_policy"]["matched_distribution_quality_claim_allowed"]
         is advantage
     )
     assert report["claim_policy"]["full_300k_launch_allowed"] is False
     assert report["claim_policy"]["promotion_or_release_allowed"] is False
+    assert report["claim_policy"]["independent_replication_claim_allowed"] is False
+    assert (
+        report["claim_policy"][
+            "multiple_independent_terminal_streams_claim_allowed"
+        ]
+        is False
+    )
+    assert any("zero independent replications" in item for item in report["limitations"])
+    assert all("independent pass" not in item for item in report["limitations"])
 
 
 def _waiter_args(tmp_path: Path) -> Namespace:
@@ -674,9 +792,26 @@ def _waiter_args(tmp_path: Path) -> Namespace:
 
 def _install_ready_upstreams(args: Namespace) -> None:
     _write(args.terminal_waiter_status, {"status": "completed"})
-    _write(args.terminal_system_guard, {"status": "hold"})
-    _write(args.comparison_waiter_status, {"status": "pass"})
-    _write(args.comparison, {"status": "hold"})
+    _write(args.terminal_system_guard, _terminal_guard("hold"))
+    _write(
+        args.comparison_waiter_status,
+        {
+            "status": "pass",
+            "terminal": {"replication_scope": _replication_scope()},
+        },
+    )
+    _write(
+        args.comparison,
+        {
+            "status": "hold",
+            "comparison_policy": {
+                "independent_replication_claim_allowed": False,
+                "multiple_independent_terminal_streams_claim_allowed": False,
+                "replication_language_requires_distinct_bound_streams": True,
+            },
+            "replication_scope": _replication_scope(),
+        },
+    )
     _write(args.comparison.parent / "quality_bridge_comparison.md", "# report\n")
     _write(args.comparison.parent / "quality_bridge_comparison.csv", "method\n")
     for alias in waiter.ALIASES:
@@ -752,7 +887,9 @@ def test_waiter_observes_waiting_failure_and_ready_sources(
     assert "terminal_system_guard_waiter" in waiting["missing"]
 
     _install_ready_upstreams(args)
-    assert waiter.observe_upstreams(context)["state"] == "ready"
+    ready = waiter.observe_upstreams(context)
+    assert ready["state"] == "ready"
+    assert ready["replication_scope"] == _replication_scope()
 
     _write(
         args.checkpoint_audit_dir / "dense_checkpoint_step_00095000_waiter_status.json",
@@ -761,6 +898,27 @@ def test_waiter_observes_waiting_failure_and_ready_sources(
     failed = waiter.observe_upstreams(context)
     assert failed["state"] == "failed"
     assert "physical hash mismatch" in failed["failures"][0]
+
+
+def test_waiter_rejects_ready_sources_that_claim_independent_replication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args = _waiter_args(tmp_path)
+    _mock_waiter_clean_git(monkeypatch, args)
+    _install_ready_upstreams(args)
+    comparison = json.loads(args.comparison.read_text(encoding="utf-8"))
+    comparison["comparison_policy"][
+        "independent_replication_claim_allowed"
+    ] = True
+    _write(args.comparison, comparison)
+    context = waiter._canonical_context(args)
+
+    with pytest.raises(
+        ValueError,
+        match="terminal completion replication boundary differs",
+    ):
+        waiter.observe_upstreams(context)
 
 
 def test_waiter_metadata_snapshot_detects_source_drift(
@@ -891,6 +1049,7 @@ def test_run_locked_waits_runs_and_publishes_pass(
             "terminal_status": "hold",
             "terminal_decision": _terminal_decision("hold"),
             "generation_advantage_proven": False,
+            "replication_scope": _replication_scope(),
         },
     )
     monkeypatch.setattr(
@@ -907,6 +1066,7 @@ def test_run_locked_waits_runs_and_publishes_pass(
     assert waiter.run_locked(args, require_detached=False) == 0
     assert [row["status"] for row in published] == ["waiting", "running", "pass"]
     assert published[-1]["audit"]["generation_advantage_proven"] is False
+    assert published[-1]["audit"]["replication_scope"] == _replication_scope()
 
 
 def test_run_locked_fails_closed_on_upstream_failure(
@@ -971,6 +1131,7 @@ def test_run_locked_rejects_metadata_drift_during_replay(
             "terminal_status": "hold",
             "terminal_decision": _terminal_decision("hold"),
             "generation_advantage_proven": False,
+            "replication_scope": _replication_scope(),
         },
     )
     monkeypatch.setattr(waiter, "publish", lambda *args, **kwargs: None)

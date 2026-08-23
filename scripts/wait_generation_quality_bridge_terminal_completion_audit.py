@@ -56,6 +56,8 @@ SCOPE = {
     "inference_export_authorization_allowed": False,
     "process_signals_allowed": False,
     "upstream_decisions_modified": False,
+    "independent_replication_claim_allowed": False,
+    "multiple_independent_terminal_streams_claim_allowed": False,
 }
 
 
@@ -440,10 +442,38 @@ def observe_upstreams(context: dict[str, Any]) -> dict[str, Any]:
             "detail": "waiting_for_exact_terminal_completion_sources",
             "missing": sorted(set(missing)),
         }
+    terminal_guard = read_json_object(
+        context["terminal_guard"],
+        name="terminal system claim guard",
+    )
+    comparison = read_json_object(
+        context["comparison"],
+        name="quality bridge comparison",
+    )
+    replication_scope = builder.validate_replication_boundary(terminal_guard)
+    comparison_policy = comparison.get("comparison_policy")
+    comparison_terminal = comparison_status.get("terminal")
+    if (
+        not isinstance(comparison_policy, dict)
+        or comparison_policy.get("independent_replication_claim_allowed") is not False
+        or comparison_policy.get(
+            "multiple_independent_terminal_streams_claim_allowed"
+        )
+        is not False
+        or comparison_policy.get(
+            "replication_language_requires_distinct_bound_streams"
+        )
+        is not True
+        or comparison.get("replication_scope") != replication_scope
+        or not isinstance(comparison_terminal, dict)
+        or comparison_terminal.get("replication_scope") != replication_scope
+    ):
+        raise ValueError("terminal completion replication boundary differs")
     return {
         "state": "ready",
         "detail": "exact_terminal_completion_sources_ready",
         "terminal_status": terminal_status.get("guard_status"),
+        "replication_scope": replication_scope,
     }
 
 
@@ -534,6 +564,7 @@ def status_payload(
         "generation_advantage_proven": (
             audit.get("generation_advantage_proven") if audit else False
         ),
+        "replication_scope": audit.get("replication_scope") if audit else None,
         "error_type": type(error).__name__ if error is not None else None,
         "error": str(error) if error is not None else None,
         "scope": copy.deepcopy(SCOPE),
@@ -654,6 +685,7 @@ def run_locked(
                 "terminal_status": report["terminal_status"],
                 "terminal_decision": report["terminal_decision"],
                 "generation_advantage_proven": report["generation_advantage_proven"],
+                "replication_scope": report["replication_scope"],
             },
         )
         return 0

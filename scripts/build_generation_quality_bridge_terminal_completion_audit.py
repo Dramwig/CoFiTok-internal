@@ -41,6 +41,10 @@ AUDIT_ALIASES = {"cofitok": "cofitok", "dense_identity": "dense"}
 CHECKPOINT_STEPS = (90_000, 95_000, 100_000)
 EXPECTED_TRAINING_STEPS = 100_000
 EXPECTED_EFFECTIVE_BATCH = 64
+EXPECTED_TERMINAL_SAMPLES = 10_000
+REPLICATION_INTERPRETATION = (
+    "paired_reanalysis_of_one_exact_bound_terminal_sample_stream"
+)
 TERMINAL_DECISIONS = {
     "pass": "matched_quality_advantage_qualified_with_terminal_system_evidence",
     "hold": "terminal_system_evidence_complete_without_qualified_matched_advantage",
@@ -62,6 +66,8 @@ AUTHORIZATION_BOUNDARY = {
     "cross_tier_numeric_ranking_allowed": False,
     "broad_generation_superiority_claim_allowed": False,
     "sota_claim_allowed": False,
+    "independent_replication_claim_allowed": False,
+    "multiple_independent_terminal_streams_claim_allowed": False,
 }
 
 
@@ -83,6 +89,44 @@ def terminal_claim_outcome(*, status: str, decision: str) -> dict[str, Any]:
         "terminal_decision": decision,
         "generation_advantage_proven": status == "pass",
     }
+
+
+def validate_replication_boundary(
+    terminal_guard: Mapping[str, Any],
+) -> dict[str, Any]:
+    policy = terminal_guard.get("claim_policy")
+    evidence = terminal_guard.get("evidence")
+    statistical = (
+        evidence.get("matched_statistical_advantage")
+        if isinstance(evidence, Mapping)
+        else None
+    )
+    replication = (
+        statistical.get("replication_scope")
+        if isinstance(statistical, Mapping)
+        else None
+    )
+    if (
+        not isinstance(policy, Mapping)
+        or policy.get("independent_replication_claim_allowed") is not False
+        or policy.get("multiple_independent_terminal_streams_claim_allowed")
+        is not False
+        or policy.get("replication_language_requires_distinct_bound_streams")
+        is not True
+        or not isinstance(replication, Mapping)
+        or replication.get("bound_terminal_stream_count") != 1
+        or replication.get("independent_replication_count") != 0
+        or replication.get("independent_replication_supported") is not False
+        or replication.get("interpretation") != REPLICATION_INTERPRETATION
+        or int(replication.get("start_index", -1)) != 0
+        or int(replication.get("end_index_exclusive", -1))
+        != EXPECTED_TERMINAL_SAMPLES
+        or int(replication.get("sample_count", -1)) != EXPECTED_TERMINAL_SAMPLES
+        or not isinstance(replication.get("bound_stream_id"), str)
+        or not replication.get("bound_stream_id")
+    ):
+        raise ValueError("terminal replication boundary differs")
+    return copy.deepcopy(dict(replication))
 
 
 def _tree(project: Path) -> str:
@@ -337,6 +381,7 @@ def replay_comparison(
     comparison_identity: Mapping[str, Any],
     comparison_report: Mapping[str, Any],
 ) -> dict[str, Any]:
+    replication_scope = validate_replication_boundary(terminal_guard)
     sources = comparison_report.get("source_reports")
     if not isinstance(sources, Mapping):
         raise TypeError("terminal comparison sources are missing")
@@ -355,6 +400,21 @@ def replay_comparison(
     verified = comparison_builder.verify_source_reports(comparison_report)
     if sources.get("terminal_system_claim_guard") != dict(terminal_guard_identity):
         raise ValueError("terminal comparison uses another system guard")
+    comparison_policy = comparison_report.get("comparison_policy")
+    if (
+        not isinstance(comparison_policy, Mapping)
+        or comparison_policy.get("independent_replication_claim_allowed") is not False
+        or comparison_policy.get(
+            "multiple_independent_terminal_streams_claim_allowed"
+        )
+        is not False
+        or comparison_policy.get(
+            "replication_language_requires_distinct_bound_streams"
+        )
+        is not True
+        or comparison_report.get("replication_scope") != replication_scope
+    ):
+        raise ValueError("terminal comparison replication boundary differs")
     return {
         "identity": dict(comparison_identity),
         "exact_replay": True,
@@ -362,6 +422,7 @@ def replay_comparison(
         "official_related_methods": official_identity,
         "status": str(comparison_report.get("status", "")),
         "decision": str(comparison_report.get("decision", "")),
+        "replication_scope": replication_scope,
     }
 
 
@@ -375,6 +436,7 @@ def validate_status_bindings(
     comparison_status: Mapping[str, Any],
     comparison_identity: Mapping[str, Any],
 ) -> dict[str, Any]:
+    replication_scope = validate_replication_boundary(terminal_guard)
     terminal_claim_status = str(terminal_guard.get("status", ""))
     if (
         terminal_status.get("schema_version") != 1
@@ -388,6 +450,7 @@ def validate_status_bindings(
     ):
         raise ValueError("terminal system guard waiter status differs")
     comparison_outputs = comparison_status.get("comparison")
+    comparison_terminal = comparison_status.get("terminal")
     if (
         comparison_status.get("schema_version") != 1
         or comparison_status.get("role") != COMPARISON_WAITER_ROLE
@@ -395,6 +458,8 @@ def validate_status_bindings(
         or comparison_status.get("detail")
         != "terminal_quality_bridge_comparison_revalidated"
         or comparison_status.get("terminal_status") != terminal_claim_status
+        or not isinstance(comparison_terminal, Mapping)
+        or comparison_terminal.get("replication_scope") != replication_scope
         or not isinstance(comparison_outputs, Mapping)
         or set(comparison_outputs) != {"json", "markdown", "csv"}
         or comparison_outputs.get("json") != dict(comparison_identity)
@@ -415,6 +480,7 @@ def validate_status_bindings(
         "comparison_outputs": output_identities,
         "terminal_status": terminal_claim_status,
         "terminal_decision": str(terminal_guard.get("decision", "")),
+        "replication_scope": replication_scope,
     }
 
 
@@ -1022,6 +1088,8 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
     if (
         comparison["status"] != status_bindings["terminal_status"]
         or comparison["decision"] != status_bindings["terminal_decision"]
+        or comparison["replication_scope"]
+        != status_bindings["replication_scope"]
     ):
         raise ValueError("terminal comparison and system guard decisions differ")
 
@@ -1183,6 +1251,7 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
         "terminal_status": claim["terminal_status"],
         "terminal_decision": claim["terminal_decision"],
         "generation_advantage_proven": advantage,
+        "replication_scope": comparison["replication_scope"],
         "scope": {
             "quality_output_root": paths["root"].as_posix(),
             "dataset": "imagenet_256",
@@ -1263,6 +1332,9 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
             "absolute_usability_claim_allowed": False,
             "broad_generation_superiority_claim_allowed": False,
             "sota_claim_allowed": False,
+            "independent_replication_claim_allowed": False,
+            "multiple_independent_terminal_streams_claim_allowed": False,
+            "replication_language_requires_distinct_bound_streams": True,
             "larger_training_launch_allowed": False,
             "full_300k_launch_allowed": False,
             "promotion_or_release_allowed": False,
@@ -1275,8 +1347,13 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
                 "10K sample pair."
             ),
             (
-                "An operational pass preserves the terminal guard's independent pass "
-                "or hold decision; it cannot convert a hold into an advantage claim."
+                "An operational pass preserves the terminal guard's pass or hold "
+                "decision; it cannot convert a hold into an advantage claim."
+            ),
+            (
+                "FID and paired block-KID reuse one exact bound terminal sample "
+                "stream. This audit records zero independent replications and "
+                "forbids a multiple-stream replication claim."
             ),
             (
                 "This artifact does not authorize training, sampling, 300K scaling, "
