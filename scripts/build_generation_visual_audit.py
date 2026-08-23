@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 from pathlib import Path
 from typing import Any
 
 import torch
+import torch.nn.functional as F
 from torchvision.io import read_image
 from torchvision.utils import make_grid, save_image
 
@@ -114,6 +116,24 @@ def _atomic_grid(images: list[torch.Tensor], path: Path, *, nrow: int) -> dict[s
 def _selected_statistics(images: list[torch.Tensor], evidence: list[dict[str, Any]]) -> dict[str, Any]:
     stacked = torch.stack(images)
     hashes = [row["sha256"] for row in evidence]
+    horizontal_variation = (stacked[..., 1:] - stacked[..., :-1]).abs().mean()
+    vertical_variation = (stacked[..., 1:, :] - stacked[..., :-1, :]).abs().mean()
+    median_residuals = []
+    median_outliers = []
+    for image in stacked:
+        padded = F.pad(image.unsqueeze(0), (1, 1, 1, 1), mode="reflect")
+        patches = padded.unfold(2, 3, 1).unfold(3, 3, 1)
+        median = patches.contiguous().view(
+            1,
+            image.shape[0],
+            image.shape[1],
+            image.shape[2],
+            9,
+        ).median(dim=-1).values.squeeze(0)
+        residual = (image - median).abs()
+        median_residuals.append(residual.mean())
+        median_outliers.append((residual > 0.2).float().mean())
+    saturation = torch.logical_or(stacked <= (1.0 / 255.0), stacked >= (254.0 / 255.0))
     return {
         "image_count": len(images),
         "exact_duplicate_count": len(hashes) - len(set(hashes)),
@@ -121,6 +141,64 @@ def _selected_statistics(images: list[torch.Tensor], evidence: list[dict[str, An
         "pixel_std": float(stacked.std().item()),
         "pixel_min": float(stacked.min().item()),
         "pixel_max": float(stacked.max().item()),
+        "channel_saturation_fraction": float(saturation.float().mean().item()),
+        "total_variation": float(
+            (horizontal_variation + vertical_variation).item()
+        ),
+        "median_residual_mean": float(torch.stack(median_residuals).mean().item()),
+        "median_residual_gt_0_2_fraction": float(
+            torch.stack(median_outliers).mean().item()
+        ),
+    }
+
+
+def _paired_statistics(
+    cofitok_images: list[torch.Tensor],
+    dense_images: list[torch.Tensor],
+    indices: list[int],
+) -> dict[str, Any]:
+    if len(cofitok_images) != len(dense_images) or len(indices) != len(cofitok_images):
+        raise ValueError("paired visual statistics require aligned image sets")
+    rows = []
+    for index, cofitok, dense in zip(indices, cofitok_images, dense_images):
+        if tuple(cofitok.shape) != tuple(dense.shape):
+            raise ValueError("paired visual statistics require equal image shapes")
+        left = cofitok.float().flatten()
+        right = dense.float().flatten()
+        mse = float((left - right).square().mean().item())
+        centered_left = left - left.mean()
+        centered_right = right - right.mean()
+        denominator = torch.linalg.vector_norm(centered_left) * torch.linalg.vector_norm(
+            centered_right
+        )
+        if float(denominator.item()) > 0.0:
+            correlation = float(
+                torch.dot(centered_left, centered_right).div(denominator).item()
+            )
+        else:
+            correlation = 1.0 if torch.equal(left, right) else 0.0
+        rows.append(
+            {
+                "index": index,
+                "pixel_mse": mse,
+                "pixel_psnr_db": -10.0 * math.log10(max(mse, 1e-12)),
+                "pixel_correlation": correlation,
+            }
+        )
+    correlations = torch.tensor([row["pixel_correlation"] for row in rows])
+    return {
+        "image_count": len(rows),
+        "pixel_mse_mean": float(
+            torch.tensor([row["pixel_mse"] for row in rows]).mean().item()
+        ),
+        "pixel_psnr_db_mean": float(
+            torch.tensor([row["pixel_psnr_db"] for row in rows]).mean().item()
+        ),
+        "pixel_correlation_mean": float(correlations.mean().item()),
+        "pixel_correlation_median": float(
+            torch.quantile(correlations, 0.5).item()
+        ),
+        "per_image": rows,
     }
 
 
@@ -198,8 +276,16 @@ def build_visual_audit(
     statistics = {
         "cofitok": _selected_statistics(cofitok_images, cofitok_evidence),
         "dense_identity": _selected_statistics(dense_images, dense_evidence),
+        "paired_similarity": _paired_statistics(
+            cofitok_images,
+            dense_images,
+            indices,
+        ),
     }
-    if any(row["exact_duplicate_count"] > 0 for row in statistics.values()):
+    if any(
+        statistics[name]["exact_duplicate_count"] > 0
+        for name in ("cofitok", "dense_identity")
+    ):
         raise ValueError("fixed formal samples contain exact duplicate PNGs")
     return {
         "schema_version": 1,

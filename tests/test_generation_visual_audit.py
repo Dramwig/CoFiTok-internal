@@ -68,6 +68,12 @@ def test_visual_audit_builds_hash_bound_matched_and_prefix_panels(tmp_path) -> N
     assert report["sources"]["cofitok"]["checkpoint_sha256"] == "a" * 64
     assert report["sources"]["dense_identity"]["sample_set_sha256"] == "1" * 64
     assert report["statistics"]["cofitok"]["exact_duplicate_count"] == 0
+    assert report["statistics"]["cofitok"]["total_variation"] == pytest.approx(0.0)
+    assert report["statistics"]["paired_similarity"]["image_count"] == 2
+    assert report["statistics"]["paired_similarity"]["per_image"][0]["index"] == 0
+    assert -1.0 <= report["statistics"]["paired_similarity"][
+        "pixel_correlation_mean"
+    ] <= 1.0
     assert report["panels"]["cofitok_prefix_paths"]["image_count"] == 4
     for panel in report["panels"].values():
         assert len(panel["sha256"]) == 64
