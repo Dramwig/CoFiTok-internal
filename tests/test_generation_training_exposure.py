@@ -245,6 +245,51 @@ def _completed_execution_status() -> dict:
     }
 
 
+def _authoritative_verification(terminal: dict, terminal_identity: dict) -> dict:
+    return {
+        "schema_version": 1,
+        "role": "generation_quality_bridge_authoritative_terminal_verification",
+        "status": "verified",
+        "quality_project": {
+            "revision": "b" * 40,
+            "tree": "d" * 40,
+            "branch": "scale/test",
+            "tracked_dirty": False,
+            "path": "/quality/project",
+        },
+        "verifier_source": {
+            "path": "/quality/project/scripts/verify.py",
+            "bytes": 1,
+            "sha256": "1" * 64,
+        },
+        "builder_source": {
+            "path": "/quality/project/scripts/build.py",
+            "bytes": 1,
+            "sha256": "2" * 64,
+        },
+        "python": {
+            "path": "/python",
+            "bytes": 1,
+            "sha256": "3" * 64,
+        },
+        "terminal_result": terminal_identity,
+        "verifier_output": {
+            "status": "verified",
+            "result": terminal_identity,
+            "quality_screen": terminal["quality_screen"],
+            "authorization_boundary": terminal["authorization_boundary"],
+        },
+        "execution_policy": {
+            "cuda_visible_devices": "-1",
+            "omp_num_threads": "1",
+            "mkl_num_threads": "1",
+            "gpu_use_allowed": False,
+            "training_launch_allowed": False,
+            "sampling_launch_allowed": False,
+        },
+    }
+
+
 def _terminal_build_inputs(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -616,6 +661,52 @@ def test_terminal_binding_rejects_another_training_report(
     terminal["source_reports"]["dense_training"]["sha256"] = "f" * 64
 
     with pytest.raises(ValueError, match="another training report"):
+        build_report(**inputs)
+
+
+def test_terminal_binding_accepts_source_bound_authoritative_verification(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inputs = _terminal_build_inputs(tmp_path, monkeypatch)
+    terminal, terminal_identity = inputs["quality_bridge_terminal_result"]
+    monkeypatch.setattr(
+        exposure_audit,
+        "_reopen_quality_bridge_terminal_sources",
+        lambda _terminal: None,
+    )
+    inputs["quality_bridge_terminal_verification"] = _authoritative_verification(
+        terminal,
+        terminal_identity,
+    )
+
+    report = build_report(**inputs)
+
+    assert (
+        report["terminal_binding"]["authoritative_terminal_verification"]["status"]
+        == "verified"
+    )
+
+
+def test_terminal_binding_rejects_authoritative_verification_for_other_result(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    inputs = _terminal_build_inputs(tmp_path, monkeypatch)
+    terminal, terminal_identity = inputs["quality_bridge_terminal_result"]
+    monkeypatch.setattr(
+        exposure_audit,
+        "_reopen_quality_bridge_terminal_sources",
+        lambda _terminal: None,
+    )
+    verification = _authoritative_verification(terminal, terminal_identity)
+    verification["terminal_result"] = {
+        **terminal_identity,
+        "sha256": "f" * 64,
+    }
+    inputs["quality_bridge_terminal_verification"] = verification
+
+    with pytest.raises(ValueError, match="used another terminal result"):
         build_report(**inputs)
 
 

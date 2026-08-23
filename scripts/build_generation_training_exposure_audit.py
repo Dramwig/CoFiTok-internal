@@ -29,6 +29,10 @@ from scripts.build_generation_milestone_report import (
 
 REPORT_SCHEMA_VERSION = 1
 REPORT_ROLE = "generation_training_exposure_audit"
+AUTHORITATIVE_TERMINAL_VERIFICATION_SCHEMA_VERSION = 1
+AUTHORITATIVE_TERMINAL_VERIFICATION_ROLE = (
+    "generation_quality_bridge_authoritative_terminal_verification"
+)
 TERMINAL_EXECUTION_DETAIL = (
     "quality bridge terminal evidence verified; no larger-training authorization "
     "was created"
@@ -136,12 +140,95 @@ def _replay_quality_bridge_terminal_result(
     )
 
 
+def _reopen_quality_bridge_terminal_sources(
+    terminal: dict[str, Any],
+) -> None:
+    sources = terminal.get("source_reports")
+    if not isinstance(sources, dict):
+        raise ValueError("quality bridge terminal result lacks source reports")
+    for name, source in sources.items():
+        _read_terminal_source(source, label=name)
+
+
+def _validate_authoritative_terminal_verification(
+    terminal: dict[str, Any],
+    terminal_identity: dict[str, Any],
+    verification: dict[str, Any],
+) -> dict[str, Any]:
+    if (
+        verification.get("schema_version")
+        != AUTHORITATIVE_TERMINAL_VERIFICATION_SCHEMA_VERSION
+        or verification.get("role") != AUTHORITATIVE_TERMINAL_VERIFICATION_ROLE
+        or verification.get("status") != "verified"
+    ):
+        raise ValueError("authoritative quality bridge verification contract differs")
+
+    terminal_git = _normalized_git_identity(
+        terminal.get("git"), label="quality bridge terminal result"
+    )
+    quality_project = verification.get("quality_project")
+    if (
+        not isinstance(quality_project, dict)
+        or quality_project.get("revision") != terminal_git["revision"]
+        or quality_project.get("branch") != terminal_git["branch"]
+        or quality_project.get("tracked_dirty") is not False
+        or not isinstance(quality_project.get("tree"), str)
+        or len(quality_project["tree"]) != 40
+        or not isinstance(quality_project.get("path"), str)
+        or not quality_project["path"]
+    ):
+        raise ValueError("authoritative quality bridge project identity differs")
+
+    for label in ("verifier_source", "builder_source", "python"):
+        source = verification.get(label)
+        _identity_content(source, label=f"authoritative {label}")
+        if not isinstance(source.get("path"), str) or not source["path"]:
+            raise ValueError(f"authoritative {label} path is missing")
+
+    verified_result = verification.get("terminal_result")
+    if (
+        not isinstance(verified_result, dict)
+        or verified_result != terminal_identity
+        or _identity_content(
+            verified_result,
+            label="authoritatively verified terminal result",
+        )
+        != _identity_content(
+            terminal_identity,
+            label="snapshotted terminal result",
+        )
+    ):
+        raise ValueError("authoritative verifier used another terminal result")
+
+    verifier_output = verification.get("verifier_output")
+    if (
+        not isinstance(verifier_output, dict)
+        or verifier_output.get("status") != "verified"
+        or verifier_output.get("result") != terminal_identity
+        or verifier_output.get("quality_screen") != terminal.get("quality_screen")
+        or verifier_output.get("authorization_boundary")
+        != terminal.get("authorization_boundary")
+    ):
+        raise ValueError("authoritative verifier output differs")
+    if verification.get("execution_policy") != {
+        "cuda_visible_devices": "-1",
+        "omp_num_threads": "1",
+        "mkl_num_threads": "1",
+        "gpu_use_allowed": False,
+        "training_launch_allowed": False,
+        "sampling_launch_allowed": False,
+    }:
+        raise ValueError("authoritative verifier execution policy differs")
+    return dict(verification)
+
+
 def _bind_quality_bridge_terminal_result(
     report: dict[str, Any],
     *,
     training_reports: dict[str, tuple[dict[str, Any], dict[str, Any]]],
     terminal_result: tuple[dict[str, Any], dict[str, Any]],
     execution_status: tuple[dict[str, Any], dict[str, Any]],
+    authoritative_terminal_verification: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if set(training_reports) != {"cofitok", "dense_identity"}:
         raise ValueError(
@@ -213,8 +300,19 @@ def _bind_quality_bridge_terminal_result(
     for name, source in sources.items():
         _identity_content(source, label=f"terminal {name}")
     _identity_content(terminal_identity, label="snapshotted terminal result")
-    if _replay_quality_bridge_terminal_result(terminal) != terminal:
-        raise ValueError("quality bridge terminal result is not logically reproducible")
+    authoritative_verification = None
+    if authoritative_terminal_verification is None:
+        if _replay_quality_bridge_terminal_result(terminal) != terminal:
+            raise ValueError(
+                "quality bridge terminal result is not logically reproducible"
+            )
+    else:
+        _reopen_quality_bridge_terminal_sources(terminal)
+        authoritative_verification = _validate_authoritative_terminal_verification(
+            terminal,
+            terminal_identity,
+            authoritative_terminal_verification,
+        )
     training_source_binding: dict[str, Any] = {}
     checkpoint_binding: dict[str, Any] = {}
     milestone_checkpoints = milestone.get("training_checkpoint_binding", {})
@@ -301,7 +399,7 @@ def _bind_quality_bridge_terminal_result(
     quality_screen = terminal.get("quality_screen")
     if not isinstance(quality_screen, dict) or not quality_screen.get("status"):
         raise ValueError("quality bridge terminal result lacks a quality screen")
-    return {
+    binding = {
         "terminal_result": dict(terminal_identity),
         "verified_execution_status": dict(execution_identity),
         "training_source_binding": training_source_binding,
@@ -313,6 +411,9 @@ def _bind_quality_bridge_terminal_result(
         "terminal_result_binding_verified": True,
         "active_runbook_verification_completed": True,
     }
+    if authoritative_verification is not None:
+        binding["authoritative_terminal_verification"] = authoritative_verification
+    return binding
 
 
 def parse_training_spec(value: str) -> tuple[str, Path]:
@@ -332,6 +433,7 @@ def build_report(
     quality_bridge_terminal_result: tuple[dict[str, Any], dict[str, Any]] | None = None,
     quality_bridge_execution_status: tuple[dict[str, Any], dict[str, Any]]
     | None = None,
+    quality_bridge_terminal_verification: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if not training_reports:
         raise ValueError("at least one training report is required")
@@ -473,12 +575,20 @@ def build_report(
         quality_bridge_execution_status is None
     ):
         raise ValueError("terminal result and verified execution status must be paired")
+    if (
+        quality_bridge_terminal_result is None
+        and quality_bridge_terminal_verification is not None
+    ):
+        raise ValueError("terminal verification was provided without a terminal result")
     if quality_bridge_terminal_result is not None:
         report["terminal_binding"] = _bind_quality_bridge_terminal_result(
             report,
             training_reports=training_reports,
             terminal_result=quality_bridge_terminal_result,
             execution_status=quality_bridge_execution_status,
+            authoritative_terminal_verification=(
+                quality_bridge_terminal_verification
+            ),
         )
         report["claim_boundary"].update(
             {
