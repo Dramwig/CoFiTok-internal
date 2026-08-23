@@ -226,6 +226,11 @@ def _context(args: argparse.Namespace, *, require_detached: bool) -> dict[str, A
         args.quality_output_root,
         name="quality output root",
     ).resolve()
+    terminal_dir_name = builder.validated_report_dir_name(
+        args.expected_terminal_dir_name,
+        prefix="terminal_completion_audit_v",
+        label="terminal completion directory name",
+    )
     output_root = reject_symlink_chain(args.output_root, name="conjunct output root").resolve()
     paths = {
         "terminal_status": reject_symlink_chain(
@@ -259,6 +264,13 @@ def _context(args: argparse.Namespace, *, require_detached: bool) -> dict[str, A
             raise ValueError(f"terminal runtime conjunct {name} is outside quality root")
         if _within(paths[name], output_root):
             raise ValueError(f"terminal runtime conjunct {name} overlaps output root")
+    terminal_dir = root / "reports" / terminal_dir_name
+    if (
+        paths["terminal_status"] != (terminal_dir / "waiter_status.json").resolve()
+        or paths["terminal_audit"]
+        != (terminal_dir / "terminal_completion_audit.json").resolve()
+    ):
+        raise ValueError("terminal completion canonical path differs")
     for name in ("output", "status", "pid", "deployment"):
         if not _within(paths[name], output_root):
             raise ValueError(f"terminal runtime conjunct {name} is outside output root")
@@ -288,6 +300,9 @@ def _deployment_payload(args: argparse.Namespace, context: Mapping[str, Any]) ->
         "expected_training": {
             "revision": args.expected_training_revision,
             "branch": args.expected_training_branch,
+        },
+        "source_contract": {
+            "terminal_completion_dir_name": args.expected_terminal_dir_name,
         },
         "targets": {
             name: path.as_posix() for name, path in context["paths"].items()
@@ -395,6 +410,7 @@ def run_waiter(args: argparse.Namespace, *, require_detached: bool = True) -> in
             expected_runtime_comparison_sha256=identities["runtime_comparison"]["sha256"],
             expected_training_revision=args.expected_training_revision,
             expected_training_branch=args.expected_training_branch,
+            expected_terminal_dir_name=args.expected_terminal_dir_name,
         )
         if any(file_identity(paths[name]) != identity for name, identity in identities.items()):
             raise ValueError("terminal runtime conjunct sources changed during replay")
@@ -459,6 +475,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-builder-source-sha256", required=True)
     parser.add_argument("--expected-training-revision", required=True)
     parser.add_argument("--expected-training-branch", required=True)
+    parser.add_argument(
+        "--expected-terminal-dir-name",
+        default="terminal_completion_audit_v1",
+    )
     parser.add_argument("--poll-seconds", type=float, default=60.0)
     parser.add_argument("--timeout-seconds", type=float, default=2_592_000.0)
     return parser.parse_args()

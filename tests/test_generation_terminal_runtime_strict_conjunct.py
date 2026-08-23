@@ -208,9 +208,14 @@ def _runtime_status(
     )
 
 
-def _sources(tmp_path: Path) -> dict:
-    terminal_audit_path = tmp_path / "terminal_completion_audit.json"
-    terminal_status_path = tmp_path / "terminal_completion_status.json"
+def _sources(
+    tmp_path: Path,
+    *,
+    terminal_dir_name: str = "terminal_completion_audit_v1",
+) -> dict:
+    terminal_dir = tmp_path / "reports" / terminal_dir_name
+    terminal_audit_path = terminal_dir / "terminal_completion_audit.json"
+    terminal_status_path = terminal_dir / "waiter_status.json"
     runtime_path = tmp_path / "runtime_claim_guard_comparison.json"
     runtime_status_path = tmp_path / "runtime_claim_guard_comparison_status.json"
     terminal_audit_identity = _terminal_audit(terminal_audit_path)
@@ -244,6 +249,7 @@ def _build(source: dict) -> dict:
         expected_runtime_comparison_sha256=source["runtime_identity"]["sha256"],
         expected_training_revision=TRAINING_REVISION,
         expected_training_branch=TRAINING_BRANCH,
+        expected_terminal_dir_name=source["terminal_audit_path"].parent.name,
     )
 
 
@@ -348,6 +354,7 @@ def test_conjunct_rejects_terminal_hold_advantage(tmp_path: Path) -> None:
             expected_runtime_comparison_sha256=source["runtime_identity"]["sha256"],
             expected_training_revision=TRAINING_REVISION,
             expected_training_branch=TRAINING_BRANCH,
+            expected_terminal_dir_name=source["terminal_audit_path"].parent.name,
         )
 
 
@@ -370,6 +377,55 @@ def test_conjunct_preserves_valid_terminal_hold(tmp_path: Path) -> None:
     assert report["terminal_status"] == "hold"
     assert report["generation_advantage_proven"] is False
     assert report["claim_policy"]["generation_advantage_proven"] is False
+
+
+def test_conjunct_accepts_versioned_terminal_completion_directory(
+    tmp_path: Path,
+) -> None:
+    source = _sources(
+        tmp_path,
+        terminal_dir_name="terminal_completion_audit_v2_runtime_strict",
+    )
+
+    report = build_conjunct(
+        terminal_status_path=source["terminal_status_path"],
+        expected_terminal_status_sha256=source["terminal_status_identity"]["sha256"],
+        terminal_audit_path=source["terminal_audit_path"],
+        expected_terminal_audit_sha256=source["terminal_audit_identity"]["sha256"],
+        runtime_status_path=source["runtime_status_path"],
+        expected_runtime_status_sha256=source["runtime_status_identity"]["sha256"],
+        runtime_comparison_path=source["runtime_path"],
+        expected_runtime_comparison_sha256=source["runtime_identity"]["sha256"],
+        expected_training_revision=TRAINING_REVISION,
+        expected_training_branch=TRAINING_BRANCH,
+        expected_terminal_dir_name="terminal_completion_audit_v2_runtime_strict",
+    )
+
+    assert report["status"] == "pass"
+
+
+def test_conjunct_rejects_wrong_versioned_terminal_completion_directory(
+    tmp_path: Path,
+) -> None:
+    source = _sources(
+        tmp_path,
+        terminal_dir_name="terminal_completion_audit_v2_runtime_strict",
+    )
+
+    with pytest.raises(ValueError, match="terminal completion canonical path"):
+        build_conjunct(
+            terminal_status_path=source["terminal_status_path"],
+            expected_terminal_status_sha256=source["terminal_status_identity"]["sha256"],
+            terminal_audit_path=source["terminal_audit_path"],
+            expected_terminal_audit_sha256=source["terminal_audit_identity"]["sha256"],
+            runtime_status_path=source["runtime_status_path"],
+            expected_runtime_status_sha256=source["runtime_status_identity"]["sha256"],
+            runtime_comparison_path=source["runtime_path"],
+            expected_runtime_comparison_sha256=source["runtime_identity"]["sha256"],
+            expected_training_revision=TRAINING_REVISION,
+            expected_training_branch=TRAINING_BRANCH,
+            expected_terminal_dir_name="terminal_completion_audit_v1",
+        )
 
 
 def test_waiter_publishes_conjunct(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -428,6 +484,7 @@ def test_waiter_publishes_conjunct(tmp_path: Path, monkeypatch: pytest.MonkeyPat
         )["sha256"],
         expected_training_revision=TRAINING_REVISION,
         expected_training_branch=TRAINING_BRANCH,
+        expected_terminal_dir_name="terminal_completion_audit_v1",
         poll_seconds=0.01,
         timeout_seconds=1.0,
     )
@@ -509,6 +566,7 @@ def test_waiter_rejects_source_overlap_with_output_root(
         )["sha256"],
         expected_training_revision=TRAINING_REVISION,
         expected_training_branch=TRAINING_BRANCH,
+        expected_terminal_dir_name="terminal_completion_audit_v1",
         poll_seconds=0.01,
         timeout_seconds=1.0,
     )

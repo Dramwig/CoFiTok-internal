@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import re
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -57,6 +58,38 @@ RUNTIME_DECISIONS = {
     "canonical_observational_runtime_claim_semantically_verified": True,
     "canonical_runtime_claim_rejected_strict_guard_controls": False,
 }
+
+
+def validated_report_dir_name(value: str, *, prefix: str, label: str) -> str:
+    if (
+        not value.startswith(prefix)
+        or re.fullmatch(r"[a-z0-9][a-z0-9_.-]*", value) is None
+        or Path(value).name != value
+    ):
+        raise ValueError(f"{label} is invalid")
+    return value
+
+
+def _validate_terminal_completion_paths(
+    *,
+    terminal_status_path: Path,
+    terminal_audit_path: Path,
+    expected_terminal_dir_name: str,
+) -> None:
+    directory_name = validated_report_dir_name(
+        expected_terminal_dir_name,
+        prefix="terminal_completion_audit_v",
+        label="terminal completion directory name",
+    )
+    audit = terminal_audit_path.resolve()
+    status = terminal_status_path.resolve()
+    expected_dir = audit.parent
+    if (
+        expected_dir.name != directory_name
+        or audit != expected_dir / "terminal_completion_audit.json"
+        or status != expected_dir / "waiter_status.json"
+    ):
+        raise ValueError("terminal completion canonical path differs")
 
 
 def _is_sha256(value: Any) -> bool:
@@ -301,7 +334,13 @@ def build_conjunct(
     expected_runtime_comparison_sha256: str,
     expected_training_revision: str,
     expected_training_branch: str,
+    expected_terminal_dir_name: str,
 ) -> dict[str, Any]:
+    _validate_terminal_completion_paths(
+        terminal_status_path=terminal_status_path,
+        terminal_audit_path=terminal_audit_path,
+        expected_terminal_dir_name=expected_terminal_dir_name,
+    )
     terminal_audit_identity, terminal_audit = _bound_json(
         terminal_audit_path,
         expected_sha256=expected_terminal_audit_sha256,
@@ -426,6 +465,10 @@ def parse_args() -> argparse.Namespace:
         parser.add_argument(f"--expected-{name}-sha256", required=True)
     parser.add_argument("--expected-training-revision", required=True)
     parser.add_argument("--expected-training-branch", required=True)
+    parser.add_argument(
+        "--expected-terminal-dir-name",
+        default="terminal_completion_audit_v1",
+    )
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--resume", action="store_true")
@@ -457,6 +500,7 @@ def main() -> int:
         expected_runtime_comparison_sha256=args.expected_runtime_comparison_sha256,
         expected_training_revision=args.expected_training_revision,
         expected_training_branch=args.expected_training_branch,
+        expected_terminal_dir_name=args.expected_terminal_dir_name,
     )
     identity = prepare_manifest(output, report, resume=args.resume, overwrite=False)
     print(json.dumps({"status": report["status"], "conjunct": identity}, sort_keys=True))
