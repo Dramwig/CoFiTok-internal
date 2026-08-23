@@ -23,7 +23,14 @@ PID_FILE=${PID_FILE:?set the exact versioned waiter PID file}
 LOCK=${LOCK:?set the exact versioned waiter lock}
 
 cd "$PROJECT"
-mkdir -p "$REPORTS"
+mkdir -p \
+  "$REPORTS" \
+  "$(dirname "$STATUS")" \
+  "$(dirname "$LOG")" \
+  "$(dirname "$PID_FILE")" \
+  "$(dirname "$LOCK")" \
+  "$(dirname "$DECISION")" \
+  "$(dirname "$DECISION_LOCK")"
 exec 9>"$LOCK"
 flock -n 9 || {
   printf 'refusing a concurrent exposure-aware follow-up waiter\n' >&2

@@ -774,3 +774,4 @@ def test_followup_runbook_is_non_authorizing() -> None:
     assert "LOCK=${LOCK:?" in runbook
     assert "EXPECTED_RESULT_SHA256=${EXPECTED_RESULT_SHA256:?" in runbook
     assert "EXPECTED_EXPOSURE_SHA256=${EXPECTED_EXPOSURE_SHA256:?" in runbook
+    assert 'mkdir -p "$(dirname "$DECISION")" "$(dirname "$LOCK")"' in runbook

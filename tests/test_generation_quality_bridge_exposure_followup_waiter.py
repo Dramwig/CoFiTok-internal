@@ -193,5 +193,7 @@ def test_exposure_followup_waiter_runbook_requires_versioned_paths() -> None:
     ):
         assert f"{name}=${{{name}:?" in runbook
     assert "CUDA_VISIBLE_DEVICES=-1" in runbook
+    assert '"$(dirname "$STATUS")"' in runbook
+    assert '"$(dirname "$DECISION")"' in runbook
     assert "training_launch_allowed" not in runbook
     assert "train_generation.py" not in runbook

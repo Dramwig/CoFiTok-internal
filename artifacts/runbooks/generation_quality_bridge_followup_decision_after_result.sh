@@ -16,6 +16,7 @@ EXPECTED_RESULT_SHA256=${EXPECTED_RESULT_SHA256:?set the exact result SHA256}
 EXPECTED_EXPOSURE_SHA256=${EXPECTED_EXPOSURE_SHA256:?set the exact exposure SHA256}
 
 cd "$PROJECT"
+mkdir -p "$(dirname "$DECISION")" "$(dirname "$LOCK")"
 exec 9>"$LOCK"
 flock -n 9 || {
   printf 'refusing concurrent quality bridge follow-up decision builder\n' >&2
