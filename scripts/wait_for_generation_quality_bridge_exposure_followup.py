@@ -15,10 +15,6 @@ from typing import Any
 ROLE = "generation_quality_bridge_exposure_aware_followup_waiter"
 SCHEMA_VERSION = 1
 RUNBOOK_NAME = "generation_quality_bridge_followup_decision_after_result.sh"
-DECISION_NAME = "followup_experiment_decision_exposure_aware_v2.json"
-EXPOSURE_RELATIVE_PATH = Path(
-    "reports/training_exposure_terminal_100k/training_exposure_report.json"
-)
 
 
 def _utc_now() -> str:
@@ -71,6 +67,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-branch", required=True)
     parser.add_argument("--expected-self-sha256", required=True)
     parser.add_argument("--python", type=Path, required=True)
+    parser.add_argument("--result", type=Path, required=True)
+    parser.add_argument("--expected-result-sha256", required=True)
+    parser.add_argument("--exposure", type=Path, required=True)
+    parser.add_argument("--expected-exposure-sha256", required=True)
+    parser.add_argument("--decision", type=Path, required=True)
+    parser.add_argument("--decision-lock", type=Path, required=True)
     parser.add_argument("--status", type=Path, required=True)
     parser.add_argument("--log", type=Path, required=True)
     parser.add_argument("--poll-seconds", type=int, default=60)
@@ -80,6 +82,21 @@ def parse_args() -> argparse.Namespace:
         parser.error("--poll-seconds must be positive")
     if args.max_polls < 0:
         parser.error("--max-polls must be nonnegative")
+    for name in ("expected_result_sha256", "expected_exposure_sha256"):
+        value = getattr(args, name)
+        if len(value) != 64 or any(character not in "0123456789abcdef" for character in value):
+            parser.error(f"--{name.replace('_', '-')} must be a SHA256 digest")
+    for name in (
+        "quality_bridge_root",
+        "result",
+        "exposure",
+        "decision",
+        "decision_lock",
+        "status",
+        "log",
+    ):
+        if not getattr(args, name).is_absolute():
+            parser.error(f"--{name.replace('_', '-')} must be absolute")
     return args
 
 
@@ -91,6 +108,22 @@ def _base_status(args: argparse.Namespace) -> dict[str, Any]:
         "pid": os.getpid(),
         "project": str(args.project),
         "quality_bridge_root": str(args.quality_bridge_root),
+        "sources": {
+            "result": {
+                "path": str(args.result),
+                "expected_sha256": args.expected_result_sha256,
+            },
+            "training_exposure": {
+                "path": str(args.exposure),
+                "expected_sha256": args.expected_exposure_sha256,
+            },
+        },
+        "outputs": {
+            "decision": str(args.decision),
+            "decision_lock": str(args.decision_lock),
+            "status": str(args.status),
+            "log": str(args.log),
+        },
         "poll_seconds": args.poll_seconds,
         "scope": {
             "source_observation_allowed": True,
@@ -231,9 +264,9 @@ def main() -> int:
     base.update({"waiter_sha256": observed_self_sha256, "git": checkout})
 
     reports = args.quality_bridge_root / "reports"
-    result = reports / "quality_bridge_result.json"
-    exposure = args.quality_bridge_root / EXPOSURE_RELATIVE_PATH
-    decision = reports / DECISION_NAME
+    result = args.result
+    exposure = args.exposure
+    decision = args.decision
     runbook = args.project / "artifacts" / "runbooks" / RUNBOOK_NAME
     polls = 0
     while not result.is_file() or not exposure.is_file():
@@ -268,6 +301,22 @@ def main() -> int:
 
     result_sha256 = _sha256(result)
     exposure_sha256 = _sha256(exposure)
+    if (
+        result_sha256 != args.expected_result_sha256
+        or exposure_sha256 != args.expected_exposure_sha256
+    ):
+        _write_status(
+            args,
+            base,
+            status="failed",
+            detail="terminal_source_sha256_mismatch",
+            polls=polls,
+            expected_result_sha256=args.expected_result_sha256,
+            observed_result_sha256=result_sha256,
+            expected_exposure_sha256=args.expected_exposure_sha256,
+            observed_exposure_sha256=exposure_sha256,
+        )
+        return 85
     existing_decision_sha256 = _sha256(decision) if decision.is_file() else ""
     _write_status(
         args,
@@ -286,6 +335,12 @@ def main() -> int:
             "PROJECT": str(args.project),
             "PYTHON": str(args.python),
             "QUALITY_BRIDGE_ROOT": str(args.quality_bridge_root),
+            "RESULT": str(result),
+            "EXPOSURE": str(exposure),
+            "DECISION": str(decision),
+            "LOCK": str(args.decision_lock),
+            "EXPECTED_RESULT_SHA256": args.expected_result_sha256,
+            "EXPECTED_EXPOSURE_SHA256": args.expected_exposure_sha256,
             "EXPECTED_DECISION_REVISION": args.expected_revision,
             "EXPECTED_DECISION_BRANCH": args.expected_branch,
             "EXPECTED_DECISION_SHA256": existing_decision_sha256,

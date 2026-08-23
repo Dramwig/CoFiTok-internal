@@ -12,14 +12,21 @@ from scripts import wait_for_generation_quality_bridge_exposure_followup as wait
 
 def _args(tmp_path: Path, *, max_polls: int) -> argparse.Namespace:
     script = Path(waiter.__file__).resolve()
+    quality = tmp_path / "quality"
     return argparse.Namespace(
         project=tmp_path / "project",
-        quality_bridge_root=tmp_path / "quality",
+        quality_bridge_root=quality,
         expected_revision="a" * 40,
         expected_tree="b" * 40,
         expected_branch="analysis/exposure-aware",
         expected_self_sha256=waiter._sha256(script),
         python=tmp_path / "python",
+        result=quality / "reports" / "quality_bridge_result.json",
+        expected_result_sha256="1" * 64,
+        exposure=quality / "reports" / "exposure_v3" / "training_exposure_report.json",
+        expected_exposure_sha256="2" * 64,
+        decision=quality / "reports" / "decisions" / "followup_v3.json",
+        decision_lock=quality / "reports" / "decisions" / "followup_v3.lock",
         status=tmp_path / "status.json",
         log=tmp_path / "waiter.log",
         poll_seconds=1,
@@ -99,12 +106,12 @@ def test_waiter_builds_once_after_both_sources_exist(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     args = _args(tmp_path, max_polls=0)
-    reports = args.quality_bridge_root / "reports"
-    reports.mkdir(parents=True)
-    (reports / "quality_bridge_result.json").write_text("{}", encoding="utf-8")
-    exposure = args.quality_bridge_root / waiter.EXPOSURE_RELATIVE_PATH
-    exposure.parent.mkdir(parents=True)
-    exposure.write_text("{}", encoding="utf-8")
+    args.result.parent.mkdir(parents=True)
+    args.result.write_text("{}", encoding="utf-8")
+    args.exposure.parent.mkdir(parents=True)
+    args.exposure.write_text("{}", encoding="utf-8")
+    args.expected_result_sha256 = waiter._sha256(args.result)
+    args.expected_exposure_sha256 = waiter._sha256(args.exposure)
     args.project.mkdir()
     args.python.write_text("", encoding="utf-8")
     monkeypatch.setattr(waiter, "parse_args", lambda: args)
@@ -122,8 +129,12 @@ def test_waiter_builds_once_after_both_sources_exist(
 
     def run_once(command, **kwargs):
         assert kwargs["env"]["CUDA_VISIBLE_DEVICES"] == "-1"
-        decision = reports / waiter.DECISION_NAME
-        decision.write_text(json.dumps(_decision()), encoding="utf-8")
+        assert kwargs["env"]["RESULT"] == str(args.result)
+        assert kwargs["env"]["EXPOSURE"] == str(args.exposure)
+        assert kwargs["env"]["DECISION"] == str(args.decision)
+        assert kwargs["env"]["LOCK"] == str(args.decision_lock)
+        args.decision.parent.mkdir(parents=True, exist_ok=True)
+        args.decision.write_text(json.dumps(_decision()), encoding="utf-8")
         return subprocess.CompletedProcess(command, 0)
 
     monkeypatch.setattr(waiter.subprocess, "run", run_once)
@@ -132,3 +143,55 @@ def test_waiter_builds_once_after_both_sources_exist(
     status = json.loads(args.status.read_text(encoding="utf-8"))
     assert status["status"] == "completed"
     assert status["recommended_next_stage"]["execution_ready"] is False
+
+
+def test_waiter_fails_closed_on_pinned_source_sha_mismatch(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args = _args(tmp_path, max_polls=0)
+    args.result.parent.mkdir(parents=True)
+    args.result.write_text("{}", encoding="utf-8")
+    args.exposure.parent.mkdir(parents=True)
+    args.exposure.write_text("{}", encoding="utf-8")
+    args.project.mkdir()
+    args.python.write_text("", encoding="utf-8")
+    monkeypatch.setattr(waiter, "parse_args", lambda: args)
+    monkeypatch.setattr(
+        waiter,
+        "_validate_checkout",
+        lambda unused: {
+            "revision": args.expected_revision,
+            "tree": args.expected_tree,
+            "branch": args.expected_branch,
+            "tracked_dirty": False,
+            "runbook_sha256": "c" * 64,
+        },
+    )
+
+    assert waiter.main() == 85
+    status = json.loads(args.status.read_text(encoding="utf-8"))
+    assert status["status"] == "failed"
+    assert status["detail"] == "terminal_source_sha256_mismatch"
+    assert status["scope"]["gpu_use_allowed"] is False
+
+
+def test_exposure_followup_waiter_runbook_requires_versioned_paths() -> None:
+    runbook = (
+        Path(__file__).resolve().parents[1]
+        / "artifacts/runbooks/generation_quality_bridge_exposure_followup_waiter.sh"
+    ).read_text(encoding="utf-8")
+    for name in (
+        "EXPOSURE",
+        "EXPECTED_EXPOSURE_SHA256",
+        "DECISION",
+        "DECISION_LOCK",
+        "STATUS",
+        "LOG",
+        "PID_FILE",
+        "LOCK",
+    ):
+        assert f"{name}=${{{name}:?" in runbook
+    assert "CUDA_VISIBLE_DEVICES=-1" in runbook
+    assert "training_launch_allowed" not in runbook
+    assert "train_generation.py" not in runbook

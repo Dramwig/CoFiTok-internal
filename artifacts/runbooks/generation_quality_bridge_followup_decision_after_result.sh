@@ -8,10 +8,12 @@ EXPECTED_DECISION_REVISION=${EXPECTED_DECISION_REVISION:?set EXPECTED_DECISION_R
 EXPECTED_DECISION_BRANCH=${EXPECTED_DECISION_BRANCH:?set EXPECTED_DECISION_BRANCH}
 EXPECTED_DECISION_SHA256=${EXPECTED_DECISION_SHA256:-}
 
-RESULT="$QUALITY_BRIDGE_ROOT/reports/quality_bridge_result.json"
-EXPOSURE="$QUALITY_BRIDGE_ROOT/reports/training_exposure_terminal_100k/training_exposure_report.json"
-DECISION="$QUALITY_BRIDGE_ROOT/reports/followup_experiment_decision_exposure_aware_v2.json"
-LOCK="$QUALITY_BRIDGE_ROOT/followup_experiment_decision_exposure_aware_v2.lock"
+RESULT=${RESULT:-"$QUALITY_BRIDGE_ROOT/reports/quality_bridge_result.json"}
+EXPOSURE=${EXPOSURE:?set the exact versioned training exposure report}
+DECISION=${DECISION:?set the exact versioned follow-up decision output}
+LOCK=${LOCK:?set the exact versioned follow-up decision lock}
+EXPECTED_RESULT_SHA256=${EXPECTED_RESULT_SHA256:?set the exact result SHA256}
+EXPECTED_EXPOSURE_SHA256=${EXPECTED_EXPOSURE_SHA256:?set the exact exposure SHA256}
 
 cd "$PROJECT"
 exec 9>"$LOCK"
@@ -31,11 +33,19 @@ flock -n 9 || {
 
 result_sha=$(sha256sum "$RESULT" | awk '{print $1}')
 exposure_sha=$(sha256sum "$EXPOSURE" | awk '{print $1}')
+[[ "$result_sha" == "$EXPECTED_RESULT_SHA256" ]] || {
+  printf 'quality bridge terminal result SHA256 differs\n' >&2
+  exit 79
+}
+[[ "$exposure_sha" == "$EXPECTED_EXPOSURE_SHA256" ]] || {
+  printf 'terminal training exposure report SHA256 differs\n' >&2
+  exit 80
+}
 common=(
   --quality-bridge-result "$RESULT"
-  --expected-quality-bridge-result-sha256 "$result_sha"
+  --expected-quality-bridge-result-sha256 "$EXPECTED_RESULT_SHA256"
   --training-exposure-report "$EXPOSURE"
-  --expected-training-exposure-report-sha256 "$exposure_sha"
+  --expected-training-exposure-report-sha256 "$EXPECTED_EXPOSURE_SHA256"
   --expected-decision-revision "$EXPECTED_DECISION_REVISION"
   --expected-decision-branch "$EXPECTED_DECISION_BRANCH"
 )

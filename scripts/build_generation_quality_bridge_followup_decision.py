@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import copy
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -87,14 +89,27 @@ def replay_quality_bridge_result(
     path: Path,
     *,
     expected_sha256: str,
+    authoritative_terminal_verification: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     identity = file_identity(path)
     if identity["sha256"] != expected_sha256:
         raise ValueError("quality bridge result SHA256 differs")
     actual = read_json_object(path, name="quality bridge terminal result")
-    recomputed = build_from_args(_result_replay_args(actual))
-    if actual != recomputed:
-        raise ValueError("quality bridge terminal result is not reproducible")
+    if authoritative_terminal_verification is None:
+        recomputed = build_from_args(_result_replay_args(actual))
+        if actual != recomputed:
+            raise ValueError("quality bridge terminal result is not reproducible")
+    else:
+        _validate_authoritative_terminal_verification(
+            actual,
+            identity,
+            authoritative_terminal_verification,
+        )
+        sources = actual.get("source_reports")
+        if not isinstance(sources, dict) or set(sources) != _RESULT_SOURCE_ARGUMENTS:
+            raise ValueError("quality bridge result source set differs")
+        for name, source in sources.items():
+            _bound_json_source(source, label=f"quality bridge terminal {name}")
     return actual, identity
 
 
@@ -110,6 +125,120 @@ def _bound_json_source(
     if identity != value:
         raise ValueError(f"{label} identity differs")
     return read_json_object(path, name=label), identity
+
+
+def _same_content_identity(
+    left: dict[str, Any],
+    right: dict[str, Any],
+    *,
+    label: str,
+) -> None:
+    if {
+        "bytes": left.get("bytes"),
+        "sha256": left.get("sha256"),
+    } != {
+        "bytes": right.get("bytes"),
+        "sha256": right.get("sha256"),
+    }:
+        raise ValueError(f"{label} content identity differs")
+
+
+def _validate_authoritative_terminal_verification(
+    terminal: dict[str, Any],
+    terminal_identity: dict[str, Any],
+    verification: dict[str, Any],
+) -> dict[str, Any]:
+    if (
+        verification.get("schema_version") != 1
+        or verification.get("role")
+        != "generation_quality_bridge_authoritative_terminal_verification"
+        or verification.get("status") != "verified"
+    ):
+        raise ValueError("authoritative quality bridge verification contract differs")
+    terminal_git = terminal.get("git")
+    quality_project = verification.get("quality_project")
+    if (
+        not isinstance(terminal_git, dict)
+        or not isinstance(quality_project, dict)
+        or quality_project.get("revision") != terminal_git.get("revision")
+        or quality_project.get("branch") != terminal_git.get("branch")
+        or quality_project.get("tracked_dirty") is not False
+        or not isinstance(quality_project.get("tree"), str)
+        or len(quality_project["tree"]) != 40
+        or not isinstance(quality_project.get("path"), str)
+        or not quality_project["path"]
+    ):
+        raise ValueError("authoritative quality bridge project identity differs")
+    expected_quality_project = {
+        "revision": quality_project["revision"],
+        "tree": quality_project["tree"],
+        "branch": quality_project["branch"],
+        "tracked_dirty": False,
+        "path": quality_project["path"],
+    }
+    if _authoritative_quality_project_identity(
+        Path(quality_project["path"])
+    ) != expected_quality_project:
+        raise ValueError("authoritative quality bridge checkout identity differs")
+    for label in ("verifier_source", "builder_source", "python"):
+        source = verification.get(label)
+        if not isinstance(source, dict):
+            raise ValueError(f"authoritative {label} identity is missing")
+        path = Path(str(source.get("path", "")))
+        if file_identity(path) != source:
+            raise ValueError(f"authoritative {label} identity differs")
+    verified_result = verification.get("terminal_result")
+    if not isinstance(verified_result, dict):
+        raise ValueError("authoritatively verified terminal result is missing")
+    _same_content_identity(
+        verified_result,
+        terminal_identity,
+        label="authoritatively verified terminal result",
+    )
+    verifier_output = verification.get("verifier_output")
+    if not isinstance(verifier_output, dict):
+        raise ValueError("authoritative quality bridge verifier output is missing")
+    output_result = verifier_output.get("result")
+    if not isinstance(output_result, dict):
+        raise ValueError("authoritative verifier result identity is missing")
+    _same_content_identity(
+        output_result,
+        terminal_identity,
+        label="authoritative verifier result",
+    )
+    if (
+        verifier_output.get("status") != "verified"
+        or verifier_output.get("quality_screen") != terminal.get("quality_screen")
+        or verifier_output.get("authorization_boundary")
+        != terminal.get("authorization_boundary")
+        or verification.get("execution_policy")
+        != {
+            "cuda_visible_devices": "-1",
+            "omp_num_threads": "1",
+            "mkl_num_threads": "1",
+            "gpu_use_allowed": False,
+            "training_launch_allowed": False,
+            "sampling_launch_allowed": False,
+        }
+    ):
+        raise ValueError("authoritative quality bridge verification differs")
+    return copy.deepcopy(verification)
+
+
+def _authoritative_quality_project_identity(project: Path) -> dict[str, Any]:
+    identity = git_provenance(project)
+    tree = subprocess.run(
+        ["git", "rev-parse", "HEAD^{tree}"],
+        cwd=str(project),
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    return {
+        **identity,
+        "tree": tree,
+        "path": project.resolve().as_posix(),
+    }
 
 
 def replay_training_exposure_report(
@@ -159,6 +288,15 @@ def replay_training_exposure_report(
         terminal_binding.get("verified_execution_status"),
         label="terminal training exposure execution status",
     )
+    authoritative_terminal_verification = terminal_binding.get(
+        "authoritative_terminal_verification"
+    )
+    if authoritative_terminal_verification is not None and not isinstance(
+        authoritative_terminal_verification, dict
+    ):
+        raise ValueError(
+            "terminal training exposure authoritative verification is malformed"
+        )
     recomputed = build_training_exposure_report(
         training_reports,
         quality_bridge_preparation=preparation,
@@ -167,6 +305,7 @@ def replay_training_exposure_report(
         milestone_source_profile=str(milestone_binding.get("source_profile", "")),
         quality_bridge_terminal_result=terminal_result,
         quality_bridge_execution_status=execution_status,
+        quality_bridge_terminal_verification=authoritative_terminal_verification,
     )
     if actual != recomputed:
         raise ValueError("terminal training exposure report is not reproducible")
@@ -219,13 +358,22 @@ def build_from_sources(
     expected_training_exposure_report_sha256: str,
     decision_git: dict[str, Any],
 ) -> dict[str, Any]:
-    result, result_identity = replay_quality_bridge_result(
-        quality_bridge_result_path,
-        expected_sha256=expected_quality_bridge_result_sha256,
-    )
     exposure, exposure_identity = replay_training_exposure_report(
         training_exposure_report_path,
         expected_sha256=expected_training_exposure_report_sha256,
+    )
+    terminal_binding = exposure.get("terminal_binding")
+    if not isinstance(terminal_binding, dict):
+        raise ValueError("terminal training exposure binding is missing")
+    verification = terminal_binding.get("authoritative_terminal_verification")
+    if not isinstance(verification, dict):
+        raise ValueError(
+            "terminal training exposure authoritative verification is missing"
+        )
+    result, result_identity = replay_quality_bridge_result(
+        quality_bridge_result_path,
+        expected_sha256=expected_quality_bridge_result_sha256,
+        authoritative_terminal_verification=verification,
     )
     milestones: dict[int, dict[str, Any]] = {}
     identities: dict[int, dict[str, Any]] = {}

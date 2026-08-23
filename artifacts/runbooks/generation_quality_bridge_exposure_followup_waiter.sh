@@ -11,10 +11,16 @@ QUALITY_BRIDGE_ROOT=${QUALITY_BRIDGE_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/
 POLL_SECONDS=${POLL_SECONDS:-60}
 
 REPORTS="$QUALITY_BRIDGE_ROOT/reports"
-STATUS="$REPORTS/exposure_aware_followup_waiter_status.json"
-LOG="$REPORTS/exposure_aware_followup_waiter.log"
-PID_FILE="$REPORTS/exposure_aware_followup_waiter.pid"
-LOCK="$QUALITY_BRIDGE_ROOT/exposure_aware_followup_waiter.lock"
+RESULT=${RESULT:-"$REPORTS/quality_bridge_result.json"}
+EXPECTED_RESULT_SHA256=${EXPECTED_RESULT_SHA256:?set the exact result SHA256}
+EXPOSURE=${EXPOSURE:?set the exact versioned training exposure report}
+EXPECTED_EXPOSURE_SHA256=${EXPECTED_EXPOSURE_SHA256:?set the exact exposure SHA256}
+DECISION=${DECISION:?set the exact versioned follow-up decision output}
+DECISION_LOCK=${DECISION_LOCK:?set the exact versioned decision lock}
+STATUS=${STATUS:?set the exact versioned waiter status}
+LOG=${LOG:?set the exact versioned waiter log}
+PID_FILE=${PID_FILE:?set the exact versioned waiter PID file}
+LOCK=${LOCK:?set the exact versioned waiter lock}
 
 cd "$PROJECT"
 mkdir -p "$REPORTS"
@@ -40,6 +46,12 @@ exec env \
     --expected-branch "$EXPECTED_BRANCH" \
     --expected-self-sha256 "$EXPECTED_WAITER_SHA256" \
     --python "$PYTHON" \
+    --result "$RESULT" \
+    --expected-result-sha256 "$EXPECTED_RESULT_SHA256" \
+    --exposure "$EXPOSURE" \
+    --expected-exposure-sha256 "$EXPECTED_EXPOSURE_SHA256" \
+    --decision "$DECISION" \
+    --decision-lock "$DECISION_LOCK" \
     --status "$STATUS" \
     --log "$LOG" \
     --poll-seconds "$POLL_SECONDS"

@@ -559,6 +559,86 @@ def test_result_replay_rejects_nonreproducible_terminal_result(
         )
 
 
+def test_result_replay_accepts_physically_bound_authoritative_verifier(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    result = _result("cofitok_absolute_fid")
+    result["source_reports"] = {}
+    for name in sorted(builder._RESULT_SOURCE_ARGUMENTS):
+        source_path = tmp_path / f"terminal_source_{name}.json"
+        source_path.write_text(json.dumps({"name": name}), encoding="utf-8")
+        result["source_reports"][name] = builder.file_identity(source_path)
+    canonical = tmp_path / "quality_bridge_result.json"
+    snapshot = tmp_path / "snapshot_quality_bridge_result.json"
+    canonical.write_text(json.dumps(result), encoding="utf-8")
+    snapshot.write_text(json.dumps(result), encoding="utf-8")
+
+    sources = {}
+    for name in ("verifier_source", "builder_source", "python"):
+        path = tmp_path / name
+        path.write_text(name, encoding="utf-8")
+        sources[name] = builder.file_identity(path)
+    snapshot_identity = builder.file_identity(snapshot)
+    verification = {
+        "schema_version": 1,
+        "role": "generation_quality_bridge_authoritative_terminal_verification",
+        "status": "verified",
+        "quality_project": {
+            "revision": QUALITY_BRIDGE_EXECUTION_REVISION,
+            "tree": "f" * 40,
+            "branch": QUALITY_BRIDGE_EXECUTION_BRANCH,
+            "tracked_dirty": False,
+            "path": str(tmp_path),
+        },
+        **sources,
+        "terminal_result": snapshot_identity,
+        "verifier_output": {
+            "status": "verified",
+            "result": snapshot_identity,
+            "quality_screen": result["quality_screen"],
+            "authorization_boundary": result["authorization_boundary"],
+        },
+        "execution_policy": {
+            "cuda_visible_devices": "-1",
+            "omp_num_threads": "1",
+            "mkl_num_threads": "1",
+            "gpu_use_allowed": False,
+            "training_launch_allowed": False,
+            "sampling_launch_allowed": False,
+        },
+    }
+    monkeypatch.setattr(
+        builder,
+        "build_from_args",
+        lambda unused: (_ for _ in ()).throw(AssertionError("legacy replay used")),
+    )
+    monkeypatch.setattr(
+        builder,
+        "_authoritative_quality_project_identity",
+        lambda unused: copy.deepcopy(verification["quality_project"]),
+    )
+
+    actual, identity = builder.replay_quality_bridge_result(
+        canonical,
+        expected_sha256=file_sha256(canonical),
+        authoritative_terminal_verification=verification,
+    )
+
+    assert actual == result
+    assert identity["sha256"] == snapshot_identity["sha256"]
+
+    Path(sources["verifier_source"]["path"]).write_text(
+        "drifted", encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="verifier_source identity differs"):
+        builder.replay_quality_bridge_result(
+            canonical,
+            expected_sha256=file_sha256(canonical),
+            authoritative_terminal_verification=verification,
+        )
+
+
 def test_training_exposure_replay_reopens_every_bound_source(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -608,6 +688,55 @@ def test_training_exposure_replay_reopens_every_bound_source(
         )
 
 
+def test_training_exposure_replay_forwards_embedded_authoritative_verification(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    exposure = _training_exposure(_result("cofitok_absolute_fid"))
+
+    def bind(name: str, payload: dict[str, object]) -> dict[str, object]:
+        path = tmp_path / f"{name}.json"
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        return builder.file_identity(path)
+
+    exposure["sources"] = {
+        "cofitok": bind("cofitok_training", {"method": "cofitok"}),
+        "dense_identity": bind("dense_training", {"method": "dense_identity"}),
+    }
+    exposure["quality_bridge_plan"]["source"] = bind(
+        "preparation", {"role": "preparation"}
+    )
+    exposure["milestone_binding"]["source"] = bind(
+        "milestone", {"step": 100_000}
+    )
+    exposure["terminal_binding"]["terminal_result"] = bind(
+        "terminal_result", {"role": "quality_result"}
+    )
+    exposure["terminal_binding"]["verified_execution_status"] = bind(
+        "execution_status", {"status": "completed"}
+    )
+    verification = {"status": "verified", "binding": "authoritative"}
+    exposure["terminal_binding"][
+        "authoritative_terminal_verification"
+    ] = verification
+    exposure_path = tmp_path / "training_exposure_report.json"
+    exposure_path.write_text(json.dumps(exposure), encoding="utf-8")
+    captured = {}
+
+    def fake_build(*args, **kwargs):
+        captured.update(kwargs)
+        return copy.deepcopy(exposure)
+
+    monkeypatch.setattr(builder, "build_training_exposure_report", fake_build)
+
+    builder.replay_training_exposure_report(
+        exposure_path,
+        expected_sha256=file_sha256(exposure_path),
+    )
+
+    assert captured["quality_bridge_terminal_verification"] == verification
+
+
 @pytest.mark.parametrize(
     "entrypoint",
     (
@@ -640,5 +769,8 @@ def test_followup_runbook_is_non_authorizing() -> None:
     assert "verify_generation_quality_bridge_followup_decision.py" in runbook
     assert "train_generation.py" not in runbook
     assert "full_matched_300k" not in runbook
-    assert "training_exposure_terminal_100k/training_exposure_report.json" in runbook
-    assert "followup_experiment_decision_exposure_aware_v2.json" in runbook
+    assert "EXPOSURE=${EXPOSURE:?" in runbook
+    assert "DECISION=${DECISION:?" in runbook
+    assert "LOCK=${LOCK:?" in runbook
+    assert "EXPECTED_RESULT_SHA256=${EXPECTED_RESULT_SHA256:?" in runbook
+    assert "EXPECTED_EXPOSURE_SHA256=${EXPECTED_EXPOSURE_SHA256:?" in runbook
