@@ -23,6 +23,9 @@ WAITER_SCHEMA_VERSION = 1
 WAITER_ROLE = "generation_quality_bridge_runtime_claim_guard_waiter"
 WRAPPER_SCHEMA_VERSION = 1
 WRAPPER_ROLE = "generation_runtime_claim_guard_strict_replay_wrapper_deployment"
+RECOVERY_SCHEMA_VERSION = 1
+RECOVERY_ROLE = "generation_runtime_claim_guard_strict_replay_recovery"
+FAILURE_RECORD_ROLE = "generation_runtime_claim_guard_strict_replay_wrapper_failure_record"
 EXPECTED_METHODS = ("cofitok", "dense_identity")
 DIRECT_POLICY_FIELDS = (
     "training_wall_clock_direct_comparison_allowed",
@@ -133,6 +136,9 @@ def _validate_wrapper(
     canonical_waiter: Mapping[str, Any],
     strict_waiter: Mapping[str, Any],
     expected_strict_control_revision: str,
+    strict_status_path: Path | None = None,
+    strict_guard_path: Path | None = None,
+    require_recovery_binding: bool = False,
 ) -> None:
     scope = report.get("scope")
     strict_control = report.get("strict_control")
@@ -181,6 +187,154 @@ def _validate_wrapper(
         or behavior.get("comparison_required_before_runtime_claim_trust") is not True
     ):
         raise ValueError("strict replay wrapper deployment contract differs")
+    recovery = report.get("recovery")
+    if require_recovery_binding:
+        if not isinstance(recovery, Mapping):
+            raise ValueError("strict replay recovery binding is missing")
+        _validate_recovery_binding(
+            report,
+            recovery=recovery,
+            strict_status_path=strict_status_path,
+            strict_guard_path=strict_guard_path,
+        )
+
+
+def _validate_recovery_identity(
+    report: Mapping[str, Any],
+    *,
+    label: str,
+) -> dict[str, Any]:
+    path = report.get("path")
+    if not isinstance(path, str) or not path:
+        raise ValueError(f"strict replay recovery {label} path is missing")
+    identity = file_identity(
+        reject_symlink_chain(Path(path), name=f"strict replay recovery {label}")
+    )
+    if identity != dict(report):
+        raise ValueError(f"strict replay recovery {label} identity differs")
+    return identity
+
+
+def _validate_recovery_binding(
+    wrapper_report: Mapping[str, Any],
+    *,
+    recovery: Mapping[str, Any],
+    strict_status_path: Path | None,
+    strict_guard_path: Path | None,
+) -> None:
+    targets = wrapper_report.get("targets")
+    wrapper = wrapper_report.get("wrapper")
+    failed_targets = recovery.get("failed_targets_absent_before_recovery")
+    if (
+        recovery.get("schema_version") != RECOVERY_SCHEMA_VERSION
+        or recovery.get("role") != RECOVERY_ROLE
+        or recovery.get("reason")
+        != "original_wrapper_missing_pythonpath_import_failure"
+        or recovery.get("new_output_version")
+        != "runtime_compute_claim_guard_strict_replay_v3"
+        or recovery.get("old_outputs_overwritten") is not False
+        or recovery.get("old_process_signaled") is not False
+        or not isinstance(targets, Mapping)
+        or not isinstance(wrapper, Mapping)
+        or wrapper.get("nice") != 10
+        or not isinstance(wrapper.get("start_ticks"), int)
+        or not _is_sha256(wrapper.get("cmdline_sha256"))
+        or not isinstance(failed_targets, Mapping)
+    ):
+        raise ValueError("strict replay recovery contract differs")
+    if strict_status_path is None or strict_guard_path is None:
+        raise ValueError("strict replay recovery target paths are missing")
+    if (
+        targets.get("status_output") != strict_status_path.resolve().as_posix()
+        or targets.get("guard_output") != strict_guard_path.resolve().as_posix()
+    ):
+        raise ValueError("strict replay recovery targets differ")
+
+    original_identity = _validate_recovery_identity(
+        recovery.get("original_wrapper_deployment", {}),
+        label="original wrapper deployment",
+    )
+    original = read_json_object(
+        Path(original_identity["path"]),
+        name="strict replay original wrapper deployment",
+    )
+    if (
+        original.get("schema_version") != WRAPPER_SCHEMA_VERSION
+        or original.get("role") != WRAPPER_ROLE
+        or original.get("status") != "pass"
+    ):
+        raise ValueError("strict replay original wrapper contract differs")
+    log_identity = _validate_recovery_identity(
+        recovery.get("original_failure_log", {}),
+        label="original failure log",
+    )
+    failure_text = Path(log_identity["path"]).read_text(
+        encoding="utf-8",
+        errors="replace",
+    )
+    if (
+        "ModuleNotFoundError: No module named 'scripts'" not in failure_text
+        or "run_generation_quality_bridge_runtime_claim_guard_waiter.py"
+        not in failure_text
+    ):
+        raise ValueError("strict replay original failure reason differs")
+    for field, label in (
+        ("recovery_source", "recovery source"),
+        ("strict_runner_source", "strict runner source"),
+        ("strict_builder_source", "strict builder source"),
+        ("canonical_status", "canonical status"),
+    ):
+        _validate_recovery_identity(recovery.get(field, {}), label=label)
+    failure_status_identity = _validate_recovery_identity(
+        recovery.get("prior_failure_status", {}),
+        label="prior failure status",
+    )
+    failure_status = read_json_object(
+        Path(failure_status_identity["path"]),
+        name="strict replay prior failure status",
+    )
+    if (
+        failure_status.get("schema_version") != 1
+        or failure_status.get("role") != FAILURE_RECORD_ROLE
+        or failure_status.get("status") != "failed"
+        or failure_status.get("detail")
+        != "original_wrapper_missing_pythonpath_import_failure"
+        or failure_status.get("original_wrapper_deployment") != original_identity
+        or failure_status.get("original_failure_log") != log_identity
+        or failure_status.get("scope") != {
+            "cpu_only": True,
+            "non_authorizing": True,
+            "gpu_execution_allowed": False,
+            "training_process_signals_allowed": False,
+            "unrelated_process_signals_allowed": False,
+            "old_waiter_signals_allowed": False,
+            "promotion_authorization_allowed": False,
+            "release_authorization_allowed": False,
+            "full_300k_launch_allowed": False,
+        }
+    ):
+        raise ValueError("strict replay prior failure status contract differs")
+    if not _is_sha256(recovery.get("strict_runner_argv_sha256")):
+        raise ValueError("strict replay recovered runner argv identity differs")
+    for field in ("status_output", "guard_output"):
+        state = failed_targets.get(field)
+        if (
+            not isinstance(state, Mapping)
+            or state.get("absent") is not True
+            or not isinstance(state.get("path"), str)
+            or state.get("path") in {
+                targets.get("status_output"),
+                targets.get("guard_output"),
+            }
+        ):
+            raise ValueError("strict replay failed target recovery state differs")
+    if (
+        failed_targets["status_output"]["path"]
+        != failure_status_identity["path"]
+        or Path(str(failed_targets["guard_output"]["path"])).exists()
+        or Path(str(failed_targets["guard_output"]["path"])).is_symlink()
+    ):
+        raise ValueError("strict replay failed target post-recovery state differs")
 
 
 def _strict_policy_verified(report: Mapping[str, Any]) -> dict[str, Any]:
@@ -300,6 +454,7 @@ def build_comparison(
     expected_strict_control_revision: str,
     expected_training_revision: str,
     expected_training_branch: str,
+    require_recovery_binding: bool = False,
 ) -> dict[str, Any]:
     canonical_guard_identity, canonical_guard = _bound_json(
         canonical_guard_path,
@@ -351,6 +506,9 @@ def build_comparison(
         canonical_waiter=canonical_waiter,
         strict_waiter=strict_waiter,
         expected_strict_control_revision=expected_strict_control_revision,
+        strict_status_path=strict_status_path,
+        strict_guard_path=strict_guard_path,
+        require_recovery_binding=require_recovery_binding,
     )
     strict_policy = _strict_policy_verified(strict_guard)
     equivalence = _canonical_semantic_equivalence(canonical_guard, strict_guard)
@@ -398,6 +556,8 @@ def build_comparison(
             "equal_gpu_hours_budget_claim_allowed": False,
             "equal_training_flops_budget_claim_allowed": False,
             "quality_or_generation_advantage_claim_allowed": False,
+            "strict_recovery_binding_required": require_recovery_binding,
+            "strict_recovery_binding_verified": require_recovery_binding,
         },
         "claim_boundary": copy.deepcopy(NON_AUTHORIZING_BOUNDARY),
         "limitations": [
@@ -434,6 +594,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-strict-control-revision", required=True)
     parser.add_argument("--expected-training-revision", required=True)
     parser.add_argument("--expected-training-branch", required=True)
+    parser.add_argument("--require-recovery-binding", action="store_true")
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--resume", action="store_true")
@@ -469,6 +630,7 @@ def main() -> int:
         expected_strict_control_revision=args.expected_strict_control_revision,
         expected_training_revision=args.expected_training_revision,
         expected_training_branch=args.expected_training_branch,
+        require_recovery_binding=args.require_recovery_binding,
     )
     identity = prepare_manifest(
         output,

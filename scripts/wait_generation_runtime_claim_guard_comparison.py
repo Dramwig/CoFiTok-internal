@@ -164,6 +164,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--expected-strict-control-revision", required=True)
     parser.add_argument("--expected-training-revision", required=True)
     parser.add_argument("--expected-training-branch", required=True)
+    parser.add_argument("--require-recovery-binding", action="store_true")
     parser.add_argument("--poll-seconds", type=float, default=60.0)
     parser.add_argument("--timeout-seconds", type=float, default=2_592_000.0)
     args = parser.parse_args()
@@ -173,6 +174,9 @@ def parse_args() -> argparse.Namespace:
 
 
 def _run_locked(args: argparse.Namespace) -> int:
+    require_recovery_binding = bool(
+        getattr(args, "require_recovery_binding", False)
+    )
     project = reject_symlink_chain(
         args.project,
         name="runtime claim comparison control checkout",
@@ -271,6 +275,7 @@ def _run_locked(args: argparse.Namespace) -> int:
             )
         },
         "comparison_output": paths["comparison_output"].as_posix(),
+        "require_recovery_binding": require_recovery_binding,
     }
     deployment = {
         "schema_version": DEPLOYMENT_SCHEMA_VERSION,
@@ -379,6 +384,7 @@ def _run_locked(args: argparse.Namespace) -> int:
         expected_strict_control_revision=args.expected_strict_control_revision,
         expected_training_revision=args.expected_training_revision,
         expected_training_branch=args.expected_training_branch,
+        require_recovery_binding=require_recovery_binding,
     )
     if any(file_identity(paths[name]) != identity for name, identity in source_identities.items()):
         raise ValueError("runtime claim comparison sources changed during build")
