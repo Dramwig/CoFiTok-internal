@@ -22,6 +22,10 @@ DEPLOYMENT_ROLE = "generation_quality_bridge_comparison_waiter_deployment"
 TERMINAL_WAITER_ROLE = "generation_terminal_system_claim_guard_waiter"
 TERMINAL_GUARD_ROLE = "generation_terminal_system_claim_guard"
 COMPARISON_ROLE = "stability_full_data_quality_bridge_comparison"
+EXPECTED_TERMINAL_SAMPLES = 10_000
+REPLICATION_INTERPRETATION = (
+    "paired_reanalysis_of_one_exact_bound_terminal_sample_stream"
+)
 OFFICIAL_RELATED_PATH = Path(
     "artifacts/reports/baselines/official_related_methods_2026-07-11_final/"
     "official_related_methods_table.json"
@@ -53,6 +57,8 @@ COMPARISON_BOUNDARY = {
     "cross_tier_numeric_ranking_allowed": False,
     "broad_generation_superiority_claim_allowed": False,
     "sota_claim_allowed": False,
+    "independent_replication_claim_allowed": False,
+    "multiple_independent_terminal_streams_claim_allowed": False,
 }
 
 SCOPE = {
@@ -75,6 +81,8 @@ SCOPE = {
     "cross_tier_numeric_ranking_allowed": False,
     "broad_generation_superiority_claim_allowed": False,
     "sota_claim_allowed": False,
+    "independent_replication_claim_allowed": False,
+    "multiple_independent_terminal_streams_claim_allowed": False,
 }
 
 
@@ -533,12 +541,39 @@ def observe_terminal(context: Mapping[str, Any]) -> dict[str, Any]:
     guard_identity = file_identity(guard_path, name="terminal system claim guard")
     guard = read_json(guard_path, name="terminal system claim guard")
     terminal_status = guard.get("status")
+    policy = guard.get("claim_policy")
+    evidence = guard.get("evidence")
+    statistical = (
+        evidence.get("matched_statistical_advantage")
+        if isinstance(evidence, Mapping)
+        else None
+    )
+    replication = (
+        statistical.get("replication_scope")
+        if isinstance(statistical, Mapping)
+        else None
+    )
     if (
         report.get("guard") != guard_identity
         or report.get("guard_status") != terminal_status
         or guard.get("schema_version") != 1
         or guard.get("role") != TERMINAL_GUARD_ROLE
         or terminal_status not in {"pass", "hold"}
+        or not isinstance(policy, Mapping)
+        or policy.get("independent_replication_claim_allowed") is not False
+        or policy.get("multiple_independent_terminal_streams_claim_allowed")
+        is not False
+        or policy.get("replication_language_requires_distinct_bound_streams")
+        is not True
+        or not isinstance(replication, Mapping)
+        or replication.get("bound_terminal_stream_count") != 1
+        or replication.get("independent_replication_count") != 0
+        or replication.get("independent_replication_supported") is not False
+        or replication.get("interpretation") != REPLICATION_INTERPRETATION
+        or int(replication.get("start_index", -1)) != 0
+        or int(replication.get("end_index_exclusive", -1))
+        != EXPECTED_TERMINAL_SAMPLES
+        or int(replication.get("sample_count", -1)) != EXPECTED_TERMINAL_SAMPLES
     ):
         raise ValueError("terminal system claim guard binding differs")
     return {
@@ -548,6 +583,7 @@ def observe_terminal(context: Mapping[str, Any]) -> dict[str, Any]:
         "guard": guard_identity,
         "terminal_status": terminal_status,
         "terminal_decision": guard.get("decision"),
+        "replication_scope": dict(replication),
     }
 
 
@@ -629,6 +665,12 @@ def validate_comparison_outputs(
         or policy.get("compute_matched_claim_allowed") is not False
         or policy.get("broad_generation_superiority_claim_allowed") is not False
         or policy.get("sota_claim_allowed") is not False
+        or policy.get("independent_replication_claim_allowed") is not False
+        or policy.get("multiple_independent_terminal_streams_claim_allowed")
+        is not False
+        or policy.get("replication_language_requires_distinct_bound_streams")
+        is not True
+        or report.get("replication_scope") != terminal.get("replication_scope")
     ):
         raise ValueError("quality bridge comparison output contract differs")
     direct = report.get("matched_training_rows")

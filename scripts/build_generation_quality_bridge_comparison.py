@@ -62,6 +62,8 @@ AUTHORIZATION_BOUNDARY = {
     "cross_tier_numeric_ranking_allowed": False,
     "broad_generation_superiority_claim_allowed": False,
     "sota_claim_allowed": False,
+    "independent_replication_claim_allowed": False,
+    "multiple_independent_terminal_streams_claim_allowed": False,
 }
 
 TERMINAL_CLAIM_BOUNDARY = {
@@ -80,7 +82,13 @@ TERMINAL_CLAIM_BOUNDARY = {
     "cross_tier_numeric_ranking_allowed": False,
     "broad_generation_superiority_claim_allowed": False,
     "sota_claim_allowed": False,
+    "independent_replication_claim_allowed": False,
+    "multiple_independent_terminal_streams_claim_allowed": False,
 }
+
+REPLICATION_INTERPRETATION = (
+    "paired_reanalysis_of_one_exact_bound_terminal_sample_stream"
+)
 
 RUNTIME_CLAIM_BOUNDARY = {
     "diagnostic_non_authorizing": True,
@@ -202,6 +210,16 @@ def _validate_terminal_guard(report: Mapping[str, Any]) -> dict[str, Any]:
         if isinstance(evidence, Mapping)
         else None
     )
+    statistical = (
+        evidence.get("matched_statistical_advantage")
+        if isinstance(evidence, Mapping)
+        else None
+    )
+    replication = (
+        statistical.get("replication_scope")
+        if isinstance(statistical, Mapping)
+        else None
+    )
     if (
         report.get("schema_version") != 1
         or report.get("role") != TERMINAL_GUARD_ROLE
@@ -220,6 +238,8 @@ def _validate_terminal_guard(report: Mapping[str, Any]) -> dict[str, Any]:
             "cross_tier_numeric_ranking_allowed",
             "broad_generation_superiority_claim_allowed",
             "sota_claim_allowed",
+            "independent_replication_claim_allowed",
+            "multiple_independent_terminal_streams_claim_allowed",
             "larger_training_launch_allowed",
             "inference_export_authorization_allowed",
             "release_authorization_allowed",
@@ -233,6 +253,17 @@ def _validate_terminal_guard(report: Mapping[str, Any]) -> dict[str, Any]:
             "requested_class_visual_audit_waiter_status",
             "runtime_compute_claim_guard",
         }
+        or not isinstance(replication, Mapping)
+        or replication.get("bound_terminal_stream_count") != 1
+        or replication.get("independent_replication_count") != 0
+        or replication.get("independent_replication_supported") is not False
+        or replication.get("interpretation") != REPLICATION_INTERPRETATION
+        or int(replication.get("start_index", -1)) != 0
+        or int(replication.get("end_index_exclusive", -1))
+        != EXPECTED_TERMINAL_SAMPLES
+        or int(replication.get("sample_count", -1)) != EXPECTED_TERMINAL_SAMPLES
+        or not isinstance(replication.get("bound_stream_id"), str)
+        or not replication.get("bound_stream_id")
     ):
         raise ValueError("terminal system claim guard contract differs")
     advantage_allowed = report.get("status") == "pass"
@@ -243,6 +274,8 @@ def _validate_terminal_guard(report: Mapping[str, Any]) -> dict[str, Any]:
         is not advantage_allowed
         or policy.get("paired_kid_statistical_support_statement_allowed")
         is not advantage_allowed
+        or policy.get("replication_language_requires_distinct_bound_streams")
+        is not True
         or report.get("decision")
         != (
             "matched_quality_advantage_qualified_with_terminal_system_evidence"
@@ -255,6 +288,7 @@ def _validate_terminal_guard(report: Mapping[str, Any]) -> dict[str, Any]:
         "status": str(report["status"]),
         "decision": str(report.get("decision", "")),
         "claim_policy": copy.deepcopy(dict(policy)),
+        "replication_scope": copy.deepcopy(dict(replication)),
         "quality_result": sources["quality_bridge_result"],
         "runtime_guard": sources["runtime_compute_claim_guard"],
         "scope": copy.deepcopy(report.get("scope")),
@@ -1275,6 +1309,9 @@ def build_report(
             "absolute_usability_claim_allowed": False,
             "broad_generation_superiority_claim_allowed": False,
             "sota_claim_allowed": False,
+            "independent_replication_claim_allowed": False,
+            "multiple_independent_terminal_streams_claim_allowed": False,
+            "replication_language_requires_distinct_bound_streams": True,
             "reason": (
                 "CoFiTok and dense_identity are the only matched-training direct "
                 "rows. D-AR, MAR, and ReTok use official pretrained checkpoints, "
@@ -1283,6 +1320,7 @@ def build_report(
             ),
         },
         "quality_screen": copy.deepcopy(dict(quality["quality_screen"])),
+        "replication_scope": guard["replication_scope"],
         "terminal_claim_policy": guard["claim_policy"],
         "authorization_boundary": copy.deepcopy(AUTHORIZATION_BOUNDARY),
         "source_reports": {
@@ -1327,6 +1365,11 @@ def build_report(
             (
                 "Official pretrained context cannot be numerically ranked against "
                 "the matched-training direct panel."
+            ),
+            (
+                "FID and paired block-KID reuse one exact bound terminal sample "
+                "stream. This report records zero independent replications and "
+                "cannot support a multiple-stream replication claim."
             ),
             (
                 "This report does not authorize larger training, sampling, export, "
@@ -1460,6 +1503,11 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             "Do not rank across the two panels: checkpoint source, training budget, sample count, and evaluator differ.",
             "",
             "This report is permanently non-authorizing and does not establish release readiness or broad generation superiority.",
+            "",
+            (
+                "Replication boundary: FID and paired block-KID re-analyze one "
+                "exact bound terminal sample stream; independent replications: 0."
+            ),
             "",
         ]
     )

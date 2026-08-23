@@ -73,6 +73,27 @@ def _terminal_guard(args: Namespace, *, status: str) -> dict[str, Any]:
             if status == "pass"
             else "terminal_system_evidence_complete_without_qualified_matched_advantage"
         ),
+        "claim_policy": {
+            "independent_replication_claim_allowed": False,
+            "multiple_independent_terminal_streams_claim_allowed": False,
+            "replication_language_requires_distinct_bound_streams": True,
+        },
+        "evidence": {
+            "matched_statistical_advantage": {
+                "replication_scope": {
+                    "bound_stream_id": (
+                        "quality_bridge_terminal_100k_00000000_00010000"
+                    ),
+                    "start_index": 0,
+                    "end_index_exclusive": 10_000,
+                    "sample_count": 10_000,
+                    "bound_terminal_stream_count": 1,
+                    "independent_replication_count": 0,
+                    "independent_replication_supported": False,
+                    "interpretation": waiter.REPLICATION_INTERPRETATION,
+                }
+            }
+        },
     }
 
 
@@ -118,7 +139,13 @@ def _fake_comparison(
             "compute_matched_claim_allowed": False,
             "broad_generation_superiority_claim_allowed": False,
             "sota_claim_allowed": False,
+            "independent_replication_claim_allowed": False,
+            "multiple_independent_terminal_streams_claim_allowed": False,
+            "replication_language_requires_distinct_bound_streams": True,
         },
+        "replication_scope": _terminal_guard(args, status=terminal_status)[
+            "evidence"
+        ]["matched_statistical_advantage"]["replication_scope"],
         "source_reports": {
             "terminal_system_claim_guard": waiter.file_identity(
                 args.terminal_system_guard,
@@ -294,6 +321,12 @@ def test_waiter_builds_for_pass_or_hold_and_operationally_passes(
     assert status["status"] == "pass"
     assert status["terminal_status"] == terminal_status
     assert status["scope"] == waiter.SCOPE
+    assert status["terminal"]["replication_scope"][
+        "bound_terminal_stream_count"
+    ] == 1
+    assert status["terminal"]["replication_scope"][
+        "independent_replication_count"
+    ] == 0
     assert len(calls) == 1
     command = calls[0]
     assert command[command.index("--expected-terminal-system-guard-sha256") + 1]
@@ -388,5 +421,28 @@ def test_waiter_scope_is_permanently_non_authorizing() -> None:
         "cross_tier_numeric_ranking_allowed",
         "broad_generation_superiority_claim_allowed",
         "sota_claim_allowed",
+        "independent_replication_claim_allowed",
+        "multiple_independent_terminal_streams_claim_allowed",
     ):
         assert waiter.SCOPE[field] is False
+
+
+def test_waiter_rejects_terminal_independent_replication_overclaim(
+    tmp_path: Path,
+) -> None:
+    args = _args(tmp_path)
+    _complete_terminal(args, status="pass")
+    guard = json.loads(args.terminal_system_guard.read_text(encoding="utf-8"))
+    guard["claim_policy"]["independent_replication_claim_allowed"] = True
+    _write(args.terminal_system_guard, guard)
+    status = json.loads(args.terminal_waiter_status.read_text(encoding="utf-8"))
+    status["guard"] = waiter.file_identity(
+        args.terminal_system_guard,
+        name="test terminal guard",
+    )
+    _write(args.terminal_waiter_status, status)
+
+    assert waiter.run_waiter(args, enforce_runtime=False) == 1
+    published = json.loads(args.status_output.read_text(encoding="utf-8"))
+    assert published["status"] == "failed"
+    assert "terminal system claim guard binding differs" in published["detail"]

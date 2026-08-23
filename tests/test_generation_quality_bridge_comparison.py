@@ -651,6 +651,20 @@ def _graph(tmp_path: Path, *, guard_status: str = "hold") -> dict:
                 "failed_checks": screen["failed_checks"],
                 "check_count": len(screen["checks"]),
             },
+            "matched_statistical_advantage": {
+                "replication_scope": {
+                    "bound_stream_id": (
+                        "quality_bridge_terminal_100k_00000000_00010000"
+                    ),
+                    "start_index": 0,
+                    "end_index_exclusive": 10_000,
+                    "sample_count": 10_000,
+                    "bound_terminal_stream_count": 1,
+                    "independent_replication_count": 0,
+                    "independent_replication_supported": False,
+                    "interpretation": comparison.REPLICATION_INTERPRETATION,
+                }
+            },
             "class_fidelity_classifier_integrity": {"status": "verified"},
         },
         "claim_policy": {
@@ -665,6 +679,9 @@ def _graph(tmp_path: Path, *, guard_status: str = "hold") -> dict:
             "cross_tier_numeric_ranking_allowed": False,
             "broad_generation_superiority_claim_allowed": False,
             "sota_claim_allowed": False,
+            "independent_replication_claim_allowed": False,
+            "multiple_independent_terminal_streams_claim_allowed": False,
+            "replication_language_requires_distinct_bound_streams": True,
             "larger_training_launch_allowed": False,
             "inference_export_authorization_allowed": False,
             "release_authorization_allowed": False,
@@ -750,6 +767,17 @@ def test_comparison_preserves_terminal_status_and_two_tier_policy(
         for row in report["official_context_rows"]
     )
     assert report["comparison_policy"]["cross_tier_numeric_ranking_allowed"] is False
+    assert report["comparison_policy"]["independent_replication_claim_allowed"] is False
+    assert (
+        report["comparison_policy"][
+            "multiple_independent_terminal_streams_claim_allowed"
+        ]
+        is False
+    )
+    assert report["replication_scope"]["bound_terminal_stream_count"] == 1
+    assert report["replication_scope"]["independent_replication_count"] == 0
+    assert report["replication_scope"]["independent_replication_supported"] is False
+    assert any("zero independent replications" in item for item in report["limitations"])
     assert report["authorization_boundary"] == comparison.AUTHORIZATION_BOUNDARY
     assert not any(
         value is True
@@ -777,6 +805,38 @@ def test_comparison_requires_terminal_classifier_physical_integrity(
         graph["guard"]["evidence"]["class_fidelity_classifier_integrity"][
             "status"
         ] = "unverified"
+    graph["guard_identity"] = _write_json(
+        Path(graph["guard_identity"]["path"]),
+        graph["guard"],
+    )
+
+    with pytest.raises(ValueError, match="terminal system claim guard contract differs"):
+        _build(graph)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["independent_policy", "replication_count", "sample_window"],
+)
+def test_comparison_rejects_terminal_replication_overclaim(
+    tmp_path: Path,
+    mutation: str,
+) -> None:
+    graph = _graph(tmp_path)
+    if mutation == "independent_policy":
+        graph["guard"]["claim_policy"][
+            "independent_replication_claim_allowed"
+        ] = True
+    else:
+        replication = graph["guard"]["evidence"][
+            "matched_statistical_advantage"
+        ]["replication_scope"]
+        if mutation == "replication_count":
+            replication["independent_replication_count"] = 1
+            replication["independent_replication_supported"] = True
+        else:
+            replication["end_index_exclusive"] = 20_000
+            replication["sample_count"] = 20_000
     graph["guard_identity"] = _write_json(
         Path(graph["guard_identity"]["path"]),
         graph["guard"],
