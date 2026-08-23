@@ -1,0 +1,362 @@
+{
+  "created_at": "2026-08-23T15:47:18.970469+00:00",
+  "decision": "legacy_v1_gpu_route_consumers_superseded_fail_closed",
+  "generation_advantage_proven": false,
+  "guarantees": {
+    "corrected_route_must_use_new_versioned_output_roots": true,
+    "legacy_conditioning_child_launch_blocked_by_preexisting_lock_directory": true,
+    "legacy_factorization_child_launch_blocked_by_preexisting_lock_directory": true,
+    "legacy_random_token_also_requires_completed_factorization_route": true,
+    "legacy_random_token_evaluator_blocked_by_non_directory_output_marker": true,
+    "no_authoritative_terminal_evidence_was_modified": true,
+    "no_existing_process_was_signaled": true,
+    "no_gpu_process_was_started": true
+  },
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "interlocks": {
+    "conditioning_ranking_v1": {
+      "active": true,
+      "interlock_kind": "directory_with_marker",
+      "interlock_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_v1.lock",
+      "legacy_output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_v1",
+      "marker": {
+        "bytes": 2431,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_v1.lock/supersession_marker.json",
+        "sha256": "a6388095e6a54cb350e375ac4efc319136035bce9aab38ab22de20bf8b4f8262"
+      },
+      "marker_mode_octal": "0o444",
+      "route": "conditioning_ranking_v1"
+    },
+    "factorization_quality_regression_v1": {
+      "active": true,
+      "interlock_kind": "directory_with_marker",
+      "interlock_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_factorization_quality_regression_v1.lock",
+      "legacy_output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_factorization_quality_regression_v1",
+      "marker": {
+        "bytes": 2483,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_factorization_quality_regression_v1.lock/supersession_marker.json",
+        "sha256": "79469ddaeb0a11448018b9021260cfcfbb88d296918ec558b540038952ded6ea"
+      },
+      "marker_mode_octal": "0o444",
+      "route": "factorization_quality_regression_v1"
+    },
+    "random_token_semantic_visual_v1": {
+      "active": true,
+      "interlock_kind": "regular_file_marker",
+      "interlock_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_random_token_semantic_visual_v1",
+      "legacy_output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_random_token_semantic_visual_v1",
+      "marker": {
+        "bytes": 2464,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_random_token_semantic_visual_v1",
+        "sha256": "e31e72391d95468121629ca437fc9497970c86109d57f5dfbd826c569a33c22c"
+      },
+      "marker_mode_octal": "0o444",
+      "route": "random_token_semantic_visual_v1"
+    }
+  },
+  "limitations": [
+    "This receipt blocks only the three enumerated stale v1 GPU-capable consumers.",
+    "It does not select a scientific route or authorize a corrected GPU experiment.",
+    "It does not establish generation quality or a CoFiTok advantage.",
+    "The legacy CPU-only terminal/comparison/completion artifacts remain historical and may still finish independently."
+  ],
+  "preflight": {
+    "control_git": {
+      "branch": "analysis/generation-terminal-route-supersession-interlock-v1-20260823",
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-route-supersession-interlock-bdcab4b/CoFiTok-internal",
+      "revision": "bdcab4b15bbbb18a78deaba85ff96eac6c129964",
+      "tracked_dirty": false,
+      "tree": "f94f85b227f2c6496f6d9c2ed845a03639df857b"
+    },
+    "control_source": {
+      "bytes": 43660,
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-route-supersession-interlock-bdcab4b/CoFiTok-internal/scripts/deploy_generation_terminal_route_supersession_interlock.py",
+      "sha256": "9c795fa660a73eb5c48496667d1fecbd29211c5d367e14bde4a90e3b6deb889c"
+    },
+    "legacy_routes": {
+      "conditioning_ranking_v1": {
+        "interlock_kind": "directory_with_marker",
+        "interlock_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_v1.lock",
+        "legacy_output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_v1",
+        "legacy_terminal_guard_bound_in_cmdline": true,
+        "process": {
+          "children": [],
+          "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/run_generation_conditioning_ranking_probe_supervisor.py --project /root/autodl-tmp/CoFiTok/checkouts/conditioning-classifier-integrity-fc78b85/CoFiTok-internal --expected-revision fc78b85ac78faa1498d749c6a24d78289cde8438 --expected-tree 587145f7962332ae74b89e177e29dbcf38b3139e --expected-branch analysis/generation-conditioning-classifier-integrity-v1-20260822 --preparation /root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_probe1k_standing_auth_v1/fc78b85ac78faa1498d749c6a24d78289cde8438/preparation.json --expected-preparation-sha256 02abb34b68666f3221a7d1111844b64b6ba13abdfc050116afc9b8d0c0c673d9 --standing-authorization /tmp/cofitok-quality-bridge-execution-cf0e5fa/standing_authorization.json --expected-standing-authorization-sha256 5fe64a0941acb55a21cb6479a726987c6259e93a772c47290f2d6883752de4df --quality-bridge-result /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/quality_bridge_result.json --followup-decision /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/followup_experiment_decision_exposure_aware_v2.json --terminal-system-guard /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/terminal_system_claim_guard_v1/terminal_system_claim_guard.json --terminal-system-guard-status /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/terminal_system_claim_guard_v1/waiter_status.json --requested-class-visual-audit-status /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/requested_class_visual_audit_waiter_status.json --execution-authorization /root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_probe1k_standing_auth_v1/fc78b85ac78faa1498d749c6a24d78289cde8438/execution_authorization.json --output-root /root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_v1 --runbook /root/autodl-tmp/CoFiTok/checkouts/conditioning-classifier-integrity-fc78b85/CoFiTok-internal/artifacts/runbooks/generation_conditioning_ranking_four_arm_probe1k_v1.sh --python /root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 --status-output /root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_probe1k_standing_auth_v1/fc78b85ac78faa1498d749c6a24d78289cde8438/supervisor_status.json --pid-file /root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_probe1k_standing_auth_v1/fc78b85ac78faa1498d749c6a24d78289cde8438/supervisor.pid.json --lock /root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_probe1k_standing_auth_v1/fc78b85ac78faa1498d749c6a24d78289cde8438/supervisor.lock --poll-seconds 60 --required-idle-polls 5 --timeout-seconds 2592000",
+          "cmdline_sha256": "6ea87606a074aee8c829422e2033621853dcabf134af13046cd8dffaee9170a0",
+          "cwd": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-classifier-integrity-fc78b85/CoFiTok-internal",
+          "environment": {
+            "CUDA_VISIBLE_DEVICES": "-1",
+            "MKL_NUM_THREADS": "1",
+            "OMP_NUM_THREADS": "1",
+            "PYTHONPATH": ".:src"
+          },
+          "ionice": "idle",
+          "nice": 10,
+          "pid": 765582,
+          "ppid": 1,
+          "start_ticks": 1706382363,
+          "state": "S"
+        },
+        "sources": {
+          "checkout": {
+            "branch": "analysis/generation-conditioning-classifier-integrity-v1-20260822",
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-classifier-integrity-fc78b85/CoFiTok-internal",
+            "revision": "fc78b85ac78faa1498d749c6a24d78289cde8438",
+            "tracked_dirty": false,
+            "tree": "587145f7962332ae74b89e177e29dbcf38b3139e"
+          },
+          "runbook": {
+            "bytes": 6809,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-classifier-integrity-fc78b85/CoFiTok-internal/artifacts/runbooks/generation_conditioning_ranking_four_arm_probe1k_v1.sh",
+            "required_snippets_present": true,
+            "sha256": "fc1b2c08d5a64b2776c9b720ddc528ba77559a12fac31d7a6e40dfe1ad268686"
+          },
+          "supervisor": {
+            "bytes": 19760,
+            "lock_check_precedes_child_launch": true,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-classifier-integrity-fc78b85/CoFiTok-internal/scripts/run_generation_conditioning_ranking_probe_supervisor.py",
+            "required_snippets_present": true,
+            "sha256": "c90b3bee114ff7d69d11c32ede4969074e9811aa1abd83ac604480c79564492f"
+          }
+        },
+        "status": {
+          "child_pid": null,
+          "detail": "waiting_for_quality_bridge_followup_decision",
+          "identity": {
+            "bytes": 1628,
+            "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_probe1k_standing_auth_v1/fc78b85ac78faa1498d749c6a24d78289cde8438/supervisor_status.json",
+            "sha256": "cebf44ca75305232343039e797dae3cf7e55fec00cdbe9cb9f8780cb876211db"
+          },
+          "pid": 765582,
+          "status": "waiting"
+        }
+      },
+      "factorization_quality_regression_v1": {
+        "interlock_kind": "directory_with_marker",
+        "interlock_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_factorization_quality_regression_v1.lock",
+        "legacy_output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_factorization_quality_regression_v1",
+        "legacy_terminal_guard_bound_in_cmdline": true,
+        "process": {
+          "children": [],
+          "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/run_generation_factorization_quality_regression_supervisor.py --project /root/autodl-tmp/CoFiTok/checkouts/factorization-classifier-integrity-14e82e4 --expected-revision 14e82e43f128e92e70d25c020548e7192a561df9 --expected-tree 6fdde0b748687f0fcf631b6f3c589ef82436e253 --expected-branch analysis/generation-factorization-classifier-integrity-v1-20260822 --preparation /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/factorization_quality_regression_supervisor_v1/preparation.2026-08-22_classifier_integrity_v1.json --expected-preparation-sha256 8bf633b4f8ef177da3fbea5c6b7afb7ca5775661dce54f277fc7338f16215dc1 --standing-authorization /tmp/cofitok-quality-bridge-execution-cf0e5fa/standing_authorization.json --expected-standing-authorization-sha256 5fe64a0941acb55a21cb6479a726987c6259e93a772c47290f2d6883752de4df --followup-decision /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/followup_experiment_decision_exposure_aware_v2.json --terminal-system-guard /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/terminal_system_claim_guard_v1/terminal_system_claim_guard.json --source-binding /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/factorization_quality_regression_supervisor_v1/source_binding.json --execution-authorization /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/factorization_quality_regression_supervisor_v1/execution_authorization.json --output-root /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_factorization_quality_regression_v1 --runbook /root/autodl-tmp/CoFiTok/checkouts/factorization-classifier-integrity-14e82e4/artifacts/runbooks/generation_factorization_quality_regression_probe_v1.sh --python /root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 --status-output /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/factorization_quality_regression_supervisor_v1/supervisor_status.json --pid-file /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/factorization_quality_regression_supervisor_v1/supervisor.pid.json --deployment-receipt-output /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/factorization_quality_regression_supervisor_v1/deployment_receipt.2026-08-22_classifier_integrity_v1.json --poll-seconds 60 --required-idle-polls 5 --timeout-seconds 2592000",
+          "cmdline_sha256": "6b3dd932d3a1f4d6cf553e69105597117543588c00c96826734304b8c33064ac",
+          "cwd": "/root/autodl-tmp/CoFiTok/checkouts/factorization-classifier-integrity-14e82e4",
+          "environment": {
+            "CUDA_VISIBLE_DEVICES": "-1",
+            "MKL_NUM_THREADS": "1",
+            "OMP_NUM_THREADS": "1",
+            "PYTHONPATH": "src:."
+          },
+          "ionice": "idle",
+          "nice": 10,
+          "pid": 761338,
+          "ppid": 1,
+          "start_ticks": 1706297849,
+          "state": "S"
+        },
+        "sources": {
+          "checkout": {
+            "branch": "analysis/generation-factorization-classifier-integrity-v1-20260822",
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/factorization-classifier-integrity-14e82e4",
+            "revision": "14e82e43f128e92e70d25c020548e7192a561df9",
+            "tracked_dirty": false,
+            "tree": "6fdde0b748687f0fcf631b6f3c589ef82436e253"
+          },
+          "runbook": {
+            "bytes": 6817,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/factorization-classifier-integrity-14e82e4/artifacts/runbooks/generation_factorization_quality_regression_probe_v1.sh",
+            "required_snippets_present": true,
+            "sha256": "8ddfbb55b3f3bd05f224e667c127f99679f4df37eb2306b41d424c794f3c8322"
+          },
+          "supervisor": {
+            "bytes": 26009,
+            "lock_check_precedes_child_launch": true,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/factorization-classifier-integrity-14e82e4/scripts/run_generation_factorization_quality_regression_supervisor.py",
+            "required_snippets_present": true,
+            "sha256": "3f253b257685f958e04c469259d249d91b9cee8032f0fc0d1474b2c8656bcbbf"
+          }
+        },
+        "status": {
+          "child_pid": null,
+          "detail": "waiting_for_quality_bridge_followup_decision",
+          "identity": {
+            "bytes": 2492,
+            "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/factorization_quality_regression_supervisor_v1/supervisor_status.json",
+            "sha256": "3e115acf1a3ac68bcc9205bf6e95eec59dfabbd2a8019f4d48680ce919c5cb55"
+          },
+          "pid": 761338,
+          "status": "waiting"
+        }
+      },
+      "random_token_semantic_visual_v1": {
+        "interlock_kind": "regular_file_marker",
+        "interlock_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_random_token_semantic_visual_v1",
+        "legacy_output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_random_token_semantic_visual_v1",
+        "legacy_terminal_guard_bound_in_cmdline": true,
+        "process": {
+          "children": [
+            140829
+          ],
+          "cmdline": "bash /tmp/cofitok-random-token-waiter-eae02a6.sh /root/autodl-tmp/CoFiTok/checkouts/random-token-classifier-integrity-4ca66c8/CoFiTok-internal/artifacts/runbooks/generation_random_token_semantic_visual_100k_v1.sh /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/random_token_semantic_visual_waiter_v1/waiter.lock 4ca66c83a573a04345def51d3501919b6b427a4c 09bc1f2dcb186ccc0aabe0789c00daf29cdf116b analysis/generation-random-token-classifier-integrity-v1-20260823",
+          "cmdline_sha256": "9dbf2057a4ce33ead58c42254107cb23f08ae98aa28b2dc619620c55c45de10f",
+          "cwd": "/root",
+          "environment": {
+            "MKL_NUM_THREADS": "1",
+            "OMP_NUM_THREADS": "1"
+          },
+          "ionice": "idle",
+          "nice": 10,
+          "pid": 773804,
+          "ppid": 1,
+          "start_ticks": 1706550673,
+          "state": "S"
+        },
+        "sources": {
+          "checkout": {
+            "branch": "analysis/generation-random-token-classifier-integrity-v1-20260823",
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/random-token-classifier-integrity-4ca66c8/CoFiTok-internal",
+            "revision": "4ca66c83a573a04345def51d3501919b6b427a4c",
+            "tracked_dirty": false,
+            "tree": "09bc1f2dcb186ccc0aabe0789c00daf29cdf116b"
+          },
+          "runbook": {
+            "bytes": 7305,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/random-token-classifier-integrity-4ca66c8/CoFiTok-internal/artifacts/runbooks/generation_random_token_semantic_visual_100k_v1.sh",
+            "required_snippets_present": true,
+            "sha256": "8e760b6ff7c498ed461b131b39a564a5ad18de8b81ce0b6081477638d29c32d1"
+          }
+        },
+        "status": null
+      }
+    },
+    "live_gpu_chain": {
+      "gpu_processes": [
+        {
+          "pid": 128678,
+          "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+          "used_memory_mib": 46640
+        }
+      ],
+      "progress": {
+        "bytes": 653,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_progress.json",
+        "sha256": "4b3a2e49657b409277081265f7f77a80a90a6228275d9d089325a40014608678"
+      },
+      "progress_state": {
+        "completed_samples": 1376,
+        "pid": 128678,
+        "status": "running",
+        "total_samples": 10000
+      },
+      "sampler": {
+        "children": [],
+        "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/generate_samples.py --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15 --num-samples 10000 --batch-size 32 --sample-steps 100 --prefix-budgets 1 --guidance-scale 1.5 --guidance-rescale 0.0 --cfg-batch-mode batched --weights ema --precision bf16 --resume",
+        "cmdline_sha256": "5afedfa149c3ca05d1a3571907b94288169c509d06a8a7043999632f9d28a9f5",
+        "cwd": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+        "environment": {
+          "PYTHONPATH": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal:/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal/src"
+        },
+        "ionice": "none: prio 0",
+        "nice": 0,
+        "pid": 128678,
+        "ppid": 47133,
+        "start_ticks": 1714748103,
+        "state": "R"
+      },
+      "sole_gpu_owner_is_exact_dense_terminal_sampler": true
+    },
+    "random_token_wrapper": {
+      "bytes": 1334,
+      "path": "/tmp/cofitok-random-token-waiter-eae02a6.sh",
+      "sha256": "d569a3019dfd4709de9b86650f11a590596e53c4b362b08e0c934d174c5a9b66"
+    },
+    "runtime_guard_supersession": {
+      "authoritative_pair_monitor": {
+        "bytes": 44316,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/pair_monitor.json",
+        "sha256": "78306a02a47d96be78f325ec2cd708ff4741f248c544fbc861dc9acfa829a2eb"
+      },
+      "authoritative_terminal_status": {
+        "bytes": 2574,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/terminal_system_claim_guard_v2_runtime_strict/waiter_status.json",
+        "sha256": "40df10963a7e720a66febdcd2416d51b3b6ebbe71a6cbad9d1f794b51fdf7e59"
+      },
+      "legacy_binding_is_stale": true,
+      "legacy_runtime_guard": {
+        "bytes": 5412,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/runtime_compute_claim_guard_v1/runtime_compute_claim_guard.json",
+        "sha256": "50556cde08451985378c17527a2484b52def50539652ca6a985bba4010f52b29"
+      },
+      "legacy_runtime_pair_monitor": {
+        "bytes": 47563,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/pair_monitor.json",
+        "sha256": "501e24ddf834c0bd8b429e47acdfaba7104badf3f3a3a0688009cbc9a37fe192"
+      },
+      "legacy_terminal_status": {
+        "bytes": 2547,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/terminal_system_claim_guard_v1/waiter_status.json",
+        "sha256": "0e27ecafbef5b386168f2701d8820f48c779da3bf350863fb4dd4ffe6b1efc14"
+      },
+      "strict_binding_matches_authoritative_pair_monitor": true,
+      "strict_runtime_guard": {
+        "bytes": 5980,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/runtime_compute_claim_guard_strict_replay_v3/runtime_compute_claim_guard.json",
+        "sha256": "f39e3e4238aba2ba098f807c331b4dadc6fb1690064bb376bdfba307b88fa3cf"
+      },
+      "strict_runtime_pair_monitor": {
+        "bytes": 44316,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/pair_monitor.json",
+        "sha256": "78306a02a47d96be78f325ec2cd708ff4741f248c544fbc861dc9acfa829a2eb"
+      },
+      "strict_runtime_status": {
+        "bytes": 7211,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/runtime_compute_claim_guard_strict_replay_v3/waiter_status.json",
+        "sha256": "ecd20ebd803f4bd896cd01d965153712d7d9c5c69bc587241acd18f8ffa9c8de"
+      }
+    },
+    "standing_authorization": {
+      "bytes": 865,
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/standing_authorization.json",
+      "sha256": "5fe64a0941acb55a21cb6479a726987c6259e93a772c47290f2d6883752de4df"
+    },
+    "training_git": {
+      "branch": "scale/generation-stability-quality-bridge-100k",
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "tracked_dirty": false,
+      "tree": "6cef27723196fd363379bca2e7b85b1678ebd777"
+    }
+  },
+  "risk": {
+    "authoritative_pair_monitor_sha256": "78306a02a47d96be78f325ec2cd708ff4741f248c544fbc861dc9acfa829a2eb",
+    "authoritative_terminal_guard": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/terminal_system_claim_guard_v2_runtime_strict/terminal_system_claim_guard.json",
+    "binding_mismatch_verified": true,
+    "legacy_gpu_consumers": [
+      "factorization_quality_regression_v1",
+      "conditioning_ranking_v1",
+      "random_token_semantic_visual_v1"
+    ],
+    "legacy_runtime_guard_pair_monitor_sha256": "501e24ddf834c0bd8b429e47acdfaba7104badf3f3a3a0688009cbc9a37fe192",
+    "legacy_terminal_guard": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/terminal_system_claim_guard_v1/terminal_system_claim_guard.json"
+  },
+  "role": "generation_terminal_route_supersession_interlock",
+  "schema_version": 1,
+  "scope": {
+    "checkpoint_payload_loading_allowed": false,
+    "cpu_only": true,
+    "diagnostic_non_authorizing": true,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "gpu_execution_allowed": false,
+    "inference_export_authorization_allowed": false,
+    "new_gpu_supervisor_launch_allowed": false,
+    "process_signals_allowed": false,
+    "promotion_authorization_allowed": false,
+    "release_authorization_allowed": false,
+    "sampling_launch_allowed": false,
+    "static_filesystem_interlock_only": true,
+    "training_launch_allowed": false,
+    "upstream_evidence_modified": false
+  },
+  "status": "pass"
+}

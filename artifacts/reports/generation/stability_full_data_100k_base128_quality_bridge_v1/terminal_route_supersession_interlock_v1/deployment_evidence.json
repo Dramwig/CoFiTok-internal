@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "role": "generation_terminal_route_supersession_interlock_deployment_evidence",
+  "status": "pass",
+  "code": {
+    "branch": "analysis/generation-terminal-route-supersession-interlock-v1-20260823",
+    "revision": "bdcab4b15bbbb18a78deaba85ff96eac6c129964",
+    "tree": "f94f85b227f2c6496f6d9c2ed845a03639df857b",
+    "source_bytes": 43660,
+    "source_sha256": "9c795fa660a73eb5c48496667d1fecbd29211c5d367e14bde4a90e3b6deb889c"
+  },
+  "bundle": {
+    "path": "D:/cofitok-bundles/terminal-route-supersession-interlock-bdcab4b.bundle",
+    "bytes": 14231,
+    "sha256": "2b5279a8c9914fd210d37c0ae17fae342b94cf3affc140b1a39268602566573b",
+    "prerequisite": "b9c03a70204fe7e89af39c041894539f31097086",
+    "advertised_head": "bdcab4b15bbbb18a78deaba85ff96eac6c129964",
+    "verify_status": "pass"
+  },
+  "remote_checkout": {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-route-supersession-interlock-bdcab4b/CoFiTok-internal",
+    "revision": "bdcab4b15bbbb18a78deaba85ff96eac6c129964",
+    "tree": "f94f85b227f2c6496f6d9c2ed845a03639df857b",
+    "branch": "analysis/generation-terminal-route-supersession-interlock-v1-20260823",
+    "tracked_dirty": false
+  },
+  "verification": {
+    "local_targeted_tests": "10 passed",
+    "remote_targeted_tests": "10 passed",
+    "remote_live_preflight": "pass",
+    "post_deployment_replay": "pass",
+    "sole_gpu_owner_at_deployment": "dense_terminal_ddim100_sampler",
+    "dense_completed_samples_at_deployment": 1376,
+    "legacy_gpu_children_after_deployment": []
+  },
+  "receipt": {
+    "remote_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/terminal_route_supersession_interlock_v1/supersession_receipt.json",
+    "local_path": "artifacts/reports/generation/stability_full_data_100k_base128_quality_bridge_v1/terminal_route_supersession_interlock_v1/supersession_receipt.json",
+    "bytes": 24968,
+    "sha256": "ce7bd71d7ef4892a7c2eafb2d3c46c69d89f3e9c14c8a2ed7ede81bf40e9b860"
+  },
+  "interlocks": {
+    "factorization_quality_regression_v1": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_factorization_quality_regression_v1.lock/supersession_marker.json",
+      "bytes": 2483,
+      "sha256": "79469ddaeb0a11448018b9021260cfcfbb88d296918ec558b540038952ded6ea",
+      "marker_mode": "0444",
+      "lock_directory_mode": "0555"
+    },
+    "conditioning_ranking_v1": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_v1.lock/supersession_marker.json",
+      "bytes": 2431,
+      "sha256": "a6388095e6a54cb350e375ac4efc319136035bce9aab38ab22de20bf8b4f8262",
+      "marker_mode": "0444",
+      "lock_directory_mode": "0555"
+    },
+    "random_token_semantic_visual_v1": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_random_token_semantic_visual_v1",
+      "bytes": 2464,
+      "sha256": "e31e72391d95468121629ca437fc9497970c86109d57f5dfbd826c569a33c22c",
+      "marker_mode": "0444",
+      "kind": "regular_file_output_marker"
+    }
+  },
+  "scope": {
+    "cpu_only": true,
+    "diagnostic_non_authorizing": true,
+    "process_signals_allowed": false,
+    "gpu_execution_allowed": false,
+    "new_gpu_supervisor_launched": false,
+    "training_launch_allowed": false,
+    "sampling_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "promotion_authorization_allowed": false,
+    "release_authorization_allowed": false,
+    "generation_advantage_proven": false
+  }
+}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -15,6 +16,12 @@ assert SPEC is not None and SPEC.loader is not None
 MODULE = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
+EVIDENCE_DIR = (
+    ROOT
+    / "artifacts/reports/generation/"
+    "stability_full_data_100k_base128_quality_bridge_v1/"
+    "terminal_route_supersession_interlock_v1"
+)
 
 
 def fake_route(tmp_path: Path, *, kind: str) -> object:
@@ -168,3 +175,44 @@ def test_all_legacy_route_targets_are_distinct() -> None:
     assert len(interlocks) == len(set(interlocks)) == 3
     assert MODULE.QUALITY_ROOT not in outputs
     assert MODULE.CANONICAL_RECEIPT.parent == MODULE.CONTROL_DIR
+
+
+def test_deployment_evidence_binds_the_byte_exact_remote_receipt() -> None:
+    evidence = json.loads((EVIDENCE_DIR / "deployment_evidence.json").read_text())
+    receipt_path = EVIDENCE_DIR / "supersession_receipt.json"
+    receipt_payload = receipt_path.read_bytes()
+    receipt = json.loads(receipt_payload)
+
+    assert evidence["status"] == "pass"
+    assert evidence["code"]["revision"] == "bdcab4b15bbbb18a78deaba85ff96eac6c129964"
+    assert evidence["code"]["tree"] == "f94f85b227f2c6496f6d9c2ed845a03639df857b"
+    assert evidence["receipt"]["bytes"] == len(receipt_payload) == 24968
+    assert evidence["receipt"]["sha256"] == hashlib.sha256(receipt_payload).hexdigest()
+    assert receipt["status"] == "pass"
+    assert receipt["role"] == MODULE.ROLE
+    assert receipt["scope"] == MODULE.SCOPE
+    assert receipt["generation_advantage_proven"] is False
+
+
+def test_deployment_evidence_keeps_every_launch_and_release_boundary_false() -> None:
+    evidence = json.loads((EVIDENCE_DIR / "deployment_evidence.json").read_text())
+    scope = evidence["scope"]
+    for field in (
+        "process_signals_allowed",
+        "gpu_execution_allowed",
+        "new_gpu_supervisor_launched",
+        "training_launch_allowed",
+        "sampling_launch_allowed",
+        "full_training_launch_allowed",
+        "full_300k_launch_allowed",
+        "promotion_authorization_allowed",
+        "release_authorization_allowed",
+        "generation_advantage_proven",
+    ):
+        assert scope[field] is False
+    assert evidence["verification"]["legacy_gpu_children_after_deployment"] == []
+    assert set(evidence["interlocks"]) == {
+        "factorization_quality_regression_v1",
+        "conditioning_ranking_v1",
+        "random_token_semantic_visual_v1",
+    }
