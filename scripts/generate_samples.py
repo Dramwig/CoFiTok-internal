@@ -28,18 +28,21 @@ from cofitok.sampling_progress import (
     write_sampling_progress,
 )
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate reproducible CoFiTok samples from EMA weights.")
+    parser = argparse.ArgumentParser(
+        description="Generate reproducible CoFiTok samples from EMA weights."
+    )
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--num-samples", type=int, default=50_000)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--sample-steps", type=int, default=250)
-    parser.add_argument("--prefix-budgets", default="", help="Comma-separated token budgets; default K.")
+    parser.add_argument(
+        "--prefix-budgets", default="", help="Comma-separated token budgets; default K."
+    )
     parser.add_argument("--guidance-scale", type=float, default=1.5)
     parser.add_argument("--guidance-rescale", type=float, default=0.0)
     parser.add_argument(
@@ -49,6 +52,28 @@ def parse_args() -> argparse.Namespace:
         help="Evaluate conditional/unconditional CFG branches together or separately.",
     )
     parser.add_argument("--eta", type=float, default=0.0)
+    parser.add_argument(
+        "--start-timestep",
+        type=int,
+        default=-1,
+        help="Optional non-terminal DDIM start; -1 preserves the full schedule.",
+    )
+    parser.add_argument(
+        "--scale-initial-noise-by-sigma",
+        action="store_true",
+        help="Scale initial Gaussian noise by sigma at the actual first timestep.",
+    )
+    parser.add_argument(
+        "--x0-constraint",
+        choices=["clip", "dynamic_threshold", "none"],
+        default="clip",
+    )
+    parser.add_argument(
+        "--dynamic-threshold-percentile",
+        type=float,
+        default=0.995,
+        help="Per-sample |x0| quantile used only with dynamic_threshold.",
+    )
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--start-index", type=int, default=0)
     parser.add_argument("--weights", choices=["ema", "model"], default="ema")
@@ -67,10 +92,15 @@ def _parse_budgets(raw: str, token_count: int) -> list[int]:
     return budgets
 
 
-def _labels(start: int, count: int, num_classes: int, device: torch.device) -> torch.Tensor | None:
+def _labels(
+    start: int, count: int, num_classes: int, device: torch.device
+) -> torch.Tensor | None:
     if num_classes <= 0:
         return None
-    return torch.arange(start, start + count, device=device, dtype=torch.long) % num_classes
+    return (
+        torch.arange(start, start + count, device=device, dtype=torch.long)
+        % num_classes
+    )
 
 
 def _sample_seed(seed: int, global_index: int) -> int:
@@ -144,7 +174,9 @@ def _batch_complete(
 
 
 def _has_images(directories: list[Path]) -> bool:
-    return any(any(directory.glob("*.png")) for directory in directories if directory.is_dir())
+    return any(
+        any(directory.glob("*.png")) for directory in directories if directory.is_dir()
+    )
 
 
 def _validate_numbered_output(
@@ -189,9 +221,13 @@ def _prepare_sampling_manifest(
     if path.is_file():
         existing = json.loads(path.read_text(encoding="utf-8"))
         if existing != manifest:
-            raise ValueError("Existing sampling manifest does not match this invocation")
+            raise ValueError(
+                "Existing sampling manifest does not match this invocation"
+            )
         if not resume:
-            raise FileExistsError("Sampling manifest already exists; pass --resume to continue")
+            raise FileExistsError(
+                "Sampling manifest already exists; pass --resume to continue"
+            )
         return
     if has_existing_images:
         raise FileExistsError("Generated images exist without a sampling manifest")
@@ -203,6 +239,8 @@ def _run_sampling(args: argparse.Namespace) -> None:
         raise ValueError("num-samples and batch-size must be positive")
     if args.start_index < 0:
         raise ValueError("start-index must be non-negative")
+    if args.start_timestep < -1:
+        raise ValueError("start-timestep must be -1 or non-negative")
     if args.resume and args.overwrite:
         raise ValueError("resume and overwrite are mutually exclusive")
     session = GenerationSession.from_checkpoint(args.checkpoint, weights=args.weights)
@@ -218,6 +256,22 @@ def _run_sampling(args: argparse.Namespace) -> None:
     )
     runtime_environment_sha = runtime_environment_sha256(runtime_environment)
     budgets = _parse_budgets(args.prefix_budgets, config.model.token_count)
+    requested_start_timestep = None if args.start_timestep < 0 else args.start_timestep
+    actual_timesteps = select_sampling_timesteps(
+        session.schedule.num_train_timesteps,
+        args.sample_steps,
+        start_timestep=requested_start_timestep,
+    )
+    clip_x0 = args.x0_constraint != "none"
+    dynamic_threshold_percentile = (
+        args.dynamic_threshold_percentile
+        if args.x0_constraint == "dynamic_threshold"
+        else 0.0
+    )
+    if dynamic_threshold_percentile != 0.0 and not (
+        0.5 <= dynamic_threshold_percentile < 1.0
+    ):
+        raise ValueError("dynamic-threshold-percentile must be in [0.5, 1)")
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     stop_index = args.start_index + args.num_samples
@@ -231,16 +285,21 @@ def _run_sampling(args: argparse.Namespace) -> None:
         "batch_size": args.batch_size,
         "sample_steps": args.sample_steps,
         "num_train_timesteps": session.schedule.num_train_timesteps,
-        "actual_timesteps": select_sampling_timesteps(
-            session.schedule.num_train_timesteps,
-            args.sample_steps,
-        ),
+        "actual_timesteps": actual_timesteps,
         "prefix_budgets": budgets,
         "guidance_scale": args.guidance_scale,
         "guidance_rescale": args.guidance_rescale,
         "cfg_batch_mode": args.cfg_batch_mode,
         "eta": args.eta,
-        "clip_x0": True,
+        "clip_x0": clip_x0,
+        "x0_constraint": args.x0_constraint,
+        "dynamic_threshold_percentile": dynamic_threshold_percentile,
+        "requested_start_timestep": requested_start_timestep,
+        "start_timestep": actual_timesteps[0],
+        "scale_initial_noise_by_sigma": args.scale_initial_noise_by_sigma,
+        "initial_noise_scale": (
+            "schedule_sigma" if args.scale_initial_noise_by_sigma else "unit"
+        ),
         "seed": args.seed,
         "precision": args.precision,
         "image_shape": [
@@ -262,7 +321,8 @@ def _run_sampling(args: argparse.Namespace) -> None:
         },
     }
     output_dirs = {
-        str(budget): str((output_dir / f"prefix_{budget}").resolve()) for budget in budgets
+        str(budget): str((output_dir / f"prefix_{budget}").resolve())
+        for budget in budgets
     }
     manifest = {
         "schema_version": SAMPLING_MANIFEST_SCHEMA_VERSION,
@@ -337,7 +397,10 @@ def _run_sampling(args: argparse.Namespace) -> None:
                     guidance_rescale=args.guidance_rescale,
                     cfg_batch_mode=args.cfg_batch_mode,
                     eta=args.eta,
-                    clip_x0=True,
+                    clip_x0=clip_x0,
+                    dynamic_threshold_percentile=(dynamic_threshold_percentile),
+                    start_timestep=requested_start_timestep,
+                    scale_initial_noise_by_sigma=(args.scale_initial_noise_by_sigma),
                     precision=args.precision,
                 )
                 samples = session.generate(request).images

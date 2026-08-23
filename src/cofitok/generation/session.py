@@ -28,13 +28,19 @@ class GenerationRequest:
     cfg_batch_mode: str = "batched"
     eta: float = 0.0
     clip_x0: bool = True
+    dynamic_threshold_percentile: float = 0.0
+    start_timestep: int | None = None
+    scale_initial_noise_by_sigma: bool = False
     precision: str = "bf16"
 
     def __post_init__(self) -> None:
         if not self.seeds:
             raise ValueError("generation request requires at least one seed")
         if any(
-            not isinstance(seed, int) or isinstance(seed, bool) or seed < 0 or seed >= 2**63
+            not isinstance(seed, int)
+            or isinstance(seed, bool)
+            or seed < 0
+            or seed >= 2**63
             for seed in self.seeds
         ):
             raise ValueError("generation seeds must be in [0, 2^63)")
@@ -60,6 +66,20 @@ class GenerationRequest:
             raise ValueError("cfg_batch_mode must be batched or sequential")
         if not math.isfinite(self.eta) or self.eta < 0.0:
             raise ValueError("eta must be non-negative")
+        if self.start_timestep is not None and (
+            isinstance(self.start_timestep, bool)
+            or not isinstance(self.start_timestep, int)
+            or self.start_timestep < 0
+        ):
+            raise ValueError("start_timestep must be a non-negative integer or None")
+        if not isinstance(self.scale_initial_noise_by_sigma, bool):
+            raise ValueError("scale_initial_noise_by_sigma must be boolean")
+        if self.dynamic_threshold_percentile != 0.0 and not (
+            0.5 <= self.dynamic_threshold_percentile < 1.0
+        ):
+            raise ValueError("dynamic_threshold_percentile must be zero or in [0.5, 1)")
+        if self.dynamic_threshold_percentile > 0.0 and not self.clip_x0:
+            raise ValueError("dynamic thresholding requires clip_x0")
         if self.precision not in {"fp32", "bf16", "fp16"}:
             raise ValueError("precision must be fp32, bf16, or fp16")
 
@@ -154,12 +174,25 @@ class GenerationSession:
                 guidance_scale=request.guidance_scale,
                 guidance_rescale=request.guidance_rescale,
                 cfg_batch_mode=request.cfg_batch_mode,
+                start_timestep=request.start_timestep,
+                scale_initial_noise_by_sigma=request.scale_initial_noise_by_sigma,
+                dynamic_threshold_percentile=(request.dynamic_threshold_percentile),
             )
-        if tuple(images.shape) != shape or not bool(torch.isfinite(images).all().item()):
+        if tuple(images.shape) != shape or not bool(
+            torch.isfinite(images).all().item()
+        ):
             raise RuntimeError("generation session produced invalid samples")
         actual_timesteps = select_sampling_timesteps(
             self.schedule.num_train_timesteps,
             request.sample_steps,
+            start_timestep=request.start_timestep,
+        )
+        x0_constraint = (
+            "dynamic_threshold"
+            if request.dynamic_threshold_percentile > 0.0
+            else "clip"
+            if request.clip_x0
+            else "none"
         )
         sampling = {
             "protocol_schema": SAMPLING_PROTOCOL_SCHEMA,
@@ -175,6 +208,14 @@ class GenerationSession:
             "cfg_batch_mode": request.cfg_batch_mode,
             "eta": request.eta,
             "clip_x0": request.clip_x0,
+            "x0_constraint": x0_constraint,
+            "dynamic_threshold_percentile": (request.dynamic_threshold_percentile),
+            "requested_start_timestep": request.start_timestep,
+            "start_timestep": actual_timesteps[0],
+            "scale_initial_noise_by_sigma": (request.scale_initial_noise_by_sigma),
+            "initial_noise_scale": (
+                "schedule_sigma" if request.scale_initial_noise_by_sigma else "unit"
+            ),
             "precision": request.precision,
             "random_stream": {
                 "scope": "per_request_seed",
@@ -217,7 +258,9 @@ class GenerationSession:
             "device": str(self.device),
             "request": {
                 "seeds": list(request.seeds),
-                "class_labels": list(request.class_labels) if request.class_labels else None,
+                "class_labels": list(request.class_labels)
+                if request.class_labels
+                else None,
                 "sample_steps": request.sample_steps,
                 "actual_timesteps": actual_timesteps,
                 "prefix_budget": budget,
@@ -226,6 +269,11 @@ class GenerationSession:
                 "cfg_batch_mode": request.cfg_batch_mode,
                 "eta": request.eta,
                 "clip_x0": request.clip_x0,
+                "x0_constraint": x0_constraint,
+                "dynamic_threshold_percentile": (request.dynamic_threshold_percentile),
+                "requested_start_timestep": request.start_timestep,
+                "start_timestep": actual_timesteps[0],
+                "scale_initial_noise_by_sigma": (request.scale_initial_noise_by_sigma),
                 "precision": request.precision,
                 "image_shape": list(shape[1:]),
             },

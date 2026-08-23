@@ -9,7 +9,6 @@ from cofitok.configs import config_to_dict, load_config
 from cofitok.generation_pair import generation_pair_contract
 from scripts.validate_generation_configs import validate_pair
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -99,6 +98,24 @@ def test_rollout_consistency_is_a_matched_training_loss() -> None:
     ]
 
 
+def test_min_snr_is_a_matched_primary_training_loss() -> None:
+    cofitok = _read("imagenet256_10pct_fixed_basis_cofitok_k8_50k.json")
+    dense = _read("imagenet256_10pct_fixed_basis_dense_50k.json")
+    cofitok["loss"]["min_snr_gamma"] = 5.0
+    dense["loss"]["min_snr_gamma"] = 5.0
+
+    report = generation_pair_contract(cofitok, dense)
+
+    assert report["valid"] is True, report["issues"]
+    assert "min_snr_gamma" in report["shared_training_loss_fields"]
+    assert "min_snr_gamma" not in report["dense_nonzero_auxiliary_losses"]
+
+    dense["loss"]["min_snr_gamma"] = 0.0
+    report = generation_pair_contract(cofitok, dense)
+    assert report["valid"] is False
+    assert report["mismatched_shared_training_loss_fields"] == ["min_snr_gamma"]
+
+
 def test_ema_teacher_consistency_is_a_matched_training_loss() -> None:
     cofitok = _read("imagenet256_10pct_fixed_basis_cofitok_k8_50k.json")
     dense = _read("imagenet256_10pct_fixed_basis_dense_50k.json")
@@ -113,8 +130,7 @@ def test_ema_teacher_consistency_is_a_matched_training_loss() -> None:
     assert report["valid"] is True, report["issues"]
     assert report["mismatched_shared_training_loss_fields"] == []
     assert (
-        "ema_teacher_consistency_weight"
-        not in report["dense_nonzero_auxiliary_losses"]
+        "ema_teacher_consistency_weight" not in report["dense_nonzero_auxiliary_losses"]
     )
 
     mismatched = copy.deepcopy(dense)
@@ -172,9 +188,7 @@ def test_ema_teacher_300k_pair_scales_the_stability_windows() -> None:
     cofitok = _read(
         "imagenet256_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json"
     )
-    dense = _read(
-        "imagenet256_stability_rollout_x0_u2_ema_teacher_dense_300k.json"
-    )
+    dense = _read("imagenet256_stability_rollout_x0_u2_ema_teacher_dense_300k.json")
 
     for config in (cofitok, dense):
         assert config["model"]["base_channels"] == 256
@@ -196,13 +210,11 @@ def test_ema_teacher_300k_pair_scales_the_stability_windows() -> None:
 def test_ema_teacher_300k_pair_has_exact_large_capacity_parameter_counts() -> None:
     report = validate_pair(
         load_config(
-            ROOT
-            / "configs/generation/"
+            ROOT / "configs/generation/"
             "imagenet256_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json"
         ),
         load_config(
-            ROOT
-            / "configs/generation/"
+            ROOT / "configs/generation/"
             "imagenet256_stability_rollout_x0_u2_ema_teacher_dense_300k.json"
         ),
         max_parameter_gap=0.02,
@@ -212,6 +224,4 @@ def test_ema_teacher_300k_pair_has_exact_large_capacity_parameter_counts() -> No
     assert report["status"] == "pass", report["mismatches"]
     assert report["cofitok"]["parameter_count"] == 250_153_763
     assert report["dense"]["parameter_count"] == 250_135_043
-    assert report["relative_parameter_gap"] == pytest.approx(
-        0.0000748395737577641
-    )
+    assert report["relative_parameter_gap"] == pytest.approx(0.0000748395737577641)

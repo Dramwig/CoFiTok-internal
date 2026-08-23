@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 import json
+import os
 import subprocess
 import sys
 from collections.abc import Mapping, Sequence
@@ -21,7 +21,6 @@ from scripts.train_generation import (
     _validate_config,
     _validate_existing_resume_revision_transition,
 )
-
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs/generation/smoke_random_cpu.json"
@@ -122,11 +121,16 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
         "validation_noise_seed",
         "validation_num_images",
     ):
-        assert uninterrupted_checkpoint["metrics"][key] == resumed_checkpoint["metrics"][key]
+        assert (
+            uninterrupted_checkpoint["metrics"][key]
+            == resumed_checkpoint["metrics"][key]
+        )
 
     rows = [
         json.loads(line)
-        for line in (resumed / "train_metrics.jsonl").read_text(encoding="utf-8").splitlines()
+        for line in (resumed / "train_metrics.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
     ]
     assert [int(row["step"]) for row in rows] == [1, 2]
     assert [row["validation_event_index"] for row in rows] == [0, 1]
@@ -223,6 +227,7 @@ def test_training_horizontal_flip_probability_boundaries_and_rng_restore() -> No
 def test_legacy_config_defaults_to_no_random_horizontal_flip() -> None:
     config = config_from_dict({"data": {"dataset": "random"}})
     assert config.data.random_horizontal_flip_prob == 0.0
+    assert config.loss.min_snr_gamma == 0.0
 
 
 def test_training_accepts_fixed_basis_restricted_synthesis() -> None:
@@ -236,7 +241,9 @@ def test_training_accepts_fixed_basis_restricted_synthesis() -> None:
 
 
 @pytest.mark.parametrize("probability", [-0.01, 1.01, float("nan")])
-def test_training_rejects_invalid_horizontal_flip_probability(probability: float) -> None:
+def test_training_rejects_invalid_horizontal_flip_probability(
+    probability: float,
+) -> None:
     config = load_config(CONFIG)
     invalid = replace(
         config,
@@ -279,6 +286,18 @@ def test_training_rejects_invalid_enabled_energy_scope() -> None:
     )
 
     with pytest.raises(ValueError, match="energy_budget_scope"):
+        _validate_config(invalid)
+
+
+@pytest.mark.parametrize("gamma", [-0.1, float("nan"), float("inf")])
+def test_training_rejects_invalid_min_snr_gamma(gamma: float) -> None:
+    config = load_config(CONFIG)
+    invalid = replace(
+        config,
+        loss=replace(config.loss, min_snr_gamma=gamma),
+    )
+
+    with pytest.raises(ValueError, match="min_snr_gamma"):
         _validate_config(invalid)
 
 

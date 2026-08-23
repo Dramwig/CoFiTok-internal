@@ -57,7 +57,6 @@ from cofitok.training.runtime import (
 )
 from cofitok.utils.seed import seed_everything
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FULL_GIT_REVISION_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 
@@ -70,14 +69,21 @@ class StopController:
     def request(self, signal_number: int, _frame: object) -> None:
         self.requested = True
         self.signal_number = signal_number
-        print(f"received signal {signal_number}; checkpointing after the current optimizer step", flush=True)
+        print(
+            f"received signal {signal_number}; checkpointing after the current optimizer step",
+            flush=True,
+        )
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train the scalable CoFiTok generation system.")
+    parser = argparse.ArgumentParser(
+        description="Train the scalable CoFiTok generation system."
+    )
     parser.add_argument("--config", required=True)
     parser.add_argument("--output-dir", required=True)
-    parser.add_argument("--resume", default="", help="Checkpoint path or 'auto' for latest.json.")
+    parser.add_argument(
+        "--resume", default="", help="Checkpoint path or 'auto' for latest.json."
+    )
     parser.add_argument(
         "--resume-source-revision",
         default="",
@@ -86,7 +92,9 @@ def parse_args() -> argparse.Namespace:
             "The transition is bound into subsequent checkpoints and reports."
         ),
     )
-    parser.add_argument("--max-steps", type=int, default=0, help="Override steps for smoke runs.")
+    parser.add_argument(
+        "--max-steps", type=int, default=0, help="Override steps for smoke runs."
+    )
     parser.add_argument("--micro-batch-size", type=int, default=0)
     parser.add_argument("--gradient-accumulation-steps", type=int, default=0)
     parser.add_argument(
@@ -112,8 +120,14 @@ def parse_args() -> argparse.Namespace:
 
 
 def _validate_config(config: ExperimentConfig) -> None:
-    if config.model.predictor_type not in {"scalable_unet", "adm_unet", "generation_unet"}:
-        raise ValueError("train_generation.py requires the scalable generation predictor")
+    if config.model.predictor_type not in {
+        "scalable_unet",
+        "adm_unet",
+        "generation_unet",
+    }:
+        raise ValueError(
+            "train_generation.py requires the scalable generation predictor"
+        )
     if config.model.synthesis_mode not in {
         "restricted",
         "fixed_basis",
@@ -124,7 +138,11 @@ def _validate_config(config: ExperimentConfig) -> None:
             "or dense_identity control"
         )
     if config.diffusion.prediction_target != "epsilon":
-        raise ValueError("production training currently supports epsilon prediction only")
+        raise ValueError(
+            "production training currently supports epsilon prediction only"
+        )
+    if not math.isfinite(config.loss.min_snr_gamma) or config.loss.min_snr_gamma < 0.0:
+        raise ValueError("min_snr_gamma must be finite and non-negative")
     if config.data.class_conditional != (config.model.num_classes > 0):
         raise ValueError("data.class_conditional and model.num_classes must agree")
     if not 0.0 <= config.data.random_horizontal_flip_prob <= 1.0:
@@ -150,7 +168,9 @@ def _validate_config(config: ExperimentConfig) -> None:
         not math.isfinite(config.loss.denoise_path_energy_capacity_power)
         or config.loss.denoise_path_energy_capacity_power <= 0.0
     ):
-        raise ValueError("denoise_path_energy_capacity_power must be finite and positive")
+        raise ValueError(
+            "denoise_path_energy_capacity_power must be finite and positive"
+        )
     if (
         not math.isfinite(config.loss.low_snr_high_frequency_power)
         or config.loss.low_snr_high_frequency_power <= 0.0
@@ -185,28 +205,34 @@ def _validate_config(config: ExperimentConfig) -> None:
     if config.loss.ema_teacher_consistency_warmup_steps < 0:
         raise ValueError("ema_teacher_consistency_warmup_steps must be non-negative")
     if not 0.0 < config.loss.ema_teacher_consistency_batch_fraction <= 1.0:
-        raise ValueError(
-            "ema_teacher_consistency_batch_fraction must be in (0, 1]"
-        )
+        raise ValueError("ema_teacher_consistency_batch_fraction must be in (0, 1]")
     protected_steps = config.runtime.protected_checkpoint_steps
     if protected_steps != sorted(set(protected_steps)):
         raise ValueError("protected_checkpoint_steps must be sorted and unique")
     if any(step < 1 or step > config.runtime.steps for step in protected_steps):
-        raise ValueError("protected checkpoint step is outside the configured training range")
+        raise ValueError(
+            "protected checkpoint step is outside the configured training range"
+        )
     if any(
         step != config.runtime.steps and step % config.runtime.checkpoint_interval != 0
         for step in protected_steps
     ):
-        raise ValueError("protected checkpoint steps must align with checkpoint_interval")
+        raise ValueError(
+            "protected checkpoint steps must align with checkpoint_interval"
+        )
 
 
 def _resolve_device(requested: str) -> torch.device:
     if requested == "cuda" and not torch.cuda.is_available():
-        raise RuntimeError("CUDA was requested for production training but is unavailable")
+        raise RuntimeError(
+            "CUDA was requested for production training but is unavailable"
+        )
     return torch.device(requested)
 
 
-def _build_train_loader(config: ExperimentConfig) -> tuple[DataLoader, StatefulRandomSampler]:
+def _build_train_loader(
+    config: ExperimentConfig,
+) -> tuple[DataLoader, StatefulRandomSampler]:
     dataset = build_dataset(config.data, split="train")
     sampler = StatefulRandomSampler(dataset, seed=config.runtime.seed)
     worker_options: dict[str, object] = {}
@@ -277,26 +303,38 @@ def _move_batch(
     return images, labels.to(device=device, dtype=torch.long, non_blocking=True)
 
 
-def _augment_training_images(images: torch.Tensor, flip_probability: float) -> torch.Tensor:
+def _augment_training_images(
+    images: torch.Tensor, flip_probability: float
+) -> torch.Tensor:
     if flip_probability <= 0.0:
         return images
     flipped = images.flip(dims=(-1,))
     if flip_probability >= 1.0:
         return flipped
-    flip_mask = torch.rand(
-        (images.shape[0], 1, 1, 1),
-        device=images.device,
-    ) < flip_probability
+    flip_mask = (
+        torch.rand(
+            (images.shape[0], 1, 1, 1),
+            device=images.device,
+        )
+        < flip_probability
+    )
     return torch.where(flip_mask, flipped, images)
 
 
-def _optimizer_groups(model: torch.nn.Module, weight_decay: float) -> list[dict[str, object]]:
+def _optimizer_groups(
+    model: torch.nn.Module, weight_decay: float
+) -> list[dict[str, object]]:
     decay = []
     no_decay = []
     for name, parameter in model.named_parameters():
         if not parameter.requires_grad:
             continue
-        if parameter.ndim < 2 or name.endswith("bias") or "norm" in name or "embed" in name:
+        if (
+            parameter.ndim < 2
+            or name.endswith("bias")
+            or "norm" in name
+            or "embed" in name
+        ):
             no_decay.append(parameter)
         else:
             decay.append(parameter)
@@ -349,10 +387,9 @@ def _resolve_resume_git_provenance(
         return dict(current_git), None
     current_revision = str(current_git.get("revision", ""))
     current_branch = str(current_git.get("branch", ""))
-    if (
-        not FULL_GIT_REVISION_PATTERN.fullmatch(source_revision)
-        or not FULL_GIT_REVISION_PATTERN.fullmatch(current_revision)
-    ):
+    if not FULL_GIT_REVISION_PATTERN.fullmatch(
+        source_revision
+    ) or not FULL_GIT_REVISION_PATTERN.fullmatch(current_revision):
         raise ValueError("controlled resume requires full lowercase Git revisions")
     if current_git.get("dirty") is not False or not current_branch:
         raise ValueError("controlled resume requires a clean named Git branch")
@@ -366,7 +403,9 @@ def _resolve_resume_git_provenance(
         text=True,
     )
     if ancestor.returncode != 0:
-        raise ValueError("resume source revision is not an ancestor of the current revision")
+        raise ValueError(
+            "resume source revision is not an ancestor of the current revision"
+        )
     return (
         {
             "revision": source_revision,
@@ -397,7 +436,9 @@ def _build_resume_revision_transition(
         or integrity.get("git_branch") != transition["branch"]
         or integrity.get("git_dirty") is not False
     ):
-        raise ValueError("resume checkpoint does not match the controlled source revision")
+        raise ValueError(
+            "resume checkpoint does not match the controlled source revision"
+        )
     return {
         **transition,
         "source_checkpoint": {
@@ -466,7 +507,9 @@ def _evaluate_batch(
     )
     noisy = schedule.add_noise(clean, noise, timesteps)
     output = model(noisy, timesteps, class_labels=labels)
-    mse = float(torch.nn.functional.mse_loss(output.epsilon.float(), noise.float()).item())
+    mse = float(
+        torch.nn.functional.mse_loss(output.epsilon.float(), noise.float()).item()
+    )
     return mse, int(clean.shape[0]), validation_noise_seed
 
 
@@ -476,7 +519,10 @@ def main() -> None:
     if benchmark_mode:
         if not args.benchmark_output:
             raise ValueError("benchmark mode requires --benchmark-output")
-        if args.benchmark_warmup_steps < 0 or args.benchmark_warmup_steps >= args.benchmark_steps:
+        if (
+            args.benchmark_warmup_steps < 0
+            or args.benchmark_warmup_steps >= args.benchmark_steps
+        ):
             raise ValueError("benchmark warmup must leave at least one measured step")
         if (
             args.resume
@@ -484,14 +530,18 @@ def main() -> None:
             or args.max_steps > 0
             or args.stop_after_steps > 0
         ):
-            raise ValueError("benchmark mode cannot resume or override the training horizon")
+            raise ValueError(
+                "benchmark mode cannot resume or override the training horizon"
+            )
     elif args.benchmark_output:
         raise ValueError("--benchmark-output requires --benchmark-steps")
     config = load_config(args.config)
     if args.max_steps > 0:
         config = replace(config, runtime=replace(config.runtime, steps=args.max_steps))
     if args.micro_batch_size > 0:
-        config = replace(config, data=replace(config.data, batch_size=args.micro_batch_size))
+        config = replace(
+            config, data=replace(config.data, batch_size=args.micro_batch_size)
+        )
     if args.gradient_accumulation_steps > 0:
         config = replace(
             config,
@@ -507,9 +557,13 @@ def main() -> None:
         and config.runtime.steps == 300_000
     )
     if benchmark_mode and args.authorization_gate:
-        raise ValueError("benchmark mode does not consume a training authorization gate")
+        raise ValueError(
+            "benchmark mode does not consume a training authorization gate"
+        )
     if formal_full_training and not args.authorization_gate:
-        raise ValueError("formal full ImageNet-256 training requires --authorization-gate")
+        raise ValueError(
+            "formal full ImageNet-256 training requires --authorization-gate"
+        )
     training_authorization = (
         capture_generation_training_authorization(args.authorization_gate)
         if args.authorization_gate
@@ -616,7 +670,10 @@ def main() -> None:
         cumulative_peak_vram_before_segment = int(
             checkpoint_extra_state.get("cumulative_peak_vram_bytes", 0)
         )
-        if cumulative_elapsed_before_segment < 0.0 or cumulative_peak_vram_before_segment < 0:
+        if (
+            cumulative_elapsed_before_segment < 0.0
+            or cumulative_peak_vram_before_segment < 0
+        ):
             raise ValueError("checkpoint cumulative compute accounting is invalid")
         sampler.load_state_dict(sampler_state)
         existing_resume_transition = checkpoint_extra_state.get(
@@ -662,14 +719,20 @@ def main() -> None:
         "torch_version": torch.__version__,
         "cuda_version": torch.version.cuda,
         "device": str(device),
-        "device_name": torch.cuda.get_device_name(device) if device.type == "cuda" else "cpu",
+        "device_name": torch.cuda.get_device_name(device)
+        if device.type == "cuda"
+        else "cpu",
         "runtime_environment": runtime_environment,
         "runtime_environment_sha256": runtime_environment_sha,
         "dataset_provenance": dataset_provenance,
         "training_authorization": training_authorization,
-        "parameter_count": sum(parameter.numel() for parameter in base_model.parameters()),
+        "parameter_count": sum(
+            parameter.numel() for parameter in base_model.parameters()
+        ),
         "trainable_parameter_count": sum(
-            parameter.numel() for parameter in base_model.parameters() if parameter.requires_grad
+            parameter.numel()
+            for parameter in base_model.parameters()
+            if parameter.requires_grad
         ),
         "resume": str(resume_path) if resume_path is not None else None,
         "resume_revision_transition": resume_revision_transition,
@@ -778,11 +841,16 @@ def main() -> None:
             else:
                 scaler.scale(scaled_loss).backward()
             for name, value in losses.as_dict().items():
-                aggregate[name] = aggregate.get(name, 0.0) + float(value.detach().float().item()) / accumulation
+                aggregate[name] = (
+                    aggregate.get(name, 0.0)
+                    + float(value.detach().float().item()) / accumulation
+                )
 
         if scaler is not None:
             scaler.unscale_(optimizer)
-        grad_norm = clip_grad_norm_(base_model.parameters(), config.optimization.grad_clip_norm)
+        grad_norm = clip_grad_norm_(
+            base_model.parameters(), config.optimization.grad_clip_norm
+        )
         if scaler is None:
             optimizer.step()
         else:
@@ -818,25 +886,30 @@ def main() -> None:
             except StopIteration:
                 eval_iterator = iter(eval_loader)
                 eval_batch = next(eval_iterator)
-            validation_mse, validation_num_images, validation_noise_seed = _evaluate_batch(
-                model,
-                schedule,
-                eval_batch,
-                config,
-                device,
+            validation_mse, validation_num_images, validation_noise_seed = (
+                _evaluate_batch(
+                    model,
+                    schedule,
+                    eval_batch,
+                    config,
+                    device,
+                )
             )
             last_metrics.update(
                 {
                     "validation_epsilon_mse": validation_mse,
                     "validation_event_index": completed_validation_events,
-                    "validation_batch_index": completed_validation_events % len(eval_loader),
+                    "validation_batch_index": completed_validation_events
+                    % len(eval_loader),
                     "validation_num_images": validation_num_images,
                     "validation_noise_seed": validation_noise_seed,
                 }
             )
             completed_validation_events += 1
 
-        should_log = step == start_step + 1 or step % config.optimization.log_interval == 0
+        should_log = (
+            step == start_step + 1 or step % config.optimization.log_interval == 0
+        )
         if should_log:
             with metrics_path.open("a", encoding="utf-8") as handle:
                 handle.write(json.dumps(last_metrics, sort_keys=True) + "\n")
@@ -903,7 +976,9 @@ def main() -> None:
         mean_seconds = statistics.fmean(measured)
         sorted_measured = sorted(measured)
         p95_index = max(0, (95 * len(sorted_measured) + 99) // 100 - 1)
-        effective_batch_size = config.data.batch_size * config.optimization.gradient_accumulation_steps
+        effective_batch_size = (
+            config.data.batch_size * config.optimization.gradient_accumulation_steps
+        )
         benchmark_report = {
             "schema_version": 1,
             "status": "completed",
@@ -912,9 +987,7 @@ def main() -> None:
             "config_path": str(Path(args.config).resolve()),
             "git": manifest["git"],
             "runtime_environment": manifest["runtime_environment"],
-            "runtime_environment_sha256": manifest[
-                "runtime_environment_sha256"
-            ],
+            "runtime_environment_sha256": manifest["runtime_environment_sha256"],
             "dataset_provenance": manifest["dataset_provenance"],
             "device": manifest["device"],
             "device_name": manifest["device_name"],
@@ -957,7 +1030,9 @@ def main() -> None:
             cumulative_peak_vram_before_segment,
             segment_peak_vram_bytes,
         ),
-        "latest_checkpoint": json.loads((output_dir / "latest.json").read_text(encoding="utf-8")),
+        "latest_checkpoint": json.loads(
+            (output_dir / "latest.json").read_text(encoding="utf-8")
+        ),
     }
     write_json_report(output_dir / "training_report.json", report)
     print(f"wrote {output_dir / 'training_report.json'}")

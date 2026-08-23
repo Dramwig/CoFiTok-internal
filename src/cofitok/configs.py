@@ -49,7 +49,9 @@ class ModelConfig:
     synthesis_active_token_channels: list[int] = field(default_factory=list)
     deep_synthesis_hidden_channels: int = 0
     deep_synthesis_depth: int = 3
-    predictor_channel_multipliers: list[int] = field(default_factory=lambda: [1, 2, 4, 4])
+    predictor_channel_multipliers: list[int] = field(
+        default_factory=lambda: [1, 2, 4, 4]
+    )
     predictor_num_res_blocks: int = 2
     predictor_attention_resolutions: list[int] = field(default_factory=lambda: [32, 16])
     predictor_num_heads: int = 4
@@ -62,6 +64,7 @@ class ModelConfig:
 @dataclass(frozen=True)
 class LossConfig:
     epsilon_weight: float = 1.0
+    min_snr_gamma: float = 0.0
     prefix_weight: float = 0.25
     monotonic_weight: float = 0.05
     monotonic_margin: float = 0.0

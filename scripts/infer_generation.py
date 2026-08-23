@@ -20,13 +20,12 @@ from cofitok.inference_replay import (
     read_json_object,
     reject_symlink_chain,
     reusable_completed_report,
-    validate_report_binding,
     validate_output_directory_layout,
+    validate_report_binding,
     write_progress,
 )
 from cofitok.output_lock import exclusive_output_lock
 from cofitok.reporting import file_sha256, git_provenance, write_json_report
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -95,8 +94,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sample-steps", type=int, default=250)
     parser.add_argument("--guidance-scale", type=float, default=1.5)
     parser.add_argument("--guidance-rescale", type=float, default=0.0)
-    parser.add_argument("--cfg-batch-mode", choices=["batched", "sequential"], default="batched")
+    parser.add_argument(
+        "--cfg-batch-mode", choices=["batched", "sequential"], default="batched"
+    )
     parser.add_argument("--eta", type=float, default=0.0)
+    parser.add_argument("--start-timestep", type=int, default=-1)
+    parser.add_argument("--scale-initial-noise-by-sigma", action="store_true")
+    parser.add_argument(
+        "--x0-constraint",
+        choices=["clip", "dynamic_threshold", "none"],
+        default="clip",
+    )
+    parser.add_argument("--dynamic-threshold-percentile", type=float, default=0.995)
     parser.add_argument("--weights", choices=["ema", "model"], default="ema")
     parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
     parser.add_argument("--require-release-authorization", action="store_true")
@@ -131,19 +140,13 @@ def _checkpoint_metadata(session: GenerationSession) -> dict[str, Any]:
         "weights": loaded.weights,
         "artifact_type": loaded.artifact_type,
         "source_checkpoint_sha256": loaded.source_checkpoint_sha256,
-        "source_runtime_environment_sha256": (
-            loaded.source_runtime_environment_sha256
-        ),
+        "source_runtime_environment_sha256": (loaded.source_runtime_environment_sha256),
         "source_git": loaded.source_git_provenance,
         "training_authorization": loaded.training_authorization,
         "release_authorization": loaded.release_authorization,
-        "release_authorization_required": (
-            loaded.release_authorization_required
-        ),
+        "release_authorization_required": (loaded.release_authorization_required),
         "completion_authorization": loaded.completion_authorization,
-        "completion_authorization_required": (
-            loaded.completion_authorization_required
-        ),
+        "completion_authorization_required": (loaded.completion_authorization_required),
     }
 
 
@@ -218,12 +221,41 @@ def _run_inference_locked(args: argparse.Namespace) -> dict[str, Any]:
     runtime_environment_sha = runtime_environment_sha256(runtime_environment)
     execution_git = git_provenance(PROJECT_ROOT)
     seeds = _resolve_seeds(args.seeds, seed=args.seed, num_images=args.num_images)
-    labels = _resolve_labels(args.class_ids, count=len(seeds), num_classes=session.num_classes)
+    labels = _resolve_labels(
+        args.class_ids, count=len(seeds), num_classes=session.num_classes
+    )
     budgets = _resolve_budgets(args.prefix_budgets, token_count=session.token_count)
+    requested_start_timestep = getattr(args, "start_timestep", -1)
+    if requested_start_timestep < -1:
+        raise ValueError("start-timestep must be -1 or non-negative")
+    requested_start_timestep = (
+        None if requested_start_timestep < 0 else requested_start_timestep
+    )
+    scale_initial_noise_by_sigma = bool(
+        getattr(args, "scale_initial_noise_by_sigma", False)
+    )
+    x0_constraint = getattr(args, "x0_constraint", "clip")
+    clip_x0 = x0_constraint != "none"
+    dynamic_threshold_percentile = (
+        float(getattr(args, "dynamic_threshold_percentile", 0.995))
+        if x0_constraint == "dynamic_threshold"
+        else 0.0
+    )
+    if dynamic_threshold_percentile != 0.0 and not (
+        0.5 <= dynamic_threshold_percentile < 1.0
+    ):
+        raise ValueError("dynamic-threshold-percentile must be in [0.5, 1)")
+    actual_timesteps = select_sampling_timesteps(
+        session.schedule.num_train_timesteps,
+        args.sample_steps,
+        start_timestep=requested_start_timestep,
+    )
     identities = list(zip(seeds, labels if labels is not None else [None] * len(seeds)))
     if len(set(identities)) != len(identities):
         raise ValueError("duplicate seed/class requests would overwrite the same image")
-    output_dir = reject_symlink_chain(args.output_dir, name="inference output directory")
+    output_dir = reject_symlink_chain(
+        args.output_dir, name="inference output directory"
+    )
     output_dir.mkdir(parents=True, exist_ok=True)
     output_dir = output_dir.resolve()
     report_path = (
@@ -235,7 +267,9 @@ def _run_inference_locked(args: argparse.Namespace) -> dict[str, Any]:
     manifest_path = output_dir / "inference_manifest.json"
     progress_path = output_dir / "inference_progress.json"
     if report_path in {manifest_path, progress_path}:
-        raise ValueError("inference report must differ from manifest and progress paths")
+        raise ValueError(
+            "inference report must differ from manifest and progress paths"
+        )
     expected_outputs = _expected_outputs(
         output_dir,
         seeds=seeds,
@@ -270,15 +304,20 @@ def _run_inference_locked(args: argparse.Namespace) -> dict[str, Any]:
         "prefix_budgets": budgets,
         "batch_size": args.batch_size,
         "sample_steps": args.sample_steps,
-        "actual_timesteps": select_sampling_timesteps(
-            session.schedule.num_train_timesteps,
-            args.sample_steps,
-        ),
+        "actual_timesteps": actual_timesteps,
         "guidance_scale": args.guidance_scale,
         "guidance_rescale": args.guidance_rescale,
         "cfg_batch_mode": args.cfg_batch_mode,
         "eta": args.eta,
-        "clip_x0": True,
+        "clip_x0": clip_x0,
+        "x0_constraint": x0_constraint,
+        "dynamic_threshold_percentile": dynamic_threshold_percentile,
+        "requested_start_timestep": requested_start_timestep,
+        "start_timestep": actual_timesteps[0],
+        "scale_initial_noise_by_sigma": scale_initial_noise_by_sigma,
+        "initial_noise_scale": (
+            "schedule_sigma" if scale_initial_noise_by_sigma else "unit"
+        ),
         "precision": args.precision,
         "image_shape": [
             session.loaded.config.model.image_channels,
@@ -317,17 +356,18 @@ def _run_inference_locked(args: argparse.Namespace) -> dict[str, Any]:
     existing_report = None
     if resume and report_path.is_file():
         if not progress_existed:
-            raise ValueError("existing inference report is missing its progress evidence")
+            raise ValueError(
+                "existing inference report is missing its progress evidence"
+            )
         existing_report = read_json_object(report_path, name="inference report")
         validate_report_binding(
             existing_report,
             manifest_identity=manifest_identity,
             manifest=manifest,
         )
-        if (
-            existing_report.get("status") == "completed"
-            and existing_report.get("progress") != file_identity(progress_path)
-        ):
+        if existing_report.get("status") == "completed" and existing_report.get(
+            "progress"
+        ) != file_identity(progress_path):
             raise ValueError("completed inference progress identity differs")
         if reusable_completed_report(
             existing_report,
@@ -343,8 +383,10 @@ def _run_inference_locked(args: argparse.Namespace) -> dict[str, Any]:
         path = reject_symlink_chain(output["path"], name="inference output")
         if path.exists() and not path.is_file():
             raise ValueError(f"inference output is not a regular file: {path}")
-        if path.exists() and output["filename"] not in valid_outputs and not (
-            resume or overwrite
+        if (
+            path.exists()
+            and output["filename"] not in valid_outputs
+            and not (resume or overwrite)
         ):
             raise FileExistsError(f"Inference output already exists: {path}")
 
@@ -408,6 +450,10 @@ def _run_inference_locked(args: argparse.Namespace) -> dict[str, Any]:
                         guidance_rescale=args.guidance_rescale,
                         cfg_batch_mode=args.cfg_batch_mode,
                         eta=args.eta,
+                        clip_x0=clip_x0,
+                        dynamic_threshold_percentile=(dynamic_threshold_percentile),
+                        start_timestep=requested_start_timestep,
+                        scale_initial_noise_by_sigma=(scale_initial_noise_by_sigma),
                         precision=args.precision,
                     )
                 )
@@ -506,7 +552,11 @@ def run_inference(args: argparse.Namespace) -> dict[str, Any]:
 def main() -> None:
     args = parse_args()
     report = run_inference(args)
-    print(Path(args.report) if args.report else Path(args.output_dir) / "inference_report.json")
+    print(
+        Path(args.report)
+        if args.report
+        else Path(args.output_dir) / "inference_report.json"
+    )
     print(f"generated {report['output_count']} images")
 
 

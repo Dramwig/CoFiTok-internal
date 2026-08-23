@@ -38,7 +38,9 @@ class DiffusionSchedule:
     def num_train_timesteps(self) -> int:
         return self.config.num_train_timesteps
 
-    def sample_timesteps(self, batch_size: int, device: torch.device | str) -> torch.Tensor:
+    def sample_timesteps(
+        self, batch_size: int, device: torch.device | str
+    ) -> torch.Tensor:
         return torch.randint(0, self.num_train_timesteps, (batch_size,), device=device)
 
     def add_noise(
@@ -60,3 +62,20 @@ class DiffusionSchedule:
         alpha = self.sqrt_alphas_cumprod[timesteps].view(-1, 1, 1, 1)
         sigma = self.sqrt_one_minus_alphas_cumprod[timesteps].view(-1, 1, 1, 1)
         return (noisy_images - sigma * epsilon) / alpha.clamp_min(1e-8)
+
+    def snr(self, timesteps: torch.Tensor) -> torch.Tensor:
+        alpha_squared = self.alphas_cumprod[timesteps]
+        sigma_squared = 1.0 - alpha_squared
+        return alpha_squared / sigma_squared.clamp_min(1e-12)
+
+    def min_snr_loss_weights(
+        self,
+        timesteps: torch.Tensor,
+        gamma: float,
+    ) -> torch.Tensor:
+        """Return standard epsilon-prediction Min-SNR loss weights."""
+        if gamma <= 0.0:
+            return torch.ones_like(timesteps, dtype=torch.float32)
+        snr = self.snr(timesteps).float()
+        capped = torch.minimum(snr, snr.new_full(snr.shape, gamma))
+        return capped / snr.clamp_min(1e-12)

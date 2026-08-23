@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 MATCHED_CONFIG_SECTIONS = ("data", "diffusion", "runtime", "optimization")
 RESTRICTED_COFITOK_SYNTHESIS_MODES = {"restricted", "fixed_basis"}
 FACTORIZATION_MODEL_FIELDS = {
@@ -21,6 +20,7 @@ FACTORIZATION_MODEL_FIELDS = {
 }
 SHARED_TRAINING_LOSS_FIELDS = {
     "epsilon_weight",
+    "min_snr_gamma",
     "rollout_consistency_weight",
     "rollout_consistency_start_step",
     "rollout_consistency_warmup_steps",
@@ -59,7 +59,9 @@ def generation_pair_contract(
     if mismatched_sections:
         issues.append("mismatched config sections: " + ", ".join(mismatched_sections))
     if mismatched_model_fields:
-        issues.append("mismatched shared model fields: " + ", ".join(mismatched_model_fields))
+        issues.append(
+            "mismatched shared model fields: " + ", ".join(mismatched_model_fields)
+        )
 
     identities = {
         "cofitok_token_count": int(cofitok_model.get("token_count", 0)),
@@ -71,7 +73,10 @@ def generation_pair_contract(
     }
     if identities["cofitok_token_count"] <= 1 or identities["dense_token_count"] != 1:
         issues.append("factorized/dense token-count identities are invalid")
-    if identities["cofitok_feedback"] is not True or identities["dense_feedback"] is not False:
+    if (
+        identities["cofitok_feedback"] is not True
+        or identities["dense_feedback"] is not False
+    ):
         issues.append("factorized/dense predictor-feedback identities are invalid")
     if (
         identities["cofitok_synthesis"] not in RESTRICTED_COFITOK_SYNTHESIS_MODES
