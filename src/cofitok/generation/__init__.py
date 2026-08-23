@@ -12,6 +12,11 @@ from cofitok.generation.protocol import (
     SAMPLING_REPORT_SCHEMA_VERSION,
     sampling_protocol_contract,
 )
+from cofitok.generation.quality_repair import (
+    EPSILON_STABILITY_SAMPLING_DESIGN_SCHEMA,
+    build_epsilon_stability_sampling_design,
+    materialize_epsilon_stability_case_protocol,
+)
 from cofitok.generation.runtime import LoadedGenerationModel, load_generation_model
 from cofitok.generation.session import GenerationRequest, GenerationResult, GenerationSession
 from cofitok.generation.release import (
@@ -37,4 +42,7 @@ __all__ = [
     "SAMPLING_PROTOCOL_SCHEMA",
     "SAMPLING_REPORT_SCHEMA_VERSION",
     "sampling_protocol_contract",
+    "EPSILON_STABILITY_SAMPLING_DESIGN_SCHEMA",
+    "build_epsilon_stability_sampling_design",
+    "materialize_epsilon_stability_case_protocol",
 ]
