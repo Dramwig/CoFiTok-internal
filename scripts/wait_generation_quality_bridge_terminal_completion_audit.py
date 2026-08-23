@@ -130,23 +130,38 @@ def _canonical_context(args: argparse.Namespace) -> dict[str, Any]:
         args.quality_output_root,
         name="quality bridge output root",
     ).resolve()
-    output_dir = quality_root / "reports" / "terminal_completion_audit_v1"
+    output_dir_name = builder.validated_report_dir_name(
+        args.expected_output_dir_name,
+        prefix="terminal_completion_audit_v",
+        label="terminal completion output directory name",
+    )
+    terminal_dir_name = builder.validated_report_dir_name(
+        args.expected_terminal_dir_name,
+        prefix="terminal_system_claim_guard_v",
+        label="terminal guard directory name",
+    )
+    comparison_dir_name = builder.validated_report_dir_name(
+        args.expected_comparison_dir_name,
+        prefix="quality_bridge_comparison_v",
+        label="comparison directory name",
+    )
+    output_dir = quality_root / "reports" / output_dir_name
     expected = {
         "terminal_guard": quality_root
         / "reports"
-        / "terminal_system_claim_guard_v1"
+        / terminal_dir_name
         / "terminal_system_claim_guard.json",
         "terminal_status": quality_root
         / "reports"
-        / "terminal_system_claim_guard_v1"
+        / terminal_dir_name
         / "waiter_status.json",
         "comparison": quality_root
         / "reports"
-        / "quality_bridge_comparison_v1"
+        / comparison_dir_name
         / "quality_bridge_comparison.json",
         "comparison_status": quality_root
         / "reports"
-        / "quality_bridge_comparison_v1"
+        / comparison_dir_name
         / "waiter_status.json",
         "audit_dir": quality_root / "reports" / "checkpoint_audits",
         "replay_status": quality_root
@@ -667,6 +682,10 @@ def parse_args() -> argparse.Namespace:
         )
     )
     builder.add_common_arguments(parser, include_dynamic_hashes=False)
+    parser.add_argument(
+        "--expected-output-dir-name",
+        default="terminal_completion_audit_v1",
+    )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--status-output", type=Path, required=True)
     parser.add_argument("--deployment-receipt-output", type=Path, required=True)
