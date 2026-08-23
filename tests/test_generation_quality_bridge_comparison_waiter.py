@@ -48,6 +48,8 @@ def _args(tmp_path: Path) -> Namespace:
         official_related=OFFICIAL,
         expected_official_related_sha256=waiter.file_sha256(OFFICIAL),
         output_dir=output_dir,
+        expected_output_dir_name="quality_bridge_comparison_v1",
+        expected_terminal_dir_name="terminal_system_claim_guard_v1",
         status_output=output_dir / "waiter_status.json",
         deployment_receipt_output=output_dir / "deployment_receipt.json",
         lock=output_dir / "waiter.lock",
@@ -239,6 +241,60 @@ def test_static_context_binds_git_tree_branch_and_sources(tmp_path: Path) -> Non
     assert context["official_source"]["sha256"] == (
         args.expected_official_related_sha256
     )
+
+
+def test_static_context_accepts_explicit_versioned_output_and_terminal_dirs(
+    tmp_path: Path,
+) -> None:
+    args = _args(tmp_path)
+    reports = args.quality_output_root / "reports"
+    terminal_root = reports / "terminal_system_claim_guard_v2_runtime_strict"
+    output_dir = reports / "quality_bridge_comparison_v2_runtime_strict"
+    args.expected_terminal_dir_name = terminal_root.name
+    args.expected_output_dir_name = output_dir.name
+    args.terminal_system_guard = terminal_root / "terminal_system_claim_guard.json"
+    args.terminal_waiter_status = terminal_root / "waiter_status.json"
+    args.output_dir = output_dir
+    args.status_output = output_dir / "waiter_status.json"
+    args.deployment_receipt_output = output_dir / "deployment_receipt.json"
+    args.lock = output_dir / "waiter.lock"
+
+    context = waiter.static_context(args)
+
+    assert context["output_dir"] == output_dir.resolve()
+    assert context["terminal_guard"] == args.terminal_system_guard.resolve()
+
+
+def test_static_context_rejects_versioned_path_not_named_explicitly(
+    tmp_path: Path,
+) -> None:
+    args = _args(tmp_path)
+    args.output_dir = (
+        args.quality_output_root
+        / "reports"
+        / "quality_bridge_comparison_v2_runtime_strict"
+    )
+    args.status_output = args.output_dir / "waiter_status.json"
+    args.deployment_receipt_output = args.output_dir / "deployment_receipt.json"
+    args.lock = args.output_dir / "waiter.lock"
+
+    with pytest.raises(ValueError, match="canonical path contract differs"):
+        waiter.static_context(args)
+
+
+@pytest.mark.parametrize(
+    "name",
+    ["../quality_bridge_comparison_v2", "quality_bridge_comparison_v2/child"],
+)
+def test_static_context_rejects_unsafe_explicit_versioned_dir_name(
+    tmp_path: Path,
+    name: str,
+) -> None:
+    args = _args(tmp_path)
+    args.expected_output_dir_name = name
+
+    with pytest.raises(ValueError, match="directory name is invalid"):
+        waiter.static_context(args)
 
 
 @pytest.mark.parametrize(
