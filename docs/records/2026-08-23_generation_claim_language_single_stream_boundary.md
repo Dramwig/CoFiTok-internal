@@ -29,6 +29,12 @@ such as "two independent 10K streams replicated the result."
 - states explicitly that paired KID is a re-analysis of the same terminal
   sample sets, not an independent generation replication.
 
+`build_generation_terminal_system_claim_guard.py` now replays and propagates
+the same boundary. A terminal-system pass therefore also requires exactly one
+bound terminal stream, zero independent replications, and false permissions for
+independent- or multiple-stream replication language. Its positive claim text
+and limitations state this restriction explicitly.
+
 The change is non-authorizing. It does not permit training, sampling, 300K
 scaling, promotion, export, release, or process signaling.
 
@@ -38,12 +44,13 @@ CUDA-hidden, low-priority tests were run on `pro6000` from an isolated `/tmp`
 snapshot using the non-symlink Python 3.10 executable:
 
 ```text
-67 passed
+38 passed in the terminal-system integration selection
 ```
 
-The test selection covered the statistical language guard, its waiter and
-deployment receipt, quality-bridge statistical qualification and waiter,
-terminal uncertainty waiter, and matched uncertainty report logic.
+The earlier isolated statistical-guard selection passed 67 tests. The later
+terminal-system integration selection passed 38 tests covering the statistical
+language guard, its waiter and deployment receipt, terminal-system guard, and
+terminal-system waiter.
 
 ## Live-chain boundary
 
