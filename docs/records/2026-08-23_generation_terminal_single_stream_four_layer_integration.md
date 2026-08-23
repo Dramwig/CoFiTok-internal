@@ -64,12 +64,11 @@ All checks used the project-local Python environment, with CUDA hidden and
   `88 passed`;
 - complete code suite excluding only the four outer-paper-layout tests:
   `1184 passed, 7 skipped in 383.02s`;
-- the four excluded tests require the outer sibling paths
-  `D:/paper/venues/aaai27/main.tex` and `D:/paper/latex/main.tex`, which are not
-  part of this isolated inner-repository checkout; their test source is
-  normalized byte-identical to the main workspace copy, and the authoritative
-  paper files exist under
-  `C:/Users/17194/Desktop/PaperFiled/CoFiTok/paper/`;
+- the four outer-paper-layout tests require sibling `paper/` paths that are not
+  part of the isolated D: inner-repository checkout. Their test source was
+  normalized byte-identical to the main workspace copy, so the exact four tests
+  were also run from the authoritative main workspace, where the sibling paper
+  files exist: `4 passed in 0.12s`;
 - all integrated Python entrypoints compiled successfully;
 - `git diff --check` passed;
 - the implementation checkout was tracked clean for the clean-Git waiter
