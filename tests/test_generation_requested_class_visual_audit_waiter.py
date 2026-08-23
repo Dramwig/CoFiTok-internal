@@ -66,6 +66,7 @@ def test_visual_audit_command_is_fixed_cpu_diagnostic_selection(tmp_path: Path) 
         dense_sampling_report=str(tmp_path / "dense.json"),
         cofitok_dir=str(tmp_path / "cofitok"),
         dense_dir=str(tmp_path / "dense"),
+        quality_result=str(tmp_path / "quality_result.json"),
         classifier_calibration_report=str(tmp_path / "calibration.json"),
         real_dir=str(tmp_path / "real"),
         output_dir=str(tmp_path / "output"),
@@ -75,6 +76,9 @@ def test_visual_audit_command_is_fixed_cpu_diagnostic_selection(tmp_path: Path) 
     command = build_visual_audit_command(args)
 
     assert command[0] == python.resolve().as_posix()
+    assert command[command.index("--quality-result") + 1] == Path(
+        args.quality_result
+    ).resolve().as_posix()
     assert command[command.index("--indices") + 1] == ",".join(
         str(index) for index in FIXED_INDICES
     )

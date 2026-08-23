@@ -133,6 +133,8 @@ def build_visual_audit_command(args: argparse.Namespace) -> list[str]:
         str(Path(args.cofitok_dir).resolve()),
         "--dense-dir",
         str(Path(args.dense_dir).resolve()),
+        "--quality-result",
+        str(Path(args.quality_result).resolve()),
         "--classifier-calibration-report",
         str(Path(args.classifier_calibration_report).resolve()),
         "--real-dir",

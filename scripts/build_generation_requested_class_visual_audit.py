@@ -11,6 +11,10 @@ import torch
 from torchvision.io import ImageReadMode, read_image
 from torchvision.utils import make_grid, save_image
 
+from cofitok.generation.quality_bridge import (
+    QUALITY_BRIDGE_RESULT_ROLE,
+    RESULT_AUTHORIZATION_BOUNDARY,
+)
 from cofitok.inference_replay import file_identity, read_json_object, reject_symlink_chain
 from cofitok.reporting import git_provenance, write_json_report
 
@@ -62,6 +66,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dense-sampling-report", required=True)
     parser.add_argument("--cofitok-dir", required=True)
     parser.add_argument("--dense-dir", required=True)
+    parser.add_argument("--quality-result", required=True)
     parser.add_argument("--classifier-calibration-report", required=True)
     parser.add_argument("--real-dir", required=True)
     parser.add_argument("--indices", required=True)
@@ -132,13 +137,20 @@ def _sampling_source(
     count = int(sample_set.get("count", -1))
     start_index = int(sampling.get("start_index", -1))
     num_samples = int(sampling.get("num_samples", -1))
-    num_classes = int(sampling.get("num_classes", -1))
+    declared_num_classes = sampling.get("num_classes")
     image_shape = sampling.get("image_shape")
     if (
         count < 1
         or count != num_samples
         or start_index < 0
-        or num_classes < 5
+        or (
+            declared_num_classes is not None
+            and (
+                isinstance(declared_num_classes, bool)
+                or not isinstance(declared_num_classes, int)
+                or declared_num_classes < 5
+            )
+        )
         or len(str(sample_set.get("sha256", ""))) != 64
         or image_shape != [3, 256, 256]
         or sampling.get("class_schedule") != "balanced_modulo"
@@ -193,6 +205,222 @@ def _matched_sampling_protocol(
     ):
         raise ValueError("CoFiTok and dense visual sources are not matched")
     return cofitok_sampling
+
+
+def _required_dict(
+    payload: dict[str, Any],
+    *path: str,
+    name: str,
+) -> dict[str, Any]:
+    value: Any = payload
+    for key in path:
+        if not isinstance(value, dict):
+            raise ValueError(f"{name} is malformed")
+        value = value.get(key)
+    if not isinstance(value, dict):
+        raise ValueError(f"{name} is malformed")
+    return value
+
+
+def _quality_bridge_class_contract(
+    result_path: str | Path,
+    *,
+    cofitok_sampling_path: str | Path,
+    dense_sampling_path: str | Path,
+    cofitok_sampling_report: dict[str, Any],
+    dense_sampling_report: dict[str, Any],
+) -> tuple[int, dict[str, Any]]:
+    path = reject_symlink_chain(result_path, name="quality-bridge terminal result")
+    report = read_json_object(path, name="quality-bridge terminal result")
+    if (
+        report.get("schema_version") != 1
+        or report.get("status") != "completed"
+        or report.get("role") != QUALITY_BRIDGE_RESULT_ROLE
+        or report.get("authorization_boundary") != RESULT_AUTHORIZATION_BOUNDARY
+    ):
+        raise ValueError("quality-bridge terminal result contract differs")
+
+    pair_validation = _required_dict(
+        report,
+        "training",
+        "pair_validation",
+        name="quality-bridge training pair validation",
+    )
+    recipe = _required_dict(
+        pair_validation,
+        "training_recipe",
+        name="quality-bridge training recipe",
+    )
+    expected_shared = _required_dict(
+        recipe,
+        "expected_shared",
+        name="quality-bridge expected shared training recipe",
+    )
+    observed = _required_dict(
+        recipe,
+        "observed",
+        name="quality-bridge observed training recipe",
+    )
+    observed_cofitok = _required_dict(
+        observed,
+        "cofitok",
+        name="quality-bridge observed CoFiTok recipe",
+    )
+    observed_dense = _required_dict(
+        observed,
+        "dense_identity",
+        name="quality-bridge observed dense recipe",
+    )
+    terminal = _required_dict(report, "terminal", name="quality-bridge terminal evidence")
+    methods = _required_dict(
+        terminal,
+        "methods",
+        name="quality-bridge terminal methods",
+    )
+    class_fidelity = _required_dict(
+        terminal,
+        "class_fidelity",
+        name="quality-bridge class fidelity",
+    )
+    classifier = _required_dict(
+        class_fidelity,
+        "classifier",
+        name="quality-bridge class-fidelity classifier",
+    )
+    class_metrics = _required_dict(
+        class_fidelity,
+        "metrics",
+        name="quality-bridge class-fidelity metrics",
+    )
+    cofitok_class_metrics = _required_dict(
+        class_metrics,
+        "cofitok",
+        name="quality-bridge CoFiTok class-fidelity metrics",
+    )
+    dense_class_metrics = _required_dict(
+        class_metrics,
+        "dense_identity",
+        name="quality-bridge dense class-fidelity metrics",
+    )
+    sampling_contract = _required_dict(
+        class_fidelity,
+        "sampling_contract",
+        name="quality-bridge class-fidelity sampling contract",
+    )
+
+    class_counts = [
+        expected_shared.get("model.num_classes"),
+        observed_cofitok.get("model.num_classes"),
+        observed_dense.get("model.num_classes"),
+        classifier.get("num_classes"),
+        cofitok_class_metrics.get("num_classes"),
+        dense_class_metrics.get("num_classes"),
+    ]
+    if (
+        any(isinstance(value, bool) or not isinstance(value, int) for value in class_counts)
+        or len(set(class_counts)) != 1
+        or int(class_counts[0]) < 5
+        or pair_validation.get("status") != "pass"
+        or recipe.get("valid") is not True
+    ):
+        raise ValueError("quality-bridge class-count contract differs")
+    num_classes = int(class_counts[0])
+
+    cofitok_path = reject_symlink_chain(
+        cofitok_sampling_path,
+        name="CoFiTok sampling report",
+    )
+    dense_path = reject_symlink_chain(
+        dense_sampling_path,
+        name="dense sampling report",
+    )
+    expected_methods = {
+        "cofitok": (cofitok_path, cofitok_sampling_report),
+        "dense_identity": (dense_path, dense_sampling_report),
+    }
+    for method_name, (sampling_path, sampling_report) in expected_methods.items():
+        method = _required_dict(
+            methods,
+            method_name,
+            name=f"quality-bridge terminal {method_name} method",
+        )
+        budget = int(sampling_report["sampling"]["prefix_budgets"][0])
+        sample_set = sampling_report["sample_sets"][str(budget)]
+        declared = sampling_report["sampling"].get("num_classes")
+        if (
+            method.get("sampling_report") != file_identity(sampling_path)
+            or method.get("sampling") != sampling_report.get("sampling")
+            or int(method.get("selected_prefix_budget", -1)) != budget
+            or int(method.get("sample_count", -1)) != int(sample_set["count"])
+            or method.get("sample_set_sha256") != sample_set.get("sha256")
+            or (declared is not None and int(declared) != num_classes)
+        ):
+            raise ValueError(
+                f"quality-bridge terminal {method_name} sampling binding differs"
+            )
+
+    matched_sampling = {
+        key: value
+        for key, value in cofitok_sampling_report["sampling"].items()
+        if key not in {"prefix_budgets", "num_classes"}
+    }
+    class_sampling = sampling_contract.get("sampling")
+    if isinstance(class_sampling, dict):
+        class_sampling = {
+            key: value
+            for key, value in class_sampling.items()
+            if key != "num_classes"
+        }
+    cofitok_budget = int(cofitok_sampling_report["sampling"]["prefix_budgets"][0])
+    dense_budget = int(dense_sampling_report["sampling"]["prefix_budgets"][0])
+    cofitok_sample_set = cofitok_sampling_report["sample_sets"][str(cofitok_budget)]
+    dense_sample_set = dense_sampling_report["sample_sets"][str(dense_budget)]
+    if (
+        class_sampling != matched_sampling
+        or int(sampling_contract.get("sample_count_per_method", -1))
+        != int(cofitok_sample_set["count"])
+        or int(cofitok_sample_set["count"]) != int(dense_sample_set["count"])
+        or int(sampling_contract.get("cofitok_prefix_budget", -1)) != cofitok_budget
+        or int(sampling_contract.get("dense_prefix_budget", -1)) != dense_budget
+        or sampling_contract.get("cofitok_sample_set_sha256")
+        != cofitok_sample_set.get("sha256")
+        or sampling_contract.get("dense_sample_set_sha256")
+        != dense_sample_set.get("sha256")
+    ):
+        raise ValueError("quality-bridge class-fidelity sampling binding differs")
+
+    class_sources = _required_dict(
+        class_fidelity,
+        "sources",
+        name="quality-bridge class-fidelity sources",
+    )
+    cofitok_class_source = _required_dict(
+        class_sources,
+        "cofitok",
+        name="quality-bridge CoFiTok class-fidelity source",
+    )
+    dense_class_source = _required_dict(
+        class_sources,
+        "dense_identity",
+        name="quality-bridge dense class-fidelity source",
+    )
+    _identity_matches(
+        cofitok_class_source,
+        name="quality-bridge CoFiTok class-fidelity source",
+    )
+    _identity_matches(
+        dense_class_source,
+        name="quality-bridge dense class-fidelity source",
+    )
+
+    return num_classes, {
+        "report": file_identity(path),
+        "num_classes": num_classes,
+        "training_recipe_schema": recipe.get("schema"),
+        "class_fidelity_status": class_fidelity.get("status"),
+        "cofitok_class_fidelity_source": cofitok_class_source,
+        "dense_class_fidelity_source": dense_class_source,
+    }
 
 
 def _calibration_source(
@@ -371,6 +599,7 @@ def build_requested_class_visual_audit(
     dense_sampling_report: str | Path,
     cofitok_dir: str | Path,
     dense_dir: str | Path,
+    quality_result: str | Path,
     classifier_calibration_report: str | Path,
     real_dir: str | Path,
     indices: Sequence[int],
@@ -405,7 +634,13 @@ def build_requested_class_visual_audit(
     if min(indices) < start_index or max(indices) >= stop_index:
         raise ValueError("requested-class visual indices fall outside the sampling window")
 
-    num_classes = int(sampling_protocol["num_classes"])
+    num_classes, quality_source = _quality_bridge_class_contract(
+        quality_result,
+        cofitok_sampling_path=cofitok_sampling_report,
+        dense_sampling_path=dense_sampling_report,
+        cofitok_sampling_report=cofitok_report,
+        dense_sampling_report=dense_report,
+    )
     _, class_order, real_by_class, calibration = _calibration_source(
         classifier_calibration_report,
         real_dir=real_dir,
@@ -466,6 +701,7 @@ def build_requested_class_visual_audit(
         "sources": {
             "cofitok": cofitok_source,
             "dense_identity": dense_source,
+            "quality_bridge_result": quality_source,
         },
         "classifier_calibration": calibration,
         "selected_files": selected_files,
@@ -518,6 +754,7 @@ def main() -> None:
         dense_sampling_report=args.dense_sampling_report,
         cofitok_dir=args.cofitok_dir,
         dense_dir=args.dense_dir,
+        quality_result=args.quality_result,
         classifier_calibration_report=args.classifier_calibration_report,
         real_dir=args.real_dir,
         indices=parse_indices(args.indices),

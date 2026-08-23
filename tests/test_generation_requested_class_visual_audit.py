@@ -7,6 +7,10 @@ import pytest
 import torch
 from torchvision.utils import save_image
 
+from cofitok.generation.quality_bridge import (
+    QUALITY_BRIDGE_RESULT_ROLE,
+    RESULT_AUTHORIZATION_BOUNDARY,
+)
 from cofitok.inference_replay import file_identity
 from scripts.build_generation_requested_class_visual_audit import (
     CLAIM_BOUNDARY,
@@ -97,7 +101,6 @@ def _sampling_report(
         "prefix_budgets": [budget],
         "start_index": 5,
         "num_samples": 5,
-        "num_classes": 5,
         "image_shape": [3, 256, 256],
         "class_schedule": "balanced_modulo",
         "sampler": "ddim",
@@ -123,6 +126,103 @@ def _sampling_report(
                 "tracked_dirty": False,
             },
             "runtime_environment_sha256": "f" * 64,
+        },
+    )
+
+
+def _quality_result(
+    path: Path,
+    cofitok_report: Path,
+    dense_report: Path,
+    *,
+    num_classes: int = 5,
+) -> None:
+    cofitok = json.loads(cofitok_report.read_text(encoding="utf-8"))
+    dense = json.loads(dense_report.read_text(encoding="utf-8"))
+    cofitok_budget = int(cofitok["sampling"]["prefix_budgets"][0])
+    dense_budget = int(dense["sampling"]["prefix_budgets"][0])
+    matched_sampling = {
+        key: value
+        for key, value in cofitok["sampling"].items()
+        if key not in {"prefix_budgets", "num_classes"}
+    }
+    cofitok_class_source = path.parent / "cofitok_class_fidelity.json"
+    dense_class_source = path.parent / "dense_class_fidelity.json"
+    _write_json(cofitok_class_source, {"status": "completed"})
+    _write_json(dense_class_source, {"status": "completed"})
+    _write_json(
+        path,
+        {
+            "schema_version": 1,
+            "status": "completed",
+            "role": QUALITY_BRIDGE_RESULT_ROLE,
+            "authorization_boundary": RESULT_AUTHORIZATION_BOUNDARY,
+            "training": {
+                "pair_validation": {
+                    "status": "pass",
+                    "training_recipe": {
+                        "schema": "test_training_recipe",
+                        "valid": True,
+                        "expected_shared": {"model.num_classes": num_classes},
+                        "observed": {
+                            "cofitok": {"model.num_classes": num_classes},
+                            "dense_identity": {"model.num_classes": num_classes},
+                        },
+                    },
+                }
+            },
+            "terminal": {
+                "methods": {
+                    "cofitok": {
+                        "sampling_report": file_identity(cofitok_report),
+                        "sampling": cofitok["sampling"],
+                        "selected_prefix_budget": cofitok_budget,
+                        "sample_count": cofitok["sample_sets"][str(cofitok_budget)][
+                            "count"
+                        ],
+                        "sample_set_sha256": cofitok["sample_sets"][str(cofitok_budget)][
+                            "sha256"
+                        ],
+                    },
+                    "dense_identity": {
+                        "sampling_report": file_identity(dense_report),
+                        "sampling": dense["sampling"],
+                        "selected_prefix_budget": dense_budget,
+                        "sample_count": dense["sample_sets"][str(dense_budget)][
+                            "count"
+                        ],
+                        "sample_set_sha256": dense["sample_sets"][str(dense_budget)][
+                            "sha256"
+                        ],
+                    },
+                },
+                "class_fidelity": {
+                    "status": "hold",
+                    "classifier": {"num_classes": num_classes},
+                    "metrics": {
+                        "cofitok": {"num_classes": num_classes},
+                        "dense_identity": {"num_classes": num_classes},
+                    },
+                    "sampling_contract": {
+                        "sampling": matched_sampling,
+                        "sample_count_per_method": cofitok["sample_sets"][
+                            str(cofitok_budget)
+                        ]["count"],
+                        "cofitok_prefix_budget": cofitok_budget,
+                        "dense_prefix_budget": dense_budget,
+                        "cofitok_sample_set_sha256": cofitok["sample_sets"][
+                            str(cofitok_budget)
+                        ]["sha256"],
+                        "dense_sample_set_sha256": dense["sample_sets"][
+                            str(dense_budget)
+                        ]["sha256"],
+                    },
+                    "sources": {
+                        "cofitok": file_identity(cofitok_class_source),
+                        "dense_identity": file_identity(dense_class_source),
+                    },
+                },
+            },
         },
     )
 
@@ -154,12 +254,15 @@ def test_builds_and_replays_source_bound_real_cofitok_dense_panels(
     order = [f"n{index:08d}" for index in range(5)]
     calibration, real_dir = _calibration(tmp_path, order)
     cofitok_report, dense_report, cofitok_dir, dense_dir = _matched_sources(tmp_path)
+    quality_result = tmp_path / "quality_result.json"
+    _quality_result(quality_result, cofitok_report, dense_report)
     output = tmp_path / "visual_audit"
     report = build_requested_class_visual_audit(
         cofitok_sampling_report=cofitok_report,
         dense_sampling_report=dense_report,
         cofitok_dir=cofitok_dir,
         dense_dir=dense_dir,
+        quality_result=quality_result,
         classifier_calibration_report=calibration,
         real_dir=real_dir,
         indices=[5, 6, 7, 8, 9],
@@ -189,6 +292,7 @@ def test_builds_and_replays_source_bound_real_cofitok_dense_panels(
         dense_sampling_report=dense_report,
         cofitok_dir=cofitok_dir,
         dense_dir=dense_dir,
+        quality_result=quality_result,
         classifier_calibration_report=calibration,
         real_dir=real_dir,
         indices=[5, 6, 7, 8, 9],
@@ -204,6 +308,8 @@ def test_rejects_protocol_drift_between_matched_sources(tmp_path: Path) -> None:
     calibration, real_dir = _calibration(tmp_path, order)
     cofitok_report, dense_report, cofitok_dir, dense_dir = _matched_sources(tmp_path)
     _sampling_report(dense_report, dense_dir, budget=1, guidance_scale=2.0)
+    quality_result = tmp_path / "quality_result.json"
+    _quality_result(quality_result, cofitok_report, dense_report)
 
     with pytest.raises(ValueError, match="different sampling protocols"):
         build_requested_class_visual_audit(
@@ -211,6 +317,29 @@ def test_rejects_protocol_drift_between_matched_sources(tmp_path: Path) -> None:
             dense_sampling_report=dense_report,
             cofitok_dir=cofitok_dir,
             dense_dir=dense_dir,
+            quality_result=quality_result,
+            classifier_calibration_report=calibration,
+            real_dir=real_dir,
+            indices=[5],
+            panel_columns=1,
+            output_dir=tmp_path / "visual_audit",
+        )
+
+
+def test_rejects_quality_result_class_count_drift(tmp_path: Path) -> None:
+    order = [f"n{index:08d}" for index in range(5)]
+    calibration, real_dir = _calibration(tmp_path, order)
+    cofitok_report, dense_report, cofitok_dir, dense_dir = _matched_sources(tmp_path)
+    quality_result = tmp_path / "quality_result.json"
+    _quality_result(quality_result, cofitok_report, dense_report, num_classes=6)
+
+    with pytest.raises(ValueError, match="calibration and sampling class counts differ"):
+        build_requested_class_visual_audit(
+            cofitok_sampling_report=cofitok_report,
+            dense_sampling_report=dense_report,
+            cofitok_dir=cofitok_dir,
+            dense_dir=dense_dir,
+            quality_result=quality_result,
             classifier_calibration_report=calibration,
             real_dir=real_dir,
             indices=[5],
