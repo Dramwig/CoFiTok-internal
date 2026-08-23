@@ -78,3 +78,9 @@ one expected random-token shell snippet used the expanded rather than literal
 `${QUALITY_ROOT}` form. It created no marker, receipt, process, or experiment.
 The corrected commit above passed both tests and live preflight before the
 single deployment.
+
+The local deployment record is commit
+`aa0a5c789910d69847143646cddb4b4dd23df5be`. Its evidence bundle is
+`D:/cofitok-bundles/terminal-route-supersession-interlock-evidence-aa0a5c7.bundle`,
+21,642 bytes, SHA256
+`90a900ccd02937415818818fec8d06026c615a667c3ca6cf2600ea2a8d61974c`.
