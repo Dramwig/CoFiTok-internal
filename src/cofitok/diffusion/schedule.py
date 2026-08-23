@@ -63,6 +63,16 @@ class DiffusionSchedule:
         sigma = self.sqrt_one_minus_alphas_cumprod[timesteps].view(-1, 1, 1, 1)
         return (noisy_images - sigma * epsilon) / alpha.clamp_min(1e-8)
 
+    def predict_epsilon_from_x0(
+        self,
+        noisy_images: torch.Tensor,
+        predicted_x0: torch.Tensor,
+        timesteps: torch.Tensor,
+    ) -> torch.Tensor:
+        alpha = self.sqrt_alphas_cumprod[timesteps].view(-1, 1, 1, 1)
+        sigma = self.sqrt_one_minus_alphas_cumprod[timesteps].view(-1, 1, 1, 1)
+        return (noisy_images - alpha * predicted_x0) / sigma.clamp_min(1e-8)
+
     def snr(self, timesteps: torch.Tensor) -> torch.Tensor:
         alpha_squared = self.alphas_cumprod[timesteps]
         sigma_squared = 1.0 - alpha_squared

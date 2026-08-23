@@ -174,6 +174,7 @@ def ddim_sample(
     start_timestep: int | None = None,
     scale_initial_noise_by_sigma: bool = False,
     dynamic_threshold_percentile: float = 0.0,
+    recompute_epsilon_after_x0_constraint: bool = False,
 ) -> torch.Tensor:
     if eta < 0.0:
         raise ValueError("eta must be non-negative")
@@ -183,6 +184,8 @@ def ddim_sample(
         raise ValueError("cfg_batch_mode must be batched or sequential")
     if dynamic_threshold_percentile > 0.0 and not clip_x0:
         raise ValueError("dynamic thresholding requires clip_x0")
+    if recompute_epsilon_after_x0_constraint and not clip_x0:
+        raise ValueError("epsilon recomputation requires an x0 constraint")
     model.eval()
     timesteps = select_sampling_timesteps(
         schedule.num_train_timesteps,
@@ -219,6 +222,12 @@ def ddim_sample(
         if previous < 0:
             images = predicted_x0
             continue
+        if recompute_epsilon_after_x0_constraint:
+            epsilon = schedule.predict_epsilon_from_x0(
+                images,
+                predicted_x0,
+                time_batch,
+            )
         alpha_t = schedule.alphas_cumprod[timestep]
         alpha_previous = schedule.alphas_cumprod[previous]
         sigma = eta * torch.sqrt(

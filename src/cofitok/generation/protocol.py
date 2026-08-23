@@ -106,6 +106,11 @@ def sampling_protocol_contract(
         issues.append("initial_noise_scale.binding")
     if initial_noise_scale == "schedule_sigma" and scale_initial_noise is not True:
         issues.append("initial_noise_scale.binding")
+    recompute_epsilon = sampling.get("recompute_epsilon_after_x0_constraint")
+    if recompute_epsilon is not None and not isinstance(recompute_epsilon, bool):
+        issues.append("recompute_epsilon_after_x0_constraint")
+    if recompute_epsilon is True and sampling.get("clip_x0") is not True:
+        issues.append("recompute_epsilon_after_x0_constraint.binding")
     requested_start_timestep = sampling.get("requested_start_timestep")
     if requested_start_timestep is not None and (
         isinstance(requested_start_timestep, bool)
@@ -181,6 +186,11 @@ def sampling_protocol_contract(
             issues.append("formal_x0_constraint")
         if dynamic_threshold_percentile != 0.0:
             issues.append("formal_dynamic_threshold_percentile")
+        if sampling.get("recompute_epsilon_after_x0_constraint") not in {
+            None,
+            False,
+        }:
+            issues.append("formal_recompute_epsilon_after_x0_constraint")
         random_stream = sampling.get("random_stream", {})
         for field in (
             "prefix_budgets_share_stream",
@@ -215,6 +225,7 @@ def sampling_protocol_contract(
                 "requested_start_timestep",
                 "start_timestep",
                 "scale_initial_noise_by_sigma",
+                "recompute_epsilon_after_x0_constraint",
                 "initial_noise_scale",
                 "precision",
                 "seed",

@@ -106,6 +106,10 @@ def parse_args() -> argparse.Namespace:
         default="clip",
     )
     parser.add_argument("--dynamic-threshold-percentile", type=float, default=0.995)
+    parser.add_argument(
+        "--recompute-epsilon-after-x0-constraint",
+        action="store_true",
+    )
     parser.add_argument("--weights", choices=["ema", "model"], default="ema")
     parser.add_argument("--precision", choices=["fp32", "bf16", "fp16"], default="bf16")
     parser.add_argument("--require-release-authorization", action="store_true")
@@ -234,6 +238,9 @@ def _run_inference_locked(args: argparse.Namespace) -> dict[str, Any]:
     scale_initial_noise_by_sigma = bool(
         getattr(args, "scale_initial_noise_by_sigma", False)
     )
+    recompute_epsilon_after_x0_constraint = bool(
+        getattr(args, "recompute_epsilon_after_x0_constraint", False)
+    )
     x0_constraint = getattr(args, "x0_constraint", "clip")
     clip_x0 = x0_constraint != "none"
     dynamic_threshold_percentile = (
@@ -315,6 +322,9 @@ def _run_inference_locked(args: argparse.Namespace) -> dict[str, Any]:
         "requested_start_timestep": requested_start_timestep,
         "start_timestep": actual_timesteps[0],
         "scale_initial_noise_by_sigma": scale_initial_noise_by_sigma,
+        "recompute_epsilon_after_x0_constraint": (
+            recompute_epsilon_after_x0_constraint
+        ),
         "initial_noise_scale": (
             "schedule_sigma" if scale_initial_noise_by_sigma else "unit"
         ),
@@ -454,6 +464,9 @@ def _run_inference_locked(args: argparse.Namespace) -> dict[str, Any]:
                         dynamic_threshold_percentile=(dynamic_threshold_percentile),
                         start_timestep=requested_start_timestep,
                         scale_initial_noise_by_sigma=(scale_initial_noise_by_sigma),
+                        recompute_epsilon_after_x0_constraint=(
+                            recompute_epsilon_after_x0_constraint
+                        ),
                         precision=args.precision,
                     )
                 )

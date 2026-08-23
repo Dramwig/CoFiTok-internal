@@ -74,6 +74,11 @@ def parse_args() -> argparse.Namespace:
         default=0.995,
         help="Per-sample |x0| quantile used only with dynamic_threshold.",
     )
+    parser.add_argument(
+        "--recompute-epsilon-after-x0-constraint",
+        action="store_true",
+        help="Re-derive epsilon from constrained x0 before the DDIM direction update.",
+    )
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--start-index", type=int, default=0)
     parser.add_argument("--weights", choices=["ema", "model"], default="ema")
@@ -297,6 +302,9 @@ def _run_sampling(args: argparse.Namespace) -> None:
         "requested_start_timestep": requested_start_timestep,
         "start_timestep": actual_timesteps[0],
         "scale_initial_noise_by_sigma": args.scale_initial_noise_by_sigma,
+        "recompute_epsilon_after_x0_constraint": (
+            args.recompute_epsilon_after_x0_constraint
+        ),
         "initial_noise_scale": (
             "schedule_sigma" if args.scale_initial_noise_by_sigma else "unit"
         ),
@@ -401,6 +409,9 @@ def _run_sampling(args: argparse.Namespace) -> None:
                     dynamic_threshold_percentile=(dynamic_threshold_percentile),
                     start_timestep=requested_start_timestep,
                     scale_initial_noise_by_sigma=(args.scale_initial_noise_by_sigma),
+                    recompute_epsilon_after_x0_constraint=(
+                        args.recompute_epsilon_after_x0_constraint
+                    ),
                     precision=args.precision,
                 )
                 samples = session.generate(request).images

@@ -62,6 +62,11 @@ def test_formal_sampling_protocol_accepts_exact_stage_contract(stage: str) -> No
         ("num_samples", 2_048, "formal_num_samples"),
         ("sample_steps", 20, "actual_timesteps"),
         ("clip_x0", False, "formal_clip_x0"),
+        (
+            "recompute_epsilon_after_x0_constraint",
+            True,
+            "formal_recompute_epsilon_after_x0_constraint",
+        ),
         ("guidance_scale", 2.0, "formal_guidance_scale"),
         ("precision", "fp32", "formal_precision"),
     ],

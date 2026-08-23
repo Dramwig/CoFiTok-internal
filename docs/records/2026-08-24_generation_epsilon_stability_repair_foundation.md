@@ -53,24 +53,30 @@ representation.
    - New requests may select no constraint or per-sample dynamic thresholding.
    - Dynamic thresholding records its percentile and is implemented in fp32
      before restoring the input dtype.
+   - An optional consistency control re-derives epsilon from constrained `x0`
+     before the DDIM direction update. It is off by default, so the numerical
+     legacy sampling path is unchanged; historical artifacts that omit the
+     new field remain valid under the protocol contract.
 
 4. **Fail-closed formal protocol compatibility**
    - Historical sampling reports that omit the new optional fields remain
      valid under the existing protocol contract.
    - Existing milestone/scaling/full formal contracts reject a nonterminal
-     start, sigma-scaled initialization, or dynamic thresholding. A future
-     experiment must therefore use a new versioned evaluator/gate rather than
-     silently replacing locked DDIM evidence.
+     start, sigma-scaled initialization, dynamic thresholding, or constrained
+     `x0` epsilon recomputation. A future experiment must therefore use a new
+     versioned evaluator/gate rather than silently replacing locked DDIM
+     evidence.
 
 ## Verification
 
 The isolated worktree uses its own `uv` environment. Targeted CPU coverage
 includes diffusion/SNR math, loss integration, pair fairness, exact resume,
 sampling streams, inference provenance, formal protocol rejection, and legacy
-loss behavior. The targeted suite passed. The full repository suite then
-passed all `1,088` collected tests (with the repository's existing skips) from
-a workspace layout that exposes the unchanged paper tree expected by the
-paper-structure tests.
+loss behavior. A direct two-step DDIM test also verifies that the optional
+reconstructed epsilon, rather than the pre-constraint model epsilon, drives
+the next direction update. The targeted suite passed. The full repository
+suite then completed `1,092` collected tests as `1,086 passed, 6 skipped` in
+`272.46s`; `git diff --check` and Python `compileall` also passed.
 
 ## Authorization
 

@@ -31,6 +31,7 @@ class GenerationRequest:
     dynamic_threshold_percentile: float = 0.0
     start_timestep: int | None = None
     scale_initial_noise_by_sigma: bool = False
+    recompute_epsilon_after_x0_constraint: bool = False
     precision: str = "bf16"
 
     def __post_init__(self) -> None:
@@ -74,12 +75,16 @@ class GenerationRequest:
             raise ValueError("start_timestep must be a non-negative integer or None")
         if not isinstance(self.scale_initial_noise_by_sigma, bool):
             raise ValueError("scale_initial_noise_by_sigma must be boolean")
+        if not isinstance(self.recompute_epsilon_after_x0_constraint, bool):
+            raise ValueError("recompute_epsilon_after_x0_constraint must be boolean")
         if self.dynamic_threshold_percentile != 0.0 and not (
             0.5 <= self.dynamic_threshold_percentile < 1.0
         ):
             raise ValueError("dynamic_threshold_percentile must be zero or in [0.5, 1)")
         if self.dynamic_threshold_percentile > 0.0 and not self.clip_x0:
             raise ValueError("dynamic thresholding requires clip_x0")
+        if self.recompute_epsilon_after_x0_constraint and not self.clip_x0:
+            raise ValueError("epsilon recomputation requires an x0 constraint")
         if self.precision not in {"fp32", "bf16", "fp16"}:
             raise ValueError("precision must be fp32, bf16, or fp16")
 
@@ -177,6 +182,9 @@ class GenerationSession:
                 start_timestep=request.start_timestep,
                 scale_initial_noise_by_sigma=request.scale_initial_noise_by_sigma,
                 dynamic_threshold_percentile=(request.dynamic_threshold_percentile),
+                recompute_epsilon_after_x0_constraint=(
+                    request.recompute_epsilon_after_x0_constraint
+                ),
             )
         if tuple(images.shape) != shape or not bool(
             torch.isfinite(images).all().item()
@@ -213,6 +221,9 @@ class GenerationSession:
             "requested_start_timestep": request.start_timestep,
             "start_timestep": actual_timesteps[0],
             "scale_initial_noise_by_sigma": (request.scale_initial_noise_by_sigma),
+            "recompute_epsilon_after_x0_constraint": (
+                request.recompute_epsilon_after_x0_constraint
+            ),
             "initial_noise_scale": (
                 "schedule_sigma" if request.scale_initial_noise_by_sigma else "unit"
             ),
@@ -274,6 +285,9 @@ class GenerationSession:
                 "requested_start_timestep": request.start_timestep,
                 "start_timestep": actual_timesteps[0],
                 "scale_initial_noise_by_sigma": (request.scale_initial_noise_by_sigma),
+                "recompute_epsilon_after_x0_constraint": (
+                    request.recompute_epsilon_after_x0_constraint
+                ),
                 "precision": request.precision,
                 "image_shape": list(shape[1:]),
             },

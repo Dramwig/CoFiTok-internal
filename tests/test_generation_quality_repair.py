@@ -34,6 +34,24 @@ class _ZeroModel(torch.nn.Module):
         )
 
 
+class _RecordingZeroModel(torch.nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.config = SimpleNamespace(num_classes=0)
+        self.inputs: list[torch.Tensor] = []
+
+    def forward(self, images, timesteps, class_labels=None, force_unconditional=False):
+        del timesteps, class_labels, force_unconditional
+        self.inputs.append(images.detach().clone())
+        zeros = torch.zeros_like(images)
+        return CoFiTokOutput(
+            tokens=[zeros],
+            components=[zeros],
+            prefix_epsilons=[zeros],
+            epsilon=zeros,
+        )
+
+
 def _single_output(epsilon: torch.Tensor) -> CoFiTokOutput:
     return CoFiTokOutput(
         tokens=[torch.zeros_like(epsilon)],
@@ -150,6 +168,87 @@ def test_initial_noise_can_be_scaled_by_selected_schedule_sigma() -> None:
     )
 
 
+def test_epsilon_can_be_reconstructed_after_x0_constraint() -> None:
+    schedule = DiffusionSchedule(
+        DiffusionConfig(num_train_timesteps=8, schedule_type="cosine"),
+        device="cpu",
+    )
+    clean = torch.randn(2, 1, 2, 2)
+    noise = torch.randn_like(clean)
+    timesteps = torch.tensor([2, 6])
+    noisy = schedule.add_noise(clean, noise, timesteps)
+
+    torch.testing.assert_close(
+        schedule.predict_epsilon_from_x0(noisy, clean, timesteps),
+        noise,
+    )
+
+
+def test_ddim_recomputed_epsilon_drives_the_next_direction_update() -> None:
+    schedule = DiffusionSchedule(
+        DiffusionConfig(num_train_timesteps=8, schedule_type="cosine"),
+        device="cpu",
+    )
+    legacy_model = _RecordingZeroModel()
+    consistent_model = _RecordingZeroModel()
+    common = {
+        "schedule": schedule,
+        "shape": (1, 1, 2, 2),
+        "sample_steps": 2,
+        "prefix_budget": 1,
+        "eta": 0.0,
+        "clip_x0": True,
+        "device": torch.device("cpu"),
+        "start_timestep": 7,
+    }
+
+    ddim_sample(
+        legacy_model,
+        generator=torch.Generator().manual_seed(17),
+        **common,
+    )
+    ddim_sample(
+        consistent_model,
+        generator=torch.Generator().manual_seed(17),
+        recompute_epsilon_after_x0_constraint=True,
+        **common,
+    )
+
+    assert len(legacy_model.inputs) == 2
+    assert len(consistent_model.inputs) == 2
+    initial = legacy_model.inputs[0]
+    torch.testing.assert_close(initial, consistent_model.inputs[0])
+    timestep = torch.tensor([7])
+    constrained_x0 = schedule.predict_x0_from_epsilon(
+        initial,
+        torch.zeros_like(initial),
+        timestep,
+    ).clamp(-1.0, 1.0)
+    consistent_epsilon = schedule.predict_epsilon_from_x0(
+        initial,
+        constrained_x0,
+        timestep,
+    )
+    alpha_previous = schedule.alphas_cumprod[0]
+    legacy_next = torch.sqrt(alpha_previous) * constrained_x0
+    consistent_next = legacy_next + torch.sqrt(
+        1.0 - alpha_previous
+    ) * consistent_epsilon
+
+    torch.testing.assert_close(legacy_model.inputs[1], legacy_next)
+    torch.testing.assert_close(consistent_model.inputs[1], consistent_next)
+    assert not torch.allclose(legacy_model.inputs[1], consistent_model.inputs[1])
+
+
+def test_epsilon_recomputation_requires_x0_constraint() -> None:
+    with pytest.raises(ValueError, match="epsilon recomputation"):
+        GenerationRequest(
+            seeds=(0,),
+            clip_x0=False,
+            recompute_epsilon_after_x0_constraint=True,
+        )
+
+
 def test_dynamic_threshold_is_per_sample_and_bounded() -> None:
     predicted = torch.tensor(
         [
@@ -185,6 +284,7 @@ def test_repair_sampling_protocol_is_explicit_and_non_formal() -> None:
         "clip_x0": True,
         "x0_constraint": "dynamic_threshold",
         "dynamic_threshold_percentile": 0.995,
+        "recompute_epsilon_after_x0_constraint": True,
         "guidance_scale": 1.5,
         "guidance_rescale": 0.0,
         "eta": 0.0,
@@ -213,3 +313,4 @@ def test_repair_sampling_protocol_is_explicit_and_non_formal() -> None:
     assert formal["valid"] is False
     assert "formal_start_timestep" in formal["issues"]
     assert "formal_x0_constraint" in formal["issues"]
+    assert "formal_recompute_epsilon_after_x0_constraint" in formal["issues"]
