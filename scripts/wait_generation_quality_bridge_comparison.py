@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -93,6 +94,16 @@ def is_sha256(value: Any) -> bool:
         and value == value.lower()
         and all(character in "0123456789abcdef" for character in value)
     )
+
+
+def validated_report_dir_name(value: str, *, prefix: str, label: str) -> str:
+    if (
+        not value.startswith(prefix)
+        or re.fullmatch(r"[a-z0-9][a-z0-9_.-]*", value) is None
+        or Path(value).name != value
+    ):
+        raise ValueError(f"{label} is invalid")
+    return value
 
 
 def reject_symlink_chain(path: str | Path, *, name: str) -> Path:
@@ -329,6 +340,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--official-related", type=Path, required=True)
     parser.add_argument("--expected-official-related-sha256", required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument(
+        "--expected-output-dir-name",
+        default="quality_bridge_comparison_v1",
+    )
+    parser.add_argument(
+        "--expected-terminal-dir-name",
+        default="terminal_system_claim_guard_v1",
+    )
     parser.add_argument("--status-output", type=Path, required=True)
     parser.add_argument("--deployment-receipt-output", type=Path, required=True)
     parser.add_argument("--lock", type=Path, required=True)
@@ -350,6 +369,22 @@ def parse_args() -> argparse.Namespace:
             parser.error(f"{name} SHA256 is invalid")
     if args.poll_seconds <= 0.0 or args.timeout_seconds <= 0.0:
         parser.error("comparison waiter timing values must be positive")
+    for label, value, prefix in (
+        (
+            "comparison output directory name",
+            args.expected_output_dir_name,
+            "quality_bridge_comparison_v",
+        ),
+        (
+            "terminal guard directory name",
+            args.expected_terminal_dir_name,
+            "terminal_system_claim_guard_v",
+        ),
+    ):
+        try:
+            validated_report_dir_name(value, prefix=prefix, label=label)
+        except ValueError:
+            parser.error(f"{label} is invalid")
     return args
 
 
@@ -393,8 +428,18 @@ def static_context(args: argparse.Namespace) -> dict[str, Any]:
     ).resolve()
     waiter_source = Path(__file__).resolve()
 
-    expected_output_dir = quality_root / "reports" / "quality_bridge_comparison_v1"
-    expected_terminal_root = quality_root / "reports" / "terminal_system_claim_guard_v1"
+    output_dir_name = validated_report_dir_name(
+        args.expected_output_dir_name,
+        prefix="quality_bridge_comparison_v",
+        label="comparison output directory name",
+    )
+    terminal_dir_name = validated_report_dir_name(
+        args.expected_terminal_dir_name,
+        prefix="terminal_system_claim_guard_v",
+        label="terminal guard directory name",
+    )
+    expected_output_dir = quality_root / "reports" / output_dir_name
+    expected_terminal_root = quality_root / "reports" / terminal_dir_name
     if (
         output_dir != expected_output_dir
         or status_output != output_dir / "waiter_status.json"
@@ -845,8 +890,14 @@ def safe_status_path(args: argparse.Namespace) -> Path | None:
             args.status_output,
             name="quality bridge comparison waiter status",
         ).resolve()
+        output_dir_name = validated_report_dir_name(
+            args.expected_output_dir_name,
+            prefix="quality_bridge_comparison_v",
+            label="comparison output directory name",
+        )
         if (
-            output_dir != quality_root / "reports" / "quality_bridge_comparison_v1"
+            output_dir
+            != quality_root / "reports" / output_dir_name
             or status != output_dir / "waiter_status.json"
         ):
             return None
