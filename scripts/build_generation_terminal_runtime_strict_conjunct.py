@@ -53,6 +53,10 @@ DIRECT_RUNTIME_FIELDS = (
     "training_throughput_direct_comparison_allowed",
     "cost_efficiency_ranking_allowed",
 )
+RUNTIME_DECISIONS = {
+    "canonical_observational_runtime_claim_semantically_verified": True,
+    "canonical_runtime_claim_rejected_strict_guard_controls": False,
+}
 
 
 def _is_sha256(value: Any) -> bool:
@@ -187,12 +191,13 @@ def _runtime_comparison(
     strict = report.get("strict_policy")
     policy = report.get("claim_policy")
     boundary = report.get("claim_boundary")
+    decision = report.get("decision")
+    canonical_trusted = RUNTIME_DECISIONS.get(decision)
     if (
         report.get("schema_version") != 1
         or report.get("role") != RUNTIME_COMPARISON_ROLE
         or report.get("status") != "pass"
-        or report.get("decision")
-        != "canonical_observational_runtime_claim_semantically_verified"
+        or decision not in RUNTIME_DECISIONS
         or not isinstance(training, Mapping)
         or training.get("revision") != expected_training_revision
         or training.get("branch") != expected_training_branch
@@ -202,7 +207,7 @@ def _runtime_comparison(
         != "observational_physical_lower_bounds_only"
         or strict.get("direct_ranking_allowed") is not False
         or not isinstance(policy, Mapping)
-        or policy.get("canonical_runtime_claim_trusted") is not True
+        or policy.get("canonical_runtime_claim_trusted") is not canonical_trusted
         or policy.get("strict_runtime_claim_guard_required") is not True
         or policy.get("physical_lower_bound_label_required") is not True
         or policy.get("observational_only_label_required") is not True
@@ -223,11 +228,22 @@ def _runtime_comparison(
         or boundary.get("full_300k_launch_allowed") is not False
     ):
         raise ValueError("runtime strict comparison contract differs")
+    recovery_required = policy.get("strict_recovery_binding_required")
+    recovery_verified = policy.get("strict_recovery_binding_verified")
+    if canonical_trusted is False and (
+        recovery_required is not True or recovery_verified is not True
+    ):
+        raise ValueError("runtime strict rejection recovery binding differs")
+    if recovery_required is True and recovery_verified is not True:
+        raise ValueError("runtime strict recovery binding is not verified")
     return {
-        "decision": report["decision"],
+        "decision": decision,
         "physical_lower_bound_methods": sorted(EXPECTED_METHODS),
         "direct_runtime_ranking_allowed": False,
-        "canonical_runtime_claim_trusted": True,
+        "canonical_runtime_claim_trusted": canonical_trusted,
+        "strict_runtime_guard_controls": not canonical_trusted,
+        "strict_recovery_binding_required": recovery_required is True,
+        "strict_recovery_binding_verified": recovery_verified is True,
     }
 
 
@@ -250,7 +266,7 @@ def _runtime_waiter(
         or comparison.get("decision") != runtime["decision"]
         or not isinstance(comparison.get("claim_policy"), Mapping)
         or comparison["claim_policy"].get("canonical_runtime_claim_trusted")
-        is not True
+        is not runtime["canonical_runtime_claim_trusted"]
         or comparison["claim_policy"].get("cost_efficiency_ranking_allowed")
         is not False
         or not isinstance(scope, Mapping)
@@ -354,7 +370,18 @@ def build_conjunct(
             "terminal_completion_audit_required": True,
             "runtime_strict_comparator_required": True,
             "runtime_strict_comparator_passed": True,
-            "canonical_runtime_claim_trusted_only_as_observational": True,
+            "canonical_runtime_claim_trusted_only_as_observational": runtime[
+                "canonical_runtime_claim_trusted"
+            ],
+            "strict_runtime_guard_controls": runtime[
+                "strict_runtime_guard_controls"
+            ],
+            "strict_recovery_binding_required": runtime[
+                "strict_recovery_binding_required"
+            ],
+            "strict_recovery_binding_verified": runtime[
+                "strict_recovery_binding_verified"
+            ],
             "physical_lower_bound_label_required": True,
             "training_wall_clock_direct_comparison_allowed": False,
             "training_throughput_direct_comparison_allowed": False,

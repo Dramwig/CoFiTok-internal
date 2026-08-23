@@ -111,14 +111,19 @@ def _terminal_status(
     )
 
 
-def _runtime_comparison(path: Path) -> dict:
+def _runtime_comparison(path: Path, *, canonical_trusted: bool = True) -> dict:
+    decision = (
+        "canonical_observational_runtime_claim_semantically_verified"
+        if canonical_trusted
+        else "canonical_runtime_claim_rejected_strict_guard_controls"
+    )
     return _write(
         path,
         {
             "schema_version": 1,
             "role": "generation_runtime_claim_guard_strict_comparison",
             "status": "pass",
-            "decision": "canonical_observational_runtime_claim_semantically_verified",
+            "decision": decision,
             "training_identity": {
                 "revision": TRAINING_REVISION,
                 "branch": TRAINING_BRANCH,
@@ -129,7 +134,7 @@ def _runtime_comparison(path: Path) -> dict:
                 "direct_ranking_allowed": False,
             },
             "claim_policy": {
-                "canonical_runtime_claim_trusted": True,
+                "canonical_runtime_claim_trusted": canonical_trusted,
                 "strict_runtime_claim_guard_required": True,
                 "adjusted_elapsed_point_estimate_reporting_allowed": True,
                 "physical_lower_bound_label_required": True,
@@ -141,6 +146,8 @@ def _runtime_comparison(path: Path) -> dict:
                 "equal_gpu_hours_budget_claim_allowed": False,
                 "equal_training_flops_budget_claim_allowed": False,
                 "quality_or_generation_advantage_claim_allowed": False,
+                "strict_recovery_binding_required": not canonical_trusted,
+                "strict_recovery_binding_verified": not canonical_trusted,
             },
             "claim_boundary": {
                 "diagnostic_non_authorizing": True,
@@ -156,9 +163,19 @@ def _runtime_comparison(path: Path) -> dict:
     )
 
 
-def _runtime_status(path: Path, comparison_identity: dict) -> dict:
+def _runtime_status(
+    path: Path,
+    comparison_identity: dict,
+    *,
+    canonical_trusted: bool = True,
+) -> dict:
+    decision = (
+        "canonical_observational_runtime_claim_semantically_verified"
+        if canonical_trusted
+        else "canonical_runtime_claim_rejected_strict_guard_controls"
+    )
     policy = {
-        "canonical_runtime_claim_trusted": True,
+        "canonical_runtime_claim_trusted": canonical_trusted,
         "cost_efficiency_ranking_allowed": False,
     }
     return _write(
@@ -167,12 +184,12 @@ def _runtime_status(path: Path, comparison_identity: dict) -> dict:
             "schema_version": 1,
             "role": "generation_runtime_claim_guard_strict_comparison_waiter",
             "status": "pass",
-            "detail": "canonical_observational_runtime_claim_semantically_verified",
+            "detail": decision,
             "pid": 895548,
             "comparison": {
                 "identity": comparison_identity,
                 "status": "pass",
-                "decision": "canonical_observational_runtime_claim_semantically_verified",
+                "decision": decision,
                 "claim_policy": policy,
             },
             "scope": {
@@ -238,6 +255,47 @@ def test_conjunct_requires_both_terminal_and_runtime_strict_pass(tmp_path: Path)
     assert report["claim_policy"]["runtime_strict_comparator_passed"] is True
     assert report["claim_policy"]["cost_efficiency_ranking_allowed"] is False
     assert report["authorization_boundary"] == AUTHORIZATION_BOUNDARY
+
+
+def test_conjunct_accepts_fail_closed_strict_guard_control(tmp_path: Path) -> None:
+    source = _sources(tmp_path)
+    source["runtime_identity"] = _runtime_comparison(
+        source["runtime_path"],
+        canonical_trusted=False,
+    )
+    source["runtime_status_identity"] = _runtime_status(
+        source["runtime_status_path"],
+        source["runtime_identity"],
+        canonical_trusted=False,
+    )
+
+    report = _build(source)
+
+    assert report["status"] == "pass"
+    assert report["replay"]["runtime_strict_comparison"][
+        "canonical_runtime_claim_trusted"
+    ] is False
+    assert report["claim_policy"]["strict_runtime_guard_controls"] is True
+    assert report["claim_policy"]["strict_recovery_binding_verified"] is True
+    assert report["claim_policy"]["cost_efficiency_ranking_allowed"] is False
+
+
+def test_conjunct_rejects_unbound_strict_guard_control(tmp_path: Path) -> None:
+    source = _sources(tmp_path)
+    runtime = json.loads(source["runtime_path"].read_text(encoding="utf-8"))
+    runtime["decision"] = "canonical_runtime_claim_rejected_strict_guard_controls"
+    runtime["claim_policy"]["canonical_runtime_claim_trusted"] = False
+    runtime["claim_policy"]["strict_recovery_binding_required"] = True
+    runtime["claim_policy"]["strict_recovery_binding_verified"] = False
+    source["runtime_identity"] = _write(source["runtime_path"], runtime)
+    source["runtime_status_identity"] = _runtime_status(
+        source["runtime_status_path"],
+        source["runtime_identity"],
+        canonical_trusted=False,
+    )
+
+    with pytest.raises(ValueError, match="recovery binding"):
+        _build(source)
 
 
 def test_conjunct_rejects_runtime_direct_ranking_drift(tmp_path: Path) -> None:
