@@ -17,13 +17,9 @@ from cofitok.inference_replay import (
 
 try:
     import audit_generation_matched_uncertainty as uncertainty_audit
-    import build_generation_capacity_claim_evidence_addendum as capacity_addendum
     import build_generation_quality_bridge_statistical_claim_qualification as quality_claim
 except ModuleNotFoundError:  # Imported as scripts.<module> by tests.
     from scripts import audit_generation_matched_uncertainty as uncertainty_audit
-    from scripts import (
-        build_generation_capacity_claim_evidence_addendum as capacity_addendum,
-    )
     from scripts import (
         build_generation_quality_bridge_statistical_claim_qualification as quality_claim,
     )
@@ -308,6 +304,18 @@ def _quality_bridge_source(
 def _capacity_source(
     report: Mapping[str, Any],
 ) -> tuple[bool, float, float, Any]:
+    try:
+        import build_generation_capacity_claim_evidence_addendum as capacity_addendum
+    except ModuleNotFoundError:
+        try:
+            from scripts import (
+                build_generation_capacity_claim_evidence_addendum as capacity_addendum,
+            )
+        except (ImportError, ModuleNotFoundError) as error:
+            raise RuntimeError(
+                "capacity_full_300k claim support is unavailable in this "
+                "quality-bridge-only integration checkout"
+            ) from error
     status = report.get("status")
     policy = report.get("claim_policy")
     evidence = report.get("matched_evidence")

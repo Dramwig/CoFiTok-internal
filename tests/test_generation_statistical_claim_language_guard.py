@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import sys
+from types import SimpleNamespace
 from pathlib import Path
 from typing import Any
 
@@ -8,11 +10,25 @@ import pytest
 
 from cofitok.inference_replay import file_identity
 from scripts import audit_generation_matched_uncertainty as uncertainty_audit
-from scripts import build_generation_capacity_claim_evidence_addendum as capacity_addendum
 from scripts import (
     build_generation_quality_bridge_statistical_claim_qualification as quality_claim,
 )
 from scripts import build_generation_statistical_claim_language_guard as guard
+
+
+CAPACITY_REPORT_SCHEMA_VERSION = 1
+CAPACITY_REPORT_ROLE = "generation_capacity_claim_evidence_addendum"
+
+
+def _install_capacity_contract(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setitem(
+        sys.modules,
+        "build_generation_capacity_claim_evidence_addendum",
+        SimpleNamespace(
+            REPORT_SCHEMA_VERSION=CAPACITY_REPORT_SCHEMA_VERSION,
+            REPORT_ROLE=CAPACITY_REPORT_ROLE,
+        ),
+    )
 
 
 def _write(path: Path, payload: dict[str, Any]) -> dict[str, Any]:
@@ -130,8 +146,8 @@ def _quality_source(
 def _capacity_source(tmp_path: Path, *, passed: bool) -> dict[str, Any]:
     uncertainty = _uncertainty(tmp_path, passed=passed)
     payload = {
-        "schema_version": capacity_addendum.REPORT_SCHEMA_VERSION,
-        "role": capacity_addendum.REPORT_ROLE,
+        "schema_version": CAPACITY_REPORT_SCHEMA_VERSION,
+        "role": CAPACITY_REPORT_ROLE,
         "source_profile": "capacity_full",
         "status": "pass" if passed else "hold",
         "decision": (
@@ -206,13 +222,22 @@ def test_guard_accepts_quality_hold_with_positive_uncertainty(tmp_path: Path) ->
     assert report["claim_policy"]["matched_distribution_quality_claim_allowed"] is False
 
 
-def test_capacity_guard_uses_the_same_metric_boundary(tmp_path: Path) -> None:
+def test_capacity_guard_uses_the_same_metric_boundary(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_capacity_contract(monkeypatch)
     report = _build("capacity_full_300k", _capacity_source(tmp_path, passed=True))
 
     assert report["status"] == "pass"
     assert report["source_kind"] == "capacity_full_300k"
     assert report["claim_policy"]["fid_confidence_interval_claim_allowed"] is False
     assert report["claim_policy"]["paired_kid_statistical_support_statement_allowed"] is True
+
+
+def test_capacity_guard_fails_closed_without_capacity_dependency(tmp_path: Path) -> None:
+    with pytest.raises(RuntimeError, match="quality-bridge-only integration checkout"):
+        _build("capacity_full_300k", _capacity_source(tmp_path, passed=True))
 
 
 def test_guard_rejects_source_sha_drift(tmp_path: Path) -> None:
@@ -253,7 +278,11 @@ def test_guard_rejects_uncertainty_without_bound_stream(tmp_path: Path) -> None:
         _build("quality_bridge_100k", source)
 
 
-def test_guard_rejects_forged_authorizing_source_policy(tmp_path: Path) -> None:
+def test_guard_rejects_forged_authorizing_source_policy(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_capacity_contract(monkeypatch)
     source = _capacity_source(tmp_path, passed=True)
     source["payload"]["claim_policy"]["cross_tier_numeric_ranking_allowed"] = True
     source["identity"] = _write(source["path"], source["payload"])
