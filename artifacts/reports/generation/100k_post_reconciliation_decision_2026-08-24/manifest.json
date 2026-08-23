@@ -1,0 +1,62 @@
+{
+  "authorization_boundary": {
+    "evaluation_launch_allowed": false,
+    "export_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "legacy_conditioning_route_allowed": false,
+    "legacy_factorization_route_allowed": false,
+    "new_source_bound_execution_gate_required": true,
+    "process_signals_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "sampling_launch_allowed": false,
+    "training_launch_allowed": false
+  },
+  "code": {
+    "branch": "analysis/generation-100k-post-reconciliation-decision-v1",
+    "bundle": {
+      "bytes": 34169,
+      "path": "D:/cofitok-bundles/100k-post-reconciliation-decision-2ebecf5.bundle",
+      "sha256": "f30a4cfcadadc05c57e3f475945e2f6b8508430395225204e59b8931d4444bd0"
+    },
+    "revision": "2ebecf56c5e4c86fc9021b617588dc94bd72a475",
+    "tree": "2c2693c705e9786b6bcd7ae23a5a555c6d2771dc"
+  },
+  "remote": {
+    "checkout": "/root/autodl-tmp/CoFiTok/checkouts/100k-post-reconciliation-decision-2ebecf5/CoFiTok-internal",
+    "decision": {
+      "bytes": 27220,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/100k_post_reconciliation_decision_v1_20260824/post_reconciliation_decision.json",
+      "sha256": "45817b27c33866f9c48eddc557c921e48c69c708d9fd47ee09695e086a1c47f4"
+    },
+    "execution_authorization_created": false,
+    "verification": {
+      "bytes": 19280,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/100k_post_reconciliation_decision_v1_20260824/verification.json",
+      "sha256": "19512853989d8d001bacd063e20485ecaa57d96bdae75e40da069f8a0cb9352d"
+    }
+  },
+  "role": "generation_100k_post_reconciliation_decision_evidence_manifest",
+  "schema_version": 1,
+  "scientific_status": {
+    "cross_protocol_conflict_resolved": true,
+    "generation_advantage_proven": false,
+    "recommended_next_stage": "prepare_matched_100k_epsilon_stability_sampling_diagnostic",
+    "terminal_status": "hold"
+  },
+  "sources": {
+    "authoritative_pre_reconciliation_decision_sha256": "ae989b2e0b0f06a2b28346aae629f5368079a45a9a5b53d90c2d6a20c137175a",
+    "cross_protocol_reconciliation_sha256": "6fc639caec0320225c2e8d26316490cde2d765d49c6062a18e0e671f79384d19",
+    "quality_bridge_result_sha256": "15752e05611fa888e15352934c1627ccb95418df0339f9ad120e195bc088d165",
+    "terminal_training_exposure_sha256": "d95c4d9c41327be36cb462af3076064123803b53d9f2f9e927ac89351513300b"
+  },
+  "status": "pass",
+  "verification": {
+    "git_diff_check": "pass",
+    "gpu_after_replay": "0 MiB / 0% / no compute process",
+    "linux_related_tests": "44 passed",
+    "local_related_tests": "44 passed",
+    "runbook_bash_syntax": "pass"
+  }
+}
