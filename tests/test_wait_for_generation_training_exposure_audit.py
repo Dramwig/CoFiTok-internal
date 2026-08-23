@@ -4,6 +4,8 @@ import argparse
 import copy
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -46,6 +48,16 @@ def _args(tmp_path: Path) -> argparse.Namespace:
         milestone_report=tmp_path / "milestone.json",
         expected_milestone_step=50_000,
         milestone_source_profile="quality_bridge",
+        quality_bridge_terminal_result=None,
+        quality_bridge_execution_status=None,
+        quality_bridge_verifier_project=None,
+        quality_bridge_verifier_python=None,
+        expected_quality_bridge_revision=None,
+        expected_quality_bridge_tree=None,
+        expected_quality_bridge_branch=None,
+        expected_quality_bridge_verifier_sha256=None,
+        expected_quality_bridge_builder_sha256=None,
+        expected_quality_bridge_result_sha256=None,
         output_root=tmp_path / "snapshot",
         status=tmp_path / "waiter_status.json",
         expected_self_revision="a" * 40,
@@ -64,6 +76,7 @@ def _fake_build_report(
     milestone_source_profile,
     quality_bridge_terminal_result=None,
     quality_bridge_execution_status=None,
+    quality_bridge_terminal_verification=None,
 ):
     report = {
         "status": "pass",
@@ -78,7 +91,55 @@ def _fake_build_report(
     if quality_bridge_terminal_result is not None:
         report["terminal_source"] = quality_bridge_terminal_result[1]
         report["execution_source"] = quality_bridge_execution_status[1]
+        report["terminal_verification"] = quality_bridge_terminal_verification
     return report
+
+
+def _verification(terminal_result: Path, *, reported_path: Path) -> dict:
+    identity = waiter._identity(terminal_result, reported_path=reported_path)
+    terminal = json.loads(terminal_result.read_text(encoding="utf-8"))
+    return {
+        "schema_version": 1,
+        "role": "generation_quality_bridge_authoritative_terminal_verification",
+        "status": "verified",
+        "quality_project": {
+            "revision": "q" * 40,
+            "tree": "t" * 40,
+            "branch": "scale/quality",
+            "tracked_dirty": False,
+            "path": "/quality/project",
+        },
+        "verifier_source": {
+            "path": "/quality/project/scripts/verify.py",
+            "bytes": 1,
+            "sha256": "a" * 64,
+        },
+        "builder_source": {
+            "path": "/quality/project/scripts/build.py",
+            "bytes": 1,
+            "sha256": "b" * 64,
+        },
+        "python": {
+            "path": "/python",
+            "bytes": 1,
+            "sha256": "c" * 64,
+        },
+        "terminal_result": identity,
+        "verifier_output": {
+            "status": "verified",
+            "result": identity,
+            "quality_screen": terminal.get("quality_screen"),
+            "authorization_boundary": terminal.get("authorization_boundary"),
+        },
+        "execution_policy": {
+            "cuda_visible_devices": "-1",
+            "omp_num_threads": "1",
+            "mkl_num_threads": "1",
+            "gpu_use_allowed": False,
+            "training_launch_allowed": False,
+            "sampling_launch_allowed": False,
+        },
+    }
 
 
 def test_waiter_waits_for_dense_training_report(tmp_path: Path) -> None:
@@ -204,6 +265,13 @@ def test_waiter_freezes_only_after_verified_terminal_completion(
     args.expected_milestone_step = 100_000
     args.quality_bridge_terminal_result = tmp_path / "quality_bridge_result.json"
     args.quality_bridge_execution_status = tmp_path / "execution_status.json"
+    args.quality_bridge_verifier_project = tmp_path / "quality_project"
+    args.quality_bridge_verifier_python = Path(sys.executable)
+    args.expected_quality_bridge_revision = "q" * 40
+    args.expected_quality_bridge_tree = "t" * 40
+    args.expected_quality_bridge_branch = "scale/quality"
+    args.expected_quality_bridge_verifier_sha256 = "a" * 64
+    args.expected_quality_bridge_builder_sha256 = "b" * 64
     _write(args.cofitok_training, _training(100_000))
     _write(args.dense_training, _training(100_000))
     _write(args.milestone_report, {"status": "completed"})
@@ -224,6 +292,43 @@ def test_waiter_freezes_only_after_verified_terminal_completion(
         "waiting_for_quality_bridge_verified_completion"
     )
     _write(args.quality_bridge_execution_status, {"status": "completed"})
+    args.expected_quality_bridge_result_sha256 = file_sha256(
+        args.quality_bridge_terminal_result
+    )
+
+    def fake_verification(_args, *, reported_terminal_result):
+        return _verification(
+            args.quality_bridge_terminal_result,
+            reported_path=reported_terminal_result,
+        )
+
+    monkeypatch.setattr(
+        waiter,
+        "_run_authoritative_quality_bridge_verifier",
+        fake_verification,
+    )
+    monkeypatch.setattr(
+        waiter,
+        "_authoritative_quality_sources",
+        lambda _args: {
+            name: value
+            for name, value in fake_verification(
+                _args,
+                reported_terminal_result=(
+                    args.output_root
+                    / "source"
+                    / "quality_bridge_terminal_result.json"
+                ),
+            ).items()
+            if name
+            in {
+                "quality_project",
+                "verifier_source",
+                "builder_source",
+                "python",
+            }
+        },
+    )
 
     first = waiter.poll_once(args, self_git=self_git)
     second = waiter.poll_once(args, self_git=self_git)
@@ -243,6 +348,108 @@ def test_waiter_freezes_only_after_verified_terminal_completion(
     assert (
         args.output_root / "source" / "quality_bridge_execution_status.json"
     ).is_file()
+    assert (
+        args.output_root
+        / "source"
+        / waiter.AUTHORITATIVE_TERMINAL_VERIFICATION_FILENAME
+    ).is_file()
+
+
+def test_authoritative_verifier_receipt_normalizes_snapshot_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args = _args(tmp_path)
+    args.quality_bridge_verifier_project = tmp_path / "quality_project"
+    args.quality_bridge_verifier_python = Path(sys.executable)
+    args.expected_quality_bridge_revision = "q" * 40
+    args.expected_quality_bridge_tree = "t" * 40
+    args.expected_quality_bridge_branch = "scale/quality"
+    args.expected_quality_bridge_verifier_sha256 = "a" * 64
+    args.expected_quality_bridge_builder_sha256 = "b" * 64
+    args.quality_bridge_terminal_result = tmp_path / "quality_bridge_result.json"
+    sources = {
+        name: {
+            "path": (tmp_path / f"{name}.json").as_posix(),
+            "bytes": 1,
+            "sha256": "d" * 64,
+        }
+        for name in waiter.QUALITY_BRIDGE_SOURCE_ARGUMENTS
+    }
+    terminal = {
+        "git": {
+            "revision": args.expected_quality_bridge_revision,
+            "branch": args.expected_quality_bridge_branch,
+            "tracked_dirty": False,
+        },
+        "source_reports": sources,
+        "quality_screen": {"status": "hold"},
+        "authorization_boundary": {"full_300k_launch_allowed": False},
+    }
+    _write(args.quality_bridge_terminal_result, terminal)
+    args.expected_quality_bridge_result_sha256 = file_sha256(
+        args.quality_bridge_terminal_result
+    )
+    binding = {
+        "quality_project": {
+            "revision": args.expected_quality_bridge_revision,
+            "tree": args.expected_quality_bridge_tree,
+            "branch": args.expected_quality_bridge_branch,
+            "tracked_dirty": False,
+            "path": args.quality_bridge_verifier_project.resolve().as_posix(),
+        },
+        "verifier_source": {
+            "path": "/quality/verifier.py",
+            "bytes": 1,
+            "sha256": "a" * 64,
+        },
+        "builder_source": {
+            "path": "/quality/builder.py",
+            "bytes": 1,
+            "sha256": "b" * 64,
+        },
+        "python": {
+            "path": Path(sys.executable).resolve().as_posix(),
+            "bytes": 1,
+            "sha256": "c" * 64,
+        },
+    }
+    monkeypatch.setattr(
+        waiter,
+        "_authoritative_quality_sources",
+        lambda _args: copy.deepcopy(binding),
+    )
+    captured = {}
+
+    def fake_run(command, **kwargs):
+        captured["command"] = command
+        captured["environment"] = kwargs["env"]
+        actual_identity = waiter._identity(args.quality_bridge_terminal_result)
+        output = {
+            "status": "verified",
+            "result": actual_identity,
+            "quality_screen": terminal["quality_screen"],
+            "authorization_boundary": terminal["authorization_boundary"],
+        }
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=json.dumps(output),
+            stderr="",
+        )
+
+    monkeypatch.setattr(waiter.subprocess, "run", fake_run)
+    reported = tmp_path / "snapshot" / "source" / "quality_bridge_result.json"
+
+    receipt = waiter._run_authoritative_quality_bridge_verifier(
+        args,
+        reported_terminal_result=reported,
+    )
+
+    assert receipt["terminal_result"]["path"] == reported.resolve().as_posix()
+    assert receipt["verifier_output"]["result"] == receipt["terminal_result"]
+    assert captured["environment"]["CUDA_VISIBLE_DEVICES"] == "-1"
+    assert "--expected-result-sha256" in captured["command"]
 
 
 def test_quality_bridge_waiter_runbook_is_cpu_only_and_exact_stage() -> None:
@@ -266,6 +473,14 @@ def test_quality_bridge_terminal_waiter_is_cpu_only_and_exact_stage() -> None:
     assert "--milestone-source-profile quality_bridge" in source
     assert "--quality-bridge-terminal-result" in source
     assert "--quality-bridge-execution-status" in source
+    assert "--quality-bridge-verifier-project" in source
+    assert "--quality-bridge-verifier-python" in source
+    assert "--expected-quality-bridge-revision" in source
+    assert "--expected-quality-bridge-tree" in source
+    assert "--expected-quality-bridge-verifier-sha256" in source
+    assert "--expected-quality-bridge-builder-sha256" in source
+    assert "--expected-quality-bridge-result-sha256" in source
+    assert "authoritative_verifier_v2" in source
     assert "step_00100000.json" in source
     assert "--poll-seconds 10" in source
     assert "EXPECTED_SELF_REVISION=${EXPECTED_SELF_REVISION:?" in source
