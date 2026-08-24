@@ -35,6 +35,13 @@ EXPECTED_OUTPUT_ROOT = (
     "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
     "conditioning_ranking_four_arm_probe1k_v1"
 )
+TERMINAL_REBIND_OUTPUT_ROOT = (
+    "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
+    "conditioning_ranking_four_arm_probe1k_terminal_rebind_v2"
+)
+ALLOWED_OUTPUT_ROOTS = frozenset(
+    {EXPECTED_OUTPUT_ROOT, TERMINAL_REBIND_OUTPUT_ROOT}
+)
 
 RUN_NAMES = (
     "control_cofitok",
@@ -219,7 +226,7 @@ def _validate_preparation(preparation: Mapping[str, Any]) -> dict[str, Any]:
         raise ValueError("Ranking-probe preparation Git is malformed")
     output_root = preparation.get("output_root")
     if (
-        output_root != EXPECTED_OUTPUT_ROOT
+        output_root not in ALLOWED_OUTPUT_ROOTS
         or not PurePosixPath(str(output_root)).is_absolute()
         or ".." in PurePosixPath(str(output_root)).parts
     ):

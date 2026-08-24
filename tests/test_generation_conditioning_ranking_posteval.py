@@ -12,6 +12,8 @@ from scripts.build_generation_conditioning_ranking_probe_posteval import (
     REPORT_ROLE,
     RUN_NAMES,
     SENSITIVITY_CLAIM_BOUNDARY,
+    TERMINAL_REBIND_OUTPUT_ROOT,
+    _validate_preparation,
     build_postevaluation,
 )
 
@@ -89,6 +91,20 @@ def _preparation() -> dict:
         },
         "parameter_counts": dict(PARAMETER_COUNTS),
     }
+
+
+def test_preparation_output_root_is_exact_versioned_allowlist() -> None:
+    terminal_rebind = _preparation()
+    terminal_rebind["output_root"] = TERMINAL_REBIND_OUTPUT_ROOT
+
+    assert _validate_preparation(terminal_rebind)["output_root"] == (
+        TERMINAL_REBIND_OUTPUT_ROOT
+    )
+
+    arbitrary = _preparation()
+    arbitrary["output_root"] = "/tmp/arbitrary-conditioning-probe"
+    with pytest.raises(ValueError, match="output root"):
+        _validate_preparation(arbitrary)
 
 
 def _expected_configs() -> dict[str, dict]:
