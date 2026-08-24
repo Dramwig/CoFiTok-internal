@@ -984,6 +984,11 @@
     "eta": 0.0,
     "guidance_rescale": 0.0,
     "guidance_scale": 1.5,
+    "image_shape": [
+      3,
+      256,
+      256
+    ],
     "inference_api": {
       "name": "cofitok.generation.GenerationSession",
       "version": 1
@@ -1002,6 +1007,10 @@
       "start_index": 0
     },
     "sample_count_per_method_case": 1000,
+    "sample_set_digest": {
+      "algorithm": "sha256",
+      "framing": "filename_utf8_nul_file_bytes_nul"
+    },
     "sample_steps": 100,
     "sampler": "ddim",
     "total_case_count": 8,
