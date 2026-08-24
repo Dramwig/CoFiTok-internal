@@ -104,7 +104,7 @@ def test_repair_cases_are_valid_diagnostics_but_rejected_by_formal_gate(
         case_id,
         "cofitok",
         seed=4049,
-        start_index=20_000,
+        start_index=0,
     )
 
     assert sampling_protocol_contract(sampling)["valid"] is True
@@ -127,7 +127,7 @@ def test_materialization_requires_explicit_fresh_stream_values() -> None:
             "legacy_terminal_hard_clip",
             "cofitok",
             seed=-1,
-            start_index=20_000,
+            start_index=0,
         )
     with pytest.raises(ValueError, match="start_index"):
         materialize_epsilon_stability_case_protocol(
@@ -137,13 +137,21 @@ def test_materialization_requires_explicit_fresh_stream_values() -> None:
             seed=4049,
             start_index=-1,
         )
+    with pytest.raises(ValueError, match="evaluator compatibility"):
+        materialize_epsilon_stability_case_protocol(
+            design,
+            "legacy_terminal_hard_clip",
+            "cofitok",
+            seed=4049,
+            start_index=20_000,
+        )
     with pytest.raises(ValueError, match="unknown"):
         materialize_epsilon_stability_case_protocol(
             design,
             "missing_case",
             "cofitok",
             seed=4049,
-            start_index=20_000,
+            start_index=0,
         )
     with pytest.raises(ValueError, match="unknown.*method"):
         materialize_epsilon_stability_case_protocol(
@@ -151,7 +159,7 @@ def test_materialization_requires_explicit_fresh_stream_values() -> None:
             "legacy_terminal_hard_clip",
             "missing_method",
             seed=4049,
-            start_index=20_000,
+            start_index=0,
         )
 
 
@@ -162,14 +170,14 @@ def test_materialized_method_protocols_differ_only_in_prefix_budget() -> None:
         "start975_sigma_dynamic_threshold_recompute",
         "cofitok",
         seed=4049,
-        start_index=20_000,
+        start_index=0,
     )
     dense = materialize_epsilon_stability_case_protocol(
         design,
         "start975_sigma_dynamic_threshold_recompute",
         "dense_identity",
         seed=4049,
-        start_index=20_000,
+        start_index=0,
     )
 
     assert cofitok["prefix_budgets"] == [8]

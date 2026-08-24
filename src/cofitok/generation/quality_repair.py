@@ -194,6 +194,7 @@ def build_epsilon_stability_sampling_design() -> dict[str, Any]:
             "cfg_batch_mode": "batched",
             "eta": 0.0,
             "precision": "bf16",
+            "image_shape": [3, 256, 256],
             "class_schedule": "balanced_modulo",
             "class_coverage": {
                 "num_classes": 1000,
@@ -205,8 +206,13 @@ def build_epsilon_stability_sampling_design() -> dict[str, Any]:
                 "batch_size_invariant": True,
                 "resume_index_invariant": True,
                 "fresh_namespace_required": True,
+                "fresh_seed_required": True,
                 "seed": None,
-                "start_index": None,
+                "start_index": 0,
+            },
+            "sample_set_digest": {
+                "algorithm": "sha256",
+                "framing": "filename_utf8_nul_file_bytes_nul",
             },
         },
         "matched_methods": {
@@ -315,6 +321,12 @@ def materialize_epsilon_stability_case_protocol(
     if method not in methods:
         raise ValueError(f"unknown epsilon-stability method: {method}")
     common = design["common_sampling_contract"]
+    required_start_index = int(common["random_stream"]["start_index"])
+    if start_index != required_start_index:
+        raise ValueError(
+            "epsilon-stability design requires start_index "
+            f"{required_start_index} for evaluator compatibility"
+        )
     controls = cases[case_id]["sampling_controls"]
     return {
         "protocol_schema": common["protocol_schema"],
@@ -325,7 +337,6 @@ def materialize_epsilon_stability_case_protocol(
         "sample_steps": common["sample_steps"],
         "actual_timesteps": controls["actual_timesteps"],
         "batch_size": common["batch_size"],
-        "weights": common["weights"],
         "prefix_budgets": [methods[method]["prefix_budget"]],
         "guidance_scale": common["guidance_scale"],
         "guidance_rescale": common["guidance_rescale"],
@@ -346,10 +357,13 @@ def materialize_epsilon_stability_case_protocol(
         ],
         "initial_noise_scale": controls["initial_noise_scale"],
         "precision": common["precision"],
+        "image_shape": list(common["image_shape"]),
         "seed": seed,
         "start_index": start_index,
         "class_schedule": common["class_schedule"],
         "random_stream": {
+            "scope": "per_global_sample_index",
+            "seed_formula": "(seed + global_index) mod 2^63",
             "prefix_budgets_share_stream": True,
             "batch_size_invariant": common["random_stream"][
                 "batch_size_invariant"
@@ -358,4 +372,5 @@ def materialize_epsilon_stability_case_protocol(
                 "resume_index_invariant"
             ],
         },
+        "sample_set_digest": dict(common["sample_set_digest"]),
     }

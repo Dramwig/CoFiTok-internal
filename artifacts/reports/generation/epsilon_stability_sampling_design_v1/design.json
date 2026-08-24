@@ -994,11 +994,12 @@
     "random_stream": {
       "batch_size_invariant": true,
       "fresh_namespace_required": true,
+      "fresh_seed_required": true,
       "resume_index_invariant": true,
       "seed": null,
       "shared_across_cases": true,
       "shared_across_methods": true,
-      "start_index": null
+      "start_index": 0
     },
     "sample_count_per_method_case": 1000,
     "sample_steps": 100,

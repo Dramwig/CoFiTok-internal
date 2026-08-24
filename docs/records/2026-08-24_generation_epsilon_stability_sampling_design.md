@@ -26,7 +26,7 @@ Both operate on CPU and create no execution authorization.
 
 Every case is defined for both immutable 100K EMA checkpoints with the same
 DDIM-100, CFG 1.5, balanced-modulo class order, one sample per ImageNet class,
-fresh per-index random stream, real set, evaluator, and classifier. CoFiTok
+fresh shared seed, zero-based sample indices, real set, evaluator, and classifier. CoFiTok
 uses prefix budget 8 and dense identity uses prefix budget 1. Each method/case
 has 1,000 screening samples, so the complete design contains eight cases and
 16,000 images.
@@ -76,7 +76,7 @@ The deterministic design keeps these fields deliberately unbound:
 - exact repair Git revision and tree;
 - both checkpoint payload/sidecar identities;
 - real-set, evaluator, classifier, dataset, and runtime identities;
-- fresh random-stream seed/index namespace;
+- fresh random-stream seed with evaluator-compatible `start_index=0`;
 - versioned non-overlapping output root.
 
 Until all are bound by a later execution receipt, every launch, evaluation,
@@ -90,8 +90,8 @@ The committed design artifact is:
 artifacts/reports/generation/epsilon_stability_sampling_design_v1/design.json
 ```
 
-- bytes: `21,869`
-- SHA256: `ed79fca630fd99311b31af17ca33dba6f3293b706cb649d0b2b51496f9c398da`
+- bytes: `21,902`
+- SHA256: `bb5231ad7645f0a0e3055a437b90c3e10a0866c931a8ae3806112652eb52bbb1`
 
 The validator rebuilt it byte-semantically from source and matched the bound
 SHA256. Targeted repair/design tests passed, Python `compileall` and
