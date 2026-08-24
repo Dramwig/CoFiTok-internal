@@ -62,3 +62,17 @@ The canonical remote output is versioned and does not overlap prior evidence:
 
 Partial output or a controller failure remains fail-closed. No automatic
 confirmation or follow-up experiment is launched from the screening result.
+
+## Pre-GPU JPEG materialization recovery
+
+The first authorized launch failed before sampling because the real-reference
+helper advertised JPEG support but required `image.format == "PNG"`. The failed
+output, controller receipt, status, log, and failure lock remain immutable.
+
+The recovery entrypoint uses a separate recovery authorization, status, and
+lock while continuing the same output root. Only the real-reference
+materializer runs from the fixed recovery checkout; every sampling, metrics,
+class-fidelity, artifact-evaluation, observation, result, and replay command
+continues to run from the original source-bound execution checkout. The
+recovery authorization requires the exact pre-GPU failure inventory, preserves
+the original failed lock, and does not broaden any execution or claim boundary.
