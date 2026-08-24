@@ -63,29 +63,29 @@ def _latest_pointer(run_dir: Path) -> dict[str, Any] | None:
         return json.load(handle)
 
 
-def _audit_latest_checkpoint_integrity(
+def _audit_checkpoint_integrity(
     run_dir: Path,
-    checkpoint_steps: list[int],
+    step: int,
     latest: dict[str, Any] | None,
     policy: str,
+    *,
+    bind_latest: bool,
 ) -> tuple[dict[str, Any], list[str], list[str]]:
     if policy not in INTEGRITY_POLICIES:
         raise ValueError(f"integrity_policy must be one of {INTEGRITY_POLICIES}")
-    if not checkpoint_steps:
-        return ({"policy": policy, "status": "not_available"}, [], [])
-
-    step = checkpoint_steps[-1]
     checkpoint = run_dir / f"checkpoint_step_{step:08d}.pt"
     integrity_path = checkpoint_integrity_path(checkpoint)
+    label = "latest checkpoint" if bind_latest else f"required checkpoint step {step}"
     base = {
         "policy": policy,
         "checkpoint": checkpoint.name,
         "step": step,
         "integrity_manifest": integrity_path.name if integrity_path.is_file() else None,
+        "latest_binding": "required" if bind_latest else "not_applicable",
     }
     if not integrity_path.is_file():
         if policy == "required":
-            issue = f"latest checkpoint integrity manifest is missing: {integrity_path.name}"
+            issue = f"{label} integrity manifest is missing: {integrity_path.name}"
             return ({**base, "status": "missing_manifest"}, [issue], [])
         report = {
             **base,
@@ -94,7 +94,7 @@ def _audit_latest_checkpoint_integrity(
             "checkpoint_sha256": file_sha256(checkpoint),
         }
         warning = (
-            "latest legacy checkpoint has no integrity manifest; size and SHA256 were "
+            f"{label} has no integrity manifest; size and SHA256 were "
             "computed read-only and must be bound by post-training migration"
         )
         return report, [], [warning]
@@ -103,30 +103,125 @@ def _audit_latest_checkpoint_integrity(
         integrity = verify_training_checkpoint(checkpoint)
         if int(integrity.get("step", -1)) != step:
             raise ValueError("integrity manifest step does not match checkpoint filename")
-        if latest is None:
-            raise ValueError("latest.json is unavailable for integrity binding")
-        if latest.get("integrity_manifest") != integrity_path.name:
-            raise ValueError("latest.json does not bind the newest integrity manifest")
-        if latest.get("checkpoint_sha256") != integrity.get("checkpoint_sha256"):
-            raise ValueError("latest.json SHA256 does not match the integrity manifest")
-        if int(latest.get("checkpoint_bytes", -1)) != int(integrity["checkpoint_bytes"]):
-            raise ValueError("latest.json byte count does not match the integrity manifest")
+        if bind_latest:
+            if latest is None:
+                raise ValueError("latest.json is unavailable for integrity binding")
+            if latest.get("integrity_manifest") != integrity_path.name:
+                raise ValueError("latest.json does not bind the newest integrity manifest")
+            if latest.get("checkpoint_sha256") != integrity.get("checkpoint_sha256"):
+                raise ValueError("latest.json SHA256 does not match the integrity manifest")
+            if int(latest.get("checkpoint_bytes", -1)) != int(
+                integrity["checkpoint_bytes"]
+            ):
+                raise ValueError(
+                    "latest.json byte count does not match the integrity manifest"
+                )
     except (FileNotFoundError, OSError, TypeError, ValueError, json.JSONDecodeError) as error:
         return (
             {**base, "status": "invalid", "error": str(error)},
-            [f"latest checkpoint integrity verification failed: {error}"],
+            [f"{label} integrity verification failed: {error}"],
             [],
         )
+    provenance = {
+        key: integrity[key]
+        for key in (
+            "runtime_environment_sha256",
+            "dataset_identity_sha256",
+            "git_revision",
+            "git_branch",
+            "git_dirty",
+        )
+        if key in integrity
+    }
     return (
         {
             **base,
             "status": "verified",
+            "latest_binding": "verified" if bind_latest else "not_applicable",
             "checkpoint_bytes": int(integrity["checkpoint_bytes"]),
             "checkpoint_sha256": integrity["checkpoint_sha256"],
             "checkpoint_format_version": int(integrity["checkpoint_format_version"]),
+            **provenance,
         },
         [],
         [],
+    )
+
+
+def _audit_latest_checkpoint_integrity(
+    run_dir: Path,
+    checkpoint_steps: list[int],
+    latest: dict[str, Any] | None,
+    policy: str,
+) -> tuple[dict[str, Any], list[str], list[str]]:
+    if not checkpoint_steps:
+        return ({"policy": policy, "status": "not_available"}, [], [])
+    return _audit_checkpoint_integrity(
+        run_dir,
+        checkpoint_steps[-1],
+        latest,
+        policy,
+        bind_latest=True,
+    )
+
+
+def _audit_required_checkpoint_integrity(
+    run_dir: Path,
+    *,
+    required_steps: list[int] | tuple[int, ...],
+    checkpoint_steps: list[int],
+    last_step: int,
+    latest_integrity: dict[str, Any],
+    policy: str,
+) -> tuple[dict[str, Any], list[str], list[str]]:
+    requested = list(required_steps)
+    if not requested:
+        return (
+            {
+                "policy": policy,
+                "status": "not_requested",
+                "requested_steps": [],
+                "reached_steps": [],
+                "checkpoints": [],
+            },
+            [],
+            [],
+        )
+
+    available = set(checkpoint_steps)
+    reached = [step for step in requested if step <= last_step]
+    missing = [step for step in reached if step not in available]
+    reports: list[dict[str, Any]] = []
+    issues: list[str] = []
+    warnings: list[str] = []
+    for step in reached:
+        if step not in available:
+            continue
+        if int(latest_integrity.get("step", -1)) == step:
+            reports.append(dict(latest_integrity))
+            continue
+        report, checkpoint_issues, checkpoint_warnings = _audit_checkpoint_integrity(
+            run_dir,
+            step,
+            None,
+            policy,
+            bind_latest=False,
+        )
+        reports.append(report)
+        issues.extend(checkpoint_issues)
+        warnings.extend(checkpoint_warnings)
+
+    return (
+        {
+            "policy": policy,
+            "status": "invalid" if missing or issues else "verified",
+            "requested_steps": requested,
+            "reached_steps": reached,
+            "missing_steps": missing,
+            "checkpoints": reports,
+        },
+        issues,
+        warnings,
     )
 
 
@@ -351,6 +446,18 @@ def audit_progress(
     )
     issues.extend(integrity_issues)
     warnings.extend(integrity_warnings)
+    required_integrity, required_integrity_issues, required_integrity_warnings = (
+        _audit_required_checkpoint_integrity(
+            root,
+            required_steps=required_checkpoint_steps,
+            checkpoint_steps=checkpoint_steps,
+            last_step=last_step,
+            latest_integrity=latest_integrity,
+            policy=integrity_policy,
+        )
+    )
+    issues.extend(required_integrity_issues)
+    warnings.extend(required_integrity_warnings)
 
     training_report = None
     training_report_status = "absent"
@@ -493,6 +600,7 @@ def audit_progress(
             "missing_required_steps": missing_required_checkpoints,
             "latest": latest,
             "latest_integrity": latest_integrity,
+            "required_integrity": required_integrity,
         },
         "issues": issues,
         "warnings": warnings,

@@ -389,6 +389,86 @@ def test_audit_does_not_require_future_protected_checkpoint(tmp_path) -> None:
     assert report["checkpoint"]["missing_required_steps"] == []
 
 
+def test_audit_physically_verifies_every_reached_protected_checkpoint(tmp_path) -> None:
+    _write_metrics(tmp_path, [1, 500, 750, 1_000])
+    expected = {}
+    for step in (500, 750, 1_000):
+        payload = f"checkpoint-{step}".encode()
+        _write_checkpoint_with_integrity(tmp_path, step, payload)
+        expected[step] = hashlib.sha256(payload).hexdigest()
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=1_000,
+        checkpoint_interval=250,
+        required_checkpoint_steps=[500, 750, 1_000],
+        integrity_policy="required",
+    )
+
+    required = report["checkpoint"]["required_integrity"]
+    assert report["status"] == "healthy"
+    assert required["status"] == "verified"
+    assert required["reached_steps"] == [500, 750, 1_000]
+    assert [item["step"] for item in required["checkpoints"]] == [500, 750, 1_000]
+    assert all(item["status"] == "verified" for item in required["checkpoints"])
+    assert {
+        item["step"]: item["checkpoint_sha256"] for item in required["checkpoints"]
+    } == expected
+    assert required["checkpoints"][-1]["latest_binding"] == "verified"
+    assert all(
+        item["latest_binding"] == "not_applicable"
+        for item in required["checkpoints"][:-1]
+    )
+
+
+def test_audit_rejects_tampered_historical_protected_checkpoint(tmp_path) -> None:
+    _write_metrics(tmp_path, [1, 500, 1_000])
+    historical = _write_checkpoint_with_integrity(tmp_path, 500)
+    _write_checkpoint_with_integrity(tmp_path, 1_000)
+    historical.write_bytes(b"tampered-historical-checkpoint")
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=1_000,
+        checkpoint_interval=500,
+        required_checkpoint_steps=[500, 1_000],
+        integrity_policy="required",
+    )
+
+    required = report["checkpoint"]["required_integrity"]
+    assert report["status"] == "invalid"
+    assert required["status"] == "invalid"
+    assert required["checkpoints"][0]["status"] == "invalid"
+    assert any(
+        issue.startswith("required checkpoint step 500 integrity verification failed")
+        for issue in report["issues"]
+    )
+
+
+def test_audit_rejects_missing_historical_protected_sidecar(tmp_path) -> None:
+    _write_metrics(tmp_path, [1, 500, 1_000])
+    historical = _write_checkpoint_with_integrity(tmp_path, 500)
+    _write_checkpoint_with_integrity(tmp_path, 1_000)
+    (tmp_path / f"{historical.name}.integrity.json").unlink()
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=1_000,
+        checkpoint_interval=500,
+        required_checkpoint_steps=[500, 1_000],
+        integrity_policy="required",
+    )
+
+    required = report["checkpoint"]["required_integrity"]
+    assert report["status"] == "invalid"
+    assert required["status"] == "invalid"
+    assert required["checkpoints"][0]["status"] == "missing_manifest"
+    assert any(
+        issue.startswith("required checkpoint step 500 integrity manifest is missing")
+        for issue in report["issues"]
+    )
+
+
 def _write_schedule_config(
     path,
     *,
