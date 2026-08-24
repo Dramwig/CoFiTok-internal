@@ -36,6 +36,7 @@ from cofitok.training import (
     ExponentialMovingAverage,
     capture_generation_training_authorization,
     class_conditioning_ranking_loss,
+    class_conditioning_residual_alignment_loss,
     compute_losses,
     consistency_weight_scale,
     ema_teacher_consistency_loss,
@@ -231,6 +232,158 @@ def _validate_config(config: ExperimentConfig) -> None:
         ):
             raise ValueError(
                 "class_conditioning_ranking_min_timestep is outside the diffusion schedule"
+            )
+    residual_weight = config.loss.class_conditioning_residual_alignment_weight
+    if (
+        not isinstance(residual_weight, (int, float))
+        or isinstance(residual_weight, bool)
+        or not math.isfinite(float(residual_weight))
+        or residual_weight < 0.0
+    ):
+        raise ValueError(
+            "class_conditioning_residual_alignment_weight must be non-negative"
+        )
+    residual_start = config.loss.class_conditioning_residual_alignment_start_step
+    if (
+        not isinstance(residual_start, int)
+        or isinstance(residual_start, bool)
+        or residual_start < 0
+    ):
+        raise ValueError(
+            "class_conditioning_residual_alignment_start_step must be non-negative"
+        )
+    residual_warmup = config.loss.class_conditioning_residual_alignment_warmup_steps
+    if (
+        not isinstance(residual_warmup, int)
+        or isinstance(residual_warmup, bool)
+        or residual_warmup < 0
+    ):
+        raise ValueError(
+            "class_conditioning_residual_alignment_warmup_steps must be non-negative"
+        )
+    residual_batch_fraction = (
+        config.loss.class_conditioning_residual_alignment_batch_fraction
+    )
+    if (
+        not isinstance(residual_batch_fraction, (int, float))
+        or isinstance(residual_batch_fraction, bool)
+        or not math.isfinite(float(residual_batch_fraction))
+        or not 0.0 < residual_batch_fraction <= 1.0
+    ):
+        raise ValueError(
+            "class_conditioning_residual_alignment_batch_fraction must be in (0, 1]"
+        )
+    residual_margin = config.loss.class_conditioning_residual_alignment_margin
+    if (
+        not isinstance(residual_margin, (int, float))
+        or isinstance(residual_margin, bool)
+        or not math.isfinite(float(residual_margin))
+        or not 0.0 <= residual_margin < 2.0
+    ):
+        raise ValueError(
+            "class_conditioning_residual_alignment_margin must be in [0, 2)"
+        )
+    residual_temperature = (
+        config.loss.class_conditioning_residual_alignment_temperature
+    )
+    if (
+        not isinstance(residual_temperature, (int, float))
+        or isinstance(residual_temperature, bool)
+        or not math.isfinite(float(residual_temperature))
+        or residual_temperature <= 0.0
+    ):
+        raise ValueError(
+            "class_conditioning_residual_alignment_temperature must be positive"
+        )
+    residual_min_timestep = (
+        config.loss.class_conditioning_residual_alignment_min_timestep
+    )
+    if (
+        not isinstance(residual_min_timestep, int)
+        or isinstance(residual_min_timestep, bool)
+        or residual_min_timestep < 0
+    ):
+        raise ValueError(
+            "class_conditioning_residual_alignment_min_timestep must be non-negative"
+        )
+    residual_reconstruction_weight = (
+        config.loss.class_conditioning_residual_alignment_reconstruction_weight
+    )
+    if (
+        not isinstance(residual_reconstruction_weight, (int, float))
+        or isinstance(residual_reconstruction_weight, bool)
+        or not math.isfinite(float(residual_reconstruction_weight))
+        or residual_reconstruction_weight < 0.0
+    ):
+        raise ValueError(
+            "class_conditioning_residual_alignment_reconstruction_weight must be non-negative"
+        )
+    residual_offsets = (
+        config.loss.class_conditioning_residual_alignment_wrong_label_offsets
+    )
+    if not isinstance(residual_offsets, list) or not residual_offsets:
+        raise ValueError(
+            "class_conditioning_residual_alignment_wrong_label_offsets must be a non-empty list"
+        )
+    if any(
+        not isinstance(offset, int) or isinstance(offset, bool)
+        for offset in residual_offsets
+    ):
+        raise ValueError(
+            "class_conditioning_residual_alignment_wrong_label_offsets must contain integers"
+        )
+    pooling_factors = (
+        config.loss.class_conditioning_residual_alignment_pooling_factors
+    )
+    if (
+        not isinstance(pooling_factors, list)
+        or not pooling_factors
+        or any(
+            not isinstance(factor, int)
+            or isinstance(factor, bool)
+            or factor < 1
+            for factor in pooling_factors
+        )
+        or pooling_factors != sorted(set(pooling_factors))
+    ):
+        raise ValueError(
+            "class_conditioning_residual_alignment_pooling_factors must be "
+            "sorted unique positive integers"
+        )
+    if config.loss.class_conditioning_residual_alignment_weight > 0.0:
+        if config.loss.class_conditioning_ranking_weight > 0.0:
+            raise ValueError(
+                "class_conditioning_ranking and residual_alignment cannot both be enabled"
+            )
+        if not config.data.class_conditional or config.model.num_classes < 2:
+            raise ValueError(
+                "class_conditioning_residual_alignment_weight requires class-conditional training"
+            )
+        if (
+            config.loss.class_conditioning_residual_alignment_min_timestep
+            >= config.diffusion.num_train_timesteps
+        ):
+            raise ValueError(
+                "class_conditioning_residual_alignment_min_timestep is outside "
+                "the diffusion schedule"
+            )
+        residues = [
+            offset % config.model.num_classes for offset in residual_offsets
+        ]
+        if any(residue == 0 for residue in residues) or len(set(residues)) != len(
+            residues
+        ):
+            raise ValueError(
+                "class_conditioning_residual_alignment_wrong_label_offsets must "
+                "be unique and change the class"
+            )
+        if any(
+            factor > config.data.image_size
+            or config.data.image_size % factor != 0
+            for factor in pooling_factors
+        ):
+            raise ValueError(
+                "class_conditioning_residual_alignment_pooling_factors must divide image_size"
             )
     protected_steps = config.runtime.protected_checkpoint_steps
     if protected_steps != sorted(set(protected_steps)):
@@ -807,6 +960,54 @@ def main() -> None:
                             config.loss.class_conditioning_ranking_min_timestep
                         ),
                     )
+                residual_alignment_scale = consistency_weight_scale(
+                    step,
+                    start_step=(
+                        config.loss.class_conditioning_residual_alignment_start_step
+                    ),
+                    warmup_steps=(
+                        config.loss.class_conditioning_residual_alignment_warmup_steps
+                    ),
+                )
+                residual_alignment = None
+                if (
+                    config.loss.class_conditioning_residual_alignment_weight > 0.0
+                    and residual_alignment_scale > 0.0
+                ):
+                    if labels is None:
+                        raise RuntimeError(
+                            "class-conditioning residual alignment requires class labels"
+                        )
+                    residual_alignment = class_conditioning_residual_alignment_loss(
+                        base_model,
+                        schedule=schedule,
+                        noisy_images=noisy,
+                        clean_images=clean,
+                        timesteps=timesteps,
+                        class_labels=labels,
+                        num_classes=config.model.num_classes,
+                        batch_fraction=(
+                            config.loss.class_conditioning_residual_alignment_batch_fraction
+                        ),
+                        margin=(
+                            config.loss.class_conditioning_residual_alignment_margin
+                        ),
+                        temperature=(
+                            config.loss.class_conditioning_residual_alignment_temperature
+                        ),
+                        wrong_label_offsets=(
+                            config.loss.class_conditioning_residual_alignment_wrong_label_offsets
+                        ),
+                        min_timestep=(
+                            config.loss.class_conditioning_residual_alignment_min_timestep
+                        ),
+                        pooling_factors=(
+                            config.loss.class_conditioning_residual_alignment_pooling_factors
+                        ),
+                        reconstruction_weight=(
+                            config.loss.class_conditioning_residual_alignment_reconstruction_weight
+                        ),
+                    )
                 rollout_scale = rollout_consistency_weight_scale(
                     step,
                     start_step=config.loss.rollout_consistency_start_step,
@@ -847,6 +1048,10 @@ def main() -> None:
                     ema_teacher_consistency_scale=ema_teacher_scale,
                     class_conditioning_ranking=class_ranking,
                     class_conditioning_ranking_scale=class_ranking_scale,
+                    class_conditioning_residual_alignment=residual_alignment,
+                    class_conditioning_residual_alignment_scale=(
+                        residual_alignment_scale
+                    ),
                 )
                 scaled_loss = losses.total / accumulation
             if not torch.isfinite(scaled_loss):

@@ -58,6 +58,25 @@ def test_load_config_with_optimization_defaults(tmp_path) -> None:
     assert config.loss.class_conditioning_ranking_margin == 0.0
     assert config.loss.class_conditioning_ranking_wrong_label_offset == 1
     assert config.loss.class_conditioning_ranking_min_timestep == 0
+    assert config.loss.class_conditioning_residual_alignment_weight == 0.0
+    assert config.loss.class_conditioning_residual_alignment_start_step == 0
+    assert config.loss.class_conditioning_residual_alignment_warmup_steps == 0
+    assert (
+        config.loss.class_conditioning_residual_alignment_batch_fraction == 0.0625
+    )
+    assert config.loss.class_conditioning_residual_alignment_margin == 0.0
+    assert config.loss.class_conditioning_residual_alignment_temperature == 0.1
+    assert config.loss.class_conditioning_residual_alignment_wrong_label_offsets == [
+        1
+    ]
+    assert config.loss.class_conditioning_residual_alignment_min_timestep == 0
+    assert config.loss.class_conditioning_residual_alignment_pooling_factors == [
+        8,
+        16,
+    ]
+    assert (
+        config.loss.class_conditioning_residual_alignment_reconstruction_weight == 0.0
+    )
 
 
 def test_multiscale_epsilononly_controls_match_20k_backbone_settings() -> None:

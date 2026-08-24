@@ -35,6 +35,16 @@ _EXACT_RESUME_COMPATIBLE_LOSS_DEFAULTS = {
     "class_conditioning_ranking_margin": 0.0,
     "class_conditioning_ranking_wrong_label_offset": 1,
     "class_conditioning_ranking_min_timestep": 0,
+    "class_conditioning_residual_alignment_weight": 0.0,
+    "class_conditioning_residual_alignment_start_step": 0,
+    "class_conditioning_residual_alignment_warmup_steps": 0,
+    "class_conditioning_residual_alignment_batch_fraction": 0.0625,
+    "class_conditioning_residual_alignment_margin": 0.0,
+    "class_conditioning_residual_alignment_temperature": 0.1,
+    "class_conditioning_residual_alignment_wrong_label_offsets": [1],
+    "class_conditioning_residual_alignment_min_timestep": 0,
+    "class_conditioning_residual_alignment_pooling_factors": [8, 16],
+    "class_conditioning_residual_alignment_reconstruction_weight": 0.0,
 }
 
 

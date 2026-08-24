@@ -148,6 +148,43 @@ def test_stability_recipe_rejects_identically_shifted_teacher_window() -> None:
     )
 
 
+def test_formal_recipe_keeps_residual_alignment_disabled() -> None:
+    cofitok = _config(
+        "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json"
+    )
+    dense = _config(
+        "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_50k.json"
+    )
+    contract = generation_training_recipe_contract(
+        cofitok,
+        dense,
+        stage="stability_scaling",
+    )
+
+    assert contract["valid"] is True, contract["issues"]
+    assert contract["expected_shared"][
+        "loss.class_conditioning_residual_alignment_weight"
+    ] == 0.0
+
+    for config in (cofitok, dense):
+        config["loss"]["class_conditioning_residual_alignment_weight"] = 0.05
+        config["loss"][
+            "class_conditioning_residual_alignment_reconstruction_weight"
+        ] = 0.25
+    assert generation_pair_contract(cofitok, dense)["valid"] is True
+
+    contract = generation_training_recipe_contract(
+        cofitok,
+        dense,
+        stage="stability_scaling",
+    )
+    assert contract["valid"] is False
+    assert any(
+        "class_conditioning_residual_alignment_weight" in issue
+        for issue in contract["issues"]
+    )
+
+
 def test_rank_recovery_probes_explicitly_disable_legacy_loss_defaults() -> None:
     expected_objectives = {
         "imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k.json": {

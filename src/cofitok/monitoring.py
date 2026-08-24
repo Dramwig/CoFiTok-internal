@@ -32,13 +32,35 @@ FINITE_METRICS = {
     "class_conditioning_correct_better_wrong_fraction",
     "class_conditioning_correct_better_null_fraction",
     "class_conditioning_ranking_selected_fraction",
+    "class_conditioning_residual_alignment",
+    "class_conditioning_residual_alignment_scale",
+    "class_conditioning_residual_direction",
+    "class_conditioning_residual_contrastive",
+    "class_conditioning_residual_reconstruction",
+    "class_conditioning_residual_correct_cosine",
+    "class_conditioning_residual_wrong_cosine",
+    "class_conditioning_residual_correct_x0_mse",
+    "class_conditioning_residual_wrong_x0_mse",
+    "class_conditioning_residual_null_x0_mse",
+    "class_conditioning_residual_correct_better_wrong_fraction",
+    "class_conditioning_residual_correct_better_null_fraction",
+    "class_conditioning_residual_selected_fraction",
+    "class_conditioning_residual_wrong_condition_count",
 }
-NONNEGATIVE_METRICS = FINITE_METRICS - {"ema_decay"}
+NONNEGATIVE_METRICS = FINITE_METRICS - {
+    "ema_decay",
+    "class_conditioning_residual_correct_cosine",
+    "class_conditioning_residual_wrong_cosine",
+}
 UNIT_INTERVAL_METRICS = {
     "class_conditioning_ranking_scale",
     "class_conditioning_correct_better_wrong_fraction",
     "class_conditioning_correct_better_null_fraction",
     "class_conditioning_ranking_selected_fraction",
+    "class_conditioning_residual_alignment_scale",
+    "class_conditioning_residual_correct_better_wrong_fraction",
+    "class_conditioning_residual_correct_better_null_fraction",
+    "class_conditioning_residual_selected_fraction",
 }
 METHOD_PROCESS_PATTERNS = {
     "cofitok": re.compile(r"imagenet256\S*cofitok", re.IGNORECASE),
@@ -374,13 +396,17 @@ def _inspect_run_manifest(
         "rollout_consistency",
         "ema_teacher_consistency",
         "class_conditioning_ranking",
+        "class_conditioning_residual_alignment",
     ):
         scale_field = f"{prefix}_scale"
         weight_field = f"{prefix}_weight"
         start_field = f"{prefix}_start_step"
         warmup_field = f"{prefix}_warmup_steps"
         schedule_fields = (weight_field, start_field, warmup_field)
-        if prefix == "class_conditioning_ranking" and not any(
+        if prefix in {
+            "class_conditioning_ranking",
+            "class_conditioning_residual_alignment",
+        } and not any(
             field in loss for field in schedule_fields
         ):
             weight = 0.0

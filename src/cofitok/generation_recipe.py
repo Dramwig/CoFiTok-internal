@@ -142,8 +142,8 @@ def _expected_shared(stage: str) -> dict[str, Any]:
         "optimization.grad_clip_norm": 1.0,
         "optimization.ema_decay": 0.9999,
         "optimization.ema_warmup_steps": 2_000,
-        # Existing formal recipes remain immutable.  The new semantic-ranking
-        # objective is admitted only by a separately reviewed probe contract.
+        # Existing formal recipes remain immutable. New semantic objectives are
+        # admitted only by separately reviewed probe contracts.
         "loss.class_conditioning_ranking_weight": 0.0,
         "loss.class_conditioning_ranking_start_step": 0,
         "loss.class_conditioning_ranking_warmup_steps": 0,
@@ -151,6 +151,16 @@ def _expected_shared(stage: str) -> dict[str, Any]:
         "loss.class_conditioning_ranking_margin": 0.0,
         "loss.class_conditioning_ranking_wrong_label_offset": 1,
         "loss.class_conditioning_ranking_min_timestep": 0,
+        "loss.class_conditioning_residual_alignment_weight": 0.0,
+        "loss.class_conditioning_residual_alignment_start_step": 0,
+        "loss.class_conditioning_residual_alignment_warmup_steps": 0,
+        "loss.class_conditioning_residual_alignment_batch_fraction": 0.0625,
+        "loss.class_conditioning_residual_alignment_margin": 0.0,
+        "loss.class_conditioning_residual_alignment_temperature": 0.1,
+        "loss.class_conditioning_residual_alignment_wrong_label_offsets": [1],
+        "loss.class_conditioning_residual_alignment_min_timestep": 0,
+        "loss.class_conditioning_residual_alignment_pooling_factors": [8, 16],
+        "loss.class_conditioning_residual_alignment_reconstruction_weight": 0.0,
     }
     if stability:
         if full:

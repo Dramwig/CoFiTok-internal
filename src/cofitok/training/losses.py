@@ -9,7 +9,10 @@ import torch.nn.functional as F
 from cofitok.configs import LossConfig
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.models import CoFiTokOutput
-from cofitok.training.conditioning import ClassConditioningRankingResult
+from cofitok.training.conditioning import (
+    ClassConditioningRankingResult,
+    ClassConditioningResidualAlignmentResult,
+)
 
 
 @dataclass
@@ -45,6 +48,20 @@ class LossBreakdown:
     class_conditioning_correct_better_wrong_fraction: torch.Tensor
     class_conditioning_correct_better_null_fraction: torch.Tensor
     class_conditioning_ranking_selected_fraction: torch.Tensor
+    class_conditioning_residual_alignment: torch.Tensor
+    class_conditioning_residual_alignment_scale: torch.Tensor
+    class_conditioning_residual_direction: torch.Tensor
+    class_conditioning_residual_contrastive: torch.Tensor
+    class_conditioning_residual_reconstruction: torch.Tensor
+    class_conditioning_residual_correct_cosine: torch.Tensor
+    class_conditioning_residual_wrong_cosine: torch.Tensor
+    class_conditioning_residual_correct_x0_mse: torch.Tensor
+    class_conditioning_residual_wrong_x0_mse: torch.Tensor
+    class_conditioning_residual_null_x0_mse: torch.Tensor
+    class_conditioning_residual_correct_better_wrong_fraction: torch.Tensor
+    class_conditioning_residual_correct_better_null_fraction: torch.Tensor
+    class_conditioning_residual_selected_fraction: torch.Tensor
+    class_conditioning_residual_wrong_condition_count: torch.Tensor
 
     def as_dict(self) -> dict[str, torch.Tensor]:
         return {
@@ -92,6 +109,48 @@ class LossBreakdown:
             ),
             "class_conditioning_ranking_selected_fraction": (
                 self.class_conditioning_ranking_selected_fraction.detach()
+            ),
+            "class_conditioning_residual_alignment": (
+                self.class_conditioning_residual_alignment.detach()
+            ),
+            "class_conditioning_residual_alignment_scale": (
+                self.class_conditioning_residual_alignment_scale.detach()
+            ),
+            "class_conditioning_residual_direction": (
+                self.class_conditioning_residual_direction.detach()
+            ),
+            "class_conditioning_residual_contrastive": (
+                self.class_conditioning_residual_contrastive.detach()
+            ),
+            "class_conditioning_residual_reconstruction": (
+                self.class_conditioning_residual_reconstruction.detach()
+            ),
+            "class_conditioning_residual_correct_cosine": (
+                self.class_conditioning_residual_correct_cosine.detach()
+            ),
+            "class_conditioning_residual_wrong_cosine": (
+                self.class_conditioning_residual_wrong_cosine.detach()
+            ),
+            "class_conditioning_residual_correct_x0_mse": (
+                self.class_conditioning_residual_correct_x0_mse.detach()
+            ),
+            "class_conditioning_residual_wrong_x0_mse": (
+                self.class_conditioning_residual_wrong_x0_mse.detach()
+            ),
+            "class_conditioning_residual_null_x0_mse": (
+                self.class_conditioning_residual_null_x0_mse.detach()
+            ),
+            "class_conditioning_residual_correct_better_wrong_fraction": (
+                self.class_conditioning_residual_correct_better_wrong_fraction.detach()
+            ),
+            "class_conditioning_residual_correct_better_null_fraction": (
+                self.class_conditioning_residual_correct_better_null_fraction.detach()
+            ),
+            "class_conditioning_residual_selected_fraction": (
+                self.class_conditioning_residual_selected_fraction.detach()
+            ),
+            "class_conditioning_residual_wrong_condition_count": (
+                self.class_conditioning_residual_wrong_condition_count.detach()
             ),
         }
 
@@ -611,6 +670,10 @@ def compute_losses(
     ema_teacher_consistency_scale: float = 1.0,
     class_conditioning_ranking: ClassConditioningRankingResult | None = None,
     class_conditioning_ranking_scale: float = 1.0,
+    class_conditioning_residual_alignment: (
+        ClassConditioningResidualAlignmentResult | None
+    ) = None,
+    class_conditioning_residual_alignment_scale: float = 1.0,
 ) -> LossBreakdown:
     def float32_scalar(value: float) -> torch.Tensor:
         return torch.as_tensor(
@@ -777,6 +840,58 @@ def compute_losses(
         class_correct_better_wrong = output.epsilon.new_zeros(())
         class_correct_better_null = output.epsilon.new_zeros(())
         class_selected_fraction = output.epsilon.new_zeros(())
+    if (
+        config.class_conditioning_residual_alignment_weight > 0.0
+        and class_conditioning_residual_alignment is not None
+        and class_conditioning_residual_alignment_scale > 0.0
+    ):
+        residual_alignment_loss = class_conditioning_residual_alignment.loss
+        residual_alignment_scale = float32_scalar(
+            class_conditioning_residual_alignment_scale
+        )
+        residual_direction = class_conditioning_residual_alignment.direction_loss
+        residual_contrastive = (
+            class_conditioning_residual_alignment.contrastive_loss
+        )
+        residual_reconstruction = (
+            class_conditioning_residual_alignment.reconstruction_loss
+        )
+        residual_correct_cosine = (
+            class_conditioning_residual_alignment.correct_alignment_cosine
+        )
+        residual_wrong_cosine = (
+            class_conditioning_residual_alignment.wrong_alignment_cosine
+        )
+        residual_correct_x0_mse = class_conditioning_residual_alignment.correct_x0_mse
+        residual_wrong_x0_mse = class_conditioning_residual_alignment.wrong_x0_mse
+        residual_null_x0_mse = class_conditioning_residual_alignment.null_x0_mse
+        residual_correct_better_wrong = (
+            class_conditioning_residual_alignment.correct_better_wrong_fraction
+        )
+        residual_correct_better_null = (
+            class_conditioning_residual_alignment.correct_better_null_fraction
+        )
+        residual_selected_fraction = (
+            class_conditioning_residual_alignment.selected_fraction
+        )
+        residual_wrong_condition_count = (
+            class_conditioning_residual_alignment.wrong_condition_count
+        )
+    else:
+        residual_alignment_loss = output.epsilon.new_zeros(())
+        residual_alignment_scale = float32_scalar(0.0)
+        residual_direction = output.epsilon.new_zeros(())
+        residual_contrastive = output.epsilon.new_zeros(())
+        residual_reconstruction = output.epsilon.new_zeros(())
+        residual_correct_cosine = output.epsilon.new_zeros(())
+        residual_wrong_cosine = output.epsilon.new_zeros(())
+        residual_correct_x0_mse = output.epsilon.new_zeros(())
+        residual_wrong_x0_mse = output.epsilon.new_zeros(())
+        residual_null_x0_mse = output.epsilon.new_zeros(())
+        residual_correct_better_wrong = output.epsilon.new_zeros(())
+        residual_correct_better_null = output.epsilon.new_zeros(())
+        residual_selected_fraction = output.epsilon.new_zeros(())
+        residual_wrong_condition_count = output.epsilon.new_zeros(())
     total = (
         config.epsilon_weight * epsilon_loss
         + config.prefix_weight * prefix_loss
@@ -804,6 +919,9 @@ def compute_losses(
         + config.class_conditioning_ranking_weight
         * class_ranking_scale
         * class_ranking_loss
+        + config.class_conditioning_residual_alignment_weight
+        * residual_alignment_scale
+        * residual_alignment_loss
     )
     return LossBreakdown(
         total=total,
@@ -841,4 +959,24 @@ def compute_losses(
             class_correct_better_null
         ),
         class_conditioning_ranking_selected_fraction=class_selected_fraction,
+        class_conditioning_residual_alignment=residual_alignment_loss,
+        class_conditioning_residual_alignment_scale=residual_alignment_scale,
+        class_conditioning_residual_direction=residual_direction,
+        class_conditioning_residual_contrastive=residual_contrastive,
+        class_conditioning_residual_reconstruction=residual_reconstruction,
+        class_conditioning_residual_correct_cosine=residual_correct_cosine,
+        class_conditioning_residual_wrong_cosine=residual_wrong_cosine,
+        class_conditioning_residual_correct_x0_mse=residual_correct_x0_mse,
+        class_conditioning_residual_wrong_x0_mse=residual_wrong_x0_mse,
+        class_conditioning_residual_null_x0_mse=residual_null_x0_mse,
+        class_conditioning_residual_correct_better_wrong_fraction=(
+            residual_correct_better_wrong
+        ),
+        class_conditioning_residual_correct_better_null_fraction=(
+            residual_correct_better_null
+        ),
+        class_conditioning_residual_selected_fraction=residual_selected_fraction,
+        class_conditioning_residual_wrong_condition_count=(
+            residual_wrong_condition_count
+        ),
     )

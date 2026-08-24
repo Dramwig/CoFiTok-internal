@@ -258,6 +258,14 @@ def _audit_consistency_schedules(
             "warmup_steps": config.loss.class_conditioning_ranking_warmup_steps,
             "requires_nonzero_active_loss": False,
         },
+        "class_conditioning_residual_alignment": {
+            "scale_field": "class_conditioning_residual_alignment_scale",
+            "loss_field": "class_conditioning_residual_alignment",
+            "weight": config.loss.class_conditioning_residual_alignment_weight,
+            "start_step": config.loss.class_conditioning_residual_alignment_start_step,
+            "warmup_steps": config.loss.class_conditioning_residual_alignment_warmup_steps,
+            "requires_nonzero_active_loss": True,
+        },
     }
     issues: list[str] = []
     evidence: dict[str, Any] = {}

@@ -4,7 +4,10 @@ import torch
 from cofitok.configs import DiffusionConfig, LossConfig
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.models import CoFiTokOutput
-from cofitok.training.conditioning import ClassConditioningRankingResult
+from cofitok.training.conditioning import (
+    ClassConditioningRankingResult,
+    ClassConditioningResidualAlignmentResult,
+)
 from cofitok.training.losses import (
     _component_energy_distribution_loss,
     _low_snr_high_frequency_loss,
@@ -160,6 +163,63 @@ def test_class_conditioning_ranking_is_scaled_and_reported_in_total() -> None:
         0.125
     )
     assert "class_conditioning_correct_better_null_fraction" in losses.as_dict()
+
+
+def test_residual_alignment_is_scaled_and_reported_in_total() -> None:
+    output = _fake_output()
+    schedule = DiffusionSchedule(DiffusionConfig(num_train_timesteps=10), device="cpu")
+    clean = torch.zeros(2, 3, 4, 4)
+    noise = output.epsilon.detach().clone()
+    timesteps = torch.tensor([1, 2])
+    noisy = schedule.add_noise(clean, noise, timesteps)
+    alignment = ClassConditioningResidualAlignmentResult(
+        loss=torch.tensor(2.0),
+        direction_loss=torch.tensor(0.2),
+        contrastive_loss=torch.tensor(0.3),
+        reconstruction_loss=torch.tensor(0.4),
+        correct_alignment_cosine=torch.tensor(0.8),
+        wrong_alignment_cosine=torch.tensor(-0.2),
+        correct_x0_mse=torch.tensor(0.1),
+        wrong_x0_mse=torch.tensor(0.5),
+        null_x0_mse=torch.tensor(0.4),
+        correct_better_wrong_fraction=torch.tensor(0.75),
+        correct_better_null_fraction=torch.tensor(0.5),
+        selected_fraction=torch.tensor(0.125),
+        wrong_condition_count=torch.tensor(3.0),
+    )
+
+    losses = compute_losses(
+        LossConfig(
+            epsilon_weight=0.0,
+            prefix_weight=0.0,
+            monotonic_weight=0.0,
+            zero_token_weight=0.0,
+            class_conditioning_residual_alignment_weight=3.0,
+        ),
+        output,
+        schedule,
+        noisy,
+        clean,
+        noise,
+        timesteps,
+        class_conditioning_residual_alignment=alignment,
+        class_conditioning_residual_alignment_scale=0.5,
+    )
+
+    assert losses.total.item() == pytest.approx(3.0)
+    assert losses.class_conditioning_residual_alignment.item() == pytest.approx(2.0)
+    assert losses.class_conditioning_residual_alignment_scale.item() == pytest.approx(
+        0.5
+    )
+    assert losses.class_conditioning_residual_correct_cosine.item() == pytest.approx(
+        0.8
+    )
+    assert losses.class_conditioning_residual_wrong_condition_count.item() == 3.0
+    metrics = losses.as_dict()
+    assert metrics["class_conditioning_residual_direction"].item() == pytest.approx(
+        0.2
+    )
+    assert "class_conditioning_residual_correct_better_null_fraction" in metrics
 
 
 def test_consistency_scales_remain_float32_for_bfloat16_outputs() -> None:

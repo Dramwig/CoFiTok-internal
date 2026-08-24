@@ -475,6 +475,7 @@ def _write_schedule_config(
     rollout_weight: float = 0.1,
     teacher_weight: float = 0.25,
     ranking_weight: float = 0.0,
+    residual_weight: float = 0.0,
 ) -> None:
     path.write_text(
         json.dumps(
@@ -493,6 +494,9 @@ def _write_schedule_config(
                     "class_conditioning_ranking_weight": ranking_weight,
                     "class_conditioning_ranking_start_step": 1_000,
                     "class_conditioning_ranking_warmup_steps": 1_000,
+                    "class_conditioning_residual_alignment_weight": residual_weight,
+                    "class_conditioning_residual_alignment_start_step": 1_000,
+                    "class_conditioning_residual_alignment_warmup_steps": 1_000,
                 },
                 "runtime": {},
                 "optimization": {},
@@ -507,6 +511,7 @@ def _write_schedule_metrics(
     *,
     corrupt: str = "",
     include_ranking: bool = False,
+    include_residual: bool = False,
 ) -> None:
     run_dir.mkdir(parents=True, exist_ok=True)
     rows = []
@@ -537,6 +542,20 @@ def _write_schedule_metrics(
                     if include_ranking
                     else {}
                 ),
+                **(
+                    {
+                        "class_conditioning_residual_alignment_scale": (
+                            0.0
+                            if step <= 1_000
+                            else min((step - 1_000) / 1_000, 1.0)
+                        ),
+                        "class_conditioning_residual_alignment": (
+                            0.0 if step <= 1_000 else 0.03
+                        ),
+                    }
+                    if include_residual
+                    else {}
+                ),
             }
         )
     if corrupt == "rollout_scale":
@@ -546,6 +565,9 @@ def _write_schedule_metrics(
     elif corrupt == "rollout_active_zero":
         for row in rows:
             row["rollout_consistency"] = 0.0
+    elif corrupt == "residual_active_zero":
+        for row in rows:
+            row["class_conditioning_residual_alignment"] = 0.0
     (run_dir / "train_metrics.jsonl").write_text(
         "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
     )
@@ -639,6 +661,49 @@ def test_audit_accepts_zero_hinge_after_ranking_activation(tmp_path) -> None:
     ]
     assert ranking["active_rows"] == 3
     assert ranking["nonzero_loss_rows"] == 0
+
+
+def test_audit_verifies_residual_alignment_schedule(tmp_path) -> None:
+    config = tmp_path / "config.json"
+    _write_schedule_config(config, residual_weight=0.05)
+    _write_schedule_metrics(tmp_path, include_residual=True)
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=4_000,
+        checkpoint_interval=5_000,
+        config_path=config,
+    )
+
+    assert report["status"] == "healthy"
+    residual = report["consistency_schedules"]["schedules"][
+        "class_conditioning_residual_alignment"
+    ]
+    assert residual["active_rows"] == 3
+    assert residual["nonzero_loss_rows"] == 3
+
+
+def test_audit_rejects_inactive_residual_alignment_objective(tmp_path) -> None:
+    config = tmp_path / "config.json"
+    _write_schedule_config(config, residual_weight=0.05)
+    _write_schedule_metrics(
+        tmp_path,
+        include_residual=True,
+        corrupt="residual_active_zero",
+    )
+
+    report = audit_progress(
+        tmp_path,
+        expected_steps=4_000,
+        checkpoint_interval=5_000,
+        config_path=config,
+    )
+
+    assert report["status"] == "invalid"
+    assert (
+        "class_conditioning_residual_alignment is zero for all active schedule rows"
+        in report["issues"]
+    )
 
 
 def test_audit_uses_zero_effective_scale_when_consistency_weight_is_zero(tmp_path) -> None:

@@ -40,6 +40,16 @@ SHARED_TRAINING_LOSS_FIELDS = {
     "class_conditioning_ranking_margin",
     "class_conditioning_ranking_wrong_label_offset",
     "class_conditioning_ranking_min_timestep",
+    "class_conditioning_residual_alignment_weight",
+    "class_conditioning_residual_alignment_start_step",
+    "class_conditioning_residual_alignment_warmup_steps",
+    "class_conditioning_residual_alignment_batch_fraction",
+    "class_conditioning_residual_alignment_margin",
+    "class_conditioning_residual_alignment_temperature",
+    "class_conditioning_residual_alignment_wrong_label_offsets",
+    "class_conditioning_residual_alignment_min_timestep",
+    "class_conditioning_residual_alignment_pooling_factors",
+    "class_conditioning_residual_alignment_reconstruction_weight",
 }
 
 

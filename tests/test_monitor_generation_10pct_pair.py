@@ -20,6 +20,9 @@ def _write_required_manifest(
     ranking_weight: float = 0.0,
     ranking_start: int = 0,
     ranking_warmup: int = 0,
+    residual_weight: float = 0.0,
+    residual_start: int = 0,
+    residual_warmup: int = 0,
 ) -> None:
     (tmp_path / "run_manifest.json").write_text(
         json.dumps(
@@ -39,6 +42,15 @@ def _write_required_manifest(
                         "class_conditioning_ranking_weight": ranking_weight,
                         "class_conditioning_ranking_start_step": ranking_start,
                         "class_conditioning_ranking_warmup_steps": ranking_warmup,
+                        "class_conditioning_residual_alignment_weight": (
+                            residual_weight
+                        ),
+                        "class_conditioning_residual_alignment_start_step": (
+                            residual_start
+                        ),
+                        "class_conditioning_residual_alignment_warmup_steps": (
+                            residual_warmup
+                        ),
                     },
                 },
                 "git": {
@@ -576,6 +588,67 @@ def test_required_monitor_rejects_manifest_schedule_drift(tmp_path) -> None:
         for issue in report["health_issues"]
     )
     assert report["run_manifest"]["status"] == "invalid"
+
+
+def test_required_monitor_validates_residual_alignment_schedule(tmp_path) -> None:
+    _write_required_manifest(
+        tmp_path,
+        residual_weight=0.05,
+        residual_start=0,
+        residual_warmup=1_000,
+    )
+    metrics_path = tmp_path / "train_metrics.jsonl"
+    metrics_path.write_text(
+        json.dumps(
+            {
+                "step": 500,
+                "total": 0.1,
+                "class_conditioning_residual_alignment": 0.2,
+                "class_conditioning_residual_alignment_scale": 0.5,
+                "class_conditioning_residual_correct_cosine": -0.2,
+                "class_conditioning_residual_wrong_cosine": -0.4,
+                "class_conditioning_residual_selected_fraction": 0.125,
+                "class_conditioning_residual_wrong_condition_count": 2.0,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+        expected_checkpoint_revision="revision-a",
+    )
+
+    assert report["health_issues"] == []
+    residual = report["run_manifest"]["schedule_contracts"][
+        "class_conditioning_residual_alignment"
+    ]
+    assert residual["missing_steps"] == []
+    assert residual["mismatched_steps"] == []
+
+    row = json.loads(metrics_path.read_text(encoding="utf-8"))
+    row["class_conditioning_residual_alignment_scale"] = 0.49
+    metrics_path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    report = inspect_run(
+        tmp_path,
+        expected_steps=5_000,
+        now=0.0,
+        checkpoint_interval=1_250,
+        checkpoint_grace_steps=100,
+        checkpoint_integrity_policy="required",
+        expected_checkpoint_revision="revision-a",
+    )
+    assert report["run_manifest"]["status"] == "invalid"
+    assert any(
+        "class_conditioning_residual_alignment_scale differs" in issue
+        for issue in report["health_issues"]
+    )
 
 
 def test_required_monitor_rejects_missing_dataset_provenance(tmp_path) -> None:

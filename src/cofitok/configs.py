@@ -110,6 +110,20 @@ class LossConfig:
     class_conditioning_ranking_margin: float = 0.0
     class_conditioning_ranking_wrong_label_offset: int = 1
     class_conditioning_ranking_min_timestep: int = 0
+    class_conditioning_residual_alignment_weight: float = 0.0
+    class_conditioning_residual_alignment_start_step: int = 0
+    class_conditioning_residual_alignment_warmup_steps: int = 0
+    class_conditioning_residual_alignment_batch_fraction: float = 0.0625
+    class_conditioning_residual_alignment_margin: float = 0.0
+    class_conditioning_residual_alignment_temperature: float = 0.1
+    class_conditioning_residual_alignment_wrong_label_offsets: list[int] = field(
+        default_factory=lambda: [1]
+    )
+    class_conditioning_residual_alignment_min_timestep: int = 0
+    class_conditioning_residual_alignment_pooling_factors: list[int] = field(
+        default_factory=lambda: [8, 16]
+    )
+    class_conditioning_residual_alignment_reconstruction_weight: float = 0.0
     tail_early_dropout_weight: float = 0.0
     tail_early_dropout_prob: float = 0.0
     tail_early_dropout_start: int = 1

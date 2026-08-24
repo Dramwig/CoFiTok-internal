@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,19 @@ from scripts.validate_generation_configs import validate_pair
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+RESIDUAL_ALIGNMENT_FIELDS = {
+    "class_conditioning_residual_alignment_weight": 0.05,
+    "class_conditioning_residual_alignment_start_step": 100,
+    "class_conditioning_residual_alignment_warmup_steps": 200,
+    "class_conditioning_residual_alignment_batch_fraction": 0.0625,
+    "class_conditioning_residual_alignment_margin": 0.1,
+    "class_conditioning_residual_alignment_temperature": 0.1,
+    "class_conditioning_residual_alignment_wrong_label_offsets": [1, 500],
+    "class_conditioning_residual_alignment_min_timestep": 500,
+    "class_conditioning_residual_alignment_pooling_factors": [8, 16, 32],
+    "class_conditioning_residual_alignment_reconstruction_weight": 0.25,
+}
 
 
 def _read(name: str) -> dict:
@@ -34,6 +48,10 @@ def test_checked_in_generation_pairs_isolate_factorization_differences() -> None
         (
             "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_probe1k.json",
             "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_probe1k.json",
+        ),
+        (
+            "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_classresidualalign_k8_probe1k.json",
+            "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_classresidualalign_dense_probe1k.json",
         ),
         (
             "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_probe5k.json",
@@ -65,6 +83,54 @@ def test_checked_in_generation_pairs_isolate_factorization_differences() -> None
             "cofitok_synthesis": "fixed_basis",
             "dense_synthesis": "dense_identity",
         }
+
+
+@pytest.mark.parametrize(
+    ("control_name", "candidate_name"),
+    [
+        (
+            "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_probe1k.json",
+            "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_classresidualalign_k8_probe1k.json",
+        ),
+        (
+            "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_probe1k.json",
+            "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_classresidualalign_dense_probe1k.json",
+        ),
+    ],
+)
+def test_residual_alignment_probe_changes_only_name_and_objective(
+    control_name: str,
+    candidate_name: str,
+) -> None:
+    config_dir = ROOT / "configs/generation"
+    control = json.loads((config_dir / control_name).read_text(encoding="utf-8"))
+    candidate = json.loads((config_dir / candidate_name).read_text(encoding="utf-8"))
+
+    assert candidate["name"] == Path(candidate_name).stem
+    assert not any(key.startswith("class_conditioning_ranking_") for key in candidate["loss"])
+    assert {
+        key: candidate["loss"][key] for key in RESIDUAL_ALIGNMENT_FIELDS
+    } == RESIDUAL_ALIGNMENT_FIELDS
+
+    candidate["name"] = control["name"]
+    for key in RESIDUAL_ALIGNMENT_FIELDS:
+        del candidate["loss"][key]
+    assert candidate == control
+
+
+def test_residual_alignment_probe_pair_is_matched() -> None:
+    cofitok = _read(
+        "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_classresidualalign_k8_probe1k.json"
+    )
+    dense = _read(
+        "imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_classresidualalign_dense_probe1k.json"
+    )
+
+    report = generation_pair_contract(cofitok, dense)
+
+    assert report["valid"] is True, report["issues"]
+    assert report["mismatched_shared_training_loss_fields"] == []
+    assert report["dense_nonzero_auxiliary_losses"] == []
 
 
 def test_rollout_consistency_is_a_matched_training_loss() -> None:
@@ -156,6 +222,42 @@ def test_class_conditioning_ranking_is_a_matched_training_loss() -> None:
     assert report["valid"] is False
     assert report["mismatched_shared_training_loss_fields"] == [
         "class_conditioning_ranking_margin"
+    ]
+
+
+def test_residual_alignment_is_a_matched_training_loss() -> None:
+    cofitok = _read("imagenet256_10pct_fixed_basis_cofitok_k8_50k.json")
+    dense = _read("imagenet256_10pct_fixed_basis_dense_50k.json")
+    shared = {
+        "class_conditioning_residual_alignment_weight": 0.05,
+        "class_conditioning_residual_alignment_start_step": 500,
+        "class_conditioning_residual_alignment_warmup_steps": 500,
+        "class_conditioning_residual_alignment_batch_fraction": 0.0625,
+        "class_conditioning_residual_alignment_margin": 0.1,
+        "class_conditioning_residual_alignment_temperature": 0.1,
+        "class_conditioning_residual_alignment_wrong_label_offsets": [1, 500],
+        "class_conditioning_residual_alignment_min_timestep": 500,
+        "class_conditioning_residual_alignment_pooling_factors": [8, 16],
+        "class_conditioning_residual_alignment_reconstruction_weight": 0.25,
+    }
+    for config in (cofitok, dense):
+        config["loss"].update(shared)
+
+    report = generation_pair_contract(cofitok, dense)
+
+    assert report["valid"] is True, report["issues"]
+    assert report["mismatched_shared_training_loss_fields"] == []
+    assert (
+        "class_conditioning_residual_alignment_weight"
+        not in report["dense_nonzero_auxiliary_losses"]
+    )
+
+    mismatched = copy.deepcopy(dense)
+    mismatched["loss"]["class_conditioning_residual_alignment_temperature"] = 0.2
+    report = generation_pair_contract(cofitok, mismatched)
+    assert report["valid"] is False
+    assert report["mismatched_shared_training_loss_fields"] == [
+        "class_conditioning_residual_alignment_temperature"
     ]
 
 

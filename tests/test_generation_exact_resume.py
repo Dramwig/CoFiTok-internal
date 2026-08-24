@@ -156,6 +156,74 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
     assert {row["validation_num_images"] for row in rows} == {2}
 
 
+def test_residual_alignment_segmented_resume_matches_uninterrupted(tmp_path) -> None:
+    config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    config["loss"].update(
+        {
+            "class_conditioning_residual_alignment_weight": 0.05,
+            "class_conditioning_residual_alignment_start_step": 0,
+            "class_conditioning_residual_alignment_warmup_steps": 1,
+            "class_conditioning_residual_alignment_batch_fraction": 0.5,
+            "class_conditioning_residual_alignment_margin": 0.1,
+            "class_conditioning_residual_alignment_temperature": 0.1,
+            "class_conditioning_residual_alignment_wrong_label_offsets": [1, 2],
+            "class_conditioning_residual_alignment_min_timestep": 0,
+            "class_conditioning_residual_alignment_pooling_factors": [4, 8],
+            "class_conditioning_residual_alignment_reconstruction_weight": 0.25,
+        }
+    )
+    config_path = tmp_path / "smoke_residual_alignment.json"
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    uninterrupted = tmp_path / "residual_uninterrupted"
+    resumed = tmp_path / "residual_resumed"
+
+    _run(uninterrupted, config=config_path)
+    _run(resumed, "--stop-after-steps", "1", config=config_path)
+    _run(resumed, "--resume", "auto", config=config_path)
+
+    uninterrupted_checkpoint = torch.load(
+        uninterrupted / "checkpoint_step_00000002.pt",
+        map_location="cpu",
+        weights_only=False,
+    )
+    resumed_checkpoint = torch.load(
+        resumed / "checkpoint_step_00000002.pt",
+        map_location="cpu",
+        weights_only=False,
+    )
+    for key in ("model", "ema", "optimizer", "scheduler", "rng_state"):
+        _assert_nested_equal(uninterrupted_checkpoint[key], resumed_checkpoint[key])
+    _assert_nested_equal(
+        uninterrupted_checkpoint["extra_state"]["sampler"],
+        resumed_checkpoint["extra_state"]["sampler"],
+    )
+    for key in (
+        "total",
+        "epsilon",
+        "class_conditioning_residual_alignment",
+        "class_conditioning_residual_alignment_scale",
+        "class_conditioning_residual_direction",
+        "class_conditioning_residual_contrastive",
+        "class_conditioning_residual_reconstruction",
+        "class_conditioning_residual_correct_x0_mse",
+        "class_conditioning_residual_wrong_x0_mse",
+        "class_conditioning_residual_null_x0_mse",
+    ):
+        assert uninterrupted_checkpoint["metrics"][key] == resumed_checkpoint["metrics"][
+            key
+        ]
+
+    rows = [
+        json.loads(line)
+        for line in (resumed / "train_metrics.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert [int(row["step"]) for row in rows] == [1, 2]
+    assert all(row["class_conditioning_residual_alignment_scale"] == 1.0 for row in rows)
+    assert all(row["class_conditioning_residual_alignment"] > 0.0 for row in rows)
+
+
 def test_controlled_resume_accepts_only_a_clean_ancestor_revision() -> None:
     current_revision = _git("rev-parse", "HEAD")
     source_revision = _git("rev-parse", "HEAD^")
@@ -246,7 +314,7 @@ def test_legacy_config_defaults_to_no_random_horizontal_flip() -> None:
     assert config.data.random_horizontal_flip_prob == 0.0
 
 
-def test_legacy_checkpoint_config_accepts_only_disabled_ranking_defaults() -> None:
+def test_legacy_checkpoint_config_accepts_only_disabled_semantic_defaults() -> None:
     expected = config_to_dict(load_config(CONFIG))
     legacy = deepcopy(expected)
     for field in (
@@ -257,6 +325,16 @@ def test_legacy_checkpoint_config_accepts_only_disabled_ranking_defaults() -> No
         "class_conditioning_ranking_margin",
         "class_conditioning_ranking_wrong_label_offset",
         "class_conditioning_ranking_min_timestep",
+        "class_conditioning_residual_alignment_weight",
+        "class_conditioning_residual_alignment_start_step",
+        "class_conditioning_residual_alignment_warmup_steps",
+        "class_conditioning_residual_alignment_batch_fraction",
+        "class_conditioning_residual_alignment_margin",
+        "class_conditioning_residual_alignment_temperature",
+        "class_conditioning_residual_alignment_wrong_label_offsets",
+        "class_conditioning_residual_alignment_min_timestep",
+        "class_conditioning_residual_alignment_pooling_factors",
+        "class_conditioning_residual_alignment_reconstruction_weight",
     ):
         legacy["loss"].pop(field)
 
@@ -271,6 +349,13 @@ def test_legacy_checkpoint_config_accepts_only_disabled_ranking_defaults() -> No
         _normalize_exact_resume_config(enabled),
         _normalize_exact_resume_config(legacy),
     ) == ["config.loss.class_conditioning_ranking_weight"]
+
+    residual_enabled = deepcopy(expected)
+    residual_enabled["loss"]["class_conditioning_residual_alignment_weight"] = 0.05
+    assert _config_mismatch_paths(
+        _normalize_exact_resume_config(residual_enabled),
+        _normalize_exact_resume_config(legacy),
+    ) == ["config.loss.class_conditioning_residual_alignment_weight"]
 
 
 def test_training_accepts_fixed_basis_restricted_synthesis() -> None:
@@ -399,6 +484,100 @@ def test_training_accepts_enabled_class_conditioning_ranking_config() -> None:
     )
 
     _validate_config(enabled)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("class_conditioning_residual_alignment_weight", -0.1),
+        ("class_conditioning_residual_alignment_weight", float("nan")),
+        ("class_conditioning_residual_alignment_start_step", -1),
+        ("class_conditioning_residual_alignment_start_step", 1.5),
+        ("class_conditioning_residual_alignment_warmup_steps", -1),
+        ("class_conditioning_residual_alignment_warmup_steps", 1.5),
+        ("class_conditioning_residual_alignment_batch_fraction", 0.0),
+        ("class_conditioning_residual_alignment_batch_fraction", 1.1),
+        ("class_conditioning_residual_alignment_batch_fraction", True),
+        ("class_conditioning_residual_alignment_margin", -0.1),
+        ("class_conditioning_residual_alignment_margin", 2.0),
+        ("class_conditioning_residual_alignment_margin", float("nan")),
+        ("class_conditioning_residual_alignment_temperature", 0.0),
+        ("class_conditioning_residual_alignment_temperature", True),
+        ("class_conditioning_residual_alignment_temperature", float("nan")),
+        ("class_conditioning_residual_alignment_wrong_label_offsets", []),
+        ("class_conditioning_residual_alignment_wrong_label_offsets", [0]),
+        ("class_conditioning_residual_alignment_wrong_label_offsets", [1, 11]),
+        ("class_conditioning_residual_alignment_wrong_label_offsets", [1.5]),
+        ("class_conditioning_residual_alignment_wrong_label_offsets", [True]),
+        ("class_conditioning_residual_alignment_min_timestep", -1),
+        ("class_conditioning_residual_alignment_min_timestep", 1.5),
+        ("class_conditioning_residual_alignment_pooling_factors", []),
+        ("class_conditioning_residual_alignment_pooling_factors", [0]),
+        ("class_conditioning_residual_alignment_pooling_factors", [2, 1]),
+        ("class_conditioning_residual_alignment_pooling_factors", [3]),
+        ("class_conditioning_residual_alignment_pooling_factors", [1.5]),
+        ("class_conditioning_residual_alignment_pooling_factors", [True]),
+        ("class_conditioning_residual_alignment_reconstruction_weight", -0.1),
+        (
+            "class_conditioning_residual_alignment_reconstruction_weight",
+            float("nan"),
+        ),
+    ],
+)
+def test_training_rejects_invalid_residual_alignment_config(
+    field: str,
+    value: Any,
+) -> None:
+    config = load_config(CONFIG)
+    values = {
+        "class_conditioning_residual_alignment_weight": 0.05,
+        field: value,
+    }
+    invalid = replace(
+        config,
+        loss=replace(config.loss, **values),
+    )
+
+    with pytest.raises(ValueError, match=field):
+        _validate_config(invalid)
+
+
+def test_training_accepts_enabled_residual_alignment_config() -> None:
+    config = load_config(CONFIG)
+    enabled = replace(
+        config,
+        loss=replace(
+            config.loss,
+            class_conditioning_residual_alignment_weight=0.05,
+            class_conditioning_residual_alignment_start_step=10,
+            class_conditioning_residual_alignment_warmup_steps=20,
+            class_conditioning_residual_alignment_batch_fraction=0.5,
+            class_conditioning_residual_alignment_margin=0.1,
+            class_conditioning_residual_alignment_temperature=0.1,
+            class_conditioning_residual_alignment_wrong_label_offsets=[1, 5],
+            class_conditioning_residual_alignment_min_timestep=8,
+            class_conditioning_residual_alignment_pooling_factors=[4, 8],
+            class_conditioning_residual_alignment_reconstruction_weight=0.25,
+        ),
+    )
+
+    _validate_config(enabled)
+
+
+def test_training_rejects_two_semantic_alignment_objectives() -> None:
+    config = load_config(CONFIG)
+    invalid = replace(
+        config,
+        loss=replace(
+            config.loss,
+            class_conditioning_ranking_weight=0.05,
+            class_conditioning_residual_alignment_weight=0.05,
+            class_conditioning_residual_alignment_pooling_factors=[4, 8],
+        ),
+    )
+
+    with pytest.raises(ValueError, match="cannot both be enabled"):
+        _validate_config(invalid)
 
 
 @pytest.mark.parametrize(
