@@ -47,9 +47,12 @@ Before creating the output root, the controller:
 It then runs exactly one child at a time. For each of the 16 method/case arms it
 creates the native schema-v6 sampling report, torch-fidelity FID/IS report,
 fixed ResNet-50 class-fidelity report, CPU artifact-statistics report, and a
-source-replayed case observation. A byte-exact 1,000-image subset of the bound
-real set supplies the shared artifact reference. The final observation matrix
-and result are physically replayed before the controller reports completion.
+source-replayed case observation. The first 1,000 images of the bound real set
+are decoded as RGB and losslessly materialized as numbered PNG files, with both
+source-byte identities and decoded-pixel digests recorded for replay. This
+supports the authoritative ImageNet validation tree's JPEG storage without
+changing any source pixels. The final observation matrix and result are
+physically replayed before the controller reports completion.
 
 The canonical remote output is versioned and does not overlap prior evidence:
 

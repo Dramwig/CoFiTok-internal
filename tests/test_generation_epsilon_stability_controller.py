@@ -126,18 +126,21 @@ def test_runbook_is_single_controller_and_non_authorizing() -> None:
     assert "300k" not in source.lower()
 
 
-def test_real_reference_subset_is_byte_exact_and_replayable(
+def test_real_reference_subset_is_decoded_pixel_exact_and_replayable(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     real = tmp_path / "real"
     real.mkdir()
-    for index, value in enumerate((17, 91)):
+    sources = []
+    for index, (value, suffix) in enumerate(((17, ".jpg"), (91, ".png"))):
+        source = real / f"source_{index}{suffix}"
         Image.fromarray(
             np.full((256, 256, 3), value, dtype=np.uint8),
             mode="RGB",
-        ).save(real / f"source_{index}.png")
-    images = sorted(real.glob("*.png"))
+        ).save(source)
+        sources.append(source)
+    images = sorted(sources)
     contract = tmp_path / "real_set.json"
     write_json_report(
         contract,
@@ -175,3 +178,19 @@ def test_real_reference_subset_is_byte_exact_and_replayable(
         "000000.png",
         "000001.png",
     ]
+    assert first["materialization"] == (
+        "decoded_rgb_pixels_to_lossless_numbered_png_v1"
+    )
+    assert [row["source_format"] for row in first["source_images"]] == [
+        "JPEG",
+        "PNG",
+    ]
+    for source, destination in zip(images, sorted(output.glob("*.png"))):
+        with (
+            Image.open(source) as source_image,
+            Image.open(destination) as output_image,
+        ):
+            assert output_image.format == "PNG"
+            assert output_image.mode == "RGB"
+            assert output_image.size == (256, 256)
+            assert output_image.tobytes() == source_image.tobytes()

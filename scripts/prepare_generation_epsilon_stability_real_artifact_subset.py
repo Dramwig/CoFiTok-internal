@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
-import shutil
 from pathlib import Path
 from typing import Any
 
@@ -12,7 +12,7 @@ from PIL import Image
 from cofitok.generation import EPSILON_STABILITY_NON_AUTHORIZING_BOUNDARY
 from cofitok.generation_gate_sources import gate_source_report_identity
 from cofitok.image_integrity import image_tree_sha256, sample_set_sha256
-from cofitok.reporting import file_sha256, write_json_report
+from cofitok.reporting import write_json_report
 
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg"}
@@ -54,28 +54,71 @@ def _find_images(root: Path) -> list[Path]:
     return images
 
 
-def _validate_source_image(path: Path) -> None:
+def _decoded_source_image(path: Path) -> tuple[str, bytes]:
     with Image.open(path) as image:
-        if image.format != "PNG" or image.mode != "RGB" or image.size != (256, 256):
+        if (
+            image.format not in {"JPEG", "PNG"}
+            or image.mode != "RGB"
+            or image.size != (256, 256)
+        ):
             raise ValueError(f"real artifact source image contract differs: {path}")
+        return str(image.format), image.tobytes()
 
 
-def _copy_exact(source: Path, destination: Path, *, resume: bool) -> None:
+def _decoded_pixel_sha256(pixels: bytes) -> str:
+    digest = hashlib.sha256()
+    digest.update(b"cofitok_rgb_256x256_uint8_v1\0")
+    digest.update(pixels)
+    return digest.hexdigest()
+
+
+def _materialize_png(
+    source: Path,
+    destination: Path,
+    *,
+    resume: bool,
+) -> tuple[str, str]:
+    source_format, source_pixels = _decoded_source_image(source)
     if destination.exists():
         if not resume or destination.is_symlink() or not destination.is_file():
             raise FileExistsError(f"real artifact subset destination exists: {destination}")
-        if (
-            destination.stat().st_size != source.stat().st_size
-            or file_sha256(destination) != file_sha256(source)
-        ):
-            raise ValueError(f"real artifact subset destination differs: {destination}")
-        return
+        with Image.open(destination) as image:
+            if (
+                image.format != "PNG"
+                or image.mode != "RGB"
+                or image.size != (256, 256)
+                or image.tobytes() != source_pixels
+            ):
+                raise ValueError(
+                    f"real artifact subset destination differs: {destination}"
+                )
+        return source_format, _decoded_pixel_sha256(source_pixels)
+
     temporary = destination.with_name(f".{destination.name}.{os.getpid()}.part")
     try:
-        shutil.copyfile(source, temporary)
+        Image.frombytes("RGB", (256, 256), source_pixels).save(
+            temporary,
+            format="PNG",
+            optimize=False,
+            compress_level=6,
+        )
+        with Image.open(temporary) as image:
+            if (
+                image.format != "PNG"
+                or image.mode != "RGB"
+                or image.size != (256, 256)
+                or image.tobytes() != source_pixels
+            ):
+                raise ValueError(
+                    f"real artifact subset PNG materialization differs: {source}"
+                )
         os.replace(temporary, destination)
     finally:
         temporary.unlink(missing_ok=True)
+    with Image.open(destination) as image:
+        if image.format != "PNG" or image.tobytes() != source_pixels:
+            raise ValueError(f"real artifact subset destination differs: {destination}")
+    return source_format, _decoded_pixel_sha256(source_pixels)
 
 
 def build_subset(
@@ -116,24 +159,33 @@ def build_subset(
     rows = []
     destinations = []
     for index, source in enumerate(selected):
-        _validate_source_image(source)
-        destination = output / f"{index:06d}.png"
-        _copy_exact(source, destination, resume=resume)
         source_identity = gate_source_report_identity(source)
+        destination = output / f"{index:06d}.png"
+        source_format, decoded_pixel_sha256 = _materialize_png(
+            source,
+            destination,
+            resume=resume,
+        )
+        if gate_source_report_identity(source) != source_identity:
+            raise ValueError(
+                f"real artifact subset source changed during materialization: {source}"
+            )
         destination_identity = gate_source_report_identity(destination)
-        if (
-            source_identity["bytes"] != destination_identity["bytes"]
-            or source_identity["sha256"] != destination_identity["sha256"]
-        ):
-            raise ValueError("epsilon-stability real subset copy differs")
         rows.append(
             {
                 "index": index,
                 "source": source_identity,
+                "source_format": source_format,
+                "decoded_pixel_sha256": decoded_pixel_sha256,
                 "destination": destination_identity,
             }
         )
         destinations.append(destination)
+
+    if image_tree_sha256(source_images, root=root) != str(real_set["sha256"]):
+        raise ValueError(
+            "epsilon-stability physical real set changed during materialization"
+        )
 
     actual_names = {path.name for path in output.iterdir() if path.is_file()}
     if actual_names != expected_names:
@@ -144,6 +196,7 @@ def build_subset(
         "real_set_identity": contract_identity,
         "real_set": real_set,
         "selection": "first_1000_images_in_sorted_recursive_path_order",
+        "materialization": "decoded_rgb_pixels_to_lossless_numbered_png_v1",
         "image_dir": output.resolve().as_posix(),
         "sample_count": SAMPLE_COUNT,
         "start_index": START_INDEX,
