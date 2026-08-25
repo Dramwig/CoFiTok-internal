@@ -64,7 +64,12 @@ def _args(tmp_path: Path) -> Namespace:
     )
 
 
-def _terminal_guard(args: Namespace, *, status: str) -> dict[str, Any]:
+def _terminal_guard(
+    args: Namespace,
+    *,
+    status: str,
+    paired_kid_evaluated: bool = True,
+) -> dict[str, Any]:
     assert status in {"pass", "hold"}
     return {
         "schema_version": 1,
@@ -76,6 +81,7 @@ def _terminal_guard(args: Namespace, *, status: str) -> dict[str, Any]:
             else "terminal_system_evidence_complete_without_qualified_matched_advantage"
         ),
         "claim_policy": {
+            "paired_kid_statistical_evidence_available": paired_kid_evaluated,
             "independent_replication_claim_allowed": False,
             "multiple_independent_terminal_streams_claim_allowed": False,
             "replication_language_requires_distinct_bound_streams": True,
@@ -92,15 +98,28 @@ def _terminal_guard(args: Namespace, *, status: str) -> dict[str, Any]:
                     "bound_terminal_stream_count": 1,
                     "independent_replication_count": 0,
                     "independent_replication_supported": False,
-                    "interpretation": waiter.REPLICATION_INTERPRETATION,
+                    "interpretation": (
+                        waiter.REPLICATION_INTERPRETATION
+                        if paired_kid_evaluated
+                        else waiter.UNPAIRED_REPLICATION_INTERPRETATION
+                    ),
                 }
             }
         },
     }
 
 
-def _complete_terminal(args: Namespace, *, status: str) -> dict[str, Any]:
-    guard = _terminal_guard(args, status=status)
+def _complete_terminal(
+    args: Namespace,
+    *,
+    status: str,
+    paired_kid_evaluated: bool = True,
+) -> dict[str, Any]:
+    guard = _terminal_guard(
+        args,
+        status=status,
+        paired_kid_evaluated=paired_kid_evaluated,
+    )
     _write(args.terminal_system_guard, guard)
     guard_identity = waiter.file_identity(
         args.terminal_system_guard,
@@ -127,12 +146,17 @@ def _fake_comparison(
     args: Namespace,
     *,
     terminal_status: str,
+    paired_kid_evaluated: bool = True,
 ) -> dict[str, Any]:
     return {
         "schema_version": 1,
         "role": waiter.COMPARISON_ROLE,
         "status": terminal_status,
-        "decision": _terminal_guard(args, status=terminal_status)["decision"],
+        "decision": _terminal_guard(
+            args,
+            status=terminal_status,
+            paired_kid_evaluated=paired_kid_evaluated,
+        )["decision"],
         "authorization_boundary": waiter.COMPARISON_BOUNDARY,
         "comparison_policy": {
             "primary_direct_tier": "matched_training_direct",
@@ -145,9 +169,11 @@ def _fake_comparison(
             "multiple_independent_terminal_streams_claim_allowed": False,
             "replication_language_requires_distinct_bound_streams": True,
         },
-        "replication_scope": _terminal_guard(args, status=terminal_status)[
-            "evidence"
-        ]["matched_statistical_advantage"]["replication_scope"],
+        "replication_scope": _terminal_guard(
+            args,
+            status=terminal_status,
+            paired_kid_evaluated=paired_kid_evaluated,
+        )["evidence"]["matched_statistical_advantage"]["replication_scope"],
         "source_reports": {
             "terminal_system_claim_guard": waiter.file_identity(
                 args.terminal_system_guard,
@@ -183,6 +209,7 @@ def _install_fake_builder(
     args: Namespace,
     *,
     terminal_status: str,
+    paired_kid_evaluated: bool = True,
     calls: list[list[str]] | None = None,
 ) -> None:
     original_run = subprocess.run
@@ -196,7 +223,11 @@ def _install_fake_builder(
         if calls is not None:
             calls.append(command)
         args.output_dir.mkdir(parents=True, exist_ok=True)
-        report = _fake_comparison(args, terminal_status=terminal_status)
+        report = _fake_comparison(
+            args,
+            terminal_status=terminal_status,
+            paired_kid_evaluated=paired_kid_evaluated,
+        )
         json_path = args.output_dir / "quality_bridge_comparison.json"
         payload = json.dumps(report, indent=2, sort_keys=True) + "\n"
         if json_path.is_file() and json_path.read_text(encoding="utf-8") != payload:
@@ -388,6 +419,26 @@ def test_waiter_builds_for_pass_or_hold_and_operationally_passes(
     assert command[command.index("--expected-terminal-system-guard-sha256") + 1]
     assert command[command.index("--expected-official-related-sha256") + 1] == (
         args.expected_official_related_sha256
+    )
+
+
+def test_waiter_accepts_bound_stream_without_paired_reanalysis(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args = _args(tmp_path)
+    _complete_terminal(args, status="hold", paired_kid_evaluated=False)
+    _install_fake_builder(
+        monkeypatch,
+        args,
+        terminal_status="hold",
+        paired_kid_evaluated=False,
+    )
+
+    assert waiter.run_waiter(args, enforce_runtime=False) == 0
+    status = json.loads(args.status_output.read_text(encoding="utf-8"))
+    assert status["terminal"]["replication_scope"]["interpretation"] == (
+        waiter.UNPAIRED_REPLICATION_INTERPRETATION
     )
 
 

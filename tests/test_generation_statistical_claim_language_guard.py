@@ -143,6 +143,43 @@ def _quality_source(
     return {"path": path, "identity": _write(path, payload), "payload": payload}
 
 
+def _fail_closed_quality_source(tmp_path: Path) -> dict[str, Any]:
+    payload = {
+        "schema_version": quality_claim.REPORT_SCHEMA_VERSION,
+        "role": quality_claim.REPORT_ROLE,
+        "status": "hold",
+        "decision": (
+            "matched_quality_bridge_fid_advantage_not_statistically_qualified"
+        ),
+        "statistical_evidence_status": "not_evaluated_prerequisite_failed",
+        "uncertainty_report": None,
+        "quality_evidence": {
+            "status": "hold",
+            "absolute_quality_passed": False,
+        },
+        "uncertainty_evidence": {
+            "status": "not_evaluated",
+            "advantage_supported": False,
+            "stream_id": "quality_bridge_terminal_100k_00000000_00010000",
+            "start_index": 0,
+            "end_index_exclusive": 10000,
+            "sample_count": 10000,
+            "sample_sets": {
+                "cofitok": {"sha256": "a" * 64},
+                "dense_identity": {"sha256": "b" * 64},
+            },
+            "fid_point_estimates": {"cofitok": 4.0, "dense_identity": 5.0},
+        },
+        "claim_policy": {
+            "matched_relative_fid_advantage_claim_allowed": False,
+            "broad_generation_superiority_claim_allowed": False,
+            "paired_uncertainty_execution_required_after_prerequisite_failure": False,
+        },
+    }
+    path = tmp_path / "quality_claim_fail_closed.json"
+    return {"path": path, "identity": _write(path, payload), "payload": payload}
+
+
 def _capacity_source(tmp_path: Path, *, passed: bool) -> dict[str, Any]:
     uncertainty = _uncertainty(tmp_path, passed=passed)
     payload = {
@@ -208,6 +245,35 @@ def test_guard_holds_when_source_qualification_holds(tmp_path: Path) -> None:
     assert report["status"] == "hold"
     assert report["claim_policy"]["matched_distribution_quality_claim_allowed"] is False
     assert report["claim_policy"]["lower_fid_point_estimate_statement_allowed"] is False
+
+
+def test_guard_fail_closes_without_synthesizing_paired_kid(tmp_path: Path) -> None:
+    report = _build("quality_bridge_100k", _fail_closed_quality_source(tmp_path))
+
+    assert report["status"] == "hold"
+    assert report["sources"]["paired_uncertainty_report"] is None
+    assert report["metric_roles"]["paired_block_kid"]["status"] == (
+        "not_evaluated_prerequisite_failed"
+    )
+    assert report["metric_roles"]["paired_block_kid"][
+        "statistical_significance_tested"
+    ] is False
+    assert report["claim_policy"][
+        "paired_kid_statistical_support_statement_allowed"
+    ] is False
+    assert report["replication_scope"]["sample_count"] == 10000
+    assert report["replication_scope"]["interpretation"] == (
+        guard.UNPAIRED_BOUND_STREAM_INTERPRETATION
+    )
+    assert "was not evaluated" in report["claim_text"]
+    assert any(
+        "no paired block-KID re-analysis was executed" in item
+        for item in report["limitations"]
+    )
+    assert all(
+        "FID and paired block-KID evidence reuse" not in item
+        for item in report["limitations"]
+    )
 
 
 def test_guard_accepts_quality_hold_with_positive_uncertainty(tmp_path: Path) -> None:

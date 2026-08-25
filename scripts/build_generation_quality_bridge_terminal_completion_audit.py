@@ -46,6 +46,9 @@ EXPECTED_TERMINAL_SAMPLES = 10_000
 REPLICATION_INTERPRETATION = (
     "paired_reanalysis_of_one_exact_bound_terminal_sample_stream"
 )
+UNPAIRED_REPLICATION_INTERPRETATION = (
+    "bound_terminal_stream_without_paired_reanalysis"
+)
 TERMINAL_DECISIONS = {
     "pass": "matched_quality_advantage_qualified_with_terminal_system_evidence",
     "hold": "terminal_system_evidence_complete_without_qualified_matched_advantage",
@@ -117,6 +120,16 @@ def validate_replication_boundary(
         if isinstance(statistical, Mapping)
         else None
     )
+    paired_kid_evaluated = (
+        policy.get("paired_kid_statistical_evidence_available")
+        if isinstance(policy, Mapping)
+        else None
+    )
+    expected_interpretation = (
+        REPLICATION_INTERPRETATION
+        if paired_kid_evaluated is True
+        else UNPAIRED_REPLICATION_INTERPRETATION
+    )
     if (
         not isinstance(policy, Mapping)
         or policy.get("independent_replication_claim_allowed") is not False
@@ -128,7 +141,12 @@ def validate_replication_boundary(
         or replication.get("bound_terminal_stream_count") != 1
         or replication.get("independent_replication_count") != 0
         or replication.get("independent_replication_supported") is not False
-        or replication.get("interpretation") != REPLICATION_INTERPRETATION
+        or not isinstance(paired_kid_evaluated, bool)
+        or (
+            terminal_guard.get("status") == "pass"
+            and paired_kid_evaluated is not True
+        )
+        or replication.get("interpretation") != expected_interpretation
         or int(replication.get("start_index", -1)) != 0
         or int(replication.get("end_index_exclusive", -1))
         != EXPECTED_TERMINAL_SAMPLES
@@ -1264,6 +1282,9 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
         decision=status_bindings["terminal_decision"],
     )
     advantage = claim["generation_advantage_proven"]
+    paired_kid_evaluated = terminal_guard["claim_policy"][
+        "paired_kid_statistical_evidence_available"
+    ]
     return {
         "schema_version": SCHEMA_VERSION,
         "role": ROLE,
@@ -1372,9 +1393,17 @@ def build_audit(args: argparse.Namespace) -> dict[str, Any]:
                 "decision; it cannot convert a hold into an advantage claim."
             ),
             (
-                "FID and paired block-KID reuse one exact bound terminal sample "
-                "stream. This audit records zero independent replications and "
-                "forbids a multiple-stream replication claim."
+                (
+                    "FID uses the exact bound terminal sample stream; paired "
+                    "block-KID was not evaluated. This audit records zero "
+                    "independent replications."
+                )
+                if not paired_kid_evaluated
+                else (
+                    "FID and paired block-KID reuse one exact bound terminal sample "
+                    "stream. This audit records zero independent replications and "
+                    "forbids a multiple-stream replication claim."
+                )
             ),
             (
                 "This artifact does not authorize training, sampling, 300K scaling, "

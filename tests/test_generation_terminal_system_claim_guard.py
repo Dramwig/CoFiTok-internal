@@ -490,6 +490,83 @@ def test_holds_when_quality_passes_but_statistical_support_does_not(
     assert report["claim_policy"]["matched_distribution_quality_claim_allowed"] is False
 
 
+def test_holds_with_fail_closed_statistics_after_absolute_quality_failure(
+    tmp_path: Path,
+) -> None:
+    case = _case(tmp_path, quality_passed=False, uncertainty_passed=False)
+    qualification_payload = {
+        "schema_version": quality_claim.REPORT_SCHEMA_VERSION,
+        "role": quality_claim.REPORT_ROLE,
+        "status": "hold",
+        "decision": (
+            "matched_quality_bridge_fid_advantage_not_statistically_qualified"
+        ),
+        "claim_scope": "matched_full_data_quality_bridge_100k_relative_fid_advantage",
+        "statistical_evidence_status": "not_evaluated_prerequisite_failed",
+        "quality_result": case["quality_identity"],
+        "quality_git": {
+            "revision": REVISION,
+            "branch": BRANCH,
+            "tracked_dirty": False,
+        },
+        "uncertainty_report": None,
+        "quality_evidence": {"status": "hold", "absolute_quality_passed": False},
+        "uncertainty_evidence": {
+            "status": "not_evaluated",
+            "advantage_supported": False,
+            "stream_id": "quality_bridge_terminal_100k_00000000_00010000",
+            "start_index": 0,
+            "end_index_exclusive": SAMPLE_COUNT,
+            "sample_count": SAMPLE_COUNT,
+            "sample_sets": {
+                "cofitok": {"sha256": "2" * 64},
+                "dense_identity": {"sha256": "4" * 64},
+            },
+            "fid_point_estimates": {"cofitok": 4.0, "dense_identity": 5.0},
+        },
+        "claim_policy": {
+            "matched_relative_fid_advantage_claim_allowed": False,
+            "broad_generation_superiority_claim_allowed": False,
+            "paired_uncertainty_execution_required_after_prerequisite_failure": False,
+        },
+    }
+    qualification_path = tmp_path / "statistical" / "fail_closed.json"
+    qualification_identity = _write(qualification_path, qualification_payload)
+    statistical_payload = statistical_guard.build_guard(
+        source_kind="quality_bridge_100k",
+        source_report_path=qualification_path,
+        expected_source_report_sha256=qualification_identity["sha256"],
+    )
+    statistical_path = tmp_path / "statistical" / "fail_closed_guard.json"
+    statistical_identity = _write(statistical_path, statistical_payload)
+    case["statistical"] = {
+        "guard_path": statistical_path,
+        "guard_identity": statistical_identity,
+    }
+
+    report = _build(case)
+
+    assert report["status"] == "hold"
+    assert report["evidence"]["matched_statistical_advantage"]["allowed"] is False
+    assert report["evidence"]["matched_statistical_advantage"]["metric_roles"][
+        "paired_block_kid"
+    ]["statistical_significance_tested"] is False
+    assert report["claim_policy"]["paired_kid_statistical_evidence_available"] is False
+    assert report["claim_policy"]["matched_distribution_quality_claim_allowed"] is False
+    assert report["evidence"]["matched_statistical_advantage"][
+        "replication_scope"
+    ]["interpretation"] == statistical_guard.UNPAIRED_BOUND_STREAM_INTERPRETATION
+    assert "was not evaluated" in report["claim_text"]
+    assert any(
+        "no paired block-KID re-analysis was executed" in item
+        for item in report["limitations"]
+    )
+    assert all(
+        "FID and paired block-KID evidence bind" not in item
+        for item in report["limitations"]
+    )
+
+
 def test_rejects_visual_sample_set_drift_from_quality_result(tmp_path: Path) -> None:
     case = _case(tmp_path)
     case["visual_payload"]["sources"]["cofitok"]["sample_set"]["sha256"] = "f" * 64

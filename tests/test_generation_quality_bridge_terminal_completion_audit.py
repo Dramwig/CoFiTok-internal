@@ -47,7 +47,7 @@ def _terminal_decision(status: str) -> str:
     return builder.TERMINAL_DECISIONS[status]
 
 
-def _replication_scope() -> dict[str, Any]:
+def _replication_scope(*, paired_kid_evaluated: bool = True) -> dict[str, Any]:
     return {
         "bound_stream_id": "quality_bridge_terminal_100k_00000000_00010000",
         "start_index": 0,
@@ -56,24 +56,35 @@ def _replication_scope() -> dict[str, Any]:
         "bound_terminal_stream_count": 1,
         "independent_replication_count": 0,
         "independent_replication_supported": False,
-        "interpretation": builder.REPLICATION_INTERPRETATION,
+        "interpretation": (
+            builder.REPLICATION_INTERPRETATION
+            if paired_kid_evaluated
+            else builder.UNPAIRED_REPLICATION_INTERPRETATION
+        ),
     }
 
 
-def _terminal_guard(status: str) -> dict[str, Any]:
+def _terminal_guard(
+    status: str,
+    *,
+    paired_kid_evaluated: bool = True,
+) -> dict[str, Any]:
     return {
         "schema_version": 1,
         "role": builder.TERMINAL_GUARD_ROLE,
         "status": status,
         "decision": _terminal_decision(status),
         "claim_policy": {
+            "paired_kid_statistical_evidence_available": paired_kid_evaluated,
             "independent_replication_claim_allowed": False,
             "multiple_independent_terminal_streams_claim_allowed": False,
             "replication_language_requires_distinct_bound_streams": True,
         },
         "evidence": {
             "matched_statistical_advantage": {
-                "replication_scope": _replication_scope(),
+                "replication_scope": _replication_scope(
+                    paired_kid_evaluated=paired_kid_evaluated
+                ),
             }
         },
     }
@@ -119,6 +130,31 @@ def test_replication_boundary_requires_one_bound_stream_and_zero_replications() 
 def test_replication_boundary_rejects_independent_replication_permission() -> None:
     guard = _terminal_guard("hold")
     guard["claim_policy"]["independent_replication_claim_allowed"] = True
+
+    with pytest.raises(ValueError, match="terminal replication boundary differs"):
+        builder.validate_replication_boundary(guard)
+
+
+def test_replication_boundary_accepts_unexecuted_paired_reanalysis() -> None:
+    guard = _terminal_guard("hold", paired_kid_evaluated=False)
+
+    assert builder.validate_replication_boundary(guard) == _replication_scope(
+        paired_kid_evaluated=False
+    )
+
+
+def test_replication_boundary_rejects_interpretation_availability_mismatch() -> None:
+    guard = _terminal_guard("hold", paired_kid_evaluated=False)
+    guard["evidence"]["matched_statistical_advantage"]["replication_scope"][
+        "interpretation"
+    ] = builder.REPLICATION_INTERPRETATION
+
+    with pytest.raises(ValueError, match="terminal replication boundary differs"):
+        builder.validate_replication_boundary(guard)
+
+
+def test_replication_boundary_cannot_pass_without_paired_evidence() -> None:
+    guard = _terminal_guard("pass", paired_kid_evaluated=False)
 
     with pytest.raises(ValueError, match="terminal replication boundary differs"):
         builder.validate_replication_boundary(guard)

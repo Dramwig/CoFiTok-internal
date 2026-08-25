@@ -89,6 +89,9 @@ TERMINAL_CLAIM_BOUNDARY = {
 REPLICATION_INTERPRETATION = (
     "paired_reanalysis_of_one_exact_bound_terminal_sample_stream"
 )
+UNPAIRED_REPLICATION_INTERPRETATION = (
+    "bound_terminal_stream_without_paired_reanalysis"
+)
 
 RUNTIME_CLAIM_BOUNDARY = {
     "diagnostic_non_authorizing": True,
@@ -220,6 +223,16 @@ def _validate_terminal_guard(report: Mapping[str, Any]) -> dict[str, Any]:
         if isinstance(statistical, Mapping)
         else None
     )
+    paired_kid_evaluated = (
+        policy.get("paired_kid_statistical_evidence_available")
+        if isinstance(policy, Mapping)
+        else None
+    )
+    expected_interpretation = (
+        REPLICATION_INTERPRETATION
+        if paired_kid_evaluated is True
+        else UNPAIRED_REPLICATION_INTERPRETATION
+    )
     if (
         report.get("schema_version") != 1
         or report.get("role") != TERMINAL_GUARD_ROLE
@@ -257,7 +270,8 @@ def _validate_terminal_guard(report: Mapping[str, Any]) -> dict[str, Any]:
         or replication.get("bound_terminal_stream_count") != 1
         or replication.get("independent_replication_count") != 0
         or replication.get("independent_replication_supported") is not False
-        or replication.get("interpretation") != REPLICATION_INTERPRETATION
+        or not isinstance(paired_kid_evaluated, bool)
+        or replication.get("interpretation") != expected_interpretation
         or int(replication.get("start_index", -1)) != 0
         or int(replication.get("end_index_exclusive", -1))
         != EXPECTED_TERMINAL_SAMPLES
@@ -268,7 +282,8 @@ def _validate_terminal_guard(report: Mapping[str, Any]) -> dict[str, Any]:
         raise ValueError("terminal system claim guard contract differs")
     advantage_allowed = report.get("status") == "pass"
     if (
-        policy.get("matched_distribution_quality_claim_allowed")
+        (advantage_allowed and paired_kid_evaluated is not True)
+        or policy.get("matched_distribution_quality_claim_allowed")
         is not advantage_allowed
         or policy.get("lower_fid_point_estimate_statement_allowed")
         is not advantage_allowed
@@ -288,6 +303,7 @@ def _validate_terminal_guard(report: Mapping[str, Any]) -> dict[str, Any]:
         "status": str(report["status"]),
         "decision": str(report.get("decision", "")),
         "claim_policy": copy.deepcopy(dict(policy)),
+        "paired_kid_evaluated": paired_kid_evaluated,
         "replication_scope": copy.deepcopy(dict(replication)),
         "quality_result": sources["quality_bridge_result"],
         "runtime_guard": sources["runtime_compute_claim_guard"],
@@ -1367,9 +1383,17 @@ def build_report(
                 "the matched-training direct panel."
             ),
             (
-                "FID and paired block-KID reuse one exact bound terminal sample "
-                "stream. This report records zero independent replications and "
-                "cannot support a multiple-stream replication claim."
+                (
+                    "FID uses the exact bound terminal sample stream; paired "
+                    "block-KID was not evaluated. This report records zero "
+                    "independent replications."
+                )
+                if not guard["paired_kid_evaluated"]
+                else (
+                    "FID and paired block-KID reuse one exact bound terminal sample "
+                    "stream. This report records zero independent replications and "
+                    "cannot support a multiple-stream replication claim."
+                )
             ),
             (
                 "This report does not authorize larger training, sampling, export, "
@@ -1439,6 +1463,9 @@ def verify_source_reports(report: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def render_markdown(report: Mapping[str, Any]) -> str:
+    paired_kid_evaluated = report["terminal_claim_policy"].get(
+        "paired_kid_statistical_evidence_available"
+    )
     lines = [
         "# Quality-Bridge Strong-Baseline Comparison",
         "",
@@ -1505,8 +1532,14 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             "This report is permanently non-authorizing and does not establish release readiness or broad generation superiority.",
             "",
             (
-                "Replication boundary: FID and paired block-KID re-analyze one "
-                "exact bound terminal sample stream; independent replications: 0."
+                "Replication boundary: FID uses one exact bound terminal sample "
+                "stream; paired block-KID was not evaluated; independent "
+                "replications: 0."
+                if paired_kid_evaluated is False
+                else (
+                    "Replication boundary: FID and paired block-KID re-analyze one "
+                    "exact bound terminal sample stream; independent replications: 0."
+                )
             ),
             "",
         ]

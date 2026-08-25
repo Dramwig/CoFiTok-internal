@@ -28,6 +28,12 @@ except ModuleNotFoundError:  # Imported as scripts.<module> by tests.
 REPORT_SCHEMA_VERSION = 1
 REPORT_ROLE = "generation_statistical_claim_language_guard"
 SOURCE_KINDS = {"quality_bridge_100k", "capacity_full_300k"}
+PAIRED_REANALYSIS_INTERPRETATION = (
+    "paired_reanalysis_of_one_exact_bound_terminal_sample_stream"
+)
+UNPAIRED_BOUND_STREAM_INTERPRETATION = (
+    "bound_terminal_stream_without_paired_reanalysis"
+)
 CLAIM_BOUNDARY = {
     "diagnostic_non_authorizing": True,
     "training_launch_allowed": False,
@@ -258,6 +264,10 @@ def _quality_bridge_source(
     policy = report.get("claim_policy")
     quality = report.get("quality_evidence")
     uncertainty = report.get("uncertainty_evidence")
+    fail_closed = (
+        report.get("statistical_evidence_status")
+        == "not_evaluated_prerequisite_failed"
+    )
     if (
         report.get("schema_version") != quality_claim.REPORT_SCHEMA_VERSION
         or report.get("role") != quality_claim.REPORT_ROLE
@@ -279,7 +289,23 @@ def _quality_bridge_source(
         or policy.get("broad_generation_superiority_claim_allowed") is not False
         or quality.get("absolute_quality_passed")
         is not (quality.get("status") == "pass")
-        or uncertainty.get("status") not in {"pass", "hold"}
+    ):
+        raise ValueError("quality-bridge claim source decision differs")
+    if fail_closed:
+        if (
+            allowed
+            or quality.get("absolute_quality_passed") is not False
+            or uncertainty.get("status") != "not_evaluated"
+            or uncertainty.get("advantage_supported") is not False
+            or report.get("uncertainty_report") is not None
+            or policy.get(
+                "paired_uncertainty_execution_required_after_prerequisite_failure"
+            )
+            is not False
+        ):
+            raise ValueError("quality-bridge fail-closed claim source differs")
+    elif (
+        uncertainty.get("status") not in {"pass", "hold"}
         or uncertainty.get("advantage_supported")
         is not (uncertainty.get("status") == "pass")
         or allowed
@@ -299,6 +325,57 @@ def _quality_bridge_source(
         _finite_positive(fid.get("dense_identity"), label="source dense FID"),
         report.get("uncertainty_report"),
     )
+
+
+def _fail_closed_metrics(
+    source: Mapping[str, Any],
+    *,
+    cofitok_fid: float,
+    dense_fid: float,
+) -> dict[str, Any]:
+    uncertainty = source.get("uncertainty_evidence")
+    if not isinstance(uncertainty, Mapping):
+        raise ValueError("fail-closed uncertainty scope is missing")
+    stream_id = uncertainty.get("stream_id")
+    sample_sets = uncertainty.get("sample_sets")
+    start = int(uncertainty.get("start_index", -1))
+    stop = int(uncertainty.get("end_index_exclusive", -1))
+    count = int(uncertainty.get("sample_count", -1))
+    if (
+        not isinstance(stream_id, str)
+        or not stream_id
+        or not isinstance(sample_sets, Mapping)
+        or set(sample_sets) != {"cofitok", "dense_identity"}
+        or start != 0
+        or stop != count
+        or count <= 0
+    ):
+        raise ValueError("fail-closed terminal stream scope differs")
+    return {
+        "fid": {
+            "cofitok": cofitok_fid,
+            "dense_identity": dense_fid,
+            "delta_cofitok_minus_dense": cofitok_fid - dense_fid,
+            "direction_supports_cofitok": cofitok_fid < dense_fid,
+        },
+        "paired_kid": {
+            "status": "not_evaluated_prerequisite_failed",
+            "supports_cofitok": False,
+            "reason": "absolute_quality_prerequisite_failed",
+        },
+        "advantage_supported": False,
+        "replication_scope": {
+            "bound_stream_id": stream_id,
+            "start_index": start,
+            "end_index_exclusive": stop,
+            "sample_count": count,
+            "bound_sample_sets": copy.deepcopy(dict(sample_sets)),
+            "bound_terminal_stream_count": 1,
+            "independent_replication_count": 0,
+            "independent_replication_supported": False,
+            "interpretation": UNPAIRED_BOUND_STREAM_INTERPRETATION,
+        },
+    }
 
 
 def _capacity_source(
@@ -375,11 +452,24 @@ def build_guard(
         else _capacity_source
     )
     source_allowed, cofitok_fid, dense_fid, uncertainty_descriptor = extractor(source)
-    uncertainty_identity, metrics = _uncertainty_evidence(
-        uncertainty_descriptor,
-        expected_cofitok_fid=cofitok_fid,
-        expected_dense_fid=dense_fid,
+    fail_closed = (
+        source_kind == "quality_bridge_100k"
+        and source.get("statistical_evidence_status")
+        == "not_evaluated_prerequisite_failed"
     )
+    if fail_closed:
+        uncertainty_identity = None
+        metrics = _fail_closed_metrics(
+            source,
+            cofitok_fid=cofitok_fid,
+            dense_fid=dense_fid,
+        )
+    else:
+        uncertainty_identity, metrics = _uncertainty_evidence(
+            uncertainty_descriptor,
+            expected_cofitok_fid=cofitok_fid,
+            expected_dense_fid=dense_fid,
+        )
     if source_kind == "quality_bridge_100k":
         source_stream_id = source["uncertainty_evidence"].get("stream_id")
         if source_stream_id != metrics["replication_scope"]["bound_stream_id"]:
@@ -416,7 +506,7 @@ def build_guard(
             "paired_block_kid": {
                 "role": "matched_distribution_distance_uncertainty",
                 **copy.deepcopy(metrics["paired_kid"]),
-                "statistical_significance_tested": True,
+                "statistical_significance_tested": not fail_closed,
             },
         },
         "replication_scope": copy.deepcopy(metrics["replication_scope"]),
@@ -441,6 +531,11 @@ def build_guard(
             "terminal sample stream, not an independent replication."
             if qualified
             else (
+                "The positive matched distribution-quality claim is fail-closed "
+                "because the absolute quality prerequisite failed. Paired block-KID "
+                "was not evaluated and no statistical-support statement is available."
+                if fail_closed
+                else
                 "The exact bound matched evidence does not qualify a positive "
                 "distribution-quality claim for CoFiTok K=8 over dense_identity."
             )
@@ -452,13 +547,26 @@ def build_guard(
                 "provide a confidence interval or significance test for FID itself."
             ),
             (
-                "The statistical result is a paired block-KID test over the "
-                "exact bound sample stream and shared real reference."
+                "Paired block-KID was not evaluated because the absolute quality "
+                "prerequisite had already failed."
+                if fail_closed
+                else (
+                    "The statistical result is a paired block-KID test over the "
+                    "exact bound sample stream and shared real reference."
+                )
             ),
             (
-                "The bound FID and paired block-KID evidence reuse the same "
-                "terminal sample sets; this artifact provides zero independent "
-                "replications and cannot support a two-stream replication claim."
+                (
+                    "The bound terminal sample sets provide FID point estimates, "
+                    "but no paired block-KID re-analysis was executed. This artifact "
+                    "provides zero independent replications."
+                )
+                if fail_closed
+                else (
+                    "The bound FID and paired block-KID evidence reuse the same "
+                    "terminal sample sets; this artifact provides zero independent "
+                    "replications and cannot support a two-stream replication claim."
+                )
             ),
             (
                 "A pass is limited to the bound dataset, checkpoints, evaluator, "

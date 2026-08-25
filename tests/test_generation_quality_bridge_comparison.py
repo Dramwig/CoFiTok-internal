@@ -438,7 +438,12 @@ def _quality_screen(status: str) -> dict:
     }
 
 
-def _graph(tmp_path: Path, *, guard_status: str = "hold") -> dict:
+def _graph(
+    tmp_path: Path,
+    *,
+    guard_status: str = "hold",
+    paired_kid_evaluated: bool = True,
+) -> dict:
     cofitok_training_path = tmp_path / "cofitok_training.json"
     dense_training_path = tmp_path / "dense_training.json"
     cofitok_training = _training_report(cofitok=True)
@@ -662,7 +667,11 @@ def _graph(tmp_path: Path, *, guard_status: str = "hold") -> dict:
                     "bound_terminal_stream_count": 1,
                     "independent_replication_count": 0,
                     "independent_replication_supported": False,
-                    "interpretation": comparison.REPLICATION_INTERPRETATION,
+                    "interpretation": (
+                        comparison.REPLICATION_INTERPRETATION
+                        if paired_kid_evaluated
+                        else comparison.UNPAIRED_REPLICATION_INTERPRETATION
+                    ),
                 }
             },
             "class_fidelity_classifier_integrity": {"status": "verified"},
@@ -673,6 +682,7 @@ def _graph(tmp_path: Path, *, guard_status: str = "hold") -> dict:
             "matched_distribution_quality_claim_allowed": advantage,
             "lower_fid_point_estimate_statement_allowed": advantage,
             "paired_kid_statistical_support_statement_allowed": advantage,
+            "paired_kid_statistical_evidence_available": paired_kid_evaluated,
             "absolute_usability_claim_allowed": False,
             "fid_statistical_significance_claim_allowed": False,
             "fid_confidence_interval_claim_allowed": False,
@@ -791,6 +801,41 @@ def test_comparison_preserves_terminal_status_and_two_tier_policy(
     assert comparison.verify_source_reports(report)["status"] == "verified"
 
 
+def test_comparison_preserves_unexecuted_paired_reanalysis_boundary(
+    tmp_path: Path,
+) -> None:
+    report = _build(_graph(tmp_path, paired_kid_evaluated=False))
+
+    assert report["status"] == "hold"
+    assert report["replication_scope"]["interpretation"] == (
+        comparison.UNPAIRED_REPLICATION_INTERPRETATION
+    )
+    assert any(
+        "paired block-KID was not evaluated" in item
+        for item in report["limitations"]
+    )
+    assert all(
+        "FID and paired block-KID reuse" not in item
+        for item in report["limitations"]
+    )
+    rendered = comparison.render_markdown(report)
+    assert "paired block-KID was not evaluated" in rendered
+    assert "FID and paired block-KID re-analyze" not in rendered
+
+
+def test_comparison_cannot_pass_without_paired_statistical_evidence(
+    tmp_path: Path,
+) -> None:
+    graph = _graph(
+        tmp_path,
+        guard_status="pass",
+        paired_kid_evaluated=False,
+    )
+
+    with pytest.raises(ValueError, match="system guard status and policy differ"):
+        _build(graph)
+
+
 @pytest.mark.parametrize("mutation", ["missing_policy", "unverified_evidence"])
 def test_comparison_requires_terminal_classifier_physical_integrity(
     tmp_path: Path,
@@ -816,7 +861,7 @@ def test_comparison_requires_terminal_classifier_physical_integrity(
 
 @pytest.mark.parametrize(
     "mutation",
-    ["independent_policy", "replication_count", "sample_window"],
+    ["independent_policy", "replication_count", "sample_window", "interpretation"],
 )
 def test_comparison_rejects_terminal_replication_overclaim(
     tmp_path: Path,
@@ -834,9 +879,13 @@ def test_comparison_rejects_terminal_replication_overclaim(
         if mutation == "replication_count":
             replication["independent_replication_count"] = 1
             replication["independent_replication_supported"] = True
-        else:
+        elif mutation == "sample_window":
             replication["end_index_exclusive"] = 20_000
             replication["sample_count"] = 20_000
+        else:
+            replication["interpretation"] = (
+                comparison.UNPAIRED_REPLICATION_INTERPRETATION
+            )
     graph["guard_identity"] = _write_json(
         Path(graph["guard_identity"]["path"]),
         graph["guard"],

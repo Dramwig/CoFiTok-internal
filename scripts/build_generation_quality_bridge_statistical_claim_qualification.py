@@ -337,6 +337,161 @@ def build_qualification(
     }
 
 
+def build_fail_closed_qualification(
+    *,
+    quality_result_path: Path,
+    expected_quality_result_sha256: str,
+    execution_manifest_path: Path,
+    expected_execution_manifest_sha256: str,
+    expected_quality_revision: str,
+    expected_quality_branch: str,
+    output_root: Path,
+) -> dict[str, Any]:
+    """Close the positive claim when its absolute-quality prerequisite failed."""
+    if not _is_revision(expected_quality_revision) or not expected_quality_branch:
+        raise ValueError("quality-bridge qualification Git identity is invalid")
+    result_identity = _bound_file(
+        quality_result_path,
+        expected_sha256=expected_quality_result_sha256,
+        label="quality-bridge fail-closed qualification result",
+    )
+    manifest_identity = _bound_file(
+        execution_manifest_path,
+        expected_sha256=expected_execution_manifest_sha256,
+        label="quality-bridge fail-closed execution manifest",
+    )
+    output_root = reject_symlink_chain(
+        output_root,
+        name="quality-bridge fail-closed qualification uncertainty root",
+    ).resolve()
+    manifest = base_waiter.validate_execution_manifest(
+        Path(manifest_identity["path"]),
+        expected_sha256=manifest_identity["sha256"],
+        output_root=output_root,
+    )
+    manifest_report = manifest["report"]
+    quality_binding = manifest_report.get("quality_bridge")
+    if (
+        not isinstance(quality_binding, Mapping)
+        or quality_binding.get("result") != result_identity
+        or quality_binding.get("git")
+        != {
+            "revision": expected_quality_revision,
+            "branch": expected_quality_branch,
+            "tracked_dirty": False,
+        }
+        or quality_binding.get("authorization_boundary")
+        != RESULT_AUTHORIZATION_BOUNDARY
+    ):
+        raise ValueError("quality-bridge fail-closed manifest result differs")
+    result = read_json_object(
+        Path(result_identity["path"]),
+        name="quality-bridge fail-closed qualification result",
+    )
+    quality = _quality_result_evidence(
+        result,
+        expected_revision=expected_quality_revision,
+        expected_branch=expected_quality_branch,
+    )
+    if quality_binding.get("quality_screen") != quality["screen"]:
+        raise ValueError("quality-bridge fail-closed manifest screen differs")
+    if quality["absolute_quality_passed"] is not False:
+        raise ValueError(
+            "fail-closed statistical short circuit requires a failed absolute screen"
+        )
+    expected = manifest_report.get("expected")
+    matched = expected.get("matched_sampling") if isinstance(expected, Mapping) else None
+    fid_estimates = expected.get("fid_point_estimates") if isinstance(expected, Mapping) else None
+    sample_sets = expected.get("sample_sets") if isinstance(expected, Mapping) else None
+    if (
+        int(manifest.get("checkpoint_step", -1)) != QUALITY_BRIDGE_STEPS
+        or not isinstance(matched, Mapping)
+        or int(matched.get("sample_count", -1))
+        != QUALITY_BRIDGE_TERMINAL_SAMPLES
+        or not isinstance(fid_estimates, Mapping)
+        or not isinstance(sample_sets, Mapping)
+        or set(sample_sets) != {"cofitok", "dense_identity"}
+        or not math.isclose(
+            float(fid_estimates.get("cofitok", math.nan)),
+            quality["cofitok_fid"],
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+        or not math.isclose(
+            float(fid_estimates.get("dense_identity", math.nan)),
+            quality["dense_identity_fid"],
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        )
+    ):
+        raise ValueError("quality-bridge fail-closed scientific scope differs")
+    return {
+        "schema_version": REPORT_SCHEMA_VERSION,
+        "role": REPORT_ROLE,
+        "status": "hold",
+        "decision": "matched_quality_bridge_fid_advantage_not_statistically_qualified",
+        "claim_scope": "matched_full_data_quality_bridge_100k_relative_fid_advantage",
+        "statistical_evidence_status": "not_evaluated_prerequisite_failed",
+        "quality_result": result_identity,
+        "execution_manifest": manifest_identity,
+        "uncertainty_report": None,
+        "quality_git": copy.deepcopy(result["git"]),
+        "evaluator_git": None,
+        "quality_evidence": {
+            "status": quality["status"],
+            "absolute_quality_passed": False,
+            "failed_checks": quality["failed_checks"],
+            "check_count": quality["check_count"],
+        },
+        "uncertainty_evidence": {
+            "status": "not_evaluated",
+            "decision": "not_evaluated_after_absolute_quality_prerequisite_failed",
+            "advantage_supported": False,
+            "stream_id": manifest["stream_id"],
+            "sample_count": int(matched["sample_count"]),
+            "start_index": int(matched["start_index"]),
+            "end_index_exclusive": int(matched["end_index_exclusive"]),
+            "checkpoint_step": int(manifest["checkpoint_step"]),
+            "sample_sets": copy.deepcopy(dict(sample_sets)),
+            "fid_point_estimates": {
+                "cofitok": quality["cofitok_fid"],
+                "dense_identity": quality["dense_identity_fid"],
+            },
+        },
+        "claim_policy": {
+            "matched_relative_fid_advantage_claim_allowed": False,
+            "formal_large_scale_generation_advantage_claim_allowed": False,
+            "broad_generation_superiority_claim_allowed": False,
+            "sota_claim_allowed": False,
+            "absolute_usability_claim_allowed_by_this_report": False,
+            "larger_training_launch_allowed": False,
+            "relative_fid_claim_requires_quality_and_uncertainty_pass": True,
+            "paired_uncertainty_execution_required_after_prerequisite_failure": False,
+        },
+        "claim_text": (
+            "The exact bound full-data ImageNet-256 100K result failed its "
+            "absolute quality prerequisite, so a positive matched advantage claim "
+            "is fail-closed without launching the unexecuted paired uncertainty "
+            "evaluation. No paired-KID support statement is available."
+        ),
+        "claim_boundary": copy.deepcopy(CLAIM_BOUNDARY),
+        "limitations": [
+            (
+                "The paired uncertainty execution manifest is bound, but its "
+                "paired-KID report does not exist and was not synthesized."
+            ),
+            (
+                "This short circuit can only reject the positive claim after the "
+                "absolute screen failed; it cannot support statistical advantage."
+            ),
+            (
+                "This report does not authorize feature extraction, training, "
+                "sampling, export, release, or process signaling."
+            ),
+        ],
+    }
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(

@@ -27,6 +27,9 @@ EXPECTED_TERMINAL_SAMPLES = 10_000
 REPLICATION_INTERPRETATION = (
     "paired_reanalysis_of_one_exact_bound_terminal_sample_stream"
 )
+UNPAIRED_REPLICATION_INTERPRETATION = (
+    "bound_terminal_stream_without_paired_reanalysis"
+)
 OFFICIAL_RELATED_PATH = Path(
     "artifacts/reports/baselines/official_related_methods_2026-07-11_final/"
     "official_related_methods_table.json"
@@ -598,6 +601,16 @@ def observe_terminal(context: Mapping[str, Any]) -> dict[str, Any]:
         if isinstance(statistical, Mapping)
         else None
     )
+    paired_kid_evaluated = (
+        policy.get("paired_kid_statistical_evidence_available")
+        if isinstance(policy, Mapping)
+        else None
+    )
+    expected_interpretation = (
+        REPLICATION_INTERPRETATION
+        if paired_kid_evaluated is True
+        else UNPAIRED_REPLICATION_INTERPRETATION
+    )
     if (
         report.get("guard") != guard_identity
         or report.get("guard_status") != terminal_status
@@ -614,7 +627,9 @@ def observe_terminal(context: Mapping[str, Any]) -> dict[str, Any]:
         or replication.get("bound_terminal_stream_count") != 1
         or replication.get("independent_replication_count") != 0
         or replication.get("independent_replication_supported") is not False
-        or replication.get("interpretation") != REPLICATION_INTERPRETATION
+        or not isinstance(paired_kid_evaluated, bool)
+        or (terminal_status == "pass" and paired_kid_evaluated is not True)
+        or replication.get("interpretation") != expected_interpretation
         or int(replication.get("start_index", -1)) != 0
         or int(replication.get("end_index_exclusive", -1))
         != EXPECTED_TERMINAL_SAMPLES

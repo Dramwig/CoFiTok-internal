@@ -306,9 +306,27 @@ def _validate_statistical_guard(
         raise ValueError("terminal statistical guard uses another quality result")
     policy = report.get("claim_policy")
     replication = report.get("replication_scope")
-    if not isinstance(policy, Mapping) or not isinstance(replication, Mapping):
+    metric_roles = report.get("metric_roles")
+    paired_kid = (
+        metric_roles.get("paired_block_kid")
+        if isinstance(metric_roles, Mapping)
+        else None
+    )
+    if (
+        not isinstance(policy, Mapping)
+        or not isinstance(replication, Mapping)
+        or not isinstance(paired_kid, Mapping)
+    ):
         raise ValueError("terminal statistical guard policy is missing")
     allowed = report.get("status") == "pass"
+    paired_kid_evaluated = (
+        paired_kid.get("status") != "not_evaluated_prerequisite_failed"
+    )
+    expected_interpretation = (
+        statistical_guard.PAIRED_REANALYSIS_INTERPRETATION
+        if paired_kid_evaluated
+        else statistical_guard.UNPAIRED_BOUND_STREAM_INTERPRETATION
+    )
     if (
         policy.get("matched_distribution_quality_claim_allowed") is not allowed
         or policy.get("lower_fid_point_estimate_statement_allowed") is not allowed
@@ -323,18 +341,21 @@ def _validate_statistical_guard(
         is not False
         or policy.get("replication_language_requires_distinct_bound_streams")
         is not True
+        or paired_kid.get("statistical_significance_tested")
+        is not paired_kid_evaluated
         or replication.get("bound_terminal_stream_count") != 1
         or replication.get("independent_replication_count") != 0
         or replication.get("independent_replication_supported") is not False
-        or replication.get("interpretation")
-        != "paired_reanalysis_of_one_exact_bound_terminal_sample_stream"
+        or (allowed and not paired_kid_evaluated)
+        or replication.get("interpretation") != expected_interpretation
     ):
         raise ValueError("terminal statistical guard claim policy differs")
     return {
         "status": str(report["status"]),
         "allowed": allowed,
         "decision": str(report.get("decision", "")),
-        "metric_roles": copy.deepcopy(report.get("metric_roles")),
+        "metric_roles": copy.deepcopy(dict(metric_roles)),
+        "paired_kid_evaluated": paired_kid_evaluated,
         "replication_scope": copy.deepcopy(dict(replication)),
         "qualification": claim_identity,
         "guard": copy.deepcopy(dict(identity)),
@@ -596,6 +617,7 @@ def build_guard(
 
     quality_pass = quality["quality_screen"]["absolute_quality_passed"] is True
     matched_advantage_allowed = statistical["allowed"] is True
+    paired_kid_evaluated = statistical["paired_kid_evaluated"] is True
     if matched_advantage_allowed and not quality_pass:
         raise ValueError(
             "terminal statistical claim exceeds the absolute quality screen"
@@ -641,6 +663,7 @@ def build_guard(
             "matched_distribution_quality_claim_allowed": matched_advantage_allowed,
             "lower_fid_point_estimate_statement_allowed": matched_advantage_allowed,
             "paired_kid_statistical_support_statement_allowed": matched_advantage_allowed,
+            "paired_kid_statistical_evidence_available": paired_kid_evaluated,
             "absolute_quality_screen_pass_statement_allowed": quality_pass,
             "requested_class_visual_evidence_available": True,
             "requested_class_visual_evidence_is_quantitative": False,
@@ -673,9 +696,18 @@ def build_guard(
             "independent replication."
             if matched_advantage_allowed
             else (
-                "The exact bound terminal system evidence is complete, but it does "
-                "not qualify a matched distribution-quality advantage claim for "
-                "CoFiTok K=8 over dense_identity."
+                (
+                    "The exact bound terminal system evidence is fail-closed after "
+                    "the absolute quality prerequisite failed. Paired block-KID was "
+                    "not evaluated, so no matched statistical-support statement is "
+                    "available for CoFiTok K=8 over dense_identity."
+                )
+                if not paired_kid_evaluated
+                else (
+                    "The exact bound terminal system evidence is complete, but it "
+                    "does not qualify a matched distribution-quality advantage claim "
+                    "for CoFiTok K=8 over dense_identity."
+                )
             )
         ),
         "claim_boundary": copy.deepcopy(CLAIM_BOUNDARY),
@@ -685,13 +717,28 @@ def build_guard(
                 "checkpoints, matched sample stream, evaluator, and protocol."
             ),
             (
-                "FID remains a point estimate. Statistical support comes only "
-                "from the paired block-KID analysis."
+                (
+                    "FID remains a point estimate. Paired block-KID was not evaluated "
+                    "after the absolute quality prerequisite failed."
+                )
+                if not paired_kid_evaluated
+                else (
+                    "FID remains a point estimate. Statistical support comes only "
+                    "from the paired block-KID analysis."
+                )
             ),
             (
-                "The FID and paired block-KID evidence bind the same terminal "
-                "sample sets. This system guard records zero independent "
-                "replications and forbids a multiple-stream replication claim."
+                (
+                    "The bound terminal sample sets provide FID point estimates, "
+                    "but no paired block-KID re-analysis was executed. This system "
+                    "guard records zero independent replications."
+                )
+                if not paired_kid_evaluated
+                else (
+                    "The FID and paired block-KID evidence bind the same terminal "
+                    "sample sets. This system guard records zero independent "
+                    "replications and forbids a multiple-stream replication claim."
+                )
             ),
             (
                 "Requested-class panels are auditable visual evidence, not a "
