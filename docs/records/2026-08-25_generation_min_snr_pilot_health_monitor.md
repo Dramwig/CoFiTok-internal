@@ -70,3 +70,36 @@ This observer cannot authorize training, sampling, evaluation, continuation
 beyond 50K, full training, 300K, promotion, inference export, release, or process
 signals. A monitor `pass` means only that the bounded pilot completed and its
 non-authorizing result replayed exactly.
+
+## Deployment
+
+- implementation revision:
+  `4bbc880ad3928b607ee61bc1be41d10a60853e4d`
+- implementation tree: `6404585661c297cdb57447e81cdfd3f84331d569`
+- remote checkout:
+  `/root/autodl-tmp/CoFiTok/checkouts/min-snr-pilot-health-monitor-4bbc880/CoFiTok-internal`
+- bundle: `17,102` bytes, SHA256
+  `1343f548c36b500a87e3e7a0c11f6b1fa9db908f460539acf560bc7ff7b3e30e`
+- launcher: `4,491` LF bytes, SHA256
+  `990075d206c3993574d6fed24107b80eb4d6087e4bb4592bc952da04ee276d2e`
+- live observer: PID `412598`, PPID `1`, start ticks `1729920946`
+- canonical status:
+  `/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/reports/health_monitor_v1/status.json`
+- canonical deployment receipt: same directory, `deployment_receipt.json`,
+  `4,869` bytes, SHA256
+  `c085855775b75794ba715a3330069115e6cb6b632b78ffe4b59b17810b4b25a0`
+- immutable initial status snapshot: `47,894` bytes, SHA256
+  `42965d6398773e77b2ef807fff64d4a7bea546c8a031ccf60225b391407c63c9`
+
+The prerequisite-aware bundle advertises only the observer branch and requires
+the exact training revision `842a341`. Local and remote bundle verification,
+Linux compilation, the 17-test focused suite, launcher syntax, clean checkout,
+source hash, process identity, runtime limits, lock ownership, and three
+successive monitor polls all passed. The sole GPU process remained trainer PID
+`407563`; the observer never appeared in the GPU process list.
+
+An earlier direct Windows-to-SSH launch command failed during local quoting of
+the wrapper sleep argument, before any observer process, status, or lock was
+created. The successful deployment used the independently hashed LF launcher;
+the receipt preserves both outcomes without treating the failed command as a
+deployment.

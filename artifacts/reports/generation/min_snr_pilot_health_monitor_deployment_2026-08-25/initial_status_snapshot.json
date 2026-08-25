@@ -1,0 +1,965 @@
+{
+  "arms": {
+    "cofitok": {
+      "at_physical_stop": false,
+      "audited": false,
+      "checkpoint_metadata": {
+        "checkpoints": [],
+        "issues": [],
+        "latest": null,
+        "required_checkpoint_step": 0
+      },
+      "issues": [],
+      "method": "cofitok",
+      "metrics": {
+        "activity_age_seconds": 62.577399015426636,
+        "exists": true,
+        "finite_min_snr_fields_verified": true,
+        "first_step": 1,
+        "issues": [],
+        "last_metric": {
+          "component_decorrelation": 0.0,
+          "cumulative_elapsed_seconds": 3615.314891576767,
+          "denoise_path_component": 0.10524631291627884,
+          "denoise_path_energy": 0.005186133086681366,
+          "denoise_path_prefix": 0.09421040117740631,
+          "elapsed_seconds": 3615.314891576767,
+          "ema_decay": 0.649935,
+          "ema_teacher_consistency": 0.0,
+          "ema_teacher_consistency_scale": 0.0,
+          "energy_budget": 0.0,
+          "epsilon": 0.012666075490415096,
+          "epsilon_band_component": 0.0,
+          "epsilon_band_prefix": 0.0,
+          "epsilon_unweighted": 0.039087530225515366,
+          "grad_norm": 0.5432252883911133,
+          "group_residual": 0.0,
+          "learning_rate": 9.999796084093778e-05,
+          "low_snr_high_frequency": 0.004682471975684166,
+          "min_snr_weight_mean": 0.815817654132843,
+          "monotonic": 0.0,
+          "prefix": 0.0,
+          "residual_component": 0.0,
+          "rollout_consistency": 0.1509466916322708,
+          "rollout_consistency_scale": 0.12999999523162842,
+          "sampled_budget": 0.0,
+          "sampled_component": 0.0,
+          "sampled_prefix": 0.0,
+          "samples_seen": 83200,
+          "step": 1300,
+          "tail_floor": 0.0,
+          "total": 0.03298269212245941,
+          "zero_token": 0.0
+        },
+        "last_step": 1300,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5/train_metrics.jsonl",
+        "row_count": 27,
+        "samples_seen_binding_verified": true,
+        "strictly_increasing": true
+      },
+      "physical_audit": {
+        "exists": false,
+        "issues": [],
+        "verified": false
+      },
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+      "run_manifest": {
+        "checks": {
+          "accumulation": true,
+          "checkpoint_interval": true,
+          "dataset": true,
+          "dataset_identity": true,
+          "effective_batch": true,
+          "gamma": true,
+          "git_branch": true,
+          "git_clean": true,
+          "git_revision": true,
+          "method_feedback": true,
+          "method_synthesis": true,
+          "method_tokens": true,
+          "prediction_target": true,
+          "runtime_environment": true,
+          "scheduler_horizon": true,
+          "seed": true
+        },
+        "issues": [],
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5/run_manifest.json",
+        "physical_stop_step": 50000,
+        "scheduler_horizon_steps": 100000,
+        "status": "verified"
+      },
+      "training_report": {
+        "exists": false,
+        "issues": [],
+        "verified": false
+      }
+    },
+    "dense_identity": {
+      "at_physical_stop": false,
+      "audited": false,
+      "checkpoint_metadata": {
+        "checkpoints": [],
+        "issues": [],
+        "latest": null,
+        "required_checkpoint_step": 0
+      },
+      "issues": [],
+      "method": "dense_identity",
+      "metrics": {
+        "activity_age_seconds": null,
+        "exists": false,
+        "finite_min_snr_fields_verified": true,
+        "first_step": 0,
+        "issues": [],
+        "last_metric": null,
+        "last_step": 0,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/dense_gamma5/train_metrics.jsonl",
+        "row_count": 0,
+        "samples_seen_binding_verified": true,
+        "strictly_increasing": true
+      },
+      "physical_audit": {
+        "exists": false,
+        "issues": [],
+        "verified": false
+      },
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/dense_gamma5",
+      "run_manifest": {
+        "issues": [],
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/dense_gamma5/run_manifest.json",
+        "status": "missing"
+      },
+      "training_report": {
+        "exists": false,
+        "issues": [],
+        "verified": false
+      }
+    }
+  },
+  "authorization_boundary": {
+    "continuation_beyond_50000_allowed": false,
+    "evaluation_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "gpu_execution_allowed": false,
+    "inference_export_allowed": false,
+    "process_signals_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "sampling_launch_allowed": false,
+    "training_launch_allowed": false
+  },
+  "controller_elapsed_seconds": 3699.740000002086,
+  "controller_status": {
+    "continuation_beyond_50000_allowed": false,
+    "detail": "serial fresh/same-config Min-SNR training to 50K",
+    "exit_code": null,
+    "full_300k_launch_allowed": false,
+    "generation_advantage_proven": false,
+    "git": {
+      "branch": "scale/generation-min-snr-matched-pilot-v1-20260825",
+      "revision": "842a34130e82f241330707118a05bf6ed01e263e",
+      "tracked_dirty": false,
+      "tree": "3fd4c4538d15b85233b1f8b582dce0f185dedba2"
+    },
+    "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+    "parent_pid": 407472,
+    "phase": "training_cofitok",
+    "pid": 407472,
+    "process_signals_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "role": "generation_matched_min_snr_50k_pilot_controller",
+    "schema_version": 1,
+    "status": "running",
+    "updated_at": "2026-08-25T08:10:33.660299+00:00"
+  },
+  "disk": {
+    "free_bytes": 264111685632,
+    "minimum_free_bytes": 128849018880,
+    "total_bytes": 1073741824000,
+    "used_bytes": 809630138368
+  },
+  "evaluations": {
+    "arms": {
+      "legacy_gamma0_cofitok": {
+        "artifacts": {
+          "checkpoint_evaluation": false,
+          "class_fidelity": false,
+          "generation_metrics": false,
+          "sampling_preflight": false,
+          "sampling_report": false
+        },
+        "complete": false,
+        "exists": false,
+        "sampling_progress": null
+      },
+      "legacy_gamma0_dense_identity": {
+        "artifacts": {
+          "checkpoint_evaluation": false,
+          "class_fidelity": false,
+          "generation_metrics": false,
+          "sampling_preflight": false,
+          "sampling_report": false
+        },
+        "complete": false,
+        "exists": false,
+        "sampling_progress": null
+      },
+      "pilot_gamma5_cofitok": {
+        "artifacts": {
+          "checkpoint_evaluation": false,
+          "class_fidelity": false,
+          "generation_metrics": false,
+          "sampling_preflight": false,
+          "sampling_report": false
+        },
+        "complete": false,
+        "exists": false,
+        "sampling_progress": null
+      },
+      "pilot_gamma5_dense_identity": {
+        "artifacts": {
+          "checkpoint_evaluation": false,
+          "class_fidelity": false,
+          "generation_metrics": false,
+          "sampling_preflight": false,
+          "sampling_report": false
+        },
+        "complete": false,
+        "exists": false,
+        "sampling_progress": null
+      }
+    },
+    "completed_arm_count": 0
+  },
+  "execution_lock": {
+    "held_by_controller": true,
+    "path": "/tmp/cofitok-min-snr-matched-50k-pilot-v1.lock",
+    "release_allowed_only_after_controller_completion": true
+  },
+  "generation_advantage_proven": false,
+  "git": {
+    "monitor_checkout": {
+      "branch": "analysis/generation-min-snr-pilot-health-monitor-v1-20260825",
+      "revision": "4bbc880ad3928b607ee61bc1be41d10a60853e4d",
+      "tracked_dirty": false,
+      "tree": "6404585661c297cdb57447e81cdfd3f84331d569"
+    },
+    "training_checkout": {
+      "branch": "scale/generation-min-snr-matched-pilot-v1-20260825",
+      "revision": "842a34130e82f241330707118a05bf6ed01e263e",
+      "tracked_dirty": false,
+      "tree": "3fd4c4538d15b85233b1f8b582dce0f185dedba2"
+    }
+  },
+  "gpu": {
+    "compute_processes": [
+      {
+        "gpu_uuid": "GPU-3838bbb0-dbf4-5b2b-b7da-6b86f7152cd8",
+        "pid": 407563,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "used_memory_mib": 84138
+      }
+    ],
+    "inventory": [
+      {
+        "index": 0,
+        "memory_total_mib": 97887,
+        "memory_used_mib": 84151,
+        "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+        "temperature_c": 70,
+        "utilization_percent": 100,
+        "uuid": "GPU-3838bbb0-dbf4-5b2b-b7da-6b86f7152cd8"
+      }
+    ]
+  },
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "issues": [],
+  "monitor_is_permanently_non_authorizing": true,
+  "monitor_is_read_only_except_status_and_lock": true,
+  "monitor_process": {
+    "cuda_visible_devices": "",
+    "ionice": "idle",
+    "mkl_num_threads": "1",
+    "nice": 10,
+    "omp_num_threads": "1",
+    "parent_pid": 1,
+    "pid": 412598
+  },
+  "phase": "training_cofitok",
+  "process_health": {
+    "controller": {
+      "argv": [
+        "bash",
+        "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/artifacts/runbooks/generation_min_snr_matched_50k_pilot_v1.sh"
+      ],
+      "cmdline": "bash /root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/artifacts/runbooks/generation_min_snr_matched_50k_pilot_v1.sh",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {},
+      "nice": 0,
+      "pid": 407472,
+      "ppid": 1,
+      "start_ticks": 1729557004,
+      "state": "S"
+    },
+    "controller_count": 1,
+    "descendant_pids": [
+      407563,
+      407761,
+      407762,
+      407763,
+      407764,
+      407765,
+      407766,
+      407767,
+      407768,
+      407778,
+      407779,
+      407780,
+      407781,
+      407782,
+      407783,
+      407797,
+      407801
+    ],
+    "direct_trainers": [
+      {
+        "argv": [
+          "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+          "scripts/train_generation.py",
+          "--config",
+          "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+          "--output-dir",
+          "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+          "--micro-batch-size",
+          "64",
+          "--gradient-accumulation-steps",
+          "1",
+          "--stop-after-steps",
+          "50000"
+        ],
+        "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+        "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+        "environment": {
+          "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+        },
+        "nice": 0,
+        "pid": 407563,
+        "ppid": 407472,
+        "start_ticks": 1729557266,
+        "state": "S"
+      }
+    ],
+    "gpu_descendants": [
+      {
+        "gpu_uuid": "GPU-3838bbb0-dbf4-5b2b-b7da-6b86f7152cd8",
+        "pid": 407563,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "used_memory_mib": 84138
+      }
+    ],
+    "gpu_external": [],
+    "issues": [],
+    "pilot_training_process_count": 17,
+    "stall_issues": []
+  },
+  "processes": [
+    {
+      "argv": [
+        "bash",
+        "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/artifacts/runbooks/generation_min_snr_matched_50k_pilot_v1.sh"
+      ],
+      "cmdline": "bash /root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/artifacts/runbooks/generation_min_snr_matched_50k_pilot_v1.sh",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {},
+      "nice": 0,
+      "pid": 407472,
+      "ppid": 1,
+      "start_ticks": 1729557004,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407563,
+      "ppid": 407472,
+      "start_ticks": 1729557266,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407761,
+      "ppid": 407563,
+      "start_ticks": 1729559149,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407762,
+      "ppid": 407563,
+      "start_ticks": 1729559151,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407763,
+      "ppid": 407563,
+      "start_ticks": 1729559153,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407764,
+      "ppid": 407563,
+      "start_ticks": 1729559155,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407765,
+      "ppid": 407563,
+      "start_ticks": 1729559156,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407766,
+      "ppid": 407563,
+      "start_ticks": 1729559158,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407767,
+      "ppid": 407563,
+      "start_ticks": 1729559160,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407768,
+      "ppid": 407563,
+      "start_ticks": 1729559162,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407778,
+      "ppid": 407563,
+      "start_ticks": 1729559165,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407779,
+      "ppid": 407563,
+      "start_ticks": 1729559167,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407780,
+      "ppid": 407563,
+      "start_ticks": 1729559169,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407781,
+      "ppid": 407563,
+      "start_ticks": 1729559171,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407782,
+      "ppid": 407563,
+      "start_ticks": 1729559174,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407783,
+      "ppid": 407563,
+      "start_ticks": 1729559176,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407797,
+      "ppid": 407563,
+      "start_ticks": 1729559178,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "scripts/train_generation.py",
+        "--config",
+        "configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json",
+        "--output-dir",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5",
+        "--micro-batch-size",
+        "64",
+        "--gradient-accumulation-steps",
+        "1",
+        "--stop-after-steps",
+        "50000"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 scripts/train_generation.py --config configs/generation/imagenet256_min_snr_gamma5_quality_repair_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k_horizon_50k_pilot.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5 --micro-batch-size 64 --gradient-accumulation-steps 1 --stop-after-steps 50000",
+      "cwd": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+      "environment": {
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal:/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/src"
+      },
+      "nice": 0,
+      "pid": 407801,
+      "ppid": 407563,
+      "start_ticks": 1729559180,
+      "state": "S"
+    },
+    {
+      "argv": [
+        "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "/root/autodl-tmp/CoFiTok/checkouts/min-snr-pilot-health-monitor-4bbc880/CoFiTok-internal/scripts/monitor_generation_min_snr_pilot.py",
+        "--output-root",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1",
+        "--status-output",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/reports/health_monitor_v1/status.json",
+        "--monitor-lock",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/reports/health_monitor_v1/monitor.lock",
+        "--training-checkout",
+        "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+        "--monitor-checkout",
+        "/root/autodl-tmp/CoFiTok/checkouts/min-snr-pilot-health-monitor-4bbc880/CoFiTok-internal",
+        "--controller-status",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/controller_status.json",
+        "--controller-runbook",
+        "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/artifacts/runbooks/generation_min_snr_matched_50k_pilot_v1.sh",
+        "--controller-launch-receipt",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/min_snr_matched_50k_pilot_v1_20260825/controller_launch_receipt.2026-08-25_842a341.json",
+        "--controller-process-tree-audit",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/min_snr_matched_50k_pilot_v1_20260825/controller_process_tree_audit.2026-08-25_842a341.json",
+        "--preparation",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/min_snr_matched_50k_pilot_v1_20260825/preparation.json",
+        "--execution-gate",
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/min_snr_matched_50k_pilot_v1_20260825/execution_gate.json",
+        "--execution-lock",
+        "/tmp/cofitok-min-snr-matched-50k-pilot-v1.lock",
+        "--expected-training-revision",
+        "842a34130e82f241330707118a05bf6ed01e263e",
+        "--expected-training-tree",
+        "3fd4c4538d15b85233b1f8b582dce0f185dedba2",
+        "--expected-training-branch",
+        "scale/generation-min-snr-matched-pilot-v1-20260825",
+        "--expected-monitor-revision",
+        "4bbc880ad3928b607ee61bc1be41d10a60853e4d",
+        "--expected-monitor-tree",
+        "6404585661c297cdb57447e81cdfd3f84331d569",
+        "--expected-monitor-branch",
+        "analysis/generation-min-snr-pilot-health-monitor-v1-20260825",
+        "--expected-controller-pid",
+        "407472",
+        "--expected-controller-start-ticks",
+        "1729557004",
+        "--expected-self-sha256",
+        "21d0c7c83ef662c3e791a4780d6a33ac08bdc2afcce885c45d3fc621272bd5ad",
+        "--expected-preparation-sha256",
+        "8fa3b768015c08c6f34627dc767c4b2fddd465a43913495120a496ef411c6830",
+        "--expected-execution-gate-sha256",
+        "19cb1560cca1feba38bf7a553652abf922e59d635d5574994996e37fcc72c014",
+        "--expected-controller-runbook-sha256",
+        "55cbf51e89c27da6c5c0fbf1e9a9e0c07b4b261b2342392c0e17c3bd846d6656",
+        "--expected-controller-launch-receipt-sha256",
+        "6ce5a4a3f4d3225f68ece879cd07ceb01361d7a1315dc88d4beffab7b057f261",
+        "--expected-controller-process-tree-audit-sha256",
+        "9be864709967606a9c0da7eb90b73d84a765d505bf73b8350eb3891e6439fcca",
+        "--poll-seconds",
+        "60",
+        "--require-parent-pid-one"
+      ],
+      "cmdline": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10 /root/autodl-tmp/CoFiTok/checkouts/min-snr-pilot-health-monitor-4bbc880/CoFiTok-internal/scripts/monitor_generation_min_snr_pilot.py --output-root /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1 --status-output /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/reports/health_monitor_v1/status.json --monitor-lock /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/reports/health_monitor_v1/monitor.lock --training-checkout /root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal --monitor-checkout /root/autodl-tmp/CoFiTok/checkouts/min-snr-pilot-health-monitor-4bbc880/CoFiTok-internal --controller-status /root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/controller_status.json --controller-runbook /root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/artifacts/runbooks/generation_min_snr_matched_50k_pilot_v1.sh --controller-launch-receipt /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/min_snr_matched_50k_pilot_v1_20260825/controller_launch_receipt.2026-08-25_842a341.json --controller-process-tree-audit /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/min_snr_matched_50k_pilot_v1_20260825/controller_process_tree_audit.2026-08-25_842a341.json --preparation /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/min_snr_matched_50k_pilot_v1_20260825/preparation.json --execution-gate /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/min_snr_matched_50k_pilot_v1_20260825/execution_gate.json --execution-lock /tmp/cofitok-min-snr-matched-50k-pilot-v1.lock --expected-training-revision 842a34130e82f241330707118a05bf6ed01e263e --expected-training-tree 3fd4c4538d15b85233b1f8b582dce0f185dedba2 --expected-training-branch scale/generation-min-snr-matched-pilot-v1-20260825 --expected-monitor-revision 4bbc880ad3928b607ee61bc1be41d10a60853e4d --expected-monitor-tree 6404585661c297cdb57447e81cdfd3f84331d569 --expected-monitor-branch analysis/generation-min-snr-pilot-health-monitor-v1-20260825 --expected-controller-pid 407472 --expected-controller-start-ticks 1729557004 --expected-self-sha256 21d0c7c83ef662c3e791a4780d6a33ac08bdc2afcce885c45d3fc621272bd5ad --expected-preparation-sha256 8fa3b768015c08c6f34627dc767c4b2fddd465a43913495120a496ef411c6830 --expected-execution-gate-sha256 19cb1560cca1feba38bf7a553652abf922e59d635d5574994996e37fcc72c014 --expected-controller-runbook-sha256 55cbf51e89c27da6c5c0fbf1e9a9e0c07b4b261b2342392c0e17c3bd846d6656 --expected-controller-launch-receipt-sha256 6ce5a4a3f4d3225f68ece879cd07ceb01361d7a1315dc88d4beffab7b057f261 --expected-controller-process-tree-audit-sha256 9be864709967606a9c0da7eb90b73d84a765d505bf73b8350eb3891e6439fcca --poll-seconds 60 --require-parent-pid-one",
+      "cwd": "/root",
+      "environment": {
+        "CUDA_VISIBLE_DEVICES": "",
+        "MKL_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-pilot-health-monitor-4bbc880/CoFiTok-internal/src:/root/autodl-tmp/CoFiTok/checkouts/min-snr-pilot-health-monitor-4bbc880/CoFiTok-internal"
+      },
+      "nice": 10,
+      "pid": 412598,
+      "ppid": 1,
+      "start_ticks": 1729920946,
+      "state": "R"
+    }
+  ],
+  "result": {
+    "exists": false,
+    "issues": [],
+    "verified_non_authorizing": false
+  },
+  "role": "generation_matched_min_snr_50k_pilot_health_monitor",
+  "schema_version": 1,
+  "source_bindings": {
+    "controller_launch_receipt": {
+      "bytes": 21014,
+      "exists": true,
+      "expected_sha256": "6ce5a4a3f4d3225f68ece879cd07ceb01361d7a1315dc88d4beffab7b057f261",
+      "label": "controller launch receipt",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/min_snr_matched_50k_pilot_v1_20260825/controller_launch_receipt.2026-08-25_842a341.json",
+      "sha256": "6ce5a4a3f4d3225f68ece879cd07ceb01361d7a1315dc88d4beffab7b057f261",
+      "verified": true
+    },
+    "controller_process_tree_audit": {
+      "bytes": 11354,
+      "exists": true,
+      "expected_sha256": "9be864709967606a9c0da7eb90b73d84a765d505bf73b8350eb3891e6439fcca",
+      "label": "controller process-tree audit",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/min_snr_matched_50k_pilot_v1_20260825/controller_process_tree_audit.2026-08-25_842a341.json",
+      "sha256": "9be864709967606a9c0da7eb90b73d84a765d505bf73b8350eb3891e6439fcca",
+      "verified": true
+    },
+    "controller_runbook": {
+      "bytes": 14478,
+      "exists": true,
+      "expected_sha256": "55cbf51e89c27da6c5c0fbf1e9a9e0c07b4b261b2342392c0e17c3bd846d6656",
+      "label": "controller runbook",
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal/artifacts/runbooks/generation_min_snr_matched_50k_pilot_v1.sh",
+      "sha256": "55cbf51e89c27da6c5c0fbf1e9a9e0c07b4b261b2342392c0e17c3bd846d6656",
+      "verified": true
+    },
+    "execution_gate": {
+      "bytes": 4249,
+      "exists": true,
+      "expected_sha256": "19cb1560cca1feba38bf7a553652abf922e59d635d5574994996e37fcc72c014",
+      "label": "execution gate",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/min_snr_matched_50k_pilot_v1_20260825/execution_gate.json",
+      "sha256": "19cb1560cca1feba38bf7a553652abf922e59d635d5574994996e37fcc72c014",
+      "verified": true
+    },
+    "monitor_source": {
+      "bytes": 49820,
+      "exists": true,
+      "expected_sha256": "21d0c7c83ef662c3e791a4780d6a33ac08bdc2afcce885c45d3fc621272bd5ad",
+      "label": "monitor source",
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-pilot-health-monitor-4bbc880/CoFiTok-internal/scripts/monitor_generation_min_snr_pilot.py",
+      "sha256": "21d0c7c83ef662c3e791a4780d6a33ac08bdc2afcce885c45d3fc621272bd5ad",
+      "verified": true
+    },
+    "preparation": {
+      "bytes": 13040,
+      "exists": true,
+      "expected_sha256": "8fa3b768015c08c6f34627dc767c4b2fddd465a43913495120a496ef411c6830",
+      "label": "preparation",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/min_snr_matched_50k_pilot_v1_20260825/preparation.json",
+      "sha256": "8fa3b768015c08c6f34627dc767c4b2fddd465a43913495120a496ef411c6830",
+      "verified": true
+    }
+  },
+  "status": "running",
+  "terminal_status": "hold",
+  "updated_at": "2026-08-25T09:12:10.927782+00:00"
+}

@@ -1,0 +1,116 @@
+{
+  "authorization_boundary": {
+    "continuation_beyond_50000_allowed": false,
+    "evaluation_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "gpu_execution_allowed": false,
+    "inference_export_allowed": false,
+    "process_signals_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "sampling_launch_allowed": false,
+    "training_launch_allowed": false
+  },
+  "bundle": {
+    "advertised_head": "4bbc880ad3928b607ee61bc1be41d10a60853e4d refs/heads/analysis/generation-min-snr-pilot-health-monitor-v1-20260825",
+    "bytes": 17102,
+    "local_path": "D:/cofitok-bundles/min-snr-pilot-health-monitor-4bbc880.bundle",
+    "prerequisite": "842a34130e82f241330707118a05bf6ed01e263e",
+    "remote_path": "/tmp/min-snr-pilot-health-monitor-4bbc880.bundle",
+    "sha256": "1343f548c36b500a87e3e7a0c11f6b1fa9db908f460539acf560bc7ff7b3e30e",
+    "verified_locally": true,
+    "verified_remotely": true
+  },
+  "deployed_at": "2026-08-25T09:11:10.717642+00:00",
+  "generation_advantage_proven": false,
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "initial_status_snapshot": {
+    "bytes": 47894,
+    "issue_count": 0,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/reports/health_monitor_v1/initial_status_snapshot.json",
+    "phase": "training_cofitok",
+    "sha256": "42965d6398773e77b2ef807fff64d4a7bea546c8a031ccf60225b391407c63c9",
+    "status": "running",
+    "updated_at": "2026-08-25T09:12:10.927782+00:00"
+  },
+  "launch_attempts": {
+    "direct_windows_ssh_command": {
+      "observer_process_created": false,
+      "reason": "Windows-to-SSH quoting rejected the wrapper sleep argument before observer execution",
+      "status": "failed_before_status_or_lock"
+    },
+    "hashed_lf_launcher": {
+      "observer_process_created": true,
+      "status": "pass"
+    }
+  },
+  "launcher": {
+    "bytes": 4491,
+    "local_path": "artifacts/runbooks/generation_min_snr_pilot_health_monitor_v1_launch.sh",
+    "remote_path": "/tmp/launch_min_snr_pilot_health_monitor_4bbc880.sh",
+    "sha256": "990075d206c3993574d6fed24107b80eb4d6087e4bb4592bc952da04ee276d2e",
+    "syntax_verified_on_linux": true
+  },
+  "monitor": {
+    "branch": "analysis/generation-min-snr-pilot-health-monitor-v1-20260825",
+    "checkout": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-pilot-health-monitor-4bbc880/CoFiTok-internal",
+    "cmdline_verified": true,
+    "cwd": "/root",
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "PYTHONPATH": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-pilot-health-monitor-4bbc880/CoFiTok-internal/src:/root/autodl-tmp/CoFiTok/checkouts/min-snr-pilot-health-monitor-4bbc880/CoFiTok-internal"
+    },
+    "exact_process_count": 1,
+    "ionice": "idle",
+    "lock": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/reports/health_monitor_v1/monitor.lock",
+    "lock_fd": 3,
+    "lock_held_by_pid": 412598,
+    "log": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/reports/health_monitor_v1/monitor.log",
+    "nice": 10,
+    "parent_pid": 1,
+    "pid": 412598,
+    "revision": "4bbc880ad3928b607ee61bc1be41d10a60853e4d",
+    "source_bytes": 49820,
+    "source_sha256": "21d0c7c83ef662c3e791a4780d6a33ac08bdc2afcce885c45d3fc621272bd5ad",
+    "start_ticks": 1729920946,
+    "status": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/reports/health_monitor_v1/status.json",
+    "tracked_clean": true,
+    "tree": "6404585661c297cdb57447e81cdfd3f84331d569"
+  },
+  "monitor_is_permanently_non_authorizing": true,
+  "monitor_is_read_only_except_status_and_lock": true,
+  "observed_execution": {
+    "controller_pid": 407472,
+    "controller_start_ticks": 1729557004,
+    "execution_flock_verified": true,
+    "free_bytes": 264111685632,
+    "gpu_compute_pids": [
+      407563
+    ],
+    "last_samples_seen": 83200,
+    "last_step": 1300,
+    "sole_gpu_owner_is_direct_trainer": true
+  },
+  "role": "generation_matched_min_snr_50k_pilot_health_monitor_deployment",
+  "schema_version": 1,
+  "status": "deployed",
+  "terminal_status": "hold",
+  "training": {
+    "branch": "scale/generation-min-snr-matched-pilot-v1-20260825",
+    "checkout": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+    "revision": "842a34130e82f241330707118a05bf6ed01e263e",
+    "tracked_clean": true,
+    "tree": "3fd4c4538d15b85233b1f8b582dce0f185dedba2"
+  },
+  "verification": {
+    "committed_linux_one_shot_issues": [],
+    "committed_linux_one_shot_status": "running",
+    "focused_local_tests_passed": 17,
+    "focused_remote_tests_passed": 17,
+    "git_diff_check_passed": true,
+    "python_compile_passed": true
+  }
+}
