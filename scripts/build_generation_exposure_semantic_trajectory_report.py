@@ -29,7 +29,7 @@ from cofitok.inference_replay import (
     reject_symlink_chain,
 )
 from cofitok.output_lock import exclusive_output_lock
-from cofitok.reporting import git_provenance, write_json_report
+from cofitok.reporting import git_provenance, to_jsonable, write_json_report
 from scripts.evaluate_generation_conditioning_sensitivity import (
     MANIFEST_FILENAME,
     REPORT_ROLE as SENSITIVITY_REPORT_ROLE,
@@ -47,6 +47,13 @@ SENSITIVITY_CLAIM_BOUNDARY = {
     "replaces_formal_quality_gate": False,
 }
 COMPARISONS = ("versus_wrong", "versus_null")
+
+
+def _json_document(value: Mapping[str, Any]) -> dict[str, Any]:
+    normalized = to_jsonable(dict(value))
+    if not isinstance(normalized, dict):
+        raise TypeError("trajectory report must normalize to a JSON object")
+    return normalized
 
 
 def parse_args() -> argparse.Namespace:
@@ -518,7 +525,7 @@ def build_report(
             "checkpoints": {str(step): checkpoints[step] for step in CHECKPOINT_STEPS},
             "trajectory": exposure_trajectory(checkpoints),
         }
-    return {
+    return _json_document({
         "schema_version": SCHEMA_VERSION,
         "role": REPORT_ROLE,
         "status": "completed",
@@ -542,7 +549,7 @@ def build_report(
         "claim_boundary": CLAIM_BOUNDARY,
         "execution_boundary": EXECUTION_BOUNDARY,
         "generation_advantage_proven": False,
-    }
+    })
 
 
 def main() -> None:

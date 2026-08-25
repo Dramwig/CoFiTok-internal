@@ -9,11 +9,26 @@ from cofitok.generation.exposure_semantic_trajectory import (
     ELIGIBLE_TIMESTEPS,
 )
 from scripts.build_generation_exposure_semantic_trajectory_report import (
+    _json_document,
     aggregate_checkpoint,
     classify_decision,
     exposure_trajectory,
     summarize_positive,
 )
+
+
+def test_json_document_matches_written_report_shape() -> None:
+    normalized = _json_document(
+        {
+            "steps": (1_250, 2_500, 5_000),
+            "by_step": {1_250: {"eligible_timesteps": (500, 700, 900)}},
+        }
+    )
+
+    assert normalized == {
+        "steps": [1_250, 2_500, 5_000],
+        "by_step": {"1250": {"eligible_timesteps": [500, 700, 900]}},
+    }
 
 
 def _sensitivity_report(*, correct_mse: float, advantage: float) -> dict[str, Any]:
