@@ -1,0 +1,166 @@
+{
+  "authorization_boundary": {
+    "continuation_beyond_50000_allowed": false,
+    "evaluation_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "gpu_execution_allowed": false,
+    "inference_export_allowed": false,
+    "process_signals_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "sampling_launch_allowed": false,
+    "training_launch_allowed": false
+  },
+  "builder": {
+    "bytes": 22625,
+    "path": "scripts/build_generation_min_snr_treatment_delivery.py",
+    "semantic_sources": {
+      "scripts/train_generation.py": {
+        "bytes": 40331,
+        "path": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-treatment-delivery-39251b7/CoFiTok-internal/scripts/train_generation.py",
+        "sha256": "af123c3d19dcd64354685a57f3c612c1f8bbc986e860b1a29d28fe7efe6196d8"
+      },
+      "src/cofitok/diffusion/schedule.py": {
+        "bytes": 2930,
+        "path": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-treatment-delivery-39251b7/CoFiTok-internal/src/cofitok/diffusion/schedule.py",
+        "sha256": "7e38432f630a31096837bfd852a6b1fa58e577706bc1f2b8b5fec1dcc8049dda"
+      },
+      "src/cofitok/training/losses.py": {
+        "bytes": 30590,
+        "path": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-treatment-delivery-39251b7/CoFiTok-internal/src/cofitok/training/losses.py",
+        "sha256": "f9e3e461148f315814b1c6550525407c7d54f673208576e88581b89b3dbeea5a"
+      }
+    },
+    "sha256": "57ca5d75c22e29795e0cb35b46bc6781965453c12e2643274ebdc509917b0400"
+  },
+  "builder_git": {
+    "branch": "analysis/generation-min-snr-treatment-delivery-v1-20260825",
+    "revision": "39251b797de0e2b4dab7c827e952b5e660b89672",
+    "tracked_dirty": false,
+    "training_revision_is_ancestor": true,
+    "training_semantic_sources_unchanged": true,
+    "training_tree_verified": true,
+    "tree": "a6579d13250c47ed88c4453a94f20360dbc4ff82"
+  },
+  "claim_boundary": {
+    "does_not_support": [
+      "matched CoFiTok-versus-dense comparison",
+      "training convergence",
+      "sample quality or class fidelity",
+      "generation advantage",
+      "continuation beyond the bounded pilot"
+    ],
+    "formal_50k_result_substitute": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "matched_advantage_claim_allowed": false,
+    "promotion_authorization_allowed": false,
+    "quality_claim_allowed": false,
+    "release_allowed": false,
+    "supports": [
+      "single-arm Min-SNR gamma configuration through the cutoff",
+      "source-bound observation of active epsilon-loss downweighting at logged steps",
+      "finite logged training metrics and exact exposure accounting through the cutoff"
+    ]
+  },
+  "contract": {
+    "dataset": "imagenet_256",
+    "dataset_identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+    "effective_batch_size": 64,
+    "git": {
+      "branch": "scale/generation-min-snr-matched-pilot-v1-20260825",
+      "dirty": false,
+      "revision": "842a34130e82f241330707118a05bf6ed01e263e",
+      "tree": "3fd4c4538d15b85233b1f8b582dce0f185dedba2"
+    },
+    "log_interval": 50,
+    "min_snr_gamma": 5.0,
+    "model": {
+      "synthesis_mode": "fixed_basis",
+      "token_count": 8
+    },
+    "parameter_count": 62834083,
+    "prediction_target": "epsilon",
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+    "scheduler_horizon_steps": 100000,
+    "seed": 2027
+  },
+  "cutoff_step": 1000,
+  "method": "cofitok",
+  "role": "single_arm_min_snr_treatment_delivery_diagnostic",
+  "schema_version": 1,
+  "scientific_interpretation": {
+    "dense_same_cutoff_evidence_required_for_matched_comparison": true,
+    "generation_advantage_proven": false,
+    "logged_numerical_stability_through_cutoff_verified": true,
+    "matched_method_comparison_present": false,
+    "sample_quality_metrics_present": false,
+    "treatment_delivery_verified": true
+  },
+  "sources": {
+    "manifest": {
+      "bytes": 8042,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5/run_manifest.json",
+      "sha256": "5965ebd2f0d28213f04a695ec178b6d7cab714b3dd8c22b1c3a407f4540d9268"
+    },
+    "metrics": {
+      "bound_prefix": {
+        "bytes": 21430,
+        "last_step": 1000,
+        "row_count": 21,
+        "sha256": "450c5033e4a55b73b317671cd2d2c2f6f957984105e74445eadbcdf749c2127a"
+      },
+      "observed_file": {
+        "bytes": 43152,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5/train_metrics.jsonl",
+        "sha256": "db0a5392f3e677184b0b77af4d2cbbf94a459b821b7306fdf48f546dbf9de6d2"
+      },
+      "origin": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/cofitok_gamma5/train_metrics.jsonl",
+      "snapshot": {
+        "bytes": 21430,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/reports/min_snr_treatment_delivery_v1/cofitok_step_00001000/cofitok_train_metrics_through_step_00001000.jsonl",
+        "sha256": "450c5033e4a55b73b317671cd2d2c2f6f957984105e74445eadbcdf749c2127a"
+      }
+    }
+  },
+  "status": "pass",
+  "trajectory": {
+    "all_logged_rows_have_weight_below_one": true,
+    "all_logged_rows_have_weighted_epsilon_below_unweighted": true,
+    "all_numeric_metrics_finite": true,
+    "cumulative_elapsed_seconds_strictly_increasing": true,
+    "downweighted_epsilon_row_count": 21,
+    "downweighted_weight_row_count": 21,
+    "endpoint": {
+      "cumulative_elapsed_seconds": 2779.820118188858,
+      "epsilon": 0.016866452991962433,
+      "epsilon_unweighted": 0.030121920630335808,
+      "grad_norm": 0.5580928921699524,
+      "learning_rate": 0.0001,
+      "min_snr_weight_mean": 0.8910196423530579,
+      "samples_seen": 64000,
+      "step": 1000,
+      "total": 0.03725580498576164
+    },
+    "first_step": 1,
+    "last_step": 1000,
+    "min_snr_weight_mean": {
+      "maximum": 0.8910196423530579,
+      "mean": 0.8307189771107265,
+      "median": 0.8390036821365356,
+      "minimum": 0.7591409087181091
+    },
+    "required_treatment_fields_present": true,
+    "row_count": 21,
+    "samples_seen": 64000,
+    "samples_seen_exact": true,
+    "steps_exact": true,
+    "weighted_to_unweighted_epsilon_ratio": {
+      "maximum": 0.8574965243989875,
+      "mean": 0.6741174893726368,
+      "median": 0.7328087096778761,
+      "minimum": 0.23417817320003653
+    }
+  }
+}
