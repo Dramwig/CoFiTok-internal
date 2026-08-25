@@ -251,6 +251,7 @@ def _case(
     quality_passed: bool = True,
     uncertainty_passed: bool = True,
     runtime_direct: bool = False,
+    schema6_visual_source: bool = False,
 ) -> dict[str, Any]:
     quality_root = (tmp_path / "quality").resolve()
     cofitok_sampling_path = quality_root / "cofitok" / "sampling_report.json"
@@ -319,6 +320,13 @@ def _case(
             "cofitok_class_fidelity": cofitok_class_identity,
             "dense_class_fidelity": dense_class_identity,
         },
+        "training": {
+            "pair_validation": {
+                "training_recipe": {
+                    "schema": "cofitok_generation_training_recipe_v4",
+                }
+            }
+        },
         "terminal": {
             "methods": {
                 "cofitok": {
@@ -341,6 +349,14 @@ def _case(
             "physical_evidence": {
                 "cofitok": {"sampling_report": cofitok_sampling_identity},
                 "dense_identity": {"sampling_report": dense_sampling_identity},
+            },
+            "class_fidelity": {
+                "status": "pass" if quality_passed else "hold",
+                "classifier": classifier,
+                "sources": {
+                    "cofitok": cofitok_class_identity,
+                    "dense_identity": dense_class_identity,
+                },
             },
         },
     }
@@ -388,6 +404,17 @@ def _case(
         },
         "panels": panels,
     }
+    if schema6_visual_source:
+        visual_payload["sources"]["quality_bridge_result"] = {
+            "report": quality_identity,
+            "num_classes": 1000,
+            "training_recipe_schema": "cofitok_generation_training_recipe_v4",
+            "class_fidelity_status": quality_payload["terminal"]["class_fidelity"][
+                "status"
+            ],
+            "cofitok_class_fidelity_source": cofitok_class_identity,
+            "dense_class_fidelity_source": dense_class_identity,
+        }
     visual_path = visual_dir / visual_audit.REPORT_FILENAME
     visual_identity = _write(visual_path, visual_payload)
     visual_status_payload = {
@@ -478,6 +505,47 @@ def test_pass_binds_quality_statistics_visuals_and_runtime(tmp_path: Path) -> No
         == 0
     )
     assert "not an independent replication" in report["claim_text"]
+
+
+def test_accepts_schema6_visual_quality_result_binding(tmp_path: Path) -> None:
+    report = _build(_case(tmp_path, schema6_visual_source=True))
+
+    assert report["status"] == "pass"
+    assert report["evidence"]["requested_class_visual_audit"]["status"] == "completed"
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (
+        ("report", {"path": "/different", "bytes": 1, "sha256": "f" * 64}),
+        ("class_fidelity_status", "different"),
+        (
+            "cofitok_class_fidelity_source",
+            {"path": "/different", "bytes": 1, "sha256": "f" * 64},
+        ),
+        (
+            "dense_class_fidelity_source",
+            {"path": "/different", "bytes": 1, "sha256": "f" * 64},
+        ),
+        ("num_classes", 999),
+        ("training_recipe_schema", "different"),
+    ),
+)
+def test_rejects_schema6_visual_quality_result_drift(
+    tmp_path: Path,
+    field: str,
+    value: Any,
+) -> None:
+    case = _case(tmp_path, schema6_visual_source=True)
+    case["visual_payload"]["sources"]["quality_bridge_result"][field] = value
+    visual_identity = _write(case["visual_path"], case["visual_payload"])
+    case["visual_status_payload"]["visual_audit"] = visual_identity
+    case["visual_status_identity"] = _write(
+        case["visual_status_path"], case["visual_status_payload"]
+    )
+
+    with pytest.raises(ValueError, match="visual quality-result source differs"):
+        _build(case)
 
 
 def test_holds_when_quality_passes_but_statistical_support_does_not(

@@ -375,6 +375,7 @@ def _validate_visual_audit(
     *,
     quality_identity: Mapping[str, Any],
     quality: Mapping[str, Any],
+    quality_report: Mapping[str, Any],
 ) -> dict[str, Any]:
     if (
         status.get("schema_version") != VISUAL_WAITER_SCHEMA_VERSION
@@ -432,9 +433,15 @@ def _validate_visual_audit(
     physical = terminal.get("physical_evidence")
     methods = terminal.get("methods")
     protocol = visual.get("sampling_protocol")
+    source_names = set(sources) if isinstance(sources, Mapping) else set()
+    method_source_names = {"cofitok", "dense_identity"}
     if (
         not isinstance(sources, Mapping)
-        or set(sources) != {"cofitok", "dense_identity"}
+        or source_names
+        not in (
+            method_source_names,
+            method_source_names | {"quality_bridge_result"},
+        )
         or not isinstance(physical, Mapping)
         or not isinstance(methods, Mapping)
         or not isinstance(protocol, Mapping)
@@ -459,6 +466,64 @@ def _validate_visual_audit(
             or dict(protocol) != _normalized_sampling_protocol(method)
         ):
             raise ValueError(f"terminal visual source differs from quality evidence: {method_name}")
+
+    if "quality_bridge_result" in sources:
+        quality_source = sources["quality_bridge_result"]
+        class_fidelity = terminal.get("class_fidelity")
+        class_sources = (
+            class_fidelity.get("sources")
+            if isinstance(class_fidelity, Mapping)
+            else None
+        )
+        classifier = (
+            class_fidelity.get("classifier")
+            if isinstance(class_fidelity, Mapping)
+            else None
+        )
+        source_reports = quality_report.get("source_reports")
+        training = quality_report.get("training")
+        pair_validation = (
+            training.get("pair_validation") if isinstance(training, Mapping) else None
+        )
+        recipe = (
+            pair_validation.get("training_recipe")
+            if isinstance(pair_validation, Mapping)
+            else None
+        )
+        expected_class_sources = {
+            "cofitok": (
+                source_reports.get("cofitok_class_fidelity")
+                if isinstance(source_reports, Mapping)
+                else None
+            ),
+            "dense_identity": (
+                source_reports.get("dense_class_fidelity")
+                if isinstance(source_reports, Mapping)
+                else None
+            ),
+        }
+        if (
+            not isinstance(quality_source, Mapping)
+            or not isinstance(class_fidelity, Mapping)
+            or not isinstance(class_sources, Mapping)
+            or not isinstance(classifier, Mapping)
+            or not isinstance(recipe, Mapping)
+            or set(class_sources) != method_source_names
+            or dict(class_sources) != expected_class_sources
+            or quality_source.get("report") != dict(quality_identity)
+            or quality_source.get("class_fidelity_status")
+            != class_fidelity.get("status")
+            or quality_source.get("cofitok_class_fidelity_source")
+            != class_sources.get("cofitok")
+            or quality_source.get("dense_class_fidelity_source")
+            != class_sources.get("dense_identity")
+            or int(classifier.get("num_classes", -1)) != 1000
+            or int(quality_source.get("num_classes", -1)) != 1000
+            or quality_source.get("training_recipe_schema") != recipe.get("schema")
+        ):
+            raise ValueError(
+                "terminal visual quality-result source differs from quality evidence"
+            )
     return {
         "status": "completed",
         "quantitative_quality_evidence": False,
@@ -592,6 +657,7 @@ def build_guard(
         visual_status,
         quality_identity=quality_identity,
         quality=quality,
+        quality_report=quality_report,
     )
     runtime_identity, runtime_report = _bound_json(
         runtime_claim_guard_path,
