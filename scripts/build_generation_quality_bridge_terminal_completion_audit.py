@@ -698,6 +698,24 @@ def _receipt_view(receipt: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _validate_checkout_git_receipt(
+    identity: Any,
+    *,
+    expected_git: Mapping[str, Any],
+    checkout: Path,
+    label: str,
+) -> dict[str, Any]:
+    if not isinstance(identity, Mapping):
+        raise TypeError(f"{label} is missing")
+    expected = {
+        **dict(expected_git),
+        "path": checkout.resolve().as_posix(),
+    }
+    if dict(identity) != expected:
+        raise ValueError(f"{label} differs")
+    return expected
+
+
 def _validate_dense_replay_status(
     *,
     identity: Mapping[str, Any],
@@ -877,11 +895,16 @@ def verify_checkpoint_chain(
                     paths["replay"],
                     name=f"dense checkpoint {step} replay receipt",
                 )
+                _validate_checkout_git_receipt(
+                    receipt.get("verifier_git"),
+                    expected_git=replay_git,
+                    checkout=replay_checkout,
+                    label=f"dense checkpoint {step} replay verifier Git",
+                )
                 if (
                     receipt.get("schema_version") != 1
                     or receipt.get("role") != REPLAY_ROLE
                     or receipt.get("status") != "pass"
-                    or receipt.get("verifier_git") != dict(replay_git)
                     or receipt.get("verifier_source") != replay_verifier_identity
                     or _receipt_view(receipt) != _receipt_view(fresh)
                 ):

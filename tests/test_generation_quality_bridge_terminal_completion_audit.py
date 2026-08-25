@@ -432,6 +432,41 @@ def test_dense_replay_waiter_requires_all_three_locked_receipts() -> None:
         )
 
 
+def test_replay_verifier_git_receipt_requires_exact_checkout_path(
+    tmp_path: Path,
+) -> None:
+    expected_git = {
+        "revision": "a" * 40,
+        "tree": "b" * 40,
+        "branch": "analysis/checkpoint-replay",
+        "tracked_dirty": False,
+    }
+    expected = {
+        **expected_git,
+        "path": tmp_path.resolve().as_posix(),
+    }
+
+    assert builder._validate_checkout_git_receipt(
+        expected,
+        expected_git=expected_git,
+        checkout=tmp_path,
+        label="replay verifier Git",
+    ) == expected
+
+    for drifted in (
+        {key: value for key, value in expected.items() if key != "path"},
+        {**expected, "path": (tmp_path / "other").resolve().as_posix()},
+        {**expected, "unexpected": True},
+    ):
+        with pytest.raises(ValueError, match="replay verifier Git differs"):
+            builder._validate_checkout_git_receipt(
+                drifted,
+                expected_git=expected_git,
+                checkout=tmp_path,
+                label="replay verifier Git",
+            )
+
+
 def test_final_checkpoint_source_revalidation_detects_post_replay_drift(
     tmp_path: Path,
 ) -> None:
