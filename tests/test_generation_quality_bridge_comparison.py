@@ -22,6 +22,7 @@ from cofitok.generation_class_fidelity import (
     CLASS_FIDELITY_QUALIFICATION_SCHEMA_VERSION,
     CLASS_FIDELITY_REPORT_ROLE,
     CLASS_FIDELITY_REPORT_SCHEMA_VERSION,
+    validate_class_fidelity_qualification,
 )
 from scripts import build_generation_quality_bridge_comparison as comparison
 
@@ -495,6 +496,13 @@ def _graph(
         tmp_path / "class_fidelity_qualification.json",
         class_fidelity,
     )
+    normalized_class_fidelity = validate_class_fidelity_qualification(
+        class_fidelity,
+        expected_stage="scaling",
+        expected_revision=REVISION,
+        expected_branch=BRANCH,
+        require_pass=False,
+    )
 
     def latest(method: dict, physical: dict) -> dict:
         return {
@@ -542,7 +550,7 @@ def _graph(
                 "cofitok": cofitok_method,
                 "dense_identity": dense_method,
             },
-            "class_fidelity": class_fidelity,
+            "class_fidelity": normalized_class_fidelity,
         },
         "quality_screen": screen,
         "authorization_boundary": copy.deepcopy(RESULT_AUTHORIZATION_BOUNDARY),
@@ -799,6 +807,66 @@ def test_comparison_preserves_terminal_status_and_two_tier_policy(
         is False
     )
     assert comparison.verify_source_reports(report)["status"] == "verified"
+
+
+def test_comparison_accepts_normalized_class_fidelity_embedding(
+    tmp_path: Path,
+) -> None:
+    graph = _graph(tmp_path)
+    qualification_path = Path(
+        graph["quality"]["source_reports"]["class_fidelity_qualification"]["path"]
+    )
+    qualification = json.loads(qualification_path.read_text(encoding="utf-8"))
+    embedded = graph["quality"]["terminal"]["class_fidelity"]
+
+    assert "checks" in qualification
+    assert "checks" not in embedded
+    assert "cofitok_minus_dense" in qualification["metrics"]
+    assert "cofitok_minus_dense" not in embedded["metrics"]
+    assert embedded["valid"] is True
+    assert _build(graph)["status"] == "hold"
+
+
+def test_comparison_rejects_normalized_class_fidelity_semantic_drift(
+    tmp_path: Path,
+) -> None:
+    graph = _graph(tmp_path)
+    qualification_path = Path(
+        graph["quality"]["source_reports"]["class_fidelity_qualification"]["path"]
+    )
+    qualification = json.loads(qualification_path.read_text(encoding="utf-8"))
+    qualification["thresholds"]["min_top1"] = 0.02
+    for check in qualification["checks"]:
+        if check["name"] in {
+            "cofitok_top1_accuracy",
+            "dense_identity_top1_accuracy",
+        }:
+            check["threshold"] = 0.02
+    graph["quality"]["source_reports"]["class_fidelity_qualification"] = (
+        _write_json(qualification_path, qualification)
+    )
+    _rebind(graph)
+
+    with pytest.raises(ValueError, match="class-fidelity qualification differs"):
+        _build(graph)
+
+
+def test_comparison_rejects_malformed_raw_class_fidelity_qualification(
+    tmp_path: Path,
+) -> None:
+    graph = _graph(tmp_path)
+    qualification_path = Path(
+        graph["quality"]["source_reports"]["class_fidelity_qualification"]["path"]
+    )
+    qualification = json.loads(qualification_path.read_text(encoding="utf-8"))
+    qualification.pop("checks")
+    graph["quality"]["source_reports"]["class_fidelity_qualification"] = (
+        _write_json(qualification_path, qualification)
+    )
+    _rebind(graph)
+
+    with pytest.raises(ValueError, match="qualification checks are incomplete"):
+        _build(graph)
 
 
 def test_comparison_preserves_unexecuted_paired_reanalysis_boundary(

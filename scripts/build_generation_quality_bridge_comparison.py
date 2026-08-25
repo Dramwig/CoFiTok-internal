@@ -1185,8 +1185,6 @@ def build_report(
         quality["source_reports"].get("class_fidelity_qualification"),
         label="quality-bridge class-fidelity qualification",
     )
-    if class_fidelity_report != dict(quality["class_fidelity"]):
-        raise ValueError("quality-bridge class-fidelity qualification differs")
     class_fidelity = validate_class_fidelity_qualification(
         class_fidelity_report,
         expected_stage="scaling",
@@ -1194,6 +1192,8 @@ def build_report(
         expected_branch=quality["git"]["branch"],
         require_pass=False,
     )
+    if class_fidelity != dict(quality["class_fidelity"]):
+        raise ValueError("quality-bridge class-fidelity qualification differs")
     if (
         not _is_sha256(training["cofitok"]["dataset_identity_sha256"])
         or training["cofitok"]["dataset_identity_sha256"]
