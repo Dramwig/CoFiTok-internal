@@ -545,7 +545,7 @@ def validate_comparison_renderings(
         ).resolve()
         if source != expected_path:
             raise ValueError(f"terminal comparison {name} path is not canonical")
-        if source.read_text(encoding="utf-8") != payload:
+        if source.read_bytes() != payload.encode("utf-8"):
             raise ValueError(f"terminal comparison {name} does not replay exactly")
         actual = file_identity(source)
         if actual != dict(descriptor):

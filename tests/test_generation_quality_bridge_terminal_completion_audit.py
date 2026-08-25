@@ -261,8 +261,8 @@ def test_validate_comparison_renderings_rejects_drift(
     markdown = tmp_path / "quality_bridge_comparison.md"
     csv = tmp_path / "quality_bridge_comparison.csv"
     _write(comparison, {})
-    _write(markdown, "expected markdown\n")
-    _write(csv, "expected,csv\n")
+    markdown.write_bytes(b"expected markdown\n")
+    csv.write_bytes(b"expected,csv\r\n")
     monkeypatch.setattr(
         builder.comparison_builder,
         "render_markdown",
@@ -271,7 +271,7 @@ def test_validate_comparison_renderings_rejects_drift(
     monkeypatch.setattr(
         builder.comparison_builder,
         "render_csv",
-        lambda _report: "expected,csv\n",
+        lambda _report: "expected,csv\r\n",
     )
     outputs = {
         "json": _identity(comparison),
@@ -282,7 +282,13 @@ def test_validate_comparison_renderings_rejects_drift(
     verified = builder.validate_comparison_renderings({}, outputs)
     assert verified == {"markdown": outputs["markdown"], "csv": outputs["csv"]}
 
-    _write(csv, "drifted,csv\n")
+    csv.write_bytes(b"expected,csv\n")
+    outputs["csv"] = _identity(csv)
+    with pytest.raises(ValueError, match="does not replay exactly"):
+        builder.validate_comparison_renderings({}, outputs)
+
+    csv.write_bytes(b"drifted,csv\r\n")
+    outputs["csv"] = _identity(csv)
     with pytest.raises(ValueError, match="does not replay exactly"):
         builder.validate_comparison_renderings({}, outputs)
 
