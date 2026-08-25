@@ -25,6 +25,7 @@ from cofitok.generation_class_fidelity import (
     validate_class_fidelity_qualification,
     validate_class_fidelity_report,
 )
+from cofitok.image_integrity import IMAGE_TREE_DIGEST_SCHEMA
 from cofitok.inference_replay import (
     file_identity,
     read_json_object,
@@ -133,6 +134,45 @@ def _finite_positive(value: Any, *, label: str) -> float:
 
 def _same_float(left: Any, right: Any) -> bool:
     return math.isclose(float(left), float(right), rel_tol=0.0, abs_tol=1e-12)
+
+
+def _normalized_real_set(
+    value: Any,
+    *,
+    label: str,
+    allow_legacy_missing_digest_schema: bool,
+) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise TypeError(f"{label} real-set identity is missing")
+    required_fields = {"root", "sha256", "image_count"}
+    observed_fields = set(value)
+    allowed_fields = required_fields | {"digest_schema"}
+    if (
+        not required_fields.issubset(observed_fields)
+        or not observed_fields.issubset(allowed_fields)
+        or (
+            "digest_schema" not in observed_fields
+            and not allow_legacy_missing_digest_schema
+        )
+    ):
+        raise ValueError(f"{label} real-set field set differs")
+    root = str(value.get("root", ""))
+    digest_schema = value.get("digest_schema", IMAGE_TREE_DIGEST_SCHEMA)
+    image_count = int(value.get("image_count", -1))
+    if (
+        not root
+        or not PurePosixPath(root).is_absolute()
+        or not _is_sha256(value.get("sha256"))
+        or image_count < EXPECTED_TERMINAL_SAMPLES
+        or digest_schema != IMAGE_TREE_DIGEST_SCHEMA
+    ):
+        raise ValueError(f"{label} real-set identity differs")
+    return {
+        "root": root,
+        "digest_schema": IMAGE_TREE_DIGEST_SCHEMA,
+        "sha256": value["sha256"],
+        "image_count": image_count,
+    }
 
 
 def _normalized_git(value: Any, *, label: str) -> dict[str, Any]:
@@ -665,6 +705,16 @@ def _validate_physical_evidence(
         for name in ("sampling_report", "sampling_manifest", "sampling_progress")
     }
     real_set = evidence.get("real_set")
+    physical_real_set = _normalized_real_set(
+        real_set,
+        label=f"{label} physical",
+        allow_legacy_missing_digest_schema=True,
+    )
+    method_real_set = _normalized_real_set(
+        method.get("real_set"),
+        label=f"{label} terminal",
+        allow_legacy_missing_digest_schema=False,
+    )
     if (
         checkpoint != evidence.get("checkpoint")
         or checkpoint["path"] != method.get("checkpoint")
@@ -696,8 +746,7 @@ def _validate_physical_evidence(
         or replayed_sampling["sampling_report"] != method.get("sampling_report")
         or replayed_sampling["sampling_manifest"] != method.get("sampling_manifest")
         or replayed_sampling["sampling_progress"] != method.get("sampling_progress")
-        or not isinstance(real_set, Mapping)
-        or dict(real_set) != dict(method.get("real_set", {}))
+        or physical_real_set != method_real_set
     ):
         raise ValueError(f"{label} terminal physical evidence differs")
     return {
@@ -707,7 +756,7 @@ def _validate_physical_evidence(
         **replayed_sampling,
         "sample_set_sha256": method["sample_set_sha256"],
         "sample_count": EXPECTED_TERMINAL_SAMPLES,
-        "real_set": copy.deepcopy(dict(real_set)),
+        "real_set": physical_real_set,
     }
 
 

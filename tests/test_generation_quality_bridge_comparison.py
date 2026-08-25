@@ -353,7 +353,6 @@ def _terminal_method(
             "sample_count": 10_000,
             "real_set": {
                 "root": "/real/imagenet_256_val",
-                "digest_schema": "cofitok_image_tree_sha256_v1",
                 "sha256": "6" * 64,
                 "image_count": 50_000,
             },
@@ -825,6 +824,34 @@ def test_comparison_accepts_normalized_class_fidelity_embedding(
     assert "cofitok_minus_dense" not in embedded["metrics"]
     assert embedded["valid"] is True
     assert _build(graph)["status"] == "hold"
+
+
+def test_comparison_normalizes_legacy_physical_real_set_schema(
+    tmp_path: Path,
+) -> None:
+    graph = _graph(tmp_path)
+    physical = graph["quality"]["terminal"]["physical_evidence"]["cofitok"]
+
+    assert "digest_schema" not in physical["real_set"]
+    report = _build(graph)
+    row = next(
+        row
+        for row in report["matched_training_rows"]
+        if row["method"] == "CoFiTok K=8"
+    )
+    assert row["real_set_digest_schema"] == "cofitok_image_tree_sha256_v1"
+
+
+def test_comparison_rejects_physical_real_set_digest_schema_drift(
+    tmp_path: Path,
+) -> None:
+    graph = _graph(tmp_path)
+    physical = graph["quality"]["terminal"]["physical_evidence"]["cofitok"]
+    physical["real_set"]["digest_schema"] = "different_digest_schema"
+    _rebind(graph)
+
+    with pytest.raises(ValueError, match="physical real-set identity differs"):
+        _build(graph)
 
 
 def test_comparison_rejects_normalized_class_fidelity_semantic_drift(
