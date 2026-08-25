@@ -62,6 +62,7 @@ class ModelConfig:
 @dataclass(frozen=True)
 class LossConfig:
     epsilon_weight: float = 1.0
+    min_snr_gamma: float = 0.0
     prefix_weight: float = 0.25
     monotonic_weight: float = 0.05
     monotonic_margin: float = 0.0

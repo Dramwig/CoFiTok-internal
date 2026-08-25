@@ -21,6 +21,7 @@ FACTORIZATION_MODEL_FIELDS = {
 }
 SHARED_TRAINING_LOSS_FIELDS = {
     "epsilon_weight",
+    "min_snr_gamma",
     "rollout_consistency_weight",
     "rollout_consistency_start_step",
     "rollout_consistency_warmup_steps",

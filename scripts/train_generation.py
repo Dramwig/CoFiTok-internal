@@ -125,6 +125,8 @@ def _validate_config(config: ExperimentConfig) -> None:
         )
     if config.diffusion.prediction_target != "epsilon":
         raise ValueError("production training currently supports epsilon prediction only")
+    if not math.isfinite(config.loss.min_snr_gamma) or config.loss.min_snr_gamma < 0.0:
+        raise ValueError("min_snr_gamma must be finite and non-negative")
     if config.data.class_conditional != (config.model.num_classes > 0):
         raise ValueError("data.class_conditional and model.num_classes must agree")
     if not 0.0 <= config.data.random_horizontal_flip_prob <= 1.0:
