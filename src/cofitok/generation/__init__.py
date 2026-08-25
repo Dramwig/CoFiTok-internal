@@ -38,6 +38,14 @@ from cofitok.generation.quality_repair_gate import (
     build_epsilon_stability_user_authorization_receipt,
     validate_epsilon_stability_user_authorization_receipt,
 )
+from cofitok.generation.quality_repair_decision import (
+    POST_DIAGNOSTIC_AUTHORIZATION_BOUNDARY,
+    POST_DIAGNOSTIC_DECISION_ROLE,
+    POST_DIAGNOSTIC_DECISION_SCHEMA,
+    POST_DIAGNOSTIC_VERIFICATION_SCHEMA,
+    build_epsilon_stability_post_diagnostic_decision,
+    validate_epsilon_stability_post_diagnostic_decision,
+)
 from cofitok.generation.quality_repair_result import (
     EPSILON_STABILITY_CASE_OBSERVATION_SCHEMA,
     EPSILON_STABILITY_EXECUTION_ACTIONS,
@@ -109,4 +117,10 @@ __all__ = [
     "build_epsilon_stability_real_artifact_reference",
     "build_epsilon_stability_sampling_result",
     "validate_epsilon_stability_execution_authorization",
+    "POST_DIAGNOSTIC_AUTHORIZATION_BOUNDARY",
+    "POST_DIAGNOSTIC_DECISION_ROLE",
+    "POST_DIAGNOSTIC_DECISION_SCHEMA",
+    "POST_DIAGNOSTIC_VERIFICATION_SCHEMA",
+    "build_epsilon_stability_post_diagnostic_decision",
+    "validate_epsilon_stability_post_diagnostic_decision",
 ]
