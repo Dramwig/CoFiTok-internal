@@ -115,13 +115,13 @@ def test_audit_binds_physical_checkpoint_latest_metrics_and_scope(
     assert report["latest_pointer"]["exact_target_binding"] is True
     assert report["metrics"]["strictly_increasing"] is True
     assert report["metrics"]["samples_seen_binding_verified"] is True
+    assert report["metrics"]["numeric_values_finite"] is True
     assert report["scope"] == {
         "read_only_checkpoint_verification": True,
         "gpu_required": False,
-        "training_process_signals_allowed": False,
-        "promotion_authorization_allowed": False,
-        "release_authorization_allowed": False,
+        "persistent_process_allowed": False,
     }
+    assert set(report["authorization_boundary"].values()) == {False}
 
 
 def test_audit_rejects_samples_seen_drift(tmp_path: Path, monkeypatch: object) -> None:
@@ -163,3 +163,74 @@ def test_audit_rejects_samples_seen_drift(tmp_path: Path, monkeypatch: object) -
         assert "samples_seen binding" in str(error)
     else:
         raise AssertionError("samples_seen drift must fail closed")
+
+
+def test_audit_verifies_min_snr_metric_contract(
+    tmp_path: Path,
+    monkeypatch: object,
+) -> None:
+    module = load_waiter()
+    _, dataset_sha, runtime_sha = write_checkpoint_fixture(tmp_path)
+    rows = [
+        {
+            **json.loads(line),
+            "epsilon": 0.25,
+            "epsilon_unweighted": 0.5,
+            "min_snr_weight_mean": 0.75,
+        }
+        for line in (tmp_path / "train_metrics.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    (tmp_path / "train_metrics.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        module,
+        "verify_checkout",
+        lambda *_args, **_kwargs: {
+            "path": "/training",
+            "revision": "a" * 40,
+            "branch": "training-branch",
+            "tree": "b" * 40,
+            "tracked_dirty": False,
+        },
+    )
+
+    report = module.audit_checkpoint(
+        run_dir=tmp_path,
+        checkpoint_step=25,
+        training_checkout=tmp_path,
+        expected_revision="a" * 40,
+        expected_branch="training-branch",
+        expected_tree="b" * 40,
+        expected_dataset_sha256=dataset_sha,
+        expected_runtime_sha256=runtime_sha,
+        effective_batch=8,
+        require_min_snr_metrics=True,
+    )
+    assert report["metrics"]["min_snr_metrics_verified"] is True
+
+    rows[-1]["epsilon"] = 0.75
+    (tmp_path / "train_metrics.jsonl").write_text(
+        "".join(json.dumps(row) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    try:
+        module.audit_checkpoint(
+            run_dir=tmp_path,
+            checkpoint_step=25,
+            training_checkout=tmp_path,
+            expected_revision="a" * 40,
+            expected_branch="training-branch",
+            expected_tree="b" * 40,
+            expected_dataset_sha256=dataset_sha,
+            expected_runtime_sha256=runtime_sha,
+            effective_batch=8,
+            require_min_snr_metrics=True,
+        )
+    except ValueError as error:
+        assert "weighted epsilon exceeds" in str(error)
+    else:
+        raise AssertionError("Min-SNR epsilon weighting drift must fail closed")

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import subprocess
 import sys
@@ -20,6 +21,22 @@ from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
     verify_training_checkpoint,
 )
+
+
+AUTHORIZATION_BOUNDARY = {
+    "training_launch_allowed": False,
+    "sampling_launch_allowed": False,
+    "evaluation_launch_allowed": False,
+    "continuation_beyond_50000_allowed": False,
+    "full_training_launch_allowed": False,
+    "full_300k_launch_allowed": False,
+    "promotion_allowed": False,
+    "inference_export_allowed": False,
+    "export_allowed": False,
+    "release_allowed": False,
+    "process_signals_allowed": False,
+    "gpu_execution_allowed": False,
+}
 
 
 def utc_now() -> str:
@@ -158,6 +175,7 @@ def audit_checkpoint(
     expected_dataset_sha256: str,
     expected_runtime_sha256: str,
     effective_batch: int,
+    require_min_snr_metrics: bool = False,
 ) -> dict[str, Any]:
     checkout = verify_checkout(
         training_checkout,
@@ -212,6 +230,23 @@ def audit_checkpoint(
         step = int(row.get("step", -1))
         if int(row.get("samples_seen", -1)) != step * effective_batch:
             raise ValueError("training metrics samples_seen binding differs")
+    numeric_values_finite = all(
+        math.isfinite(float(value))
+        for row in rows
+        for value in row.values()
+        if isinstance(value, (int, float)) and not isinstance(value, bool)
+    )
+    if not numeric_values_finite:
+        raise ValueError("training metrics contain non-finite numeric values")
+    min_snr_metrics_verified = False
+    if require_min_snr_metrics:
+        required_fields = {"epsilon", "epsilon_unweighted", "min_snr_weight_mean"}
+        for row in rows:
+            if not required_fields.issubset(row):
+                raise ValueError("training metrics omit required Min-SNR fields")
+            if float(row["epsilon"]) > float(row["epsilon_unweighted"]) + 1e-12:
+                raise ValueError("weighted epsilon exceeds unweighted epsilon")
+        min_snr_metrics_verified = True
     target_row = rows[steps.index(checkpoint_step)]
 
     return {
@@ -222,10 +257,9 @@ def audit_checkpoint(
         "scope": {
             "read_only_checkpoint_verification": True,
             "gpu_required": False,
-            "training_process_signals_allowed": False,
-            "promotion_authorization_allowed": False,
-            "release_authorization_allowed": False,
+            "persistent_process_allowed": False,
         },
+        "authorization_boundary": dict(AUTHORIZATION_BOUNDARY),
         "training_checkout": checkout,
         "run_dir": str(run_dir.resolve()),
         "checkpoint": {
@@ -248,6 +282,9 @@ def audit_checkpoint(
             "strictly_increasing": True,
             "samples_seen_binding": f"samples_seen == step * {effective_batch}",
             "samples_seen_binding_verified": True,
+            "numeric_values_finite": True,
+            "min_snr_metrics_required": require_min_snr_metrics,
+            "min_snr_metrics_verified": min_snr_metrics_verified,
             "target_row": target_row,
         },
     }
@@ -261,6 +298,7 @@ def waiter_status(
     checkpoint_step: int,
     audit_output: Path,
     started_at: str,
+    require_min_snr_metrics: bool,
 ) -> dict[str, Any]:
     return {
         "schema_version": 1,
@@ -277,10 +315,10 @@ def waiter_status(
         "scope": {
             "read_only_checkpoint_verification": True,
             "gpu_required": False,
-            "training_process_signals_allowed": False,
-            "promotion_authorization_allowed": False,
-            "release_authorization_allowed": False,
+            "persistent_process_allowed": status == "waiting",
         },
+        "require_min_snr_metrics": require_min_snr_metrics,
+        "authorization_boundary": dict(AUTHORIZATION_BOUNDARY),
     }
 
 
@@ -306,6 +344,7 @@ def main() -> None:
     parser.add_argument("--poll-seconds", type=float, default=30.0)
     parser.add_argument("--timeout-seconds", type=float, default=43200.0)
     parser.add_argument("--once", action="store_true")
+    parser.add_argument("--require-min-snr-metrics", action="store_true")
     args = parser.parse_args()
 
     if args.checkpoint_step < 1 or args.effective_batch < 1:
@@ -322,6 +361,12 @@ def main() -> None:
     source_identity = file_identity(Path(__file__))
     if source_identity["sha256"] != args.expected_source_sha256:
         raise ValueError("waiter source SHA256 differs")
+    if os.environ.get("CUDA_VISIBLE_DEVICES") != "":
+        raise ValueError("checkpoint integrity waiter requires CUDA hidden")
+    if os.environ.get("OMP_NUM_THREADS") != "1" or os.environ.get(
+        "MKL_NUM_THREADS"
+    ) != "1":
+        raise ValueError("checkpoint integrity waiter requires OMP/MKL threads set to 1")
 
     lock_path = args.status_output.with_suffix(args.status_output.suffix + ".lock")
     lock_path.parent.mkdir(parents=True, exist_ok=True)
@@ -349,7 +394,12 @@ def main() -> None:
                     expected_dataset_sha256=args.expected_dataset_sha256,
                     expected_runtime_sha256=args.expected_runtime_sha256,
                     effective_batch=args.effective_batch,
+                    require_min_snr_metrics=args.require_min_snr_metrics,
                 )
+                if args.audit_output.exists():
+                    raise FileExistsError(
+                        "refusing to overwrite an existing checkpoint integrity audit"
+                    )
                 write_json_atomic(args.audit_output, report)
                 status = waiter_status(
                     status="pass",
@@ -358,6 +408,7 @@ def main() -> None:
                     checkpoint_step=args.checkpoint_step,
                     audit_output=args.audit_output,
                     started_at=started_at,
+                    require_min_snr_metrics=args.require_min_snr_metrics,
                 )
                 status["audit_output_identity"] = file_identity(args.audit_output)
                 write_json_atomic(args.status_output, status)
@@ -373,6 +424,7 @@ def main() -> None:
                     checkpoint_step=args.checkpoint_step,
                     audit_output=args.audit_output,
                     started_at=started_at,
+                    require_min_snr_metrics=args.require_min_snr_metrics,
                 ),
             )
             if args.once:
@@ -390,6 +442,7 @@ def main() -> None:
                 checkpoint_step=args.checkpoint_step,
                 audit_output=args.audit_output,
                 started_at=started_at,
+                require_min_snr_metrics=args.require_min_snr_metrics,
             ),
         )
         raise
