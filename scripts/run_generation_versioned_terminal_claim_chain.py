@@ -233,7 +233,12 @@ def _validate_authoritative_sources(
         and exposure.get("status") == "pass"
         and isinstance(terminal, Mapping)
         and terminal.get("terminal_result_binding_verified") is True
-        and terminal.get("training_git") == dict(expected_training_git)
+        and terminal.get("training_git")
+        == {
+            "revision": expected_training_git["revision"],
+            "branch": expected_training_git["branch"],
+            "tracked_dirty": False,
+        }
         and isinstance(verification, Mapping)
         and verification.get("status") == "verified"
         and verification.get("quality_project") == dict(expected_training_git)

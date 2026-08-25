@@ -58,7 +58,11 @@ def _args(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Namespace:
             "status": "pass",
             "terminal_binding": {
                 "terminal_result_binding_verified": True,
-                "training_git": expected_training_git,
+                "training_git": {
+                    "revision": QUALITY_GIT["revision"],
+                    "branch": QUALITY_GIT["branch"],
+                    "tracked_dirty": False,
+                },
                 "authoritative_terminal_verification": {
                     "status": "verified",
                     "quality_project": expected_training_git,
@@ -300,6 +304,29 @@ def test_chain_rejects_followup_that_does_not_bind_authoritative_exposure(
     )["sha256"]
 
     with pytest.raises(ValueError, match="follow-up decision binding differs"):
+        chain.run_locked(args, require_detached=False)
+
+    paths = chain._output_paths(args.quality_output_root.resolve())
+    assert not paths["qualification"].exists()
+    assert not paths["terminal"].exists()
+
+
+def test_chain_rejects_exposure_quality_project_tree_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args = _args(tmp_path, monkeypatch)
+    _mock_builders(monkeypatch)
+    exposure = json.loads(args.authoritative_exposure.read_text(encoding="utf-8"))
+    exposure["terminal_binding"]["authoritative_terminal_verification"][
+        "quality_project"
+    ]["tree"] = "f" * 40
+    args.expected_authoritative_exposure_sha256 = _write(
+        args.authoritative_exposure,
+        exposure,
+    )["sha256"]
+
+    with pytest.raises(ValueError, match="terminal exposure binding differs"):
         chain.run_locked(args, require_detached=False)
 
     paths = chain._output_paths(args.quality_output_root.resolve())
