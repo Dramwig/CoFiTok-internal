@@ -14,6 +14,7 @@ from cofitok.configs import LossConfig, load_config
 from cofitok.diffusion import DiffusionSchedule
 from cofitok.generation.min_snr_pilot import (
     DATASET_IDENTITY_SHA256,
+    DIRECT_EXECUTION_USER_INSTRUCTION,
     EFFECTIVE_BATCH_SIZE,
     EXECUTION_BOUNDARY,
     GAMMA,
@@ -304,7 +305,7 @@ def test_execution_gate_is_bounded_and_rejects_gpu_contention() -> None:
         "authorization_record": {
             "scope": "matched_min_snr_50k_pilot_only",
             "approved_by": "user",
-            "instruction": "Run needed bounded experiments directly.",
+            "instruction": DIRECT_EXECUTION_USER_INSTRUCTION,
             "direct_execution_without_repeated_prompt": True,
             "full_300k_launch_allowed": False,
         },
@@ -315,10 +316,22 @@ def test_execution_gate_is_bounded_and_rejects_gpu_contention() -> None:
     ) == gate
     assert gate["authorization_boundary"] == EXECUTION_BOUNDARY
     assert gate["authorization_boundary"]["continuation_beyond_50000_allowed"] is False
+    tampered = deepcopy(gate)
+    tampered["authorization_record"]["instruction"] = "not an approval"
+    with pytest.raises(ValueError, match="authorization record differs"):
+        validate_execution_gate(
+            tampered,
+            preparation=preparation,
+            preparation_identity=identity,
+        )
     busy = deepcopy(kwargs)
     busy["gpu_compute_processes"] = [{"pid": 42}]
     with pytest.raises(ValueError, match="exclusivity"):
         build_execution_gate(**busy)
+    wrong_instruction = deepcopy(kwargs)
+    wrong_instruction["authorization_record"]["instruction"] = "not an approval"
+    with pytest.raises(ValueError, match="authorization record differs"):
+        build_execution_gate(**wrong_instruction)
 
 
 def _execution_gate(preparation: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -345,7 +358,7 @@ def _execution_gate(preparation: dict[str, Any]) -> tuple[dict[str, Any], dict[s
         authorization_record={
             "scope": "matched_min_snr_50k_pilot_only",
             "approved_by": "user",
-            "instruction": "Run needed bounded experiments directly.",
+            "instruction": DIRECT_EXECUTION_USER_INSTRUCTION,
             "direct_execution_without_repeated_prompt": True,
             "full_300k_launch_allowed": False,
         },

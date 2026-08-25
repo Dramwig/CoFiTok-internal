@@ -14,6 +14,7 @@ RESULT_SCHEMA = "cofitok_matched_min_snr_pilot_result_v1"
 LEGACY_REVISION = "cf0e5faa94bf4ab38d947b921935b3b765b5537a"
 LEGACY_BRANCH = "scale/generation-stability-quality-bridge-100k"
 PILOT_BRANCH = "scale/generation-min-snr-matched-pilot-v1-20260825"
+DIRECT_EXECUTION_USER_INSTRUCTION = "之后不要我授权你直接运行需要的实验"
 DATASET_IDENTITY_SHA256 = (
     "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659"
 )
@@ -139,6 +140,19 @@ def _require_false(value: Any, *, fields: tuple[str, ...], label: str) -> None:
     for field in fields:
         if row.get(field) is not False:
             raise ValueError(f"{label} permits {field}")
+
+
+def _validate_execution_authorization(value: Any) -> dict[str, Any]:
+    authorization = _mapping(value, label="authorization record")
+    if (
+        authorization.get("scope") != "matched_min_snr_50k_pilot_only"
+        or authorization.get("approved_by") != "user"
+        or authorization.get("instruction") != DIRECT_EXECUTION_USER_INSTRUCTION
+        or authorization.get("direct_execution_without_repeated_prompt") is not True
+        or authorization.get("full_300k_launch_allowed") is not False
+    ):
+        raise ValueError("scoped user authorization record differs")
+    return copy.deepcopy(dict(authorization))
 
 
 def _validate_post_diagnostic_decision(value: Any) -> None:
@@ -578,15 +592,7 @@ def build_execution_gate(
         or int(free_bytes) < MIN_FREE_BYTES
     ):
         raise ValueError("live prelaunch exclusivity or capacity gate failed")
-    authorization = _mapping(authorization_record, label="authorization record")
-    if (
-        authorization.get("scope") != "matched_min_snr_50k_pilot_only"
-        or authorization.get("approved_by") != "user"
-        or authorization.get("direct_execution_without_repeated_prompt") is not True
-        or authorization.get("full_300k_launch_allowed") is not False
-        or not str(authorization.get("instruction", "")).strip()
-    ):
-        raise ValueError("scoped user authorization record differs")
+    authorization = _validate_execution_authorization(authorization_record)
     return {
         "schema": EXECUTION_GATE_SCHEMA,
         "role": "generation_matched_min_snr_training_pilot_execution_gate",
@@ -643,6 +649,7 @@ def validate_execution_gate(
         raise ValueError("Min-SNR pilot execution gate contract differs")
     contract = _mapping(report.get("execution_contract"), label="execution contract")
     live = _mapping(report.get("live_prelaunch"), label="live prelaunch")
+    _validate_execution_authorization(report.get("authorization_record"))
     if (
         contract.get("output_root") != prepared["output_root"]
         or contract.get("methods") != list(METHODS)

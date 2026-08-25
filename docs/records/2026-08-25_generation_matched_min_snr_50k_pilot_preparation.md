@@ -18,8 +18,12 @@ The source-bound post-diagnostic decision is:
 - terminal status: `hold`
 - `generation_advantage_proven=false`
 
-The decision is preparation evidence, not an execution authorization. A fresh,
-source-bound live execution gate remains mandatory.
+The decision is preparation evidence, not an execution authorization. The user
+subsequently supplied the standing instruction
+`之后不要我授权你直接运行需要的实验`, meaning that needed experiments should run
+directly without repeated authorization prompts. The pilot execution gate must
+bind that exact instruction and its own narrow scope; arbitrary non-empty text
+is rejected. A fresh, source-bound live execution gate remains mandatory.
 
 ## Controlled treatment
 
