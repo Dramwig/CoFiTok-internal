@@ -1,3 +1,4 @@
+import hashlib
 import json
 import random
 from dataclasses import replace
@@ -508,6 +509,59 @@ def test_prune_checkpoints_removes_matching_integrity_manifests(tmp_path) -> Non
     assert not checkpoint_integrity_path(old).exists()
     assert latest.exists()
     assert checkpoint_integrity_path(latest).exists()
+
+
+@pytest.mark.parametrize(
+    ("field", "expected_message"),
+    [
+        ("checkpoint_sha256", "Checkpoint integrity SHA256 is malformed"),
+        (
+            "runtime_environment_sha256",
+            "Checkpoint runtime environment SHA256 is malformed",
+        ),
+        ("dataset_identity_sha256", "Checkpoint dataset identity SHA256 is malformed"),
+        (
+            "authorization_gate_sha256",
+            "Checkpoint authorization gate SHA256 is malformed",
+        ),
+        (
+            "authorization_gate_identity_sha256",
+            "Checkpoint authorization gate identity SHA256 is malformed",
+        ),
+    ],
+)
+def test_verify_training_checkpoint_rejects_non_hex_digests(
+    tmp_path, field, expected_message
+) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    checkpoint.write_bytes(b"checkpoint")
+    integrity = {
+        "schema_version": 1,
+        "checkpoint": checkpoint.name,
+        "checkpoint_bytes": checkpoint.stat().st_size,
+        "checkpoint_sha256": hashlib.sha256(checkpoint.read_bytes()).hexdigest(),
+        "checkpoint_format_version": 1,
+        "step": 1,
+    }
+    if field.startswith("authorization_gate"):
+        integrity.update(
+            {
+                "authorization_stage": "scaling",
+                "authorization_decision": "promote_to_full_imagenet256",
+                "authorization_gate_bytes": 1,
+                "authorization_gate_sha256": "a" * 64,
+                "authorization_gate_identity_sha256": "a" * 64,
+            }
+        )
+        integrity[field] = "g" * 64
+    else:
+        integrity[field] = "g" * 64
+    checkpoint_integrity_path(checkpoint).write_text(
+        json.dumps(integrity), encoding="utf-8"
+    )
+
+    with pytest.raises(ValueError, match=expected_message):
+        verify_training_checkpoint(checkpoint)
 
 
 def test_prune_checkpoints_keeps_protected_milestones_and_recent_recovery_points(

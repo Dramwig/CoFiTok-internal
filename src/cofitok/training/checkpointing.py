@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import re
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,15 @@ from cofitok.training.ema import ExponentialMovingAverage
 
 CHECKPOINT_FORMAT_VERSION = 1
 CHECKPOINT_INTEGRITY_VERSION = 1
+SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
+
+
+def _validate_sha256(value: Any, *, label: str) -> str:
+    """Require serialized digests to be canonical lowercase SHA256 values."""
+
+    if not isinstance(value, str) or SHA256_PATTERN.fullmatch(value) is None:
+        raise ValueError(f"{label} is malformed")
+    return value
 
 
 def _config_mismatch_paths(
@@ -89,18 +99,24 @@ def verify_training_checkpoint(path: str | Path) -> dict[str, Any]:
         raise ValueError(
             f"Checkpoint size mismatch: expected {expected_bytes}, found {actual_bytes}"
         )
-    expected_sha256 = str(integrity.get("checkpoint_sha256", ""))
-    if len(expected_sha256) != 64:
-        raise ValueError("Checkpoint integrity SHA256 is malformed")
+    expected_sha256 = _validate_sha256(
+        integrity.get("checkpoint_sha256"), label="Checkpoint integrity SHA256"
+    )
     actual_sha256 = file_sha256(checkpoint)
     if actual_sha256 != expected_sha256:
         raise ValueError("Checkpoint SHA256 mismatch")
     runtime_environment_sha = integrity.get("runtime_environment_sha256")
-    if runtime_environment_sha is not None and len(str(runtime_environment_sha)) != 64:
-        raise ValueError("Checkpoint runtime environment SHA256 is malformed")
+    if runtime_environment_sha is not None:
+        _validate_sha256(
+            runtime_environment_sha,
+            label="Checkpoint runtime environment SHA256",
+        )
     dataset_identity_sha = integrity.get("dataset_identity_sha256")
-    if dataset_identity_sha is not None and len(str(dataset_identity_sha)) != 64:
-        raise ValueError("Checkpoint dataset identity SHA256 is malformed")
+    if dataset_identity_sha is not None:
+        _validate_sha256(
+            dataset_identity_sha,
+            label="Checkpoint dataset identity SHA256",
+        )
     git_keys = {"git_revision", "git_branch", "git_dirty"}
     present_git_keys = git_keys & integrity.keys()
     if present_git_keys and present_git_keys != git_keys:
@@ -126,10 +142,17 @@ def verify_training_checkpoint(path: str | Path) -> dict[str, Any]:
         integrity["authorization_stage"] != "scaling"
         or integrity["authorization_decision"] != "promote_to_full_imagenet256"
         or int(integrity["authorization_gate_bytes"]) < 1
-        or len(str(integrity["authorization_gate_sha256"])) != 64
-        or len(str(integrity["authorization_gate_identity_sha256"])) != 64
     ):
         raise ValueError("Checkpoint training-authorization metadata is malformed")
+    if present_authorization_keys:
+        _validate_sha256(
+            integrity["authorization_gate_sha256"],
+            label="Checkpoint authorization gate SHA256",
+        )
+        _validate_sha256(
+            integrity["authorization_gate_identity_sha256"],
+            label="Checkpoint authorization gate identity SHA256",
+        )
     return integrity
 
 
