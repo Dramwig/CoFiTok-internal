@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from typing import Any
 
+from cofitok.image_integrity import is_valid_png
 from cofitok.reporting import file_sha256, write_json_report
 
 
@@ -292,6 +293,28 @@ def reusable_completed_report(
     )
 
 
+def _manifest_png_spec(manifest: dict[str, Any]) -> tuple[int, int, int]:
+    request = manifest.get("request")
+    if not isinstance(request, dict):
+        raise ValueError("inference manifest request is malformed")
+    shape = request.get("image_shape")
+    if (
+        not isinstance(shape, list)
+        or len(shape) != 3
+        or any(
+            isinstance(value, bool)
+            or not isinstance(value, int)
+            or value < 1
+            for value in shape
+        )
+    ):
+        raise ValueError("inference manifest image_shape is malformed")
+    channels, height, width = shape
+    if channels not in {1, 3, 4}:
+        raise ValueError("inference manifest image_shape channels are unsupported")
+    return width, height, channels
+
+
 def validate_completed_inference_evidence(
     report: dict[str, Any],
     *,
@@ -356,6 +379,7 @@ def validate_completed_inference_evidence(
         root,
         expected_outputs=expected_outputs,
     )
+    png_width, png_height, png_channels = _manifest_png_spec(manifest)
     try:
         progress_attempts = int(progress.get("attempt_count", -1))
         progress_elapsed = float(progress.get("cumulative_elapsed_seconds", -1.0))
@@ -404,6 +428,15 @@ def validate_completed_inference_evidence(
         digest = str(row.get("sha256", ""))
         if not path.is_file() or len(digest) != 64 or file_sha256(path) != digest:
             raise ValueError("inference report output digest differs from physical PNG")
+        if not is_valid_png(
+            path,
+            width=png_width,
+            height=png_height,
+            channels=png_channels,
+        ):
+            raise ValueError(
+                "inference report output PNG format or shape differs from the manifest"
+            )
     if seen != set(expected_by_name):
         raise ValueError("inference report output set is incomplete")
     return {

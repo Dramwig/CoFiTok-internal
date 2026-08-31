@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 import torch
+from PIL import Image
 
 import scripts.infer_generation as inference_cli
 from cofitok.configs import (
@@ -24,6 +25,7 @@ from cofitok.generation import GenerationRequest, GenerationSession
 from cofitok.generation.protocol import INFERENCE_API, sampling_protocol_contract
 from cofitok.inference_replay import (
     INFERENCE_REPORT_SCHEMA_VERSION,
+    file_identity,
     validate_completed_inference_evidence,
 )
 from cofitok.models import CoFiTokTiny
@@ -463,6 +465,33 @@ def test_completed_inference_evidence_rehashes_physical_pngs(tmp_path) -> None:
 
     with pytest.raises(ValueError, match="digest differs from physical PNG"):
         validate_completed_inference_evidence(report, expected_root=output_dir)
+
+
+def test_completed_inference_evidence_rejects_manifest_shape_mismatch(tmp_path) -> None:
+    checkpoint = _checkpoint(tmp_path)
+    output_dir = tmp_path / "wrong_shape"
+    report = run_inference(
+        _inference_args(checkpoint, output_dir)
+    )
+    target = Path(report["outputs"][0]["path"])
+    Image.new("RGB", (2, 2), color=(0, 0, 0)).save(target, format="PNG")
+    replacement_sha = file_sha256(target)
+
+    progress_path = output_dir / "inference_progress.json"
+    progress = json.loads(progress_path.read_text(encoding="utf-8"))
+    progress["outputs"][0]["sha256"] = replacement_sha
+    write_json_report(progress_path, progress)
+    report["outputs"][0]["sha256"] = replacement_sha
+    report["progress"] = file_identity(progress_path)
+    write_json_report(output_dir / "inference_report.json", report)
+
+    with pytest.raises(ValueError, match="PNG format or shape"):
+        validate_completed_inference_evidence(
+            json.loads(
+                (output_dir / "inference_report.json").read_text(encoding="utf-8")
+            ),
+            expected_root=output_dir,
+        )
 
 
 def test_formal_sampling_cli_runs_checkpoint_to_png_and_report(tmp_path) -> None:
