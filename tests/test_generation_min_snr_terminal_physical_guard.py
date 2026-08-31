@@ -541,7 +541,9 @@ def _sampling_case(tmp_path: Path) -> dict[str, Any]:
     progress_path.write_text(
         json.dumps(
             {
-                "schema_version": SAMPLING_REPORT_SCHEMA_VERSION,
+                # sampling_progress.json uses its own schema version (v1),
+                # rather than the sampling_report schema (v6).
+                "schema_version": 1,
                 "status": "completed",
                 "sampling_manifest_sha256": manifest_sha,
                 "completed_samples": 2,
