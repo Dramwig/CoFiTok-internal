@@ -405,6 +405,41 @@ def test_inference_cli_resume_regenerates_only_corrupt_output(tmp_path) -> None:
     assert (file_sha256(untouched), untouched.stat().st_mtime_ns) == untouched_identity
 
 
+def test_inference_cli_resume_regenerates_wrong_shape_output(tmp_path, monkeypatch) -> None:
+    checkpoint = _checkpoint(tmp_path)
+    output_dir = tmp_path / "wrong_shape_resume"
+    args = _inference_args(checkpoint, output_dir)
+    original_save = inference_cli.save_tensor_png
+    save_calls = 0
+
+    def interrupt_second_save(image, path, *, overwrite=False):
+        nonlocal save_calls
+        save_calls += 1
+        if save_calls == 2:
+            raise RuntimeError("simulated inference interruption")
+        return original_save(image, path, overwrite=overwrite)
+
+    monkeypatch.setattr(inference_cli, "save_tensor_png", interrupt_second_save)
+    with pytest.raises(RuntimeError, match="simulated inference interruption"):
+        run_inference(args)
+
+    progress_path = output_dir / "inference_progress.json"
+    progress = json.loads(progress_path.read_text(encoding="utf-8"))
+    target = Path(progress["outputs"][0]["path"])
+    Image.new("RGB", (2, 2), color=(0, 0, 0)).save(target, format="PNG")
+    progress["outputs"][0]["sha256"] = file_sha256(target)
+    write_json_report(progress_path, progress)
+
+    monkeypatch.setattr(inference_cli, "save_tensor_png", original_save)
+    args.resume = True
+    recovered = run_inference(args)
+
+    assert recovered["status"] == "completed"
+    assert recovered["attempt_count"] == 2
+    with Image.open(target) as image:
+        assert image.size == (8, 8)
+
+
 def test_inference_cli_completed_resume_rejects_progress_tamper(tmp_path) -> None:
     checkpoint = _checkpoint(tmp_path)
     output_dir = tmp_path / "tampered_progress"

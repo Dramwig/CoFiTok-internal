@@ -311,6 +311,7 @@ def _run_inference_locked(args: argparse.Namespace) -> dict[str, Any]:
         progress_path,
         manifest_identity=manifest_identity,
         expected_outputs=expected_outputs,
+        image_shape=request["image_shape"],
         resume=resume,
         overwrite=overwrite,
     )

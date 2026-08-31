@@ -95,6 +95,28 @@ def _expected_index(
     return indexed
 
 
+def _png_spec_from_shape(
+    shape: Any,
+    *,
+    name: str,
+) -> tuple[int, int, int]:
+    if (
+        not isinstance(shape, (list, tuple))
+        or len(shape) != 3
+        or any(
+            isinstance(value, bool)
+            or not isinstance(value, int)
+            or value < 1
+            for value in shape
+        )
+    ):
+        raise ValueError(f"{name} image_shape is malformed")
+    channels, height, width = shape
+    if channels not in {1, 3, 4}:
+        raise ValueError(f"{name} image_shape channels are unsupported")
+    return width, height, channels
+
+
 def validate_output_directory_layout(
     root: str | Path,
     *,
@@ -138,11 +160,16 @@ def load_progress(
     *,
     manifest_identity: dict[str, Any],
     expected_outputs: list[dict[str, Any]],
+    image_shape: list[int],
     resume: bool,
     overwrite: bool = False,
 ) -> dict[str, Any]:
     target = reject_symlink_chain(path, name="inference progress")
     expected = _expected_index(expected_outputs)
+    png_width, png_height, png_channels = _png_spec_from_shape(
+        image_shape,
+        name="inference progress",
+    )
     if target.exists() and not target.is_file():
         raise ValueError(f"inference progress is not a regular file: {target}")
     if not target.is_file():
@@ -199,7 +226,16 @@ def load_progress(
         output_path = reject_symlink_chain(row["path"], name="inference output")
         if output_path.exists() and not output_path.is_file():
             raise ValueError("inference output path is not a regular file")
-        if output_path.is_file() and file_sha256(output_path) == sha256:
+        if (
+            output_path.is_file()
+            and file_sha256(output_path) == sha256
+            and is_valid_png(
+                output_path,
+                width=png_width,
+                height=png_height,
+                channels=png_channels,
+            )
+        ):
             valid[filename] = dict(row)
     completed_count = int(progress.get("completed_output_count", -1))
     if completed_count != len(rows):
@@ -297,22 +333,10 @@ def _manifest_png_spec(manifest: dict[str, Any]) -> tuple[int, int, int]:
     request = manifest.get("request")
     if not isinstance(request, dict):
         raise ValueError("inference manifest request is malformed")
-    shape = request.get("image_shape")
-    if (
-        not isinstance(shape, list)
-        or len(shape) != 3
-        or any(
-            isinstance(value, bool)
-            or not isinstance(value, int)
-            or value < 1
-            for value in shape
-        )
-    ):
-        raise ValueError("inference manifest image_shape is malformed")
-    channels, height, width = shape
-    if channels not in {1, 3, 4}:
-        raise ValueError("inference manifest image_shape channels are unsupported")
-    return width, height, channels
+    return _png_spec_from_shape(
+        request.get("image_shape"),
+        name="inference manifest",
+    )
 
 
 def validate_completed_inference_evidence(
