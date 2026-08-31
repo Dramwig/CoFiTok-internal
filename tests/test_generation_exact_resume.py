@@ -135,6 +135,71 @@ def test_segmented_resume_matches_uninterrupted_training_exactly(tmp_path) -> No
     assert {row["validation_num_images"] for row in rows} == {2}
 
 
+def test_resume_target_steps_allows_only_explicit_horizon_extension(tmp_path) -> None:
+    output = tmp_path / "extended_resume"
+    source_config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    source_config_path = tmp_path / "source_steps_2.json"
+    source_config_path.write_text(json.dumps(source_config), encoding="utf-8")
+
+    target_config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    target_config["name"] = "generation_smoke_random_cpu_extended"
+    target_config["runtime"]["steps"] = 3
+    target_config_path = tmp_path / "target_steps_3.json"
+    target_config_path.write_text(json.dumps(target_config), encoding="utf-8")
+
+    _run(output, "--stop-after-steps", "1", config=source_config_path)
+
+    _run(
+        output,
+        "--resume",
+        "auto",
+        "--resume-target-steps",
+        "3",
+        config=target_config_path,
+    )
+
+    checkpoint = torch.load(
+        output / "checkpoint_step_00000003.pt",
+        map_location="cpu",
+        weights_only=False,
+    )
+    assert checkpoint["step"] == 3
+    assert checkpoint["config"]["runtime"]["steps"] == 3
+    report = json.loads((output / "training_report.json").read_text(encoding="utf-8"))
+    assert report["completed_steps"] == 3
+    assert report["training_complete"] is True
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [
+        ("--resume-target-steps", "1"),
+        ("--resume-target-steps", "3", "--micro-batch-size", "1"),
+    ],
+)
+def test_resume_target_steps_rejects_invalid_horizon_or_batch_override(
+    tmp_path, extra: tuple[str, ...]
+) -> None:
+    output = tmp_path / "invalid_extended_resume"
+    source_config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    source_config_path = tmp_path / "source_steps_2.json"
+    source_config_path.write_text(json.dumps(source_config), encoding="utf-8")
+
+    target_config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    target_config["name"] = "generation_smoke_random_cpu_extended"
+    target_config["runtime"]["steps"] = 3
+    target_config_path = tmp_path / "target_steps_3.json"
+    target_config_path.write_text(json.dumps(target_config), encoding="utf-8")
+
+    _run(output, "--stop-after-steps", "1", config=source_config_path)
+
+    with pytest.raises(subprocess.CalledProcessError):
+        _run(output, "--resume", "auto", *extra, config=target_config_path)
+
+    assert json.loads((output / "latest.json").read_text(encoding="utf-8"))["step"] == 1
+    assert not (output / "checkpoint_step_00000002.pt").exists()
+
+
 def test_controlled_resume_accepts_only_a_clean_ancestor_revision() -> None:
     current_revision = _git("rev-parse", "HEAD")
     source_revision = _git("rev-parse", "HEAD^")

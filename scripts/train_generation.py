@@ -49,6 +49,7 @@ from cofitok.training.checkpointing import (
     prune_checkpoints,
     resolve_latest_checkpoint,
     save_training_checkpoint,
+    verify_training_checkpoint,
 )
 from cofitok.training.runtime import (
     autocast_context,
@@ -60,6 +61,24 @@ from cofitok.utils.seed import seed_everything
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FULL_GIT_REVISION_PATTERN = re.compile(r"^[0-9a-f]{40}$")
+
+
+def _config_mismatch_paths(
+    expected: object,
+    actual: object,
+    *,
+    path: str = "config",
+) -> list[str]:
+    if isinstance(expected, dict) and isinstance(actual, dict):
+        mismatches: list[str] = []
+        for key in sorted(set(expected) | set(actual), key=str):
+            child = f"{path}.{key}"
+            if key not in expected or key not in actual:
+                mismatches.append(child)
+                continue
+            mismatches.extend(_config_mismatch_paths(expected[key], actual[key], path=child))
+        return mismatches
+    return [] if expected == actual else [path]
 
 
 class StopController:
@@ -94,6 +113,15 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=0,
         help="Stop cleanly after N optimizer steps without changing the configured LR schedule.",
+    )
+    parser.add_argument(
+        "--resume-target-steps",
+        type=int,
+        default=0,
+        help=(
+            "Explicitly extend a controlled checkpoint resume to this horizon. "
+            "Only runtime.steps may differ from the checkpoint config."
+        ),
     )
     parser.add_argument(
         "--benchmark-steps",
@@ -483,11 +511,27 @@ def main() -> None:
             or args.resume_source_revision
             or args.max_steps > 0
             or args.stop_after_steps > 0
+            or args.resume_target_steps > 0
         ):
             raise ValueError("benchmark mode cannot resume or override the training horizon")
     elif args.benchmark_output:
         raise ValueError("--benchmark-output requires --benchmark-steps")
     config = load_config(args.config)
+    if args.resume_target_steps > 0:
+        if not args.resume:
+            raise ValueError("--resume-target-steps requires --resume")
+        if args.max_steps > 0:
+            raise ValueError("--resume-target-steps cannot be combined with --max-steps")
+        if args.micro_batch_size > 0 or args.gradient_accumulation_steps > 0:
+            raise ValueError(
+                "--resume-target-steps cannot change the effective batch configuration"
+            )
+        if args.resume_target_steps < 1:
+            raise ValueError("--resume-target-steps must be positive")
+        if config.runtime.steps != args.resume_target_steps:
+            raise ValueError(
+                "--resume-target-steps must match the configured target horizon"
+            )
     if args.max_steps > 0:
         config = replace(config, runtime=replace(config.runtime, steps=args.max_steps))
     if args.micro_batch_size > 0:
@@ -523,6 +567,34 @@ def main() -> None:
         raise ValueError("--resume-source-revision requires --resume")
     if resume_path is None:
         ensure_fresh_training_output(output_dir)
+    expected_checkpoint_config = config_to_dict(config)
+    if args.resume_target_steps > 0:
+        if resume_path is None:
+            raise ValueError("--resume-target-steps requires a resolved checkpoint")
+        verify_training_checkpoint(resume_path)
+        source_payload = torch.load(
+            resume_path,
+            map_location="cpu",
+            weights_only=False,
+        )
+        source_config = source_payload.get("config")
+        if not isinstance(source_config, dict):
+            raise ValueError("extension source checkpoint is missing its config")
+        mismatches = _config_mismatch_paths(
+            config_to_dict(config),
+            source_config,
+        )
+        allowed_mismatches = {"config.name", "config.runtime.steps"}
+        if set(mismatches) - allowed_mismatches or "config.runtime.steps" not in mismatches:
+            preview = ", ".join(mismatches[:8])
+            raise ValueError(
+                "exposure continuation changes config fields outside name/runtime.steps: "
+                + preview
+            )
+        source_steps = int(source_config.get("runtime", {}).get("steps", -1))
+        if source_steps < 1 or source_steps >= args.resume_target_steps:
+            raise ValueError("extension source config horizon is not below its target")
+        expected_checkpoint_config = source_config
     stop = StopController()
     signal.signal(signal.SIGTERM, stop.request)
     signal.signal(signal.SIGINT, stop.request)
@@ -598,7 +670,10 @@ def main() -> None:
             scheduler=scheduler,
             scaler=scaler,
             restore_rng=True,
-            expected_config=config_to_dict(config),
+            # A bounded exposure continuation changes only the explicit
+            # runtime horizon; the source checkpoint still receives the
+            # original full-config exact-resume comparison.
+            expected_config=expected_checkpoint_config,
             expected_runtime_environment=runtime_environment,
             expected_git_provenance=checkpoint_git_provenance,
             expected_dataset_provenance=dataset_provenance,
