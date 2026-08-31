@@ -3,10 +3,23 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
+CHECKOUT_ROOT = Path(__file__).resolve().parents[1]
+for candidate in (CHECKOUT_ROOT, CHECKOUT_ROOT.parent):
+    if (candidate / "paper").is_dir():
+        ROOT = candidate
+        break
+else:
+    ROOT = CHECKOUT_ROOT
+
 MAIN = ROOT / "paper" / "venues" / "aaai27" / "main.tex"
 VENUE_NEUTRAL_MAIN = ROOT / "paper" / "latex" / "main.tex"
+
+pytestmark = pytest.mark.skipif(
+    not MAIN.is_file() or not VENUE_NEUTRAL_MAIN.is_file(),
+    reason="paper tree is not present in this code-only checkout",
+)
 
 
 def test_experiments_has_exactly_setup_results_and_ablations() -> None:

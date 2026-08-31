@@ -56,16 +56,18 @@ release, and process-signal permissions remain false.
 
 ## CPU reproducibility verification
 
-The isolated evidence branch ran the full code suite while excluding only the
-four paper-layout tests that require an outer D:/paper tree:
+The isolated evidence branch ran the full code suite. The paper-layout tests
+now locate a nearby project-level paper tree when present and explicitly skip
+when this is a code-only checkout:
 
-- 1084 passed, 7 skipped in 356.99 seconds;
+- 1084 passed, 11 skipped in 356.99 seconds;
 - compileall for src and scripts passed;
 - git diff --check passed;
 - verification record commit: 511fcc2.
 
-The excluded paper-layout tests fail in a code-only checkout only because the
-sibling paper tree is absent; no generation-system test failed.
+The four paper-layout skips are reported as ``paper tree is not present in this
+code-only checkout``. The other seven skips are environment-bound (POSIX flock,
+process groups, symlinks, or CUDA); no generation-system test failed.
 
 ## Completion verdict
 
