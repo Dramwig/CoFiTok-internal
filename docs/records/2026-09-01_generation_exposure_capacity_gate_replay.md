@@ -42,6 +42,15 @@ the authoritative replay therefore runs on Linux where those paths exist.
 On the isolated branch, the exposure-authorization and continuation suites
 reported `7 passed, 1 skipped`; `compileall` and `git diff --check` passed.
 
+An expanded CPU-only run of the complete code checkout, excluding the four
+`tests/test_aaai27_experiment_structure.py` cases that intentionally read the
+outer `D:\paper` tree, reported `1084 passed, 7 skipped` in `356.99` seconds.
+The seven skips are environment-bound (POSIX flock/process semantics,
+symlinks, or CUDA). Running those four paper-layout tests in this isolated
+code-only checkout fails only because the sibling paper tree is absent; no
+generation-system test failed. `python -m compileall -q src scripts` and
+`git diff --check` both exited successfully.
+
 The next GPU action still requires a separately created exact-stage
 authorization. Until then, `generation_advantage_proven=false` and the
 terminal scientific status remains `hold`.
