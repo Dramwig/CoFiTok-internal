@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import Any
 
 from cofitok.configs import load_config
-from cofitok.generation import SAMPLING_REPORT_SCHEMA_VERSION
 from cofitok.generation import min_snr_pilot
 from cofitok.generation_class_fidelity import (
     CLASS_FIDELITY_CATEGORIES_SHA256,
@@ -51,6 +50,8 @@ TERMINAL_GUARD_SCHEMA = "cofitok_matched_min_snr_terminal_physical_guard_v1"
 TERMINAL_GUARD_ROLE = "generation_matched_min_snr_terminal_physical_guard"
 TERMINAL_GUARD_DIRECTORY = "terminal_physical_guard_v1"
 TERMINAL_GUARD_FILENAME = "terminal_physical_guard.json"
+# sampling_progress.json has its own schema, separate from sampling_report.json.
+SAMPLING_PROGRESS_SCHEMA_VERSION = 1
 REAL_IMAGE_COUNT = 50_000
 CANONICAL_REAL_SET = Path(
     "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val"
@@ -1226,7 +1227,7 @@ def _verify_sampling_evidence(
     )
     if (
         int(progress_payload.get("schema_version", -1))
-        != SAMPLING_REPORT_SCHEMA_VERSION
+        != SAMPLING_PROGRESS_SCHEMA_VERSION
         or progress.get("status") != "completed"
         or int(progress.get("invocation", -1)) < 1
         or int(progress.get("completed_samples", -1))
