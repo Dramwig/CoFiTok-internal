@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import os
 import json
 import subprocess
@@ -17,6 +18,7 @@ from cofitok.configs import config_from_dict, load_config
 from cofitok.environment import runtime_environment_sha256
 from scripts.train_generation import (
     _augment_training_images,
+    _build_resume_revision_transition,
     _resolve_resume_git_provenance,
     _validate_config,
     _validate_existing_resume_revision_transition,
@@ -234,6 +236,42 @@ def test_controlled_resume_accepts_only_a_clean_ancestor_revision() -> None:
             {**current_git, "dirty": True},
             source_revision,
         )
+
+
+def test_controlled_resume_records_source_branch_when_target_branch_differs(tmp_path) -> None:
+    checkpoint = tmp_path / "checkpoint_step_00000001.pt"
+    checkpoint.write_bytes(b"checkpoint")
+    sidecar = checkpoint.with_name(f"{checkpoint.name}.integrity.json")
+    sidecar.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "checkpoint": checkpoint.name,
+                "checkpoint_bytes": checkpoint.stat().st_size,
+                "checkpoint_sha256": hashlib.sha256(checkpoint.read_bytes()).hexdigest(),
+                "checkpoint_format_version": 1,
+                "step": 1,
+                "git_revision": "a" * 40,
+                "git_branch": "scale/generation-stability-quality-bridge-100k",
+                "git_dirty": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+    transition = {
+        "schema_version": 1,
+        "reason": "sampler_rng_state_device_compatibility",
+        "source_revision": "a" * 40,
+        "target_revision": "b" * 40,
+        "branch": "analysis/generation-exposure-continuation-v1",
+    }
+
+    built = _build_resume_revision_transition(transition, checkpoint)
+
+    assert built["branch"] == "analysis/generation-exposure-continuation-v1"
+    assert built["source_checkpoint"]["git_branch"] == (
+        "scale/generation-stability-quality-bridge-100k"
+    )
 
 
 def test_existing_resume_transition_must_target_current_revision() -> None:

@@ -422,8 +422,9 @@ def _build_resume_revision_transition(
         raise ValueError("resume checkpoint integrity manifest must be an object")
     if (
         integrity.get("git_revision") != transition["source_revision"]
-        or integrity.get("git_branch") != transition["branch"]
         or integrity.get("git_dirty") is not False
+        or not isinstance(integrity.get("git_branch"), str)
+        or not integrity.get("git_branch")
     ):
         raise ValueError("resume checkpoint does not match the controlled source revision")
     return {
@@ -437,6 +438,7 @@ def _build_resume_revision_transition(
             "integrity_manifest": integrity_path.resolve().as_posix(),
             "integrity_manifest_bytes": integrity_path.stat().st_size,
             "integrity_manifest_sha256": file_sha256(integrity_path),
+            "git_branch": integrity["git_branch"],
         },
     }
 
@@ -661,7 +663,23 @@ def main() -> None:
     cumulative_peak_vram_before_segment = 0
     metrics_resume_reconciliation = None
     resume_revision_transition = None
+    prebuilt_resume_revision_transition = None
     if resume_path is not None:
+        if requested_resume_transition is not None:
+            # The checkpoint integrity metadata records the source branch.
+            # Build this binding before loading so the checkpoint verifier sees
+            # the source provenance rather than the continuation branch.
+            prebuilt_resume_revision_transition = _build_resume_revision_transition(
+                requested_resume_transition,
+                resume_path,
+            )
+            source_branch = prebuilt_resume_revision_transition["source_checkpoint"].get(
+                "git_branch"
+            )
+            checkpoint_git_provenance = {
+                **checkpoint_git_provenance,
+                "branch": source_branch,
+            }
         checkpoint = load_training_checkpoint(
             resume_path,
             model=base_model,
@@ -702,10 +720,9 @@ def main() -> None:
                 raise ValueError(
                     "checkpoint already contains a resume revision transition"
                 )
-            resume_revision_transition = _build_resume_revision_transition(
-                requested_resume_transition,
-                resume_path,
-            )
+            resume_revision_transition = prebuilt_resume_revision_transition
+            if resume_revision_transition is None:
+                raise AssertionError("controlled resume transition was not prebuilt")
         elif existing_resume_transition is not None:
             resume_revision_transition = _validate_existing_resume_revision_transition(
                 existing_resume_transition,

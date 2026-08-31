@@ -1,0 +1,557 @@
+"""Fail-closed audit for the bounded 100K-to-110K exposure continuation."""
+
+from __future__ import annotations
+
+import copy
+import json
+import math
+from collections.abc import Mapping
+from pathlib import Path
+from typing import Any
+
+from cofitok.generation.exposure_capacity_authorization import (
+    AUTHORIZATION_BOUNDARY,
+    EVALUATION_CONTRACT,
+    SOURCE_CHECKOUT,
+    TARGET_STEP,
+    identity,
+    read_object,
+    validate_authorization_contract,
+)
+from cofitok.inference_replay import reject_symlink_chain
+from cofitok.image_integrity import sample_set_sha256
+from cofitok.reporting import file_sha256, write_json_report
+from cofitok.training.checkpointing import resolve_latest_checkpoint, verify_training_checkpoint
+
+
+RESULT_SCHEMA = "cofitok_generation_exposure_capacity_continuation_result_v1"
+RESULT_ROLE = "bounded_exposure_capacity_continuation_result"
+SOURCE_STEP = 100_000
+EXPECTED_IMAGES_SEEN = TARGET_STEP * 64
+EXPECTED_SAMPLING = copy.deepcopy(EVALUATION_CONTRACT)
+EXPECTED_PREFIXES = {"cofitok": 8, "dense_identity": 1}
+
+
+def _object(value: Any, name: str) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise ValueError(f"{name} must be a JSON object")
+    return dict(value)
+
+
+def _finite(value: Any, name: str, *, minimum: float | None = None) -> float:
+    try:
+        result = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{name} is not numeric") from exc
+    if not math.isfinite(result) or (minimum is not None and result < minimum):
+        raise ValueError(f"{name} is outside its finite domain")
+    return result
+
+
+def _verified_final_checkpoint(
+    report: Mapping[str, Any],
+    *,
+    method: str,
+    expected_run_dir: Path,
+    report_path: Path,
+    expected_source: Mapping[str, Any],
+    expected_execution_checkout: Mapping[str, Any],
+    expected_config_identity: Mapping[str, Any],
+    expected_dataset_identity_sha256: str,
+    expected_runtime_environment_sha256: str,
+) -> dict[str, Any]:
+    if report.get("training_complete") is not True or report.get("completed_steps") != TARGET_STEP:
+        raise ValueError(f"{method} training report is not a completed 110K continuation")
+    if report.get("target_steps") != TARGET_STEP:
+        raise ValueError(f"{method} training target horizon differs")
+    final_metrics = _object(report.get("final_metrics"), f"{method} final metrics")
+    if final_metrics.get("step") != TARGET_STEP or final_metrics.get("samples_seen") != EXPECTED_IMAGES_SEEN:
+        raise ValueError(f"{method} final metrics exposure differs")
+    config = _object(report.get("config"), f"{method} training config")
+    if config.get("runtime", {}).get("steps") != TARGET_STEP:
+        raise ValueError(f"{method} training config horizon differs")
+    config_identity = _object(expected_config_identity, f"{method} continuation config identity")
+    if report.get("config_path") != config_identity.get("path"):
+        raise ValueError(f"{method} training report config path differs")
+    if config.get("data", {}).get("dataset") != "imagenet_256":
+        raise ValueError(f"{method} training dataset differs")
+    if config.get("data", {}).get("batch_size") != 64:
+        raise ValueError(f"{method} training effective batch differs")
+    git = _object(report.get("git"), f"{method} training Git")
+    if (
+        git.get("revision") != expected_execution_checkout.get("revision")
+        or git.get("branch") != expected_execution_checkout.get("branch")
+        or git.get("dirty") is not False
+    ):
+        raise ValueError(f"{method} training Git provenance differs from execution checkout")
+    dataset = _object(report.get("dataset_provenance"), f"{method} dataset provenance")
+    if dataset.get("identity_sha256") != expected_dataset_identity_sha256 or dataset.get("status") != "pass":
+        raise ValueError(f"{method} dataset provenance differs from authorization")
+    if report.get("runtime_environment_sha256") != expected_runtime_environment_sha256:
+        raise ValueError(f"{method} runtime environment differs from authorization")
+
+    source = _object(expected_source, f"{method} source checkpoint binding")
+    source_checkpoint = _object(source.get("checkpoint"), f"{method} source checkpoint")
+    transition = _object(
+        report.get("resume_revision_transition"),
+        f"{method} resume revision transition",
+    )
+    transition_source = _object(
+        transition.get("source_checkpoint"),
+        f"{method} resume transition source checkpoint",
+    )
+    if (
+        report.get("resume") != source_checkpoint.get("path")
+        or transition.get("schema_version") != 1
+        or transition.get("reason") != "sampler_rng_state_device_compatibility"
+        or transition.get("source_revision") != SOURCE_CHECKOUT["revision"]
+        or transition.get("target_revision") != expected_execution_checkout.get("revision")
+        or transition.get("branch") != expected_execution_checkout.get("branch")
+        or transition_source.get("path") != source_checkpoint.get("path")
+        or transition_source.get("filename") != Path(str(source_checkpoint.get("path"))).name
+        or transition_source.get("bytes") != source_checkpoint.get("bytes")
+        or transition_source.get("sha256") != source_checkpoint.get("sha256")
+        or transition_source.get("step") != SOURCE_STEP
+        or transition_source.get("integrity_manifest")
+        != _object(source.get("integrity_manifest"), f"{method} source sidecar").get("path")
+        or transition_source.get("git_branch") != SOURCE_CHECKOUT["branch"]
+    ):
+        raise ValueError(f"{method} resume provenance differs from the authorized source")
+    if report.get("metrics_resume_reconciliation") is None:
+        raise ValueError(f"{method} metrics resume reconciliation is missing")
+    output_dir = reject_symlink_chain(report.get("output_dir", ""), name=f"{method} training output")
+    if output_dir.resolve() != expected_run_dir.resolve():
+        raise ValueError(f"{method} training output directory differs")
+    latest = expected_run_dir / "latest.json"
+    checkpoint = resolve_latest_checkpoint(expected_run_dir)
+    if latest.resolve() != checkpoint.parent.joinpath("latest.json").resolve():
+        raise ValueError(f"{method} latest pointer path differs")
+    integrity = verify_training_checkpoint(checkpoint)
+    if int(integrity.get("step", -1)) != TARGET_STEP:
+        raise ValueError(f"{method} final checkpoint step differs")
+    latest_payload = read_object(latest, name=f"{method} latest pointer")
+    expected = {
+        "checkpoint": checkpoint.name,
+        "step": TARGET_STEP,
+        "checkpoint_bytes": int(integrity["checkpoint_bytes"]),
+        "checkpoint_sha256": str(integrity["checkpoint_sha256"]),
+        "integrity_manifest": checkpoint.with_name(
+            f"{checkpoint.name}.integrity.json"
+        ).name,
+    }
+    for key, value in expected.items():
+        if latest_payload.get(key) != value:
+            raise ValueError(f"{method} latest pointer {key} differs from checkpoint")
+    latest_report = _object(report.get("latest_checkpoint"), f"{method} report latest checkpoint")
+    if (
+        latest_report.get("checkpoint") != checkpoint.name
+        or latest_report.get("checkpoint_sha256") != integrity["checkpoint_sha256"]
+        or latest_report.get("checkpoint_bytes") != integrity["checkpoint_bytes"]
+        or latest_report.get("step") != TARGET_STEP
+    ):
+        raise ValueError(f"{method} training report latest checkpoint differs")
+    metrics_path = expected_run_dir / "train_metrics.jsonl"
+    if not metrics_path.is_file() or metrics_path.is_symlink():
+        raise ValueError(f"{method} training metrics history is missing")
+    rows: list[dict[str, Any]] = []
+    previous_step = 0
+    for line in metrics_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = _object(json.loads(line), f"{method} training metric row")
+        step = int(row.get("step", -1))
+        samples_seen = int(row.get("samples_seen", -1))
+        if step <= previous_step or samples_seen != step * 64 or step > TARGET_STEP:
+            raise ValueError(f"{method} training metrics are not strictly increasing")
+        previous_step = step
+        rows.append(row)
+    if not rows or rows[-1].get("step") != TARGET_STEP or rows[-1].get("samples_seen") != EXPECTED_IMAGES_SEEN:
+        raise ValueError(f"{method} training metrics do not reach the 110K exposure")
+    if rows[-1] != final_metrics:
+        raise ValueError(f"{method} final metrics are not the canonical metrics tail")
+    return {
+        "report": identity(report_path),
+        "run_dir": expected_run_dir.resolve().as_posix(),
+        "checkpoint": identity(checkpoint),
+        "integrity_manifest": identity(
+            checkpoint.with_name(f"{checkpoint.name}.integrity.json")
+        ),
+        "latest": identity(latest),
+        "git": git,
+        "config": copy.deepcopy(_object(report.get("config"), f"{method} training config")),
+        "metrics": identity(metrics_path),
+        "parameter_count": report.get("parameter_count"),
+    }
+
+
+def _sampling_provenance(
+    report_path: Path,
+    *,
+    expected_checkpoint: Mapping[str, Any],
+    method: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    try:
+        from scripts.evaluate_generation_metrics import find_images, validate_sampling_provenance
+    except ModuleNotFoundError:  # pragma: no cover - direct script invocation fallback
+        from evaluate_generation_metrics import find_images, validate_sampling_provenance
+
+    report = read_object(report_path, name=f"{method} sampling report")
+    if report.get("status") != "completed":
+        raise ValueError(f"{method} sampling is not completed")
+    sampling = _object(report.get("sampling"), f"{method} sampling protocol")
+    expected = {
+        "sample_steps": 100,
+        "num_samples": 10_000,
+        "weights": "ema",
+        "guidance_scale": 1.5,
+        "guidance_rescale": 0.0,
+        "cfg_batch_mode": "batched",
+        "eta": 0.0,
+        "seed": 2027,
+        "start_index": 0,
+        "class_schedule": "balanced_modulo",
+    }
+    for key, value in expected.items():
+        if sampling.get(key) != value:
+            raise ValueError(f"{method} sampling {key} differs from the bounded protocol")
+    if report.get("checkpoint_step") != TARGET_STEP or report.get("checkpoint_sha256") != expected_checkpoint["sha256"]:
+        raise ValueError(f"{method} sampling checkpoint differs from final continuation")
+    if report.get("weights") != "ema":
+        raise ValueError(f"{method} sampling weights are not EMA")
+    prefix = EXPECTED_PREFIXES[method]
+    output_dirs = _object(report.get("output_dirs"), f"{method} sampling output dirs")
+    generated_dir = reject_symlink_chain(
+        output_dirs.get(str(prefix), ""), name=f"{method} generated sample directory"
+    )
+    images = find_images(generated_dir)
+    if len(images) != 10_000:
+        raise ValueError(f"{method} generated sample count differs")
+    provenance = validate_sampling_provenance(report_path, generated_dir, images)
+    if provenance["sampling"] != sampling:
+        raise ValueError(f"{method} sampling protocol differs from validated provenance")
+    if provenance["checkpoint_step"] != TARGET_STEP or provenance["weights"] != "ema":
+        raise ValueError(f"{method} sampling provenance is not the final EMA checkpoint")
+    if provenance["sample_set_sha256"] != sample_set_sha256(images):
+        raise ValueError(f"{method} sample-set digest cannot be reproduced")
+    return report, {
+        "report": identity(report_path),
+        "generated_dir": generated_dir.resolve().as_posix(),
+        "sample_count": len(images),
+        "sample_set_sha256": provenance["sample_set_sha256"],
+        "sampling": copy.deepcopy(sampling),
+        "provenance": provenance,
+    }
+
+
+def _metrics_report(
+    report_path: Path,
+    *,
+    method: str,
+    sampling: Mapping[str, Any],
+    expected_count: int = 10_000,
+) -> dict[str, Any]:
+    report = read_object(report_path, name=f"{method} metrics report")
+    if report.get("status") != "completed" or report.get("protocol") != "torch_fidelity_directory_metrics":
+        raise ValueError(f"{method} metrics report is not completed torch-fidelity evidence")
+    counts = _object(report.get("counts"), f"{method} metrics counts")
+    if counts.get("generated_image_count") != expected_count:
+        raise ValueError(f"{method} metrics generated count differs")
+    if report.get("sample_provenance") != sampling["provenance"]:
+        raise ValueError(f"{method} metrics report is bound to another sampling report")
+    metrics = _object(report.get("metrics"), f"{method} metrics")
+    values = {
+        name: _finite(metrics.get(name), f"{method} {name}", minimum=0.0)
+        for name in (
+            "frechet_inception_distance",
+            "inception_score_mean",
+            "inception_score_std",
+            "precision",
+            "recall",
+        )
+    }
+    if values["inception_score_mean"] <= 0.0 or values["precision"] > 1.0 or values["recall"] > 1.0:
+        raise ValueError(f"{method} distribution metrics are outside their domains")
+    return {
+        "report": identity(report_path),
+        "metrics": values,
+        "counts": counts,
+        "sample_provenance": copy.deepcopy(report["sample_provenance"]),
+    }
+
+
+def _class_report(
+    report_path: Path,
+    *,
+    method: str,
+    sampling: Mapping[str, Any],
+) -> dict[str, Any]:
+    from scripts.evaluate_generation_class_fidelity import validate_class_fidelity_report
+
+    report = read_object(report_path, name=f"{method} class-fidelity report")
+    validate_class_fidelity_report(report)
+    if report.get("sample_provenance") != sampling["provenance"]:
+        raise ValueError(f"{method} class fidelity is bound to another sample set")
+    metrics = _object(report.get("metrics"), f"{method} class-fidelity metrics")
+    if metrics.get("sample_count") != 10_000 or metrics.get("requested_class_count") != 1000:
+        raise ValueError(f"{method} class-fidelity sample/class count differs")
+    return {
+        "report": identity(report_path),
+        "metrics": {
+            "top1_accuracy": _finite(metrics.get("top1_accuracy"), f"{method} class top1"),
+            "top5_accuracy": _finite(metrics.get("top5_accuracy"), f"{method} class top5"),
+            "predicted_class_fraction": _finite(
+                metrics.get("predicted_class_fraction"), f"{method} predicted class fraction"
+            ),
+            "normalized_predicted_class_entropy": _finite(
+                metrics.get("normalized_predicted_class_entropy"),
+                f"{method} class entropy",
+            ),
+        },
+        "sample_provenance": copy.deepcopy(report["sample_provenance"]),
+    }
+
+
+def _checkpoint_eval(report_path: Path, *, method: str, expected_checkpoint: Mapping[str, Any]) -> dict[str, Any]:
+    report = read_object(report_path, name=f"{method} mechanism report")
+    if report.get("status") != "completed":
+        raise ValueError(f"{method} mechanism evaluation is not completed")
+    if report.get("checkpoint_step") != TARGET_STEP or report.get("checkpoint_sha256") != expected_checkpoint["sha256"]:
+        raise ValueError(f"{method} mechanism evaluation checkpoint differs")
+    request = _object(report.get("request"), f"{method} mechanism request")
+    metrics = _object(report.get("metrics"), f"{method} mechanism metrics")
+    expected_random_orders = {"cofitok": 4, "dense_identity": 0}[method]
+    if (
+        request.get("num_images") != 1024
+        or request.get("timestep") != 500
+        or request.get("random_orders") != expected_random_orders
+        or request.get("weights") != "ema"
+    ):
+        raise ValueError(f"{method} mechanism request differs")
+    if metrics.get("evaluated_images") != 1024 or metrics.get("timestep") != 500:
+        raise ValueError(f"{method} mechanism image/timestep count differs")
+    return {
+        "report": identity(report_path),
+        "request": request,
+        "metrics": {
+            "evaluated_images": metrics["evaluated_images"],
+            "timestep": metrics["timestep"],
+            "order_count": metrics.get("order_count"),
+        },
+    }
+
+
+def _rollout_report(report_path: Path, *, method: str, expected_checkpoint: Mapping[str, Any]) -> dict[str, Any]:
+    report = read_object(report_path, name=f"{method} rollout report")
+    if report.get("status") != "completed" or report.get("checkpoint_step") != TARGET_STEP:
+        raise ValueError(f"{method} rollout report is not a completed 110K evaluation")
+    if report.get("checkpoint_sha256") != expected_checkpoint["sha256"]:
+        raise ValueError(f"{method} rollout report checkpoint differs")
+    protocol = _object(report.get("protocol"), f"{method} rollout protocol")
+    if protocol.get("sample_steps") != 100 or protocol.get("num_images") != 64 or protocol.get("weights") != "ema":
+        raise ValueError(f"{method} rollout protocol differs")
+    return {"report": identity(report_path), "protocol": protocol}
+
+
+def build_result(
+    *,
+    authorization: Mapping[str, Any],
+    gate: Mapping[str, Any],
+    preparation: Mapping[str, Any],
+    preparation_identity: Mapping[str, Any],
+    gate_identity: Mapping[str, Any],
+    standing_identity: Mapping[str, Any],
+    execution_checkout: Mapping[str, Any],
+    source_checkout: Mapping[str, Any] | None = None,
+    config_identities: Mapping[str, Any],
+    authorization_identity: Mapping[str, Any],
+    candidate_gate_identity: Mapping[str, Any],
+    cofitok_run_dir: str | Path,
+    dense_run_dir: str | Path,
+    cofitok_training_report: str | Path,
+    dense_training_report: str | Path,
+    cofitok_sampling_report: str | Path,
+    dense_sampling_report: str | Path,
+    cofitok_metrics_report: str | Path,
+    dense_metrics_report: str | Path,
+    cofitok_class_report: str | Path,
+    dense_class_report: str | Path,
+    cofitok_checkpoint_report: str | Path,
+    dense_checkpoint_report: str | Path,
+    cofitok_rollout_report: str | Path,
+    dense_rollout_report: str | Path,
+) -> dict[str, Any]:
+    validated_auth = validate_authorization_contract(
+        authorization,
+        gate=gate,
+        preparation=preparation,
+        preparation_identity=preparation_identity,
+        gate_identity=gate_identity,
+        standing_identity=standing_identity,
+        execution_checkout=execution_checkout,
+        source_checkout=source_checkout,
+        config_identities=config_identities,
+    )
+    training = {}
+    sampling = {}
+    quality = {}
+    class_fidelity = {}
+    mechanism = {}
+    rollout = {}
+    for method, run_dir, training_path, sampling_path, metrics_path, class_path, checkpoint_path, rollout_path in (
+        (
+            "cofitok",
+            Path(cofitok_run_dir),
+            Path(cofitok_training_report),
+            Path(cofitok_sampling_report),
+            Path(cofitok_metrics_report),
+            Path(cofitok_class_report),
+            Path(cofitok_checkpoint_report),
+            Path(cofitok_rollout_report),
+        ),
+        (
+            "dense_identity",
+            Path(dense_run_dir),
+            Path(dense_training_report),
+            Path(dense_sampling_report),
+            Path(dense_metrics_report),
+            Path(dense_class_report),
+            Path(dense_checkpoint_report),
+            Path(dense_rollout_report),
+        ),
+    ):
+        report = read_object(training_path, name=f"{method} training report")
+        training[method] = _verified_final_checkpoint(
+            report,
+            method=method,
+            expected_run_dir=run_dir,
+            report_path=training_path,
+            expected_source=_object(
+                validated_auth["source_checkpoints"].get(method),
+                f"{method} authorized source checkpoint",
+            ),
+            expected_execution_checkout=execution_checkout,
+            expected_config_identity=_object(
+                config_identities.get(method), f"{method} config identity"
+            ),
+            expected_dataset_identity_sha256=str(
+                _object(validated_auth["live_prelaunch"], "authorization live snapshot")[
+                    "dataset_identity_sha256"
+                ]
+            ),
+            expected_runtime_environment_sha256=str(
+                _object(validated_auth["live_prelaunch"], "authorization live snapshot")[
+                    "runtime_environment_sha256"
+                ]
+            ),
+        )
+        sampling_report, sampling[method] = _sampling_provenance(
+            sampling_path,
+            expected_checkpoint=training[method]["checkpoint"],
+            method=method,
+        )
+        del sampling_report
+        quality[method] = _metrics_report(
+            metrics_path, method=method, sampling=sampling[method]
+        )
+        class_fidelity[method] = _class_report(
+            class_path, method=method, sampling=sampling[method]
+        )
+        mechanism[method] = _checkpoint_eval(
+            checkpoint_path,
+            method=method,
+            expected_checkpoint=training[method]["checkpoint"],
+        )
+        rollout[method] = _rollout_report(
+            rollout_path,
+            method=method,
+            expected_checkpoint=training[method]["checkpoint"],
+        )
+
+    cofitok_sampling = sampling["cofitok"]["sampling"]
+    dense_sampling = sampling["dense_identity"]["sampling"]
+    for key in ("sample_steps", "num_samples", "weights", "guidance_scale", "guidance_rescale", "cfg_batch_mode", "eta", "seed", "start_index", "class_schedule"):
+        if cofitok_sampling.get(key) != dense_sampling.get(key):
+            raise ValueError(f"matched sampling protocol differs at {key}")
+    cofitok_rollout_protocol = rollout["cofitok"]["protocol"]
+    dense_rollout_protocol = rollout["dense_identity"]["protocol"]
+    if cofitok_rollout_protocol != dense_rollout_protocol:
+        raise ValueError("matched rollout protocol differs")
+    revisions = {training[method]["git"].get("revision") for method in training}
+    branches = {training[method]["git"].get("branch") for method in training}
+    datasets = {
+        training[method]["config"].get("data", {}).get("dataset")
+        for method in training
+    }
+    runtime_shas = {
+        read_object(
+            cofitok_training_report if method == "cofitok" else dense_training_report,
+            name=f"{method} training report",
+        ).get("runtime_environment_sha256")
+        for method in training
+    }
+    if len(revisions) != 1 or len(branches) != 1 or datasets != {"imagenet_256"} or len(runtime_shas) != 1:
+        raise ValueError("matched continuation training provenance differs")
+    cofitok_fid = quality["cofitok"]["metrics"]["frechet_inception_distance"]
+    dense_fid = quality["dense_identity"]["metrics"]["frechet_inception_distance"]
+    cofitok_recall = quality["cofitok"]["metrics"]["recall"]
+    dense_recall = quality["dense_identity"]["metrics"]["recall"]
+    return {
+        "schema_version": RESULT_SCHEMA,
+        "role": RESULT_ROLE,
+        "status": "completed",
+        "operational_status": "pass",
+        "scientific_status": "hold",
+        "terminal_status": "hold",
+        "generation_advantage_proven": False,
+        "decision": "bounded_exposure_continuation_completed_without_claim_upgrade",
+        "authorization": dict(authorization_identity),
+        "candidate_gate": dict(candidate_gate_identity),
+        "preparation": dict(preparation_identity),
+        "standing_authorization": dict(standing_identity),
+        "execution_checkout": dict(execution_checkout),
+        "configs": copy.deepcopy(dict(config_identities)),
+        "source_checkpoints": copy.deepcopy(validated_auth["source_checkpoints"]),
+        "target": {
+            "source_step": SOURCE_STEP,
+            "target_step": TARGET_STEP,
+            "additional_steps": TARGET_STEP - SOURCE_STEP,
+            "effective_batch_size": 64,
+            "methods": ["cofitok", "dense_identity"],
+            "evaluation": copy.deepcopy(EXPECTED_SAMPLING),
+        },
+        "training": training,
+        "sampling": sampling,
+        "quality": {
+            method: {
+                "report": row["report"],
+                "metrics": row["metrics"],
+            }
+            for method, row in quality.items()
+        },
+        "relative_quality": {
+            "cofitok_fid_minus_dense": cofitok_fid - dense_fid,
+            "cofitok_fid_over_dense": cofitok_fid / dense_fid,
+            "cofitok_recall_minus_dense": cofitok_recall - dense_recall,
+            "absolute_quality_claim_allowed": False,
+        },
+        "class_fidelity": class_fidelity,
+        "mechanism": mechanism,
+        "rollout": rollout,
+        "claim_guards": {
+            "terminal_hold_preserved": True,
+            "generation_advantage_proven": False,
+            "full_training_launch_allowed": False,
+            "full_300k_launch_allowed": False,
+            "promotion_allowed": False,
+            "release_allowed": False,
+        },
+        "authorization_boundary": copy.deepcopy(AUTHORIZATION_BOUNDARY),
+        "validated_authorization": {
+            "schema_version": validated_auth["schema_version"],
+            "decision": validated_auth["decision"],
+            "scope": validated_auth["scope"],
+        },
+    }
+
+
+__all__ = ["RESULT_ROLE", "RESULT_SCHEMA", "build_result"]
