@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import math
 from collections.abc import Mapping
@@ -30,6 +31,8 @@ SOURCE_STEP = 100_000
 EXPECTED_IMAGES_SEEN = TARGET_STEP * 64
 EXPECTED_SAMPLING = copy.deepcopy(EVALUATION_CONTRACT)
 EXPECTED_PREFIXES = {"cofitok": 8, "dense_identity": 1}
+HORIZON_EXTENSION_SCHEMA_VERSION = 1
+HORIZON_EXTENSION_SCHEDULER_POLICY = "preserve_source_scheduler_horizon"
 
 
 def _object(value: Any, name: str) -> dict[str, Any]:
@@ -46,6 +49,11 @@ def _finite(value: Any, name: str, *, minimum: float | None = None) -> float:
     if not math.isfinite(result) or (minimum is not None and result < minimum):
         raise ValueError(f"{name} is outside its finite domain")
     return result
+
+
+def _canonical_object_sha256(value: Mapping[str, Any]) -> str:
+    payload = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def _verified_final_checkpoint(
@@ -92,6 +100,50 @@ def _verified_final_checkpoint(
 
     source = _object(expected_source, f"{method} source checkpoint binding")
     source_checkpoint = _object(source.get("checkpoint"), f"{method} source checkpoint")
+    extension = _object(
+        report.get("horizon_extension"),
+        f"{method} horizon extension provenance",
+    )
+    scheduler = _object(
+        extension.get("scheduler"),
+        f"{method} horizon extension scheduler provenance",
+    )
+    extension_source = _object(
+        extension.get("source_checkpoint"),
+        f"{method} horizon extension source checkpoint",
+    )
+    expected_sidecar = _object(
+        source.get("integrity_manifest"),
+        f"{method} source checkpoint sidecar",
+    )
+    if (
+        extension.get("schema_version") != HORIZON_EXTENSION_SCHEMA_VERSION
+        or extension.get("kind") != "bounded_training_horizon_extension"
+        or extension.get("source_horizon_steps") != SOURCE_STEP
+        or extension.get("target_horizon_steps") != TARGET_STEP
+        or extension.get("additional_horizon_steps") != TARGET_STEP - SOURCE_STEP
+        or extension.get("source_checkpoint_step") != source.get("step")
+        or extension.get("allowed_config_mismatch_paths")
+        != ["config.name", "config.runtime.steps"]
+        or extension.get("target_config_sha256") != _canonical_object_sha256(config)
+        or extension_source.get("path") != source_checkpoint.get("path")
+        or extension_source.get("filename") != source_checkpoint.get("name")
+        or extension_source.get("step") != SOURCE_STEP
+        or extension_source.get("bytes") != source_checkpoint.get("bytes")
+        or extension_source.get("sha256") != source_checkpoint.get("sha256")
+        or extension_source.get("integrity_manifest") != expected_sidecar.get("path")
+        or extension_source.get("integrity_manifest_bytes")
+        != expected_sidecar.get("bytes")
+        or extension_source.get("integrity_manifest_sha256")
+        != expected_sidecar.get("sha256")
+        or scheduler.get("policy") != HORIZON_EXTENSION_SCHEDULER_POLICY
+        or scheduler.get("source_horizon_steps") != SOURCE_STEP
+        or scheduler.get("effective_horizon_steps") != SOURCE_STEP
+        or int(scheduler.get("restored_last_epoch", -1)) != int(
+            extension.get("source_checkpoint_step", -1)
+        )
+    ):
+        raise ValueError(f"{method} horizon extension provenance differs")
     transition = _object(
         report.get("resume_revision_transition"),
         f"{method} resume revision transition",

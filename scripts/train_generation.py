@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -61,6 +62,67 @@ from cofitok.utils.seed import seed_everything
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FULL_GIT_REVISION_PATTERN = re.compile(r"^[0-9a-f]{40}$")
+HORIZON_EXTENSION_SCHEMA_VERSION = 1
+HORIZON_EXTENSION_SCHEDULER_POLICY = "preserve_source_scheduler_horizon"
+
+
+def _canonical_config_sha256(config: dict[str, object]) -> str:
+    payload = json.dumps(config, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _build_horizon_extension(
+    *,
+    source_config: dict[str, object],
+    target_config: dict[str, object],
+    source_checkpoint: Path,
+    source_integrity: dict[str, object],
+) -> dict[str, object]:
+    source_runtime = source_config.get("runtime")
+    target_runtime = target_config.get("runtime")
+    if not isinstance(source_runtime, dict) or not isinstance(target_runtime, dict):
+        raise ValueError("horizon extension configs must contain runtime objects")
+    source_steps = int(source_runtime.get("steps", -1))
+    target_steps = int(target_runtime.get("steps", -1))
+    if source_steps < 1 or target_steps <= source_steps:
+        raise ValueError("horizon extension target must be greater than source horizon")
+    checkpoint_step = int(source_integrity.get("step", -1))
+    if checkpoint_step < 1 or checkpoint_step > source_steps:
+        raise ValueError("horizon extension source checkpoint is outside source horizon")
+    sidecar = checkpoint_integrity_path(source_checkpoint)
+    if not sidecar.is_file() or sidecar.is_symlink():
+        raise ValueError("horizon extension source integrity sidecar is missing")
+    optimization = target_config.get("optimization")
+    if not isinstance(optimization, dict):
+        raise ValueError("horizon extension target config is missing optimization")
+    return {
+        "schema_version": HORIZON_EXTENSION_SCHEMA_VERSION,
+        "kind": "bounded_training_horizon_extension",
+        "source_horizon_steps": source_steps,
+        "target_horizon_steps": target_steps,
+        "additional_horizon_steps": target_steps - source_steps,
+        "source_checkpoint_step": checkpoint_step,
+        "allowed_config_mismatch_paths": ["config.name", "config.runtime.steps"],
+        "source_config_sha256": _canonical_config_sha256(source_config),
+        "target_config_sha256": _canonical_config_sha256(target_config),
+        "source_checkpoint": {
+            "path": source_checkpoint.resolve().as_posix(),
+            "filename": source_checkpoint.name,
+            "step": checkpoint_step,
+            "bytes": int(source_integrity["checkpoint_bytes"]),
+            "sha256": str(source_integrity["checkpoint_sha256"]),
+            "integrity_manifest": sidecar.resolve().as_posix(),
+            "integrity_manifest_bytes": sidecar.stat().st_size,
+            "integrity_manifest_sha256": file_sha256(sidecar),
+        },
+        "scheduler": {
+            "policy": HORIZON_EXTENSION_SCHEDULER_POLICY,
+            "source_horizon_steps": source_steps,
+            "effective_horizon_steps": source_steps,
+            "warmup_steps": int(optimization.get("warmup_steps", 0)),
+            "min_learning_rate": float(optimization.get("min_learning_rate", 0.0)),
+        },
+    }
 
 
 def _config_mismatch_paths(
@@ -570,10 +632,13 @@ def main() -> None:
     if resume_path is None:
         ensure_fresh_training_output(output_dir)
     expected_checkpoint_config = config_to_dict(config)
+    source_integrity: dict[str, object] | None = None
+    source_horizon_steps: int | None = None
+    horizon_extension: dict[str, object] | None = None
     if args.resume_target_steps > 0:
         if resume_path is None:
             raise ValueError("--resume-target-steps requires a resolved checkpoint")
-        verify_training_checkpoint(resume_path)
+        source_integrity = verify_training_checkpoint(resume_path)
         source_payload = torch.load(
             resume_path,
             map_location="cpu",
@@ -596,7 +661,14 @@ def main() -> None:
         source_steps = int(source_config.get("runtime", {}).get("steps", -1))
         if source_steps < 1 or source_steps >= args.resume_target_steps:
             raise ValueError("extension source config horizon is not below its target")
+        source_horizon_steps = source_steps
         expected_checkpoint_config = source_config
+        horizon_extension = _build_horizon_extension(
+            source_config=source_config,
+            target_config=config_to_dict(config),
+            source_checkpoint=resume_path,
+            source_integrity=source_integrity,
+        )
     stop = StopController()
     signal.signal(signal.SIGTERM, stop.request)
     signal.signal(signal.SIGINT, stop.request)
@@ -647,7 +719,10 @@ def main() -> None:
     )
     scheduler = build_warmup_cosine_scheduler(
         optimizer,
-        total_steps=config.runtime.steps,
+        # Extending exposure must not silently alter the source optimization
+        # trajectory.  The source schedule reaches its configured floor and
+        # remains there during the bounded continuation.
+        total_steps=source_horizon_steps or config.runtime.steps,
         warmup_steps=config.optimization.warmup_steps,
         min_learning_rate=config.optimization.min_learning_rate,
     )
@@ -732,6 +807,18 @@ def main() -> None:
             metrics_path,
             resume_step=start_step,
         )
+        if horizon_extension is not None:
+            scheduler_metadata = horizon_extension["scheduler"]
+            if not isinstance(scheduler_metadata, dict):
+                raise ValueError("horizon extension scheduler metadata is malformed")
+            scheduler_metadata.update(
+                {
+                    "restored_last_epoch": int(scheduler.last_epoch),
+                    "restored_learning_rates": [
+                        float(value) for value in scheduler.get_last_lr()
+                    ],
+                }
+            )
 
     train_iterator = iter(train_loader)
     eval_iterator = iter(eval_loader)
@@ -766,6 +853,7 @@ def main() -> None:
         "resume": str(resume_path) if resume_path is not None else None,
         "resume_revision_transition": resume_revision_transition,
         "metrics_resume_reconciliation": metrics_resume_reconciliation,
+        "horizon_extension": horizon_extension,
     }
     write_json_report(output_dir / "run_manifest.json", manifest)
 
@@ -969,6 +1057,7 @@ def main() -> None:
                     "dataset_provenance": dataset_provenance,
                     "training_authorization": training_authorization,
                     "resume_revision_transition": resume_revision_transition,
+                    "horizon_extension": horizon_extension,
                     "cumulative_elapsed_seconds": (
                         cumulative_elapsed_before_segment + segment_elapsed_seconds
                     ),

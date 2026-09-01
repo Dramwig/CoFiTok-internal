@@ -18,6 +18,7 @@ from cofitok.configs import config_from_dict, load_config
 from cofitok.environment import runtime_environment_sha256
 from scripts.train_generation import (
     _augment_training_images,
+    HORIZON_EXTENSION_SCHEDULER_POLICY,
     _build_resume_revision_transition,
     _resolve_resume_git_provenance,
     _validate_config,
@@ -170,6 +171,18 @@ def test_resume_target_steps_allows_only_explicit_horizon_extension(tmp_path) ->
     report = json.loads((output / "training_report.json").read_text(encoding="utf-8"))
     assert report["completed_steps"] == 3
     assert report["training_complete"] is True
+    extension = report["horizon_extension"]
+    assert extension["source_horizon_steps"] == 2
+    assert extension["target_horizon_steps"] == 3
+    assert extension["additional_horizon_steps"] == 1
+    assert extension["source_checkpoint_step"] == 1
+    assert extension["scheduler"]["policy"] == HORIZON_EXTENSION_SCHEDULER_POLICY
+    assert extension["scheduler"]["effective_horizon_steps"] == 2
+    assert extension["scheduler"]["restored_last_epoch"] == 1
+    assert checkpoint["extra_state"]["horizon_extension"] == extension
+    assert report["final_metrics"]["learning_rate"] == pytest.approx(
+        target_config.get("optimization", {}).get("min_learning_rate", 0.0)
+    )
 
 
 @pytest.mark.parametrize(
