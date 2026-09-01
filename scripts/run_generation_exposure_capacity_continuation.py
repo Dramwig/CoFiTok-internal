@@ -52,6 +52,7 @@ SAMPLE_COUNT = 10_000
 SAMPLE_STEPS = 100
 SAMPLE_SEED = 2027
 ROLLOUT_SEED = 2029
+ROLLOUT_TEACHER_TIMESTEPS = [999, 900, 750, 500, 250, 100, 10]
 COFITOK_PREFIX = 8
 DENSE_PREFIX = 1
 MIN_FREE_BYTES = 120 * 1024**3
@@ -468,6 +469,7 @@ def _validate_resumable_rollout_report(
     expected_protocol = {
         "num_images": 64,
         "batch_size": 4,
+        "teacher_timesteps": ROLLOUT_TEACHER_TIMESTEPS,
         "sample_steps": SAMPLE_STEPS,
         "guidance_scale": 1.5,
         "teacher_guidance_scale": 1.0,

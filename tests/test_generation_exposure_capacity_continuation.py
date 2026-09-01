@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+import cofitok.generation.exposure_capacity_result as result_builder
 import scripts.run_generation_exposure_capacity_continuation as controller
 
 
@@ -198,6 +199,7 @@ def _rollout_report_fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, objec
         "protocol": {
             "num_images": 64,
             "batch_size": 4,
+            "teacher_timesteps": controller.ROLLOUT_TEACHER_TIMESTEPS,
             "sample_steps": controller.SAMPLE_STEPS,
             "guidance_scale": 1.5,
             "teacher_guidance_scale": 1.0,
@@ -242,4 +244,33 @@ def test_resume_rollout_reuse_requires_checkpoint_git_and_protocol_binding(
             method="cofitok",
             checkpoint=checkpoint,
             execution_checkout=execution,
+        )
+
+
+def test_result_rollout_report_matches_evaluator_schema_and_top_level_weights(
+    tmp_path: Path,
+) -> None:
+    report_path, _checkpoint, _report = _rollout_report_fixture(tmp_path)
+
+    validated = result_builder._rollout_report(
+        report_path,
+        method="cofitok",
+        expected_checkpoint={"sha256": "a" * 64},
+    )
+
+    assert validated["protocol"] == result_builder.EXPECTED_ROLLOUT_PROTOCOL
+
+
+def test_result_rollout_report_rejects_protocol_drift(
+    tmp_path: Path,
+) -> None:
+    report_path, _checkpoint, report = _rollout_report_fixture(tmp_path)
+    report["protocol"]["teacher_timesteps"] = [999, 750]  # type: ignore[index]
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="protocol differs at teacher_timesteps"):
+        result_builder._rollout_report(
+            report_path,
+            method="cofitok",
+            expected_checkpoint={"sha256": "a" * 64},
         )

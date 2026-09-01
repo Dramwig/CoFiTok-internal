@@ -33,6 +33,21 @@ EXPECTED_IMAGES_SEEN = TARGET_STEP * 64
 EXPECTED_SAMPLING = copy.deepcopy(EVALUATION_CONTRACT)
 EXPECTED_PREFIXES = {"cofitok": 8, "dense_identity": 1}
 HORIZON_EXTENSION_SCHEMA_VERSION = 1
+EXPECTED_ROLLOUT_PROTOCOL = {
+    "num_images": 64,
+    "batch_size": 4,
+    "teacher_timesteps": [999, 900, 750, 500, 250, 100, 10],
+    "sample_steps": 100,
+    "guidance_scale": 1.5,
+    "teacher_guidance_scale": 1.0,
+    "guidance_rescale": 0.0,
+    "cfg_batch_mode": "batched",
+    "clip_x0": True,
+    "precision": "bf16",
+    "seed": 2029,
+}
+
+
 def _object(value: Any, name: str) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         raise ValueError(f"{name} must be a JSON object")
@@ -398,9 +413,17 @@ def _rollout_report(report_path: Path, *, method: str, expected_checkpoint: Mapp
         raise ValueError(f"{method} rollout report is not a completed 110K evaluation")
     if report.get("checkpoint_sha256") != expected_checkpoint["sha256"]:
         raise ValueError(f"{method} rollout report checkpoint differs")
+    if report.get("weights") != "ema":
+        raise ValueError(f"{method} rollout weights are not EMA")
     protocol = _object(report.get("protocol"), f"{method} rollout protocol")
-    if protocol.get("sample_steps") != 100 or protocol.get("num_images") != 64 or protocol.get("weights") != "ema":
-        raise ValueError(f"{method} rollout protocol differs")
+    for key, expected in EXPECTED_ROLLOUT_PROTOCOL.items():
+        if protocol.get(key) != expected:
+            raise ValueError(f"{method} rollout protocol differs at {key}")
+    unexpected = sorted(set(protocol) - set(EXPECTED_ROLLOUT_PROTOCOL))
+    if unexpected:
+        raise ValueError(
+            f"{method} rollout protocol has unexpected fields: {', '.join(unexpected)}"
+        )
     return {"report": identity(report_path), "protocol": protocol}
 
 
