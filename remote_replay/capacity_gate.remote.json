@@ -1,0 +1,114 @@
+{
+  "authorization_boundary": {
+    "decision_is_execution_authorization": false,
+    "evaluation_launch_allowed": false,
+    "execution_gate_authorized": false,
+    "export_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "gpu_execution_authorized": false,
+    "process_signals_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "remote_mutation_allowed": false,
+    "sampling_launch_allowed": false,
+    "terminal_hold_replacement_allowed": false,
+    "training_launch_allowed": false
+  },
+  "execution_ready": false,
+  "gate_builder_git": {
+    "branch": "master",
+    "revision": "3fbe12f577f957ba78d905aefd6db86e34a3bad8",
+    "tracked_dirty": false,
+    "tree": "e551685be51e12473f53cc913793d3a04e972c99"
+  },
+  "generation_advantage_proven": false,
+  "live_prelaunch": {
+    "conflicting_processes": [],
+    "dataset_identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+    "execution_lock_free": true,
+    "free_bytes": 250128105472,
+    "gpu_compute_processes": [],
+    "gpu_inventory": [
+      {
+        "index": 0,
+        "memory_total_mib": 97887,
+        "memory_used_mib": 0,
+        "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+        "utilization_percent": 0,
+        "uuid": "GPU-3838bbb0-dbf4-5b2b-b7da-6b86f7152cd8"
+      }
+    ],
+    "minimum_free_bytes": 128849018880,
+    "output_root_absent": true,
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e"
+  },
+  "preparation": {
+    "bytes": 9508,
+    "path": "/tmp/cofitok-exposure-capacity-source-compatible-20260901/preparation.json",
+    "sha256": "e9652b12912c399d9e462475f3777e40cb27b16d0221734f11ce11b032aa524c"
+  },
+  "qualification_contract": {
+    "arm_id": "capacity_qualification",
+    "automatic_300k_escalation_allowed": false,
+    "candidate_base_channels": 256,
+    "conditioning_change_allowed": false,
+    "confirmation_requires_new_stage_decision": true,
+    "confirmation_samples_per_method": 10000,
+    "controlled_change": "model_capacity_only",
+    "dataset": "imagenet_256",
+    "effective_batch_size": 64,
+    "evaluation": {
+      "class_fidelity_required": true,
+      "mechanism_diagnostics_required": true,
+      "sample_steps": 100,
+      "sampler": "ddim",
+      "samples_per_method": 10000,
+      "shared_random_stream_required": true,
+      "weights": "ema"
+    },
+    "formal_quality_claim_allowed": false,
+    "initialization": "fresh_matched_initialization_required",
+    "matched_pair_required": true,
+    "methods": [
+      "cofitok",
+      "dense_identity"
+    ],
+    "new_output_root_required": true,
+    "objective_change_allowed": false,
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/capacity",
+    "qualification_steps": 10000,
+    "screen_samples_per_method": 1000,
+    "source_base_channels": 128,
+    "source_checkpoint_binding_required": false,
+    "source_images_seen_per_method": 6400000,
+    "source_stage": "stability_quality_bridge",
+    "source_step": 100000
+  },
+  "role": "source_bound_bounded_exposure_capacity_execution_gate",
+  "schema_version": "cofitok_generation_exposure_capacity_execution_gate_v2",
+  "selected_arm": "capacity_qualification",
+  "selection_policy": {
+    "automatic_300k_escalation_allowed": false,
+    "exact_stage_authorization_required": true,
+    "failure_policy": "fail_closed",
+    "formal_quality_claim_allowed": false,
+    "single_arm_only": true,
+    "terminal_hold_replacement_allowed": false
+  },
+  "source_checkout": {
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tracked_dirty": false,
+    "tree": "6cef27723196fd363379bca2e7b85b1678ebd777"
+  },
+  "source_checkpoint": null,
+  "stage_authorization": {
+    "reason": "preparation_and_prelaunch_snapshot_do_not_authorize_execution",
+    "required": true,
+    "scope": "bounded_qualification_only",
+    "status": "not_authorized"
+  },
+  "status": "prepared",
+  "terminal_status": "hold"
+}
