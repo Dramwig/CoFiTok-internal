@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+import cofitok.generation.exposure_capacity as preparation_module
 import cofitok.generation.exposure_capacity_authorization as authorization
 import cofitok.generation.exposure_capacity_gate as gate
 from scripts.exposure_capacity_result_cli import layout
@@ -62,6 +63,24 @@ def _source_run(root: Path, name: str, *, payload: bytes) -> tuple[Path, dict[st
         "integrity_manifest_name": sidecar.name,
     }
     return run, summary
+
+
+def test_preparation_source_descriptors_bind_objective_reassessment() -> None:
+    identities = {
+        name: {
+            "path": f"/tmp/{name}.json",
+            "bytes": 1,
+            "sha256": "a" * 64,
+        }
+        for name in preparation_module._SOURCE_NAMES
+    }
+    assert set(preparation_module._source_descriptors(identities)) == set(
+        preparation_module._SOURCE_NAMES
+    )
+
+    del identities["objective_reassessment"]
+    with pytest.raises(ValueError, match="missing"):
+        preparation_module._source_descriptors(identities)
 
 
 def _preparation(tmp_path: Path) -> tuple[dict[str, object], dict[str, object]]:

@@ -424,6 +424,65 @@ def _training_resume_action(
     return "auto"
 
 
+def _validate_resumable_rollout_report(
+    report_path: Path,
+    *,
+    method: str,
+    checkpoint: Path,
+    execution_checkout: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Accept only a completed rollout bound to this continuation request."""
+
+    if report_path.is_symlink():
+        raise ValueError(f"{method} rollout report must not be a symlink")
+    report = _read(report_path, f"{method} rollout report")
+    if report.get("status") != "completed":
+        raise RuntimeError(
+            f"{method} rollout report is incomplete; refusing implicit reuse"
+        )
+    verified = verify_training_checkpoint(
+        reject_symlink_chain(checkpoint, name=f"{method} rollout checkpoint")
+    )
+    expected_checkpoint = checkpoint.resolve()
+    expected_sidecar = expected_checkpoint.with_name(
+        f"{expected_checkpoint.name}.integrity.json"
+    )
+    if (
+        report.get("checkpoint") != expected_checkpoint.as_posix()
+        or report.get("checkpoint_sha256") != verified.get("checkpoint_sha256")
+        or report.get("checkpoint_integrity_manifest") != expected_sidecar.as_posix()
+        or report.get("checkpoint_step") != TARGET_STEP
+        or report.get("weights") != "ema"
+    ):
+        raise ValueError(f"{method} rollout report checkpoint binding differs")
+    report_git = report.get("git")
+    if not isinstance(report_git, Mapping) or (
+        report_git.get("revision") != execution_checkout.get("revision")
+        or report_git.get("branch") != execution_checkout.get("branch")
+        or report_git.get("dirty") is not False
+    ):
+        raise ValueError(f"{method} rollout report Git provenance differs")
+    protocol = report.get("protocol")
+    if not isinstance(protocol, Mapping):
+        raise ValueError(f"{method} rollout report protocol is missing")
+    expected_protocol = {
+        "num_images": 64,
+        "batch_size": 4,
+        "sample_steps": SAMPLE_STEPS,
+        "guidance_scale": 1.5,
+        "teacher_guidance_scale": 1.0,
+        "guidance_rescale": 0.0,
+        "cfg_batch_mode": "batched",
+        "clip_x0": True,
+        "precision": "bf16",
+        "seed": ROLLOUT_SEED,
+    }
+    for key, expected in expected_protocol.items():
+        if protocol.get(key) != expected:
+            raise ValueError(f"{method} rollout protocol differs at {key}")
+    return report
+
+
 def _layout(root: Path, method: str) -> dict[str, Path]:
     return result_layout(root, method)
 
@@ -695,6 +754,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                         log_handle=log_handle,
                     )
                     if args.resume and layout["rollout"].exists():
+                        if layout["rollout"].is_symlink():
+                            raise ValueError(
+                                f"{method} rollout output directory must not be a symlink"
+                            )
                         if (
                             not layout["rollout_report"].is_file()
                             or layout["rollout_report"].is_symlink()
@@ -703,6 +766,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                                 "incomplete rollout output cannot be recovered safely; "
                                 "refusing to rerun without an explicit evaluator resume contract"
                             )
+                        _validate_resumable_rollout_report(
+                            layout["rollout_report"],
+                            method=method,
+                            checkpoint=checkpoint,
+                            execution_checkout=execution_checkout,
+                        )
                         _write_status(
                             status_path,
                             status="running",

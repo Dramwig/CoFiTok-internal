@@ -177,3 +177,69 @@ def test_runbook_resume_is_explicitly_opt_in() -> None:
     source = runbook.read_text(encoding="utf-8")
     assert 'RESUME="${EXPOSURE_CONTINUATION_RESUME:-false}"' in source
     assert "RESUME_ARGS+=(--resume)" in source
+
+
+def _rollout_report_fixture(tmp_path: Path) -> tuple[Path, Path, dict[str, object]]:
+    checkpoint = tmp_path / "checkpoint_step_00110000.pt"
+    checkpoint.write_bytes(b"checkpoint")
+    sidecar = checkpoint.with_name(f"{checkpoint.name}.integrity.json")
+    sidecar.write_text("{}", encoding="utf-8")
+    report_path = tmp_path / "rollout" / "rollout_stability_report.json"
+    report_path.parent.mkdir()
+    report = {
+        "schema_version": 1,
+        "status": "completed",
+        "git": {"revision": "b" * 40, "branch": "execution", "dirty": False},
+        "checkpoint": checkpoint.resolve().as_posix(),
+        "checkpoint_sha256": "a" * 64,
+        "checkpoint_integrity_manifest": sidecar.resolve().as_posix(),
+        "checkpoint_step": controller.TARGET_STEP,
+        "weights": "ema",
+        "protocol": {
+            "num_images": 64,
+            "batch_size": 4,
+            "sample_steps": controller.SAMPLE_STEPS,
+            "guidance_scale": 1.5,
+            "teacher_guidance_scale": 1.0,
+            "guidance_rescale": 0.0,
+            "cfg_batch_mode": "batched",
+            "clip_x0": True,
+            "precision": "bf16",
+            "seed": controller.ROLLOUT_SEED,
+        },
+    }
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    return report_path, checkpoint, report
+
+
+def test_resume_rollout_reuse_requires_checkpoint_git_and_protocol_binding(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    report_path, checkpoint, report = _rollout_report_fixture(tmp_path)
+    monkeypatch.setattr(
+        controller,
+        "verify_training_checkpoint",
+        lambda _checkpoint: {
+            "step": controller.TARGET_STEP,
+            "checkpoint_sha256": "a" * 64,
+        },
+    )
+    execution = {"revision": "b" * 40, "branch": "execution"}
+
+    assert controller._validate_resumable_rollout_report(
+        report_path,
+        method="cofitok",
+        checkpoint=checkpoint,
+        execution_checkout=execution,
+    ) == report
+
+    report["protocol"]["guidance_scale"] = 2.0  # type: ignore[index]
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    with pytest.raises(ValueError, match="protocol differs at guidance_scale"):
+        controller._validate_resumable_rollout_report(
+            report_path,
+            method="cofitok",
+            checkpoint=checkpoint,
+            execution_checkout=execution,
+        )

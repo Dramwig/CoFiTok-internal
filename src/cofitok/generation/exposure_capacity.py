@@ -40,6 +40,7 @@ PREPARATION_BOUNDARY = {
 }
 
 _SOURCE_NAMES = (
+    "objective_reassessment",
     "quality_bridge_result",
     "post_reconciliation_decision",
     "cross_protocol_reconciliation",
@@ -242,6 +243,24 @@ def _validate_evidence(
         objective_reassessment.get("authorization_boundary"),
         "objective reassessment authorization boundary",
     )
+    objective_next_evidence = _object(
+        objective_reassessment.get("next_evidence"),
+        "objective reassessment next evidence",
+    )
+    objective_summary = {
+        "schema": objective_reassessment["schema"],
+        "status": objective_reassessment["status"],
+        "decision": objective_reassessment["decision"],
+        "generation_advantage_proven": False,
+        "execution_ready": False,
+        "next_evidence": {"id": objective_next_evidence["id"]},
+        "authorization_boundary": dict(
+            _object(
+                objective_reassessment.get("authorization_boundary"),
+                "objective reassessment authorization boundary",
+            )
+        ),
+    }
 
     if post_reconciliation_decision.get("status") != "completed":
         raise ValueError("post-reconciliation decision is not completed")
@@ -360,6 +379,7 @@ def _validate_evidence(
     }
 
     return {
+        "objective_reassessment": objective_summary,
         "quality_bridge": {
             "status": quality_bridge_result["status"],
             "terminal_status": terminal_status,
@@ -546,6 +566,30 @@ def validate_preparation(report: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("preparation authorization boundary is not canonical")
 
     evidence = _object(report.get("evidence"), "preparation evidence")
+    objective = _object(
+        evidence.get("objective_reassessment"),
+        "preparation objective reassessment evidence",
+    )
+    if (
+        objective.get("schema")
+        != "cofitok_generation_training_objective_reassessment_v1"
+        or objective.get("status") != "completed"
+        or objective.get("decision")
+        != "preserve_qualified_objective_defer_new_intervention"
+        or objective.get("generation_advantage_proven") is not False
+        or objective.get("execution_ready") is not False
+    ):
+        raise ValueError("preparation objective reassessment evidence is invalid")
+    objective_next_evidence = _object(
+        objective.get("next_evidence"),
+        "preparation objective reassessment next evidence",
+    )
+    if objective_next_evidence.get("id") != ROUTE_ID:
+        raise ValueError("preparation objective reassessment route differs")
+    _boundary_is_disabled(
+        objective.get("authorization_boundary"),
+        "preparation objective reassessment authorization boundary",
+    )
     training = _object(evidence.get("training"), "preparation training evidence")
     if training.get("completed_steps") != 100_000:
         raise ValueError("preparation must bind the completed 100K bridge")
