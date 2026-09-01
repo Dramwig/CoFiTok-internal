@@ -19,6 +19,7 @@ from cofitok.generation.exposure_capacity_authorization import (
     read_object,
     validate_authorization_contract,
 )
+from cofitok.generation.exposure_capacity_gate import HORIZON_EXTENSION_SCHEDULER_POLICY
 from cofitok.inference_replay import reject_symlink_chain
 from cofitok.image_integrity import sample_set_sha256
 from cofitok.reporting import file_sha256, write_json_report
@@ -32,9 +33,6 @@ EXPECTED_IMAGES_SEEN = TARGET_STEP * 64
 EXPECTED_SAMPLING = copy.deepcopy(EVALUATION_CONTRACT)
 EXPECTED_PREFIXES = {"cofitok": 8, "dense_identity": 1}
 HORIZON_EXTENSION_SCHEMA_VERSION = 1
-HORIZON_EXTENSION_SCHEDULER_POLICY = "preserve_source_scheduler_horizon"
-
-
 def _object(value: Any, name: str) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         raise ValueError(f"{name} must be a JSON object")
@@ -139,6 +137,8 @@ def _verified_final_checkpoint(
         or scheduler.get("policy") != HORIZON_EXTENSION_SCHEDULER_POLICY
         or scheduler.get("source_horizon_steps") != SOURCE_STEP
         or scheduler.get("effective_horizon_steps") != SOURCE_STEP
+        or scheduler.get("target_horizon_steps") != TARGET_STEP
+        or scheduler.get("explicit_resume_target_steps_required") is not True
         or int(scheduler.get("restored_last_epoch", -1)) != int(
             extension.get("source_checkpoint_step", -1)
         )

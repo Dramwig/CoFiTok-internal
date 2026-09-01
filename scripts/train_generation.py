@@ -119,6 +119,8 @@ def _build_horizon_extension(
             "policy": HORIZON_EXTENSION_SCHEDULER_POLICY,
             "source_horizon_steps": source_steps,
             "effective_horizon_steps": source_steps,
+            "target_horizon_steps": target_steps,
+            "explicit_resume_target_steps_required": True,
             "warmup_steps": int(optimization.get("warmup_steps", 0)),
             "min_learning_rate": float(optimization.get("min_learning_rate", 0.0)),
         },

@@ -38,6 +38,7 @@ from cofitok.generation.exposure_capacity_authorization import (
 )
 from cofitok.inference_replay import reject_symlink_chain
 from cofitok.reporting import file_sha256
+from cofitok.training.checkpointing import resolve_latest_checkpoint, verify_training_checkpoint
 try:
     from scripts.exposure_capacity_result_cli import layout as result_layout
 except ModuleNotFoundError:  # pragma: no cover - direct script invocation fallback
@@ -96,6 +97,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--python", type=Path, default=Path(sys.executable))
     parser.add_argument("--status-output", type=Path, default=None)
     parser.add_argument("--log-output", type=Path, default=None)
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help=(
+            "Recover an explicitly interrupted continuation output root after "
+            "revalidating its controller status and checkpoint state."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -259,17 +268,160 @@ def _execution_lock(path: Path) -> Iterator[None]:
 
 
 @contextmanager
-def _claimed_output_root(output_root: Path, lock_path: Path) -> Iterator[None]:
-    """Atomically claim a new output root while holding the controller lock."""
+def _claimed_output_root(
+    output_root: Path,
+    lock_path: Path,
+    *,
+    resume: bool = False,
+) -> Iterator[None]:
+    """Claim a new root or reopen a verified partial root under the lock."""
 
     output_root.parent.mkdir(parents=True, exist_ok=True)
     with _execution_lock(lock_path):
-        if output_root.exists():
-            raise FileExistsError(
-                f"refusing to reuse an existing continuation output root: {output_root}"
-            )
-        output_root.mkdir(parents=True, exist_ok=False)
+        if resume:
+            if not output_root.exists():
+                raise FileNotFoundError(
+                    f"cannot recover a missing continuation output root: {output_root}"
+                )
+            reject_symlink_chain(output_root, name="continuation output root")
+            if not output_root.is_dir():
+                raise ValueError(
+                    f"continuation output root is not a directory: {output_root}"
+                )
+        else:
+            if output_root.exists():
+                raise FileExistsError(
+                    f"refusing to reuse an existing continuation output root: {output_root}"
+                )
+            output_root.mkdir(parents=True, exist_ok=False)
         yield
+
+
+def _validate_resumable_output_root(
+    output_root: Path,
+    status_path: Path,
+    authorization_identity: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Accept only an explicitly incomplete root created by this authorization."""
+
+    resolved_root = output_root.resolve()
+    resolved_status = reject_symlink_chain(
+        status_path,
+        name="continuation controller status",
+    ).resolve()
+    if resolved_status.parent != resolved_root:
+        raise ValueError(
+            "continuation recovery requires controller_status.json inside the output root"
+        )
+    if not resolved_status.is_file():
+        raise FileNotFoundError(
+            f"continuation recovery status is missing: {resolved_status}"
+        )
+    status = _read(resolved_status, "continuation controller status")
+    if status.get("role") != ROLE:
+        raise ValueError("continuation recovery status belongs to another controller")
+    if status.get("status") not in {"running", "failed"}:
+        raise ValueError(
+            "continuation recovery requires a non-terminal running or failed status"
+        )
+    if status.get("authorization") != dict(authorization_identity):
+        raise ValueError("continuation recovery authorization identity differs")
+    if status.get("terminal_status") != "hold":
+        raise ValueError("continuation recovery status weakens the terminal hold")
+    for field in (
+        "generation_advantage_proven",
+        "full_training_launch_allowed",
+        "full_300k_launch_allowed",
+        "promotion_allowed",
+        "release_allowed",
+        "process_signals_allowed",
+    ):
+        if status.get(field) is not False:
+            raise ValueError(f"continuation recovery status permits {field}")
+    result_path = resolved_root / "exposure_capacity_result.json"
+    if result_path.exists():
+        raise ValueError(
+            "continuation recovery refuses a root that already contains a result"
+        )
+    allowed_names = {
+        "controller.log",
+        "controller_status.json",
+        "cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+        "dense_rollout_x0_u2_ema_teacher",
+        "evaluations",
+    }
+    unexpected = sorted(
+        child.name for child in resolved_root.iterdir() if child.name not in allowed_names
+    )
+    if unexpected:
+        raise ValueError(
+            "continuation recovery output root contains unexpected entries: "
+            + ", ".join(unexpected)
+        )
+    return status
+
+
+def _training_resume_action(
+    run_dir: Path,
+    *,
+    source_checkpoint: Path,
+    config_path: Path,
+    execution_checkout: Mapping[str, Any],
+    resume_requested: bool,
+) -> str:
+    """Return ``source``, ``auto``, or ``skip`` after checking a partial run."""
+
+    if run_dir.is_symlink():
+        raise ValueError("continuation training output must not be a symlink")
+    if not run_dir.exists():
+        return "source"
+    run = reject_symlink_chain(run_dir, name="continuation training output").resolve()
+    if not run.is_dir():
+        raise ValueError(f"continuation training output is not a directory: {run}")
+    latest = run / "latest.json"
+    if not latest.is_file() or latest.is_symlink():
+        raise RuntimeError(
+            "existing continuation training output has no verified latest.json; "
+            "refusing implicit reconstruction"
+        )
+    checkpoint = resolve_latest_checkpoint(run).resolve()
+    integrity = verify_training_checkpoint(checkpoint)
+    step = int(integrity.get("step", -1))
+    if not SOURCE_STEP <= step <= TARGET_STEP:
+        raise ValueError(
+            f"continuation checkpoint step {step} is outside [{SOURCE_STEP}, {TARGET_STEP}]"
+        )
+    if step == SOURCE_STEP:
+        if not resume_requested:
+            raise RuntimeError(
+                "source-step continuation output exists; rerun the controller with --resume"
+            )
+        return "source"
+    if step == TARGET_STEP:
+        report_path = run / "training_report.json"
+        if report_path.is_file() and not report_path.is_symlink():
+            report = _read(report_path, "continuation training report")
+            report_git = report.get("git")
+            if (
+                report.get("training_complete") is True
+                and report.get("completed_steps") == TARGET_STEP
+                and report.get("target_steps") == TARGET_STEP
+                and report.get("config_path") == config_path.resolve().as_posix()
+                and isinstance(report_git, Mapping)
+                and report_git.get("revision") == execution_checkout.get("revision")
+                and report_git.get("branch") == execution_checkout.get("branch")
+                and report_git.get("dirty") is False
+            ):
+                return "skip"
+            if report.get("training_complete") is True:
+                raise ValueError(
+                    "completed continuation training report does not match the current execution identity"
+                )
+    if not resume_requested:
+        raise RuntimeError(
+            "partial continuation output exists; rerun the controller with --resume"
+        )
+    return "auto"
 
 
 def _layout(root: Path, method: str) -> dict[str, Path]:
@@ -393,7 +545,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         # Lock the sibling path before creating the output root, so a second
         # controller cannot race the output-root absence check.
-        with _claimed_output_root(output_root, root_lock):
+        with _claimed_output_root(output_root, root_lock, resume=args.resume):
+            if args.resume:
+                _validate_resumable_output_root(output_root, status_path, auth_summary)
             _assert_idle_runtime(output_root)
             log_path.parent.mkdir(parents=True, exist_ok=True)
             with log_path.open("a", encoding="utf-8", buffering=1) as log_handle:
@@ -406,23 +560,52 @@ def main(argv: Sequence[str] | None = None) -> int:
                 ):
                     layout = _layout(output_root, method)
                     source_checkpoint = Path(source_checkpoints[method]["checkpoint"]["path"])
+                    training_action = _training_resume_action(
+                        layout["run"],
+                        source_checkpoint=source_checkpoint,
+                        config_path=config,
+                        execution_checkout=execution_checkout,
+                        resume_requested=args.resume,
+                    )
                     _assert_idle_runtime(output_root)
                     _assert_sha(args.authorization, args.expected_authorization_sha256, "authorization")
-                    _write_status(status_path, status="running", stage=f"training_{method}", detail=f"exact-resume training {method} to 110K", auth=auth_summary)
-                    _run(
-                        [
-                            args.python,
-                            project_root / "scripts" / "train_generation.py",
-                            "--config", config,
-                            "--output-dir", layout["run"],
-                            "--resume", source_checkpoint,
-                            "--resume-source-revision", SOURCE_REVISION,
-                            "--resume-target-steps", str(TARGET_STEP),
-                        ],
-                        cwd=project_root,
-                        env=env,
-                        log_handle=log_handle,
+                    if training_action == "skip":
+                        _write_status(
+                            status_path,
+                            status="running",
+                            stage=f"training_{method}",
+                            detail=f"reusing verified completed {method} continuation training",
+                            auth=auth_summary,
+                        )
+                        continue
+                    _write_status(
+                        status_path,
+                        status="running",
+                        stage=f"training_{method}",
+                        detail=f"exact-resume training {method} to 110K",
+                        auth=auth_summary,
                     )
+                    command: list[str | Path] = [
+                        args.python,
+                        project_root / "scripts" / "train_generation.py",
+                        "--config",
+                        config,
+                        "--output-dir",
+                        layout["run"],
+                    ]
+                    if training_action == "source":
+                        command.extend(
+                            [
+                                "--resume",
+                                source_checkpoint,
+                                "--resume-source-revision",
+                                SOURCE_REVISION,
+                            ]
+                        )
+                    else:
+                        command.extend(["--resume", "auto"])
+                    command.extend(["--resume-target-steps", str(TARGET_STEP)])
+                    _run(command, cwd=project_root, env=env, log_handle=log_handle)
 
                 for method, prefix in (("cofitok", COFITOK_PREFIX), ("dense_identity", DENSE_PREFIX)):
                     layout = _layout(output_root, method)
@@ -447,6 +630,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                             "--start-index", "0",
                             "--weights", "ema",
                             "--precision", "bf16",
+                            *( ["--resume"] if args.resume else [] ),
                         ],
                         cwd=project_root,
                         env=env,
@@ -467,6 +651,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                             "--seed", str(SAMPLE_SEED),
                             "--cache-root", args.cache_root,
                             "--real-cache-name", "imagenet256_val_50k_torch_fidelity_v04",
+                            *( ["--resume"] if args.resume else [] ),
                         ],
                         cwd=project_root,
                         env=env,
@@ -484,6 +669,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                             "--batch-size", "64",
                             "--num-workers", "8",
                             "--min-samples", str(SAMPLE_COUNT),
+                            *( ["--resume"] if args.resume else [] ),
                         ],
                         cwd=project_root,
                         env=env,
@@ -502,11 +688,29 @@ def main(argv: Sequence[str] | None = None) -> int:
                             "--seed", str(SAMPLE_SEED),
                             "--weights", "ema",
                             "--precision", "bf16",
+                            *( ["--resume"] if args.resume else [] ),
                         ],
                         cwd=project_root,
                         env=env,
                         log_handle=log_handle,
                     )
+                    if args.resume and layout["rollout"].exists():
+                        if (
+                            not layout["rollout_report"].is_file()
+                            or layout["rollout_report"].is_symlink()
+                        ):
+                            raise RuntimeError(
+                                "incomplete rollout output cannot be recovered safely; "
+                                "refusing to rerun without an explicit evaluator resume contract"
+                            )
+                        _write_status(
+                            status_path,
+                            status="running",
+                            stage=f"rollout_{method}",
+                            detail=f"reusing verified completed {method} rollout stability report",
+                            auth=auth_summary,
+                        )
+                        continue
                     _write_status(status_path, status="running", stage=f"rollout_{method}", detail=f"DDIM-100 rollout stability for {method}", auth=auth_summary)
                     _run(
                         [

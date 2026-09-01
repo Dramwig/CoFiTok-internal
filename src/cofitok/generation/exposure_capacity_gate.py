@@ -17,7 +17,7 @@ from typing import Any
 from cofitok.generation.exposure_capacity import validate_preparation
 
 
-EXECUTION_GATE_SCHEMA = "cofitok_generation_exposure_capacity_execution_gate_v1"
+EXECUTION_GATE_SCHEMA = "cofitok_generation_exposure_capacity_execution_gate_v2"
 EXECUTION_GATE_ROLE = "source_bound_bounded_exposure_capacity_execution_gate"
 SOURCE_REVISION = "cf0e5faa94bf4ab38d947b921935b3b765b5537a"
 SOURCE_TREE = "6cef27723196fd363379bca2e7b85b1678ebd777"
@@ -33,6 +33,19 @@ MAX_GPU_UTILIZATION_PERCENT = 5
 ARM_IDS = ("exposure_continuation", "capacity_qualification")
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 GIT_REVISION_PATTERN = re.compile(r"[0-9a-f]{40}")
+HORIZON_EXTENSION_SCHEDULER_POLICY = "preserve_source_scheduler_horizon"
+
+# The exposure arm changes only the number of optimizer steps.  Rebuilding a
+# warmup/cosine scheduler with the target horizon would change the learning
+# rate at the source boundary, so the candidate gate binds the source horizon
+# as an explicit part of the execution contract.
+EXPOSURE_SCHEDULER_CONTRACT = {
+    "policy": HORIZON_EXTENSION_SCHEDULER_POLICY,
+    "source_horizon_steps": SOURCE_STEP,
+    "effective_horizon_steps": SOURCE_STEP,
+    "target_horizon_steps": EXPOSURE_TARGET_STEP,
+    "explicit_resume_target_steps_required": True,
+}
 
 
 # This artifact is a contract for a later authorization step, not that step.
@@ -314,6 +327,7 @@ def _arm_contract(preparation: Mapping[str, Any], arm_id: str) -> dict[str, Any]
                 "source_checkpoint_binding_required": True,
                 "new_output_root_required": True,
                 "automatic_300k_escalation_allowed": False,
+                "scheduler": copy.deepcopy(EXPOSURE_SCHEDULER_CONTRACT),
             }
         )
     else:
@@ -495,11 +509,13 @@ __all__ = [
     "ARM_IDS",
     "CAPACITY_QUALIFICATION_STEPS",
     "EFFECTIVE_BATCH_SIZE",
+    "EXPOSURE_SCHEDULER_CONTRACT",
     "EXECUTION_GATE_ROLE",
     "EXECUTION_GATE_SCHEMA",
     "EXPOSURE_TARGET_STEP",
     "GATE_AUTHORIZATION_BOUNDARY",
     "MIN_FREE_BYTES",
+    "HORIZON_EXTENSION_SCHEDULER_POLICY",
     "SOURCE_BRANCH",
     "SOURCE_IMAGES_SEEN_PER_METHOD",
     "SOURCE_REVISION",

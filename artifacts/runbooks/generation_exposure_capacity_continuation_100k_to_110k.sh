@@ -30,6 +30,12 @@ OUTPUT_ROOT="${EXPOSURE_CONTINUATION_OUTPUT_ROOT:-/root/autodl-tmp/CoFiTok/check
 REAL_DIR="${EXPOSURE_CONTINUATION_REAL_DIR:-/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val}"
 CLASSIFIER_CHECKPOINT="${EXPOSURE_CONTINUATION_CLASSIFIER_CHECKPOINT:-/root/autodl-tmp/CoFiTok/checkpoints/evaluators/torchvision/resnet50-11ad3fa6.pth}"
 CACHE_ROOT="${EXPOSURE_CONTINUATION_CACHE_ROOT:-/root/autodl-tmp/CoFiTok/checkpoints/eval_cache/torch_fidelity}"
+RESUME="${EXPOSURE_CONTINUATION_RESUME:-false}"
+
+RESUME_ARGS=()
+if [[ "$RESUME" == true ]]; then
+  RESUME_ARGS+=(--resume)
+fi
 
 export PYTHONPATH="$PROJECT:$PROJECT/src${PYTHONPATH:+:$PYTHONPATH}"
 exec "$PYTHON" "$PROJECT/scripts/run_generation_exposure_capacity_continuation.py" \
@@ -51,4 +57,5 @@ exec "$PYTHON" "$PROJECT/scripts/run_generation_exposure_capacity_continuation.p
   --real-dir "$REAL_DIR" \
   --classifier-checkpoint "$CLASSIFIER_CHECKPOINT" \
   --cache-root "$CACHE_ROOT" \
-  --python "$PYTHON"
+  --python "$PYTHON" \
+  "${RESUME_ARGS[@]}"

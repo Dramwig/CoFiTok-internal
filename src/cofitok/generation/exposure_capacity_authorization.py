@@ -12,6 +12,7 @@ from typing import Any
 from cofitok.configs import config_from_dict, config_to_dict, load_config
 from cofitok.generation.exposure_capacity import validate_source_checkpoint_bindings
 from cofitok.generation.exposure_capacity_gate import (
+    EXPOSURE_SCHEDULER_CONTRACT,
     SOURCE_BRANCH,
     SOURCE_REVISION,
     SOURCE_STEP,
@@ -481,6 +482,8 @@ def _validate_contract_fields(contract: Mapping[str, Any]) -> dict[str, Any]:
         raise ValueError("authorization qualification initialization differs")
     if normalized.get("source_checkpoint_binding_required") is not True:
         raise ValueError("authorization qualification does not require source binding")
+    if normalized.get("scheduler") != EXPOSURE_SCHEDULER_CONTRACT:
+        raise ValueError("authorization scheduler horizon contract differs")
     if normalized.get("automatic_300k_escalation_allowed") is not False:
         raise ValueError("authorization qualification permits automatic escalation")
     if normalized.get("evaluation") != EVALUATION_CONTRACT:

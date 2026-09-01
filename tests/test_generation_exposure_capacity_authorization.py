@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 import cofitok.generation.exposure_capacity_authorization as authorization
+import cofitok.generation.exposure_capacity_gate as gate
 from scripts.exposure_capacity_result_cli import layout
 
 
@@ -149,6 +150,29 @@ def test_result_layout_binds_method_specific_prefixes(tmp_path: Path) -> None:
     assert dense["checkpoint_report"].name == "checkpoint_evaluation_report.json"
 
 
+def test_exposure_gate_binds_source_scheduler_horizon() -> None:
+    preparation = {
+        "candidate_arms": {
+            "exposure_continuation": {
+                "controlled_change": "training_exposure_only",
+                "initialization": "exact_100k_checkpoint_resume_only",
+                "model_layout_change_allowed": False,
+                "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure",
+            },
+            "capacity_qualification": {
+                "controlled_change": "model_capacity_only",
+                "initialization": "fresh_matched_initialization_required",
+                "candidate_base_channels": 256,
+                "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/capacity",
+            },
+        }
+    }
+    contract = gate._arm_contract(preparation, "exposure_continuation")
+    assert contract["scheduler"] == gate.EXPOSURE_SCHEDULER_CONTRACT
+    assert contract["scheduler"]["effective_horizon_steps"] == gate.SOURCE_STEP
+    assert contract["scheduler"]["target_horizon_steps"] == gate.EXPOSURE_TARGET_STEP
+
+
 def _contract() -> dict[str, object]:
     return {
         "arm_id": "exposure_continuation",
@@ -173,6 +197,7 @@ def _contract() -> dict[str, object]:
         "source_checkpoint_binding_required": True,
         "new_output_root_required": True,
         "automatic_300k_escalation_allowed": False,
+        "scheduler": deepcopy(authorization.EXPOSURE_SCHEDULER_CONTRACT),
     }
 
 

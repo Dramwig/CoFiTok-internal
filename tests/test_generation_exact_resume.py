@@ -178,6 +178,8 @@ def test_resume_target_steps_allows_only_explicit_horizon_extension(tmp_path) ->
     assert extension["source_checkpoint_step"] == 1
     assert extension["scheduler"]["policy"] == HORIZON_EXTENSION_SCHEDULER_POLICY
     assert extension["scheduler"]["effective_horizon_steps"] == 2
+    assert extension["scheduler"]["target_horizon_steps"] == 3
+    assert extension["scheduler"]["explicit_resume_target_steps_required"] is True
     assert extension["scheduler"]["restored_last_epoch"] == 1
     assert checkpoint["extra_state"]["horizon_extension"] == extension
     assert report["final_metrics"]["learning_rate"] == pytest.approx(
