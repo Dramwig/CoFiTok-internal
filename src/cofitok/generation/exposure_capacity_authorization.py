@@ -233,16 +233,19 @@ def _preparation_sources(preparation: Mapping[str, Any]) -> dict[str, dict[str, 
             expected, name=f"preparation source {name}"
         ):
             raise ValueError(f"preparation source changed: {name}")
-    reports = {
+    source_reports = {
         name: read_object(str(sources[name]["path"]), name=name)
         for name in ("cofitok_training_report", "dense_training_report")
     }
     validate_source_checkpoint_bindings(
         dict(preparation),
-        cofitok_training_report=reports["cofitok_training_report"],
-        dense_training_report=reports["dense_training_report"],
+        cofitok_training_report=source_reports["cofitok_training_report"],
+        dense_training_report=source_reports["dense_training_report"],
     )
-    return reports
+    return {
+        "cofitok": source_reports["cofitok_training_report"],
+        "dense_identity": source_reports["dense_training_report"],
+    }
 
 
 def _validate_config_bindings(

@@ -112,6 +112,37 @@ def test_physical_source_binding_rehashes_payload_sidecar_and_latest(tmp_path: P
         authorization._physical_source_bindings(preparation)
 
 
+def test_preparation_sources_maps_report_names_to_method_ids(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    cofitok_report = tmp_path / "cofitok_training_report.json"
+    dense_report = tmp_path / "dense_training_report.json"
+    cofitok_report.write_text(
+        json.dumps({"config": {"name": "cofitok-source"}}), encoding="utf-8"
+    )
+    dense_report.write_text(
+        json.dumps({"config": {"name": "dense-source"}}), encoding="utf-8"
+    )
+    preparation = {
+        "sources": {
+            "cofitok_training_report": _identity(cofitok_report),
+            "dense_training_report": _identity(dense_report),
+        }
+    }
+    monkeypatch.setattr(
+        authorization,
+        "validate_source_checkpoint_bindings",
+        lambda *_args, **_kwargs: None,
+    )
+
+    reports = authorization._preparation_sources(preparation)
+
+    assert set(reports) == {"cofitok", "dense_identity"}
+    assert reports["cofitok"]["config"]["name"] == "cofitok-source"
+    assert reports["dense_identity"]["config"]["name"] == "dense-source"
+
+
 def test_config_binding_allows_only_name_and_horizon(tmp_path: Path) -> None:
     source = {
         "name": "source",
