@@ -519,6 +519,26 @@ def _common_python_env(project_root: Path) -> dict[str, str]:
     return env
 
 
+def _authorized_execution_lock(
+    authorization: Mapping[str, Any],
+    *,
+    output_root: Path,
+) -> Path:
+    target = authorization.get("target")
+    if not isinstance(target, Mapping):
+        raise ValueError("execution authorization target is missing")
+    lock_value = target.get("execution_lock")
+    if not isinstance(lock_value, str) or not lock_value:
+        raise ValueError("execution authorization lock is missing")
+    authorized_lock = reject_symlink_chain(
+        Path(lock_value), name="continuation execution lock"
+    ).resolve()
+    expected_lock = output_root.parent / f".{output_root.name}.exposure_execution.lock"
+    if authorized_lock != expected_lock:
+        raise ValueError("authorization execution lock is not the sibling controller lock")
+    return authorized_lock
+
+
 def _result_command(args: argparse.Namespace, root: Path) -> list[str | Path]:
     builder = args.project_root / "scripts" / "build_generation_exposure_capacity_result.py"
     command: list[str | Path] = [args.python, builder, "--result", root / "exposure_capacity_result.json"]
@@ -595,13 +615,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not args.python.is_file():
         raise FileNotFoundError(f"continuation Python executable is missing: {args.python}")
 
-    authorized_lock = reject_symlink_chain(
-        Path(str(contract["execution_lock"])), name="continuation execution lock"
-    ).resolve()
-    expected_lock = output_root.parent / f".{output_root.name}.exposure_execution.lock"
-    if authorized_lock != expected_lock:
-        raise ValueError("authorization execution lock is not the sibling controller lock")
-    root_lock = authorized_lock
+    root_lock = _authorized_execution_lock(validated, output_root=output_root)
     auth_summary = {"path": auth_id["path"], "bytes": auth_id["bytes"], "sha256": auth_id["sha256"]}
     try:
         # Lock the sibling path before creating the output root, so a second

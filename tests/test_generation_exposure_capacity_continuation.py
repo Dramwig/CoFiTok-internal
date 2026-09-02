@@ -55,6 +55,20 @@ def test_claimed_output_root_is_created_inside_the_lock(
     assert events == ["lock_enter", "lock_exit"]
 
 
+def test_authorized_execution_lock_is_read_from_target(tmp_path: Path) -> None:
+    output_root = tmp_path / "exposure"
+    expected_lock = tmp_path / ".exposure.exposure_execution.lock"
+    authorization = {
+        "qualification_contract": {"output_root": output_root.as_posix()},
+        "target": {"execution_lock": expected_lock.as_posix()},
+    }
+
+    assert controller._authorized_execution_lock(
+        authorization,
+        output_root=output_root,
+    ) == expected_lock.resolve()
+
+
 @pytest.mark.skipif(controller.fcntl is None, reason="POSIX flock is required")
 def test_execution_lock_rejects_a_competing_lock(tmp_path: Path) -> None:
     lock = tmp_path / "candidate.lock"
