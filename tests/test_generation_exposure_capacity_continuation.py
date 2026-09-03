@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 import cofitok.generation.exposure_capacity_result as result_builder
+import scripts.evaluate_generation_metrics as metrics_evaluator
 import scripts.run_generation_exposure_capacity_continuation as controller
 
 
@@ -609,3 +610,60 @@ def test_result_uses_authorized_source_path_for_horizon_filename(
     )
 
     assert validated["checkpoint"]["path"] == checkpoint.resolve().as_posix()
+
+
+def test_result_normalizes_top_level_sampling_weights(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    generated = tmp_path / "generated"
+    generated.mkdir()
+    report_path = tmp_path / "sampling_report.json"
+    sampling = {
+        "sample_steps": 100,
+        "num_samples": 10_000,
+        "guidance_scale": 1.5,
+        "guidance_rescale": 0.0,
+        "cfg_batch_mode": "batched",
+        "eta": 0.0,
+        "seed": 2027,
+        "start_index": 0,
+        "class_schedule": "balanced_modulo",
+    }
+    report = {
+        "status": "completed",
+        "sampling": sampling,
+        "checkpoint_step": result_builder.TARGET_STEP,
+        "checkpoint_sha256": "a" * 64,
+        "weights": "ema",
+        "output_dirs": {"8": generated.as_posix()},
+    }
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    images = [generated / f"{index:05d}.png" for index in range(10_000)]
+    provenance = {
+        "sampling": sampling,
+        "checkpoint_step": result_builder.TARGET_STEP,
+        "weights": "ema",
+        "sample_set_sha256": "b" * 64,
+    }
+    monkeypatch.setattr(metrics_evaluator, "find_images", lambda _path: images)
+    monkeypatch.setattr(
+        metrics_evaluator,
+        "validate_sampling_provenance",
+        lambda *_args, **_kwargs: provenance,
+    )
+    monkeypatch.setattr(
+        result_builder,
+        "sample_set_sha256",
+        lambda _images: provenance["sample_set_sha256"],
+    )
+
+    _, validated = result_builder._sampling_provenance(
+        report_path,
+        expected_checkpoint={"sha256": "a" * 64},
+        method="cofitok",
+    )
+
+    assert "weights" not in sampling
+    assert validated["sampling"] == {**sampling, "weights": "ema"}
+    assert validated["provenance"]["sampling"] == sampling

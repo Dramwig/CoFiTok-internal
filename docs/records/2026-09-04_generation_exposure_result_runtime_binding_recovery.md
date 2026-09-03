@@ -56,6 +56,15 @@ malformed path, and reuses it for both checks. A filesystem-backed regression
 test exercises the path-only authorization schema through final-checkpoint
 validation.
 
+The next replay reached formal sampling validation and exposed one final
+producer/consumer schema mismatch: the sampler records `weights` at report
+top-level while its nested `sampling` object contains the DDIM/random-stream
+protocol. The builder had required `weights` in both places. It now validates
+the authoritative top-level field once, preserves the nested provenance object
+byte-for-byte for sampler replay, and adds the verified weight only to the
+normalized result protocol used for matched comparison. A regression test
+covers the exact top-level-weight layout.
+
 ## Recovery boundary
 
 The recovery must run from a clean, committed checkout. It may create the

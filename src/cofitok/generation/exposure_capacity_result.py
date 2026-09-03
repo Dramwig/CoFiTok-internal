@@ -436,7 +436,6 @@ def _sampling_provenance(
     expected = {
         "sample_steps": 100,
         "num_samples": 10_000,
-        "weights": "ema",
         "guidance_scale": 1.5,
         "guidance_rescale": 0.0,
         "cfg_batch_mode": "batched",
@@ -467,12 +466,14 @@ def _sampling_provenance(
         raise ValueError(f"{method} sampling provenance is not the final EMA checkpoint")
     if provenance["sample_set_sha256"] != sample_set_sha256(images):
         raise ValueError(f"{method} sample-set digest cannot be reproduced")
+    normalized_sampling = copy.deepcopy(sampling)
+    normalized_sampling["weights"] = report["weights"]
     return report, {
         "report": identity(report_path),
         "generated_dir": generated_dir.resolve().as_posix(),
         "sample_count": len(images),
         "sample_set_sha256": provenance["sample_set_sha256"],
-        "sampling": copy.deepcopy(sampling),
+        "sampling": normalized_sampling,
         "provenance": provenance,
     }
 
