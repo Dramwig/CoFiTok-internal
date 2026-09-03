@@ -483,6 +483,7 @@ def validate_capacity_qualification_partial_training(
             "path": checkpoint.as_posix(),
             "bytes": checkpoint.stat().st_size,
             "sha256": integrity["checkpoint_sha256"],
+            "step": expected_stop_step,
             "integrity_manifest": {
                 "path": integrity_path.as_posix(),
                 "bytes": integrity_path.stat().st_size,

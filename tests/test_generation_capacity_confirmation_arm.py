@@ -62,9 +62,19 @@ def _fixture(
         "step": 10_000,
         "integrity_manifest": file_identity(sidecar),
     }
+    config_path = tmp_path / f"config_{arm}.json"
+    training_path = checkpoint.parent / "training_report.json"
+    _write(config_path, {"name": arm})
+    _write(training_path, {"completed_steps": 10_000})
+    config_id = file_identity(config_path)
+    training_id = file_identity(training_path)
     screen_path = tmp_path / f"screen_{arm}.json"
     screen_validation = {
         "arm": arm,
+        "sources": {
+            "config": config_id,
+            "training_report": training_id,
+        },
         "training": {
             "validation_epsilon_mse": 0.03,
             "checkpoint": checkpoint_row,
@@ -135,6 +145,8 @@ def _fixture(
                     "sha256": "d" * 64,
                 },
                 "checkpoint": checkpoint_row if name == arm else {},
+                "config": config_id if name == arm else {},
+                "training_report": training_id if name == arm else {},
             }
             for name in ARM_NAMES
         },
