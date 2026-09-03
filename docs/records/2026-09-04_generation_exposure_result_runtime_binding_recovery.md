@@ -65,6 +65,14 @@ byte-for-byte for sampler replay, and adds the verified weight only to the
 normalized result protocol used for matched comparison. A regression test
 covers the exact top-level-weight layout.
 
+The replay then exposed an import-only consumer defect at class-fidelity
+validation. The reusable validator is defined by
+`cofitok.generation_class_fidelity`, as used by all other gate builders, but the
+result builder tried to import it from the evaluator CLI, which never exports
+that symbol. The builder now imports the shared schema validator directly; no
+class-fidelity field or scientific check changes. A producer-consumer regression
+test confirms that result ingestion invokes the shared validator.
+
 ## Recovery boundary
 
 The recovery must run from a clean, committed checkout. It may create the

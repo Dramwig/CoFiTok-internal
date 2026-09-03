@@ -20,6 +20,7 @@ from cofitok.generation.exposure_capacity_authorization import (
     validate_authorization_contract,
 )
 from cofitok.generation.exposure_capacity_gate import HORIZON_EXTENSION_SCHEDULER_POLICY
+from cofitok.generation_class_fidelity import validate_class_fidelity_report
 from cofitok.inference_replay import reject_symlink_chain
 from cofitok.image_integrity import sample_set_sha256
 from cofitok.reporting import file_sha256, write_json_report
@@ -520,8 +521,6 @@ def _class_report(
     method: str,
     sampling: Mapping[str, Any],
 ) -> dict[str, Any]:
-    from scripts.evaluate_generation_class_fidelity import validate_class_fidelity_report
-
     report = read_object(report_path, name=f"{method} class-fidelity report")
     validate_class_fidelity_report(report)
     if report.get("sample_provenance") != sampling["provenance"]:

@@ -667,3 +667,38 @@ def test_result_normalizes_top_level_sampling_weights(
     assert "weights" not in sampling
     assert validated["sampling"] == {**sampling, "weights": "ema"}
     assert validated["provenance"]["sampling"] == sampling
+
+
+def test_result_class_report_uses_shared_schema_validator(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    provenance = {"sample_set_sha256": "a" * 64}
+    report = {
+        "sample_provenance": provenance,
+        "metrics": {
+            "sample_count": 10_000,
+            "requested_class_count": 1000,
+            "top1_accuracy": 0.1,
+            "top5_accuracy": 0.2,
+            "predicted_class_fraction": 0.3,
+            "normalized_predicted_class_entropy": 0.4,
+        },
+    }
+    report_path = tmp_path / "class_fidelity_report.json"
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    validated_reports: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        result_builder,
+        "validate_class_fidelity_report",
+        lambda payload: validated_reports.append(payload),
+    )
+
+    validated = result_builder._class_report(
+        report_path,
+        method="cofitok",
+        sampling={"provenance": provenance},
+    )
+
+    assert validated_reports == [report]
+    assert validated["metrics"]["top1_accuracy"] == 0.1
