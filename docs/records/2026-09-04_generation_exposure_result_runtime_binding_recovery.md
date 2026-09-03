@@ -45,6 +45,17 @@ A regression test supplies deliberately different control-plane and training
 runtime identities and verifies that both training reports are checked against
 the candidate-gate identity.
 
+The first physical replay then exposed a second dormant schema mismatch in the
+same result-only path. The authorization stores each source checkpoint as a
+serialized file identity with `path`, `bytes`, and `sha256`; it does not carry a
+redundant `name` field. The builder compared the training report's source
+`filename` with that absent field even though the resume-transition check below
+already derived the filename from the authorized path. The horizon-extension
+check now derives the basename from the same bound path, rejects an empty or
+malformed path, and reuses it for both checks. A filesystem-backed regression
+test exercises the path-only authorization schema through final-checkpoint
+validation.
+
 ## Recovery boundary
 
 The recovery must run from a clean, committed checkout. It may create the

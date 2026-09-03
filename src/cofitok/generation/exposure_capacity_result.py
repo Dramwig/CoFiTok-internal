@@ -276,6 +276,10 @@ def _verified_final_checkpoint(
 
     source = _object(expected_source, f"{method} source checkpoint binding")
     source_checkpoint = _object(source.get("checkpoint"), f"{method} source checkpoint")
+    source_checkpoint_path = str(source_checkpoint.get("path", ""))
+    source_checkpoint_filename = Path(source_checkpoint_path).name
+    if not source_checkpoint_path or not source_checkpoint_filename:
+        raise ValueError(f"{method} authorized source checkpoint path is malformed")
     extension = _object(
         report.get("horizon_extension"),
         f"{method} horizon extension provenance",
@@ -303,7 +307,7 @@ def _verified_final_checkpoint(
         != ["config.name", "config.runtime.steps"]
         or extension.get("target_config_sha256") != _canonical_object_sha256(config)
         or extension_source.get("path") != source_checkpoint.get("path")
-        or extension_source.get("filename") != source_checkpoint.get("name")
+        or extension_source.get("filename") != source_checkpoint_filename
         or extension_source.get("step") != SOURCE_STEP
         or extension_source.get("bytes") != source_checkpoint.get("bytes")
         or extension_source.get("sha256") != source_checkpoint.get("sha256")
@@ -338,7 +342,7 @@ def _verified_final_checkpoint(
         or transition.get("target_revision") != expected_execution_checkout.get("revision")
         or transition.get("branch") != expected_execution_checkout.get("branch")
         or transition_source.get("path") != source_checkpoint.get("path")
-        or transition_source.get("filename") != Path(str(source_checkpoint.get("path"))).name
+        or transition_source.get("filename") != source_checkpoint_filename
         or transition_source.get("bytes") != source_checkpoint.get("bytes")
         or transition_source.get("sha256") != source_checkpoint.get("sha256")
         or transition_source.get("step") != SOURCE_STEP

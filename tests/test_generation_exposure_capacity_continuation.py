@@ -454,3 +454,158 @@ def test_result_uses_candidate_gate_runtime_for_training_reports(
 
     assert captured_runtimes == [training_runtime, training_runtime]
     assert training_runtime != control_runtime
+
+
+def test_result_uses_authorized_source_path_for_horizon_filename(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    checkpoint = run_dir / "checkpoint_step_00110000.pt"
+    checkpoint.write_bytes(b"checkpoint")
+    sidecar = checkpoint.with_name(f"{checkpoint.name}.integrity.json")
+    sidecar.write_text("{}", encoding="utf-8")
+    metrics = {
+        "step": result_builder.TARGET_STEP,
+        "samples_seen": result_builder.EXPECTED_IMAGES_SEEN,
+        "loss": 0.1,
+    }
+    (run_dir / "train_metrics.jsonl").write_text(
+        json.dumps(metrics) + "\n",
+        encoding="utf-8",
+    )
+    checkpoint_sha = "d" * 64
+    checkpoint_bytes = checkpoint.stat().st_size
+    (run_dir / "latest.json").write_text(
+        json.dumps(
+            {
+                "checkpoint": checkpoint.name,
+                "step": result_builder.TARGET_STEP,
+                "checkpoint_bytes": checkpoint_bytes,
+                "checkpoint_sha256": checkpoint_sha,
+                "integrity_manifest": sidecar.name,
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        result_builder,
+        "verify_training_checkpoint",
+        lambda _checkpoint: {
+            "step": result_builder.TARGET_STEP,
+            "checkpoint_bytes": checkpoint_bytes,
+            "checkpoint_sha256": checkpoint_sha,
+        },
+    )
+    monkeypatch.setattr(
+        result_builder,
+        "resolve_latest_checkpoint",
+        lambda _run_dir: checkpoint,
+    )
+
+    source_checkpoint_path = tmp_path / "source" / "checkpoint_step_00100000.pt"
+    source_sidecar_path = source_checkpoint_path.with_name(
+        f"{source_checkpoint_path.name}.integrity.json"
+    )
+    source_checkpoint = {
+        "path": source_checkpoint_path.as_posix(),
+        "bytes": 123,
+        "sha256": "a" * 64,
+    }
+    source_sidecar = {
+        "path": source_sidecar_path.as_posix(),
+        "bytes": 456,
+        "sha256": "b" * 64,
+    }
+    execution = {"revision": "e" * 40, "branch": "execution"}
+    runtime_sha = "f" * 64
+    dataset_sha = "c" * 64
+    config_path = tmp_path / "continuation.json"
+    config = {
+        "name": "continuation",
+        "runtime": {"steps": result_builder.TARGET_STEP},
+        "data": {"dataset": "imagenet_256", "batch_size": 64},
+    }
+    report = {
+        "training_complete": True,
+        "completed_steps": result_builder.TARGET_STEP,
+        "target_steps": result_builder.TARGET_STEP,
+        "final_metrics": metrics,
+        "config": config,
+        "config_path": config_path.as_posix(),
+        "git": {**execution, "dirty": False},
+        "dataset_provenance": {"identity_sha256": dataset_sha, "status": "pass"},
+        "runtime_environment_sha256": runtime_sha,
+        "horizon_extension": {
+            "schema_version": result_builder.HORIZON_EXTENSION_SCHEMA_VERSION,
+            "kind": "bounded_training_horizon_extension",
+            "source_horizon_steps": result_builder.SOURCE_STEP,
+            "target_horizon_steps": result_builder.TARGET_STEP,
+            "additional_horizon_steps": result_builder.TARGET_STEP
+            - result_builder.SOURCE_STEP,
+            "source_checkpoint_step": result_builder.SOURCE_STEP,
+            "allowed_config_mismatch_paths": ["config.name", "config.runtime.steps"],
+            "target_config_sha256": result_builder._canonical_object_sha256(config),
+            "source_checkpoint": {
+                **source_checkpoint,
+                "filename": source_checkpoint_path.name,
+                "step": result_builder.SOURCE_STEP,
+                "integrity_manifest": source_sidecar["path"],
+                "integrity_manifest_bytes": source_sidecar["bytes"],
+                "integrity_manifest_sha256": source_sidecar["sha256"],
+            },
+            "scheduler": {
+                "policy": result_builder.HORIZON_EXTENSION_SCHEDULER_POLICY,
+                "source_horizon_steps": result_builder.SOURCE_STEP,
+                "effective_horizon_steps": result_builder.SOURCE_STEP,
+                "target_horizon_steps": result_builder.TARGET_STEP,
+                "explicit_resume_target_steps_required": True,
+                "restored_last_epoch": result_builder.SOURCE_STEP,
+            },
+        },
+        "resume": source_checkpoint["path"],
+        "resume_revision_transition": {
+            "schema_version": 1,
+            "reason": "sampler_rng_state_device_compatibility",
+            "source_revision": result_builder.SOURCE_CHECKOUT["revision"],
+            "target_revision": execution["revision"],
+            "branch": execution["branch"],
+            "source_checkpoint": {
+                **source_checkpoint,
+                "filename": source_checkpoint_path.name,
+                "step": result_builder.SOURCE_STEP,
+                "integrity_manifest": source_sidecar["path"],
+                "git_branch": result_builder.SOURCE_CHECKOUT["branch"],
+            },
+        },
+        "metrics_resume_reconciliation": {},
+        "output_dir": run_dir.as_posix(),
+        "latest_checkpoint": {
+            "checkpoint": checkpoint.name,
+            "checkpoint_sha256": checkpoint_sha,
+            "checkpoint_bytes": checkpoint_bytes,
+            "step": result_builder.TARGET_STEP,
+        },
+        "parameter_count": 1,
+    }
+    report_path = run_dir / "training_report.json"
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+
+    validated = result_builder._verified_final_checkpoint(
+        report,
+        method="cofitok",
+        expected_run_dir=run_dir,
+        report_path=report_path,
+        expected_source={
+            "step": result_builder.SOURCE_STEP,
+            "checkpoint": source_checkpoint,
+            "integrity_manifest": source_sidecar,
+        },
+        expected_execution_checkout=execution,
+        expected_config_identity={"path": config_path.as_posix()},
+        expected_dataset_identity_sha256=dataset_sha,
+        expected_runtime_environment_sha256=runtime_sha,
+    )
+
+    assert validated["checkpoint"]["path"] == checkpoint.resolve().as_posix()
