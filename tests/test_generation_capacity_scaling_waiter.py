@@ -7,10 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from cofitok.generation.capacity_scaling_decision import (
-    CAPACITY_SCALING_RECOMMENDATION_ID,
-)
-from cofitok.reporting import file_sha256
+from cofitok.generation.exposure_capacity_authorization import identity
 from scripts import wait_for_generation_capacity_scaling_decision as waiter
 
 
@@ -20,54 +17,44 @@ ROOT = Path(__file__).resolve().parents[1]
 def _args(tmp_path: Path) -> argparse.Namespace:
     return argparse.Namespace(
         project=ROOT,
-        capacity_probe_result=tmp_path / "capacity_probe_result.json",
-        standing_authorization=tmp_path / "standing_authorization.json",
-        expected_standing_authorization_sha256="a" * 64,
+        capacity_confirmation_result=tmp_path / "capacity_confirmation_result.json",
         decision=tmp_path / "capacity_scaling_decision.json",
         status=tmp_path / "waiter_status.json",
-        expected_self_revision="d" * 40,
-        expected_self_tree="e" * 40,
+        expected_self_revision="a" * 40,
+        expected_self_tree="b" * 40,
         expected_self_branch="scale/capacity-decision",
-        expected_capacity_revision="c" * 40,
-        expected_capacity_branch="scale/capacity-probe",
+        expected_confirmation_revision="c" * 40,
+        expected_confirmation_tree="d" * 40,
+        expected_confirmation_branch="scale/capacity-confirmation",
         poll_seconds=1,
     )
 
 
-def _decision(*, authorized: bool) -> dict:
+def _decision(*, selected: bool) -> dict[str, object]:
     return {
-        "recommended_next_stage": {
-            "id": (
-                CAPACITY_SCALING_RECOMMENDATION_ID
-                if authorized
-                else "hold_250m_capacity_scaling_and_prepare_recipe_intervention"
-            ),
-            "execution_ready": authorized,
-        },
-        "execution_authorization": {
-            "matched_250m_resume_allowed": authorized,
+        "scientific_status": "scaling_preparation_selected" if selected else "hold",
+        "next_stage": {
+            "route": "capacity_scaling_preparation" if selected else "hold",
+            "capacity_scaling_preparation_allowed": selected,
+            "training_launch_allowed": False,
+            "full_300k_launch_allowed": False,
         },
     }
 
 
 @pytest.mark.parametrize(
-    ("authorized", "expected_status"),
+    ("selected", "expected_status"),
     ((True, "completed"), (False, "not_selected")),
 )
-def test_waiter_builds_once_and_records_selected_branch(
+def test_waiter_builds_once_and_records_non_authorizing_selection(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
-    authorized: bool,
+    selected: bool,
     expected_status: str,
 ) -> None:
     args = _args(tmp_path)
-    result = {"status": "completed"}
-    args.capacity_probe_result.write_text(json.dumps(result), encoding="utf-8")
-    args.standing_authorization.write_text("{}", encoding="utf-8")
-    args.expected_standing_authorization_sha256 = file_sha256(
-        args.standing_authorization
-    )
-    expected = _decision(authorized=authorized)
+    args.capacity_confirmation_result.write_text("{}", encoding="utf-8")
+    expected = _decision(selected=selected)
     monkeypatch.setattr(waiter, "parse_args", lambda: args)
     monkeypatch.setattr(
         waiter,
@@ -94,10 +81,9 @@ def test_waiter_builds_once_and_records_selected_branch(
     status = json.loads(args.status.read_text(encoding="utf-8"))
     assert actual == expected
     assert status["status"] == expected_status
-    assert status["recommended_next_stage"]["id"] == (
-        expected["recommended_next_stage"]["id"]
-    )
+    assert status["next_stage"] == expected["next_stage"]
     assert status["authorization_boundary"]["training_launch_allowed"] is False
+    assert status["authorization_boundary"]["full_300k_launch_allowed"] is False
 
 
 def test_waiter_refuses_existing_nonreproducible_decision(
@@ -105,11 +91,7 @@ def test_waiter_refuses_existing_nonreproducible_decision(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     args = _args(tmp_path)
-    args.capacity_probe_result.write_text("{}", encoding="utf-8")
-    args.standing_authorization.write_text("{}", encoding="utf-8")
-    args.expected_standing_authorization_sha256 = file_sha256(
-        args.standing_authorization
-    )
+    args.capacity_confirmation_result.write_text("{}", encoding="utf-8")
     args.decision.write_text(json.dumps({"different": True}), encoding="utf-8")
     monkeypatch.setattr(waiter, "parse_args", lambda: args)
     monkeypatch.setattr(
@@ -125,18 +107,49 @@ def test_waiter_refuses_existing_nonreproducible_decision(
     monkeypatch.setattr(
         waiter,
         "build_from_sources",
-        lambda **kwargs: _decision(authorized=True),
+        lambda **kwargs: _decision(selected=True),
     )
     with pytest.raises(ValueError, match="not reproducible"):
         waiter.main()
+    status = json.loads(args.status.read_text(encoding="utf-8"))
+    assert status["status"] == "failed"
+    assert "not reproducible" in status["error"]
 
 
 def test_capacity_scaling_waiter_runbook_is_cpu_only() -> None:
     source = (
         ROOT
-        / "artifacts/runbooks/generation_capacity_scaling_decision_after_probe.sh"
+        / "artifacts/runbooks/generation_capacity_scaling_decision_after_confirmation.sh"
     ).read_text(encoding="utf-8")
+    assert "capacity-confirmation-result" in source
     assert "wait_for_generation_capacity_scaling_decision.py" in source
+    assert "capacity-probe-result" not in source
+    assert "standing-authorization" not in source
     assert "train_generation.py" not in source
     assert "nvidia-smi" not in source
     assert "full_matched_300k" not in source
+
+
+def test_waiter_status_binds_physical_confirmation_result(
+    tmp_path: Path,
+) -> None:
+    args = _args(tmp_path)
+    args.capacity_confirmation_result.write_text("{}", encoding="utf-8")
+    result_id = identity(args.capacity_confirmation_result)
+    waiter._status(
+        args,
+        state="waiting",
+        detail="test",
+        polls=1,
+        self_git={
+            "revision": args.expected_self_revision,
+            "tree": args.expected_self_tree,
+            "branch": args.expected_self_branch,
+            "tracked_dirty": False,
+        },
+        result_identity=result_id,
+        decision_identity=None,
+        next_stage=None,
+    )
+    status = json.loads(args.status.read_text(encoding="utf-8"))
+    assert status["capacity_confirmation_result"] == result_id

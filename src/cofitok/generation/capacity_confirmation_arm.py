@@ -425,10 +425,26 @@ def build_capacity_confirmation_arm_validation(
         ),
         f"{arm} frozen checkpoint",
     )
-    if checkpoint != _object(prepared_arms[arm], f"{arm} frozen arm").get(
-        "checkpoint"
-    ):
+    prepared_arm = _object(prepared_arms[arm], f"{arm} frozen arm")
+    if checkpoint != prepared_arm.get("checkpoint"):
         raise ValueError(f"{arm} frozen checkpoint differs from confirmation launch")
+    config_identity = _object(
+        _object(screen_validation.get("sources"), f"{arm} screen sources").get(
+            "config"
+        ),
+        f"{arm} frozen config",
+    )
+    training_report_identity = _object(
+        _object(screen_validation.get("sources"), f"{arm} screen sources").get(
+            "training_report"
+        ),
+        f"{arm} frozen training report",
+    )
+    if (
+        config_identity != prepared_arm.get("config")
+        or training_report_identity != prepared_arm.get("training_report")
+    ):
+        raise ValueError(f"{arm} frozen training sources differ from confirmation launch")
     output_root = Path(
         str(
             _object(
@@ -477,6 +493,8 @@ def build_capacity_confirmation_arm_validation(
         "frozen_training": {
             "training_performed": False,
             "checkpoint": copy.deepcopy(checkpoint),
+            "config": copy.deepcopy(config_identity),
+            "training_report": copy.deepcopy(training_report_identity),
             "screen_training": copy.deepcopy(screen_validation["training"]),
         },
         "sampling": sampling,
