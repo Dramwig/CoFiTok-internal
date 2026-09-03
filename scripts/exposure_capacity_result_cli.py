@@ -16,6 +16,14 @@ from cofitok.inference_replay import reject_symlink_chain
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--result", type=Path, required=True)
+    parser.add_argument(
+        "--validation-receipt",
+        type=Path,
+        help=(
+            "Optional immutable receipt written by the validator after the result "
+            "has been rebuilt from all bound source evidence."
+        ),
+    )
     parser.add_argument("--authorization", type=Path, required=True)
     parser.add_argument("--expected-authorization-sha256", required=True)
     parser.add_argument("--gate", type=Path, required=True)
@@ -28,6 +36,14 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--expected-stage-authorization-sha256", required=True)
     parser.add_argument("--source-project-root", type=Path, required=True)
     parser.add_argument("--execution-project-root", type=Path, required=True)
+    parser.add_argument(
+        "--validator-project-root",
+        type=Path,
+        help=(
+            "Clean checkout running the result validator. This may be a newer "
+            "revision than the immutable execution checkout recorded by the result."
+        ),
+    )
     parser.add_argument("--cofitok-config", type=Path, required=True)
     parser.add_argument("--dense-config", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)

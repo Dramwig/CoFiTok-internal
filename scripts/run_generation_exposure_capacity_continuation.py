@@ -567,6 +567,34 @@ def _result_command(args: argparse.Namespace, root: Path) -> list[str | Path]:
     return command
 
 
+def _validation_command(args: argparse.Namespace, root: Path) -> list[str | Path]:
+    return [
+        args.python,
+        args.project_root / "scripts" / "validate_generation_exposure_capacity_result.py",
+        "--result", root / "exposure_capacity_result.json",
+        "--validation-receipt", root / "exposure_capacity_result.validation.json",
+        "--authorization", args.authorization,
+        "--expected-authorization-sha256", args.expected_authorization_sha256,
+        "--gate", args.gate,
+        "--expected-gate-sha256", args.expected_gate_sha256,
+        "--preparation", args.preparation,
+        "--expected-preparation-sha256", args.expected_preparation_sha256,
+        "--standing-authorization", args.standing_authorization,
+        "--expected-standing-authorization-sha256", args.expected_standing_authorization_sha256,
+        "--stage-authorization", args.stage_authorization,
+        "--expected-stage-authorization-sha256", args.expected_stage_authorization_sha256,
+        "--source-project-root", args.source_project_root,
+        "--execution-project-root", args.project_root,
+        "--validator-project-root", args.project_root,
+        "--cofitok-config", args.cofitok_config,
+        "--dense-config", args.dense_config,
+        "--output-root", root,
+        "--real-dir", args.real_dir,
+        "--classifier-checkpoint", args.classifier_checkpoint,
+        "--cache-root", args.cache_root,
+    ]
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     project_root = reject_symlink_chain(args.project_root, name="execution project root").resolve()
@@ -823,27 +851,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 _write_status(status_path, status="running", stage="result", detail="building and validating bounded continuation result", auth=auth_summary)
                 _run(_result_command(args, output_root), cwd=project_root, env=env, log_handle=log_handle)
                 _run(
-                    [
-                        args.python,
-                        project_root / "scripts" / "validate_generation_exposure_capacity_result.py",
-                        "--result", output_root / "exposure_capacity_result.json",
-                        "--authorization", args.authorization,
-                        "--expected-authorization-sha256", args.expected_authorization_sha256,
-                        "--gate", args.gate,
-                        "--expected-gate-sha256", args.expected_gate_sha256,
-                        "--preparation", args.preparation,
-                        "--expected-preparation-sha256", args.expected_preparation_sha256,
-                        "--standing-authorization", args.standing_authorization,
-                        "--expected-standing-authorization-sha256", args.expected_standing_authorization_sha256,
-                        "--source-project-root", source_project_root,
-                        "--execution-project-root", project_root,
-                        "--cofitok-config", args.cofitok_config,
-                        "--dense-config", args.dense_config,
-                        "--output-root", output_root,
-                        "--real-dir", args.real_dir,
-                        "--classifier-checkpoint", args.classifier_checkpoint,
-                        "--cache-root", args.cache_root,
-                    ],
+                    _validation_command(args, output_root),
                     cwd=project_root,
                     env=env,
                     log_handle=log_handle,

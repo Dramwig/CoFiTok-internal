@@ -42,6 +42,8 @@ def parse_args() -> argparse.Namespace:
             "full",
             "stability_scaling",
             "stability_quality_bridge",
+            "stability_capacity_reference",
+            "stability_capacity_qualification",
             "stability_full",
         ),
     )

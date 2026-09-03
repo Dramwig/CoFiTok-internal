@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 from contextlib import contextmanager
 import json
 from pathlib import Path
@@ -8,6 +9,50 @@ import pytest
 
 import cofitok.generation.exposure_capacity_result as result_builder
 import scripts.run_generation_exposure_capacity_continuation as controller
+
+
+def test_result_validation_command_binds_stage_authorization_and_receipt(
+    tmp_path: Path,
+) -> None:
+    args = argparse.Namespace(
+        python=Path("python"),
+        project_root=tmp_path / "execution",
+        source_project_root=tmp_path / "source",
+        authorization=tmp_path / "authorization.json",
+        expected_authorization_sha256="a" * 64,
+        gate=tmp_path / "gate.json",
+        expected_gate_sha256="b" * 64,
+        preparation=tmp_path / "preparation.json",
+        expected_preparation_sha256="c" * 64,
+        standing_authorization=tmp_path / "standing.json",
+        expected_standing_authorization_sha256="d" * 64,
+        stage_authorization=tmp_path / "stage.json",
+        expected_stage_authorization_sha256="e" * 64,
+        cofitok_config=tmp_path / "cofitok.json",
+        dense_config=tmp_path / "dense.json",
+        real_dir=tmp_path / "real",
+        classifier_checkpoint=tmp_path / "classifier.pth",
+        cache_root=tmp_path / "cache",
+    )
+    root = tmp_path / "output"
+
+    command = [str(value) for value in controller._validation_command(args, root)]
+
+    assert command[command.index("--stage-authorization") + 1] == str(
+        args.stage_authorization
+    )
+    assert command[command.index("--expected-stage-authorization-sha256") + 1] == (
+        args.expected_stage_authorization_sha256
+    )
+    assert command[command.index("--validation-receipt") + 1] == str(
+        root / "exposure_capacity_result.validation.json"
+    )
+    assert command[command.index("--execution-project-root") + 1] == str(
+        args.project_root
+    )
+    assert command[command.index("--validator-project-root") + 1] == str(
+        args.project_root
+    )
 
 
 def _controller_status(root: Path, authorization: dict[str, object], *, status: str = "failed") -> Path:

@@ -124,6 +124,92 @@ def test_stability_full_recipe_scales_the_qualified_mechanism_to_300k() -> None:
     ]
 
 
+def test_stability_capacity_qualification_is_a_fresh_250m_10k_stop() -> None:
+    cofitok = _config(
+        "imagenet256_capacity_qualification_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k.json"
+    )
+    dense = _config(
+        "imagenet256_capacity_qualification_rollout_x0_u2_ema_teacher_dense_100k.json"
+    )
+
+    assert (
+        infer_generation_training_stage(cofitok, dense)
+        == "stability_capacity_qualification"
+    )
+    contract = generation_training_recipe_contract(
+        cofitok,
+        dense,
+        stage="stability_capacity_qualification",
+    )
+
+    assert contract["valid"] is True, contract["issues"]
+    assert contract["issues"] == []
+    assert contract["expected_shared"]["model.base_channels"] == 256
+    assert contract["expected_shared"]["runtime.protected_checkpoint_steps"] == [
+        10_000
+    ]
+    assert contract["expected_shared"]["runtime.steps"] == 100_000
+    assert contract["effective_batches"]["cofitok"] == {
+        "micro_batch_size": 16,
+        "gradient_accumulation_steps": 4,
+        "effective_batch_size": 64,
+    }
+    assert contract["observed"]["cofitok"]["model.token_channel_schedule"] == [
+        4,
+        4,
+        8,
+        8,
+        8,
+        1,
+        1,
+        1,
+    ]
+
+
+def test_stability_capacity_qualification_rejects_a_base128_pair() -> None:
+    cofitok = _config(
+        "imagenet256_capacity_qualification_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k.json"
+    )
+    dense = _config(
+        "imagenet256_capacity_qualification_rollout_x0_u2_ema_teacher_dense_100k.json"
+    )
+    for config in (cofitok, dense):
+        config["model"]["base_channels"] = 128
+
+    contract = generation_training_recipe_contract(
+        cofitok,
+        dense,
+        stage="stability_capacity_qualification",
+    )
+
+    assert contract["valid"] is False
+    assert any("model.base_channels" in issue for issue in contract["issues"])
+
+
+def test_stability_capacity_reference_is_a_fresh_base128_10k_stop() -> None:
+    cofitok = _config(
+        "imagenet256_capacity_reference_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k.json"
+    )
+    dense = _config(
+        "imagenet256_capacity_reference_rollout_x0_u2_ema_teacher_dense_100k.json"
+    )
+
+    assert infer_generation_training_stage(cofitok, dense) == (
+        "stability_capacity_reference"
+    )
+    contract = generation_training_recipe_contract(
+        cofitok,
+        dense,
+        stage="stability_capacity_reference",
+    )
+
+    assert contract["valid"] is True, contract["issues"]
+    assert contract["expected_shared"]["model.base_channels"] == 128
+    assert contract["expected_shared"]["runtime.protected_checkpoint_steps"] == [
+        10_000
+    ]
+
+
 def test_stability_recipe_rejects_identically_shifted_teacher_window() -> None:
     cofitok = _config(
         "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_50k.json"

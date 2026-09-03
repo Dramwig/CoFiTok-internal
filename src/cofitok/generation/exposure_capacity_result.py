@@ -28,6 +28,25 @@ from cofitok.training.checkpointing import resolve_latest_checkpoint, verify_tra
 
 RESULT_SCHEMA = "cofitok_generation_exposure_capacity_continuation_result_v1"
 RESULT_ROLE = "bounded_exposure_capacity_continuation_result"
+VALIDATION_RECEIPT_SCHEMA = (
+    "cofitok_generation_exposure_capacity_result_validation_receipt_v1"
+)
+VALIDATION_RECEIPT_ROLE = "content_addressed_exposure_capacity_result_validation"
+VALIDATION_RECEIPT_BOUNDARY = {
+    "receipt_is_execution_authorization": False,
+    "remote_mutation_allowed": False,
+    "gpu_execution_allowed": False,
+    "training_launch_allowed": False,
+    "sampling_launch_allowed": False,
+    "evaluation_launch_allowed": False,
+    "capacity_screen_launch_allowed": False,
+    "full_training_launch_allowed": False,
+    "full_300k_launch_allowed": False,
+    "promotion_allowed": False,
+    "export_allowed": False,
+    "release_allowed": False,
+    "process_signals_allowed": False,
+}
 SOURCE_STEP = 100_000
 EXPECTED_IMAGES_SEEN = TARGET_STEP * 64
 EXPECTED_SAMPLING = copy.deepcopy(EVALUATION_CONTRACT)
@@ -67,6 +86,150 @@ def _finite(value: Any, name: str, *, minimum: float | None = None) -> float:
 def _canonical_object_sha256(value: Mapping[str, Any]) -> str:
     payload = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _serialized_identity(value: Any, name: str) -> dict[str, Any]:
+    row = _object(value, name)
+    if set(row) != {"path", "bytes", "sha256"}:
+        raise ValueError(f"{name} identity fields differ")
+    path = row.get("path")
+    size = row.get("bytes")
+    digest = row.get("sha256")
+    if not isinstance(path, str) or not path:
+        raise ValueError(f"{name} identity path is missing")
+    if not isinstance(size, int) or isinstance(size, bool) or size < 1:
+        raise ValueError(f"{name} identity byte count is invalid")
+    if (
+        not isinstance(digest, str)
+        or len(digest) != 64
+        or digest != digest.lower()
+        or any(character not in "0123456789abcdef" for character in digest)
+    ):
+        raise ValueError(f"{name} identity SHA256 is malformed")
+    return {"path": path, "bytes": size, "sha256": digest}
+
+
+def _clean_checkout_identity(value: Any, name: str) -> dict[str, Any]:
+    row = _object(value, name)
+    if set(row) != {"revision", "tree", "branch", "tracked_dirty"}:
+        raise ValueError(f"{name} Git identity fields differ")
+    revision = row.get("revision")
+    tree = row.get("tree")
+    branch = row.get("branch")
+    if (
+        not isinstance(revision, str)
+        or len(revision) != 40
+        or revision != revision.lower()
+        or any(character not in "0123456789abcdef" for character in revision)
+        or not isinstance(tree, str)
+        or len(tree) != 40
+        or tree != tree.lower()
+        or any(character not in "0123456789abcdef" for character in tree)
+        or not isinstance(branch, str)
+        or not branch
+        or row.get("tracked_dirty") is not False
+    ):
+        raise ValueError(f"{name} must identify one exact clean checkout")
+    return {
+        "revision": revision,
+        "tree": tree,
+        "branch": branch,
+        "tracked_dirty": False,
+    }
+
+
+def _validation_source_evidence(result: Mapping[str, Any]) -> dict[str, Any]:
+    methods = ("cofitok", "dense_identity")
+    root_sources = {
+        name: _serialized_identity(result.get(name), f"result {name}")
+        for name in (
+            "authorization",
+            "candidate_gate",
+            "preparation",
+            "standing_authorization",
+        )
+    }
+    configs = _object(result.get("configs"), "result configs")
+    if set(configs) != set(methods):
+        raise ValueError("result config identity set differs")
+    normalized_configs = {
+        method: _serialized_identity(
+            configs.get(method), f"result {method} config"
+        )
+        for method in methods
+    }
+    training = _object(result.get("training"), "result training evidence")
+    sampling = _object(result.get("sampling"), "result sampling evidence")
+    quality = _object(result.get("quality"), "result quality evidence")
+    class_fidelity = _object(
+        result.get("class_fidelity"), "result class-fidelity evidence"
+    )
+    mechanism = _object(result.get("mechanism"), "result mechanism evidence")
+    rollout = _object(result.get("rollout"), "result rollout evidence")
+    for label, rows in (
+        ("training", training),
+        ("sampling", sampling),
+        ("quality", quality),
+        ("class fidelity", class_fidelity),
+        ("mechanism", mechanism),
+        ("rollout", rollout),
+    ):
+        if set(rows) != set(methods):
+            raise ValueError(f"result {label} method set differs")
+    method_sources: dict[str, Any] = {}
+    for method in methods:
+        training_row = _object(training.get(method), f"result {method} training")
+        sampling_row = _object(sampling.get(method), f"result {method} sampling")
+        quality_row = _object(quality.get(method), f"result {method} quality")
+        class_row = _object(
+            class_fidelity.get(method), f"result {method} class fidelity"
+        )
+        mechanism_row = _object(
+            mechanism.get(method), f"result {method} mechanism"
+        )
+        rollout_row = _object(rollout.get(method), f"result {method} rollout")
+        method_sources[method] = {
+            "training_report": _serialized_identity(
+                training_row.get("report"), f"result {method} training report"
+            ),
+            "checkpoint": _serialized_identity(
+                training_row.get("checkpoint"), f"result {method} checkpoint"
+            ),
+            "checkpoint_integrity_manifest": _serialized_identity(
+                training_row.get("integrity_manifest"),
+                f"result {method} checkpoint integrity manifest",
+            ),
+            "latest": _serialized_identity(
+                training_row.get("latest"), f"result {method} latest pointer"
+            ),
+            "metrics": _serialized_identity(
+                training_row.get("metrics"), f"result {method} training metrics"
+            ),
+            "sampling_report": _serialized_identity(
+                sampling_row.get("report"), f"result {method} sampling report"
+            ),
+            "generation_metrics_report": _serialized_identity(
+                quality_row.get("report"),
+                f"result {method} generation metrics report",
+            ),
+            "class_fidelity_report": _serialized_identity(
+                class_row.get("report"),
+                f"result {method} class-fidelity report",
+            ),
+            "checkpoint_evaluation_report": _serialized_identity(
+                mechanism_row.get("report"),
+                f"result {method} checkpoint evaluation report",
+            ),
+            "rollout_stability_report": _serialized_identity(
+                rollout_row.get("report"),
+                f"result {method} rollout stability report",
+            ),
+        }
+    return {
+        "root": root_sources,
+        "configs": normalized_configs,
+        "methods": method_sources,
+    }
 
 
 def _verified_final_checkpoint(
@@ -629,4 +792,86 @@ def build_result(
     }
 
 
-__all__ = ["RESULT_ROLE", "RESULT_SCHEMA", "build_result"]
+def build_validation_receipt(
+    *,
+    result: Mapping[str, Any],
+    result_identity: Mapping[str, Any],
+    validator_git: Mapping[str, Any],
+) -> dict[str, Any]:
+    if (
+        result.get("schema_version") != RESULT_SCHEMA
+        or result.get("role") != RESULT_ROLE
+        or result.get("status") != "completed"
+        or result.get("operational_status") != "pass"
+        or result.get("scientific_status") != "hold"
+        or result.get("terminal_status") != "hold"
+        or result.get("generation_advantage_proven") is not False
+    ):
+        raise ValueError("continuation result is not the canonical completed hold")
+    claim_guards = _object(result.get("claim_guards"), "result claim guards")
+    if claim_guards != {
+        "terminal_hold_preserved": True,
+        "generation_advantage_proven": False,
+        "full_training_launch_allowed": False,
+        "full_300k_launch_allowed": False,
+        "promotion_allowed": False,
+        "release_allowed": False,
+    }:
+        raise ValueError("continuation result claim guards differ")
+    serialized_result = _serialized_identity(result_identity, "continuation result")
+    git = _clean_checkout_identity(validator_git, "result validator")
+    execution = _clean_checkout_identity(
+        result.get("execution_checkout"), "result execution checkout"
+    )
+    source_evidence = _validation_source_evidence(result)
+    basis = {
+        "result": serialized_result,
+        "execution_checkout": execution,
+        "validator_git": git,
+        "source_evidence": source_evidence,
+    }
+    return {
+        "schema_version": VALIDATION_RECEIPT_SCHEMA,
+        "role": VALIDATION_RECEIPT_ROLE,
+        "status": "pass",
+        "result": serialized_result,
+        "execution_checkout": execution,
+        "validator_git": git,
+        "source_evidence": source_evidence,
+        "validation_basis_sha256": _canonical_object_sha256(basis),
+        "scientific_status": "hold",
+        "generation_advantage_proven": False,
+        "authorization_boundary": copy.deepcopy(VALIDATION_RECEIPT_BOUNDARY),
+    }
+
+
+def validate_validation_receipt(
+    receipt: Mapping[str, Any],
+    *,
+    result: Mapping[str, Any],
+    result_identity: Mapping[str, Any],
+) -> dict[str, Any]:
+    receipt_object = _object(receipt, "result validation receipt")
+    validator_git = _clean_checkout_identity(
+        receipt_object.get("validator_git"), "result validator"
+    )
+    expected = build_validation_receipt(
+        result=result,
+        result_identity=result_identity,
+        validator_git=validator_git,
+    )
+    if receipt_object != expected:
+        raise ValueError("result validation receipt is not reproducible")
+    return copy.deepcopy(expected)
+
+
+__all__ = [
+    "RESULT_ROLE",
+    "RESULT_SCHEMA",
+    "VALIDATION_RECEIPT_BOUNDARY",
+    "VALIDATION_RECEIPT_ROLE",
+    "VALIDATION_RECEIPT_SCHEMA",
+    "build_result",
+    "build_validation_receipt",
+    "validate_validation_receipt",
+]
