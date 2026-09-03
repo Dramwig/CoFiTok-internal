@@ -629,6 +629,18 @@ def build_result(
         source_checkout=source_checkout,
         config_identities=config_identities,
     )
+    gate_live = _object(gate.get("live_prelaunch"), "candidate gate live snapshot")
+    training_runtime_environment_sha256 = str(
+        gate_live.get("runtime_environment_sha256", "")
+    )
+    if (
+        len(training_runtime_environment_sha256) != 64
+        or any(
+            character not in "0123456789abcdef"
+            for character in training_runtime_environment_sha256
+        )
+    ):
+        raise ValueError("candidate gate training runtime SHA256 is malformed")
     training = {}
     sampling = {}
     quality = {}
@@ -676,11 +688,7 @@ def build_result(
                     "dataset_identity_sha256"
                 ]
             ),
-            expected_runtime_environment_sha256=str(
-                _object(validated_auth["live_prelaunch"], "authorization live snapshot")[
-                    "runtime_environment_sha256"
-                ]
-            ),
+            expected_runtime_environment_sha256=training_runtime_environment_sha256,
         )
         sampling_report, sampling[method] = _sampling_provenance(
             sampling_path,

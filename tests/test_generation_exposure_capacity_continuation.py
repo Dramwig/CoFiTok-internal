@@ -333,3 +333,124 @@ def test_result_rollout_report_rejects_protocol_drift(
             method="cofitok",
             expected_checkpoint={"sha256": "a" * 64},
         )
+
+
+def test_result_uses_candidate_gate_runtime_for_training_reports(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    control_runtime = "a" * 64
+    training_runtime = "b" * 64
+    captured_runtimes: list[str] = []
+    training_report = {"runtime_environment_sha256": training_runtime}
+    validated_authorization = {
+        "schema_version": "authorization",
+        "decision": "bounded",
+        "scope": "exposure",
+        "source_checkpoints": {"cofitok": {}, "dense_identity": {}},
+        "live_prelaunch": {
+            "dataset_identity_sha256": "c" * 64,
+            "runtime_environment_sha256": control_runtime,
+        },
+    }
+
+    monkeypatch.setattr(
+        result_builder,
+        "validate_authorization_contract",
+        lambda *args, **kwargs: validated_authorization,
+    )
+    monkeypatch.setattr(
+        result_builder,
+        "read_object",
+        lambda *args, **kwargs: training_report,
+    )
+
+    def verified_checkpoint(*args, **kwargs):
+        captured_runtimes.append(kwargs["expected_runtime_environment_sha256"])
+        return {
+            "checkpoint": {"sha256": "d" * 64},
+            "git": {"revision": "e" * 40, "branch": "execution"},
+            "config": {"data": {"dataset": "imagenet_256"}},
+        }
+
+    sampling_protocol = {
+        "sample_steps": 100,
+        "num_samples": 10_000,
+        "weights": "ema",
+        "guidance_scale": 1.5,
+        "guidance_rescale": 0.0,
+        "cfg_batch_mode": "batched",
+        "eta": 0.0,
+        "seed": 2027,
+        "start_index": 0,
+        "class_schedule": "balanced_modulo",
+    }
+    monkeypatch.setattr(
+        result_builder,
+        "_verified_final_checkpoint",
+        verified_checkpoint,
+    )
+    monkeypatch.setattr(
+        result_builder,
+        "_sampling_provenance",
+        lambda *args, **kwargs: ({}, {"sampling": sampling_protocol}),
+    )
+    monkeypatch.setattr(
+        result_builder,
+        "_metrics_report",
+        lambda *args, **kwargs: {
+            "report": {},
+            "metrics": {
+                "frechet_inception_distance": 1.0,
+                "recall": 0.1,
+            },
+        },
+    )
+    monkeypatch.setattr(
+        result_builder,
+        "_class_report",
+        lambda *args, **kwargs: {},
+    )
+    monkeypatch.setattr(
+        result_builder,
+        "_checkpoint_eval",
+        lambda *args, **kwargs: {},
+    )
+    monkeypatch.setattr(
+        result_builder,
+        "_rollout_report",
+        lambda *args, **kwargs: {
+            "report": {},
+            "protocol": result_builder.EXPECTED_ROLLOUT_PROTOCOL,
+        },
+    )
+
+    result_builder.build_result(
+        authorization={},
+        gate={"live_prelaunch": {"runtime_environment_sha256": training_runtime}},
+        preparation={},
+        preparation_identity={},
+        gate_identity={},
+        standing_identity={},
+        execution_checkout={},
+        config_identities={"cofitok": {}, "dense_identity": {}},
+        authorization_identity={},
+        candidate_gate_identity={},
+        cofitok_run_dir=tmp_path / "cofitok",
+        dense_run_dir=tmp_path / "dense",
+        cofitok_training_report=tmp_path / "cofitok-training.json",
+        dense_training_report=tmp_path / "dense-training.json",
+        cofitok_sampling_report=tmp_path / "cofitok-sampling.json",
+        dense_sampling_report=tmp_path / "dense-sampling.json",
+        cofitok_metrics_report=tmp_path / "cofitok-metrics.json",
+        dense_metrics_report=tmp_path / "dense-metrics.json",
+        cofitok_class_report=tmp_path / "cofitok-class.json",
+        dense_class_report=tmp_path / "dense-class.json",
+        cofitok_checkpoint_report=tmp_path / "cofitok-checkpoint.json",
+        dense_checkpoint_report=tmp_path / "dense-checkpoint.json",
+        cofitok_rollout_report=tmp_path / "cofitok-rollout.json",
+        dense_rollout_report=tmp_path / "dense-rollout.json",
+    )
+
+    assert captured_runtimes == [training_runtime, training_runtime]
+    assert training_runtime != control_runtime
