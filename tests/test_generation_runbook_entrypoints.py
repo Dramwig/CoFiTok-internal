@@ -39,6 +39,7 @@ RUNBOOKS = (
     "generation_stability_ema_teacher_completion_audit.sh",
     "generation_capacity_screen_10k.sh",
     "generation_capacity_confirmation_10k.sh",
+    "generation_terminal_snr_confirmation_10k.sh",
 )
 ENTRYPOINTS = {
     "audit_generation_stability_completion.py",
@@ -78,6 +79,7 @@ ENTRYPOINTS = {
     "run_generation_stage_once.py",
     "run_generation_capacity_screen.py",
     "run_generation_capacity_confirmation.py",
+    "run_generation_terminal_snr_confirmation.py",
     "run_generation_training_watchdog.py",
     "select_generation_sampling_batch.py",
     "select_generation_training_runtime.py",
