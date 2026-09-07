@@ -288,6 +288,9 @@ def test_build_and_replay_terminal_paper_bundle(
     assert all(path.stat().st_mtime_ns == mtimes[path] for path in paths)
     assert first["authorization_boundary"]["training_authorized"] is False
     assert first["paper_policy"]["cross_tier_numeric_ranking_allowed"] is False
+    assert first["paper_policy"]["paper_consumer_files_mutated_by_builder"] is False
+    assert first["paper_policy"]["generated_snippets_may_be_written_under_output_root"] is True
+    assert "paper_source_mutated_by_builder" not in first["paper_policy"]
     assert "do not establish broad generation SOTA" in (
         fixture["output_dir"] / "generation_claims.tex"
     ).read_text(encoding="utf-8")

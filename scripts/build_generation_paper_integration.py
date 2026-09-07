@@ -594,7 +594,8 @@ def build_paper_integration_manifest(
                 "ordered restricted dense-noise factorization with controllable "
                 "prefix denoising"
             ),
-            "paper_source_mutated_by_builder": False,
+            "paper_consumer_files_mutated_by_builder": False,
+            "generated_snippets_may_be_written_under_output_root": True,
             "post_application_lock_required": True,
         },
         "authorization_boundary": {
