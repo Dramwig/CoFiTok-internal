@@ -102,6 +102,64 @@ sidecar was exactly the corresponding `latest.json` object without its
 or evaluation process owned the GPU, GPU memory use was 0 MiB, and
 `/root/autodl-tmp` had more than 640 GB free.
 
-The exact implementation Git identity, bundle identity, Linux rehearsal
-results, and live immutable receipt and decision identities are appended only
-after those checks complete.
+## Linux rehearsal and immutable outputs
+
+The implementation commit is
+`302f9213e3e04adb4e76eae3f71948322c440995`, tree
+`c48c5a59f9198e31fc655e80a14a1c3df957fbbf`, on branch
+`analysis/generation-capacity-screen-hold-recovery-v1-20260907`. Its parent is
+the clean exposure-result recovery revision
+`b15d979d8c03d50f29d1e6e460d3ce3988152fbe`. The first incremental bundle was
+25,445 bytes with SHA256
+`974c1d51e551391a5166b249a8ea67cf54c6132758aef242eca3f367b1a0207c`;
+it advertised only the implementation branch head and required exactly
+`b15d979`. The authoritative main repository correctly rejected that missing
+prerequisite. The exact clean remote recovery checkout at `b15d979` accepted
+the bundle, and only then was the isolated checkout
+`/tmp/cofitok-capacity-hold-recovery-302f921` created. Neither the source nor
+the formal repository moved.
+
+The isolated Linux checkout reported `torch.cuda.is_available()==false` and
+completed `1213 passed, 6 skipped in 245.60s`. Its JUnit SHA256 is
+`44fd935d248bab4672bee4ec8a64a8d0b19f755be94c35150f24abea939cbe24`.
+Compilation, all `110/110` runbook syntax checks, the three CLI imports, and
+tracked-clean verification passed.
+
+The exact clean `3370e68` producer checkout first replayed the existing
+capacity result byte-for-byte and returned `status=pass`. The new validator
+then repeated that physical replay with `--project-root` still pointing to the
+exact producer checkout and created the adjacent immutable receipt:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/capacity_qualification_v1/capacity_screen_result.validation.json
+bytes=3311
+sha256=213685d6d6f38232c83272250d0d211cfdc2f390a38b79f1f3bee0ab383b44ba
+```
+
+The receipt records producer Git `3370e68.../5dc3e72...` and validator Git
+`302f921.../c48c5a5...`, preserves `scientific_status=hold`, and has no enabled
+authorization boundary.
+
+The joint source replay then created and validated:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/capacity_qualification_v1/capacity_screen_hold_recovery.json
+bytes=10905
+sha256=585840359db244c51cbfddc6c425f8703ea8ed1b12557fbfc9b6b441812ae013
+
+/root/autodl-tmp/CoFiTok/checkpoints/generation/capacity_qualification_v1/capacity_screen_hold_recovery.validation.json
+bytes=8513
+sha256=79baa341bbf9017d53775af3dc6c2c14405dbfbb3b80c4332400bb26bed15880
+```
+
+The verifier physically replayed all eleven source groups: both exposure
+artifacts and validations, capacity result and validation, four capacity arm
+validations, sampling recovery, Min-SNR result and guard, and six rollout
+reports. A second validation returned the same identities; all three new file
+mtimes were unchanged, demonstrating the existing-receipt path was read-only.
+
+At final evidence capture the GPU had 0 MiB allocated, no compute application
+was present, and no experiment trainer, sampler, or evaluator remained. The
+isolated checkout occupied about 359 MB while the project filesystem retained
+more than 500 GB free. No process was signaled, no threshold or locked result
+was changed, and no GPU stage was launched.
