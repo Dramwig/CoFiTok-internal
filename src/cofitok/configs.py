@@ -27,6 +27,7 @@ class DiffusionConfig:
     beta_end: float = 2e-2
     prediction_target: str = "epsilon"
     schedule_type: str = "linear"
+    cosine_endpoint_fraction: float = 1.0
 
 
 @dataclass(frozen=True)

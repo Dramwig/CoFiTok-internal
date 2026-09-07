@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import torch
 
 from cofitok.configs import DiffusionConfig
@@ -8,6 +10,13 @@ from cofitok.configs import DiffusionConfig
 class DiffusionSchedule:
     def __init__(self, config: DiffusionConfig, device: torch.device | str) -> None:
         self.config = config
+        endpoint = float(config.cosine_endpoint_fraction)
+        if not math.isfinite(endpoint) or not 0.0 < endpoint <= 1.0:
+            raise ValueError("cosine_endpoint_fraction must be finite and in (0, 1]")
+        if config.schedule_type != "cosine" and endpoint != 1.0:
+            raise ValueError(
+                "cosine_endpoint_fraction may differ from 1 only for a cosine schedule"
+            )
         if config.schedule_type == "linear":
             betas = torch.linspace(
                 config.beta_start,
@@ -18,7 +27,8 @@ class DiffusionSchedule:
             )
         elif config.schedule_type == "cosine":
             steps = config.num_train_timesteps + 1
-            values = torch.linspace(0, config.num_train_timesteps, steps, device=device)
+            endpoint_step = config.num_train_timesteps * endpoint
+            values = torch.linspace(0, endpoint_step, steps, device=device)
             cumulative = torch.cos(
                 ((values / config.num_train_timesteps + 0.008) / 1.008) * torch.pi * 0.5
             ).pow(2)

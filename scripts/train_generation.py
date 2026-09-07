@@ -217,6 +217,13 @@ def _validate_config(config: ExperimentConfig) -> None:
         )
     if config.diffusion.prediction_target != "epsilon":
         raise ValueError("production training currently supports epsilon prediction only")
+    endpoint = config.diffusion.cosine_endpoint_fraction
+    if not math.isfinite(endpoint) or not 0.0 < endpoint <= 1.0:
+        raise ValueError("cosine_endpoint_fraction must be finite and in (0, 1]")
+    if config.diffusion.schedule_type != "cosine" and endpoint != 1.0:
+        raise ValueError(
+            "cosine_endpoint_fraction may differ from 1 only for a cosine schedule"
+        )
     if config.data.class_conditional != (config.model.num_classes > 0):
         raise ValueError("data.class_conditional and model.num_classes must agree")
     if not 0.0 <= config.data.random_horizontal_flip_prob <= 1.0:
