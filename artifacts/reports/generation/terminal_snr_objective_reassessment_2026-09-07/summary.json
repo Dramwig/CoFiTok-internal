@@ -1,0 +1,57 @@
+{
+  "authorization_boundary": {
+    "capacity_confirmation_launch_allowed": false,
+    "evaluation_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "process_signals_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "sampling_launch_allowed": false,
+    "training_launch_allowed": false
+  },
+  "bundle": {
+    "advertised_branch": "analysis/generation-terminal-snr-endpoint-screen-v1-20260907",
+    "advertised_revision": "b68a5cc55d23c5e689c8721dce341009b60dbf8d",
+    "bytes": 40134,
+    "path": "/tmp/cofitok-generation-terminal-snr-b68a5cc-from-b15d979.bundle",
+    "prerequisite": "b15d979d8c03d50f29d1e6e460d3ce3988152fbe",
+    "sha256": "bd117956d231e3c85119a07c59f8dbf9c8398c4be29407ee6b68b33fa931c357"
+  },
+  "decision": {
+    "bytes": 17364,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/capacity_qualification_v1/terminal_snr_objective_reassessment.json",
+    "sha256": "646e47f4efab523ae3d27e1d341a48ac07c10e6c16e5fdbba912cb4e96be67af"
+  },
+  "implementation_git": {
+    "branch": "analysis/generation-terminal-snr-endpoint-screen-v1-20260907",
+    "revision": "b68a5cc55d23c5e689c8721dce341009b60dbf8d",
+    "tracked_dirty": false,
+    "tree": "a3ffa50176a6ad8a0c5f5ff22a6160e2e676b6e1"
+  },
+  "linux_rehearsal": {
+    "errors": 0,
+    "failures": 0,
+    "junit_sha256": "16c50959561d3fac7bb9700c328c72f8741042a58cd7cd3f41f8ffdd96f412a4",
+    "runbook_syntax_passed": 110,
+    "runbook_syntax_total": 110,
+    "skipped": 6,
+    "tests": 1232,
+    "time_seconds": 214.827
+  },
+  "role": "terminal_snr_objective_reassessment_evidence_summary",
+  "schema_version": 1,
+  "selected_intervention": {
+    "control_endpoint_fraction": 1.0,
+    "intervention_endpoint_fraction": 0.975,
+    "prediction_target": "epsilon",
+    "single_scientific_config_field": "diffusion.cosine_endpoint_fraction"
+  },
+  "status": "pass",
+  "validation": {
+    "bytes": 11625,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/capacity_qualification_v1/terminal_snr_objective_reassessment.validation.json",
+    "replay_mtime_unchanged": true,
+    "sha256": "76ce4f3bba0f0e3abfa3f06f0810c072c3773507e4106f8cd2ae6eecffc10b1a"
+  }
+}
