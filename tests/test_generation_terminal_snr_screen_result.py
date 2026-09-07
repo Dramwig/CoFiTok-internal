@@ -30,18 +30,29 @@ def _identity(name: str) -> dict[str, object]:
 
 def _summaries() -> dict[str, dict[str, object]]:
     common = {
-        "checkpoint": {},
         "validation_epsilon_mse": 0.1,
         "sample_count": 1_000,
-        "sample_set_sha256": "c" * 64,
         "inception_score_mean": 2.0,
-        "runtime_environment_sha256": "d" * 64,
+        "real_set": {
+            "path": "/tmp/imagenet-val",
+            "image_count": 50_000,
+            "digest_schema": "cofitok_image_tree_sha256_v1",
+            "sha256": "e" * 64,
+        },
+        "classifier": {
+            "architecture": "torchvision_resnet50_imagenet1k_v2",
+            "checkpoint_sha256": "f" * 64,
+        },
+        "training_runtime_environment_sha256": "d" * 64,
+        "sampling_runtime_environment_sha256": "d" * 64,
+        "distribution_runtime_environment_sha256": "d" * 64,
+        "class_fidelity_runtime_environment_sha256": "d" * 64,
         "execution_git": copy.deepcopy(GIT),
     }
     rows: dict[str, dict[str, object]] = {}
-    for method in ("cofitok", "dense_identity"):
+    for index, method in enumerate(("cofitok", "dense_identity")):
         rows[f"control_{method}"] = {
-            **common,
+            **copy.deepcopy(common),
             "arm": f"control_{method}",
             "condition": "control",
             "method": method,
@@ -52,9 +63,11 @@ def _summaries() -> dict[str, dict[str, object]]:
             "class_top1": 0.20,
             "class_top5": 0.40,
             "terminal_raw_x0_clip_fraction": 0.999,
+            "checkpoint": {"sha256": f"{index + 1}" * 64},
+            "sample_set_sha256": f"{index + 3}" * 64,
         }
         rows[f"endpoint0975_{method}"] = {
-            **common,
+            **copy.deepcopy(common),
             "arm": f"endpoint0975_{method}",
             "condition": "endpoint0975",
             "method": method,
@@ -65,6 +78,8 @@ def _summaries() -> dict[str, dict[str, object]]:
             "class_top1": 0.195,
             "class_top5": 0.39,
             "terminal_raw_x0_clip_fraction": 0.90,
+            "checkpoint": {"sha256": f"{index + 5}" * 64},
+            "sample_set_sha256": f"{index + 7}" * 64,
         }
     diagnostics = {
         "ordered_rank_by_path_auc": 1,
@@ -80,6 +95,7 @@ def _summaries() -> dict[str, dict[str, object]]:
 
 def _report(summaries: dict[str, dict[str, object]]) -> dict[str, object]:
     evaluated = result._evaluate(summaries)
+    cross_arm = result._cross_arm_evidence(summaries, "d" * 64)
     passed = evaluated["screen_pass"]
     return {
         "schema_version": result.RESULT_SCHEMA,
@@ -96,6 +112,7 @@ def _report(summaries: dict[str, dict[str, object]]) -> dict[str, object]:
             else "hold_terminal_snr_intervention"
         ),
         "result_git": copy.deepcopy(GIT),
+        "runtime_environment_sha256": "d" * 64,
         "source_evidence": {
             "preparation": _identity("preparation"),
             "launch_receipt": _identity("launch"),
@@ -105,6 +122,7 @@ def _report(summaries: dict[str, dict[str, object]]) -> dict[str, object]:
         },
         "thresholds": copy.deepcopy(SCREEN_THRESHOLDS),
         "arm_summaries": summaries,
+        "cross_arm_evidence": cross_arm,
         "comparisons": evaluated["comparisons"],
         "checks": evaluated["checks"],
         "failed_checks": evaluated["failed_checks"],
@@ -169,6 +187,46 @@ def test_rejects_threshold_weakening() -> None:
 
     with pytest.raises(ValueError, match="result contract differs"):
         result.validate_terminal_snr_screen_result_contract(report)
+
+
+def test_rejects_duplicate_sample_sets() -> None:
+    report = _report(_summaries())
+    report["arm_summaries"]["endpoint0975_cofitok"][
+        "sample_set_sha256"
+    ] = report["arm_summaries"]["control_cofitok"]["sample_set_sha256"]
+
+    with pytest.raises(ValueError, match="sample sets are missing or duplicated"):
+        result.validate_terminal_snr_screen_result_contract(report)
+
+
+def test_rejects_different_real_set() -> None:
+    report = _report(_summaries())
+    report["arm_summaries"]["endpoint0975_dense_identity"]["real_set"][
+        "sha256"
+    ] = "0" * 64
+
+    with pytest.raises(ValueError, match="one identical real set"):
+        result.validate_terminal_snr_screen_result_contract(report)
+
+
+def test_rejects_evaluator_runtime_mismatch() -> None:
+    report = _report(_summaries())
+    report["arm_summaries"]["endpoint0975_cofitok"][
+        "distribution_runtime_environment_sha256"
+    ] = "0" * 64
+
+    with pytest.raises(ValueError, match="runtime differs from launch"):
+        result.validate_terminal_snr_screen_result_contract(report)
+
+
+def test_arm_runtime_binding_rejects_mismatch() -> None:
+    with pytest.raises(ValueError, match="sampling runtime differs"):
+        arm_validation._require_launch_runtime(
+            {"runtime_environment_sha256": "0" * 64},
+            arm="endpoint0975_cofitok",
+            evidence_name="sampling",
+            expected_runtime_environment_sha256="d" * 64,
+        )
 
 
 def test_terminal_clip_source_is_exact_first_rollout_step(tmp_path: Path) -> None:

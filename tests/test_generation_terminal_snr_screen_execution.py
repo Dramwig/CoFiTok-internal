@@ -26,7 +26,7 @@ CONTROL = (
 )
 BENCHMARK = (
     "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
-    ".terminal_snr_endpoint_screen_v1.terminal_snr_runtime_benchmarks"
+    ".terminal_snr_endpoint_screen_v1.terminal_snr_runtime_benchmarks_v2"
 )
 GIT = {
     "revision": "a" * 40,
@@ -377,6 +377,21 @@ def test_exact_control_paths() -> None:
     assert execution.terminal_snr_screen_execution_lock_path(ROOT) == LOCK
     assert execution.terminal_snr_screen_control_root(ROOT) == CONTROL
     assert execution.terminal_snr_screen_benchmark_root(ROOT) == BENCHMARK
+
+
+def test_runbook_canonicalizes_the_bound_runtime_environment() -> None:
+    runbook = (
+        Path(__file__).parents[1]
+        / "artifacts"
+        / "runbooks"
+        / "generation_terminal_snr_screen_10k.sh"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        "unset CUBLAS_WORKSPACE_CONFIG CUDA_VISIBLE_DEVICES PYTHONHASHSEED"
+        in runbook
+    )
+    assert "export PYTORCH_ALLOC_CONF=expandable_segments:True" in runbook
 
 
 def test_controller_exposes_all_terminal_snr_configs() -> None:

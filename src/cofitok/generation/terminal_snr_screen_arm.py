@@ -118,6 +118,22 @@ def _terminal_clip_fraction(report_path: Path, arm: str) -> dict[str, Any]:
     }
 
 
+def _require_launch_runtime(
+    evidence: Mapping[str, Any],
+    *,
+    arm: str,
+    evidence_name: str,
+    expected_runtime_environment_sha256: str,
+) -> None:
+    if (
+        evidence.get("runtime_environment_sha256")
+        != expected_runtime_environment_sha256
+    ):
+        raise ValueError(
+            f"{arm} {evidence_name} runtime differs from launch selection"
+        )
+
+
 def build_terminal_snr_screen_arm_validation(
     *,
     arm: str,
@@ -228,6 +244,18 @@ def build_terminal_snr_screen_arm_validation(
             expected_checkpoint=checkpoint,
             expected_config=config,
             expected_git=expected_git,
+        )
+    expected_runtime = str(runtime["runtime_environment_sha256"])
+    for evidence_name, evidence in (
+        ("sampling", sampling),
+        ("distribution evaluation", distribution),
+        ("class-fidelity evaluation", class_fidelity),
+    ):
+        _require_launch_runtime(
+            evidence,
+            arm=arm,
+            evidence_name=evidence_name,
+            expected_runtime_environment_sha256=expected_runtime,
         )
     rollout["terminal_raw_x0_clipping"] = _terminal_clip_fraction(
         Path(rollout_report_path), arm

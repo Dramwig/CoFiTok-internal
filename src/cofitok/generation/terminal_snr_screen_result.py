@@ -128,6 +128,10 @@ def _summary(report: Mapping[str, Any], arm: str) -> dict[str, Any]:
         rollout.get("terminal_raw_x0_clipping"), f"{arm} terminal clipping"
     )
     training = _object(row.get("training"), f"{arm} training")
+    training_validation = _object(
+        training.get("validation"), f"{arm} training validation"
+    )
+    sampling = _object(row.get("sampling"), f"{arm} sampling")
     result: dict[str, Any] = {
         "arm": arm,
         "condition": row.get("condition"),
@@ -141,14 +145,14 @@ def _summary(report: Mapping[str, Any], arm: str) -> dict[str, Any]:
             f"{arm} validation epsilon MSE",
             minimum=0.0,
         ),
-        "sample_count": int(
-            _object(row.get("sampling"), f"{arm} sampling").get(
-                "sample_count", -1
-            )
+        "sample_count": int(sampling.get("sample_count", -1)),
+        "sample_set_sha256": sampling.get("sample_set_sha256"),
+        "real_set": copy.deepcopy(
+            _object(distribution.get("real_set"), f"{arm} real set")
         ),
-        "sample_set_sha256": _object(
-            row.get("sampling"), f"{arm} sampling"
-        ).get("sample_set_sha256"),
+        "classifier": copy.deepcopy(
+            _object(class_fidelity.get("classifier"), f"{arm} classifier")
+        ),
         "fid": _finite(metrics.get("fid"), f"{arm} FID", minimum=0.0),
         "inception_score_mean": _finite(
             metrics.get("inception_score_mean"), f"{arm} IS", minimum=0.0
@@ -168,9 +172,18 @@ def _summary(report: Mapping[str, Any], arm: str) -> dict[str, Any]:
             f"{arm} terminal raw-x0 clip fraction",
             minimum=0.0,
         ),
-        "runtime_environment_sha256": _object(
-            row.get("sampling"), f"{arm} sampling"
-        ).get("runtime_environment_sha256"),
+        "training_runtime_environment_sha256": training_validation.get(
+            "runtime_environment_sha256"
+        ),
+        "sampling_runtime_environment_sha256": sampling.get(
+            "runtime_environment_sha256"
+        ),
+        "distribution_runtime_environment_sha256": distribution.get(
+            "runtime_environment_sha256"
+        ),
+        "class_fidelity_runtime_environment_sha256": class_fidelity.get(
+            "runtime_environment_sha256"
+        ),
         "execution_git": copy.deepcopy(row.get("execution_git")),
     }
     if result["sample_count"] != 1_000 or not _hex(
@@ -217,6 +230,79 @@ def _summary(report: Mapping[str, Any], arm: str) -> dict[str, Any]:
             ),
         }
     return result
+
+
+def _cross_arm_evidence(
+    summaries: Mapping[str, Mapping[str, Any]],
+    expected_runtime_environment_sha256: str,
+) -> dict[str, Any]:
+    if not _hex(expected_runtime_environment_sha256, length=64):
+        raise ValueError("terminal-SNR launch runtime identity is malformed")
+    if set(summaries) != set(ARM_NAMES):
+        raise ValueError("terminal-SNR cross-arm evidence arm set differs")
+
+    real_sets: dict[str, dict[str, Any]] = {}
+    classifiers: dict[str, dict[str, Any]] = {}
+    sample_shas: dict[str, str] = {}
+    checkpoint_shas: dict[str, str] = {}
+    runtime_shas: dict[str, dict[str, str]] = {}
+    runtime_fields = (
+        "training_runtime_environment_sha256",
+        "sampling_runtime_environment_sha256",
+        "distribution_runtime_environment_sha256",
+        "class_fidelity_runtime_environment_sha256",
+    )
+    for arm in ARM_NAMES:
+        summary = _object(summaries[arm], f"{arm} summary")
+        real_sets[arm] = _object(summary.get("real_set"), f"{arm} real set")
+        classifiers[arm] = _object(
+            summary.get("classifier"), f"{arm} classifier"
+        )
+        sample_sha = summary.get("sample_set_sha256")
+        if not _hex(sample_sha, length=64):
+            raise ValueError(f"{arm} sample-set identity is malformed")
+        sample_shas[arm] = sample_sha
+        checkpoint = _object(summary.get("checkpoint"), f"{arm} checkpoint")
+        checkpoint_sha = checkpoint.get("sha256")
+        if not _hex(checkpoint_sha, length=64):
+            raise ValueError(f"{arm} checkpoint identity is malformed")
+        checkpoint_shas[arm] = checkpoint_sha
+        runtime_shas[arm] = {}
+        for field in runtime_fields:
+            runtime_sha = summary.get(field)
+            if runtime_sha != expected_runtime_environment_sha256:
+                raise ValueError(
+                    f"{arm} {field} runtime differs from launch"
+                )
+            runtime_shas[arm][field] = runtime_sha
+
+    reference_real_set = real_sets[ARM_NAMES[0]]
+    if not _hex(reference_real_set.get("sha256"), length=64) or any(
+        real_sets[arm] != reference_real_set for arm in ARM_NAMES[1:]
+    ):
+        raise ValueError("terminal-SNR arms do not share one identical real set")
+    reference_classifier = classifiers[ARM_NAMES[0]]
+    if not reference_classifier or any(
+        classifiers[arm] != reference_classifier for arm in ARM_NAMES[1:]
+    ):
+        raise ValueError("terminal-SNR arms do not share one identical classifier")
+    if len(set(sample_shas.values())) != len(ARM_NAMES):
+        raise ValueError("terminal-SNR sample sets are missing or duplicated")
+    if len(set(checkpoint_shas.values())) != len(ARM_NAMES):
+        raise ValueError("terminal-SNR checkpoints are missing or duplicated")
+
+    return {
+        "runtime_environment_sha256": expected_runtime_environment_sha256,
+        "runtime_environment_sha256_by_arm": runtime_shas,
+        "real_set": copy.deepcopy(reference_real_set),
+        "real_set_identity_sha256": _canonical_sha256(reference_real_set),
+        "classifier": copy.deepcopy(reference_classifier),
+        "classifier_identity_sha256": _canonical_sha256(reference_classifier),
+        "sample_set_sha256_by_arm": sample_shas,
+        "sample_sets_unique": True,
+        "checkpoint_sha256_by_arm": checkpoint_shas,
+        "checkpoints_unique": True,
+    }
 
 
 def _check(name: str, *, actual: float | int, operator: str, threshold: float | int) -> dict[str, Any]:
@@ -425,6 +511,8 @@ def build_terminal_snr_screen_result(
             raise ValueError(f"{arm} execution Git differs")
         summaries[arm] = _summary(validation, arm)
         arm_ids[arm] = arm_id
+    runtime_environment_sha256 = str(launch["runtime_environment_sha256"])
+    cross_arm = _cross_arm_evidence(summaries, runtime_environment_sha256)
     evaluated = _evaluate(summaries)
     passed = bool(evaluated["screen_pass"])
     report = {
@@ -442,6 +530,7 @@ def build_terminal_snr_screen_result(
             else "hold_terminal_snr_intervention"
         ),
         "result_git": result_checkout,
+        "runtime_environment_sha256": runtime_environment_sha256,
         "source_evidence": {
             "preparation": prep_id,
             "launch_receipt": launch_id,
@@ -449,6 +538,7 @@ def build_terminal_snr_screen_result(
         },
         "thresholds": copy.deepcopy(SCREEN_THRESHOLDS),
         "arm_summaries": summaries,
+        "cross_arm_evidence": cross_arm,
         "comparisons": evaluated["comparisons"],
         "checks": evaluated["checks"],
         "failed_checks": evaluated["failed_checks"],
@@ -472,6 +562,10 @@ def validate_terminal_snr_screen_result_contract(
     summaries = _object(row.get("arm_summaries"), "terminal-SNR arm summaries")
     if set(summaries) != set(ARM_NAMES):
         raise ValueError("terminal-SNR result summary arm set differs")
+    runtime_environment_sha256 = row.get("runtime_environment_sha256")
+    cross_arm = _cross_arm_evidence(
+        summaries, str(runtime_environment_sha256)
+    )
     evaluated = _evaluate(summaries)
     passed = bool(evaluated["screen_pass"])
     expected_status = "pass" if passed else "hold"
@@ -503,6 +597,7 @@ def validate_terminal_snr_screen_result_contract(
         or row.get("comparisons") != evaluated["comparisons"]
         or row.get("checks") != evaluated["checks"]
         or row.get("failed_checks") != evaluated["failed_checks"]
+        or row.get("cross_arm_evidence") != cross_arm
         or row.get("authorization_boundary") != RESULT_BOUNDARY
         or next_stage.get("route")
         != ("frozen_10k_confirmation_preparation" if passed else "hold")

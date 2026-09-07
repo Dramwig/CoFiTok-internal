@@ -36,6 +36,11 @@ if [[ "${TERMINAL_SNR_SCREEN_RESUME:-false}" == true ]]; then
 fi
 
 cd "$PROJECT"
+# Runtime identity is part of the immutable launch receipt.  Canonicalize every
+# controller child (training, sampling, and evaluators) to the exact environment
+# selected by the preflight benchmark.
+unset CUBLAS_WORKSPACE_CONFIG CUDA_VISIBLE_DEVICES PYTHONHASHSEED
+export PYTORCH_ALLOC_CONF=expandable_segments:True
 export PYTHONPATH="$PROJECT:$PROJECT/src${PYTHONPATH:+:$PYTHONPATH}"
 exec "$PYTHON" scripts/run_generation_terminal_snr_screen.py \
   --project-root "$PROJECT" \
