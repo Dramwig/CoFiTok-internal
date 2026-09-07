@@ -3,18 +3,19 @@
 ## Scope
 
 This record covers a post-completion-only paper integration layer. It does not
-modify a paper checkout, launch GPU work, authorize training or evaluation, or
-change any terminal-SNR screen/confirmation evidence. Its only material outputs
-are immutable, venue-neutral LaTeX snippets and a replayable validation receipt,
-and those outputs cannot be created until the terminal generation completion
-audit and release receipt have both passed.
+modify existing paper consumer files, launch GPU work, authorize training or
+evaluation, or change any terminal-SNR screen/confirmation evidence. Its only
+material outputs are immutable, venue-neutral LaTeX snippets under the explicit
+output root and a replayable validation receipt, and those outputs cannot be
+created until the terminal generation completion audit and release receipt have
+both passed.
 
 ## Source identity
 
 - implementation revision:
-  `722d8050cba1ce6452322905774b43b5079eaeb9`
+  `fa999b12008ff16774113fd5d7ba0504cb064a3d`
 - implementation tree:
-  `3f754aea9e530ce5c179683c2cbfb89caddca902`
+  `cae52e0b80c0c7f1d67ea300d309fa46231557ff`
 - branch:
   `analysis/generation-paper-integration-v1-20260908`
 - prerequisite confirmation implementation:
@@ -54,7 +55,10 @@ D-AR/MAR/ReTok pretrained context in separate LaTeX tables. It permanently sets
 `cross_tier_numeric_ranking_allowed=false` and
 `broad_generation_sota_claim_allowed=false`. The claim text is generated from
 the validated metric values and preserves the scoped dense-noise factorization
-and prefix-denoising claim.
+and prefix-denoising claim. The manifest states precisely that existing paper
+consumer files are not mutated; generated snippets may be written only under
+the caller's explicit output root. It does not make the broader and potentially
+false claim that no paper-tree file can be created.
 
 Existing outputs are never overwritten when their bytes differ. Exact replays
 reuse the files without changing their mtimes. The separate validator rebuilds
@@ -74,12 +78,12 @@ Local project environment:
 Incremental bundle:
 
 - local path:
-  `C:/Users/17194/AppData/Local/Temp/cofitok-generation-paper-integration-722d805-from-a5199e6.bundle`
+  `C:/Users/17194/AppData/Local/Temp/cofitok-generation-paper-integration-fa999b1-from-a5199e6.bundle`
 - remote path:
-  `/tmp/cofitok-generation-paper-integration-722d805-from-a5199e6.bundle`
-- bytes: `14942`
+  `/tmp/cofitok-generation-paper-integration-fa999b1-from-a5199e6.bundle`
+- bytes: `17772`
 - SHA256:
-  `8f3cb54cd28ffc04c7557757128b01a4d7ac9bde843804abb0d41759cfc6e1be`
+  `b26325c2c0afcb5853c7ec0704bc6e32b1f777e0b71f7c83b1ed32d8bbe27f53`
 - advertised head: only
   `analysis/generation-paper-integration-v1-20260908` at the implementation
   revision above;
@@ -87,7 +91,7 @@ Incremental bundle:
 
 Remote isolated checkout:
 
-- `/tmp/cofitok-paper-integration-rehearsal-722d805-v1`
+- `/tmp/cofitok-paper-integration-rehearsal-fa999b1-v2`
 - exact implementation revision/tree and clean status;
 - CUDA disabled (`CUDA_VISIBLE_DEVICES=''`, `NVIDIA_VISIBLE_DEVICES=none`);
 - 1,296 collected tests, zero failures/errors, six expected CUDA-disabled skips;
