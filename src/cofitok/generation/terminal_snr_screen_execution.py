@@ -171,7 +171,7 @@ def terminal_snr_screen_control_root(output_root: str) -> str:
 def terminal_snr_screen_benchmark_root(output_root: str) -> str:
     root = PurePosixPath(_absolute(output_root, "terminal-SNR output root"))
     return (
-        root.parent / f".{root.name}.terminal_snr_runtime_benchmarks_v2"
+        root.parent / f".{root.name}.terminal_snr_runtime_benchmarks_v3"
     ).as_posix()
 
 

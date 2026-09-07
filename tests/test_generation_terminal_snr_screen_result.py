@@ -45,8 +45,8 @@ def _summaries() -> dict[str, dict[str, object]]:
         },
         "training_runtime_environment_sha256": "d" * 64,
         "sampling_runtime_environment_sha256": "d" * 64,
-        "distribution_runtime_environment_sha256": "d" * 64,
-        "class_fidelity_runtime_environment_sha256": "d" * 64,
+        "distribution_runtime_environment_sha256": "9" * 64,
+        "class_fidelity_runtime_environment_sha256": "9" * 64,
         "execution_git": copy.deepcopy(GIT),
     }
     rows: dict[str, dict[str, object]] = {}
@@ -214,8 +214,11 @@ def test_rejects_evaluator_runtime_mismatch() -> None:
     report["arm_summaries"]["endpoint0975_cofitok"][
         "distribution_runtime_environment_sha256"
     ] = "0" * 64
+    report["arm_summaries"]["endpoint0975_cofitok"][
+        "class_fidelity_runtime_environment_sha256"
+    ] = "0" * 64
 
-    with pytest.raises(ValueError, match="runtime differs from launch"):
+    with pytest.raises(ValueError, match="evaluator runtime differs across arms"):
         result.validate_terminal_snr_screen_result_contract(report)
 
 
@@ -226,6 +229,15 @@ def test_arm_runtime_binding_rejects_mismatch() -> None:
             arm="endpoint0975_cofitok",
             evidence_name="sampling",
             expected_runtime_environment_sha256="d" * 64,
+        )
+
+
+def test_arm_evaluator_runtime_binding_rejects_mismatch() -> None:
+    with pytest.raises(ValueError, match="evaluator runtime identities differ"):
+        arm_validation._require_matching_evaluator_runtime(
+            {"runtime_environment_sha256": "8" * 64},
+            {"runtime_environment_sha256": "9" * 64},
+            arm="endpoint0975_cofitok",
         )
 
 

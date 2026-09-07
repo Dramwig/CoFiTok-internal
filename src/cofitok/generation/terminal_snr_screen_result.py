@@ -246,9 +246,11 @@ def _cross_arm_evidence(
     sample_shas: dict[str, str] = {}
     checkpoint_shas: dict[str, str] = {}
     runtime_shas: dict[str, dict[str, str]] = {}
-    runtime_fields = (
+    generation_runtime_fields = (
         "training_runtime_environment_sha256",
         "sampling_runtime_environment_sha256",
+    )
+    evaluator_runtime_fields = (
         "distribution_runtime_environment_sha256",
         "class_fidelity_runtime_environment_sha256",
     )
@@ -268,13 +270,22 @@ def _cross_arm_evidence(
             raise ValueError(f"{arm} checkpoint identity is malformed")
         checkpoint_shas[arm] = checkpoint_sha
         runtime_shas[arm] = {}
-        for field in runtime_fields:
+        for field in generation_runtime_fields:
             runtime_sha = summary.get(field)
             if runtime_sha != expected_runtime_environment_sha256:
                 raise ValueError(
                     f"{arm} {field} runtime differs from launch"
                 )
             runtime_shas[arm][field] = runtime_sha
+        evaluator_runtimes: list[str] = []
+        for field in evaluator_runtime_fields:
+            runtime_sha = summary.get(field)
+            if not _hex(runtime_sha, length=64):
+                raise ValueError(f"{arm} {field} runtime is malformed")
+            runtime_shas[arm][field] = runtime_sha
+            evaluator_runtimes.append(runtime_sha)
+        if len(set(evaluator_runtimes)) != 1:
+            raise ValueError(f"{arm} evaluator runtime identities differ")
 
     reference_real_set = real_sets[ARM_NAMES[0]]
     if not _hex(reference_real_set.get("sha256"), length=64) or any(
@@ -290,9 +301,20 @@ def _cross_arm_evidence(
         raise ValueError("terminal-SNR sample sets are missing or duplicated")
     if len(set(checkpoint_shas.values())) != len(ARM_NAMES):
         raise ValueError("terminal-SNR checkpoints are missing or duplicated")
+    evaluator_runtime_shas = {
+        runtimes["distribution_runtime_environment_sha256"]
+        for runtimes in runtime_shas.values()
+    }
+    if len(evaluator_runtime_shas) != 1:
+        raise ValueError("terminal-SNR evaluator runtime differs across arms")
 
     return {
-        "runtime_environment_sha256": expected_runtime_environment_sha256,
+        "generation_runtime_environment_sha256": (
+            expected_runtime_environment_sha256
+        ),
+        "evaluator_runtime_environment_sha256": next(
+            iter(evaluator_runtime_shas)
+        ),
         "runtime_environment_sha256_by_arm": runtime_shas,
         "real_set": copy.deepcopy(reference_real_set),
         "real_set_identity_sha256": _canonical_sha256(reference_real_set),

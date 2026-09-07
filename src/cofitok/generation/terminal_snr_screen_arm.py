@@ -134,6 +134,27 @@ def _require_launch_runtime(
         )
 
 
+def _require_matching_evaluator_runtime(
+    distribution: Mapping[str, Any],
+    class_fidelity: Mapping[str, Any],
+    *,
+    arm: str,
+) -> None:
+    distribution_runtime = distribution.get("runtime_environment_sha256")
+    class_runtime = class_fidelity.get("runtime_environment_sha256")
+    if (
+        not isinstance(distribution_runtime, str)
+        or len(distribution_runtime) != 64
+        or distribution_runtime != distribution_runtime.lower()
+        or any(
+            character not in "0123456789abcdef"
+            for character in distribution_runtime
+        )
+        or class_runtime != distribution_runtime
+    ):
+        raise ValueError(f"{arm} evaluator runtime identities differ")
+
+
 def build_terminal_snr_screen_arm_validation(
     *,
     arm: str,
@@ -246,17 +267,17 @@ def build_terminal_snr_screen_arm_validation(
             expected_git=expected_git,
         )
     expected_runtime = str(runtime["runtime_environment_sha256"])
-    for evidence_name, evidence in (
-        ("sampling", sampling),
-        ("distribution evaluation", distribution),
-        ("class-fidelity evaluation", class_fidelity),
-    ):
-        _require_launch_runtime(
-            evidence,
-            arm=arm,
-            evidence_name=evidence_name,
-            expected_runtime_environment_sha256=expected_runtime,
-        )
+    _require_launch_runtime(
+        sampling,
+        arm=arm,
+        evidence_name="sampling",
+        expected_runtime_environment_sha256=expected_runtime,
+    )
+    _require_matching_evaluator_runtime(
+        distribution,
+        class_fidelity,
+        arm=arm,
+    )
     rollout["terminal_raw_x0_clipping"] = _terminal_clip_fraction(
         Path(rollout_report_path), arm
     )

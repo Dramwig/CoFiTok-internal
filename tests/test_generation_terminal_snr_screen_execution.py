@@ -26,7 +26,7 @@ CONTROL = (
 )
 BENCHMARK = (
     "/root/autodl-tmp/CoFiTok/checkpoints/generation/"
-    ".terminal_snr_endpoint_screen_v1.terminal_snr_runtime_benchmarks_v2"
+    ".terminal_snr_endpoint_screen_v1.terminal_snr_runtime_benchmarks_v3"
 )
 GIT = {
     "revision": "a" * 40,
