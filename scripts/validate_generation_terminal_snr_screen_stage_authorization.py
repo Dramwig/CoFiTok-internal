@@ -29,8 +29,12 @@ def main() -> None:
     if file_sha256(path) != args.expected_stage_authorization_sha256:
         raise ValueError("terminal-SNR stage authorization SHA256 differs")
     actual = read_object(path, name="terminal-SNR stage authorization")
+    kwargs = stage_kwargs(args)
     validated = validate_terminal_snr_screen_stage_authorization(
-        actual, **stage_kwargs(args)
+        actual,
+        preparation_identity=kwargs["preparation_identity"],
+        execution_checkout=kwargs["execution_checkout"],
+        expected_output_root=kwargs["output_root"],
     )
     if validated != actual:
         raise ValueError("terminal-SNR stage authorization replay differs")

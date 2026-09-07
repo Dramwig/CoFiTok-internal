@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import copy
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -8,6 +10,9 @@ from cofitok.generation import terminal_snr_screen_execution as execution
 from cofitok.generation.terminal_snr_screen import ARM_NAMES
 from scripts import run_generation_capacity_screen as shared_controller
 from scripts import run_generation_terminal_snr_screen as controller
+from scripts import (
+    validate_generation_terminal_snr_screen_stage_authorization as stage_validator_cli,
+)
 
 
 ROOT = "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1"
@@ -415,3 +420,44 @@ def test_controller_bindings_are_restorable() -> None:
 
     assert shared_controller.ARM_NAMES is original_names
     assert shared_controller.SAMPLE_SEED == original_seed
+
+
+def test_stage_validator_maps_builder_root_to_expected_root(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    args = SimpleNamespace(
+        stage_authorization=Path("/tmp/stage.json"),
+        expected_stage_authorization_sha256="a" * 64,
+    )
+    captured: dict[str, object] = {}
+    monkeypatch.setattr(stage_validator_cli, "parse_validate_stage_args", lambda: args)
+    monkeypatch.setattr(
+        stage_validator_cli,
+        "reject_symlink_chain",
+        lambda path, **_: path,
+    )
+    monkeypatch.setattr(stage_validator_cli, "file_sha256", lambda _: "a" * 64)
+    monkeypatch.setattr(stage_validator_cli, "read_object", lambda *_args, **_: {})
+    monkeypatch.setattr(
+        stage_validator_cli,
+        "stage_kwargs",
+        lambda _: {
+            "preparation_identity": _identity("preparation"),
+            "execution_checkout": GIT,
+            "output_root": ROOT,
+        },
+    )
+
+    def validate(_actual: object, **kwargs: object) -> dict[str, object]:
+        captured.update(kwargs)
+        return {}
+
+    monkeypatch.setattr(
+        stage_validator_cli,
+        "validate_terminal_snr_screen_stage_authorization",
+        validate,
+    )
+    stage_validator_cli.main()
+
+    assert captured["expected_output_root"] == ROOT
+    assert "output_root" not in captured
