@@ -10,6 +10,8 @@ factorization mechanism.  It never authorizes 300K training.
 from __future__ import annotations
 
 import copy
+import hashlib
+import json
 import math
 from collections.abc import Mapping
 from typing import Any
@@ -32,6 +34,26 @@ from cofitok.generation.capacity_screen_execution import (
 
 RESULT_SCHEMA = "cofitok_generation_capacity_screen_result_v1"
 RESULT_ROLE = "source_bound_four_arm_capacity_screen_scientific_result"
+VALIDATION_RECEIPT_SCHEMA = (
+    "cofitok_generation_capacity_screen_result_validation_v1"
+)
+VALIDATION_RECEIPT_ROLE = "content_addressed_capacity_screen_result_validation"
+VALIDATION_RECEIPT_BOUNDARY = {
+    "decision_is_execution_authorization": False,
+    "remote_mutation_allowed": False,
+    "gpu_execution_allowed": False,
+    "training_launch_allowed": False,
+    "sampling_launch_allowed": False,
+    "evaluation_launch_allowed": False,
+    "capacity_confirmation_preparation_allowed": False,
+    "capacity_confirmation_launch_allowed": False,
+    "full_training_launch_allowed": False,
+    "full_300k_launch_allowed": False,
+    "promotion_allowed": False,
+    "export_allowed": False,
+    "release_allowed": False,
+    "process_signals_allowed": False,
+}
 SCREEN_THRESHOLDS = {
     "max_precision_drop": 0.05,
     "max_top1_drop": 0.01,
@@ -693,11 +715,78 @@ def validate_capacity_screen_result_contract(
     return copy.deepcopy(row)
 
 
+def _canonical_object_sha256(value: Mapping[str, Any]) -> str:
+    encoded = json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def build_capacity_screen_validation_receipt(
+    *,
+    result: Mapping[str, Any],
+    result_identity: Mapping[str, Any],
+    validator_git: Mapping[str, Any],
+) -> dict[str, Any]:
+    validated = validate_capacity_screen_result_contract(result)
+    result_id = _identity(result_identity, "capacity screen result")
+    producer_git = _git(validated.get("result_git"), "capacity result producer")
+    validator = _git(validator_git, "capacity result validator")
+    sources = copy.deepcopy(
+        _object(validated.get("source_evidence"), "capacity result sources")
+    )
+    basis = {
+        "result": result_id,
+        "producer_git": producer_git,
+        "validator_git": validator,
+        "source_evidence": sources,
+    }
+    return {
+        "schema_version": VALIDATION_RECEIPT_SCHEMA,
+        "role": VALIDATION_RECEIPT_ROLE,
+        "status": "pass",
+        "result": result_id,
+        "producer_git": producer_git,
+        "validator_git": validator,
+        "source_evidence": sources,
+        "validation_basis_sha256": _canonical_object_sha256(basis),
+        "scientific_status": validated["scientific_status"],
+        "generation_advantage_proven": False,
+        "authorization_boundary": copy.deepcopy(VALIDATION_RECEIPT_BOUNDARY),
+    }
+
+
+def validate_capacity_screen_validation_receipt(
+    receipt: Mapping[str, Any],
+    *,
+    result: Mapping[str, Any],
+    result_identity: Mapping[str, Any],
+) -> dict[str, Any]:
+    row = _object(receipt, "capacity screen result validation receipt")
+    validator = _git(row.get("validator_git"), "capacity result validator")
+    expected = build_capacity_screen_validation_receipt(
+        result=result,
+        result_identity=result_identity,
+        validator_git=validator,
+    )
+    if row != expected:
+        raise ValueError("capacity screen validation receipt is not reproducible")
+    return expected
+
+
 __all__ = [
     "RESULT_BOUNDARY",
     "RESULT_ROLE",
     "RESULT_SCHEMA",
     "SCREEN_THRESHOLDS",
+    "VALIDATION_RECEIPT_BOUNDARY",
+    "VALIDATION_RECEIPT_ROLE",
+    "VALIDATION_RECEIPT_SCHEMA",
     "build_capacity_screen_result",
+    "build_capacity_screen_validation_receipt",
     "validate_capacity_screen_result_contract",
+    "validate_capacity_screen_validation_receipt",
 ]

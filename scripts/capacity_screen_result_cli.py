@@ -44,6 +44,8 @@ def parse_validate_args(argv: list[str] | None = None) -> argparse.Namespace:
     add_result_source_arguments(parser)
     parser.add_argument("--result", type=Path, required=True)
     parser.add_argument("--expected-result-sha256", required=True)
+    parser.add_argument("--validation-receipt", type=Path)
+    parser.add_argument("--validator-project-root", type=Path)
     return parser.parse_args(argv)
 
 

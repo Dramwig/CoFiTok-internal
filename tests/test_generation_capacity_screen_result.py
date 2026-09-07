@@ -12,8 +12,11 @@ from cofitok.generation.capacity_screen_arm import (
 )
 from cofitok.generation.capacity_screen_result import (
     RESULT_BOUNDARY,
+    VALIDATION_RECEIPT_BOUNDARY,
+    build_capacity_screen_validation_receipt,
     build_capacity_screen_result,
     validate_capacity_screen_result_contract,
+    validate_capacity_screen_validation_receipt,
 )
 
 
@@ -233,3 +236,66 @@ def test_contract_rejects_direct_300k_permission(
     altered["authorization_boundary"]["full_300k_launch_allowed"] = True
     with pytest.raises(ValueError, match="contract differs"):
         validate_capacity_screen_result_contract(altered)
+
+
+def test_validation_receipt_binds_result_sources_and_stays_non_authorizing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    result = build_capacity_screen_result(**_inputs(monkeypatch))
+    receipt = build_capacity_screen_validation_receipt(
+        result=result,
+        result_identity=_identity("capacity_result"),
+        validator_git=GIT,
+    )
+
+    assert receipt["status"] == "pass"
+    assert len(receipt["validation_basis_sha256"]) == 64
+    assert receipt["producer_git"] == result["result_git"]
+    assert receipt["authorization_boundary"] == VALIDATION_RECEIPT_BOUNDARY
+    assert not any(VALIDATION_RECEIPT_BOUNDARY.values())
+    assert (
+        validate_capacity_screen_validation_receipt(
+            receipt,
+            result=result,
+            result_identity=_identity("capacity_result"),
+        )
+        == receipt
+    )
+
+
+def test_validation_receipt_rejects_result_identity_drift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    result = build_capacity_screen_result(**_inputs(monkeypatch))
+    receipt = build_capacity_screen_validation_receipt(
+        result=result,
+        result_identity=_identity("capacity_result"),
+        validator_git=GIT,
+    )
+
+    with pytest.raises(ValueError, match="not reproducible"):
+        validate_capacity_screen_validation_receipt(
+            receipt,
+            result=result,
+            result_identity=_identity("changed_capacity_result"),
+        )
+
+
+def test_validation_receipt_rejects_permission_tampering(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    result = build_capacity_screen_result(**_inputs(monkeypatch))
+    receipt = build_capacity_screen_validation_receipt(
+        result=result,
+        result_identity=_identity("capacity_result"),
+        validator_git=GIT,
+    )
+    altered = deepcopy(receipt)
+    altered["authorization_boundary"]["capacity_confirmation_launch_allowed"] = True
+
+    with pytest.raises(ValueError, match="not reproducible"):
+        validate_capacity_screen_validation_receipt(
+            altered,
+            result=result,
+            result_identity=_identity("capacity_result"),
+        )
