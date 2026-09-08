@@ -124,6 +124,39 @@ def test_stability_full_recipe_scales_the_qualified_mechanism_to_300k() -> None:
     ]
 
 
+def test_terminal_snr_endpoint0975_full_recipe_is_a_matched_fresh_300k_pair() -> None:
+    cofitok = _config(
+        "imagenet256_terminal_snr_endpoint0975_rgbtail3_rollout_x0_u2_"
+        "ema_teacher_k8_300k.json"
+    )
+    dense = _config(
+        "imagenet256_terminal_snr_endpoint0975_rollout_x0_u2_"
+        "ema_teacher_dense_300k.json"
+    )
+
+    assert infer_generation_training_stage(cofitok, dense) == "stability_full"
+    contract = generation_training_recipe_contract(
+        cofitok,
+        dense,
+        stage="stability_full",
+    )
+
+    assert contract["valid"] is True, contract["issues"]
+    assert contract["issues"] == []
+    assert contract["pair_contract"]["valid"] is True
+    assert contract["effective_batches"]["cofitok"]["effective_batch_size"] == 64
+    for method in ("cofitok", "dense_identity"):
+        assert contract["observed"][method]["model.base_channels"] == 256
+        assert contract["observed"][method]["runtime.steps"] == 300_000
+        assert contract["observed"][method][
+            "runtime.protected_checkpoint_steps"
+        ] == [50_000, 100_000, 200_000, 300_000]
+    assert cofitok["diffusion"] == dense["diffusion"]
+    assert cofitok["diffusion"]["beta_start"] == 0.0001
+    assert cofitok["diffusion"]["beta_end"] == 0.02
+    assert cofitok["diffusion"]["cosine_endpoint_fraction"] == 0.975
+
+
 def test_stability_capacity_qualification_is_a_fresh_250m_10k_stop() -> None:
     cofitok = _config(
         "imagenet256_capacity_qualification_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k.json"

@@ -17,6 +17,19 @@ the locked short-budget paper runs.
   dense recipe; run identity `imagenet256_10pct_fixed_basis_dense_50k_v3`.
 - `imagenet256_cofitok_k8_300k.json`: full-data long-budget run after the 10% gate passes.
 - `imagenet256_dense_300k.json`: full-data matched dense control.
+- `imagenet256_terminal_snr_endpoint0975_rgbtail3_rollout_x0_u2_ema_teacher_k8_300k.json`:
+  fresh base-256 CoFiTok candidate selected only after a passing terminal-SNR
+  frozen-checkpoint confirmation.
+- `imagenet256_terminal_snr_endpoint0975_rollout_x0_u2_ema_teacher_dense_300k.json`:
+  fresh base-256 matched dense candidate with the identical endpoint-0.975
+  diffusion schedule and 300K budget.
+
+The terminal-SNR endpoint-0.975 files are a candidate pair, not execution
+authority. Their non-authorizing preparation must physically replay the exact
+passing 10K-per-arm frozen confirmation and its adjacent validation receipt.
+GPU/runtime/storage/live-snapshot evidence, explicit user stage authorization,
+a separate source-bound execution authorization, and an immutable launch
+receipt are still required before either 300K run may be created or launched.
 
 The fresh fixed-basis scaling pair and the full 300K pair both use matched
 random horizontal flips with probability `0.5`. Legacy failed scaling evidence
