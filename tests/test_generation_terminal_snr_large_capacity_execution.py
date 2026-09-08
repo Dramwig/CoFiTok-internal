@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from pathlib import Path
 
 import pytest
 
@@ -15,17 +16,37 @@ from cofitok.generation.terminal_snr_large_capacity import (
 from cofitok.generation.terminal_snr_large_capacity_execution import (
     GOAL_BINDING,
     PAIR_VALIDATION_BOUNDARY,
+    RUNTIME_BASELINE,
+    RUNTIME_BENCHMARK_STEPS,
+    RUNTIME_CANDIDATES,
+    RUNTIME_MAX_MEMORY_FRACTION,
+    RUNTIME_WARMUP_STEPS,
     STAGE_BOUNDARY,
+    STORAGE_ADDITIONAL_BYTES,
+    STORAGE_CHECKPOINT_COUNT,
+    STORAGE_CHECKPOINT_SIZE_MULTIPLIER,
+    STORAGE_ESTIMATED_SAMPLE_BYTES,
+    STORAGE_SAFETY_MARGIN_BYTES,
+    STORAGE_SAMPLE_COUNT,
+    STORAGE_STAGE,
     build_terminal_snr_large_capacity_pair_validation,
     build_terminal_snr_large_capacity_stage_authorization,
     validate_terminal_snr_large_capacity_pair_validation,
+    validate_terminal_snr_large_capacity_runtime_selection,
     validate_terminal_snr_large_capacity_stage_authorization,
+    validate_terminal_snr_large_capacity_storage_capacity,
+)
+from scripts.check_generation_storage_capacity import build_storage_capacity_report
+from scripts.select_generation_training_runtime import (
+    _selection_contract,
+    select_runtime_candidate,
 )
 from test_generation_terminal_snr_large_capacity import (
     _build as _build_preparation,
     _config_validation,
     _read_config,
 )
+from test_generation_runtime_selection import _candidate, _method
 
 
 OUTPUT_ROOT = (
@@ -126,6 +147,87 @@ def _build_pair(monkeypatch: pytest.MonkeyPatch) -> tuple[dict, dict, dict]:
         output_root=OUTPUT_ROOT,
     )
     return report, preparation, stage
+
+
+def _runtime_selection(preparation: dict) -> tuple[dict, dict, dict, str]:
+    candidates = [
+        _candidate(1, 64, _method(4.0), _method(3.8)),
+        _candidate(2, 32, _method(3.2), _method(3.1)),
+        _candidate(4, 16, _method(2.8), _method(2.9)),
+    ]
+    report = select_runtime_candidate(
+        candidates,
+        expected_effective_batch=EFFECTIVE_BATCH_SIZE,
+        max_memory_fraction=RUNTIME_MAX_MEMORY_FRACTION,
+        baseline_candidate=RUNTIME_BASELINE,
+    )
+    configs = preparation["source_evidence"]["configs"]
+    config_sha = {
+        method: configs[method]["sha256"] for method in METHODS
+    }
+    run_dirs = {
+        method: f"{OUTPUT_ROOT}/training/{method}" for method in METHODS
+    }
+    benchmark_root = "/tmp/terminal-snr-large-capacity-runtime"
+    lock = _selection_contract(
+        run_dirs=[Path(run_dirs[method]) for method in METHODS],
+        candidates=list(RUNTIME_CANDIDATES),
+        baseline_candidate=RUNTIME_BASELINE,
+        expected_effective_batch=EFFECTIVE_BATCH_SIZE,
+        benchmark_steps=RUNTIME_BENCHMARK_STEPS,
+        warmup_steps=RUNTIME_WARMUP_STEPS,
+        max_memory_fraction=RUNTIME_MAX_MEMORY_FRACTION,
+        target_steps=TARGET_STEPS,
+        revision=EXECUTION_GIT["revision"],
+        branch=EXECUTION_GIT["branch"],
+        config_sha256=config_sha,
+        benchmark_root=Path(benchmark_root),
+    )
+    report.update(
+        git_revision=EXECUTION_GIT["revision"],
+        config_sha256=config_sha,
+        benchmark_root=benchmark_root,
+        selection_lock=lock,
+    )
+    return report, configs, run_dirs, benchmark_root
+
+
+def _storage_capacity() -> dict:
+    reference_bytes = 1_010_933_866
+    checkpoint_bytes = int(
+        reference_bytes * STORAGE_CHECKPOINT_SIZE_MULTIPLIER
+    )
+    required = (
+        STORAGE_CHECKPOINT_COUNT * checkpoint_bytes
+        + STORAGE_SAMPLE_COUNT * STORAGE_ESTIMATED_SAMPLE_BYTES
+        + STORAGE_ADDITIONAL_BYTES
+        + STORAGE_SAFETY_MARGIN_BYTES
+    )
+    report = build_storage_capacity_report(
+        stage=STORAGE_STAGE,
+        path=Path("."),
+        total_bytes=required * 3,
+        used_bytes=required,
+        free_bytes=required * 2,
+        checkpoint_count=STORAGE_CHECKPOINT_COUNT,
+        checkpoint_bytes=reference_bytes,
+        checkpoint_size_multiplier=STORAGE_CHECKPOINT_SIZE_MULTIPLIER,
+        sample_count=STORAGE_SAMPLE_COUNT,
+        estimated_sample_bytes=STORAGE_ESTIMATED_SAMPLE_BYTES,
+        additional_bytes=STORAGE_ADDITIONAL_BYTES,
+        safety_margin_bytes=STORAGE_SAFETY_MARGIN_BYTES,
+        git={
+            "revision": EXECUTION_GIT["revision"],
+            "branch": EXECUTION_GIT["branch"],
+            "tracked_dirty": False,
+        },
+        hostname="pro6000",
+        checked_at="2026-09-08T00:00:00+00:00",
+    )
+    report["filesystem"]["path"] = (
+        "/root/autodl-tmp/CoFiTok/checkpoints/generation"
+    )
+    return report
 
 
 def test_stage_authorization_binds_exact_fresh_300k_goal(
@@ -354,4 +456,62 @@ def test_pair_validation_contract_rejects_implicit_launch_permission(
             dense_config_identity=configs["dense_identity"],
             execution_checkout=EXECUTION_GIT,
             expected_output_root=OUTPUT_ROOT,
+        )
+
+
+def test_large_capacity_runtime_selection_binds_base256_candidates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    preparation = _build_preparation(monkeypatch)
+    report, configs, run_dirs, benchmark_root = _runtime_selection(preparation)
+    validated = validate_terminal_snr_large_capacity_runtime_selection(
+        report,
+        execution_checkout=EXECUTION_GIT,
+        config_identities=configs,
+        run_dirs=run_dirs,
+        benchmark_root=benchmark_root,
+    )
+    assert validated["micro_batch_size"] == 4
+    assert validated["gradient_accumulation_steps"] == 16
+    assert validated["effective_batch_size"] == 64
+    assert validated["max_memory_fraction"] <= RUNTIME_MAX_MEMORY_FRACTION
+
+
+def test_large_capacity_runtime_selection_rejects_selected_candidate_drift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    preparation = _build_preparation(monkeypatch)
+    report, configs, run_dirs, benchmark_root = _runtime_selection(preparation)
+    report["selected"]["micro_batch_size"] = 2
+    report["selected"]["gradient_accumulation_steps"] = 32
+    with pytest.raises(ValueError, match="runtime selection differs"):
+        validate_terminal_snr_large_capacity_runtime_selection(
+            report,
+            execution_checkout=EXECUTION_GIT,
+            config_identities=configs,
+            run_dirs=run_dirs,
+            benchmark_root=benchmark_root,
+        )
+
+
+def test_large_capacity_storage_capacity_binds_full_artifact_budget() -> None:
+    report = _storage_capacity()
+    validated = validate_terminal_snr_large_capacity_storage_capacity(
+        report,
+        execution_checkout=EXECUTION_GIT,
+        output_root=OUTPUT_ROOT,
+    )
+    assert validated["plan"]["checkpoint_count"] == 14
+    assert validated["plan"]["sample_count"] == 116_384
+    assert validated["headroom_bytes"] >= 0
+
+
+def test_large_capacity_storage_capacity_rejects_weaker_reserve() -> None:
+    report = _storage_capacity()
+    report["plan"]["checkpoint_count"] -= 1
+    with pytest.raises(ValueError, match="storage evidence differs"):
+        validate_terminal_snr_large_capacity_storage_capacity(
+            report,
+            execution_checkout=EXECUTION_GIT,
+            output_root=OUTPUT_ROOT,
         )

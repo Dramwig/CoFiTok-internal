@@ -10,10 +10,13 @@ source-bound execution authorization and immutable launch receipt.
 from __future__ import annotations
 
 import copy
+import math
 from collections.abc import Mapping
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from cofitok.data.provenance import validate_dataset_provenance
+from cofitok.environment import runtime_environment_sha256
 from cofitok.generation.terminal_snr_large_capacity import (
     BASE_CHANNELS,
     CONFIG_FILENAMES,
@@ -21,6 +24,7 @@ from cofitok.generation.terminal_snr_large_capacity import (
     ENDPOINT_FRACTION,
     EXPECTED_PARAMETER_COUNTS,
     FORMAL_EVALUATION_CONTRACT,
+    FULL_STAGE_DIRNAME,
     METHODS,
     MILESTONE_STEPS,
     TARGET_STEPS,
@@ -44,6 +48,25 @@ PAIR_VALIDATION_SCHEMA = (
 PAIR_VALIDATION_ROLE = (
     "source_bound_terminal_snr_large_capacity_matched_pair_validation"
 )
+
+RUNTIME_CANDIDATES = ((1, 64), (2, 32), (4, 16))
+RUNTIME_BASELINE = (1, 64)
+RUNTIME_BENCHMARK_STEPS = 8
+RUNTIME_WARMUP_STEPS = 2
+RUNTIME_MAX_MEMORY_FRACTION = 0.90
+
+STORAGE_STAGE = "terminal_snr_endpoint0975_large_capacity_300k_training"
+# Eight protected 50K/100K/200K/300K checkpoints plus three rolling recovery
+# checkpoints per method.  The sample reserve covers both formal 50K sets and
+# every 2,048-sample matched milestone trend evaluation.
+STORAGE_CHECKPOINT_COUNT = 14
+# The live reference is a base-128 checkpoint; base-256 is approximately four
+# times larger, with an additional 6.25% reserve for payload/schema overhead.
+STORAGE_CHECKPOINT_SIZE_MULTIPLIER = 4.25
+STORAGE_SAMPLE_COUNT = 2 * 50_000 + 4 * 2 * 2_048
+STORAGE_ESTIMATED_SAMPLE_BYTES = 256 * 1024
+STORAGE_ADDITIONAL_BYTES = 32 * 1024**3
+STORAGE_SAFETY_MARGIN_BYTES = 128 * 1024**3
 
 GOAL_BINDING = {
     "project": "CoFiTok",
@@ -127,6 +150,12 @@ def _hex(value: Any, length: int) -> bool:
     )
 
 
+def _float(value: Any) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return math.nan
+    return float(value)
+
+
 def _identity(value: Any, name: str) -> dict[str, Any]:
     row = _object(value, name)
     if set(row) != {"path", "bytes", "sha256"}:
@@ -166,6 +195,14 @@ def _absolute(value: Any, name: str) -> str:
     ):
         raise ValueError(f"{name} must be absolute")
     return text
+
+
+def _path_is_within(path: str, parent: str) -> bool:
+    try:
+        PurePosixPath(path).relative_to(PurePosixPath(parent))
+    except ValueError:
+        return False
+    return True
 
 
 def _explicit_goal_instruction(value: Any) -> str:
@@ -530,11 +567,386 @@ def validate_terminal_snr_large_capacity_pair_validation(
     return copy.deepcopy(row)
 
 
+def _runtime_git(execution_checkout: Mapping[str, Any]) -> dict[str, Any]:
+    git = _git(execution_checkout, "large-capacity runtime checkout")
+    return {
+        "revision": git["revision"],
+        "branch": git["branch"],
+        "tracked_dirty": False,
+    }
+
+
+def validate_terminal_snr_large_capacity_runtime_selection(
+    report: Mapping[str, Any],
+    *,
+    execution_checkout: Mapping[str, Any],
+    config_identities: Mapping[str, Mapping[str, Any]],
+    run_dirs: Mapping[str, str],
+    benchmark_root: str,
+) -> dict[str, Any]:
+    row = _object(report, "large-capacity runtime selection")
+    if set(config_identities) != set(METHODS) or set(run_dirs) != set(METHODS):
+        raise ValueError("large-capacity runtime method set differs")
+    execution = _git(
+        execution_checkout, "large-capacity runtime execution checkout"
+    )
+    selected = _object(row.get("selected"), "large-capacity selected runtime")
+    baseline = _object(row.get("baseline"), "large-capacity runtime baseline")
+    policy = _object(row.get("policy"), "large-capacity runtime policy")
+    lock = _object(row.get("selection_lock"), "large-capacity runtime lock")
+    configs = {
+        method: _identity(
+            config_identities[method], f"large-capacity {method} config"
+        )
+        for method in METHODS
+    }
+    normalized_runs = {
+        method: _absolute(run_dirs[method], f"large-capacity {method} run")
+        for method in METHODS
+    }
+    inferred_root = PurePosixPath(normalized_runs["cofitok"]).parent.parent
+    expected_run_layout = {
+        method: (inferred_root / "training" / method).as_posix()
+        for method in METHODS
+    }
+    if (
+        inferred_root.name != FULL_STAGE_DIRNAME
+        or normalized_runs != expected_run_layout
+    ):
+        raise ValueError("large-capacity runtime run layout differs")
+    expected_runs = [normalized_runs[method] for method in METHODS]
+    expected_candidates = [
+        {
+            "micro_batch_size": micro,
+            "gradient_accumulation_steps": accumulation,
+        }
+        for micro, accumulation in RUNTIME_CANDIDATES
+    ]
+    expected_config_sha = {
+        method: configs[method]["sha256"] for method in METHODS
+    }
+    benchmark = _absolute(benchmark_root, "large-capacity benchmark root")
+    if _path_is_within(benchmark, inferred_root.as_posix()):
+        raise ValueError("large-capacity runtime benchmarks must be outside output root")
+    candidates = row.get("candidates")
+    if not isinstance(candidates, list) or len(candidates) != len(
+        RUNTIME_CANDIDATES
+    ):
+        raise ValueError("large-capacity runtime candidate set differs")
+    observed_candidates: list[tuple[int, int]] = []
+    eligible_candidates: list[dict[str, Any]] = []
+    for candidate in candidates:
+        value = _object(candidate, "large-capacity runtime candidate")
+        micro = int(value.get("micro_batch_size", -1))
+        accumulation = int(value.get("gradient_accumulation_steps", -1))
+        observed_candidates.append((micro, accumulation))
+        methods = _object(
+            value.get("methods"), "large-capacity runtime candidate methods"
+        )
+        if (
+            micro * accumulation != EFFECTIVE_BATCH_SIZE
+            or int(value.get("effective_batch_size", -1))
+            != EFFECTIVE_BATCH_SIZE
+            or set(methods) != set(METHODS)
+        ):
+            raise ValueError("large-capacity runtime candidate differs")
+        method_scores: list[float] = []
+        method_memory: list[float] = []
+        method_runtime_shas: list[str] = []
+        method_dataset_shas: list[str] = []
+        all_completed = True
+        for method in METHODS:
+            method_report = _object(
+                methods[method], f"large-capacity {method} runtime benchmark"
+            )
+            if method_report.get("status") != "completed":
+                all_completed = False
+                continue
+            environment = _object(
+                method_report.get("runtime_environment"),
+                f"large-capacity {method} runtime environment",
+            )
+            environment_sha = runtime_environment_sha256(environment)
+            provenance = _object(
+                method_report.get("dataset_provenance"),
+                f"large-capacity {method} dataset provenance",
+            )
+            dataset_sha = validate_dataset_provenance(
+                provenance, expected_dataset="imagenet_256"
+            )["identity_sha256"]
+            seconds = _float(method_report.get("mean_optimizer_step_seconds"))
+            throughput = _float(method_report.get("images_per_second"))
+            peak = int(method_report.get("peak_vram_bytes", 0))
+            total = int(method_report.get("device_total_memory_bytes", 0))
+            if (
+                int(method_report.get("effective_batch_size", -1))
+                != EFFECTIVE_BATCH_SIZE
+                or method_report.get("runtime_environment_sha256")
+                != environment_sha
+                or provenance.get("identity_sha256") != dataset_sha
+                or not math.isfinite(seconds)
+                or seconds <= 0.0
+                or not math.isfinite(throughput)
+                or throughput <= 0.0
+                or peak <= 0
+                or total <= 0
+                or peak > total
+            ):
+                raise ValueError(
+                    "large-capacity runtime benchmark provenance differs"
+                )
+            method_scores.append(seconds)
+            method_memory.append(peak / total)
+            method_runtime_shas.append(environment_sha)
+            method_dataset_shas.append(dataset_sha)
+        reasons = value.get("ineligible_reasons")
+        if not isinstance(reasons, list) or any(
+            not isinstance(reason, str) or not reason for reason in reasons
+        ):
+            raise ValueError("large-capacity runtime ineligible reasons differ")
+        eligible = value.get("eligible") is True
+        candidate_score = value.get("selection_score_seconds")
+        candidate_memory = value.get("max_memory_fraction")
+        candidate_score_value = _float(candidate_score)
+        candidate_memory_value = _float(candidate_memory)
+        if eligible:
+            expected_score = max(method_scores) if len(method_scores) == 2 else None
+            expected_memory = max(method_memory) if len(method_memory) == 2 else None
+            if (
+                reasons != []
+                or not all_completed
+                or expected_score is None
+                or expected_memory is None
+                or value.get("runtime_environment_sha256")
+                != row.get("runtime_environment_sha256")
+                or value.get("dataset_identity_sha256")
+                != row.get("dataset_identity_sha256")
+                or len(set(method_runtime_shas)) != 1
+                or len(set(method_dataset_shas)) != 1
+                or not math.isclose(
+                    candidate_score_value, expected_score, rel_tol=1e-12
+                )
+                or not math.isclose(
+                    candidate_memory_value, expected_memory, rel_tol=1e-12
+                )
+                or expected_memory > RUNTIME_MAX_MEMORY_FRACTION
+            ):
+                raise ValueError("large-capacity eligible runtime differs")
+            eligible_candidates.append(
+                {
+                    "pair": (micro, accumulation),
+                    "score": expected_score,
+                    "memory": expected_memory,
+                }
+            )
+        elif not reasons or candidate_score is not None or candidate_memory is not None:
+            raise ValueError("large-capacity ineligible runtime differs")
+    selected_pair = (
+        int(selected.get("micro_batch_size", -1)),
+        int(selected.get("gradient_accumulation_steps", -1)),
+    )
+    baseline_pair = (
+        int(baseline.get("micro_batch_size", -1)),
+        int(baseline.get("gradient_accumulation_steps", -1)),
+    )
+    selection_score = _float(selected.get("selection_score_seconds"))
+    memory_fraction = _float(selected.get("max_memory_fraction"))
+    speedup = _float(selected.get("estimated_speedup_over_baseline"))
+    baseline_score = _float(baseline.get("selection_score_seconds"))
+    baseline_memory = _float(baseline.get("max_memory_fraction"))
+    if not eligible_candidates:
+        raise ValueError("large-capacity runtime has no eligible candidate")
+    recomputed_selected = min(
+        eligible_candidates,
+        key=lambda candidate: (candidate["score"], candidate["pair"][0]),
+    )
+    eligible_by_pair = {
+        candidate["pair"]: candidate for candidate in eligible_candidates
+    }
+    recomputed_baseline = eligible_by_pair.get(RUNTIME_BASELINE)
+    if (
+        set(row)
+        != {
+            "schema_version",
+            "status",
+            "policy",
+            "selected",
+            "runtime_environment_sha256",
+            "dataset_identity_sha256",
+            "candidates",
+            "baseline",
+            "git_revision",
+            "config_sha256",
+            "benchmark_root",
+            "selection_lock",
+        }
+        or int(row.get("schema_version", -1)) != 3
+        or row.get("status") != "selected"
+        or observed_candidates != list(RUNTIME_CANDIDATES)
+        or selected_pair != recomputed_selected["pair"]
+        or baseline_pair != RUNTIME_BASELINE
+        or recomputed_baseline is None
+        or int(selected.get("effective_batch_size", -1))
+        != EFFECTIVE_BATCH_SIZE
+        or int(baseline.get("effective_batch_size", -1))
+        != EFFECTIVE_BATCH_SIZE
+        or not math.isfinite(selection_score)
+        or selection_score <= 0.0
+        or not math.isfinite(memory_fraction)
+        or not 0.0 < memory_fraction <= RUNTIME_MAX_MEMORY_FRACTION
+        or not math.isfinite(speedup)
+        or speedup <= 0.0
+        or not math.isfinite(baseline_score)
+        or baseline_score <= 0.0
+        or not math.isfinite(baseline_memory)
+        or not 0.0 < baseline_memory <= RUNTIME_MAX_MEMORY_FRACTION
+        or not math.isclose(
+            selection_score, recomputed_selected["score"], rel_tol=1e-12
+        )
+        or not math.isclose(
+            memory_fraction, recomputed_selected["memory"], rel_tol=1e-12
+        )
+        or not math.isclose(
+            baseline_score, recomputed_baseline["score"], rel_tol=1e-12
+        )
+        or not math.isclose(
+            baseline_memory, recomputed_baseline["memory"], rel_tol=1e-12
+        )
+        or not math.isclose(
+            speedup, baseline_score / selection_score, rel_tol=1e-12
+        )
+        or policy
+        != {
+            "shared_candidate_required": True,
+            "score": "minimize_worst_method_mean_optimizer_step_seconds",
+            "expected_effective_batch_size": EFFECTIVE_BATCH_SIZE,
+            "max_memory_fraction": RUNTIME_MAX_MEMORY_FRACTION,
+        }
+        or row.get("git_revision") != execution["revision"]
+        or row.get("config_sha256") != expected_config_sha
+        or row.get("benchmark_root") != benchmark
+        or lock.get("schema_version") != 2
+        or lock.get("mode") != "freeze_on_training_state"
+        or lock.get("training_run_dirs") != expected_runs
+        or lock.get("candidates") != expected_candidates
+        or lock.get("baseline_candidate")
+        != {
+            "micro_batch_size": RUNTIME_BASELINE[0],
+            "gradient_accumulation_steps": RUNTIME_BASELINE[1],
+        }
+        or int(lock.get("expected_effective_batch_size", -1))
+        != EFFECTIVE_BATCH_SIZE
+        or int(lock.get("benchmark_steps", -1))
+        != RUNTIME_BENCHMARK_STEPS
+        or int(lock.get("warmup_steps", -1)) != RUNTIME_WARMUP_STEPS
+        or _float(lock.get("max_memory_fraction"))
+        != RUNTIME_MAX_MEMORY_FRACTION
+        or int(lock.get("training_target_steps", -1)) != TARGET_STEPS
+        or lock.get("git") != _runtime_git(execution)
+        or lock.get("config_sha256") != expected_config_sha
+        or lock.get("benchmark_root") != benchmark
+        or not _hex(row.get("runtime_environment_sha256"), 64)
+        or not _hex(row.get("dataset_identity_sha256"), 64)
+    ):
+        raise ValueError("terminal-SNR large-capacity runtime selection differs")
+    return {
+        "micro_batch_size": selected_pair[0],
+        "gradient_accumulation_steps": selected_pair[1],
+        "effective_batch_size": EFFECTIVE_BATCH_SIZE,
+        "selection_score_seconds": selection_score,
+        "max_memory_fraction": memory_fraction,
+        "estimated_speedup_over_baseline": speedup,
+        "runtime_environment_sha256": row["runtime_environment_sha256"],
+        "dataset_identity_sha256": row["dataset_identity_sha256"],
+    }
+
+
+def validate_terminal_snr_large_capacity_storage_capacity(
+    report: Mapping[str, Any],
+    *,
+    execution_checkout: Mapping[str, Any],
+    output_root: str,
+) -> dict[str, Any]:
+    row = _object(report, "large-capacity storage capacity")
+    filesystem = _object(
+        row.get("filesystem"), "large-capacity storage filesystem"
+    )
+    plan = _object(row.get("plan"), "large-capacity storage plan")
+    root = _absolute(output_root, "large-capacity output root")
+    storage_path = PurePosixPath(root).parent.as_posix()
+    reference_bytes = int(plan.get("reference_checkpoint_bytes_each", -1))
+    checkpoint_bytes = int(plan.get("checkpoint_bytes_each", -1))
+    expected_checkpoint_bytes = (
+        math.ceil(reference_bytes * STORAGE_CHECKPOINT_SIZE_MULTIPLIER)
+        if reference_bytes > 0
+        else -1
+    )
+    expected_required = (
+        STORAGE_CHECKPOINT_COUNT * expected_checkpoint_bytes
+        + STORAGE_SAMPLE_COUNT * STORAGE_ESTIMATED_SAMPLE_BYTES
+        + STORAGE_ADDITIONAL_BYTES
+        + STORAGE_SAFETY_MARGIN_BYTES
+    )
+    free_bytes = int(filesystem.get("free_bytes", -1))
+    required_bytes = int(plan.get("required_free_bytes", -1))
+    if (
+        int(row.get("schema_version", -1)) != 2
+        or row.get("role") != "generation_storage_capacity_preflight"
+        or row.get("stage") != STORAGE_STAGE
+        or row.get("status") != "pass"
+        or row.get("git") != _runtime_git(execution_checkout)
+        or filesystem.get("path") != storage_path
+        or int(filesystem.get("total_bytes", 0)) < 1
+        or int(filesystem.get("used_bytes", -1)) < 0
+        or free_bytes < 0
+        or int(filesystem.get("used_bytes", -1)) + free_bytes
+        > int(filesystem.get("total_bytes", 0))
+        or int(plan.get("checkpoint_count", -1))
+        != STORAGE_CHECKPOINT_COUNT
+        or reference_bytes < 1
+        or _float(plan.get("checkpoint_size_multiplier"))
+        != STORAGE_CHECKPOINT_SIZE_MULTIPLIER
+        or checkpoint_bytes != expected_checkpoint_bytes
+        or int(plan.get("checkpoint_reserve_bytes", -1))
+        != STORAGE_CHECKPOINT_COUNT * checkpoint_bytes
+        or int(plan.get("sample_count", -1)) != STORAGE_SAMPLE_COUNT
+        or int(plan.get("estimated_sample_bytes_each", -1))
+        != STORAGE_ESTIMATED_SAMPLE_BYTES
+        or int(plan.get("sample_reserve_bytes", -1))
+        != STORAGE_SAMPLE_COUNT * STORAGE_ESTIMATED_SAMPLE_BYTES
+        or int(plan.get("additional_bytes", -1)) != STORAGE_ADDITIONAL_BYTES
+        or int(plan.get("safety_margin_bytes", -1))
+        != STORAGE_SAFETY_MARGIN_BYTES
+        or required_bytes != expected_required
+        or int(row.get("headroom_bytes", -1))
+        != free_bytes - required_bytes
+        or free_bytes < required_bytes
+    ):
+        raise ValueError("terminal-SNR large-capacity storage evidence differs")
+    return {
+        "filesystem": copy.deepcopy(filesystem),
+        "plan": copy.deepcopy(plan),
+        "headroom_bytes": int(row["headroom_bytes"]),
+    }
+
+
 __all__ = [
     "GOAL_BINDING",
     "PAIR_VALIDATION_BOUNDARY",
     "PAIR_VALIDATION_ROLE",
     "PAIR_VALIDATION_SCHEMA",
+    "RUNTIME_BASELINE",
+    "RUNTIME_BENCHMARK_STEPS",
+    "RUNTIME_CANDIDATES",
+    "RUNTIME_MAX_MEMORY_FRACTION",
+    "RUNTIME_WARMUP_STEPS",
+    "STORAGE_ADDITIONAL_BYTES",
+    "STORAGE_CHECKPOINT_COUNT",
+    "STORAGE_CHECKPOINT_SIZE_MULTIPLIER",
+    "STORAGE_ESTIMATED_SAMPLE_BYTES",
+    "STORAGE_SAFETY_MARGIN_BYTES",
+    "STORAGE_SAMPLE_COUNT",
+    "STORAGE_STAGE",
     "STAGE_AUTHORIZATION_ROLE",
     "STAGE_AUTHORIZATION_SCHEMA",
     "STAGE_AUTHORIZATION_SCOPE",
@@ -542,5 +954,7 @@ __all__ = [
     "build_terminal_snr_large_capacity_pair_validation",
     "build_terminal_snr_large_capacity_stage_authorization",
     "validate_terminal_snr_large_capacity_pair_validation",
+    "validate_terminal_snr_large_capacity_runtime_selection",
     "validate_terminal_snr_large_capacity_stage_authorization",
+    "validate_terminal_snr_large_capacity_storage_capacity",
 ]
