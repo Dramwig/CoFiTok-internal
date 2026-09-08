@@ -14,11 +14,18 @@ from cofitok.generation.terminal_snr_large_capacity import (
 )
 from cofitok.generation.terminal_snr_large_capacity_execution import (
     GOAL_BINDING,
+    PAIR_VALIDATION_BOUNDARY,
     STAGE_BOUNDARY,
+    build_terminal_snr_large_capacity_pair_validation,
     build_terminal_snr_large_capacity_stage_authorization,
+    validate_terminal_snr_large_capacity_pair_validation,
     validate_terminal_snr_large_capacity_stage_authorization,
 )
-from test_generation_terminal_snr_large_capacity import _build as _build_preparation
+from test_generation_terminal_snr_large_capacity import (
+    _build as _build_preparation,
+    _config_validation,
+    _read_config,
+)
 
 
 OUTPUT_ROOT = (
@@ -84,6 +91,41 @@ def _build(monkeypatch: pytest.MonkeyPatch) -> dict:
             "training, per-method 50K DDIM-250 formal evaluation, and terminal audit."
         ),
     )
+
+
+def _build_pair(monkeypatch: pytest.MonkeyPatch) -> tuple[dict, dict, dict]:
+    preparation = _build_preparation(monkeypatch)
+    stage = build_terminal_snr_large_capacity_stage_authorization(
+        preparation=preparation,
+        preparation_identity=PREPARATION_ID,
+        execution_checkout=EXECUTION_GIT,
+        output_root=OUTPUT_ROOT,
+        approved_by="user",
+        approved_at="2026-09-08T00:00:00+00:00",
+        source_instruction=(
+            "Explicit 250M/300K matched training, per-method 50K DDIM-250 "
+            "formal evaluation, and terminal completion audit."
+        ),
+    )
+    monkeypatch.setattr(
+        "cofitok.generation.terminal_snr_large_capacity_execution."
+        "validate_terminal_snr_large_capacity_config_pair",
+        lambda **_: _config_validation(),
+    )
+    configs = preparation["source_evidence"]["configs"]
+    report = build_terminal_snr_large_capacity_pair_validation(
+        preparation=preparation,
+        preparation_identity=PREPARATION_ID,
+        stage_authorization=stage,
+        stage_authorization_identity=_identity("/evidence/stage.json", "f"),
+        cofitok_config=_read_config("cofitok"),
+        cofitok_config_identity=configs["cofitok"],
+        dense_config=_read_config("dense_identity"),
+        dense_config_identity=configs["dense_identity"],
+        execution_checkout=EXECUTION_GIT,
+        output_root=OUTPUT_ROOT,
+    )
+    return report, preparation, stage
 
 
 def test_stage_authorization_binds_exact_fresh_300k_goal(
@@ -223,4 +265,93 @@ def test_stage_authorization_requires_exact_clean_execution_git(
             approved_by="user",
             approved_at="now",
             source_instruction="explicit goal",
+        )
+
+
+def test_pair_validation_replays_exact_fresh_matched_pair(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report, _, _ = _build_pair(monkeypatch)
+    assert report["status"] == "pass"
+    assert report["execution_checkout"] == EXECUTION_GIT
+    assert report["validation"] == _config_validation()
+    assert report["selection"]["parameter_counts"] == EXPECTED_PARAMETER_COUNTS
+    assert report["selection"]["configured_training_steps"] == TARGET_STEPS
+    assert report["selection"]["fresh_initialization_required"] is True
+    assert report["selection"]["resume_allowed"] is False
+    assert report["authorization_boundary"] == PAIR_VALIDATION_BOUNDARY
+    assert report["next_stage"]["execution_ready"] is False
+    assert report["next_stage"]["training_launch_allowed"] is False
+
+
+def test_pair_validation_requires_preparation_config_identities(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report, preparation, stage = _build_pair(monkeypatch)
+    del report
+    configs = preparation["source_evidence"]["configs"]
+    with pytest.raises(ValueError, match="config identity differs"):
+        build_terminal_snr_large_capacity_pair_validation(
+            preparation=preparation,
+            preparation_identity=PREPARATION_ID,
+            stage_authorization=stage,
+            stage_authorization_identity=_identity("/evidence/stage.json", "f"),
+            cofitok_config=_read_config("cofitok"),
+            cofitok_config_identity={
+                **configs["cofitok"],
+                "sha256": "0" * 64,
+            },
+            dense_config=_read_config("dense_identity"),
+            dense_config_identity=configs["dense_identity"],
+            execution_checkout=EXECUTION_GIT,
+            output_root=OUTPUT_ROOT,
+        )
+
+
+def test_pair_validation_rejects_drift_from_preparation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report, preparation, stage = _build_pair(monkeypatch)
+    del report
+    monkeypatch.setattr(
+        "cofitok.generation.terminal_snr_large_capacity_execution."
+        "validate_terminal_snr_large_capacity_config_pair",
+        lambda **_: {**_config_validation(), "relative_parameter_gap": 0.01},
+    )
+    configs = preparation["source_evidence"]["configs"]
+    with pytest.raises(ValueError, match="differs from preparation"):
+        build_terminal_snr_large_capacity_pair_validation(
+            preparation=preparation,
+            preparation_identity=PREPARATION_ID,
+            stage_authorization=stage,
+            stage_authorization_identity=_identity("/evidence/stage.json", "f"),
+            cofitok_config=_read_config("cofitok"),
+            cofitok_config_identity=configs["cofitok"],
+            dense_config=_read_config("dense_identity"),
+            dense_config_identity=configs["dense_identity"],
+            execution_checkout=EXECUTION_GIT,
+            output_root=OUTPUT_ROOT,
+        )
+
+
+def test_pair_validation_contract_rejects_implicit_launch_permission(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report, preparation, stage = _build_pair(monkeypatch)
+    altered = copy.deepcopy(report)
+    altered["authorization_boundary"]["training_launch_allowed"] = True
+    configs = preparation["source_evidence"]["configs"]
+    with pytest.raises(ValueError, match="pair validation differs"):
+        validate_terminal_snr_large_capacity_pair_validation(
+            altered,
+            preparation=preparation,
+            preparation_identity=PREPARATION_ID,
+            stage_authorization=stage,
+            stage_authorization_identity=_identity("/evidence/stage.json", "f"),
+            cofitok_config=_read_config("cofitok"),
+            cofitok_config_identity=configs["cofitok"],
+            dense_config=_read_config("dense_identity"),
+            dense_config_identity=configs["dense_identity"],
+            execution_checkout=EXECUTION_GIT,
+            expected_output_root=OUTPUT_ROOT,
         )

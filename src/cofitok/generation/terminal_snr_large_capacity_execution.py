@@ -16,6 +16,7 @@ from typing import Any
 
 from cofitok.generation.terminal_snr_large_capacity import (
     BASE_CHANNELS,
+    CONFIG_FILENAMES,
     EFFECTIVE_BATCH_SIZE,
     ENDPOINT_FRACTION,
     EXPECTED_PARAMETER_COUNTS,
@@ -23,6 +24,7 @@ from cofitok.generation.terminal_snr_large_capacity import (
     METHODS,
     MILESTONE_STEPS,
     TARGET_STEPS,
+    validate_terminal_snr_large_capacity_config_pair,
     validate_terminal_snr_large_capacity_preparation_contract,
 )
 
@@ -35,6 +37,12 @@ STAGE_AUTHORIZATION_ROLE = (
 )
 STAGE_AUTHORIZATION_SCOPE = (
     "fresh_endpoint0975_matched_base256_250m_300k_prelaunch_evidence_only"
+)
+PAIR_VALIDATION_SCHEMA = (
+    "cofitok_generation_terminal_snr_large_capacity_pair_validation_v1"
+)
+PAIR_VALIDATION_ROLE = (
+    "source_bound_terminal_snr_large_capacity_matched_pair_validation"
 )
 
 GOAL_BINDING = {
@@ -76,6 +84,29 @@ STAGE_BOUNDARY = {
     "export_allowed": False,
     "release_allowed": False,
     "process_signals_allowed": False,
+    "separate_execution_authorization_required": True,
+    "immutable_launch_receipt_required": True,
+}
+
+PAIR_VALIDATION_BOUNDARY = {
+    "matched_pair_validated": True,
+    "decision_is_execution_authorization": False,
+    "remote_mutation_allowed": False,
+    "gpu_execution_allowed": False,
+    "training_launch_allowed": False,
+    "sampling_launch_allowed": False,
+    "evaluation_launch_allowed": False,
+    "checkpoint_mutation_allowed": False,
+    "resume_allowed": False,
+    "full_training_launch_allowed": False,
+    "full_300k_launch_allowed": False,
+    "promotion_allowed": False,
+    "export_allowed": False,
+    "release_allowed": False,
+    "process_signals_allowed": False,
+    "runtime_selection_still_required": True,
+    "storage_capacity_still_required": True,
+    "live_snapshot_still_required": True,
     "separate_execution_authorization_required": True,
     "immutable_launch_receipt_required": True,
 }
@@ -320,12 +351,196 @@ def validate_terminal_snr_large_capacity_stage_authorization(
     return copy.deepcopy(row)
 
 
+def _pair_validation_report(
+    *,
+    preparation: Mapping[str, Any],
+    preparation_identity: Mapping[str, Any],
+    stage_authorization: Mapping[str, Any],
+    stage_authorization_identity: Mapping[str, Any],
+    cofitok_config: Mapping[str, Any],
+    cofitok_config_identity: Mapping[str, Any],
+    dense_config: Mapping[str, Any],
+    dense_config_identity: Mapping[str, Any],
+    execution_checkout: Mapping[str, Any],
+    output_root: str,
+) -> dict[str, Any]:
+    prepared = validate_terminal_snr_large_capacity_preparation_contract(
+        preparation
+    )
+    prepared_id = _identity(
+        preparation_identity, "large-capacity preparation"
+    )
+    execution = _git(
+        execution_checkout, "large-capacity execution checkout"
+    )
+    root = _absolute(output_root, "large-capacity output root")
+    stage = validate_terminal_snr_large_capacity_stage_authorization(
+        stage_authorization,
+        preparation=prepared,
+        preparation_identity=prepared_id,
+        execution_checkout=execution,
+        expected_output_root=root,
+    )
+    stage_id = _identity(
+        stage_authorization_identity, "large-capacity stage authorization"
+    )
+    prepared_sources = _object(
+        prepared.get("source_evidence"), "large-capacity preparation sources"
+    )
+    prepared_configs = _object(
+        prepared_sources.get("configs"), "large-capacity prepared configs"
+    )
+    config_ids = {
+        "cofitok": _identity(
+            cofitok_config_identity, "large-capacity CoFiTok config"
+        ),
+        "dense_identity": _identity(
+            dense_config_identity, "large-capacity dense config"
+        ),
+    }
+    if set(prepared_configs) != set(METHODS) or any(
+        config_ids[method]
+        != _identity(prepared_configs[method], f"prepared {method} config")
+        for method in METHODS
+    ):
+        raise ValueError("large-capacity pair-validation config identity differs")
+    for method in METHODS:
+        if PurePosixPath(config_ids[method]["path"]).name != CONFIG_FILENAMES[method]:
+            raise ValueError(
+                f"large-capacity {method} pair-validation config path differs"
+            )
+    validation = validate_terminal_snr_large_capacity_config_pair(
+        cofitok_config=cofitok_config,
+        dense_config=dense_config,
+    )
+    prepared_selection = _object(
+        prepared.get("selection"), "large-capacity prepared selection"
+    )
+    if validation != prepared_selection.get("config_validation"):
+        raise ValueError(
+            "large-capacity pair validation differs from preparation"
+        )
+    return {
+        "schema_version": PAIR_VALIDATION_SCHEMA,
+        "role": PAIR_VALIDATION_ROLE,
+        "status": "pass",
+        "execution_checkout": execution,
+        "source_evidence": {
+            "preparation": prepared_id,
+            "stage_authorization": stage_id,
+            "configs": config_ids,
+        },
+        "selection": {
+            "output_root": root,
+            "condition": "terminal_snr_endpoint0975",
+            "methods": list(METHODS),
+            "base_channels": BASE_CHANNELS,
+            "parameter_counts": copy.deepcopy(EXPECTED_PARAMETER_COUNTS),
+            "effective_batch_size": EFFECTIVE_BATCH_SIZE,
+            "configured_training_steps": TARGET_STEPS,
+            "milestone_steps": list(MILESTONE_STEPS),
+            "fresh_initialization_required": True,
+            "resume_allowed": False,
+        },
+        "validation": validation,
+        "next_stage": {
+            "route": "collect_large_capacity_runtime_storage_and_live_snapshot",
+            "runtime_selection_required": True,
+            "storage_capacity_required": True,
+            "live_snapshot_required": True,
+            "separate_execution_authorization_required": True,
+            "immutable_launch_receipt_required": True,
+            "execution_ready": False,
+            "training_launch_allowed": False,
+            "full_300k_launch_allowed": False,
+        },
+        "authorization_boundary": copy.deepcopy(PAIR_VALIDATION_BOUNDARY),
+    }
+
+
+def build_terminal_snr_large_capacity_pair_validation(
+    *,
+    preparation: Mapping[str, Any],
+    preparation_identity: Mapping[str, Any],
+    stage_authorization: Mapping[str, Any],
+    stage_authorization_identity: Mapping[str, Any],
+    cofitok_config: Mapping[str, Any],
+    cofitok_config_identity: Mapping[str, Any],
+    dense_config: Mapping[str, Any],
+    dense_config_identity: Mapping[str, Any],
+    execution_checkout: Mapping[str, Any],
+    output_root: str,
+) -> dict[str, Any]:
+    report = _pair_validation_report(
+        preparation=preparation,
+        preparation_identity=preparation_identity,
+        stage_authorization=stage_authorization,
+        stage_authorization_identity=stage_authorization_identity,
+        cofitok_config=cofitok_config,
+        cofitok_config_identity=cofitok_config_identity,
+        dense_config=dense_config,
+        dense_config_identity=dense_config_identity,
+        execution_checkout=execution_checkout,
+        output_root=output_root,
+    )
+    return validate_terminal_snr_large_capacity_pair_validation(
+        report,
+        preparation=preparation,
+        preparation_identity=preparation_identity,
+        stage_authorization=stage_authorization,
+        stage_authorization_identity=stage_authorization_identity,
+        cofitok_config=cofitok_config,
+        cofitok_config_identity=cofitok_config_identity,
+        dense_config=dense_config,
+        dense_config_identity=dense_config_identity,
+        execution_checkout=execution_checkout,
+        expected_output_root=output_root,
+    )
+
+
+def validate_terminal_snr_large_capacity_pair_validation(
+    report: Mapping[str, Any],
+    *,
+    preparation: Mapping[str, Any],
+    preparation_identity: Mapping[str, Any],
+    stage_authorization: Mapping[str, Any],
+    stage_authorization_identity: Mapping[str, Any],
+    cofitok_config: Mapping[str, Any],
+    cofitok_config_identity: Mapping[str, Any],
+    dense_config: Mapping[str, Any],
+    dense_config_identity: Mapping[str, Any],
+    execution_checkout: Mapping[str, Any],
+    expected_output_root: str,
+) -> dict[str, Any]:
+    row = _object(report, "large-capacity pair validation")
+    expected = _pair_validation_report(
+        preparation=preparation,
+        preparation_identity=preparation_identity,
+        stage_authorization=stage_authorization,
+        stage_authorization_identity=stage_authorization_identity,
+        cofitok_config=cofitok_config,
+        cofitok_config_identity=cofitok_config_identity,
+        dense_config=dense_config,
+        dense_config_identity=dense_config_identity,
+        execution_checkout=execution_checkout,
+        output_root=expected_output_root,
+    )
+    if row != expected:
+        raise ValueError("terminal-SNR large-capacity pair validation differs")
+    return copy.deepcopy(row)
+
+
 __all__ = [
     "GOAL_BINDING",
+    "PAIR_VALIDATION_BOUNDARY",
+    "PAIR_VALIDATION_ROLE",
+    "PAIR_VALIDATION_SCHEMA",
     "STAGE_AUTHORIZATION_ROLE",
     "STAGE_AUTHORIZATION_SCHEMA",
     "STAGE_AUTHORIZATION_SCOPE",
     "STAGE_BOUNDARY",
+    "build_terminal_snr_large_capacity_pair_validation",
     "build_terminal_snr_large_capacity_stage_authorization",
+    "validate_terminal_snr_large_capacity_pair_validation",
     "validate_terminal_snr_large_capacity_stage_authorization",
 ]
