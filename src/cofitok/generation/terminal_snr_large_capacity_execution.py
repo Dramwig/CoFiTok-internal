@@ -48,6 +48,12 @@ PAIR_VALIDATION_SCHEMA = (
 PAIR_VALIDATION_ROLE = (
     "source_bound_terminal_snr_large_capacity_matched_pair_validation"
 )
+LIVE_SNAPSHOT_SCHEMA = (
+    "cofitok_generation_terminal_snr_large_capacity_live_snapshot_v1"
+)
+LIVE_SNAPSHOT_ROLE = (
+    "terminal_snr_large_capacity_idle_gpu_and_output_absence_snapshot"
+)
 
 RUNTIME_CANDIDATES = ((1, 64), (2, 32), (4, 16))
 RUNTIME_BASELINE = (1, 64)
@@ -67,6 +73,9 @@ STORAGE_SAMPLE_COUNT = 2 * 50_000 + 4 * 2 * 2_048
 STORAGE_ESTIMATED_SAMPLE_BYTES = 256 * 1024
 STORAGE_ADDITIONAL_BYTES = 32 * 1024**3
 STORAGE_SAFETY_MARGIN_BYTES = 128 * 1024**3
+LIVE_MAX_IDLE_MEMORY_MIB = 16
+LIVE_MAX_IDLE_UTILIZATION_PERCENT = 5
+LIVE_MIN_FREE_BYTES = STORAGE_SAFETY_MARGIN_BYTES
 
 GOAL_BINDING = {
     "project": "CoFiTok",
@@ -130,6 +139,26 @@ PAIR_VALIDATION_BOUNDARY = {
     "runtime_selection_still_required": True,
     "storage_capacity_still_required": True,
     "live_snapshot_still_required": True,
+    "separate_execution_authorization_required": True,
+    "immutable_launch_receipt_required": True,
+}
+
+LIVE_SNAPSHOT_BOUNDARY = {
+    "evidence_only": True,
+    "decision_is_execution_authorization": False,
+    "remote_mutation_allowed": False,
+    "gpu_execution_allowed": False,
+    "training_launch_allowed": False,
+    "sampling_launch_allowed": False,
+    "evaluation_launch_allowed": False,
+    "checkpoint_mutation_allowed": False,
+    "resume_allowed": False,
+    "full_training_launch_allowed": False,
+    "full_300k_launch_allowed": False,
+    "promotion_allowed": False,
+    "export_allowed": False,
+    "release_allowed": False,
+    "process_signals_allowed": False,
     "separate_execution_authorization_required": True,
     "immutable_launch_receipt_required": True,
 }
@@ -203,6 +232,30 @@ def _path_is_within(path: str, parent: str) -> bool:
     except ValueError:
         return False
     return True
+
+
+def terminal_snr_large_capacity_execution_lock_path(output_root: str) -> str:
+    root = PurePosixPath(
+        _absolute(output_root, "large-capacity output root")
+    )
+    if root.name != FULL_STAGE_DIRNAME:
+        raise ValueError("large-capacity output root basename differs")
+    return (
+        root.parent
+        / f".{root.name}.terminal_snr_large_capacity_execution.lock"
+    ).as_posix()
+
+
+def _expected_training_run_dirs(output_root: str) -> dict[str, str]:
+    root = PurePosixPath(
+        _absolute(output_root, "large-capacity output root")
+    )
+    if root.name != FULL_STAGE_DIRNAME:
+        raise ValueError("large-capacity output root basename differs")
+    return {
+        method: (root / "training" / method).as_posix()
+        for method in METHODS
+    }
 
 
 def _explicit_goal_instruction(value: Any) -> str:
@@ -930,8 +983,187 @@ def validate_terminal_snr_large_capacity_storage_capacity(
     }
 
 
+def validate_terminal_snr_large_capacity_live_snapshot(
+    report: Mapping[str, Any],
+    *,
+    expected_output_root: str,
+    expected_execution_checkout: Mapping[str, Any],
+    expected_execution_lock: str,
+    expected_runtime_selection_identity: Mapping[str, Any],
+    expected_storage_capacity_identity: Mapping[str, Any],
+    expected_config_identities: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Validate the final idle, clean, empty-output prelaunch observation.
+
+    The snapshot is evidence-only.  A later execution authorization and
+    immutable launch receipt must bind and physically replay it together with
+    every other large-capacity prelaunch source before training can start.
+    """
+
+    row = _object(report, "large-capacity live snapshot")
+    root = _absolute(expected_output_root, "large-capacity output root")
+    if PurePosixPath(root).name != FULL_STAGE_DIRNAME:
+        raise ValueError("large-capacity output root basename differs")
+    execution = _git(
+        expected_execution_checkout,
+        "large-capacity live execution checkout",
+    )
+    exact_lock = terminal_snr_large_capacity_execution_lock_path(root)
+    supplied_lock = _absolute(
+        expected_execution_lock, "large-capacity execution lock"
+    )
+    expected_runs = _expected_training_run_dirs(root)
+    sources = _object(
+        row.get("source_evidence"), "large-capacity live sources"
+    )
+    configs = _object(
+        sources.get("configs"), "large-capacity live configs"
+    )
+    if set(expected_config_identities) != set(METHODS):
+        raise ValueError("large-capacity live config set differs")
+    expected_configs = {
+        method: _identity(
+            expected_config_identities[method],
+            f"large-capacity live {method} config",
+        )
+        for method in METHODS
+    }
+    if set(configs) == set(METHODS):
+        configs = {
+            method: _identity(
+                configs[method], f"large-capacity live {method} config"
+            )
+            for method in METHODS
+        }
+    runtime_id = _identity(
+        expected_runtime_selection_identity,
+        "large-capacity runtime selection",
+    )
+    storage_id = _identity(
+        expected_storage_capacity_identity,
+        "large-capacity storage capacity",
+    )
+    gpu = row.get("gpu_inventory")
+    if not isinstance(gpu, list) or len(gpu) != 1:
+        raise ValueError("large-capacity launch requires exactly one target GPU")
+    device = _object(gpu[0], "large-capacity GPU inventory")
+    compute = row.get("gpu_compute_processes")
+    conflicts = row.get("conflicting_processes")
+    filesystem = _object(
+        row.get("filesystem"), "large-capacity live filesystem"
+    )
+    environment = _object(
+        row.get("runtime_environment"),
+        "large-capacity live runtime environment",
+    )
+    provenance = _object(
+        row.get("dataset_provenance"),
+        "large-capacity live dataset provenance",
+    )
+    environment_sha = runtime_environment_sha256(environment)
+    dataset_sha = validate_dataset_provenance(
+        provenance, expected_dataset="imagenet_256"
+    )["identity_sha256"]
+    run_dirs = _object(
+        row.get("training_run_dirs"), "large-capacity training run dirs"
+    )
+    if (
+        set(row)
+        != {
+            "schema_version",
+            "role",
+            "status",
+            "execution_checkout",
+            "source_evidence",
+            "output_root",
+            "execution_lock",
+            "training_run_dirs",
+            "gpu_inventory",
+            "gpu_compute_processes",
+            "conflicting_processes",
+            "output_root_absent",
+            "training_state_absent",
+            "execution_lock_free",
+            "filesystem",
+            "runtime_environment",
+            "runtime_environment_sha256",
+            "dataset_provenance",
+            "dataset_identity_sha256",
+            "hostname",
+            "captured_at",
+            "authorization_boundary",
+        }
+        or set(sources) != {"runtime_selection", "storage_capacity", "configs"}
+        or row.get("schema_version") != LIVE_SNAPSHOT_SCHEMA
+        or row.get("role") != LIVE_SNAPSHOT_ROLE
+        or row.get("status") != "pass"
+        or row.get("execution_checkout") != execution
+        or row.get("source_evidence")
+        != {
+            "runtime_selection": runtime_id,
+            "storage_capacity": storage_id,
+            "configs": expected_configs,
+        }
+        or row.get("output_root") != root
+        or row.get("execution_lock") != exact_lock
+        or supplied_lock != exact_lock
+        or run_dirs != expected_runs
+        or row.get("output_root_absent") is not True
+        or row.get("training_state_absent") is not True
+        or row.get("execution_lock_free") is not True
+        or compute != []
+        or conflicts != []
+        or set(device)
+        != {
+            "index",
+            "uuid",
+            "name",
+            "memory_used_mib",
+            "memory_total_mib",
+            "utilization_percent",
+        }
+        or int(device.get("index", -1)) != 0
+        or not str(device.get("uuid", "")).strip()
+        or not str(device.get("name", "")).strip()
+        or int(device.get("memory_used_mib", -1)) < 0
+        or int(device.get("memory_used_mib", LIVE_MAX_IDLE_MEMORY_MIB + 1))
+        > LIVE_MAX_IDLE_MEMORY_MIB
+        or int(device.get("memory_total_mib", 0)) < 1
+        or int(
+            device.get(
+                "utilization_percent",
+                LIVE_MAX_IDLE_UTILIZATION_PERCENT + 1,
+            )
+        )
+        > LIVE_MAX_IDLE_UTILIZATION_PERCENT
+        or set(filesystem)
+        != {"path", "free_bytes", "required_free_bytes", "headroom_bytes"}
+        or filesystem.get("path") != PurePosixPath(root).parent.as_posix()
+        or int(filesystem.get("free_bytes", 0)) < LIVE_MIN_FREE_BYTES
+        or int(filesystem.get("required_free_bytes", 0)) < 1
+        or int(filesystem.get("free_bytes", -1))
+        < int(filesystem.get("required_free_bytes", 0))
+        or int(filesystem.get("headroom_bytes", -1))
+        != int(filesystem.get("free_bytes", -1))
+        - int(filesystem.get("required_free_bytes", 0))
+        or row.get("runtime_environment_sha256") != environment_sha
+        or row.get("dataset_identity_sha256") != dataset_sha
+        or not str(row.get("hostname", "")).strip()
+        or not str(row.get("captured_at", "")).strip()
+        or row.get("authorization_boundary") != LIVE_SNAPSHOT_BOUNDARY
+    ):
+        raise ValueError("terminal-SNR large-capacity live snapshot differs")
+    return copy.deepcopy(row)
+
+
 __all__ = [
     "GOAL_BINDING",
+    "LIVE_MAX_IDLE_MEMORY_MIB",
+    "LIVE_MAX_IDLE_UTILIZATION_PERCENT",
+    "LIVE_MIN_FREE_BYTES",
+    "LIVE_SNAPSHOT_BOUNDARY",
+    "LIVE_SNAPSHOT_ROLE",
+    "LIVE_SNAPSHOT_SCHEMA",
     "PAIR_VALIDATION_BOUNDARY",
     "PAIR_VALIDATION_ROLE",
     "PAIR_VALIDATION_SCHEMA",
@@ -953,6 +1185,8 @@ __all__ = [
     "STAGE_BOUNDARY",
     "build_terminal_snr_large_capacity_pair_validation",
     "build_terminal_snr_large_capacity_stage_authorization",
+    "terminal_snr_large_capacity_execution_lock_path",
+    "validate_terminal_snr_large_capacity_live_snapshot",
     "validate_terminal_snr_large_capacity_pair_validation",
     "validate_terminal_snr_large_capacity_runtime_selection",
     "validate_terminal_snr_large_capacity_stage_authorization",

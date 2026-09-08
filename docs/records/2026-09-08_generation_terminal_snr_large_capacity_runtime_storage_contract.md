@@ -54,7 +54,24 @@ by a separate execution authorization and immutable launch receipt.  Resume,
 training, full-300K launch, sampling, evaluation, promotion, export, release,
 and process signalling remain unauthorized.
 
+The idle snapshot contract and POSIX-only builder are now implemented.  The
+builder replays the exact runtime and storage reports, both config identities,
+the clean execution Git, current runtime and ImageNet-256 identities, the
+single-GPU inventory, compute-process inventory, output-scoped process scan,
+exact sibling lock availability, output/run-directory absence, and current
+filesystem headroom.  Its schema is evidence-only and keeps every execution,
+training, sampling, evaluation, promotion, export, release, and process-signal
+permission false.  It refuses to overwrite a prior snapshot and contains no
+training or detached-process launch path.  No live snapshot is created before
+the frozen terminal-SNR confirmation passes.
+
 Focused large-capacity, runtime-selection, storage, and preparation tests pass
-(`52 passed`), together with Python compilation and `git diff --check`.
+(`52 passed` before the snapshot addition; the consolidated execution module
+now has `29 passed`), together with Python compilation and `git diff --check`.
+The complete Windows CPU-only suite after the snapshot addition collected
+`1,344` tests and exited successfully (`1,332 passed / 12 skipped`, as shown
+by pytest's progress output).  The earlier complete suite at commit `a26a500`
+also exited successfully, closing the previously pending full-suite
+validation.
 No remote checkout, running process, checkpoint, sample, or locked evidence
 was modified.

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import copy
+import inspect
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -15,6 +17,7 @@ from cofitok.generation.terminal_snr_large_capacity import (
 )
 from cofitok.generation.terminal_snr_large_capacity_execution import (
     GOAL_BINDING,
+    LIVE_SNAPSHOT_BOUNDARY,
     PAIR_VALIDATION_BOUNDARY,
     RUNTIME_BASELINE,
     RUNTIME_BENCHMARK_STEPS,
@@ -31,12 +34,15 @@ from cofitok.generation.terminal_snr_large_capacity_execution import (
     STORAGE_STAGE,
     build_terminal_snr_large_capacity_pair_validation,
     build_terminal_snr_large_capacity_stage_authorization,
+    terminal_snr_large_capacity_execution_lock_path,
+    validate_terminal_snr_large_capacity_live_snapshot,
     validate_terminal_snr_large_capacity_pair_validation,
     validate_terminal_snr_large_capacity_runtime_selection,
     validate_terminal_snr_large_capacity_stage_authorization,
     validate_terminal_snr_large_capacity_storage_capacity,
 )
 from scripts.check_generation_storage_capacity import build_storage_capacity_report
+from scripts import build_generation_terminal_snr_large_capacity_live_snapshot as live_snapshot
 from scripts.select_generation_training_runtime import (
     _selection_contract,
     select_runtime_candidate,
@@ -228,6 +234,63 @@ def _storage_capacity() -> dict:
         "/root/autodl-tmp/CoFiTok/checkpoints/generation"
     )
     return report
+
+
+def _live_snapshot(preparation: dict) -> tuple[dict, dict, dict]:
+    runtime_id = _identity("/evidence/runtime.json", "1")
+    storage_id = _identity("/evidence/storage.json", "2")
+    configs = preparation["source_evidence"]["configs"]
+    measured = _method(1.0)
+    lock = terminal_snr_large_capacity_execution_lock_path(OUTPUT_ROOT)
+    report = {
+        "schema_version": (
+            "cofitok_generation_terminal_snr_large_capacity_live_snapshot_v1"
+        ),
+        "role": (
+            "terminal_snr_large_capacity_idle_gpu_and_output_absence_snapshot"
+        ),
+        "status": "pass",
+        "execution_checkout": EXECUTION_GIT,
+        "source_evidence": {
+            "runtime_selection": copy.deepcopy(runtime_id),
+            "storage_capacity": copy.deepcopy(storage_id),
+            "configs": copy.deepcopy(configs),
+        },
+        "output_root": OUTPUT_ROOT,
+        "execution_lock": lock,
+        "training_run_dirs": {
+            method: f"{OUTPUT_ROOT}/training/{method}" for method in METHODS
+        },
+        "gpu_inventory": [{
+            "index": 0,
+            "uuid": "GPU-00000000-0000-0000-0000-000000000000",
+            "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+            "memory_used_mib": 1,
+            "memory_total_mib": 97_887,
+            "utilization_percent": 0,
+        }],
+        "gpu_compute_processes": [],
+        "conflicting_processes": [],
+        "output_root_absent": True,
+        "training_state_absent": True,
+        "execution_lock_free": True,
+        "filesystem": {
+            "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
+            "free_bytes": 512 * 1024**3,
+            "required_free_bytes": 256 * 1024**3,
+            "headroom_bytes": 256 * 1024**3,
+        },
+        "runtime_environment": measured["runtime_environment"],
+        "runtime_environment_sha256": measured["runtime_environment_sha256"],
+        "dataset_provenance": measured["dataset_provenance"],
+        "dataset_identity_sha256": measured["dataset_provenance"][
+            "identity_sha256"
+        ],
+        "hostname": "pro6000",
+        "captured_at": "2026-09-08T00:00:00+00:00",
+        "authorization_boundary": LIVE_SNAPSHOT_BOUNDARY,
+    }
+    return report, runtime_id, storage_id
 
 
 def test_stage_authorization_binds_exact_fresh_300k_goal(
@@ -515,3 +578,130 @@ def test_large_capacity_storage_capacity_rejects_weaker_reserve() -> None:
             execution_checkout=EXECUTION_GIT,
             output_root=OUTPUT_ROOT,
         )
+
+
+def test_large_capacity_live_snapshot_binds_idle_gpu_and_empty_output(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    preparation = _build_preparation(monkeypatch)
+    report, runtime_id, storage_id = _live_snapshot(preparation)
+    validated = validate_terminal_snr_large_capacity_live_snapshot(
+        report,
+        expected_output_root=OUTPUT_ROOT,
+        expected_execution_checkout=EXECUTION_GIT,
+        expected_execution_lock=report["execution_lock"],
+        expected_runtime_selection_identity=runtime_id,
+        expected_storage_capacity_identity=storage_id,
+        expected_config_identities=preparation["source_evidence"]["configs"],
+    )
+    assert validated["gpu_compute_processes"] == []
+    assert validated["output_root_absent"] is True
+    assert validated["training_state_absent"] is True
+    assert validated["authorization_boundary"]["training_launch_allowed"] is False
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("gpu_compute_processes", [{"pid": 123, "process_name": "python"}]),
+        ("conflicting_processes", [{"pid": 456, "command": "trainer"}]),
+        ("output_root_absent", False),
+        ("training_state_absent", False),
+        ("execution_lock_free", False),
+    ],
+)
+def test_large_capacity_live_snapshot_rejects_non_idle_or_existing_state(
+    monkeypatch: pytest.MonkeyPatch,
+    field: str,
+    value: object,
+) -> None:
+    preparation = _build_preparation(monkeypatch)
+    report, runtime_id, storage_id = _live_snapshot(preparation)
+    report[field] = value
+    with pytest.raises(ValueError, match="live snapshot differs"):
+        validate_terminal_snr_large_capacity_live_snapshot(
+            report,
+            expected_output_root=OUTPUT_ROOT,
+            expected_execution_checkout=EXECUTION_GIT,
+            expected_execution_lock=report["execution_lock"],
+            expected_runtime_selection_identity=runtime_id,
+            expected_storage_capacity_identity=storage_id,
+            expected_config_identities=(
+                preparation["source_evidence"]["configs"]
+            ),
+        )
+
+
+def test_large_capacity_live_snapshot_rejects_bound_source_drift(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    preparation = _build_preparation(monkeypatch)
+    report, runtime_id, storage_id = _live_snapshot(preparation)
+    report["source_evidence"]["runtime_selection"]["sha256"] = "9" * 64
+    with pytest.raises(ValueError, match="live snapshot differs"):
+        validate_terminal_snr_large_capacity_live_snapshot(
+            report,
+            expected_output_root=OUTPUT_ROOT,
+            expected_execution_checkout=EXECUTION_GIT,
+            expected_execution_lock=report["execution_lock"],
+            expected_runtime_selection_identity=runtime_id,
+            expected_storage_capacity_identity=storage_id,
+            expected_config_identities=(
+                preparation["source_evidence"]["configs"]
+            ),
+        )
+
+
+def test_large_capacity_live_snapshot_cli_binds_every_measured_source() -> None:
+    args = live_snapshot.parse_args([
+        "--project-root", "/tmp/execution",
+        "--runtime-selection", "/evidence/runtime.json",
+        "--expected-runtime-selection-sha256", "1" * 64,
+        "--storage-capacity", "/evidence/storage.json",
+        "--expected-storage-capacity-sha256", "2" * 64,
+        "--cofitok-config", "/configs/cofitok.json",
+        "--expected-cofitok-config-sha256", "3" * 64,
+        "--dense-config", "/configs/dense.json",
+        "--expected-dense-config-sha256", "4" * 64,
+        "--cofitok-run-dir", f"{OUTPUT_ROOT}/training/cofitok",
+        "--dense-run-dir", f"{OUTPUT_ROOT}/training/dense_identity",
+        "--benchmark-root", "/tmp/runtime-benchmark",
+        "--output-root", OUTPUT_ROOT,
+        "--execution-lock",
+        terminal_snr_large_capacity_execution_lock_path(OUTPUT_ROOT),
+        "--storage-path", "/root/autodl-tmp/CoFiTok/checkpoints/generation",
+        "--output", "/evidence/live.json",
+    ])
+    assert args.expected_runtime_selection_sha256 == "1" * 64
+    assert args.expected_storage_capacity_sha256 == "2" * 64
+    assert args.output_root == OUTPUT_ROOT
+
+
+def test_large_capacity_live_snapshot_gpu_inventory_is_exact(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    outputs = iter([
+        SimpleNamespace(stdout=(
+            "0, GPU-0, NVIDIA RTX PRO 6000, 1, 97887, 0\n"
+        )),
+        SimpleNamespace(stdout=""),
+    ])
+    monkeypatch.setattr(live_snapshot.subprocess, "run", lambda *_, **__: next(outputs))
+    inventory, compute = live_snapshot._gpu_inventory()
+    assert inventory == [{
+        "index": 0,
+        "uuid": "GPU-0",
+        "name": "NVIDIA RTX PRO 6000",
+        "memory_used_mib": 1,
+        "memory_total_mib": 97_887,
+        "utilization_percent": 0,
+    }]
+    assert compute == []
+
+
+def test_large_capacity_live_snapshot_builder_cannot_launch_training() -> None:
+    source = inspect.getsource(live_snapshot)
+    assert "train_generation.py" in source
+    assert "subprocess.Popen" not in source
+    assert "nohup" not in source
+    assert "full_300k_launch_allowed" not in source
