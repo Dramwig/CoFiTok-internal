@@ -42,16 +42,6 @@ SOURCE_PROFILES = {
             "dense_rollout_x0_u2_ema_teacher"
         ),
     },
-    "capacity_scaling": {
-        "cofitok": (
-            "stability_full_data_100k_capacity_probe_250m_10k_v1/"
-            "base256_cofitok"
-        ),
-        "dense": (
-            "stability_full_data_100k_capacity_probe_250m_10k_v1/"
-            "base256_dense_identity"
-        ),
-    },
 }
 
 

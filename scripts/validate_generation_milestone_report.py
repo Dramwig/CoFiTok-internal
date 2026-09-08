@@ -24,7 +24,7 @@ def main() -> None:
     parser.add_argument("--expected-step", required=True, type=int)
     parser.add_argument(
         "--source-profile",
-        choices=("full", "stability_full", "quality_bridge", "capacity_scaling"),
+        choices=("full", "stability_full", "quality_bridge"),
         default="full",
     )
     args = parser.parse_args()
