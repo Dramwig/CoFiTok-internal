@@ -11,9 +11,10 @@ change a checkpoint, or replace the terminal-SNR result.
 
 The diagnostic is deliberately contingent. It cannot authorize or imply a
 confirmation run, large-capacity readiness, full training, 300K training,
-promotion, export, release, or paper integration. No preparation, stage
-approval, execution authorization, diagnostic result, or validation receipt
-was built or written by this work.
+promotion, export, release, or paper integration. A source-bound,
+non-authorizing preparation was subsequently created and physically replayed.
+No stage approval, execution authorization, classifier inference, diagnostic
+result, or validation receipt has been created.
 
 The implementation was developed in the isolated worktree `C:/qbcsc` on
 branch `analysis/generation-class-support-contingency-v1-20260910`, based on
@@ -50,6 +51,47 @@ SHA256 is
 independent validation binding is
 `0043680c6109de3adffae743517ef87b4efd81f3e87f6d540a144aa804354292`.
 
+## Immutable remote preparation
+
+The non-authorizing preparation is stored outside the frozen sample trees and
+outside the immutable terminal-SNR screen:
+
+```text
+path:   /root/autodl-tmp/CoFiTok/checkpoints/generation/.class_support_contingency_v1.control/preparation.json
+bytes:  19,469
+sha256: 4a1aebfcb2ee5b32586d97a2a1d39ec619048fcd99840fef7dfce9033dabc2bc
+```
+
+It was built from the clean preparation checkout
+`/tmp/cofitok-class-support-contingency-preparation-c38291b` at revision
+`c38291b14058746712dc0934937539a86bb3800e` and tree
+`ae5d00d450cee99777ed1f663e92d179511204ed`. The preparation binds the fixed
+classifier above and physically verified frozen sample trees with these exact
+identities:
+
+| method | images | sample-set SHA256 |
+| --- | ---: | --- |
+| CoFiTok K8 | 10,000 | `7f57ee4a874667b17085df203503443440a84124719a53da31db726a1efaff98` |
+| dense identity | 10,000 | `3fc905a55dc368ddf268278c04963c5933b3e783f4cabd872762135b6345bdaf` |
+
+The same exact checkout replayed the preparation from every physical source.
+The latest replay returned `status=pass`,
+`scientific_status=diagnostic_not_executed`,
+`classifier_inference_performed=false`, and `execution_authorized=false`.
+The intended result root remains absent:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/class_support_contingency_v1
+```
+
+The preparation itself fixes every mutation and downstream permission to
+false. In particular, it is not a stage approval or execution authorization.
+Running the frozen 20,000-image classifier diagnostic requires a distinct
+user-created approval bound to this preparation identity and to the exact
+evaluator Git identity. That approval is limited to existing-image classifier
+inference; it cannot authorize sampling, retraining, confirmation, full
+training, 300K training, promotion, export, release, or paper integration.
+
 ## Hardening included
 
 The contingency module and its four scripts enforce:
@@ -81,8 +123,10 @@ compileall (src, scripts, tests): passed
 repository CPU suite with CUDA hidden: 1263 passed, 12 skipped
 ```
 
-The full suite completed in 309.36 seconds. No classifier inference, sampling,
-training, GPU work, or remote write was performed by this diagnostic turn.
+The full suite completed in 309.36 seconds. The later preparation step wrote
+only the immutable JSON preparation described above. It performed no
+classifier inference, sampling, training, checkpoint mutation, controller
+mutation, or GPU work.
 
 ## Live authoritative screen audit
 
@@ -130,6 +174,8 @@ The scientific result is still a hold, not a pass. Both
 `dense_identity.relative_fid_improvement` fail the declared `>= 0.05`
 threshold. The result therefore keeps `generation_advantage_proven=false` and
 all confirmation, full-training, 300K, promotion, export, release, and paper
-integration permissions false. The GPU is idle and the authoritative
-`/root/autodl-tmp` free space observed during the audit was 189,708,369,920
-bytes. The historical exposure controller remains untouched.
+integration permissions false. The latest recheck found the GPU idle at
+`0 MiB` and `0%` utilization, with no GPU compute process. The authoritative
+`/root/autodl-tmp` free space was 189,708,275,712 bytes. The historical
+exposure controller and the immutable terminal-SNR controller, evidence, and
+result remain untouched.
