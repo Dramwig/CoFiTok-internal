@@ -1,5 +1,12 @@
 # Generation class-support contingency diagnostic (2026-09-10)
 
+> Historical preparation record. The diagnostic was subsequently authorized and
+> executed once on September 12, with its existing validation receipt physically
+> replayed on September 13. See
+> [the execution and interpretation record](2026-09-13_generation_class_support_contingency_result.md).
+> Statements below about absent execution artifacts describe the preparation
+> checkpoint, not the current state. No frozen source was rewritten.
+
 ## Scope and boundary
 
 This record documents a source-bound, non-authorizing CPU diagnostic prepared

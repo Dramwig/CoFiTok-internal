@@ -1,0 +1,54 @@
+{
+  "claim_boundary": {
+    "confirmation_launch_allowed": false,
+    "confirmation_preparation_allowed": false,
+    "diagnostic_only": true,
+    "export_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "full_training_preparation_allowed": false,
+    "generates_new_samples": false,
+    "generation_advantage_proven": false,
+    "large_capacity_readiness_preparation_allowed": false,
+    "paper_integration_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "replaces_terminal_snr_screen": false,
+    "retraining_performed": false
+  },
+  "generation_advantage_proven": false,
+  "physical_prediction_replay": {
+    "method_count": 2,
+    "performed": true,
+    "recomputed_analysis_canonical_sha256": "d797aaaefa1ae77e765aeb47fcf84983c06ee0e6c6e86aad6a578e1a2de642d6",
+    "sample_count_per_method": 10000
+  },
+  "prediction_files": {
+    "cofitok": {
+      "bytes": 4521151,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/class_support_contingency_v1/cofitok_predictions.jsonl",
+      "sha256": "b429c8672657d8065ffd66110e2d59b608a3860c9e5c1c0eef6411c650edd139"
+    },
+    "dense_identity": {
+      "bytes": 4524855,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/class_support_contingency_v1/dense_identity_predictions.jsonl",
+      "sha256": "90903aaf7620f65610f72914dccdac7856ab0cd6d5e4ede28fe1ef1a48302902"
+    }
+  },
+  "result": {
+    "bytes": 2535030,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/class_support_contingency_v1/class_support_contingency_result.json",
+    "sha256": "9d1a5709a18f5beadf7a8654dd147906a269b35ce35ef0720a68ab2c484c0dc1"
+  },
+  "role": "independent_frozen_sample_class_support_contingency_validation",
+  "schema_version": "cofitok_generation_class_support_contingency_validation_v1",
+  "scientific_status": "diagnostic_completed_non_authorizing",
+  "status": "pass",
+  "terminal_status": "hold",
+  "validator_git": {
+    "branch": "validation/generation-class-support-contingency-v1-20260910",
+    "revision": "c38291b14058746712dc0934937539a86bb3800e",
+    "tracked_dirty": false,
+    "tree": "ae5d00d450cee99777ed1f663e92d179511204ed"
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "caveats": [
+    "Predeclared AMI practical floor 0.01 fails despite significant permutation association.",
+    "The frozen label shared_unconditional_support_collapse is a decision label, not proof of independence.",
+    "Binomial tails assume iid trials; balanced labels and correlated samples limit that interpretation.",
+    "Same seed/index couples the two methods; agreement does not establish a training-time cause.",
+    "Only 10 images per requested class; lack of mapping rescue does not rule out every possible mapping."
+  ],
+  "claim": "weak detectable label association; no heldout relabeling rescue; shared support concentration",
+  "common_cause_proven": false,
+  "confirmation_authorized": false,
+  "cross_method": {
+    "histogram_overlap": 0.6730999999999999,
+    "jensen_shannon_divergence_bits": 0.13836683448547046,
+    "same_index_top1_count": 1441,
+    "shared_image_hash_count": 0
+  },
+  "full_300k_authorized": false,
+  "methods": {
+    "cofitok": {
+      "adjusted_mutual_information": 0.003919647055074238,
+      "best_cyclic_accuracy": 0.0024,
+      "best_cyclic_offset": 0,
+      "count": 10000,
+      "effective_class_count": 218.9688075110791,
+      "expected_mutual_information_nats": 3.1698801646031574,
+      "heldout_mapping_accuracy": 0.0014,
+      "mean_requested_probability": 0.0016550545959380543,
+      "mutual_information_nats": 3.18155468487653,
+      "permutation_pvalue_from_validated_result": 0.001949317738791423,
+      "predicted_class_count": 734,
+      "predicted_entropy_nats": 5.388929288215918,
+      "top1_accuracy": 0.0024,
+      "top1_binomial_tail_iid_assumption": 0.00011898446380270056,
+      "top1_correct": 24,
+      "top5_accuracy": 0.0106,
+      "top5_binomial_tail_iid_assumption": 3.3036850604905416e-12,
+      "top5_correct": 106,
+      "top_mode_class": 885,
+      "top_mode_count": 854,
+      "unique_image_hashes": 10000
+    },
+    "dense_identity": {
+      "adjusted_mutual_information": 0.003033364228221885,
+      "best_cyclic_accuracy": 0.0022,
+      "best_cyclic_offset": 65,
+      "count": 10000,
+      "effective_class_count": 178.00999534928002,
+      "expected_mutual_information_nats": 2.969855292122878,
+      "heldout_mapping_accuracy": 0.0009,
+      "mean_requested_probability": 0.0012884529046459647,
+      "mutual_information_nats": 2.979182711791809,
+      "permutation_pvalue_from_validated_result": 0.001949317738791423,
+      "predicted_class_count": 696,
+      "predicted_entropy_nats": 5.181839702363169,
+      "top1_accuracy": 0.0017,
+      "top1_binomial_tail_iid_assumption": 0.026976517048223996,
+      "top1_correct": 17,
+      "top5_accuracy": 0.0081,
+      "top5_binomial_tail_iid_assumption": 0.00003271709806181653,
+      "top5_correct": 81,
+      "top_mode_class": 885,
+      "top_mode_count": 770,
+      "unique_image_hashes": 10000
+    }
+  },
+  "not_independently_recomputed": [
+    "512-replicate permutation nulls",
+    "classifier logits"
+  ],
+  "observer_source": {
+    "bytes": 11093,
+    "path": "/tmp/cofitok-class-support-readout-ff62fc4988b9.py",
+    "sha256": "ff62fc4988b913d905648fc8f06c06ccd49def5988ec9bfea1c2086d10b8fef3"
+  },
+  "release_or_paper_integration_authorized": false,
+  "schema_version": "cofitok_class_support_readout_observer_v1",
+  "scope": "independent arithmetic, not classifier reinference or a scientific release gate",
+  "sources": {
+    "class_support_contingency_result.json": {
+      "bytes": 2535030,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/class_support_contingency_v1/class_support_contingency_result.json",
+      "sha256": "9d1a5709a18f5beadf7a8654dd147906a269b35ce35ef0720a68ab2c484c0dc1"
+    },
+    "class_support_contingency_result.validation.json": {
+      "bytes": 2209,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/class_support_contingency_v1/class_support_contingency_result.validation.json",
+      "sha256": "6ad46a2cece75f17038ddb2c32fe08665db372909e728e956b34e02168855dae"
+    },
+    "cofitok": {
+      "bytes": 4521151,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/class_support_contingency_v1/cofitok_predictions.jsonl",
+      "sha256": "b429c8672657d8065ffd66110e2d59b608a3860c9e5c1c0eef6411c650edd139"
+    },
+    "dense_identity": {
+      "bytes": 4524855,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/class_support_contingency_v1/dense_identity_predictions.jsonl",
+      "sha256": "90903aaf7620f65610f72914dccdac7856ab0cd6d5e4ede28fe1ef1a48302902"
+    }
+  },
+  "status": "pass",
+  "training_or_sampling_authorized": false
+}

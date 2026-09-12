@@ -1,0 +1,31 @@
+{
+  "confirmation_preparation_allowed": false,
+  "decision": "authorize_frozen_sample_class_support_contingency_evaluation_only",
+  "evaluator_git": {
+    "branch": "execution/generation-class-support-contingency-v1-20260910",
+    "revision": "c38291b14058746712dc0934937539a86bb3800e",
+    "tracked_dirty": false,
+    "tree": "ae5d00d450cee99777ed1f663e92d179511204ed"
+  },
+  "export_allowed": false,
+  "full_300k_launch_allowed": false,
+  "full_training_launch_allowed": false,
+  "paper_integration_allowed": false,
+  "preparation": {
+    "bytes": 19469,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.class_support_contingency_v1.control/preparation.json",
+    "sha256": "4a1aebfcb2ee5b32586d97a2a1d39ec619048fcd99840fef7dfce9033dabc2bc"
+  },
+  "process_signals_allowed": false,
+  "promotion_allowed": false,
+  "release_allowed": false,
+  "resampling_allowed": false,
+  "retraining_allowed": false,
+  "role": "user_created_frozen_sample_class_support_contingency_approval",
+  "sampling_launch_allowed": false,
+  "schema_version": "cofitok_generation_class_support_contingency_stage_approval_v1",
+  "scope": "frozen_100k_sample_class_support_contingency_evaluation_only",
+  "status": "approved",
+  "training_launch_allowed": false,
+  "user_authorized": true
+}

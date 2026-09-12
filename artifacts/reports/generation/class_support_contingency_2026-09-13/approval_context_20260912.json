@@ -1,0 +1,19 @@
+{
+  "basis": "User instructed continued progress after the assistant described the exact frozen 20,000-image diagnostic and requested approval for it. This records that contextual approval, not an assertion that the user typed a hash.",
+  "evaluator_git": {
+    "branch": "execution/generation-class-support-contingency-v1-20260910",
+    "revision": "c38291b14058746712dc0934937539a86bb3800e",
+    "tracked_dirty": false,
+    "tree": "ae5d00d450cee99777ed1f663e92d179511204ed"
+  },
+  "preparation": {
+    "bytes": 19469,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.class_support_contingency_v1.control/preparation.json",
+    "sha256": "4a1aebfcb2ee5b32586d97a2a1d39ec619048fcd99840fef7dfce9033dabc2bc"
+  },
+  "recorded_at_utc": "2026-09-12T09:08:50.924020+00:00",
+  "recorded_by": "Codex on behalf of the user",
+  "scope": "Fixed ResNet-50 inference on existing two 10K sample trees and deterministic CPU statistical analysis; no training, resampling, confirmation, release, or paper integration.",
+  "source_instruction": "\u7ee7\u7eed\u63a8\u8fdb\u8ba9\u7ed3\u679c\u6709\u6548\u652f\u6491",
+  "thread_id": "01a06164-f3f4-76b3-9bc4-f15318865a07"
+}
