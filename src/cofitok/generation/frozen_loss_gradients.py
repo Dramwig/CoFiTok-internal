@@ -131,6 +131,8 @@ def measure_selected_example(
         raise ValueError("gradient probe cannot run in inference mode")
     if clean.ndim != 4 or clean.shape[0] != 1:
         raise ValueError("probe requires exactly one selected image")
+    if tuple(clean.shape[1:]) != (config.model.image_channels, config.model.image_size, config.model.image_size):
+        raise ValueError("probe image shape differs from frozen model")
     if clean.requires_grad or clean.dtype != torch.float32:
         raise ValueError("clean image must be detached float32")
     if not torch.isfinite(clean).all() or clean.min() < -1 or clean.max() > 1:
@@ -169,6 +171,7 @@ def measure_selected_example(
     versions = _tensor_versions([*model.named_parameters(), *model.named_buffers()])
     ema_versions = _tensor_versions(ema_state.items())
     old_grads = [parameter.grad for parameter in parameters]
+    old_grad_versions = [(id(value), value._version) if value is not None else None for value in old_grads]
     modes = [(module, module.training) for module in model.modules()]
     phase = ["main"]
     routes, rollout_outputs, handles = [], [], []
@@ -289,4 +292,6 @@ def measure_selected_example(
             raise RuntimeError("EMA tensors changed during frozen probe")
         if any(parameter.grad is not old for parameter, old in zip(parameters, old_grads)):
             raise RuntimeError("parameter .grad buffers changed during probe")
+        if [(id(p.grad), p.grad._version) if p.grad is not None else None for p in parameters] != old_grad_versions:
+            raise RuntimeError("parameter .grad contents changed during probe")
     return result

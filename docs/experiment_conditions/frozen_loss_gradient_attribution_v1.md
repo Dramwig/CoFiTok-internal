@@ -1,6 +1,7 @@
 # Frozen loss-gradient attribution: bounded diagnostic specification
 
-Status: specification only, **not an execution authorization** (2026-09-13).
+Status: executable implemented and under pre-execution validation;
+**not an execution authorization** (2026-09-13).
 
 ## Question
 
@@ -68,6 +69,31 @@ paired effects; do not select just unfavorable timesteps or count them as extra
 independent samples. Before execution, freeze any rule used to nominate a
 follow-up ablation. A gradient conflict can select a hypothesis, not authorize
 training or establish that changing it will improve FID/recall.
+
+Before observing real gradients, freeze this exploratory nomination rule:
+for the same auxiliary term (rollout or teacher) and same conditioning group
+(class embedding or conditioning projections), cosine <= -0.1 and weighted
+norm ratio >= 0.1 must hold at >= 3/4 timesteps in >= 24/32 images **in both
+methods**. For a shared saturation hypothesis, both rollout steps must each
+have >= 50% strictly saturated x0 coordinates at >= 3/4 timesteps in >= 24/32
+images in each method. These are operational screening thresholds, not
+statistical significance or established effect-size standards. Report every
+count even when no route qualifies; no qualifying route is not proof of no
+effect. A nominated route still does not authorize any intervention.
+
+The executable is `scripts/frozen_loss_gradient_diagnostic.py`. Its bounded
+invocation has exactly 256 primary rows, a 7,200-second own-process deadline,
+one atomic output-directory claim and no automatic rerun. It measures online
+weights without updating `.grad`, optimizer or EMA; it fingerprints model and
+EMA tensors before/after, rehashes source checkpoints before/after, records
+physical GPU ownership and preserves partial evidence on failure. Runtime must
+exactly match the frozen report before model deserialization/forward.
+
+The independent receipt rehashes every physical row and source, independently
+recalculates scalar norms/cosines/sums and image-level summaries, and verifies
+recorded tensor preservation. It **does not independently recompute full gradient
+vectors**; that limitation is explicit in machine reports and cannot be promoted
+to a claim of independent tensor-level replication.
 
 ## Falsification and stopping rules
 

@@ -12,6 +12,7 @@ from cofitok.diffusion import DiffusionSchedule
 
 @pytest.fixture
 def probe():
+    old_threads = torch.get_num_threads()
     torch.set_num_threads(1)
     config = config_from_dict({
         "data": {"image_size": 8, "batch_size": 64, "class_conditional": True},
@@ -40,8 +41,9 @@ def probe():
                 torch.nn.init.normal_(param, std=0.01)
         ema = {k: v.detach().clone() * 0.97 for k, v in model.state_dict().items()}
         clean = torch.randn(1, 3, 8, 8).clamp(-1, 1)
-    return dict(model=model, ema_state=ema, config=config, clean=clean, label=1,
+    yield dict(model=model, ema_state=ema, config=config, clean=clean, label=1,
                 timestep=24, checkpoint_step=100, noise_seed=12, dropout_seed=15)
+    torch.set_num_threads(old_threads)
 
 
 def test_nonupdating_probe_is_reproducible_and_restores_everything(probe):
@@ -175,3 +177,28 @@ def test_rejects_config_drift_and_restores_on_hook_exception(probe):
         assert len(model.predictor.class_embed._forward_pre_hooks) == 1
     finally:
         handle.remove()
+
+
+def test_real_tiny_core_output_passes_independent_scalar_validator(probe):
+    from cofitok.configs import config_to_dict
+    from cofitok.generation.frozen_gradient_stage import invocation_row
+    from cofitok.generation.frozen_gradient_readout import validate_row
+    config = probe["config"]
+    config = dataclasses.replace(config,
+        model=dataclasses.replace(config.model, class_dropout_prob=0.),
+        diffusion=dataclasses.replace(config.diffusion, num_train_timesteps=1000),
+        loss=dataclasses.replace(config.loss, rollout_consistency_timestep_delta=10))
+    model = CoFiTokTiny(config.model)
+    model.load_state_dict(probe["model"].state_dict())
+    seeds = invocation_row(0, 100)
+    row = measure_selected_example(model, ema_state=probe["ema_state"], config=config,
+        clean=probe["clean"], label=1, timestep=100, checkpoint_step=100000,
+        noise_seed=seeds["noise_seed"], dropout_seed=seeds["dropout_seed"])
+    image = {"path": "/synthetic/fixture.png", "sha256": "a"*64, "bytes": 10}
+    catalog = {"selection": {"samples": [{"label": 1, "image": image}]},
+               "methods": {"dense_identity": {"config": config_to_dict(config)}}}
+    # Exercise scalar schema with real CPU toy arithmetic. Synthetic cost and
+    # precision labels here are test data only, never persisted as GPU evidence.
+    row.update({**seeds, "image": image, "method": "dense_identity", "precision": "bf16",
+                "elapsed_seconds": 1., "peak_vram_bytes": 1})
+    validate_row(row, method="dense_identity", index=0, timestep=100, catalog=catalog)
