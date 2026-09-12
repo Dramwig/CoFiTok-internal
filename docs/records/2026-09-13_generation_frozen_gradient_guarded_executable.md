@@ -62,6 +62,53 @@ GPU ownership, no-overwrite behavior, finite arithmetic, seed/order/row coverage
 component assignment and image-level nomination behavior. `py_compile` and
 `git diff --check` pass. This is not a full-repository or real-checkpoint GPU test.
 
-Remote exact-source rehearsal and complete preparation identities are recorded
-separately after physical validation. No authorization or actual gradient result
-exists merely because this implementation was committed.
+## Exact remote rehearsal and completed preparation
+
+Implementation revision `ad237efa810df8677b4187110a723279d47f9d4b`, tree
+`e5b0def15e93df13b845abbc905cff7eda7bc486` was transferred as a single-head
+incremental bundle requiring `5ac619228b051d12d87a2d790a3676d31c8d7b72`:
+
+```text
+/tmp/cofitok-frozen-gradient-stage-ad237ef-from-5ac6192.bundle
+bytes: 36604
+sha256: 9c2951d22a7d414f62d9500a913f6047f4e252e0deb775985102510d4437b8f0
+```
+
+Local/remote bundle verification passed. Four new isolated clean checkouts were
+created without moving any existing checkout:
+
+```text
+/tmp/cofitok-frozen-gradient-preparation-ad237ef
+/tmp/cofitok-frozen-gradient-authorization-ad237ef
+/tmp/cofitok-frozen-gradient-evaluator-ad237ef
+/tmp/cofitok-frozen-gradient-validator-ad237ef
+```
+
+Each is at the exact revision/tree above with its own
+`analysis/frozen-gradient-<role>-v1-20260913` branch. Each independently passed
+the same **62 CPU tests** with `CUDA_VISIBLE_DEVICES=''`, bytecode writing and
+pytest cache disabled. All remained clean.
+
+The complete immutable preparation now exists:
+
+```text
+/root/autodl-tmp/CoFiTok/checkpoints/generation/.frozen_loss_gradient_attribution_v1.control/preparation.json
+bytes: 51660
+sha256: 8cc706a237812d137389b44985c599789bbca38d3cfa02e8ceb8c07c26cd422b
+mode: 0444
+mtime_ns: 1789233150586218883
+```
+
+The preparation builder performs its own physical replay, and the distinct
+exact validator checkout then returned `status=pass` for `replay-preparation`.
+The receipt-independent preparation mtime remained unchanged. The bound prior
+catalog was replayed from its original clean `5ac6192` builder, including the
+32 image bytes, original checkpoints/sidecars/reports and exclusion census.
+
+At handoff, `stage_approval.json`, `execution_authorization.json` and
+`checkpoints/generation/frozen_loss_gradient_attribution_v1/` are all absent.
+The executable has never deserialized a real checkpoint or performed the
+gradient measurement. A passing preparation is not GPU/runtime execution,
+scientific evidence, user consent or a later-stage permission. The next step
+requires a distinct human approval of this exact 256-row, at-most-7,200-second,
+non-updating frozen diagnostic. All other permissions remain false.
