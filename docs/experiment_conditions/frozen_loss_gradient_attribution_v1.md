@@ -39,6 +39,17 @@ teacher. Measure epsilon, rollout, EMA-teacher, and CoFiTok-only auxiliary
 gradients **separately with their frozen weights/schedules**, then their sum.
 Do not equate logged loss magnitudes with gradient magnitudes.
 
+Implementation clarification before execution: the frozen training batch is 64,
+with four teacher-selected images and up to eight rollout-selected images. In a
+single-image probe the same ceil-based helper selects 1/1 when active. Thus the
+measurement is the weighted gradient of one **selected** image, not the original
+minibatch gradient or a replay of its full population/normalization. Report both
+the frozen selection counts and probe counts. Do not silently multiply by batch
+size or claim this establishes the minibatch gradient's direction. A subsequent
+exact-batch check would be required before a claim about optimizer-step conflict.
+Mixed-precision per-term and combined backwards can differ through rounding;
+record their gradient-sum residual, rather than forcing exact additivity.
+
 Record per image/timestep:
 
 - True-label versus null-label routing and the exact selected-image fractions;
