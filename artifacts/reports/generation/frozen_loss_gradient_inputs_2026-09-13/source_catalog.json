@@ -1,0 +1,829 @@
+{
+  "boundary": {
+    "confirmation_allowed": false,
+    "execution_authorized": false,
+    "full_300k_allowed": false,
+    "gpu_execution_allowed": false,
+    "input_catalog_only": true,
+    "model_deserialization_performed": false,
+    "paper_integration_allowed": false,
+    "release_allowed": false,
+    "sampling_allowed": false,
+    "training_allowed": false
+  },
+  "builder": {
+    "branch": "analysis/frozen-loss-gradient-preparation-v1-20260913",
+    "revision": "5ac619228b051d12d87a2d790a3676d31c8d7b72",
+    "root": "/tmp/cofitok-frozen-loss-gradient-preparation-5ac6192",
+    "script": {
+      "bytes": 11913,
+      "path": "/tmp/cofitok-frozen-loss-gradient-preparation-5ac6192/scripts/build_frozen_loss_gradient_source_catalog.py",
+      "sha256": "08e571378720b03178f1e580b8eadd2a9387c01986eb54e1be519d7ed3b2af5c"
+    },
+    "tracked_dirty": false,
+    "tree": "693704cc227e7ac213be3686a920214556525058"
+  },
+  "class_support_result": {
+    "bytes": 2535030,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/class_support_contingency_v1/class_support_contingency_result.json",
+    "sha256": "9d1a5709a18f5beadf7a8654dd147906a269b35ce35ef0720a68ab2c484c0dc1"
+  },
+  "class_support_validation": {
+    "bytes": 2209,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/class_support_contingency_v1/class_support_contingency_result.validation.json",
+    "sha256": "6ad46a2cece75f17038ddb2c32fe08665db372909e728e956b34e02168855dae"
+  },
+  "dataset_manifest": {
+    "bytes": 405484553,
+    "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/metadata/image_manifest.jsonl",
+    "sha256": "9a2eec642f0d56162bffaafed84a41267f22abfc9feff4cf41fed9f6881173f0"
+  },
+  "excluded_class_count": 32,
+  "excluded_classes": [
+    "n01440764",
+    "n01443537",
+    "n01484850",
+    "n01491361",
+    "n01494475",
+    "n01496331",
+    "n01498041",
+    "n01514668",
+    "n01749939",
+    "n01751748",
+    "n01753488",
+    "n01755581",
+    "n01756291",
+    "n01768244",
+    "n01770081",
+    "n01770393",
+    "n02002724",
+    "n02006656",
+    "n02007558",
+    "n02009229",
+    "n02009912",
+    "n02011460",
+    "n02012849",
+    "n02013706",
+    "n02017213",
+    "n02018207",
+    "n02018795",
+    "n02025239",
+    "n02027492",
+    "n02028035",
+    "n02033041",
+    "n02037110"
+  ],
+  "excluded_image_hash_count": 32,
+  "exclusion_inventory": [
+    {
+      "bytes": 5068,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/control_cofitok/conditioning_sensitivity_manifest.json",
+      "sha256": "35cb72c18539d49934a363c885e9a5c69b444fcf8bf75aada73349e9564e5760"
+    },
+    {
+      "bytes": 5096,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/control_dense_identity/conditioning_sensitivity_manifest.json",
+      "sha256": "bcab51f5c6dbdad53f2cbe266dc7952296b8f5639c9c7ca73c859001c9c1d94f"
+    },
+    {
+      "bytes": 5064,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/ranked_cofitok/conditioning_sensitivity_manifest.json",
+      "sha256": "051408d9757a90482ee681ec21d4f4745951ce41f41b5378e3a6f725978dc8d0"
+    },
+    {
+      "bytes": 5092,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/ranked_dense_identity/conditioning_sensitivity_manifest.json",
+      "sha256": "48451b143c73fc6ab0d31c2e2e77104633fcc6bb181de4f36f1f62ac45c4207e"
+    },
+    {
+      "bytes": 7810,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/cofitok/step_00001250/conditioning_sensitivity_manifest.json",
+      "sha256": "e52e70a783377f5cf4b0bcfe0e76935402c59aed6ffaac76a527b3a95ad98940"
+    },
+    {
+      "bytes": 7810,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/cofitok/step_00002500/conditioning_sensitivity_manifest.json",
+      "sha256": "a7479c98327317a232eda957a5eaa8d68593d0a4b62c49ff8ab49d3ece471f9a"
+    },
+    {
+      "bytes": 7810,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/cofitok/step_00005000/conditioning_sensitivity_manifest.json",
+      "sha256": "12215349377648a171fddf323f8b5ff5ecd2102a206da47937365190f63b52fc"
+    },
+    {
+      "bytes": 7802,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/dense_identity/step_00001250/conditioning_sensitivity_manifest.json",
+      "sha256": "f1e9d57938360f3e5ad637f45ecfdb2ea1e8950c82b33f10d4606d908bb8c6d1"
+    },
+    {
+      "bytes": 7802,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/dense_identity/step_00002500/conditioning_sensitivity_manifest.json",
+      "sha256": "c5b3927582be023ffe0b6f89c02a2cd53d6c10c2277ad353d08665af3e44cc38"
+    },
+    {
+      "bytes": 7802,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/dense_identity/step_00005000/conditioning_sensitivity_manifest.json",
+      "sha256": "5a46ab538e0f953b74f50d01fd6b0b68711c65e4dd15734c89cef1787ad95403"
+    },
+    {
+      "bytes": 5045,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/control_cofitok/conditioning_sensitivity_manifest.json",
+      "sha256": "7555dd32e58af3b06e021fceefc83faaad47c8211b58e58d375066caba1d0a30"
+    },
+    {
+      "bytes": 5073,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/control_dense_identity/conditioning_sensitivity_manifest.json",
+      "sha256": "2b369dd18e633683031d8125c0b10cafac132bca4b592c190257ed6c49eda478"
+    },
+    {
+      "bytes": 5049,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/residual_cofitok/conditioning_sensitivity_manifest.json",
+      "sha256": "a9b503d8b35f1d348dfeeef127d9393bb890b2f7540edb45e7848aa95e96deff"
+    },
+    {
+      "bytes": 5077,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/residual_dense_identity/conditioning_sensitivity_manifest.json",
+      "sha256": "589387dbb5eaacac2e2f1fa5f887899deefbee5f138fb4aef675041c600f0a3c"
+    },
+    {
+      "bytes": 4970,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/conditioning_sensitivity_a5c6478/cofitok_k8/conditioning_sensitivity_manifest.json",
+      "sha256": "c97a9e12c1a65fb20b615ac48cf9f6687d43b792873613476f19c07390d9bbfd"
+    },
+    {
+      "bytes": 4956,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/conditioning_sensitivity_a5c6478/dense_identity/conditioning_sensitivity_manifest.json",
+      "sha256": "b8f4857744470e6ae665aa73c626b98356e0064244809e6f50390be709ffd18b"
+    }
+  ],
+  "exclusion_scope": "all discoverable conditioning_sensitivity_manifest.json; generated-image and metric/cache subtrees pruned",
+  "methods": {
+    "cofitok": {
+      "checkpoint": {
+        "bytes": 1010937514,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+        "sha256": "b36a92229ba2dd021db9c7585970ddda1d17d1919ca6b0eec0362b06d4bd462e"
+      },
+      "config": {
+        "data": {
+          "batch_size": 64,
+          "channels": 3,
+          "class_conditional": true,
+          "dataset": "imagenet_256",
+          "image_size": 256,
+          "num_workers": 8,
+          "persistent_workers": true,
+          "prefetch_factor": 2,
+          "random_horizontal_flip_prob": 0.5,
+          "root": "/root/autodl-tmp/CoFiTok/datasets"
+        },
+        "diffusion": {
+          "beta_end": 0.02,
+          "beta_start": 0.0001,
+          "num_train_timesteps": 1000,
+          "prediction_target": "epsilon",
+          "schedule_type": "cosine"
+        },
+        "loss": {
+          "component_decorrelation_start_step": 0,
+          "component_decorrelation_warmup_steps": 0,
+          "component_decorrelation_weight": 0.0,
+          "denoise_path_component_weight": 0.1,
+          "denoise_path_energy_capacity_power": 0.5,
+          "denoise_path_energy_capacity_weight": 0.75,
+          "denoise_path_energy_mode": "hellinger_stable",
+          "denoise_path_energy_weight": 0.15,
+          "denoise_path_prefix_weight": 0.05,
+          "denoise_path_progress_mode": "token_capacity",
+          "denoise_path_progress_power": 1.0,
+          "ema_teacher_consistency_batch_fraction": 0.0625,
+          "ema_teacher_consistency_start_step": 30000,
+          "ema_teacher_consistency_warmup_steps": 10000,
+          "ema_teacher_consistency_weight": 0.25,
+          "energy_budget_scope": "batch",
+          "energy_budget_weight": 0.0,
+          "energy_target": [],
+          "epsilon_band_component_weight": 0.0,
+          "epsilon_band_prefix_weight": 0.0,
+          "epsilon_weight": 1.0,
+          "group_residual_size": 0,
+          "group_residual_weight": 0.0,
+          "low_snr_high_frequency_power": 0.5,
+          "low_snr_high_frequency_weight": 0.5,
+          "monotonic_margin": 0.0,
+          "monotonic_weight": 0.0,
+          "prefix_weight": 0.0,
+          "residual_component_weight": 0.0,
+          "rollout_consistency_batch_fraction": 0.125,
+          "rollout_consistency_clip_x0": true,
+          "rollout_consistency_mode": "clipped_x0",
+          "rollout_consistency_start_step": 0,
+          "rollout_consistency_timestep_delta": 10,
+          "rollout_consistency_unroll_steps": 2,
+          "rollout_consistency_warmup_steps": 10000,
+          "rollout_consistency_weight": 0.1,
+          "sampled_component_weight": 0.0,
+          "sampled_prefix_weight": 0.0,
+          "tail_early_dropout_prob": 0.0,
+          "tail_early_dropout_start": 1,
+          "tail_early_dropout_weight": 0.0,
+          "tail_endpoint_weight": 0.0,
+          "tail_floor_min_ratio": 0.0,
+          "tail_floor_weight": 0.0,
+          "tail_late_monotonic_margin": 0.0,
+          "tail_late_monotonic_start": 0,
+          "tail_late_monotonic_weight": 0.0,
+          "tail_late_prefix_start": 0,
+          "tail_late_prefix_weight": 0.0,
+          "tail_replay_weight": 0.0,
+          "zero_token_weight": 0.0
+        },
+        "model": {
+          "base_channels": 128,
+          "class_dropout_prob": 0.1,
+          "deep_synthesis_depth": 3,
+          "deep_synthesis_hidden_channels": 0,
+          "gamma_mode": "fixed_one",
+          "image_channels": 3,
+          "image_size": 256,
+          "num_classes": 1000,
+          "predictor_attention_resolutions": [
+            32,
+            16
+          ],
+          "predictor_channel_multipliers": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "predictor_depth": 3,
+          "predictor_dropout": 0.0,
+          "predictor_gradient_checkpointing": true,
+          "predictor_multiscale_levels": 2,
+          "predictor_num_heads": 8,
+          "predictor_num_res_blocks": 2,
+          "predictor_type": "scalable_unet",
+          "predictor_use_feedback": true,
+          "synthesis_active_token_channels": [],
+          "synthesis_kernel_size": 1,
+          "synthesis_mode": "fixed_basis",
+          "synthesis_token_strides": [],
+          "token_channel_schedule": [
+            4,
+            4,
+            8,
+            8,
+            8,
+            1,
+            1,
+            1
+          ],
+          "token_channels": 8,
+          "token_count": 8,
+          "token_spatial_strides": [
+            16,
+            16,
+            8,
+            8,
+            4,
+            1,
+            1,
+            1
+          ]
+        },
+        "name": "imagenet256_stability_quality_bridge_rgbtail3_rollout_x0_u2_ema_teacher_k8_100k",
+        "optimization": {
+          "betas": [
+            0.9,
+            0.99
+          ],
+          "ema_decay": 0.9999,
+          "ema_warmup_steps": 2000,
+          "grad_clip_norm": 1.0,
+          "gradient_accumulation_steps": 1,
+          "learning_rate": 0.0001,
+          "log_interval": 50,
+          "min_learning_rate": 1e-05,
+          "visualization_count": 8,
+          "warmup_steps": 1000,
+          "weight_decay": 0.01
+        },
+        "runtime": {
+          "allow_tf32": true,
+          "checkpoint_interval": 5000,
+          "compile_model": false,
+          "cudnn_benchmark": false,
+          "device": "cuda",
+          "evaluation_interval": 1000,
+          "keep_last_checkpoints": 3,
+          "precision": "bf16",
+          "protected_checkpoint_steps": [
+            50000,
+            100000
+          ],
+          "seed": 2027,
+          "steps": 100000
+        }
+      },
+      "sampling_report": {
+        "bytes": 5507,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_report.json",
+        "sha256": "79d5ab69283d171cf0390671d3204f9eeaf13a07f80354527b02335128069a44"
+      },
+      "sidecar": {
+        "bytes": 597,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+        "sha256": "d5dd3ac3afb9c5e1d6facf3ea766700c221f17b22724749056213a55dc19c2d5"
+      },
+      "teacher_weights": "original_checkpoint_ema",
+      "training_report": {
+        "bytes": 11232,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json",
+        "sha256": "9056b47fe7733b092608e29b9b5d14c95f5af6a35c170be4ec0dcd553f6b4a86"
+      },
+      "weights_to_measure": "model"
+    },
+    "dense_identity": {
+      "checkpoint": {
+        "bytes": 1010735510,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+        "sha256": "b6586cc906a9c38bbf9d592f5f6169b7a37a8d3aa485ca4879021fa840943d0b"
+      },
+      "config": {
+        "data": {
+          "batch_size": 64,
+          "channels": 3,
+          "class_conditional": true,
+          "dataset": "imagenet_256",
+          "image_size": 256,
+          "num_workers": 8,
+          "persistent_workers": true,
+          "prefetch_factor": 2,
+          "random_horizontal_flip_prob": 0.5,
+          "root": "/root/autodl-tmp/CoFiTok/datasets"
+        },
+        "diffusion": {
+          "beta_end": 0.02,
+          "beta_start": 0.0001,
+          "num_train_timesteps": 1000,
+          "prediction_target": "epsilon",
+          "schedule_type": "cosine"
+        },
+        "loss": {
+          "component_decorrelation_start_step": 0,
+          "component_decorrelation_warmup_steps": 0,
+          "component_decorrelation_weight": 0.0,
+          "denoise_path_component_weight": 0.0,
+          "denoise_path_energy_capacity_power": 0.5,
+          "denoise_path_energy_capacity_weight": 0.0,
+          "denoise_path_energy_mode": "mse",
+          "denoise_path_energy_weight": 0.0,
+          "denoise_path_prefix_weight": 0.0,
+          "denoise_path_progress_mode": "power",
+          "denoise_path_progress_power": 1.0,
+          "ema_teacher_consistency_batch_fraction": 0.0625,
+          "ema_teacher_consistency_start_step": 30000,
+          "ema_teacher_consistency_warmup_steps": 10000,
+          "ema_teacher_consistency_weight": 0.25,
+          "energy_budget_scope": "batch",
+          "energy_budget_weight": 0.0,
+          "energy_target": [],
+          "epsilon_band_component_weight": 0.0,
+          "epsilon_band_prefix_weight": 0.0,
+          "epsilon_weight": 1.0,
+          "group_residual_size": 0,
+          "group_residual_weight": 0.0,
+          "low_snr_high_frequency_power": 1.0,
+          "low_snr_high_frequency_weight": 0.0,
+          "monotonic_margin": 0.0,
+          "monotonic_weight": 0.0,
+          "prefix_weight": 0.0,
+          "residual_component_weight": 0.0,
+          "rollout_consistency_batch_fraction": 0.125,
+          "rollout_consistency_clip_x0": true,
+          "rollout_consistency_mode": "clipped_x0",
+          "rollout_consistency_start_step": 0,
+          "rollout_consistency_timestep_delta": 10,
+          "rollout_consistency_unroll_steps": 2,
+          "rollout_consistency_warmup_steps": 10000,
+          "rollout_consistency_weight": 0.1,
+          "sampled_component_weight": 0.0,
+          "sampled_prefix_weight": 0.0,
+          "tail_early_dropout_prob": 0.0,
+          "tail_early_dropout_start": 1,
+          "tail_early_dropout_weight": 0.0,
+          "tail_endpoint_weight": 0.0,
+          "tail_floor_min_ratio": 0.0,
+          "tail_floor_weight": 0.0,
+          "tail_late_monotonic_margin": 0.0,
+          "tail_late_monotonic_start": 0,
+          "tail_late_monotonic_weight": 0.0,
+          "tail_late_prefix_start": 0,
+          "tail_late_prefix_weight": 0.0,
+          "tail_replay_weight": 0.0,
+          "zero_token_weight": 0.0
+        },
+        "model": {
+          "base_channels": 128,
+          "class_dropout_prob": 0.1,
+          "deep_synthesis_depth": 3,
+          "deep_synthesis_hidden_channels": 0,
+          "gamma_mode": "fixed_one",
+          "image_channels": 3,
+          "image_size": 256,
+          "num_classes": 1000,
+          "predictor_attention_resolutions": [
+            32,
+            16
+          ],
+          "predictor_channel_multipliers": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "predictor_depth": 3,
+          "predictor_dropout": 0.0,
+          "predictor_gradient_checkpointing": true,
+          "predictor_multiscale_levels": 2,
+          "predictor_num_heads": 8,
+          "predictor_num_res_blocks": 2,
+          "predictor_type": "scalable_unet",
+          "predictor_use_feedback": false,
+          "synthesis_active_token_channels": [],
+          "synthesis_kernel_size": 1,
+          "synthesis_mode": "dense_identity",
+          "synthesis_token_strides": [],
+          "token_channel_schedule": [],
+          "token_channels": 3,
+          "token_count": 1,
+          "token_spatial_strides": []
+        },
+        "name": "imagenet256_stability_quality_bridge_rollout_x0_u2_ema_teacher_dense_100k",
+        "optimization": {
+          "betas": [
+            0.9,
+            0.99
+          ],
+          "ema_decay": 0.9999,
+          "ema_warmup_steps": 2000,
+          "grad_clip_norm": 1.0,
+          "gradient_accumulation_steps": 1,
+          "learning_rate": 0.0001,
+          "log_interval": 50,
+          "min_learning_rate": 1e-05,
+          "visualization_count": 8,
+          "warmup_steps": 1000,
+          "weight_decay": 0.01
+        },
+        "runtime": {
+          "allow_tf32": true,
+          "checkpoint_interval": 5000,
+          "compile_model": false,
+          "cudnn_benchmark": false,
+          "device": "cuda",
+          "evaluation_interval": 1000,
+          "keep_last_checkpoints": 3,
+          "precision": "bf16",
+          "protected_checkpoint_steps": [
+            50000,
+            100000
+          ],
+          "seed": 2027,
+          "steps": 100000
+        }
+      },
+      "sampling_report": {
+        "bytes": 5463,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_report.json",
+        "sha256": "5cb1e0f1f90313101d65194058eaf78fb6dcc8545ca048b2c5b48f509d79c235"
+      },
+      "sidecar": {
+        "bytes": 597,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+        "sha256": "466310f75d941ecd909f22c245fe9db885cc623e8f0a6085ee3b254a0d2dd06a"
+      },
+      "teacher_weights": "original_checkpoint_ema",
+      "training_report": {
+        "bytes": 10888,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/training_report.json",
+        "sha256": "5b38303da71f324acb668fca8c52cf7558fbee7ab8a38a5bc7768836387f08ec"
+      },
+      "weights_to_measure": "model"
+    }
+  },
+  "probe_protocol": {
+    "example_timestep_rows_per_method": 128,
+    "not_original_minibatch_gradient": true,
+    "timesteps": [
+      100,
+      500,
+      700,
+      900
+    ],
+    "unit": "single_selected_image"
+  },
+  "remaining_before_execution": [
+    "exact executable and source/runtime compatibility validation",
+    "independent preparation replay",
+    "distinct stage approval and execution authorization"
+  ],
+  "schema_version": "cofitok_frozen_loss_gradient_source_catalog_v1",
+  "selection": {
+    "algorithm": "ascending sha256('2031/class/'+wnid), then sha256('2031/image/'+relative_path)",
+    "count": 32,
+    "samples": [
+      {
+        "image": {
+          "bytes": 21847,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02699494/ILSVRC2012_val_00002747_n02699494.jpg",
+          "sha256": "d6e48fd6cd07c6267eef4dc222f4bfd809b56ee99682f419ba849856d27a249b"
+        },
+        "label": 406,
+        "wnid": "n02699494"
+      },
+      {
+        "image": {
+          "bytes": 10921,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n04008634/ILSVRC2012_val_00026393_n04008634.jpg",
+          "sha256": "da04fd1baf4bfb2ca58f1c402ffaf012900e7c8e314e699c25cda6e1267e9c42"
+        },
+        "label": 744,
+        "wnid": "n04008634"
+      },
+      {
+        "image": {
+          "bytes": 17295,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n04311174/ILSVRC2012_val_00006311_n04311174.jpg",
+          "sha256": "fff886ec3abef3b7d0a04ed9fa91339caf289dbe4b4797f65424d77b9dabcbf0"
+        },
+        "label": 822,
+        "wnid": "n04311174"
+      },
+      {
+        "image": {
+          "bytes": 15263,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n12267677/ILSVRC2012_val_00028961_n12267677.jpg",
+          "sha256": "d335a2599e55af400964e2eed8865056e5c975735aca06a2ee1be05daba6b48f"
+        },
+        "label": 988,
+        "wnid": "n12267677"
+      },
+      {
+        "image": {
+          "bytes": 8396,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02095314/ILSVRC2012_val_00032581_n02095314.jpg",
+          "sha256": "8f53cb9d1e7d50ae026874ddf6f351aeccd60c01ae413d7ba7cf170caba75f1a"
+        },
+        "label": 188,
+        "wnid": "n02095314"
+      },
+      {
+        "image": {
+          "bytes": 23522,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n03388183/ILSVRC2012_val_00040940_n03388183.jpg",
+          "sha256": "ef6ae4ec44883c2bec0e37bd87ea368a62242e1c85e6a38404500a96c7f6f996"
+        },
+        "label": 563,
+        "wnid": "n03388183"
+      },
+      {
+        "image": {
+          "bytes": 8824,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02113978/ILSVRC2012_val_00003435_n02113978.jpg",
+          "sha256": "9566b6e04000ed335e447288c93a92d03124d5c64dad8c72392f13c935587601"
+        },
+        "label": 268,
+        "wnid": "n02113978"
+      },
+      {
+        "image": {
+          "bytes": 19400,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02484975/ILSVRC2012_val_00002334_n02484975.jpg",
+          "sha256": "6ce13d64e05e3d44e5d274a0bddcb14e79bcb360eed6a8b3bb1da5e1e88a8622"
+        },
+        "label": 370,
+        "wnid": "n02484975"
+      },
+      {
+        "image": {
+          "bytes": 9378,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02493793/ILSVRC2012_val_00031957_n02493793.jpg",
+          "sha256": "d3e3d275718e96929a1a2d46e5149213e7e99255a3f1d63221592b3d46415bfb"
+        },
+        "label": 381,
+        "wnid": "n02493793"
+      },
+      {
+        "image": {
+          "bytes": 7445,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n03483316/ILSVRC2012_val_00034530_n03483316.jpg",
+          "sha256": "206e298e800daf0ad3c5831bd26957db15c8a4b4a6c4fc4a07e098f55b458bd1"
+        },
+        "label": 589,
+        "wnid": "n03483316"
+      },
+      {
+        "image": {
+          "bytes": 10424,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01728920/ILSVRC2012_val_00013215_n01728920.jpg",
+          "sha256": "7023fb52e1a2f71fb13e5ef63061393f0decd65799796a42ba73aa8ea29c060e"
+        },
+        "label": 53,
+        "wnid": "n01728920"
+      },
+      {
+        "image": {
+          "bytes": 13344,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n04344873/ILSVRC2012_val_00010519_n04344873.jpg",
+          "sha256": "7ddfdab7f33ef9da48cb3d89f33b4cda03131ef51aa6593f0f77b561c1a21580"
+        },
+        "label": 831,
+        "wnid": "n04344873"
+      },
+      {
+        "image": {
+          "bytes": 7072,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n03314780/ILSVRC2012_val_00044750_n03314780.jpg",
+          "sha256": "5e2825360e75dcf67ad257db4008e0377ba344b0d854760cfaf915a30fa05ee2"
+        },
+        "label": 551,
+        "wnid": "n03314780"
+      },
+      {
+        "image": {
+          "bytes": 13356,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n04523525/ILSVRC2012_val_00001002_n04523525.jpg",
+          "sha256": "aa63df3de7905488b5be608689802c1856e5dc7410dc82e5a2dceaf11d2c5ac0"
+        },
+        "label": 884,
+        "wnid": "n04523525"
+      },
+      {
+        "image": {
+          "bytes": 20510,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02091635/ILSVRC2012_val_00022137_n02091635.jpg",
+          "sha256": "220a6f0680b5e480a1978f70604e3623a67c172075fa8f96174a3d1476073d58"
+        },
+        "label": 175,
+        "wnid": "n02091635"
+      },
+      {
+        "image": {
+          "bytes": 11614,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n03584254/ILSVRC2012_val_00014592_n03584254.jpg",
+          "sha256": "f3091d5227b37295b7d0ab3f42a366e00db038ee09066fb507ee60274fadf347"
+        },
+        "label": 605,
+        "wnid": "n03584254"
+      },
+      {
+        "image": {
+          "bytes": 10361,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02281406/ILSVRC2012_val_00041173_n02281406.jpg",
+          "sha256": "72a094a2bfe640df8aac48cb63fc48e0e8d3c956c2cb64867f4fcdef587c86ba"
+        },
+        "label": 325,
+        "wnid": "n02281406"
+      },
+      {
+        "image": {
+          "bytes": 8235,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n03961711/ILSVRC2012_val_00017668_n03961711.jpg",
+          "sha256": "4955f2fbcec20086a8cbc7877419b23fc7194f7c91949f1ceb29b7c430b4befe"
+        },
+        "label": 729,
+        "wnid": "n03961711"
+      },
+      {
+        "image": {
+          "bytes": 19378,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n03347037/ILSVRC2012_val_00044848_n03347037.jpg",
+          "sha256": "44f865480c8ddc82dcce739833843b9ea3dafdbc67132624416d24aaa1babf08"
+        },
+        "label": 556,
+        "wnid": "n03347037"
+      },
+      {
+        "image": {
+          "bytes": 11236,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02877765/ILSVRC2012_val_00018878_n02877765.jpg",
+          "sha256": "7471334c0bb775a0c8e801e04bbf32c61ef953f236282594141ae608ef8529d9"
+        },
+        "label": 455,
+        "wnid": "n02877765"
+      },
+      {
+        "image": {
+          "bytes": 12323,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01980166/ILSVRC2012_val_00036212_n01980166.jpg",
+          "sha256": "692a2f080ce0e5db2a065b6ad1277eed277da108b80105ff309b6990b2101ae3"
+        },
+        "label": 120,
+        "wnid": "n01980166"
+      },
+      {
+        "image": {
+          "bytes": 9915,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02106382/ILSVRC2012_val_00009547_n02106382.jpg",
+          "sha256": "b437365b206cd2e897869b9aff415a2227d53b5504e7250bc02174148b3f5e9a"
+        },
+        "label": 233,
+        "wnid": "n02106382"
+      },
+      {
+        "image": {
+          "bytes": 23437,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n01883070/ILSVRC2012_val_00040774_n01883070.jpg",
+          "sha256": "9bdf541257a9f98a7a860edf5606d066a6a38ba41ee897bf743cfadc57a7c16e"
+        },
+        "label": 106,
+        "wnid": "n01883070"
+      },
+      {
+        "image": {
+          "bytes": 14366,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n04328186/ILSVRC2012_val_00041973_n04328186.jpg",
+          "sha256": "4f0a20c8d91806b1dd15c04083c6476d676e8e2b637f4486e66683478fc5a507"
+        },
+        "label": 826,
+        "wnid": "n04328186"
+      },
+      {
+        "image": {
+          "bytes": 15511,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n04326547/ILSVRC2012_val_00008758_n04326547.jpg",
+          "sha256": "47eeab898879ce56e68985be3e12cd1dab7e8e90985914531ba35cdd7962c417"
+        },
+        "label": 825,
+        "wnid": "n04326547"
+      },
+      {
+        "image": {
+          "bytes": 12916,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02101388/ILSVRC2012_val_00023824_n02101388.jpg",
+          "sha256": "ae3ea0a455e6ef878dc873dc891814bfb2aa870f1cb19c06eeb44458849e81f6"
+        },
+        "label": 215,
+        "wnid": "n02101388"
+      },
+      {
+        "image": {
+          "bytes": 13948,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n03788365/ILSVRC2012_val_00045540_n03788365.jpg",
+          "sha256": "d9b7024c262ac401a8d7f70ddecbff4b80616230c82c681e9905044975f0c686"
+        },
+        "label": 669,
+        "wnid": "n03788365"
+      },
+      {
+        "image": {
+          "bytes": 11445,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n04069434/ILSVRC2012_val_00035899_n04069434.jpg",
+          "sha256": "c957d13d937698ca6d6c0f4bc7f69cdb75155c34ec7982a7437c26c7996a3293"
+        },
+        "label": 759,
+        "wnid": "n04069434"
+      },
+      {
+        "image": {
+          "bytes": 12095,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n03857828/ILSVRC2012_val_00013357_n03857828.jpg",
+          "sha256": "01057e524af6c546f4149c510950d4e8cede2b37a3dc740034fa81486edc68d4"
+        },
+        "label": 688,
+        "wnid": "n03857828"
+      },
+      {
+        "image": {
+          "bytes": 15683,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02119022/ILSVRC2012_val_00036547_n02119022.jpg",
+          "sha256": "a16af2ad3d798b7cc5184157a9a0bd6666deaae128bfdca7083bbaad4ce640dc"
+        },
+        "label": 277,
+        "wnid": "n02119022"
+      },
+      {
+        "image": {
+          "bytes": 11418,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02102040/ILSVRC2012_val_00015499_n02102040.jpg",
+          "sha256": "8ed2498868538df543a171452f11d230add9ab5f8449356470386332b438bde6"
+        },
+        "label": 217,
+        "wnid": "n02102040"
+      },
+      {
+        "image": {
+          "bytes": 15004,
+          "path": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val/n02098413/ILSVRC2012_val_00011063_n02098413.jpg",
+          "sha256": "1bc2f9703b33a3edaa2561cbf47a871c06040497a7c91cf32b3ccccf62510c44"
+        },
+        "label": 204,
+        "wnid": "n02098413"
+      }
+    ],
+    "seed": 2031
+  },
+  "status": "prepared_inputs_only"
+}
