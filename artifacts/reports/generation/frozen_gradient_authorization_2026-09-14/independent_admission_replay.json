@@ -1,0 +1,35 @@
+{
+  "status": "pass",
+  "scope": "independent_exact_validator_admission_replay_only",
+  "authorization": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.frozen_loss_gradient_attribution_v1.control/execution_authorization.json",
+    "bytes": 13316,
+    "sha256": "24dab51374333fe4f6b271fd48a1a3f3e1c012c4b55ba475e93745d982d4fca2"
+  },
+  "stage_approval": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.frozen_loss_gradient_attribution_v1.control/stage_approval.json",
+    "bytes": 13619,
+    "sha256": "5631879393eaa9eb010bdaf72b39a22050fbc224f93e12033a2db168d06b9060"
+  },
+  "preparation": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.frozen_loss_gradient_attribution_v1.control/preparation.json",
+    "bytes": 51660,
+    "sha256": "8cc706a237812d137389b44985c599789bbca38d3cfa02e8ceb8c07c26cd422b"
+  },
+  "diagnostic_output_exists": false,
+  "gpu_runtime_validated": false,
+  "gradient_measurements_completed": 0,
+  "later_permissions": {
+    "confirmation_allowed": false,
+    "ema_update_allowed": false,
+    "export_allowed": false,
+    "full_300k_allowed": false,
+    "full_training_allowed": false,
+    "optimizer_step_allowed": false,
+    "paper_integration_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "sampling_allowed": false,
+    "training_allowed": false
+  }
+}
