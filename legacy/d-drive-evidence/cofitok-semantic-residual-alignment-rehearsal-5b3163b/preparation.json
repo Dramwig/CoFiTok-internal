@@ -1,0 +1,305 @@
+{
+  "authorization_required": true,
+  "candidate_residual_alignment_config": {
+    "class_conditioning_residual_alignment_batch_fraction": 0.0625,
+    "class_conditioning_residual_alignment_margin": 0.1,
+    "class_conditioning_residual_alignment_min_timestep": 500,
+    "class_conditioning_residual_alignment_pooling_factors": [
+      8,
+      16,
+      32
+    ],
+    "class_conditioning_residual_alignment_reconstruction_weight": 0.25,
+    "class_conditioning_residual_alignment_start_step": 100,
+    "class_conditioning_residual_alignment_temperature": 0.1,
+    "class_conditioning_residual_alignment_warmup_steps": 200,
+    "class_conditioning_residual_alignment_weight": 0.05,
+    "class_conditioning_residual_alignment_wrong_label_offsets": [
+      1,
+      500
+    ]
+  },
+  "claim_boundary": {
+    "checkpoint_promotion_allowed": false,
+    "cofitok_specific_advantage_claim_allowed": false,
+    "diagnostic_non_authorizing": true,
+    "followup_training_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "generation_advantage_proven": false,
+    "inference_export_allowed": false,
+    "process_signal_allowed": false,
+    "release_allowed": false,
+    "sample_quality_claim_allowed": false,
+    "training_quality_claim_allowed": false
+  },
+  "configs": {
+    "control_cofitok": {
+      "bytes": 3050,
+      "path": "D:/cofitok-conditioning-ranking-terminal-rebind-v2/configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_probe1k.json",
+      "sha256": "901ac771e78dba0c59e4a4f929f5cabfc639868417007cecd5d5616dbe665557"
+    },
+    "control_dense": {
+      "bytes": 2478,
+      "path": "D:/cofitok-conditioning-ranking-terminal-rebind-v2/configs/generation/imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_dense_probe1k.json",
+      "sha256": "5c83d60ab927ac2f27350bd8200d4a900b899ae9748047cb7c9489cd1f8f4708"
+    },
+    "residual_cofitok": {
+      "bytes": 3629,
+      "path": "D:/cofitok-conditioning-ranking-terminal-rebind-v2/configs/generation/imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_classresidualalign_k8_probe1k.json",
+      "sha256": "2ff16800087ad170326b1808f42f3ec34102e13dc39a560905639e7794c1fcfd"
+    },
+    "residual_dense": {
+      "bytes": 3069,
+      "path": "D:/cofitok-conditioning-ranking-terminal-rebind-v2/configs/generation/imagenet256_10pct_stability_rollout_x0_u2_ema_teacher_classresidualalign_dense_probe1k.json",
+      "sha256": "038f6ecf5804e116bb46b846897eeb8caa164e71b8a19a15f9a770c46836b8b8"
+    }
+  },
+  "control_residual_alignment_config": {
+    "class_conditioning_residual_alignment_batch_fraction": 0.0625,
+    "class_conditioning_residual_alignment_margin": 0.0,
+    "class_conditioning_residual_alignment_min_timestep": 0,
+    "class_conditioning_residual_alignment_pooling_factors": [
+      8,
+      16
+    ],
+    "class_conditioning_residual_alignment_reconstruction_weight": 0.0,
+    "class_conditioning_residual_alignment_start_step": 0,
+    "class_conditioning_residual_alignment_temperature": 0.1,
+    "class_conditioning_residual_alignment_warmup_steps": 0,
+    "class_conditioning_residual_alignment_weight": 0.0,
+    "class_conditioning_residual_alignment_wrong_label_offsets": [
+      1
+    ]
+  },
+  "execution_boundary": {
+    "checkpoint_promotion_allowed": false,
+    "dataset": "imagenet_256_10pct",
+    "followup_training_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "generation_sampling_allowed": false,
+    "held_out_cpu_evaluation_allowed": true,
+    "inference_export_allowed": false,
+    "release_allowed": false,
+    "required_checkpoint_steps": [
+      500,
+      750,
+      1000
+    ],
+    "steps_per_run": 1000,
+    "training_allowed": true,
+    "training_runs": [
+      "control_cofitok",
+      "residual_cofitok",
+      "control_dense_identity",
+      "residual_dense_identity"
+    ],
+    "unrelated_process_signaling_allowed": false
+  },
+  "git": {
+    "branch": "analysis/generation-semantic-residual-alignment-v2-20260825",
+    "revision": "5b3163b1490ca62b95591a9aae7d7b082782309e",
+    "tracked_dirty": false,
+    "tree": "39c87adab47af611568d50690596e41820e0e992"
+  },
+  "gpu_execution_authorized": false,
+  "issues": [],
+  "objective": "shared_low_frequency_x0_residual_alignment",
+  "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1",
+  "pair_contracts": {
+    "control": {
+      "dense_nonzero_auxiliary_losses": [],
+      "factorization_model_fields": [
+        "deep_synthesis_depth",
+        "deep_synthesis_hidden_channels",
+        "gamma_mode",
+        "predictor_use_feedback",
+        "synthesis_active_token_channels",
+        "synthesis_kernel_size",
+        "synthesis_mode",
+        "synthesis_token_strides",
+        "token_channel_schedule",
+        "token_channels",
+        "token_count",
+        "token_spatial_strides"
+      ],
+      "identities": {
+        "cofitok_feedback": true,
+        "cofitok_synthesis": "fixed_basis",
+        "cofitok_token_count": 8,
+        "dense_feedback": false,
+        "dense_synthesis": "dense_identity",
+        "dense_token_count": 1
+      },
+      "issues": [],
+      "matched_config_sections": [
+        "data",
+        "diffusion",
+        "runtime",
+        "optimization"
+      ],
+      "mismatched_config_sections": [],
+      "mismatched_shared_model_fields": [],
+      "mismatched_shared_training_loss_fields": [],
+      "primary_epsilon_weight": 1.0,
+      "shared_model_fields": [
+        "base_channels",
+        "class_dropout_prob",
+        "image_channels",
+        "image_size",
+        "num_classes",
+        "predictor_attention_resolutions",
+        "predictor_channel_multipliers",
+        "predictor_depth",
+        "predictor_dropout",
+        "predictor_gradient_checkpointing",
+        "predictor_multiscale_levels",
+        "predictor_num_heads",
+        "predictor_num_res_blocks",
+        "predictor_type"
+      ],
+      "shared_training_loss_fields": [
+        "class_conditioning_ranking_batch_fraction",
+        "class_conditioning_ranking_margin",
+        "class_conditioning_ranking_min_timestep",
+        "class_conditioning_ranking_start_step",
+        "class_conditioning_ranking_warmup_steps",
+        "class_conditioning_ranking_weight",
+        "class_conditioning_ranking_wrong_label_offset",
+        "class_conditioning_residual_alignment_batch_fraction",
+        "class_conditioning_residual_alignment_margin",
+        "class_conditioning_residual_alignment_min_timestep",
+        "class_conditioning_residual_alignment_pooling_factors",
+        "class_conditioning_residual_alignment_reconstruction_weight",
+        "class_conditioning_residual_alignment_start_step",
+        "class_conditioning_residual_alignment_temperature",
+        "class_conditioning_residual_alignment_warmup_steps",
+        "class_conditioning_residual_alignment_weight",
+        "class_conditioning_residual_alignment_wrong_label_offsets",
+        "ema_teacher_consistency_batch_fraction",
+        "ema_teacher_consistency_start_step",
+        "ema_teacher_consistency_warmup_steps",
+        "ema_teacher_consistency_weight",
+        "epsilon_weight",
+        "rollout_consistency_batch_fraction",
+        "rollout_consistency_clip_x0",
+        "rollout_consistency_mode",
+        "rollout_consistency_start_step",
+        "rollout_consistency_timestep_delta",
+        "rollout_consistency_unroll_steps",
+        "rollout_consistency_warmup_steps",
+        "rollout_consistency_weight"
+      ],
+      "valid": true
+    },
+    "residual_alignment": {
+      "dense_nonzero_auxiliary_losses": [],
+      "factorization_model_fields": [
+        "deep_synthesis_depth",
+        "deep_synthesis_hidden_channels",
+        "gamma_mode",
+        "predictor_use_feedback",
+        "synthesis_active_token_channels",
+        "synthesis_kernel_size",
+        "synthesis_mode",
+        "synthesis_token_strides",
+        "token_channel_schedule",
+        "token_channels",
+        "token_count",
+        "token_spatial_strides"
+      ],
+      "identities": {
+        "cofitok_feedback": true,
+        "cofitok_synthesis": "fixed_basis",
+        "cofitok_token_count": 8,
+        "dense_feedback": false,
+        "dense_synthesis": "dense_identity",
+        "dense_token_count": 1
+      },
+      "issues": [],
+      "matched_config_sections": [
+        "data",
+        "diffusion",
+        "runtime",
+        "optimization"
+      ],
+      "mismatched_config_sections": [],
+      "mismatched_shared_model_fields": [],
+      "mismatched_shared_training_loss_fields": [],
+      "primary_epsilon_weight": 1.0,
+      "shared_model_fields": [
+        "base_channels",
+        "class_dropout_prob",
+        "image_channels",
+        "image_size",
+        "num_classes",
+        "predictor_attention_resolutions",
+        "predictor_channel_multipliers",
+        "predictor_depth",
+        "predictor_dropout",
+        "predictor_gradient_checkpointing",
+        "predictor_multiscale_levels",
+        "predictor_num_heads",
+        "predictor_num_res_blocks",
+        "predictor_type"
+      ],
+      "shared_training_loss_fields": [
+        "class_conditioning_ranking_batch_fraction",
+        "class_conditioning_ranking_margin",
+        "class_conditioning_ranking_min_timestep",
+        "class_conditioning_ranking_start_step",
+        "class_conditioning_ranking_warmup_steps",
+        "class_conditioning_ranking_weight",
+        "class_conditioning_ranking_wrong_label_offset",
+        "class_conditioning_residual_alignment_batch_fraction",
+        "class_conditioning_residual_alignment_margin",
+        "class_conditioning_residual_alignment_min_timestep",
+        "class_conditioning_residual_alignment_pooling_factors",
+        "class_conditioning_residual_alignment_reconstruction_weight",
+        "class_conditioning_residual_alignment_start_step",
+        "class_conditioning_residual_alignment_temperature",
+        "class_conditioning_residual_alignment_warmup_steps",
+        "class_conditioning_residual_alignment_weight",
+        "class_conditioning_residual_alignment_wrong_label_offsets",
+        "ema_teacher_consistency_batch_fraction",
+        "ema_teacher_consistency_start_step",
+        "ema_teacher_consistency_warmup_steps",
+        "ema_teacher_consistency_weight",
+        "epsilon_weight",
+        "rollout_consistency_batch_fraction",
+        "rollout_consistency_clip_x0",
+        "rollout_consistency_mode",
+        "rollout_consistency_start_step",
+        "rollout_consistency_timestep_delta",
+        "rollout_consistency_unroll_steps",
+        "rollout_consistency_warmup_steps",
+        "rollout_consistency_weight"
+      ],
+      "valid": true
+    }
+  },
+  "parameter_counts": {
+    "control_cofitok": 62834083,
+    "control_dense": 62824707,
+    "residual_cofitok": 62834083,
+    "residual_dense": 62824707
+  },
+  "residual_alignment_fields": [
+    "class_conditioning_residual_alignment_weight",
+    "class_conditioning_residual_alignment_start_step",
+    "class_conditioning_residual_alignment_warmup_steps",
+    "class_conditioning_residual_alignment_batch_fraction",
+    "class_conditioning_residual_alignment_margin",
+    "class_conditioning_residual_alignment_temperature",
+    "class_conditioning_residual_alignment_wrong_label_offsets",
+    "class_conditioning_residual_alignment_min_timestep",
+    "class_conditioning_residual_alignment_pooling_factors",
+    "class_conditioning_residual_alignment_reconstruction_weight"
+  ],
+  "role": "generation_semantic_residual_alignment_probe_preparation",
+  "schema_version": 1,
+  "scope": "imagenet256_10pct_four_arm_semantic_residual_alignment_probe1k_only",
+  "status": "pass",
+  "valid": true
+}

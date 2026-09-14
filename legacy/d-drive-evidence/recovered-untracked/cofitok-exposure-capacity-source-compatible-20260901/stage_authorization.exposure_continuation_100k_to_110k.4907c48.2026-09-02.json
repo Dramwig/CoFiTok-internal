@@ -1,0 +1,51 @@
+{
+  "schema_version": "cofitok_generation_exposure_capacity_stage_authorization_v1",
+  "role": "user_created_exposure_continuation_execution_approval",
+  "status": "approved",
+  "scope": "exposure_continuation_100k_to_110k_execution_only",
+  "decision": "authorize_exposure_continuation_100k_to_110k_only",
+  "selection": {
+    "source_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "source_tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+    "source_branch": "scale/generation-stability-quality-bridge-100k",
+    "source_step": 100000,
+    "target_step": 110000,
+    "execution_revision": "4907c48633dc2b665a15c500d0c58b0547519818",
+    "execution_tree": "db8bb88f36b500819974360c201b367b6c9b30e5",
+    "execution_branch": "analysis/generation-exposure-capacity-source-compatible-20260901",
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/exposure"
+  },
+  "approval_record": {
+    "approved_by": "user",
+    "approved_at": "2026-09-02T18:54:50.3425636+08:00"
+  },
+  "source_checkout": {
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tree": "6cef27723196fd363379bca2e7b85b1678ebd777",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "tracked_dirty": false
+  },
+  "execution_checkout": {
+    "revision": "4907c48633dc2b665a15c500d0c58b0547519818",
+    "tree": "db8bb88f36b500819974360c201b367b6c9b30e5",
+    "branch": "analysis/generation-exposure-capacity-source-compatible-20260901",
+    "tracked_dirty": false
+  },
+  "authorization_boundary": {
+    "decision_is_execution_authorization": true,
+    "execution_gate_authorized": true,
+    "remote_mutation_allowed": true,
+    "gpu_execution_authorized": true,
+    "training_launch_allowed": true,
+    "sampling_launch_allowed": true,
+    "evaluation_launch_allowed": true,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "promotion_allowed": false,
+    "export_allowed": false,
+    "release_allowed": false,
+    "process_signals_allowed": false,
+    "terminal_hold_replacement_allowed": false,
+    "broad_generation_superiority_claim_allowed": false
+  }
+}

@@ -1,0 +1,1657 @@
+{
+  "authorization_boundary": {
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "new_gate_required": true,
+    "quality_bridge_evidence_complete": true,
+    "quality_bridge_execution_allowed": false,
+    "release_authorization_allowed": false,
+    "report_is_promotion_gate": false
+  },
+  "git": {
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tracked_dirty": false
+  },
+  "milestones": {
+    "100000": {
+      "evidence": {
+        "cofitok_fid": 219.8605344767381,
+        "dense_fid": 134.684114724896,
+        "quality_alerts": [
+          "cofitok_fid_more_than_25pct_above_dense"
+        ],
+        "source_profile": "quality_bridge",
+        "source_report_sha256": {
+          "cofitok_checkpoint_eval": "4da3be37858a5b222649e67f77f2eef57df0c8377e065f0cc57c31e6d030a2f2",
+          "cofitok_generation": "5d63c697f198a649e83e1338fcac09253f298b226d69db3be814e1ba500f327a",
+          "dense_checkpoint_eval": "674ffec58ac7fd77104ea12e196acf57f42aed16642b4ddcbf8fffbed94f1b98",
+          "dense_generation": "02488a41bdb6b6a1ccda5ce0ca4114894eebb1c2a72fef2ed7b54b003357b740"
+        },
+        "status": "verified"
+      },
+      "report": {
+        "bytes": 8173,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/milestones/step_00100000.json",
+        "sha256": "89de83d71c574b990e68917192c6067721a642adfa50a65ba139632a1fea0fc2"
+      },
+      "status": "verified",
+      "warnings": [
+        "milestone_100000:cofitok_fid_more_than_25pct_above_dense"
+      ]
+    },
+    "50000": {
+      "evidence": {
+        "cofitok_fid": 221.05073384081678,
+        "dense_fid": 192.1684452482233,
+        "quality_alerts": [],
+        "source_profile": "quality_bridge",
+        "source_report_sha256": {
+          "cofitok_checkpoint_eval": "0b7f4a6320243b25a425eae1430ce63471b34f57410ca1aa94be64ed4fa37016",
+          "cofitok_generation": "34d3b9b31ebdac0b177795fd1e629210c8b390da66cadbe7fe199850c5cde2b1",
+          "dense_checkpoint_eval": "054e7beb386a2d02700ba9748ddb9ccf9e95aee5cee7661d69ce69893bb4bdb5",
+          "dense_generation": "baf7e4b366e4e41fe3f4e11d18b8ac06e3196f5b77cf27e12d66e05fd098aa37"
+        },
+        "status": "verified"
+      },
+      "report": {
+        "bytes": 8122,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/milestones/step_00050000.json",
+        "sha256": "14992df2cc5aad1576dc10d147a8f1caa4f196f066339cbce7c7a55fc85bac42"
+      },
+      "status": "verified",
+      "warnings": []
+    }
+  },
+  "quality_screen": {
+    "checks": [
+      {
+        "comparison": "<=",
+        "name": "cofitok_absolute_fid",
+        "observed": 115.26217262363417,
+        "passed": false,
+        "threshold": 100.0
+      },
+      {
+        "comparison": "<=",
+        "name": "matched_fid_tolerance",
+        "observed": -0.06306936667684926,
+        "passed": true,
+        "threshold": 0.05
+      },
+      {
+        "comparison": ">=",
+        "name": "cofitok_precision_floor",
+        "observed": 0.7555999755859375,
+        "passed": true,
+        "threshold": 0.3
+      },
+      {
+        "comparison": ">=",
+        "name": "cofitok_recall_floor",
+        "observed": 0.008320000022649765,
+        "passed": false,
+        "threshold": 0.3
+      },
+      {
+        "comparison": "<=",
+        "name": "matched_precision_tolerance",
+        "observed": -0.09029996395111084,
+        "passed": true,
+        "threshold": 0.05
+      },
+      {
+        "comparison": "<=",
+        "name": "matched_recall_tolerance",
+        "observed": 0.001679999753832817,
+        "passed": true,
+        "threshold": 0.05
+      },
+      {
+        "comparison": "<=",
+        "name": "matched_endpoint_tolerance",
+        "observed": 0.007149473634424863,
+        "passed": true,
+        "threshold": 0.05
+      },
+      {
+        "comparison": "rank == 1 and order_count >=",
+        "name": "ordered_prefix_rank",
+        "observed": {
+          "order_count": 6,
+          "rank": 1
+        },
+        "passed": true,
+        "threshold": 6
+      },
+      {
+        "comparison": ">=",
+        "name": "coarse_token_utilization",
+        "observed": 0.1504667028784752,
+        "passed": true,
+        "threshold": 0.05
+      },
+      {
+        "comparison": "==",
+        "name": "restricted_synthesis_zero_token",
+        "observed": 0.0,
+        "passed": true,
+        "threshold": 0.0
+      },
+      {
+        "comparison": ">",
+        "name": "shuffle_mismatch",
+        "observed": 133.59027526504823,
+        "passed": true,
+        "threshold": 1.0
+      },
+      {
+        "comparison": "==",
+        "name": "class_fidelity",
+        "observed": "hold",
+        "passed": false,
+        "threshold": "pass"
+      }
+    ],
+    "failed_checks": [
+      "cofitok_absolute_fid",
+      "cofitok_recall_floor",
+      "class_fidelity"
+    ],
+    "interpretation": "This is a non-authorizing full-data quality screen. Every absolute, matched-distribution, mechanism, and class-fidelity check must pass; a separate source-compatible gate and explicit user decision are required before any larger training stage.",
+    "non_authorizing": true,
+    "source_to_bridge": {
+      "cofitok_fid_delta": -23.034852329043645,
+      "cofitok_fid_relative_change": -0.16656072201788621,
+      "cofitok_recall_delta": -0.0003599999472498894,
+      "dense_fid_delta": -28.426646200507832,
+      "dense_fid_relative_change": -0.187699453029441,
+      "dense_recall_delta": 0.00021999981254339218
+    },
+    "status": "hold",
+    "thresholds": {
+      "max_absolute_fid": 100.0,
+      "max_endpoint_regression": 0.05,
+      "max_fid_regression": 0.05,
+      "max_precision_regression": 0.05,
+      "max_recall_regression": 0.05,
+      "min_coarse_token_energy_ratio": 0.05,
+      "min_precision": 0.3,
+      "min_recall": 0.3,
+      "min_samples": 10000
+    }
+  },
+  "role": "stability_full_data_quality_bridge_result",
+  "schema_version": 1,
+  "source_reports": {
+    "class_fidelity_qualification": {
+      "bytes": 9188,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/class_fidelity/qualification_report.json",
+      "sha256": "91b03a57f033c9d8d6f7918fdd4071c9b1f13426980a464114f7371a059858f8"
+    },
+    "cofitok_checkpoint_eval": {
+      "bytes": 16218,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/checkpoint_eval/checkpoint_evaluation_report.json",
+      "sha256": "d5fdff3846852ff9fb5683a03024f66ec1318cf57e73acc606e9d43281d16c27"
+    },
+    "cofitok_class_fidelity": {
+      "bytes": 14531,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/class_fidelity/class_fidelity_report.json",
+      "sha256": "d84bad6dc9834f98600af44221b82b3433b0fb91063ba0ba5c27a7ba5435fd21"
+    },
+    "cofitok_generation": {
+      "bytes": 14180,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/metrics/generation_metrics_report.json",
+      "sha256": "4dc4c6afd68f9e9f8ac335bf84108b8134d5a6404c316079c1185330f67f76dc"
+    },
+    "cofitok_sampling_preflight": {
+      "bytes": 4338,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/sampling_preflight.json",
+      "sha256": "b5e0cdbc883f5a5eef93f856c33a0d5920df9d5969dbf0669b524e5ba3a4336d"
+    },
+    "cofitok_training": {
+      "bytes": 11232,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json",
+      "sha256": "9056b47fe7733b092608e29b9b5d14c95f5af6a35c170be4ec0dcd553f6b4a86"
+    },
+    "cofitok_training_audit": {
+      "bytes": 5275,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/cofitok_training_audit.json",
+      "sha256": "88033abef92e750960de82e2756ab2445dc9d4850ccca8690ef64769db6e0f2c"
+    },
+    "dense_checkpoint_eval": {
+      "bytes": 7463,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/checkpoint_eval/checkpoint_evaluation_report.json",
+      "sha256": "5a600b8241b8c9f2aef3c121e04d1f7d21e49e8ee823c413261e5bc517754309"
+    },
+    "dense_class_fidelity": {
+      "bytes": 14412,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/class_fidelity/class_fidelity_report.json",
+      "sha256": "987cf89e0d886ac9fbfdcdd814beb760a2fb7fbe3621c0eea6d665f3c1e0bf4b"
+    },
+    "dense_generation": {
+      "bytes": 14057,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/metrics/generation_metrics_report.json",
+      "sha256": "b59f33f98a34906a0c7d97767728595f990cc0f52838f51fa9f3cc18bf7acfba"
+    },
+    "dense_sampling_preflight": {
+      "bytes": 4317,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/sampling_preflight.json",
+      "sha256": "4c43ad2d73af1fdab36b55e198646c929f2682b116cd2eb5b48c05a5188c5800"
+    },
+    "dense_training": {
+      "bytes": 10888,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/training_report.json",
+      "sha256": "5b38303da71f324acb668fca8c52cf7558fbee7ab8a38a5bc7768836387f08ec"
+    },
+    "dense_training_audit": {
+      "bytes": 5181,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/dense_training_audit.json",
+      "sha256": "c931294cbd7dc65bdc628a0ce9280a63c039b3e7ece218fece9e8333b316c992"
+    },
+    "launch_receipt": {
+      "bytes": 8588,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/launch_receipt.json",
+      "sha256": "4a9fd8577c24a92583d9538846dcab35c2d73e6066d164050f49b976985a3a21"
+    },
+    "milestone_100000": {
+      "bytes": 8173,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/milestones/step_00100000.json",
+      "sha256": "89de83d71c574b990e68917192c6067721a642adfa50a65ba139632a1fea0fc2"
+    },
+    "milestone_50000": {
+      "bytes": 8122,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/milestones/step_00050000.json",
+      "sha256": "14992df2cc5aad1576dc10d147a8f1caa4f196f066339cbce7c7a55fc85bac42"
+    },
+    "preparation": {
+      "bytes": 23398,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/preparation.json",
+      "sha256": "7398d9a6f096ea9c178295c9016bb56fd38e28dff30f26662ae4225aded208ea"
+    },
+    "training_pair_validation": {
+      "bytes": 16914,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/training_pair_validation.json",
+      "sha256": "2592e975bfd88af5f9287defb48f7cc2784fffb4ef71bda77e06d614753acd66"
+    }
+  },
+  "stage": "stability_quality_bridge",
+  "status": "completed",
+  "terminal": {
+    "class_fidelity": {
+      "claim_boundary": {
+        "class_conditional_quality_evaluated": true,
+        "full_training_launch_allowed": false,
+        "interpretation": "Class fidelity complements but cannot replace FID, IS, precision, recall, rollout stability, or visual review.",
+        "release_authorization_allowed": false,
+        "standalone_generation_quality_claim_allowed": false,
+        "unconditional_distribution_quality_evaluated": false
+      },
+      "classifier": {
+        "categories_sha256": "62fff941ecff3f19de9128c6ca9c2097807c6b7bafc5552d7589a219431221ed",
+        "name": "torchvision_resnet50_imagenet1k_v2",
+        "num_classes": 1000,
+        "preprocessing": {
+          "antialias": true,
+          "crop_size": [
+            224
+          ],
+          "interpolation": "bilinear",
+          "mean": [
+            0.485,
+            0.456,
+            0.406
+          ],
+          "resize_size": [
+            232
+          ],
+          "std": [
+            0.229,
+            0.224,
+            0.225
+          ]
+        },
+        "weights_bytes": 102540417,
+        "weights_enum": "ResNet50_Weights.IMAGENET1K_V2",
+        "weights_path": "/root/autodl-tmp/CoFiTok/checkpoints/evaluators/torchvision/resnet50-11ad3fa6.pth",
+        "weights_sha256": "11ad3fa62ca79e40addfd354a8ec4b7c75143b3038b8d2a807fbc68deab379ca",
+        "weights_url": "https://download.pytorch.org/models/resnet50-11ad3fa6.pth"
+      },
+      "git": {
+        "branch": "scale/generation-stability-quality-bridge-100k",
+        "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+        "tracked_dirty": false
+      },
+      "metrics": {
+        "cofitok": {
+          "mean_target_probability": 0.0016550545930862426,
+          "normalized_predicted_class_entropy": 0.780127417746333,
+          "num_classes": 1000,
+          "predicted_class_count": 734,
+          "predicted_class_entropy": 5.388929288215935,
+          "predicted_class_fraction": 0.734,
+          "requested_class_count": 1000,
+          "requested_count_max": 10,
+          "requested_count_min": 10,
+          "sample_count": 10000,
+          "target_negative_log_likelihood": 7.40555559387207,
+          "top1_accuracy": 0.0024,
+          "top1_correct": 24,
+          "top5_accuracy": 0.0106,
+          "top5_correct": 106
+        },
+        "dense_identity": {
+          "mean_target_probability": 0.0012884528880938888,
+          "normalized_predicted_class_entropy": 0.7501481296145057,
+          "num_classes": 1000,
+          "predicted_class_count": 696,
+          "predicted_class_entropy": 5.181839702363178,
+          "predicted_class_fraction": 0.696,
+          "requested_class_count": 1000,
+          "requested_count_max": 10,
+          "requested_count_min": 10,
+          "sample_count": 10000,
+          "target_negative_log_likelihood": 7.4760595916748045,
+          "top1_accuracy": 0.0017,
+          "top1_correct": 17,
+          "top5_accuracy": 0.0081,
+          "top5_correct": 81
+        }
+      },
+      "sampling_contract": {
+        "cofitok_checkpoint_sha256": "b36a92229ba2dd021db9c7585970ddda1d17d1919ca6b0eec0362b06d4bd462e",
+        "cofitok_prefix_budget": 8,
+        "cofitok_sample_set_sha256": "7f57ee4a874667b17085df203503443440a84124719a53da31db726a1efaff98",
+        "dense_checkpoint_sha256": "b6586cc906a9c38bbf9d592f5f6169b7a37a8d3aa485ca4879021fa840943d0b",
+        "dense_prefix_budget": 1,
+        "dense_sample_set_sha256": "3fc905a55dc368ddf268278c04963c5933b3e783f4cabd872762135b6345bdaf",
+        "evaluator_git": {
+          "branch": "scale/generation-stability-quality-bridge-100k",
+          "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+          "tracked_dirty": false
+        },
+        "evaluator_runtime_environment_sha256": "0cfe4f0bf03a70cff136a084f36cce8daaaf0316d4a7fdb818d912257cc302f2",
+        "sample_count_per_method": 10000,
+        "sampling": {
+          "actual_timesteps": [
+            999,
+            989,
+            979,
+            969,
+            959,
+            949,
+            938,
+            928,
+            918,
+            908,
+            898,
+            888,
+            878,
+            868,
+            858,
+            848,
+            838,
+            827,
+            817,
+            807,
+            797,
+            787,
+            777,
+            767,
+            757,
+            747,
+            737,
+            727,
+            716,
+            706,
+            696,
+            686,
+            676,
+            666,
+            656,
+            646,
+            636,
+            626,
+            616,
+            605,
+            595,
+            585,
+            575,
+            565,
+            555,
+            545,
+            535,
+            525,
+            515,
+            505,
+            494,
+            484,
+            474,
+            464,
+            454,
+            444,
+            434,
+            424,
+            414,
+            404,
+            394,
+            383,
+            373,
+            363,
+            353,
+            343,
+            333,
+            323,
+            313,
+            303,
+            293,
+            283,
+            272,
+            262,
+            252,
+            242,
+            232,
+            222,
+            212,
+            202,
+            192,
+            182,
+            172,
+            161,
+            151,
+            141,
+            131,
+            121,
+            111,
+            101,
+            91,
+            81,
+            71,
+            61,
+            50,
+            40,
+            30,
+            20,
+            10,
+            0
+          ],
+          "batch_size": 32,
+          "cfg_batch_mode": "batched",
+          "class_schedule": "balanced_modulo",
+          "clip_x0": true,
+          "eta": 0.0,
+          "guidance_rescale": 0.0,
+          "guidance_scale": 1.5,
+          "image_shape": [
+            3,
+            256,
+            256
+          ],
+          "inference_api": {
+            "name": "cofitok.generation.GenerationSession",
+            "version": 1
+          },
+          "num_samples": 10000,
+          "num_train_timesteps": 1000,
+          "precision": "bf16",
+          "protocol_schema": "cofitok_ddim_sampling_v1",
+          "random_stream": {
+            "batch_size_invariant": true,
+            "prefix_budgets_share_stream": true,
+            "resume_index_invariant": true,
+            "scope": "per_global_sample_index",
+            "seed_formula": "(seed + global_index) mod 2^63"
+          },
+          "sample_set_digest": {
+            "algorithm": "sha256",
+            "framing": "filename_utf8_nul_file_bytes_nul"
+          },
+          "sample_steps": 100,
+          "sampler": "ddim",
+          "seed": 0,
+          "start_index": 0
+        },
+        "sampling_git": {
+          "branch": "scale/generation-stability-quality-bridge-100k",
+          "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+          "tracked_dirty": false
+        },
+        "weights": "ema"
+      },
+      "sources": {
+        "cofitok": {
+          "bytes": 14531,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/class_fidelity/class_fidelity_report.json",
+          "sha256": "d84bad6dc9834f98600af44221b82b3433b0fb91063ba0ba5c27a7ba5435fd21"
+        },
+        "dense_identity": {
+          "bytes": 14412,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/class_fidelity/class_fidelity_report.json",
+          "sha256": "987cf89e0d886ac9fbfdcdd814beb760a2fb7fbe3621c0eea6d665f3c1e0bf4b"
+        }
+      },
+      "stage": "scaling",
+      "status": "hold",
+      "thresholds": {
+        "max_top1_regression": 0.05,
+        "max_top5_regression": 0.05,
+        "min_normalized_predicted_entropy": 0.5,
+        "min_predicted_class_fraction": 0.25,
+        "min_top1": 0.01,
+        "min_top5": 0.05
+      },
+      "valid": false
+    },
+    "matched_comparison": {
+      "endpoint_clean_mse_relative_change": 0.00714947363442476,
+      "fid_relative_change": -0.06306936667684929,
+      "precision_delta": 0.09029996395111084,
+      "recall_delta": -0.001679999753832817
+    },
+    "methods": {
+      "cofitok": {
+        "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+        "checkpoint_integrity_manifest": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+        "checkpoint_sha256": "b36a92229ba2dd021db9c7585970ddda1d17d1919ca6b0eec0362b06d4bd462e",
+        "checkpoint_step": 100000,
+        "coarse_token_utilization": {
+          "coarse_token_count": 5,
+          "coarse_token_energy_ratio": 0.1504667028784752,
+          "component_energy_ratios": [
+            0.012974003329873085,
+            0.015038689598441124,
+            0.029249755665659904,
+            0.030812228098511696,
+            0.06239202618598938,
+            0.28197918832302094,
+            0.2836952656507492,
+            0.28385884314775467
+          ],
+          "full_resolution_tail_token_count": 3,
+          "partition_schema": "token_spatial_stride_suffix_v1",
+          "source_metric": "component_energy_ratio_per_sample_mean",
+          "token_count": 8,
+          "token_spatial_strides": [
+            16,
+            16,
+            8,
+            8,
+            4,
+            1,
+            1,
+            1
+          ]
+        },
+        "endpoint_clean_mse": 0.015429251361638308,
+        "fid": 115.26217262363417,
+        "inception_score": 9.755936397830892,
+        "metrics_evaluator_git": {
+          "branch": "scale/generation-stability-quality-bridge-100k",
+          "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+          "tracked_dirty": false
+        },
+        "metrics_runtime_environment_sha256": "0cfe4f0bf03a70cff136a084f36cce8daaaf0316d4a7fdb818d912257cc302f2",
+        "order_count": 6,
+        "ordered_rank_by_path_auc": 1,
+        "precision": 0.7555999755859375,
+        "prefix_path_mse_auc": 0.09359038513087269,
+        "real_set": {
+          "digest_schema": "cofitok_image_tree_sha256_v1",
+          "image_count": 50000,
+          "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+          "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f"
+        },
+        "recall": 0.008320000022649765,
+        "sample_count": 10000,
+        "sample_set_sha256": "7f57ee4a874667b17085df203503443440a84124719a53da31db726a1efaff98",
+        "sampling": {
+          "actual_timesteps": [
+            999,
+            989,
+            979,
+            969,
+            959,
+            949,
+            938,
+            928,
+            918,
+            908,
+            898,
+            888,
+            878,
+            868,
+            858,
+            848,
+            838,
+            827,
+            817,
+            807,
+            797,
+            787,
+            777,
+            767,
+            757,
+            747,
+            737,
+            727,
+            716,
+            706,
+            696,
+            686,
+            676,
+            666,
+            656,
+            646,
+            636,
+            626,
+            616,
+            605,
+            595,
+            585,
+            575,
+            565,
+            555,
+            545,
+            535,
+            525,
+            515,
+            505,
+            494,
+            484,
+            474,
+            464,
+            454,
+            444,
+            434,
+            424,
+            414,
+            404,
+            394,
+            383,
+            373,
+            363,
+            353,
+            343,
+            333,
+            323,
+            313,
+            303,
+            293,
+            283,
+            272,
+            262,
+            252,
+            242,
+            232,
+            222,
+            212,
+            202,
+            192,
+            182,
+            172,
+            161,
+            151,
+            141,
+            131,
+            121,
+            111,
+            101,
+            91,
+            81,
+            71,
+            61,
+            50,
+            40,
+            30,
+            20,
+            10,
+            0
+          ],
+          "batch_size": 32,
+          "cfg_batch_mode": "batched",
+          "class_schedule": "balanced_modulo",
+          "clip_x0": true,
+          "eta": 0.0,
+          "guidance_rescale": 0.0,
+          "guidance_scale": 1.5,
+          "image_shape": [
+            3,
+            256,
+            256
+          ],
+          "inference_api": {
+            "name": "cofitok.generation.GenerationSession",
+            "version": 1
+          },
+          "num_samples": 10000,
+          "num_train_timesteps": 1000,
+          "precision": "bf16",
+          "prefix_budgets": [
+            8
+          ],
+          "protocol_schema": "cofitok_ddim_sampling_v1",
+          "random_stream": {
+            "batch_size_invariant": true,
+            "prefix_budgets_share_stream": true,
+            "resume_index_invariant": true,
+            "scope": "per_global_sample_index",
+            "seed_formula": "(seed + global_index) mod 2^63"
+          },
+          "sample_set_digest": {
+            "algorithm": "sha256",
+            "framing": "filename_utf8_nul_file_bytes_nul"
+          },
+          "sample_steps": 100,
+          "sampler": "ddim",
+          "seed": 0,
+          "start_index": 0
+        },
+        "sampling_manifest": {
+          "bytes": 4860,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_manifest.json",
+          "sha256": "d87f96a455664454fd790d4553a0a01494ee6580217e7755b0bb98be2a80e306"
+        },
+        "sampling_progress": {
+          "bytes": 762,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_progress.json",
+          "sha256": "ee9442c3d96f80ba15284b2992c6d0d36816a3bbe7485115289e55a8b1b9afa1"
+        },
+        "sampling_report": {
+          "bytes": 5507,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_report.json",
+          "sha256": "79d5ab69283d171cf0390671d3204f9eeaf13a07f80354527b02335128069a44"
+        },
+        "sampling_runtime_environment_sha256": "8b424f8f4095a919daee99d1345c7657e94ca133f19369958410f793a35b1bb1",
+        "selected_prefix_budget": 8,
+        "shuffled_to_ordered_endpoint_ratio": 133.59027526504823,
+        "weights": "ema",
+        "zero_token_max_abs": 0.0
+      },
+      "dense_identity": {
+        "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+        "checkpoint_integrity_manifest": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+        "checkpoint_sha256": "b6586cc906a9c38bbf9d592f5f6169b7a37a8d3aa485ca4879021fa840943d0b",
+        "checkpoint_step": 100000,
+        "endpoint_clean_mse": 0.015319723403081298,
+        "fid": 123.02103114594166,
+        "inception_score": 9.06167118448111,
+        "metrics_evaluator_git": {
+          "branch": "scale/generation-stability-quality-bridge-100k",
+          "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+          "tracked_dirty": false
+        },
+        "metrics_runtime_environment_sha256": "0cfe4f0bf03a70cff136a084f36cce8daaaf0316d4a7fdb818d912257cc302f2",
+        "order_count": 1,
+        "ordered_rank_by_path_auc": 1,
+        "precision": 0.6653000116348267,
+        "prefix_path_mse_auc": 0.015319723403081298,
+        "real_set": {
+          "digest_schema": "cofitok_image_tree_sha256_v1",
+          "image_count": 50000,
+          "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+          "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f"
+        },
+        "recall": 0.009999999776482582,
+        "sample_count": 10000,
+        "sample_set_sha256": "3fc905a55dc368ddf268278c04963c5933b3e783f4cabd872762135b6345bdaf",
+        "sampling": {
+          "actual_timesteps": [
+            999,
+            989,
+            979,
+            969,
+            959,
+            949,
+            938,
+            928,
+            918,
+            908,
+            898,
+            888,
+            878,
+            868,
+            858,
+            848,
+            838,
+            827,
+            817,
+            807,
+            797,
+            787,
+            777,
+            767,
+            757,
+            747,
+            737,
+            727,
+            716,
+            706,
+            696,
+            686,
+            676,
+            666,
+            656,
+            646,
+            636,
+            626,
+            616,
+            605,
+            595,
+            585,
+            575,
+            565,
+            555,
+            545,
+            535,
+            525,
+            515,
+            505,
+            494,
+            484,
+            474,
+            464,
+            454,
+            444,
+            434,
+            424,
+            414,
+            404,
+            394,
+            383,
+            373,
+            363,
+            353,
+            343,
+            333,
+            323,
+            313,
+            303,
+            293,
+            283,
+            272,
+            262,
+            252,
+            242,
+            232,
+            222,
+            212,
+            202,
+            192,
+            182,
+            172,
+            161,
+            151,
+            141,
+            131,
+            121,
+            111,
+            101,
+            91,
+            81,
+            71,
+            61,
+            50,
+            40,
+            30,
+            20,
+            10,
+            0
+          ],
+          "batch_size": 32,
+          "cfg_batch_mode": "batched",
+          "class_schedule": "balanced_modulo",
+          "clip_x0": true,
+          "eta": 0.0,
+          "guidance_rescale": 0.0,
+          "guidance_scale": 1.5,
+          "image_shape": [
+            3,
+            256,
+            256
+          ],
+          "inference_api": {
+            "name": "cofitok.generation.GenerationSession",
+            "version": 1
+          },
+          "num_samples": 10000,
+          "num_train_timesteps": 1000,
+          "precision": "bf16",
+          "prefix_budgets": [
+            1
+          ],
+          "protocol_schema": "cofitok_ddim_sampling_v1",
+          "random_stream": {
+            "batch_size_invariant": true,
+            "prefix_budgets_share_stream": true,
+            "resume_index_invariant": true,
+            "scope": "per_global_sample_index",
+            "seed_formula": "(seed + global_index) mod 2^63"
+          },
+          "sample_set_digest": {
+            "algorithm": "sha256",
+            "framing": "filename_utf8_nul_file_bytes_nul"
+          },
+          "sample_steps": 100,
+          "sampler": "ddim",
+          "seed": 0,
+          "start_index": 0
+        },
+        "sampling_manifest": {
+          "bytes": 4827,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_manifest.json",
+          "sha256": "28d1fdd70e73a2933a2628330c5b174af7944571669a8f88b625f0ec6c6b21c9"
+        },
+        "sampling_progress": {
+          "bytes": 762,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_progress.json",
+          "sha256": "929603ff47dc4a8e0a59855b506a6e5240bedfdacbe92825a5cb3a5cd98b5173"
+        },
+        "sampling_report": {
+          "bytes": 5463,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_report.json",
+          "sha256": "5cb1e0f1f90313101d65194058eaf78fb6dcc8545ca048b2c5b48f509d79c235"
+        },
+        "sampling_runtime_environment_sha256": "8b424f8f4095a919daee99d1345c7657e94ca133f19369958410f793a35b1bb1",
+        "selected_prefix_budget": 1,
+        "shuffled_to_ordered_endpoint_ratio": 133.78593161090362,
+        "weights": "ema",
+        "zero_token_max_abs": 0.0
+      }
+    },
+    "physical_evidence": {
+      "cofitok": {
+        "checkpoint": {
+          "bytes": 1010937514,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+          "sha256": "b36a92229ba2dd021db9c7585970ddda1d17d1919ca6b0eec0362b06d4bd462e"
+        },
+        "checkpoint_integrity_manifest": {
+          "bytes": 597,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+          "sha256": "d5dd3ac3afb9c5e1d6facf3ea766700c221f17b22724749056213a55dc19c2d5"
+        },
+        "checkpoint_step": 100000,
+        "real_set": {
+          "image_count": 50000,
+          "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+          "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f"
+        },
+        "sample_count": 10000,
+        "sample_set_sha256": "7f57ee4a874667b17085df203503443440a84124719a53da31db726a1efaff98",
+        "sampling_manifest": {
+          "bytes": 4860,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_manifest.json",
+          "sha256": "d87f96a455664454fd790d4553a0a01494ee6580217e7755b0bb98be2a80e306"
+        },
+        "sampling_progress": {
+          "bytes": 762,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_progress.json",
+          "sha256": "ee9442c3d96f80ba15284b2992c6d0d36816a3bbe7485115289e55a8b1b9afa1"
+        },
+        "sampling_report": {
+          "bytes": 5507,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_report.json",
+          "sha256": "79d5ab69283d171cf0390671d3204f9eeaf13a07f80354527b02335128069a44"
+        }
+      },
+      "dense_identity": {
+        "checkpoint": {
+          "bytes": 1010735510,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+          "sha256": "b6586cc906a9c38bbf9d592f5f6169b7a37a8d3aa485ca4879021fa840943d0b"
+        },
+        "checkpoint_integrity_manifest": {
+          "bytes": 597,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+          "sha256": "466310f75d941ecd909f22c245fe9db885cc623e8f0a6085ee3b254a0d2dd06a"
+        },
+        "checkpoint_step": 100000,
+        "real_set": {
+          "image_count": 50000,
+          "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+          "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f"
+        },
+        "sample_count": 10000,
+        "sample_set_sha256": "3fc905a55dc368ddf268278c04963c5933b3e783f4cabd872762135b6345bdaf",
+        "sampling_manifest": {
+          "bytes": 4827,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_manifest.json",
+          "sha256": "28d1fdd70e73a2933a2628330c5b174af7944571669a8f88b625f0ec6c6b21c9"
+        },
+        "sampling_progress": {
+          "bytes": 762,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_progress.json",
+          "sha256": "929603ff47dc4a8e0a59855b506a6e5240bedfdacbe92825a5cb3a5cd98b5173"
+        },
+        "sampling_report": {
+          "bytes": 5463,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_report.json",
+          "sha256": "5cb1e0f1f90313101d65194058eaf78fb6dcc8545ca048b2c5b48f509d79c235"
+        }
+      }
+    },
+    "sampling_preflights": {
+      "cofitok": {
+        "checkpoint_integrity_manifest": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+        "checkpoint_sha256": "b36a92229ba2dd021db9c7585970ddda1d17d1919ca6b0eec0362b06d4bd462e",
+        "mean_forward_seconds": 0.930723499506712,
+        "peak_memory": {
+          "allocated_bytes": 312676864,
+          "peak_allocated_bytes": 28114702336,
+          "peak_reserved_bytes": 48186261504,
+          "reserved_bytes": 48186261504
+        },
+        "runtime_environment_sha256": "8b424f8f4095a919daee99d1345c7657e94ca133f19369958410f793a35b1bb1"
+      },
+      "dense_identity": {
+        "checkpoint_integrity_manifest": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+        "checkpoint_sha256": "b6586cc906a9c38bbf9d592f5f6169b7a37a8d3aa485ca4879021fa840943d0b",
+        "mean_forward_seconds": 0.838234469294548,
+        "peak_memory": {
+          "allocated_bytes": 300040704,
+          "peak_allocated_bytes": 28114649088,
+          "peak_reserved_bytes": 48184164352,
+          "reserved_bytes": 48184164352
+        },
+        "runtime_environment_sha256": "8b424f8f4095a919daee99d1345c7657e94ca133f19369958410f793a35b1bb1"
+      }
+    }
+  },
+  "training": {
+    "audits": {
+      "cofitok": {
+        "checkpoint_steps": [
+          50000,
+          90000,
+          95000,
+          100000
+        ],
+        "last_step": 100000,
+        "latest_integrity": {
+          "checkpoint": "checkpoint_step_00100000.pt",
+          "checkpoint_bytes": 1010937514,
+          "checkpoint_format_version": 1,
+          "checkpoint_sha256": "b36a92229ba2dd021db9c7585970ddda1d17d1919ca6b0eec0362b06d4bd462e",
+          "integrity_manifest": "checkpoint_step_00100000.pt.integrity.json",
+          "policy": "required",
+          "status": "verified",
+          "step": 100000
+        },
+        "metric_row_count": 2004,
+        "validation_event_count": 100,
+        "warnings": []
+      },
+      "dense_identity": {
+        "checkpoint_steps": [
+          50000,
+          90000,
+          95000,
+          100000
+        ],
+        "last_step": 100000,
+        "latest_integrity": {
+          "checkpoint": "checkpoint_step_00100000.pt",
+          "checkpoint_bytes": 1010735510,
+          "checkpoint_format_version": 1,
+          "checkpoint_sha256": "b6586cc906a9c38bbf9d592f5f6169b7a37a8d3aa485ca4879021fa840943d0b",
+          "integrity_manifest": "checkpoint_step_00100000.pt.integrity.json",
+          "policy": "required",
+          "status": "verified",
+          "step": 100000
+        },
+        "metric_row_count": 2002,
+        "validation_event_count": 100,
+        "warnings": []
+      }
+    },
+    "pair_validation": {
+      "authorization_gate_identity_sha256": null,
+      "cofitok": {
+        "branch": "scale/generation-stability-quality-bridge-100k",
+        "completed_steps": 100000,
+        "dataset": "imagenet_256",
+        "dataset_provenance": {
+          "dataset": "imagenet_256",
+          "dataset_root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256",
+          "identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+          "manifest_bytes": 405484553,
+          "manifest_sha256": "9a2eec642f0d56162bffaafed84a41267f22abfc9feff4cf41fed9f6881173f0",
+          "splits": {
+            "train": 1281167,
+            "val": 50000
+          }
+        },
+        "dataset_provenance_warning": null,
+        "formal_full_training": false,
+        "latest_checkpoint": "checkpoint_step_00100000.pt",
+        "parameter_count": 62834083,
+        "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+        "training_authorization": null
+      },
+      "dataset_identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+      "dense": {
+        "branch": "scale/generation-stability-quality-bridge-100k",
+        "completed_steps": 100000,
+        "dataset": "imagenet_256",
+        "dataset_provenance": {
+          "dataset": "imagenet_256",
+          "dataset_root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256",
+          "identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+          "manifest_bytes": 405484553,
+          "manifest_sha256": "9a2eec642f0d56162bffaafed84a41267f22abfc9feff4cf41fed9f6881173f0",
+          "splits": {
+            "train": 1281167,
+            "val": 50000
+          }
+        },
+        "dataset_provenance_warning": null,
+        "formal_full_training": false,
+        "latest_checkpoint": "checkpoint_step_00100000.pt",
+        "parameter_count": 62824707,
+        "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+        "training_authorization": null
+      },
+      "expected_branch": "scale/generation-stability-quality-bridge-100k",
+      "expected_dataset": "imagenet_256",
+      "expected_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "expected_steps": 100000,
+      "legacy_dataset_provenance_allowed": false,
+      "matched_config_sections": [
+        "data",
+        "diffusion",
+        "runtime",
+        "optimization"
+      ],
+      "max_parameter_gap": 0.02,
+      "pair_contract": {
+        "dense_nonzero_auxiliary_losses": [],
+        "factorization_model_fields": [
+          "deep_synthesis_depth",
+          "deep_synthesis_hidden_channels",
+          "gamma_mode",
+          "predictor_use_feedback",
+          "synthesis_active_token_channels",
+          "synthesis_kernel_size",
+          "synthesis_mode",
+          "synthesis_token_strides",
+          "token_channel_schedule",
+          "token_channels",
+          "token_count",
+          "token_spatial_strides"
+        ],
+        "identities": {
+          "cofitok_feedback": true,
+          "cofitok_synthesis": "fixed_basis",
+          "cofitok_token_count": 8,
+          "dense_feedback": false,
+          "dense_synthesis": "dense_identity",
+          "dense_token_count": 1
+        },
+        "issues": [],
+        "matched_config_sections": [
+          "data",
+          "diffusion",
+          "runtime",
+          "optimization"
+        ],
+        "mismatched_config_sections": [],
+        "mismatched_shared_model_fields": [],
+        "mismatched_shared_training_loss_fields": [],
+        "primary_epsilon_weight": 1.0,
+        "shared_model_fields": [
+          "base_channels",
+          "class_dropout_prob",
+          "image_channels",
+          "image_size",
+          "num_classes",
+          "predictor_attention_resolutions",
+          "predictor_channel_multipliers",
+          "predictor_depth",
+          "predictor_dropout",
+          "predictor_gradient_checkpointing",
+          "predictor_multiscale_levels",
+          "predictor_num_heads",
+          "predictor_num_res_blocks",
+          "predictor_type"
+        ],
+        "shared_training_loss_fields": [
+          "ema_teacher_consistency_batch_fraction",
+          "ema_teacher_consistency_start_step",
+          "ema_teacher_consistency_warmup_steps",
+          "ema_teacher_consistency_weight",
+          "epsilon_weight",
+          "rollout_consistency_batch_fraction",
+          "rollout_consistency_clip_x0",
+          "rollout_consistency_mode",
+          "rollout_consistency_start_step",
+          "rollout_consistency_timestep_delta",
+          "rollout_consistency_unroll_steps",
+          "rollout_consistency_warmup_steps",
+          "rollout_consistency_weight"
+        ],
+        "valid": true
+      },
+      "relative_parameter_gap": 0.00014924064826915946,
+      "schema_version": 3,
+      "status": "pass",
+      "training_recipe": {
+        "allowed_runtime_batches": [
+          [
+            1,
+            64
+          ],
+          [
+            2,
+            32
+          ],
+          [
+            4,
+            16
+          ],
+          [
+            8,
+            8
+          ],
+          [
+            16,
+            4
+          ],
+          [
+            32,
+            2
+          ],
+          [
+            64,
+            1
+          ]
+        ],
+        "effective_batches": {
+          "cofitok": {
+            "effective_batch_size": 64,
+            "gradient_accumulation_steps": 1,
+            "micro_batch_size": 64
+          },
+          "dense_identity": {
+            "effective_batch_size": 64,
+            "gradient_accumulation_steps": 1,
+            "micro_batch_size": 64
+          }
+        },
+        "expected_shared": {
+          "data.channels": 3,
+          "data.class_conditional": true,
+          "data.dataset": "imagenet_256",
+          "data.image_size": 256,
+          "data.random_horizontal_flip_prob": 0.5,
+          "diffusion.num_train_timesteps": 1000,
+          "diffusion.prediction_target": "epsilon",
+          "diffusion.schedule_type": "cosine",
+          "loss.ema_teacher_consistency_batch_fraction": 0.0625,
+          "loss.ema_teacher_consistency_start_step": 30000,
+          "loss.ema_teacher_consistency_warmup_steps": 10000,
+          "loss.ema_teacher_consistency_weight": 0.25,
+          "loss.rollout_consistency_batch_fraction": 0.125,
+          "loss.rollout_consistency_clip_x0": true,
+          "loss.rollout_consistency_mode": "clipped_x0",
+          "loss.rollout_consistency_start_step": 0,
+          "loss.rollout_consistency_timestep_delta": 10,
+          "loss.rollout_consistency_unroll_steps": 2,
+          "loss.rollout_consistency_warmup_steps": 10000,
+          "loss.rollout_consistency_weight": 0.1,
+          "model.base_channels": 128,
+          "model.class_dropout_prob": 0.1,
+          "model.image_channels": 3,
+          "model.image_size": 256,
+          "model.num_classes": 1000,
+          "model.predictor_attention_resolutions": [
+            32,
+            16
+          ],
+          "model.predictor_channel_multipliers": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "model.predictor_dropout": 0.0,
+          "model.predictor_gradient_checkpointing": true,
+          "model.predictor_num_heads": 8,
+          "model.predictor_num_res_blocks": 2,
+          "model.predictor_type": "scalable_unet",
+          "optimization.betas": [
+            0.9,
+            0.99
+          ],
+          "optimization.ema_decay": 0.9999,
+          "optimization.ema_warmup_steps": 2000,
+          "optimization.grad_clip_norm": 1.0,
+          "optimization.learning_rate": 0.0001,
+          "optimization.min_learning_rate": 1e-05,
+          "optimization.warmup_steps": 1000,
+          "optimization.weight_decay": 0.01,
+          "runtime.allow_tf32": true,
+          "runtime.checkpoint_interval": 5000,
+          "runtime.device": "cuda",
+          "runtime.evaluation_interval": 1000,
+          "runtime.keep_last_checkpoints": 3,
+          "runtime.precision": "bf16",
+          "runtime.protected_checkpoint_steps": [
+            50000,
+            100000
+          ],
+          "runtime.seed": 2027,
+          "runtime.steps": 100000
+        },
+        "issues": [],
+        "observed": {
+          "cofitok": {
+            "data.channels": 3,
+            "data.class_conditional": true,
+            "data.dataset": "imagenet_256",
+            "data.image_size": 256,
+            "data.random_horizontal_flip_prob": 0.5,
+            "diffusion.num_train_timesteps": 1000,
+            "diffusion.prediction_target": "epsilon",
+            "diffusion.schedule_type": "cosine",
+            "loss.denoise_path_component_weight": 0.1,
+            "loss.denoise_path_energy_capacity_power": 0.5,
+            "loss.denoise_path_energy_capacity_weight": 0.75,
+            "loss.denoise_path_energy_mode": "hellinger_stable",
+            "loss.denoise_path_energy_weight": 0.15,
+            "loss.denoise_path_prefix_weight": 0.05,
+            "loss.denoise_path_progress_mode": "token_capacity",
+            "loss.denoise_path_progress_power": 1.0,
+            "loss.ema_teacher_consistency_batch_fraction": 0.0625,
+            "loss.ema_teacher_consistency_start_step": 30000,
+            "loss.ema_teacher_consistency_warmup_steps": 10000,
+            "loss.ema_teacher_consistency_weight": 0.25,
+            "loss.epsilon_weight": 1.0,
+            "loss.low_snr_high_frequency_power": 0.5,
+            "loss.low_snr_high_frequency_weight": 0.5,
+            "loss.rollout_consistency_batch_fraction": 0.125,
+            "loss.rollout_consistency_clip_x0": true,
+            "loss.rollout_consistency_mode": "clipped_x0",
+            "loss.rollout_consistency_start_step": 0,
+            "loss.rollout_consistency_timestep_delta": 10,
+            "loss.rollout_consistency_unroll_steps": 2,
+            "loss.rollout_consistency_warmup_steps": 10000,
+            "loss.rollout_consistency_weight": 0.1,
+            "model.base_channels": 128,
+            "model.class_dropout_prob": 0.1,
+            "model.gamma_mode": "fixed_one",
+            "model.image_channels": 3,
+            "model.image_size": 256,
+            "model.num_classes": 1000,
+            "model.predictor_attention_resolutions": [
+              32,
+              16
+            ],
+            "model.predictor_channel_multipliers": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "model.predictor_dropout": 0.0,
+            "model.predictor_gradient_checkpointing": true,
+            "model.predictor_num_heads": 8,
+            "model.predictor_num_res_blocks": 2,
+            "model.predictor_type": "scalable_unet",
+            "model.predictor_use_feedback": true,
+            "model.synthesis_active_token_channels": [],
+            "model.synthesis_kernel_size": 1,
+            "model.synthesis_mode": "fixed_basis",
+            "model.synthesis_token_strides": [],
+            "model.token_channel_schedule": [
+              4,
+              4,
+              8,
+              8,
+              8,
+              1,
+              1,
+              1
+            ],
+            "model.token_channels": 8,
+            "model.token_count": 8,
+            "model.token_spatial_strides": [
+              16,
+              16,
+              8,
+              8,
+              4,
+              1,
+              1,
+              1
+            ],
+            "optimization.betas": [
+              0.9,
+              0.99
+            ],
+            "optimization.ema_decay": 0.9999,
+            "optimization.ema_warmup_steps": 2000,
+            "optimization.grad_clip_norm": 1.0,
+            "optimization.learning_rate": 0.0001,
+            "optimization.min_learning_rate": 1e-05,
+            "optimization.warmup_steps": 1000,
+            "optimization.weight_decay": 0.01,
+            "runtime.allow_tf32": true,
+            "runtime.checkpoint_interval": 5000,
+            "runtime.device": "cuda",
+            "runtime.evaluation_interval": 1000,
+            "runtime.keep_last_checkpoints": 3,
+            "runtime.precision": "bf16",
+            "runtime.protected_checkpoint_steps": [
+              50000,
+              100000
+            ],
+            "runtime.seed": 2027,
+            "runtime.steps": 100000
+          },
+          "dense_identity": {
+            "data.channels": 3,
+            "data.class_conditional": true,
+            "data.dataset": "imagenet_256",
+            "data.image_size": 256,
+            "data.random_horizontal_flip_prob": 0.5,
+            "diffusion.num_train_timesteps": 1000,
+            "diffusion.prediction_target": "epsilon",
+            "diffusion.schedule_type": "cosine",
+            "loss.ema_teacher_consistency_batch_fraction": 0.0625,
+            "loss.ema_teacher_consistency_start_step": 30000,
+            "loss.ema_teacher_consistency_warmup_steps": 10000,
+            "loss.ema_teacher_consistency_weight": 0.25,
+            "loss.epsilon_weight": 1.0,
+            "loss.rollout_consistency_batch_fraction": 0.125,
+            "loss.rollout_consistency_clip_x0": true,
+            "loss.rollout_consistency_mode": "clipped_x0",
+            "loss.rollout_consistency_start_step": 0,
+            "loss.rollout_consistency_timestep_delta": 10,
+            "loss.rollout_consistency_unroll_steps": 2,
+            "loss.rollout_consistency_warmup_steps": 10000,
+            "loss.rollout_consistency_weight": 0.1,
+            "model.base_channels": 128,
+            "model.class_dropout_prob": 0.1,
+            "model.image_channels": 3,
+            "model.image_size": 256,
+            "model.num_classes": 1000,
+            "model.predictor_attention_resolutions": [
+              32,
+              16
+            ],
+            "model.predictor_channel_multipliers": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "model.predictor_dropout": 0.0,
+            "model.predictor_gradient_checkpointing": true,
+            "model.predictor_num_heads": 8,
+            "model.predictor_num_res_blocks": 2,
+            "model.predictor_type": "scalable_unet",
+            "model.predictor_use_feedback": false,
+            "model.synthesis_mode": "dense_identity",
+            "model.token_channel_schedule": [],
+            "model.token_channels": 3,
+            "model.token_count": 1,
+            "model.token_spatial_strides": [],
+            "optimization.betas": [
+              0.9,
+              0.99
+            ],
+            "optimization.ema_decay": 0.9999,
+            "optimization.ema_warmup_steps": 2000,
+            "optimization.grad_clip_norm": 1.0,
+            "optimization.learning_rate": 0.0001,
+            "optimization.min_learning_rate": 1e-05,
+            "optimization.warmup_steps": 1000,
+            "optimization.weight_decay": 0.01,
+            "runtime.allow_tf32": true,
+            "runtime.checkpoint_interval": 5000,
+            "runtime.device": "cuda",
+            "runtime.evaluation_interval": 1000,
+            "runtime.keep_last_checkpoints": 3,
+            "runtime.precision": "bf16",
+            "runtime.protected_checkpoint_steps": [
+              50000,
+              100000
+            ],
+            "runtime.seed": 2027,
+            "runtime.steps": 100000
+          }
+        },
+        "pair_contract": {
+          "dense_nonzero_auxiliary_losses": [],
+          "factorization_model_fields": [
+            "deep_synthesis_depth",
+            "deep_synthesis_hidden_channels",
+            "gamma_mode",
+            "predictor_use_feedback",
+            "synthesis_active_token_channels",
+            "synthesis_kernel_size",
+            "synthesis_mode",
+            "synthesis_token_strides",
+            "token_channel_schedule",
+            "token_channels",
+            "token_count",
+            "token_spatial_strides"
+          ],
+          "identities": {
+            "cofitok_feedback": true,
+            "cofitok_synthesis": "fixed_basis",
+            "cofitok_token_count": 8,
+            "dense_feedback": false,
+            "dense_synthesis": "dense_identity",
+            "dense_token_count": 1
+          },
+          "issues": [],
+          "matched_config_sections": [
+            "data",
+            "diffusion",
+            "runtime",
+            "optimization"
+          ],
+          "mismatched_config_sections": [],
+          "mismatched_shared_model_fields": [],
+          "mismatched_shared_training_loss_fields": [],
+          "primary_epsilon_weight": 1.0,
+          "shared_model_fields": [
+            "base_channels",
+            "class_dropout_prob",
+            "image_channels",
+            "image_size",
+            "num_classes",
+            "predictor_attention_resolutions",
+            "predictor_channel_multipliers",
+            "predictor_depth",
+            "predictor_dropout",
+            "predictor_gradient_checkpointing",
+            "predictor_multiscale_levels",
+            "predictor_num_heads",
+            "predictor_num_res_blocks",
+            "predictor_type"
+          ],
+          "shared_training_loss_fields": [
+            "ema_teacher_consistency_batch_fraction",
+            "ema_teacher_consistency_start_step",
+            "ema_teacher_consistency_warmup_steps",
+            "ema_teacher_consistency_weight",
+            "epsilon_weight",
+            "rollout_consistency_batch_fraction",
+            "rollout_consistency_clip_x0",
+            "rollout_consistency_mode",
+            "rollout_consistency_start_step",
+            "rollout_consistency_timestep_delta",
+            "rollout_consistency_unroll_steps",
+            "rollout_consistency_warmup_steps",
+            "rollout_consistency_weight"
+          ],
+          "valid": true
+        },
+        "schema": "cofitok_generation_training_recipe_v4",
+        "stage": "stability_quality_bridge",
+        "token_layout": {
+          "aggregate_compression": 0.7933884297520661,
+          "aggregate_token_to_dense_ratio": 1.2604166666666667,
+          "channels": [
+            4,
+            4,
+            8,
+            8,
+            8,
+            1,
+            1,
+            1
+          ],
+          "dense_scalar_count": 196608,
+          "full_resolution_channels": 3,
+          "issues": [],
+          "per_token_compression": [
+            192.0,
+            192.0,
+            24.0,
+            24.0,
+            6.0,
+            3.0,
+            3.0,
+            3.0
+          ],
+          "required_full_resolution_channels": 3,
+          "scalar_counts": [
+            1024,
+            1024,
+            8192,
+            8192,
+            32768,
+            65536,
+            65536,
+            65536
+          ],
+          "spatial_sizes": [
+            16,
+            16,
+            32,
+            32,
+            64,
+            256,
+            256,
+            256
+          ],
+          "spatial_strides": [
+            16,
+            16,
+            8,
+            8,
+            4,
+            1,
+            1,
+            1
+          ],
+          "total_scalar_count": 247808
+        },
+        "valid": true
+      }
+    }
+  }
+}

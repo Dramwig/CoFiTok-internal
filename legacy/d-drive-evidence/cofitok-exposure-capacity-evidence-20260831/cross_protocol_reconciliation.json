@@ -1,0 +1,1903 @@
+{
+  "claim_boundary": {
+    "export_authorization_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "generation_advantage_proven": false,
+    "gpu_execution_allowed": false,
+    "process_signals_allowed": false,
+    "promotion_authorization_allowed": false,
+    "quality_or_generation_advantage_claim_allowed": false,
+    "release_authorization_allowed": false,
+    "report_is_promotion_gate": false,
+    "sampling_launch_allowed": false,
+    "training_launch_allowed": false
+  },
+  "comparison": {
+    "generation_advantage_proven": false,
+    "per_method_effects": {
+      "cofitok": {
+        "sample_count_effect_at_ddim100": {
+          "10000_strictly_better": true,
+          "fid_delta_10000_minus_2048": -13.272773329932875
+        },
+        "sampler_step_effect_at_2048": {
+          "ddim100_strictly_better": true,
+          "fid_delta_ddim100_minus_ddim50": -91.32558852317106
+        }
+      },
+      "dense_identity": {
+        "sample_count_effect_at_ddim100": {
+          "10000_strictly_better": true,
+          "fid_delta_10000_minus_2048": -14.391747738779486
+        },
+        "sampler_step_effect_at_2048": {
+          "ddim100_strictly_better": false,
+          "fid_delta_ddim100_minus_ddim50": 2.7286641598251435
+        }
+      }
+    },
+    "protocol_rows": {
+      "ddim100_10000": {
+        "cofitok": {
+          "frechet_inception_distance": 115.26217262363417,
+          "inception_score_mean": 9.755936397830892,
+          "inception_score_std": 0.24562122634637842
+        },
+        "dense_identity": {
+          "frechet_inception_distance": 123.02103114594166,
+          "inception_score_mean": 9.06167118448111,
+          "inception_score_std": 0.3520862446591065
+        },
+        "lower_fid_method": "cofitok"
+      },
+      "ddim100_2048": {
+        "cofitok": {
+          "frechet_inception_distance": 128.53494595356705,
+          "inception_score_mean": 9.033701804425448,
+          "inception_score_std": 0.646652433396563
+        },
+        "dense_identity": {
+          "frechet_inception_distance": 137.41277888472115,
+          "inception_score_mean": 8.482343747808583,
+          "inception_score_std": 0.5248761659969393
+        },
+        "lower_fid_method": "cofitok"
+      },
+      "ddim50_2048": {
+        "cofitok": {
+          "frechet_inception_distance": 219.8605344767381,
+          "inception_score_mean": 4.016042069448239,
+          "inception_score_std": 0.292641479465546
+        },
+        "dense_identity": {
+          "frechet_inception_distance": 134.684114724896,
+          "inception_score_mean": 7.805163250535612,
+          "inception_score_std": 0.30155827479185254
+        },
+        "lower_fid_method": "dense_identity"
+      }
+    },
+    "ranking_reversal_explanation": "sampler_step_effect_dominates_observed_ranking_reversal",
+    "sample_count_changes_matched_ranking": false,
+    "sampler_step_changes_matched_ranking": true,
+    "terminal_protocol_controls_quality_status": true,
+    "terminal_quality_status": "hold"
+  },
+  "completed_at": "2026-08-23T22:17:34.452086+00:00",
+  "derived_ddim100_first_2048": {
+    "cofitok": {
+      "metric_report": {
+        "bytes": 4188,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/100k_cross_protocol_reconciliation_v1_20260824/metrics/cofitok_ddim100_first_2048_metrics.json",
+        "sha256": "b8774b4f7984e056465c9a94936ec29a9448c00ced140749105f0f222e6550fd"
+      },
+      "metrics": {
+        "frechet_inception_distance": 128.53494595356705,
+        "inception_score_mean": 9.033701804425448,
+        "inception_score_std": 0.646652433396563
+      },
+      "paired_ddim50_vs_ddim100_pixel_difference": {
+        "different_pair_count": 2048,
+        "identical_pair_count": 0,
+        "maximum_absolute_channel_difference": 245,
+        "mean_absolute_error_unit_range": 0.09694121326106826,
+        "mean_squared_error_unit_range": 0.015458991438719488,
+        "pair_count": 2048,
+        "peak_signal_to_noise_ratio_db": 18.10818843334038
+      },
+      "subset": {
+        "link_mode": "hardlink_existing_png_view",
+        "new_sampling_performed": false,
+        "source_count": 2048,
+        "source_sample_set_sha256": "ae02e41fada215d19309d585332971e7098e789f826cd0a737f56b8f13a51a48",
+        "status": "verified",
+        "target_count": 2048,
+        "target_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/100k_cross_protocol_reconciliation_v1_20260824/subsets/cofitok/ddim100_first_2048",
+        "target_sample_set_sha256": "ae02e41fada215d19309d585332971e7098e789f826cd0a737f56b8f13a51a48"
+      }
+    },
+    "dense_identity": {
+      "metric_report": {
+        "bytes": 4192,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/100k_cross_protocol_reconciliation_v1_20260824/metrics/dense_identity_ddim100_first_2048_metrics.json",
+        "sha256": "d14965bac8228f4bc40f07657eee6544b23320d1f77a507ad9526206d0ac1360"
+      },
+      "metrics": {
+        "frechet_inception_distance": 137.41277888472115,
+        "inception_score_mean": 8.482343747808583,
+        "inception_score_std": 0.5248761659969393
+      },
+      "paired_ddim50_vs_ddim100_pixel_difference": {
+        "different_pair_count": 2048,
+        "identical_pair_count": 0,
+        "maximum_absolute_channel_difference": 226,
+        "mean_absolute_error_unit_range": 0.03960672195246017,
+        "mean_squared_error_unit_range": 0.002946746276729033,
+        "pair_count": 2048,
+        "peak_signal_to_noise_ratio_db": 25.306572565356326
+      },
+      "subset": {
+        "link_mode": "hardlink_existing_png_view",
+        "new_sampling_performed": false,
+        "source_count": 2048,
+        "source_sample_set_sha256": "5e282a0c1050de97dcd17366fb3b66d651d4500fff0c90a1762f363bd5f1f69a",
+        "status": "verified",
+        "target_count": 2048,
+        "target_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/100k_cross_protocol_reconciliation_v1_20260824/subsets/dense_identity/ddim100_first_2048",
+        "target_sample_set_sha256": "5e282a0c1050de97dcd17366fb3b66d651d4500fff0c90a1762f363bd5f1f69a"
+      }
+    }
+  },
+  "evaluator_runtime_environment": {
+    "device": {
+      "type": "cpu"
+    },
+    "environment_variables": {
+      "CUBLAS_WORKSPACE_CONFIG": null,
+      "CUDA_VISIBLE_DEVICES": "",
+      "PYTHONHASHSEED": "0",
+      "PYTORCH_ALLOC_CONF": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "pillow": "12.2.0",
+      "torch": "2.7.1+cu128",
+      "torchvision": "0.22.1+cu128",
+      "tqdm": "4.67.3"
+    },
+    "platform": {
+      "machine": "x86_64",
+      "release": "5.15.0-78-generic",
+      "system": "Linux"
+    },
+    "project_files": {
+      "pyproject.toml": {
+        "bytes": 791,
+        "path": "pyproject.toml",
+        "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+      },
+      "uv.lock": {
+        "bytes": 363675,
+        "path": "uv.lock",
+        "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+      }
+    },
+    "python": {
+      "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+      "implementation": "CPython",
+      "version": "3.10.20"
+    },
+    "schema_version": 1,
+    "torch": {
+      "cuda_matmul_allow_tf32": false,
+      "cuda_version": "12.8",
+      "cudnn_allow_tf32": true,
+      "cudnn_benchmark": false,
+      "cudnn_version": 90701,
+      "deterministic_algorithms": false,
+      "float32_matmul_precision": "highest",
+      "num_interop_threads": 1,
+      "num_threads": 8,
+      "nvidia_driver_version": null,
+      "version": "2.7.1+cu128"
+    }
+  },
+  "evaluator_runtime_environment_sha256": "08ffe0b809e804c5f61be18e907c26de1c24f25487db50369385f5fcc6ffec20",
+  "implementation": {
+    "metric_package": "torch_fidelity",
+    "metric_version": "0.4.0",
+    "new_model_load_performed": false,
+    "new_sampling_performed": false,
+    "subset_metric_device": "cpu"
+  },
+  "interpretation": {
+    "formal_quality_status_unchanged": true,
+    "generation_advantage_proven": false,
+    "purpose": "Isolate sampler-step and sample-count contributions to the matched 100K FID ranking reversal using only pre-existing PNGs.",
+    "sample_count_contrast": "DDIM-100/first-2048 versus DDIM-100/10000",
+    "sampler_step_contrast": "DDIM-50/2048 versus DDIM-100/first-2048",
+    "terminal_result_remains_authoritative": true
+  },
+  "operational_status": "pass",
+  "role": "generation_100k_cross_protocol_reconciliation",
+  "schema_version": 1,
+  "source_evidence": {
+    "decision": {
+      "bytes": 23074,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/followup_decision_authoritative_verifier_v3_20260824/followup_experiment_decision.json",
+      "sha256": "ae989b2e0b0f06a2b28346aae629f5368079a45a9a5b53d90c2d6a20c137175a"
+    },
+    "evaluator_git": {
+      "branch": "analysis/generation-100k-cross-protocol-reconciliation-v1",
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/100k-cross-protocol-reconciliation-c1a27c5/CoFiTok-internal",
+      "revision": "c1a27c557e81e89d4e015648e9c065924725ce6c",
+      "tracked_dirty": false,
+      "tree": "c97007957138ae890352672e82b33cfead0e88d4"
+    },
+    "methods": {
+      "cofitok": {
+        "checkpoint": {
+          "checkpoint_step": 100000,
+          "dataset_identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+          "integrity_sidecar": {
+            "bytes": 597,
+            "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+            "sha256": "d5dd3ac3afb9c5e1d6facf3ea766700c221f17b22724749056213a55dc19c2d5"
+          },
+          "latest": {
+            "bytes": 667,
+            "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/latest.json",
+            "sha256": "8b5620f78b89c51a32e863f563a6311448a0545ad1bc6c06a1b532cc9eba079c"
+          },
+          "payload": {
+            "bytes": 1010937514,
+            "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+            "sha256": "b36a92229ba2dd021db9c7585970ddda1d17d1919ca6b0eec0362b06d4bd462e"
+          },
+          "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+          "status": "physically_verified",
+          "training_git": {
+            "branch": "scale/generation-stability-quality-bridge-100k",
+            "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+            "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+            "tracked_dirty": false,
+            "tree": "6cef27723196fd363379bca2e7b85b1678ebd777"
+          }
+        },
+        "method": "cofitok",
+        "prefix_budget": 8,
+        "protocols": {
+          "ddim100_10000": {
+            "paths": {
+              "generated": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/prefix_8",
+              "metrics_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/metrics/generation_metrics_report.json",
+              "root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15",
+              "sampling_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_report.json"
+            },
+            "sample_set_sha256": "7f57ee4a874667b17085df203503443440a84124719a53da31db726a1efaff98",
+            "sampling_provenance": {
+              "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+              "checkpoint_integrity_manifest": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+              "checkpoint_sha256": "b36a92229ba2dd021db9c7585970ddda1d17d1919ca6b0eec0362b06d4bd462e",
+              "checkpoint_step": 100000,
+              "git": {
+                "branch": "scale/generation-stability-quality-bridge-100k",
+                "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+                "tracked_dirty": false
+              },
+              "image_shape": [
+                3,
+                256,
+                256
+              ],
+              "manifest_identity": {
+                "bytes": 4860,
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_manifest.json",
+                "sha256": "d87f96a455664454fd790d4553a0a01494ee6580217e7755b0bb98be2a80e306"
+              },
+              "report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_report.json",
+              "report_identity": {
+                "bytes": 5507,
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_report.json",
+                "sha256": "79d5ab69283d171cf0390671d3204f9eeaf13a07f80354527b02335128069a44"
+              },
+              "runtime_environment": {
+                "device": {
+                  "capability": [
+                    12,
+                    0
+                  ],
+                  "multi_processor_count": 188,
+                  "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+                  "total_memory_bytes": 101976440832,
+                  "type": "cuda"
+                },
+                "environment_variables": {
+                  "CUBLAS_WORKSPACE_CONFIG": null,
+                  "CUDA_VISIBLE_DEVICES": null,
+                  "PYTHONHASHSEED": null,
+                  "PYTORCH_ALLOC_CONF": null
+                },
+                "packages": {
+                  "numpy": "2.2.6",
+                  "pillow": "12.2.0",
+                  "torch": "2.7.1+cu128",
+                  "torchvision": "0.22.1+cu128",
+                  "tqdm": "4.67.3"
+                },
+                "platform": {
+                  "machine": "x86_64",
+                  "release": "5.15.0-78-generic",
+                  "system": "Linux"
+                },
+                "project_files": {
+                  "pyproject.toml": {
+                    "bytes": 791,
+                    "path": "pyproject.toml",
+                    "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+                  },
+                  "uv.lock": {
+                    "bytes": 363675,
+                    "path": "uv.lock",
+                    "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+                  }
+                },
+                "python": {
+                  "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+                  "implementation": "CPython",
+                  "version": "3.10.20"
+                },
+                "schema_version": 1,
+                "torch": {
+                  "cuda_matmul_allow_tf32": true,
+                  "cuda_version": "12.8",
+                  "cudnn_allow_tf32": true,
+                  "cudnn_benchmark": false,
+                  "cudnn_version": 90701,
+                  "deterministic_algorithms": false,
+                  "float32_matmul_precision": "high",
+                  "num_interop_threads": 104,
+                  "num_threads": 104,
+                  "nvidia_driver_version": "590.44.01",
+                  "version": "2.7.1+cu128"
+                }
+              },
+              "runtime_environment_sha256": "8b424f8f4095a919daee99d1345c7657e94ca133f19369958410f793a35b1bb1",
+              "sample_set_sha256": "7f57ee4a874667b17085df203503443440a84124719a53da31db726a1efaff98",
+              "sampling": {
+                "actual_timesteps": [
+                  999,
+                  989,
+                  979,
+                  969,
+                  959,
+                  949,
+                  938,
+                  928,
+                  918,
+                  908,
+                  898,
+                  888,
+                  878,
+                  868,
+                  858,
+                  848,
+                  838,
+                  827,
+                  817,
+                  807,
+                  797,
+                  787,
+                  777,
+                  767,
+                  757,
+                  747,
+                  737,
+                  727,
+                  716,
+                  706,
+                  696,
+                  686,
+                  676,
+                  666,
+                  656,
+                  646,
+                  636,
+                  626,
+                  616,
+                  605,
+                  595,
+                  585,
+                  575,
+                  565,
+                  555,
+                  545,
+                  535,
+                  525,
+                  515,
+                  505,
+                  494,
+                  484,
+                  474,
+                  464,
+                  454,
+                  444,
+                  434,
+                  424,
+                  414,
+                  404,
+                  394,
+                  383,
+                  373,
+                  363,
+                  353,
+                  343,
+                  333,
+                  323,
+                  313,
+                  303,
+                  293,
+                  283,
+                  272,
+                  262,
+                  252,
+                  242,
+                  232,
+                  222,
+                  212,
+                  202,
+                  192,
+                  182,
+                  172,
+                  161,
+                  151,
+                  141,
+                  131,
+                  121,
+                  111,
+                  101,
+                  91,
+                  81,
+                  71,
+                  61,
+                  50,
+                  40,
+                  30,
+                  20,
+                  10,
+                  0
+                ],
+                "batch_size": 32,
+                "cfg_batch_mode": "batched",
+                "class_schedule": "balanced_modulo",
+                "clip_x0": true,
+                "eta": 0.0,
+                "guidance_rescale": 0.0,
+                "guidance_scale": 1.5,
+                "image_shape": [
+                  3,
+                  256,
+                  256
+                ],
+                "inference_api": {
+                  "name": "cofitok.generation.GenerationSession",
+                  "version": 1
+                },
+                "num_samples": 10000,
+                "num_train_timesteps": 1000,
+                "precision": "bf16",
+                "prefix_budgets": [
+                  8
+                ],
+                "protocol_schema": "cofitok_ddim_sampling_v1",
+                "random_stream": {
+                  "batch_size_invariant": true,
+                  "prefix_budgets_share_stream": true,
+                  "resume_index_invariant": true,
+                  "scope": "per_global_sample_index",
+                  "seed_formula": "(seed + global_index) mod 2^63"
+                },
+                "sample_set_digest": {
+                  "algorithm": "sha256",
+                  "framing": "filename_utf8_nul_file_bytes_nul"
+                },
+                "sample_steps": 100,
+                "sampler": "ddim",
+                "seed": 0,
+                "start_index": 0
+              },
+              "sampling_progress": {
+                "completed_samples": 10000,
+                "cumulative_elapsed_seconds": 21087.33664393425,
+                "identity": {
+                  "bytes": 762,
+                  "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_progress.json",
+                  "sha256": "ee9442c3d96f80ba15284b2992c6d0d36816a3bbe7485115289e55a8b1b9afa1"
+                },
+                "invocation": 1,
+                "report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_progress.json",
+                "status": "completed"
+              },
+              "sampling_protocol_contract": {
+                "actual": {
+                  "actual_timesteps": [
+                    999,
+                    989,
+                    979,
+                    969,
+                    959,
+                    949,
+                    938,
+                    928,
+                    918,
+                    908,
+                    898,
+                    888,
+                    878,
+                    868,
+                    858,
+                    848,
+                    838,
+                    827,
+                    817,
+                    807,
+                    797,
+                    787,
+                    777,
+                    767,
+                    757,
+                    747,
+                    737,
+                    727,
+                    716,
+                    706,
+                    696,
+                    686,
+                    676,
+                    666,
+                    656,
+                    646,
+                    636,
+                    626,
+                    616,
+                    605,
+                    595,
+                    585,
+                    575,
+                    565,
+                    555,
+                    545,
+                    535,
+                    525,
+                    515,
+                    505,
+                    494,
+                    484,
+                    474,
+                    464,
+                    454,
+                    444,
+                    434,
+                    424,
+                    414,
+                    404,
+                    394,
+                    383,
+                    373,
+                    363,
+                    353,
+                    343,
+                    333,
+                    323,
+                    313,
+                    303,
+                    293,
+                    283,
+                    272,
+                    262,
+                    252,
+                    242,
+                    232,
+                    222,
+                    212,
+                    202,
+                    192,
+                    182,
+                    172,
+                    161,
+                    151,
+                    141,
+                    131,
+                    121,
+                    111,
+                    101,
+                    91,
+                    81,
+                    71,
+                    61,
+                    50,
+                    40,
+                    30,
+                    20,
+                    10,
+                    0
+                  ],
+                  "cfg_batch_mode": "batched",
+                  "class_schedule": "balanced_modulo",
+                  "clip_x0": true,
+                  "eta": 0.0,
+                  "guidance_rescale": 0.0,
+                  "guidance_scale": 1.5,
+                  "inference_api": {
+                    "name": "cofitok.generation.GenerationSession",
+                    "version": 1
+                  },
+                  "num_samples": 10000,
+                  "num_train_timesteps": 1000,
+                  "precision": "bf16",
+                  "protocol_schema": "cofitok_ddim_sampling_v1",
+                  "random_stream": {
+                    "batch_size_invariant": true,
+                    "prefix_budgets_share_stream": true,
+                    "resume_index_invariant": true,
+                    "scope": "per_global_sample_index",
+                    "seed_formula": "(seed + global_index) mod 2^63"
+                  },
+                  "sample_steps": 100,
+                  "sampler": "ddim",
+                  "seed": 0,
+                  "start_index": 0
+                },
+                "expected": {
+                  "inference_api": {
+                    "name": "cofitok.generation.GenerationSession",
+                    "version": 1
+                  },
+                  "protocol_schema": "cofitok_ddim_sampling_v1",
+                  "sampler": "ddim"
+                },
+                "issues": [],
+                "stage": null,
+                "valid": true
+              },
+              "selected_prefix_budget": 8,
+              "weights": "ema"
+            },
+            "source_metrics": {
+              "identity": {
+                "bytes": 14180,
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/metrics/generation_metrics_report.json",
+                "sha256": "4dc4c6afd68f9e9f8ac335bf84108b8134d5a6404c316079c1185330f67f76dc"
+              },
+              "implementation": {
+                "package": "torch_fidelity",
+                "version": "0.4.0"
+              },
+              "metrics": {
+                "frechet_inception_distance": 115.26217262363417,
+                "inception_score_mean": 9.755936397830892,
+                "inception_score_std": 0.24562122634637842
+              },
+              "parameters": {
+                "batch_size": 64,
+                "cache_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/eval_cache/torch_fidelity",
+                "cpu_requested": false,
+                "cuda": true,
+                "min_samples": 10000,
+                "prc_batch_size": 10000,
+                "precision_recall_enabled": true,
+                "real_cache_name": "imagenet256_val_50k_torch_fidelity_v04__cofitok_19ace4e37bee2fca",
+                "requested_real_cache_name": "imagenet256_val_50k_torch_fidelity_v04",
+                "samples_find_deep": true,
+                "samples_shuffle": false,
+                "seed": 2027
+              },
+              "real_set": {
+                "digest_schema": "cofitok_image_tree_sha256_v1",
+                "image_count": 50000,
+                "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+                "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f"
+              },
+              "runtime_environment_sha256": "0cfe4f0bf03a70cff136a084f36cce8daaaf0316d4a7fdb818d912257cc302f2"
+            }
+          },
+          "ddim100_first_2048": {
+            "new_sampling_performed": false,
+            "selected_index_interval": [
+              0,
+              2047
+            ],
+            "selection_rule": "existing_ddim100_zero_based_indices_000000_through_002047",
+            "source_sample_set_sha256": "ae02e41fada215d19309d585332971e7098e789f826cd0a737f56b8f13a51a48"
+          },
+          "ddim50_2048": {
+            "paths": {
+              "generated": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/prefix_8",
+              "metrics_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/metrics/generation_metrics_report.json",
+              "root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15",
+              "sampling_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/sampling_report.json"
+            },
+            "sample_set_sha256": "775b91ff6b111cafa61b604a1846f81658805b26493f1f5e1e6686e74edd2eb0",
+            "sampling_provenance": {
+              "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+              "checkpoint_integrity_manifest": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+              "checkpoint_sha256": "b36a92229ba2dd021db9c7585970ddda1d17d1919ca6b0eec0362b06d4bd462e",
+              "checkpoint_step": 100000,
+              "git": {
+                "branch": "scale/generation-stability-quality-bridge-100k",
+                "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+                "tracked_dirty": false
+              },
+              "image_shape": [
+                3,
+                256,
+                256
+              ],
+              "manifest_identity": {
+                "bytes": 4322,
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/sampling_manifest.json",
+                "sha256": "551f70f3ee5ed482f6bc2cded2310296c8dbe5aded36216ef40adaea29371ec8"
+              },
+              "report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/sampling_report.json",
+              "report_identity": {
+                "bytes": 4979,
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/sampling_report.json",
+                "sha256": "11d2af3597c0222583743c447480f73a439476a510c5b41123b2190af216ab99"
+              },
+              "runtime_environment": {
+                "device": {
+                  "capability": [
+                    12,
+                    0
+                  ],
+                  "multi_processor_count": 188,
+                  "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+                  "total_memory_bytes": 101976440832,
+                  "type": "cuda"
+                },
+                "environment_variables": {
+                  "CUBLAS_WORKSPACE_CONFIG": null,
+                  "CUDA_VISIBLE_DEVICES": null,
+                  "PYTHONHASHSEED": null,
+                  "PYTORCH_ALLOC_CONF": null
+                },
+                "packages": {
+                  "numpy": "2.2.6",
+                  "pillow": "12.2.0",
+                  "torch": "2.7.1+cu128",
+                  "torchvision": "0.22.1+cu128",
+                  "tqdm": "4.67.3"
+                },
+                "platform": {
+                  "machine": "x86_64",
+                  "release": "5.15.0-78-generic",
+                  "system": "Linux"
+                },
+                "project_files": {
+                  "pyproject.toml": {
+                    "bytes": 791,
+                    "path": "pyproject.toml",
+                    "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+                  },
+                  "uv.lock": {
+                    "bytes": 363675,
+                    "path": "uv.lock",
+                    "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+                  }
+                },
+                "python": {
+                  "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+                  "implementation": "CPython",
+                  "version": "3.10.20"
+                },
+                "schema_version": 1,
+                "torch": {
+                  "cuda_matmul_allow_tf32": true,
+                  "cuda_version": "12.8",
+                  "cudnn_allow_tf32": true,
+                  "cudnn_benchmark": false,
+                  "cudnn_version": 90701,
+                  "deterministic_algorithms": false,
+                  "float32_matmul_precision": "high",
+                  "num_interop_threads": 104,
+                  "num_threads": 104,
+                  "nvidia_driver_version": "590.44.01",
+                  "version": "2.7.1+cu128"
+                }
+              },
+              "runtime_environment_sha256": "8b424f8f4095a919daee99d1345c7657e94ca133f19369958410f793a35b1bb1",
+              "sample_set_sha256": "775b91ff6b111cafa61b604a1846f81658805b26493f1f5e1e6686e74edd2eb0",
+              "sampling": {
+                "actual_timesteps": [
+                  999,
+                  979,
+                  958,
+                  938,
+                  917,
+                  897,
+                  877,
+                  856,
+                  836,
+                  816,
+                  795,
+                  775,
+                  754,
+                  734,
+                  714,
+                  693,
+                  673,
+                  652,
+                  632,
+                  612,
+                  591,
+                  571,
+                  550,
+                  530,
+                  510,
+                  489,
+                  469,
+                  449,
+                  428,
+                  408,
+                  387,
+                  367,
+                  347,
+                  326,
+                  306,
+                  285,
+                  265,
+                  245,
+                  224,
+                  204,
+                  183,
+                  163,
+                  143,
+                  122,
+                  102,
+                  82,
+                  61,
+                  41,
+                  20,
+                  0
+                ],
+                "batch_size": 32,
+                "cfg_batch_mode": "batched",
+                "class_schedule": "balanced_modulo",
+                "clip_x0": true,
+                "eta": 0.0,
+                "guidance_rescale": 0.0,
+                "guidance_scale": 1.5,
+                "image_shape": [
+                  3,
+                  256,
+                  256
+                ],
+                "inference_api": {
+                  "name": "cofitok.generation.GenerationSession",
+                  "version": 1
+                },
+                "num_samples": 2048,
+                "num_train_timesteps": 1000,
+                "precision": "bf16",
+                "prefix_budgets": [
+                  8
+                ],
+                "protocol_schema": "cofitok_ddim_sampling_v1",
+                "random_stream": {
+                  "batch_size_invariant": true,
+                  "prefix_budgets_share_stream": true,
+                  "resume_index_invariant": true,
+                  "scope": "per_global_sample_index",
+                  "seed_formula": "(seed + global_index) mod 2^63"
+                },
+                "sample_set_digest": {
+                  "algorithm": "sha256",
+                  "framing": "filename_utf8_nul_file_bytes_nul"
+                },
+                "sample_steps": 50,
+                "sampler": "ddim",
+                "seed": 0,
+                "start_index": 0
+              },
+              "sampling_progress": {
+                "completed_samples": 2048,
+                "cumulative_elapsed_seconds": 2184.8529090881348,
+                "identity": {
+                  "bytes": 761,
+                  "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/sampling_progress.json",
+                  "sha256": "ca64ff7ab91980d07ecd38c9a2499c064863000f0d6de4ea0ca33f346947c5fc"
+                },
+                "invocation": 1,
+                "report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/sampling_progress.json",
+                "status": "completed"
+              },
+              "sampling_protocol_contract": {
+                "actual": {
+                  "actual_timesteps": [
+                    999,
+                    979,
+                    958,
+                    938,
+                    917,
+                    897,
+                    877,
+                    856,
+                    836,
+                    816,
+                    795,
+                    775,
+                    754,
+                    734,
+                    714,
+                    693,
+                    673,
+                    652,
+                    632,
+                    612,
+                    591,
+                    571,
+                    550,
+                    530,
+                    510,
+                    489,
+                    469,
+                    449,
+                    428,
+                    408,
+                    387,
+                    367,
+                    347,
+                    326,
+                    306,
+                    285,
+                    265,
+                    245,
+                    224,
+                    204,
+                    183,
+                    163,
+                    143,
+                    122,
+                    102,
+                    82,
+                    61,
+                    41,
+                    20,
+                    0
+                  ],
+                  "cfg_batch_mode": "batched",
+                  "class_schedule": "balanced_modulo",
+                  "clip_x0": true,
+                  "eta": 0.0,
+                  "guidance_rescale": 0.0,
+                  "guidance_scale": 1.5,
+                  "inference_api": {
+                    "name": "cofitok.generation.GenerationSession",
+                    "version": 1
+                  },
+                  "num_samples": 2048,
+                  "num_train_timesteps": 1000,
+                  "precision": "bf16",
+                  "protocol_schema": "cofitok_ddim_sampling_v1",
+                  "random_stream": {
+                    "batch_size_invariant": true,
+                    "prefix_budgets_share_stream": true,
+                    "resume_index_invariant": true,
+                    "scope": "per_global_sample_index",
+                    "seed_formula": "(seed + global_index) mod 2^63"
+                  },
+                  "sample_steps": 50,
+                  "sampler": "ddim",
+                  "seed": 0,
+                  "start_index": 0
+                },
+                "expected": {
+                  "inference_api": {
+                    "name": "cofitok.generation.GenerationSession",
+                    "version": 1
+                  },
+                  "protocol_schema": "cofitok_ddim_sampling_v1",
+                  "sampler": "ddim"
+                },
+                "issues": [],
+                "stage": null,
+                "valid": true
+              },
+              "selected_prefix_budget": 8,
+              "weights": "ema"
+            },
+            "source_metrics": {
+              "identity": {
+                "bytes": 12754,
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/metrics/generation_metrics_report.json",
+                "sha256": "5d63c697f198a649e83e1338fcac09253f298b226d69db3be814e1ba500f327a"
+              },
+              "implementation": {
+                "package": "torch_fidelity",
+                "version": "0.4.0"
+              },
+              "metrics": {
+                "frechet_inception_distance": 219.8605344767381,
+                "inception_score_mean": 4.016042069448239,
+                "inception_score_std": 0.292641479465546
+              },
+              "parameters": {
+                "batch_size": 64,
+                "cache_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/eval_cache/torch_fidelity",
+                "cpu_requested": false,
+                "cuda": true,
+                "min_samples": 2048,
+                "prc_batch_size": 10000,
+                "precision_recall_enabled": false,
+                "real_cache_name": "imagenet256_val_50k_torch_fidelity_v04__cofitok_19ace4e37bee2fca",
+                "requested_real_cache_name": "imagenet256_val_50k_torch_fidelity_v04",
+                "samples_find_deep": true,
+                "samples_shuffle": false,
+                "seed": 2027
+              },
+              "real_set": {
+                "digest_schema": "cofitok_image_tree_sha256_v1",
+                "image_count": 50000,
+                "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+                "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f"
+              },
+              "runtime_environment_sha256": "0cfe4f0bf03a70cff136a084f36cce8daaaf0316d4a7fdb818d912257cc302f2"
+            }
+          }
+        },
+        "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher"
+      },
+      "dense_identity": {
+        "checkpoint": {
+          "checkpoint_step": 100000,
+          "dataset_identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+          "integrity_sidecar": {
+            "bytes": 597,
+            "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+            "sha256": "466310f75d941ecd909f22c245fe9db885cc623e8f0a6085ee3b254a0d2dd06a"
+          },
+          "latest": {
+            "bytes": 667,
+            "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/latest.json",
+            "sha256": "6da767b813dacc206a8a7e7de1aae05b6e8eacb61d742c6de816d4689de97efd"
+          },
+          "payload": {
+            "bytes": 1010735510,
+            "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+            "sha256": "b6586cc906a9c38bbf9d592f5f6169b7a37a8d3aa485ca4879021fa840943d0b"
+          },
+          "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e",
+          "status": "physically_verified",
+          "training_git": {
+            "branch": "scale/generation-stability-quality-bridge-100k",
+            "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+            "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+            "tracked_dirty": false,
+            "tree": "6cef27723196fd363379bca2e7b85b1678ebd777"
+          }
+        },
+        "method": "dense_identity",
+        "prefix_budget": 1,
+        "protocols": {
+          "ddim100_10000": {
+            "paths": {
+              "generated": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/prefix_1",
+              "metrics_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/metrics/generation_metrics_report.json",
+              "root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15",
+              "sampling_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_report.json"
+            },
+            "sample_set_sha256": "3fc905a55dc368ddf268278c04963c5933b3e783f4cabd872762135b6345bdaf",
+            "sampling_provenance": {
+              "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+              "checkpoint_integrity_manifest": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+              "checkpoint_sha256": "b6586cc906a9c38bbf9d592f5f6169b7a37a8d3aa485ca4879021fa840943d0b",
+              "checkpoint_step": 100000,
+              "git": {
+                "branch": "scale/generation-stability-quality-bridge-100k",
+                "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+                "tracked_dirty": false
+              },
+              "image_shape": [
+                3,
+                256,
+                256
+              ],
+              "manifest_identity": {
+                "bytes": 4827,
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_manifest.json",
+                "sha256": "28d1fdd70e73a2933a2628330c5b174af7944571669a8f88b625f0ec6c6b21c9"
+              },
+              "report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_report.json",
+              "report_identity": {
+                "bytes": 5463,
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_report.json",
+                "sha256": "5cb1e0f1f90313101d65194058eaf78fb6dcc8545ca048b2c5b48f509d79c235"
+              },
+              "runtime_environment": {
+                "device": {
+                  "capability": [
+                    12,
+                    0
+                  ],
+                  "multi_processor_count": 188,
+                  "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+                  "total_memory_bytes": 101976440832,
+                  "type": "cuda"
+                },
+                "environment_variables": {
+                  "CUBLAS_WORKSPACE_CONFIG": null,
+                  "CUDA_VISIBLE_DEVICES": null,
+                  "PYTHONHASHSEED": null,
+                  "PYTORCH_ALLOC_CONF": null
+                },
+                "packages": {
+                  "numpy": "2.2.6",
+                  "pillow": "12.2.0",
+                  "torch": "2.7.1+cu128",
+                  "torchvision": "0.22.1+cu128",
+                  "tqdm": "4.67.3"
+                },
+                "platform": {
+                  "machine": "x86_64",
+                  "release": "5.15.0-78-generic",
+                  "system": "Linux"
+                },
+                "project_files": {
+                  "pyproject.toml": {
+                    "bytes": 791,
+                    "path": "pyproject.toml",
+                    "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+                  },
+                  "uv.lock": {
+                    "bytes": 363675,
+                    "path": "uv.lock",
+                    "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+                  }
+                },
+                "python": {
+                  "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+                  "implementation": "CPython",
+                  "version": "3.10.20"
+                },
+                "schema_version": 1,
+                "torch": {
+                  "cuda_matmul_allow_tf32": true,
+                  "cuda_version": "12.8",
+                  "cudnn_allow_tf32": true,
+                  "cudnn_benchmark": false,
+                  "cudnn_version": 90701,
+                  "deterministic_algorithms": false,
+                  "float32_matmul_precision": "high",
+                  "num_interop_threads": 104,
+                  "num_threads": 104,
+                  "nvidia_driver_version": "590.44.01",
+                  "version": "2.7.1+cu128"
+                }
+              },
+              "runtime_environment_sha256": "8b424f8f4095a919daee99d1345c7657e94ca133f19369958410f793a35b1bb1",
+              "sample_set_sha256": "3fc905a55dc368ddf268278c04963c5933b3e783f4cabd872762135b6345bdaf",
+              "sampling": {
+                "actual_timesteps": [
+                  999,
+                  989,
+                  979,
+                  969,
+                  959,
+                  949,
+                  938,
+                  928,
+                  918,
+                  908,
+                  898,
+                  888,
+                  878,
+                  868,
+                  858,
+                  848,
+                  838,
+                  827,
+                  817,
+                  807,
+                  797,
+                  787,
+                  777,
+                  767,
+                  757,
+                  747,
+                  737,
+                  727,
+                  716,
+                  706,
+                  696,
+                  686,
+                  676,
+                  666,
+                  656,
+                  646,
+                  636,
+                  626,
+                  616,
+                  605,
+                  595,
+                  585,
+                  575,
+                  565,
+                  555,
+                  545,
+                  535,
+                  525,
+                  515,
+                  505,
+                  494,
+                  484,
+                  474,
+                  464,
+                  454,
+                  444,
+                  434,
+                  424,
+                  414,
+                  404,
+                  394,
+                  383,
+                  373,
+                  363,
+                  353,
+                  343,
+                  333,
+                  323,
+                  313,
+                  303,
+                  293,
+                  283,
+                  272,
+                  262,
+                  252,
+                  242,
+                  232,
+                  222,
+                  212,
+                  202,
+                  192,
+                  182,
+                  172,
+                  161,
+                  151,
+                  141,
+                  131,
+                  121,
+                  111,
+                  101,
+                  91,
+                  81,
+                  71,
+                  61,
+                  50,
+                  40,
+                  30,
+                  20,
+                  10,
+                  0
+                ],
+                "batch_size": 32,
+                "cfg_batch_mode": "batched",
+                "class_schedule": "balanced_modulo",
+                "clip_x0": true,
+                "eta": 0.0,
+                "guidance_rescale": 0.0,
+                "guidance_scale": 1.5,
+                "image_shape": [
+                  3,
+                  256,
+                  256
+                ],
+                "inference_api": {
+                  "name": "cofitok.generation.GenerationSession",
+                  "version": 1
+                },
+                "num_samples": 10000,
+                "num_train_timesteps": 1000,
+                "precision": "bf16",
+                "prefix_budgets": [
+                  1
+                ],
+                "protocol_schema": "cofitok_ddim_sampling_v1",
+                "random_stream": {
+                  "batch_size_invariant": true,
+                  "prefix_budgets_share_stream": true,
+                  "resume_index_invariant": true,
+                  "scope": "per_global_sample_index",
+                  "seed_formula": "(seed + global_index) mod 2^63"
+                },
+                "sample_set_digest": {
+                  "algorithm": "sha256",
+                  "framing": "filename_utf8_nul_file_bytes_nul"
+                },
+                "sample_steps": 100,
+                "sampler": "ddim",
+                "seed": 0,
+                "start_index": 0
+              },
+              "sampling_progress": {
+                "completed_samples": 10000,
+                "cumulative_elapsed_seconds": 19182.39761376381,
+                "identity": {
+                  "bytes": 762,
+                  "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_progress.json",
+                  "sha256": "929603ff47dc4a8e0a59855b506a6e5240bedfdacbe92825a5cb3a5cd98b5173"
+                },
+                "invocation": 1,
+                "report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/sampling_progress.json",
+                "status": "completed"
+              },
+              "sampling_protocol_contract": {
+                "actual": {
+                  "actual_timesteps": [
+                    999,
+                    989,
+                    979,
+                    969,
+                    959,
+                    949,
+                    938,
+                    928,
+                    918,
+                    908,
+                    898,
+                    888,
+                    878,
+                    868,
+                    858,
+                    848,
+                    838,
+                    827,
+                    817,
+                    807,
+                    797,
+                    787,
+                    777,
+                    767,
+                    757,
+                    747,
+                    737,
+                    727,
+                    716,
+                    706,
+                    696,
+                    686,
+                    676,
+                    666,
+                    656,
+                    646,
+                    636,
+                    626,
+                    616,
+                    605,
+                    595,
+                    585,
+                    575,
+                    565,
+                    555,
+                    545,
+                    535,
+                    525,
+                    515,
+                    505,
+                    494,
+                    484,
+                    474,
+                    464,
+                    454,
+                    444,
+                    434,
+                    424,
+                    414,
+                    404,
+                    394,
+                    383,
+                    373,
+                    363,
+                    353,
+                    343,
+                    333,
+                    323,
+                    313,
+                    303,
+                    293,
+                    283,
+                    272,
+                    262,
+                    252,
+                    242,
+                    232,
+                    222,
+                    212,
+                    202,
+                    192,
+                    182,
+                    172,
+                    161,
+                    151,
+                    141,
+                    131,
+                    121,
+                    111,
+                    101,
+                    91,
+                    81,
+                    71,
+                    61,
+                    50,
+                    40,
+                    30,
+                    20,
+                    10,
+                    0
+                  ],
+                  "cfg_batch_mode": "batched",
+                  "class_schedule": "balanced_modulo",
+                  "clip_x0": true,
+                  "eta": 0.0,
+                  "guidance_rescale": 0.0,
+                  "guidance_scale": 1.5,
+                  "inference_api": {
+                    "name": "cofitok.generation.GenerationSession",
+                    "version": 1
+                  },
+                  "num_samples": 10000,
+                  "num_train_timesteps": 1000,
+                  "precision": "bf16",
+                  "protocol_schema": "cofitok_ddim_sampling_v1",
+                  "random_stream": {
+                    "batch_size_invariant": true,
+                    "prefix_budgets_share_stream": true,
+                    "resume_index_invariant": true,
+                    "scope": "per_global_sample_index",
+                    "seed_formula": "(seed + global_index) mod 2^63"
+                  },
+                  "sample_steps": 100,
+                  "sampler": "ddim",
+                  "seed": 0,
+                  "start_index": 0
+                },
+                "expected": {
+                  "inference_api": {
+                    "name": "cofitok.generation.GenerationSession",
+                    "version": 1
+                  },
+                  "protocol_schema": "cofitok_ddim_sampling_v1",
+                  "sampler": "ddim"
+                },
+                "issues": [],
+                "stage": null,
+                "valid": true
+              },
+              "selected_prefix_budget": 1,
+              "weights": "ema"
+            },
+            "source_metrics": {
+              "identity": {
+                "bytes": 14057,
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/metrics/generation_metrics_report.json",
+                "sha256": "b59f33f98a34906a0c7d97767728595f990cc0f52838f51fa9f3cc18bf7acfba"
+              },
+              "implementation": {
+                "package": "torch_fidelity",
+                "version": "0.4.0"
+              },
+              "metrics": {
+                "frechet_inception_distance": 123.02103114594166,
+                "inception_score_mean": 9.06167118448111,
+                "inception_score_std": 0.3520862446591065
+              },
+              "parameters": {
+                "batch_size": 64,
+                "cache_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/eval_cache/torch_fidelity",
+                "cpu_requested": false,
+                "cuda": true,
+                "min_samples": 10000,
+                "prc_batch_size": 10000,
+                "precision_recall_enabled": true,
+                "real_cache_name": "imagenet256_val_50k_torch_fidelity_v04__cofitok_19ace4e37bee2fca",
+                "requested_real_cache_name": "imagenet256_val_50k_torch_fidelity_v04",
+                "samples_find_deep": true,
+                "samples_shuffle": false,
+                "seed": 2027
+              },
+              "real_set": {
+                "digest_schema": "cofitok_image_tree_sha256_v1",
+                "image_count": 50000,
+                "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+                "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f"
+              },
+              "runtime_environment_sha256": "0cfe4f0bf03a70cff136a084f36cce8daaaf0316d4a7fdb818d912257cc302f2"
+            }
+          },
+          "ddim100_first_2048": {
+            "new_sampling_performed": false,
+            "selected_index_interval": [
+              0,
+              2047
+            ],
+            "selection_rule": "existing_ddim100_zero_based_indices_000000_through_002047",
+            "source_sample_set_sha256": "5e282a0c1050de97dcd17366fb3b66d651d4500fff0c90a1762f363bd5f1f69a"
+          },
+          "ddim50_2048": {
+            "paths": {
+              "generated": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/prefix_1",
+              "metrics_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/metrics/generation_metrics_report.json",
+              "root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15",
+              "sampling_report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/sampling_report.json"
+            },
+            "sample_set_sha256": "04253ea319cdf125b5f1df49b972c9529f1ff0613ca1e92dcd5e8d83ac6a7771",
+            "sampling_provenance": {
+              "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+              "checkpoint_integrity_manifest": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+              "checkpoint_sha256": "b6586cc906a9c38bbf9d592f5f6169b7a37a8d3aa485ca4879021fa840943d0b",
+              "checkpoint_step": 100000,
+              "git": {
+                "branch": "scale/generation-stability-quality-bridge-100k",
+                "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+                "tracked_dirty": false
+              },
+              "image_shape": [
+                3,
+                256,
+                256
+              ],
+              "manifest_identity": {
+                "bytes": 4289,
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/sampling_manifest.json",
+                "sha256": "9b62c6b1f395530bf68c9879b153d778cf9f55f097134267fdb2530d39fb3ea2"
+              },
+              "report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/sampling_report.json",
+              "report_identity": {
+                "bytes": 4935,
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/sampling_report.json",
+                "sha256": "b1a9a075ea4edb448469533558b5049ec8ae815c126825a6606c3a1880f27cc0"
+              },
+              "runtime_environment": {
+                "device": {
+                  "capability": [
+                    12,
+                    0
+                  ],
+                  "multi_processor_count": 188,
+                  "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+                  "total_memory_bytes": 101976440832,
+                  "type": "cuda"
+                },
+                "environment_variables": {
+                  "CUBLAS_WORKSPACE_CONFIG": null,
+                  "CUDA_VISIBLE_DEVICES": null,
+                  "PYTHONHASHSEED": null,
+                  "PYTORCH_ALLOC_CONF": null
+                },
+                "packages": {
+                  "numpy": "2.2.6",
+                  "pillow": "12.2.0",
+                  "torch": "2.7.1+cu128",
+                  "torchvision": "0.22.1+cu128",
+                  "tqdm": "4.67.3"
+                },
+                "platform": {
+                  "machine": "x86_64",
+                  "release": "5.15.0-78-generic",
+                  "system": "Linux"
+                },
+                "project_files": {
+                  "pyproject.toml": {
+                    "bytes": 791,
+                    "path": "pyproject.toml",
+                    "sha256": "ee9d38e4bb5d799d5933bd79cc123b38e5fc9c8f73d62314cf9bbeced0f82c50"
+                  },
+                  "uv.lock": {
+                    "bytes": 363675,
+                    "path": "uv.lock",
+                    "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+                  }
+                },
+                "python": {
+                  "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+                  "implementation": "CPython",
+                  "version": "3.10.20"
+                },
+                "schema_version": 1,
+                "torch": {
+                  "cuda_matmul_allow_tf32": true,
+                  "cuda_version": "12.8",
+                  "cudnn_allow_tf32": true,
+                  "cudnn_benchmark": false,
+                  "cudnn_version": 90701,
+                  "deterministic_algorithms": false,
+                  "float32_matmul_precision": "high",
+                  "num_interop_threads": 104,
+                  "num_threads": 104,
+                  "nvidia_driver_version": "590.44.01",
+                  "version": "2.7.1+cu128"
+                }
+              },
+              "runtime_environment_sha256": "8b424f8f4095a919daee99d1345c7657e94ca133f19369958410f793a35b1bb1",
+              "sample_set_sha256": "04253ea319cdf125b5f1df49b972c9529f1ff0613ca1e92dcd5e8d83ac6a7771",
+              "sampling": {
+                "actual_timesteps": [
+                  999,
+                  979,
+                  958,
+                  938,
+                  917,
+                  897,
+                  877,
+                  856,
+                  836,
+                  816,
+                  795,
+                  775,
+                  754,
+                  734,
+                  714,
+                  693,
+                  673,
+                  652,
+                  632,
+                  612,
+                  591,
+                  571,
+                  550,
+                  530,
+                  510,
+                  489,
+                  469,
+                  449,
+                  428,
+                  408,
+                  387,
+                  367,
+                  347,
+                  326,
+                  306,
+                  285,
+                  265,
+                  245,
+                  224,
+                  204,
+                  183,
+                  163,
+                  143,
+                  122,
+                  102,
+                  82,
+                  61,
+                  41,
+                  20,
+                  0
+                ],
+                "batch_size": 32,
+                "cfg_batch_mode": "batched",
+                "class_schedule": "balanced_modulo",
+                "clip_x0": true,
+                "eta": 0.0,
+                "guidance_rescale": 0.0,
+                "guidance_scale": 1.5,
+                "image_shape": [
+                  3,
+                  256,
+                  256
+                ],
+                "inference_api": {
+                  "name": "cofitok.generation.GenerationSession",
+                  "version": 1
+                },
+                "num_samples": 2048,
+                "num_train_timesteps": 1000,
+                "precision": "bf16",
+                "prefix_budgets": [
+                  1
+                ],
+                "protocol_schema": "cofitok_ddim_sampling_v1",
+                "random_stream": {
+                  "batch_size_invariant": true,
+                  "prefix_budgets_share_stream": true,
+                  "resume_index_invariant": true,
+                  "scope": "per_global_sample_index",
+                  "seed_formula": "(seed + global_index) mod 2^63"
+                },
+                "sample_set_digest": {
+                  "algorithm": "sha256",
+                  "framing": "filename_utf8_nul_file_bytes_nul"
+                },
+                "sample_steps": 50,
+                "sampler": "ddim",
+                "seed": 0,
+                "start_index": 0
+              },
+              "sampling_progress": {
+                "completed_samples": 2048,
+                "cumulative_elapsed_seconds": 1999.5566103458405,
+                "identity": {
+                  "bytes": 760,
+                  "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/sampling_progress.json",
+                  "sha256": "8aaefdc3acf0940fb7de2ead0a83215c95c9f1aefb5e86300cb84fbc480f93f6"
+                },
+                "invocation": 1,
+                "report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/sampling_progress.json",
+                "status": "completed"
+              },
+              "sampling_protocol_contract": {
+                "actual": {
+                  "actual_timesteps": [
+                    999,
+                    979,
+                    958,
+                    938,
+                    917,
+                    897,
+                    877,
+                    856,
+                    836,
+                    816,
+                    795,
+                    775,
+                    754,
+                    734,
+                    714,
+                    693,
+                    673,
+                    652,
+                    632,
+                    612,
+                    591,
+                    571,
+                    550,
+                    530,
+                    510,
+                    489,
+                    469,
+                    449,
+                    428,
+                    408,
+                    387,
+                    367,
+                    347,
+                    326,
+                    306,
+                    285,
+                    265,
+                    245,
+                    224,
+                    204,
+                    183,
+                    163,
+                    143,
+                    122,
+                    102,
+                    82,
+                    61,
+                    41,
+                    20,
+                    0
+                  ],
+                  "cfg_batch_mode": "batched",
+                  "class_schedule": "balanced_modulo",
+                  "clip_x0": true,
+                  "eta": 0.0,
+                  "guidance_rescale": 0.0,
+                  "guidance_scale": 1.5,
+                  "inference_api": {
+                    "name": "cofitok.generation.GenerationSession",
+                    "version": 1
+                  },
+                  "num_samples": 2048,
+                  "num_train_timesteps": 1000,
+                  "precision": "bf16",
+                  "protocol_schema": "cofitok_ddim_sampling_v1",
+                  "random_stream": {
+                    "batch_size_invariant": true,
+                    "prefix_budgets_share_stream": true,
+                    "resume_index_invariant": true,
+                    "scope": "per_global_sample_index",
+                    "seed_formula": "(seed + global_index) mod 2^63"
+                  },
+                  "sample_steps": 50,
+                  "sampler": "ddim",
+                  "seed": 0,
+                  "start_index": 0
+                },
+                "expected": {
+                  "inference_api": {
+                    "name": "cofitok.generation.GenerationSession",
+                    "version": 1
+                  },
+                  "protocol_schema": "cofitok_ddim_sampling_v1",
+                  "sampler": "ddim"
+                },
+                "issues": [],
+                "stage": null,
+                "valid": true
+              },
+              "selected_prefix_budget": 1,
+              "weights": "ema"
+            },
+            "source_metrics": {
+              "identity": {
+                "bytes": 12634,
+                "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/milestones/step_00100000/samples_2048_ddim50_cfg15/metrics/generation_metrics_report.json",
+                "sha256": "02488a41bdb6b6a1ccda5ce0ca4114894eebb1c2a72fef2ed7b54b003357b740"
+              },
+              "implementation": {
+                "package": "torch_fidelity",
+                "version": "0.4.0"
+              },
+              "metrics": {
+                "frechet_inception_distance": 134.684114724896,
+                "inception_score_mean": 7.805163250535612,
+                "inception_score_std": 0.30155827479185254
+              },
+              "parameters": {
+                "batch_size": 64,
+                "cache_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/eval_cache/torch_fidelity",
+                "cpu_requested": false,
+                "cuda": true,
+                "min_samples": 2048,
+                "prc_batch_size": 10000,
+                "precision_recall_enabled": false,
+                "real_cache_name": "imagenet256_val_50k_torch_fidelity_v04__cofitok_19ace4e37bee2fca",
+                "requested_real_cache_name": "imagenet256_val_50k_torch_fidelity_v04",
+                "samples_find_deep": true,
+                "samples_shuffle": false,
+                "seed": 2027
+              },
+              "real_set": {
+                "digest_schema": "cofitok_image_tree_sha256_v1",
+                "image_count": 50000,
+                "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+                "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f"
+              },
+              "runtime_environment_sha256": "0cfe4f0bf03a70cff136a084f36cce8daaaf0316d4a7fdb818d912257cc302f2"
+            }
+          }
+        },
+        "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher"
+      }
+    },
+    "milestone_100000": {
+      "bytes": 8173,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/milestones/step_00100000.json",
+      "sha256": "89de83d71c574b990e68917192c6067721a642adfa50a65ba139632a1fea0fc2"
+    },
+    "pair_monitor": {
+      "bytes": 44316,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/pair_monitor.json",
+      "sha256": "78306a02a47d96be78f325ec2cd708ff4741f248c544fbc861dc9acfa829a2eb"
+    },
+    "quality_bridge_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "quality_result": {
+      "bytes": 60024,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/quality_bridge_result.json",
+      "sha256": "15752e05611fa888e15352934c1627ccb95418df0339f9ad120e195bc088d165"
+    },
+    "real_set": {
+      "digest_schema": "cofitok_image_tree_sha256_v1",
+      "image_count": 50000,
+      "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+      "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f",
+      "status": "physically_verified"
+    },
+    "terminal_training_exposure": {
+      "bytes": 21571,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/training_exposure_terminal_100k_authoritative_verifier_v2/training_exposure_report.json",
+      "sha256": "d95c4d9c41327be36cb462af3076064123803b53d9f2f9e927ac89351513300b"
+    },
+    "training_git": {
+      "branch": "scale/generation-stability-quality-bridge-100k",
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "tracked_dirty": false,
+      "tree": "6cef27723196fd363379bca2e7b85b1678ebd777"
+    }
+  },
+  "started_at": "2026-08-23T22:14:44.213832+00:00",
+  "status": "completed",
+  "terminal_status": "hold"
+}

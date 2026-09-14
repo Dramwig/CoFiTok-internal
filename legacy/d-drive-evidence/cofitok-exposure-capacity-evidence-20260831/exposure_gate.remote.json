@@ -1,0 +1,130 @@
+{
+  "authorization_boundary": {
+    "decision_is_execution_authorization": false,
+    "evaluation_launch_allowed": false,
+    "execution_gate_authorized": false,
+    "export_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "gpu_execution_authorized": false,
+    "process_signals_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "remote_mutation_allowed": false,
+    "sampling_launch_allowed": false,
+    "terminal_hold_replacement_allowed": false,
+    "training_launch_allowed": false
+  },
+  "execution_ready": false,
+  "gate_builder_git": {
+    "branch": "analysis/exposure-capacity-gate-builder-20260831",
+    "revision": "d6c4f5daa1fb8fcb3cb8cf2d6e106abffdb7866f",
+    "tracked_dirty": false,
+    "tree": "7437522fcc54a9937b5914a0227351e137c3faac"
+  },
+  "generation_advantage_proven": false,
+  "live_prelaunch": {
+    "conflicting_processes": [],
+    "dataset_identity_sha256": "6ec1d96ac3cd8a41fc66c40d424bf8e005c6a08bf9f580f5379c93772c8fe659",
+    "execution_lock_free": true,
+    "free_bytes": 250797514752,
+    "gpu_compute_processes": [],
+    "gpu_inventory": [
+      {
+        "index": 0,
+        "memory_total_mib": 97887,
+        "memory_used_mib": 0,
+        "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+        "utilization_percent": 0,
+        "uuid": "GPU-3838bbb0-dbf4-5b2b-b7da-6b86f7152cd8"
+      }
+    ],
+    "minimum_free_bytes": 128849018880,
+    "output_root_absent": true,
+    "runtime_environment_sha256": "d5bfcd085ea467ee5d24dfccc6e147da06dd7a0a0efdcdab355882b8547c985e"
+  },
+  "preparation": {
+    "bytes": 8364,
+    "path": "/tmp/cofitok-exposure-capacity-gate-20260831/evidence/preparation.json",
+    "sha256": "8be2b6d8f2f85531b0d4f18ce8f28d93e76d739d0530175edaad33be51d51d8a"
+  },
+  "qualification_contract": {
+    "additional_steps": 10000,
+    "arm_id": "exposure_continuation",
+    "automatic_300k_escalation_allowed": false,
+    "conditioning_change_allowed": false,
+    "controlled_change": "training_exposure_only",
+    "dataset": "imagenet_256",
+    "effective_batch_size": 64,
+    "evaluation": {
+      "class_fidelity_required": true,
+      "mechanism_diagnostics_required": true,
+      "sample_steps": 100,
+      "sampler": "ddim",
+      "samples_per_method": 10000,
+      "shared_random_stream_required": true,
+      "weights": "ema"
+    },
+    "formal_quality_claim_allowed": false,
+    "initialization": "exact_100k_checkpoint_resume_only",
+    "matched_pair_required": true,
+    "methods": [
+      "cofitok",
+      "dense_identity"
+    ],
+    "new_output_root_required": true,
+    "objective_change_allowed": false,
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/exposure",
+    "resume_checkpoint_required": true,
+    "resume_checkpoint_step": 100000,
+    "source_checkpoint_binding_required": true,
+    "source_images_seen_per_method": 6400000,
+    "source_stage": "stability_quality_bridge",
+    "source_step": 100000,
+    "target_step": 110000
+  },
+  "role": "source_bound_bounded_exposure_capacity_execution_gate",
+  "schema_version": "cofitok_generation_exposure_capacity_execution_gate_v1",
+  "selected_arm": "exposure_continuation",
+  "selection_policy": {
+    "automatic_300k_escalation_allowed": false,
+    "exact_stage_authorization_required": true,
+    "failure_policy": "fail_closed",
+    "formal_quality_claim_allowed": false,
+    "single_arm_only": true,
+    "terminal_hold_replacement_allowed": false
+  },
+  "source_checkout": {
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "tracked_dirty": false,
+    "tree": "6cef27723196fd363379bca2e7b85b1678ebd777"
+  },
+  "source_checkpoint": {
+    "checkpoint": {
+      "bytes": 1010937514,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt",
+      "sha256": "b36a92229ba2dd021db9c7585970ddda1d17d1919ca6b0eec0362b06d4bd462e"
+    },
+    "integrity_manifest": {
+      "bytes": 597,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/checkpoint_step_00100000.pt.integrity.json",
+      "sha256": "d5dd3ac3afb9c5e1d6facf3ea766700c221f17b22724749056213a55dc19c2d5"
+    },
+    "latest": {
+      "bytes": 667,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/latest.json",
+      "sha256": "8b5620f78b89c51a32e863f563a6311448a0545ad1bc6c06a1b532cc9eba079c"
+    },
+    "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+    "step": 100000
+  },
+  "stage_authorization": {
+    "reason": "preparation_and_prelaunch_snapshot_do_not_authorize_execution",
+    "required": true,
+    "scope": "bounded_qualification_only",
+    "status": "not_authorized"
+  },
+  "status": "prepared",
+  "terminal_status": "hold"
+}

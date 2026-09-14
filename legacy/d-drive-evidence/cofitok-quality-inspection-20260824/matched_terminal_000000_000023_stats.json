@@ -1,0 +1,406 @@
+{
+  "CoFiTok": {
+    "count": 24,
+    "mean": 0.47629281878471375,
+    "std": 0.21224232017993927,
+    "near_black_fraction": 0.002085791693793403,
+    "near_white_fraction": 0.0022602081298828125,
+    "channel_saturation_fraction": 0.0043459998236762155,
+    "per_image": [
+      {
+        "index": 0,
+        "mean": 0.30310359597206116,
+        "std": 0.14647985994815826,
+        "near_black_fraction": 0.0011494954427083333,
+        "near_white_fraction": 0.0,
+        "channel_saturation_fraction": 0.0011494954427083333
+      },
+      {
+        "index": 1,
+        "mean": 0.636124849319458,
+        "std": 0.09757133573293686,
+        "near_black_fraction": 0.0001068115234375,
+        "near_white_fraction": 0.0,
+        "channel_saturation_fraction": 0.0001068115234375
+      },
+      {
+        "index": 2,
+        "mean": 0.26690635085105896,
+        "std": 0.1754319667816162,
+        "near_black_fraction": 0.0001068115234375,
+        "near_white_fraction": 5.086263020833333e-06,
+        "channel_saturation_fraction": 0.00011189778645833333
+      },
+      {
+        "index": 3,
+        "mean": 0.4705338776111603,
+        "std": 0.16323482990264893,
+        "near_black_fraction": 0.0,
+        "near_white_fraction": 4.0690104166666664e-05,
+        "channel_saturation_fraction": 4.0690104166666664e-05
+      },
+      {
+        "index": 4,
+        "mean": 0.5821022391319275,
+        "std": 0.20781823992729187,
+        "near_black_fraction": 0.0015411376953125,
+        "near_white_fraction": 0.0092315673828125,
+        "channel_saturation_fraction": 0.010772705078125
+      },
+      {
+        "index": 5,
+        "mean": 0.49539661407470703,
+        "std": 0.20555737614631653,
+        "near_black_fraction": 0.0,
+        "near_white_fraction": 0.0003560384114583333,
+        "channel_saturation_fraction": 0.0003560384114583333
+      },
+      {
+        "index": 6,
+        "mean": 0.2606758177280426,
+        "std": 0.12454657256603241,
+        "near_black_fraction": 7.62939453125e-05,
+        "near_white_fraction": 0.0,
+        "channel_saturation_fraction": 7.62939453125e-05
+      },
+      {
+        "index": 7,
+        "mean": 0.44266489148139954,
+        "std": 0.24052393436431885,
+        "near_black_fraction": 0.0,
+        "near_white_fraction": 5.086263020833333e-06,
+        "channel_saturation_fraction": 5.086263020833333e-06
+      },
+      {
+        "index": 8,
+        "mean": 0.4647844135761261,
+        "std": 0.23715588450431824,
+        "near_black_fraction": 0.017690022786458332,
+        "near_white_fraction": 0.009480794270833334,
+        "channel_saturation_fraction": 0.027170817057291668
+      },
+      {
+        "index": 9,
+        "mean": 0.34987425804138184,
+        "std": 0.13509103655815125,
+        "near_black_fraction": 4.57763671875e-05,
+        "near_white_fraction": 0.0,
+        "channel_saturation_fraction": 4.57763671875e-05
+      },
+      {
+        "index": 10,
+        "mean": 0.5575142502784729,
+        "std": 0.11804411560297012,
+        "near_black_fraction": 0.0,
+        "near_white_fraction": 1.52587890625e-05,
+        "channel_saturation_fraction": 1.52587890625e-05
+      },
+      {
+        "index": 11,
+        "mean": 0.46948370337486267,
+        "std": 0.25783345103263855,
+        "near_black_fraction": 0.0013020833333333333,
+        "near_white_fraction": 0.010274251302083334,
+        "channel_saturation_fraction": 0.011576334635416666
+      },
+      {
+        "index": 12,
+        "mean": 0.4188520908355713,
+        "std": 0.11796431243419647,
+        "near_black_fraction": 3.5603841145833336e-05,
+        "near_white_fraction": 0.0,
+        "channel_saturation_fraction": 3.5603841145833336e-05
+      },
+      {
+        "index": 13,
+        "mean": 0.4155680239200592,
+        "std": 0.1600223183631897,
+        "near_black_fraction": 0.00011698404947916667,
+        "near_white_fraction": 0.0,
+        "channel_saturation_fraction": 0.00011698404947916667
+      },
+      {
+        "index": 14,
+        "mean": 0.5530989766120911,
+        "std": 0.1849575936794281,
+        "near_black_fraction": 0.0005696614583333334,
+        "near_white_fraction": 0.0005645751953125,
+        "channel_saturation_fraction": 0.0011342366536458333
+      },
+      {
+        "index": 15,
+        "mean": 0.41306960582733154,
+        "std": 0.20570139586925507,
+        "near_black_fraction": 0.01141357421875,
+        "near_white_fraction": 0.0014546712239583333,
+        "channel_saturation_fraction": 0.012868245442708334
+      },
+      {
+        "index": 16,
+        "mean": 0.6215523481369019,
+        "std": 0.18576675653457642,
+        "near_black_fraction": 0.0,
+        "near_white_fraction": 0.00030517578125,
+        "channel_saturation_fraction": 0.00030517578125
+      },
+      {
+        "index": 17,
+        "mean": 0.6035839915275574,
+        "std": 0.1625836193561554,
+        "near_black_fraction": 0.0,
+        "near_white_fraction": 0.000701904296875,
+        "channel_saturation_fraction": 0.000701904296875
+      },
+      {
+        "index": 18,
+        "mean": 0.48871755599975586,
+        "std": 0.14253972470760345,
+        "near_black_fraction": 0.0007731119791666666,
+        "near_white_fraction": 0.0004425048828125,
+        "channel_saturation_fraction": 0.0012156168619791667
+      },
+      {
+        "index": 19,
+        "mean": 0.5145803689956665,
+        "std": 0.2021232396364212,
+        "near_black_fraction": 0.002471923828125,
+        "near_white_fraction": 0.007288614908854167,
+        "channel_saturation_fraction": 0.009760538736979166
+      },
+      {
+        "index": 20,
+        "mean": 0.5641960501670837,
+        "std": 0.2236933410167694,
+        "near_black_fraction": 0.0003865559895833333,
+        "near_white_fraction": 0.0005849202473958334,
+        "channel_saturation_fraction": 0.0009714762369791666
+      },
+      {
+        "index": 21,
+        "mean": 0.4728911817073822,
+        "std": 0.23317605257034302,
+        "near_black_fraction": 0.0038350423177083335,
+        "near_white_fraction": 0.004954020182291667,
+        "channel_saturation_fraction": 0.0087890625
+      },
+      {
+        "index": 22,
+        "mean": 0.5518838167190552,
+        "std": 0.1751374900341034,
+        "near_black_fraction": 0.0,
+        "near_white_fraction": 2.0345052083333332e-05,
+        "channel_saturation_fraction": 2.0345052083333332e-05
+      },
+      {
+        "index": 23,
+        "mean": 0.5138683319091797,
+        "std": 0.2318280041217804,
+        "near_black_fraction": 0.0084381103515625,
+        "near_white_fraction": 0.008519490559895834,
+        "channel_saturation_fraction": 0.016957600911458332
+      }
+    ]
+  },
+  "Dense": {
+    "count": 24,
+    "mean": 0.48407256603240967,
+    "std": 0.26608407497406006,
+    "near_black_fraction": 0.0055760277642144095,
+    "near_white_fraction": 0.007989247639973959,
+    "channel_saturation_fraction": 0.013565275404188368,
+    "per_image": [
+      {
+        "index": 0,
+        "mean": 0.291613906621933,
+        "std": 0.14082951843738556,
+        "near_black_fraction": 0.00011189778645833333,
+        "near_white_fraction": 0.0,
+        "channel_saturation_fraction": 0.00011189778645833333
+      },
+      {
+        "index": 1,
+        "mean": 0.7285418510437012,
+        "std": 0.1036100834608078,
+        "near_black_fraction": 2.0345052083333332e-05,
+        "near_white_fraction": 0.00010172526041666667,
+        "channel_saturation_fraction": 0.0001220703125
+      },
+      {
+        "index": 2,
+        "mean": 0.23591990768909454,
+        "std": 0.1773523986339569,
+        "near_black_fraction": 0.0005238850911458334,
+        "near_white_fraction": 0.0,
+        "channel_saturation_fraction": 0.0005238850911458334
+      },
+      {
+        "index": 3,
+        "mean": 0.4854555130004883,
+        "std": 0.184809148311615,
+        "near_black_fraction": 2.0345052083333332e-05,
+        "near_white_fraction": 0.0,
+        "channel_saturation_fraction": 2.0345052083333332e-05
+      },
+      {
+        "index": 4,
+        "mean": 0.6554281115531921,
+        "std": 0.23004955053329468,
+        "near_black_fraction": 0.0020904541015625,
+        "near_white_fraction": 0.027018229166666668,
+        "channel_saturation_fraction": 0.029108683268229168
+      },
+      {
+        "index": 5,
+        "mean": 0.48526349663734436,
+        "std": 0.2341548651456833,
+        "near_black_fraction": 1.0172526041666666e-05,
+        "near_white_fraction": 1.52587890625e-05,
+        "channel_saturation_fraction": 2.5431315104166668e-05
+      },
+      {
+        "index": 6,
+        "mean": 0.20855672657489777,
+        "std": 0.08674396574497223,
+        "near_black_fraction": 0.00042724609375,
+        "near_white_fraction": 0.0,
+        "channel_saturation_fraction": 0.00042724609375
+      },
+      {
+        "index": 7,
+        "mean": 0.43181324005126953,
+        "std": 0.3165215849876404,
+        "near_black_fraction": 0.0003102620442708333,
+        "near_white_fraction": 0.005849202473958333,
+        "channel_saturation_fraction": 0.006159464518229167
+      },
+      {
+        "index": 8,
+        "mean": 0.4668891727924347,
+        "std": 0.2754754424095154,
+        "near_black_fraction": 0.036341349283854164,
+        "near_white_fraction": 0.021672566731770832,
+        "channel_saturation_fraction": 0.058013916015625
+      },
+      {
+        "index": 9,
+        "mean": 0.28910279273986816,
+        "std": 0.17006152868270874,
+        "near_black_fraction": 0.0007476806640625,
+        "near_white_fraction": 0.0,
+        "channel_saturation_fraction": 0.0007476806640625
+      },
+      {
+        "index": 10,
+        "mean": 0.6240761280059814,
+        "std": 0.14649978280067444,
+        "near_black_fraction": 5.086263020833333e-06,
+        "near_white_fraction": 0.00020853678385416666,
+        "channel_saturation_fraction": 0.000213623046875
+      },
+      {
+        "index": 11,
+        "mean": 0.43532589077949524,
+        "std": 0.3436920642852783,
+        "near_black_fraction": 0.006932576497395833,
+        "near_white_fraction": 0.0131378173828125,
+        "channel_saturation_fraction": 0.020070393880208332
+      },
+      {
+        "index": 12,
+        "mean": 0.39490917325019836,
+        "std": 0.14195221662521362,
+        "near_black_fraction": 3.0517578125e-05,
+        "near_white_fraction": 3.5603841145833336e-05,
+        "channel_saturation_fraction": 6.612141927083333e-05
+      },
+      {
+        "index": 13,
+        "mean": 0.3669167757034302,
+        "std": 0.25243905186653137,
+        "near_black_fraction": 0.004155476888020833,
+        "near_white_fraction": 7.120768229166667e-05,
+        "channel_saturation_fraction": 0.0042266845703125
+      },
+      {
+        "index": 14,
+        "mean": 0.5926583409309387,
+        "std": 0.2883877158164978,
+        "near_black_fraction": 0.018458048502604168,
+        "near_white_fraction": 0.035013834635416664,
+        "channel_saturation_fraction": 0.053471883138020836
+      },
+      {
+        "index": 15,
+        "mean": 0.39246901869773865,
+        "std": 0.22522631287574768,
+        "near_black_fraction": 0.017506917317708332,
+        "near_white_fraction": 0.0013478597005208333,
+        "channel_saturation_fraction": 0.018854777018229168
+      },
+      {
+        "index": 16,
+        "mean": 0.6515823006629944,
+        "std": 0.19247280061244965,
+        "near_black_fraction": 1.0172526041666666e-05,
+        "near_white_fraction": 0.000518798828125,
+        "channel_saturation_fraction": 0.0005289713541666666
+      },
+      {
+        "index": 17,
+        "mean": 0.6504749655723572,
+        "std": 0.19746820628643036,
+        "near_black_fraction": 0.0,
+        "near_white_fraction": 2.0345052083333332e-05,
+        "channel_saturation_fraction": 2.0345052083333332e-05
+      },
+      {
+        "index": 18,
+        "mean": 0.47943034768104553,
+        "std": 0.23488833010196686,
+        "near_black_fraction": 0.01361083984375,
+        "near_white_fraction": 0.011322021484375,
+        "channel_saturation_fraction": 0.024932861328125
+      },
+      {
+        "index": 19,
+        "mean": 0.5165676474571228,
+        "std": 0.2539149224758148,
+        "near_black_fraction": 0.0086517333984375,
+        "near_white_fraction": 0.022008260091145832,
+        "channel_saturation_fraction": 0.030659993489583332
+      },
+      {
+        "index": 20,
+        "mean": 0.5792476534843445,
+        "std": 0.26727303862571716,
+        "near_black_fraction": 0.00010172526041666667,
+        "near_white_fraction": 0.0003560384114583333,
+        "channel_saturation_fraction": 0.000457763671875
+      },
+      {
+        "index": 21,
+        "mean": 0.4914543628692627,
+        "std": 0.27574047446250916,
+        "near_black_fraction": 0.00872802734375,
+        "near_white_fraction": 0.013676961263020834,
+        "channel_saturation_fraction": 0.022404988606770832
+      },
+      {
+        "index": 22,
+        "mean": 0.5801156163215637,
+        "std": 0.23204120993614197,
+        "near_black_fraction": 0.0,
+        "near_white_fraction": 0.0058746337890625,
+        "channel_saturation_fraction": 0.0058746337890625
+      },
+      {
+        "index": 23,
+        "mean": 0.5839298367500305,
+        "std": 0.27340322732925415,
+        "near_black_fraction": 0.0150299072265625,
+        "near_white_fraction": 0.0334930419921875,
+        "channel_saturation_fraction": 0.04852294921875
+      }
+    ]
+  }
+}
