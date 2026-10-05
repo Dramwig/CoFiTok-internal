@@ -1,0 +1,1210 @@
+[
+  {
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal-prevalidation-5a93c70",
+    "head": "5a93c7061e4df237234b19b052331fbc3ec10425",
+    "branch": "",
+    "refs": "61f052eab8b9aeaf49917ca2967779224ba1e3fa refs/heads/archive/pro6000-retirement-2026-10-06\n5a93c7061e4df237234b19b052331fbc3ec10425 refs/heads/archive/pro6000/CoFiTok-internal-prevalidation-5a93c70\n2c22aa5f17b04821ac12579e9dbf440782b1494e refs/heads/archive/pro6000/capacity-execution-2c22aa5\n3a7dc9db6950055829db00c8ffdd6e906501fbb4 refs/heads/archive/pro6000/capacity-execution-3a7dc9d\n7f1bc94d4ec684659fb765b72ad1f22adcb20fff refs/heads/archive/pro6000/capacity-execution-7f1bc94\nacedc6d32b4f77875f83948d8cb0a2024bd69a84 refs/heads/archive/pro6000/capacity-supervisor-acedc6d\n8a2840e200c7adcdddac458cba8c84b4a771f0f2 refs/heads/archive/pro6000/conditioning-ranking-full-data-prep-8a2840e\nd019a17b742c5da867e71fa72b2d67f75cb0bc7c refs/heads/archive/pro6000/conditioning-ranking-terminal-rebind-v2-d019a17\n14e82e43f128e92e70d25c020548e7192a561df9 refs/heads/archive/pro6000/factorization-classifier-integrity-14e82e4\nfbda904ac97b6049f0efa1e96b66ea16526fdc8f refs/heads/archive/pro6000/matched-trajectory-waiter-fbda904\n172388fc4d873bb1001313f979442516ea7b5069 refs/heads/archive/pro6000/quality-bridge-checkpoint-waiter-172388f\n2a80f6e55f71c9c25c405564bc4393bf06cb3154 refs/heads/archive/pro6000/quality-bridge-ema-transition-2a80f6e\n564b751b31e0a75fb5a8756d12325cdcc515c531 refs/heads/archive/pro6000/quality-bridge-ipc-recovery-564b751\n17eaa4a2d37521281e5abcbc4050ad0e8b11ba94 refs/heads/archive/pro6000/required-checkpoint-physical-integrity-17eaa4a\n06ac9b4f034c4cc7ce8961d9499937e0dbe6dfa3 refs/heads/archive/pro6000/runtime-claim-strict-recovery-06ac9b4\ne6f083d01062d594c32b1d595a77f0feb81a0ac4 refs/heads/archive/pro6000/terminal-exposure-waiter-e6f083d\n0a64804ea698c9708afa1368198274395f34c15b refs/heads/archive/pro6000/terminal-runtime-strict-conjunct-fail-closed-0a64804\nd8749a6aea927545eb194f290a3b46017d7d99dd refs/heads/archive/pro6000/training-exposure-waiter-d8749a6\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/heads/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/heads/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/heads/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/heads/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/heads/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/heads/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/heads/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n0de78bfe9d4298352a24d0cafe1963642622a67f refs/remotes/bundle/scale\n154357f020906dbb6629df961775fc250c6f7ec0 refs/remotes/bundle/scale-154357f\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/bundle/scale-781a014\n85b0d7c7c3ac9b2bd5f2bcac307613c1350fc5d8 refs/remotes/bundle/scale-85b0d7c\n21edf9d75056c3d9d094bca9585f13df28af0f21 refs/remotes/bundle/scale-v3\nbb6ecbb62c5d7365b85bf7f45c9d6554bbbbd94b refs/remotes/bundle/scale-v4\nead85dcb304bea8d5b23611add8e5397c65b5e73 refs/remotes/deploy/capacity-light-v6\n83d5b07f1fd8a169688b77cdf2b06ed7cbb90a24 refs/remotes/predeploy/formal-v7-83d5b07\n8e91e92aa3f4902117303c8bd46ffa9ca55b43fe refs/remotes/predeploy/formal-v7-8e91e92\n05bbb4af63a9f1d9b7f11bc4222d50875e382e1d refs/remotes/recovery/probe-loss-hotfix-05bbb4a\n05572b189548b14e963678f4174a989b408bc4d0 refs/remotes/recovery/rank-recovery-05572b1",
+    "remotes": "origin\thttps://github.com/Dramwig/CoFiTok-internal.git (fetch)\norigin\thttps://github.com/Dramwig/CoFiTok-internal.git (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/5a93c7061e4d"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "head": "61f052eab8b9aeaf49917ca2967779224ba1e3fa",
+    "branch": "archive/pro6000-retirement-2026-10-06",
+    "refs": "61f052eab8b9aeaf49917ca2967779224ba1e3fa refs/heads/archive/pro6000-retirement-2026-10-06\n5a93c7061e4df237234b19b052331fbc3ec10425 refs/heads/archive/pro6000/CoFiTok-internal-prevalidation-5a93c70\n2c22aa5f17b04821ac12579e9dbf440782b1494e refs/heads/archive/pro6000/capacity-execution-2c22aa5\n3a7dc9db6950055829db00c8ffdd6e906501fbb4 refs/heads/archive/pro6000/capacity-execution-3a7dc9d\n7f1bc94d4ec684659fb765b72ad1f22adcb20fff refs/heads/archive/pro6000/capacity-execution-7f1bc94\nacedc6d32b4f77875f83948d8cb0a2024bd69a84 refs/heads/archive/pro6000/capacity-supervisor-acedc6d\n8a2840e200c7adcdddac458cba8c84b4a771f0f2 refs/heads/archive/pro6000/conditioning-ranking-full-data-prep-8a2840e\nd019a17b742c5da867e71fa72b2d67f75cb0bc7c refs/heads/archive/pro6000/conditioning-ranking-terminal-rebind-v2-d019a17\n14e82e43f128e92e70d25c020548e7192a561df9 refs/heads/archive/pro6000/factorization-classifier-integrity-14e82e4\nfbda904ac97b6049f0efa1e96b66ea16526fdc8f refs/heads/archive/pro6000/matched-trajectory-waiter-fbda904\n172388fc4d873bb1001313f979442516ea7b5069 refs/heads/archive/pro6000/quality-bridge-checkpoint-waiter-172388f\n2a80f6e55f71c9c25c405564bc4393bf06cb3154 refs/heads/archive/pro6000/quality-bridge-ema-transition-2a80f6e\n564b751b31e0a75fb5a8756d12325cdcc515c531 refs/heads/archive/pro6000/quality-bridge-ipc-recovery-564b751\n17eaa4a2d37521281e5abcbc4050ad0e8b11ba94 refs/heads/archive/pro6000/required-checkpoint-physical-integrity-17eaa4a\n06ac9b4f034c4cc7ce8961d9499937e0dbe6dfa3 refs/heads/archive/pro6000/runtime-claim-strict-recovery-06ac9b4\ne6f083d01062d594c32b1d595a77f0feb81a0ac4 refs/heads/archive/pro6000/terminal-exposure-waiter-e6f083d\n0a64804ea698c9708afa1368198274395f34c15b refs/heads/archive/pro6000/terminal-runtime-strict-conjunct-fail-closed-0a64804\nd8749a6aea927545eb194f290a3b46017d7d99dd refs/heads/archive/pro6000/training-exposure-waiter-d8749a6\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/heads/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/heads/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/heads/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/heads/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/heads/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/heads/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/heads/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n0de78bfe9d4298352a24d0cafe1963642622a67f refs/remotes/bundle/scale\n154357f020906dbb6629df961775fc250c6f7ec0 refs/remotes/bundle/scale-154357f\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/bundle/scale-781a014\n85b0d7c7c3ac9b2bd5f2bcac307613c1350fc5d8 refs/remotes/bundle/scale-85b0d7c\n21edf9d75056c3d9d094bca9585f13df28af0f21 refs/remotes/bundle/scale-v3\nbb6ecbb62c5d7365b85bf7f45c9d6554bbbbd94b refs/remotes/bundle/scale-v4\nead85dcb304bea8d5b23611add8e5397c65b5e73 refs/remotes/deploy/capacity-light-v6\n83d5b07f1fd8a169688b77cdf2b06ed7cbb90a24 refs/remotes/predeploy/formal-v7-83d5b07\n8e91e92aa3f4902117303c8bd46ffa9ca55b43fe refs/remotes/predeploy/formal-v7-8e91e92\n05bbb4af63a9f1d9b7f11bc4222d50875e382e1d refs/remotes/recovery/probe-loss-hotfix-05bbb4a\n05572b189548b14e963678f4174a989b408bc4d0 refs/remotes/recovery/rank-recovery-05572b1",
+    "remotes": "origin\thttps://github.com/Dramwig/CoFiTok-internal.git (fetch)\norigin\thttps://github.com/Dramwig/CoFiTok-internal.git (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/61f052eab8b9"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-completion-100k-892c1d6/CoFiTok-internal",
+    "head": "892c1d63db872f1135d41adaf0a25ee7388999c7",
+    "branch": "scale/generation-capacity-completion-100k-execution-v1",
+    "refs": "892c1d63db872f1135d41adaf0a25ee7388999c7 refs/heads/scale/generation-capacity-completion-100k-execution-v1\n7c3a1b8a06fa4dab8733c808b284fbe86cfeaccb refs/heads/scale/generation-capacity-completion-decision-waiter-v1\n7c3a1b8a06fa4dab8733c808b284fbe86cfeaccb refs/remotes/origin/HEAD\n7c3a1b8a06fa4dab8733c808b284fbe86cfeaccb refs/remotes/origin/scale/generation-capacity-completion-decision-waiter-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-completion-waiter-7c3a1b8/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-completion-waiter-7c3a1b8/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/892c1d63db87"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-completion-result-b9f940d/CoFiTok-internal",
+    "head": "b9f940ddf555837ae5303124af09d80c9f698ce3",
+    "branch": "scale/generation-capacity-completion-100k-result-waiter-v1",
+    "refs": "892c1d63db872f1135d41adaf0a25ee7388999c7 refs/heads/scale/generation-capacity-completion-100k-execution-v1\nb9f940ddf555837ae5303124af09d80c9f698ce3 refs/heads/scale/generation-capacity-completion-100k-result-waiter-v1\n892c1d63db872f1135d41adaf0a25ee7388999c7 refs/remotes/origin/HEAD\n892c1d63db872f1135d41adaf0a25ee7388999c7 refs/remotes/origin/scale/generation-capacity-completion-100k-execution-v1\n7c3a1b8a06fa4dab8733c808b284fbe86cfeaccb refs/remotes/origin/scale/generation-capacity-completion-decision-waiter-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-completion-100k-892c1d6/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-completion-100k-892c1d6/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/b9f940ddf555"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-completion-waiter-7c3a1b8/CoFiTok-internal",
+    "head": "7c3a1b8a06fa4dab8733c808b284fbe86cfeaccb",
+    "branch": "scale/generation-capacity-completion-decision-waiter-v1",
+    "refs": "7c3a1b8a06fa4dab8733c808b284fbe86cfeaccb refs/heads/scale/generation-capacity-completion-decision-waiter-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/7c3a1b8a06fa"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-71fd7b0/CoFiTok-internal",
+    "head": "71fd7b0da0365b2469b1cf409acddd48f2777b86",
+    "branch": "scale/generation-capacity-control-continuity-v1",
+    "refs": "71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/heads/continuity-v2\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/heads/scale/generation-capacity-control-continuity-v1\neec546381cedb904fb2d52ee12a97418479068c3 refs/remotes/origin/HEAD\neec546381cedb904fb2d52ee12a97418479068c3 refs/remotes/origin/scale/generation-capacity-control-continuity-v1\n0bbd1cc43b9bb713ab2da8d4da6404f304f88ffe refs/remotes/origin/scale/generation-capacity-pipeline-observer-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-eec5463/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-eec5463/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/71fd7b0da036"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-a89c1fa/CoFiTok-internal",
+    "head": "a89c1fa29fda494f3492d32dfa5e9a60bfa705a9",
+    "branch": "scale/generation-capacity-control-continuity-v1",
+    "refs": "a89c1fa29fda494f3492d32dfa5e9a60bfa705a9 refs/heads/continuity-final\na89c1fa29fda494f3492d32dfa5e9a60bfa705a9 refs/heads/scale/generation-capacity-control-continuity-v1\n2108255d00b0c822dd93636339fd912a8150484a refs/heads/scale/generation-capacity-control-continuity-v3\n47e59a0ce926c3ac1fdaa4860de84d2f27e39f76 refs/heads/scale/generation-capacity-control-process-relaunch-rehearsal-v1\n7836359feb823fd93840255f6aeae5478008bb1c refs/heads/scale/generation-capacity-control-process-relaunch-v1\n4eb041d6d385df905a120fba1e5d0fcab575d170 refs/heads/scale/generation-capacity-control-process-snapshot-v1\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/HEAD\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/continuity-v2\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/scale/generation-capacity-control-continuity-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-71fd7b0/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-71fd7b0/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/a89c1fa29fda"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-eec5463/CoFiTok-internal",
+    "head": "eec546381cedb904fb2d52ee12a97418479068c3",
+    "branch": "scale/generation-capacity-control-continuity-v1",
+    "refs": "eec546381cedb904fb2d52ee12a97418479068c3 refs/heads/scale/generation-capacity-control-continuity-v1\n0bbd1cc43b9bb713ab2da8d4da6404f304f88ffe refs/heads/scale/generation-capacity-pipeline-observer-v1\n0bbd1cc43b9bb713ab2da8d4da6404f304f88ffe refs/remotes/origin/HEAD\n5e04dbe488ee166d2756bc99c71ee5fffbe0bd83 refs/remotes/origin/scale/generation-capacity-full-postprocessing-v1\n0bbd1cc43b9bb713ab2da8d4da6404f304f88ffe refs/remotes/origin/scale/generation-capacity-pipeline-observer-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-pipeline-observer-0bbd1cc/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-pipeline-observer-0bbd1cc/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/eec546381ced"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-v3-2108255/CoFiTok-internal",
+    "head": "2108255d00b0c822dd93636339fd912a8150484a",
+    "branch": "scale/generation-capacity-control-continuity-v3",
+    "refs": "a89c1fa29fda494f3492d32dfa5e9a60bfa705a9 refs/heads/continuity-final\na89c1fa29fda494f3492d32dfa5e9a60bfa705a9 refs/heads/scale/generation-capacity-control-continuity-v1\n2108255d00b0c822dd93636339fd912a8150484a refs/heads/scale/generation-capacity-control-continuity-v3\n47e59a0ce926c3ac1fdaa4860de84d2f27e39f76 refs/heads/scale/generation-capacity-control-process-relaunch-rehearsal-v1\n7836359feb823fd93840255f6aeae5478008bb1c refs/heads/scale/generation-capacity-control-process-relaunch-v1\n4eb041d6d385df905a120fba1e5d0fcab575d170 refs/heads/scale/generation-capacity-control-process-snapshot-v1\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/HEAD\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/continuity-v2\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/scale/generation-capacity-control-continuity-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-71fd7b0/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-71fd7b0/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/2108255d00b0"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-control-process-rehearsal-47e59a0/CoFiTok-internal",
+    "head": "47e59a0ce926c3ac1fdaa4860de84d2f27e39f76",
+    "branch": "scale/generation-capacity-control-process-relaunch-rehearsal-v1",
+    "refs": "a89c1fa29fda494f3492d32dfa5e9a60bfa705a9 refs/heads/continuity-final\na89c1fa29fda494f3492d32dfa5e9a60bfa705a9 refs/heads/scale/generation-capacity-control-continuity-v1\n2108255d00b0c822dd93636339fd912a8150484a refs/heads/scale/generation-capacity-control-continuity-v3\n47e59a0ce926c3ac1fdaa4860de84d2f27e39f76 refs/heads/scale/generation-capacity-control-process-relaunch-rehearsal-v1\n7836359feb823fd93840255f6aeae5478008bb1c refs/heads/scale/generation-capacity-control-process-relaunch-v1\n4eb041d6d385df905a120fba1e5d0fcab575d170 refs/heads/scale/generation-capacity-control-process-snapshot-v1\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/HEAD\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/continuity-v2\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/scale/generation-capacity-control-continuity-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-71fd7b0/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-71fd7b0/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/47e59a0ce926"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-control-process-relaunch-7836359/CoFiTok-internal",
+    "head": "7836359feb823fd93840255f6aeae5478008bb1c",
+    "branch": "scale/generation-capacity-control-process-relaunch-v1",
+    "refs": "a89c1fa29fda494f3492d32dfa5e9a60bfa705a9 refs/heads/continuity-final\na89c1fa29fda494f3492d32dfa5e9a60bfa705a9 refs/heads/scale/generation-capacity-control-continuity-v1\n2108255d00b0c822dd93636339fd912a8150484a refs/heads/scale/generation-capacity-control-continuity-v3\n47e59a0ce926c3ac1fdaa4860de84d2f27e39f76 refs/heads/scale/generation-capacity-control-process-relaunch-rehearsal-v1\n7836359feb823fd93840255f6aeae5478008bb1c refs/heads/scale/generation-capacity-control-process-relaunch-v1\n4eb041d6d385df905a120fba1e5d0fcab575d170 refs/heads/scale/generation-capacity-control-process-snapshot-v1\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/HEAD\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/continuity-v2\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/scale/generation-capacity-control-continuity-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-71fd7b0/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-71fd7b0/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/7836359feb82"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-control-process-snapshot-4eb041d/CoFiTok-internal",
+    "head": "4eb041d6d385df905a120fba1e5d0fcab575d170",
+    "branch": "scale/generation-capacity-control-process-snapshot-v1",
+    "refs": "a89c1fa29fda494f3492d32dfa5e9a60bfa705a9 refs/heads/continuity-final\na89c1fa29fda494f3492d32dfa5e9a60bfa705a9 refs/heads/scale/generation-capacity-control-continuity-v1\n2108255d00b0c822dd93636339fd912a8150484a refs/heads/scale/generation-capacity-control-continuity-v3\n47e59a0ce926c3ac1fdaa4860de84d2f27e39f76 refs/heads/scale/generation-capacity-control-process-relaunch-rehearsal-v1\n7836359feb823fd93840255f6aeae5478008bb1c refs/heads/scale/generation-capacity-control-process-relaunch-v1\n4eb041d6d385df905a120fba1e5d0fcab575d170 refs/heads/scale/generation-capacity-control-process-snapshot-v1\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/HEAD\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/continuity-v2\n71fd7b0da0365b2469b1cf409acddd48f2777b86 refs/remotes/origin/scale/generation-capacity-control-continuity-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-71fd7b0/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-control-continuity-71fd7b0/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/4eb041d6d385"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-execution-2c22aa5",
+    "head": "2c22aa5f17b04821ac12579e9dbf440782b1494e",
+    "branch": "scale/generation-capacity-probe-v1",
+    "refs": "2c22aa5f17b04821ac12579e9dbf440782b1494e refs/heads/scale/generation-capacity-probe-v1\n2c22aa5f17b04821ac12579e9dbf440782b1494e refs/remotes/bundle/capacity-execution\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/remotes/origin/HEAD\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/remotes/origin/scale/generation-capacity-probe-reference-v1\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/remotes/origin/scale/generation-capacity-probe-v1\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/remotes/origin/scale/generation-quality-bridge-followup-decision-v1",
+    "remotes": "origin\t/tmp/cofitok-capacity-probe-22a5994 (fetch)\norigin\t/tmp/cofitok-capacity-probe-22a5994 (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/2c22aa5f17b0"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-execution-3a7dc9d",
+    "head": "3a7dc9db6950055829db00c8ffdd6e906501fbb4",
+    "branch": "scale/generation-capacity-probe-v1",
+    "refs": "3a7dc9db6950055829db00c8ffdd6e906501fbb4 refs/heads/scale/generation-capacity-probe-v1\n3a7dc9db6950055829db00c8ffdd6e906501fbb4 refs/remotes/bundle/capacity-execution\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/remotes/origin/HEAD\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/remotes/origin/scale/generation-capacity-probe-reference-v1\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/remotes/origin/scale/generation-capacity-probe-v1\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/remotes/origin/scale/generation-quality-bridge-followup-decision-v1",
+    "remotes": "origin\t/tmp/cofitok-capacity-probe-22a5994 (fetch)\norigin\t/tmp/cofitok-capacity-probe-22a5994 (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/3a7dc9db6950"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-execution-7f1bc94",
+    "head": "7f1bc94d4ec684659fb765b72ad1f22adcb20fff",
+    "branch": "scale/generation-capacity-probe-v1",
+    "refs": "7f1bc94d4ec684659fb765b72ad1f22adcb20fff refs/heads/scale/generation-capacity-probe-v1\n7f1bc94d4ec684659fb765b72ad1f22adcb20fff refs/remotes/bundle/capacity-execution\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/remotes/origin/HEAD\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/remotes/origin/scale/generation-capacity-probe-reference-v1\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/remotes/origin/scale/generation-capacity-probe-v1\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/remotes/origin/scale/generation-quality-bridge-followup-decision-v1",
+    "remotes": "origin\t/tmp/cofitok-capacity-probe-22a5994 (fetch)\norigin\t/tmp/cofitok-capacity-probe-22a5994 (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/7f1bc94d4ec6"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-execution-d75dfea/CoFiTok-internal",
+    "head": "d75dfea37ddcb504cfe8ecba25774ee36f522480",
+    "branch": "scale/generation-capacity-full-300k-execution-v1",
+    "refs": "d75dfea37ddcb504cfe8ecba25774ee36f522480 refs/heads/scale/generation-capacity-full-300k-execution-v1\n87b043339df073437e8130e20a032d367a2e1649 refs/heads/scale/generation-capacity-full-300k-readiness-supervisor-v1\n87b043339df073437e8130e20a032d367a2e1649 refs/remotes/origin/HEAD\n70b7470a6ca8f43a544cf41dd988802dc5f8c9f1 refs/remotes/origin/scale/generation-capacity-full-300k-readiness-decision-waiter-v1\n87b043339df073437e8130e20a032d367a2e1649 refs/remotes/origin/scale/generation-capacity-full-300k-readiness-supervisor-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-full-readiness-87b0433/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-full-readiness-87b0433/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/d75dfea37ddc"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal",
+    "head": "5e04dbe488ee166d2756bc99c71ee5fffbe0bd83",
+    "branch": "scale/generation-capacity-full-postprocessing-v1",
+    "refs": "d75dfea37ddcb504cfe8ecba25774ee36f522480 refs/heads/scale/generation-capacity-full-300k-execution-v1\n5e04dbe488ee166d2756bc99c71ee5fffbe0bd83 refs/heads/scale/generation-capacity-full-postprocessing-v1\nd75dfea37ddcb504cfe8ecba25774ee36f522480 refs/remotes/origin/HEAD\nd75dfea37ddcb504cfe8ecba25774ee36f522480 refs/remotes/origin/scale/generation-capacity-full-300k-execution-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-full-execution-d75dfea/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-full-execution-d75dfea/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/5e04dbe488ee"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-readiness-87b0433/CoFiTok-internal",
+    "head": "87b043339df073437e8130e20a032d367a2e1649",
+    "branch": "scale/generation-capacity-full-300k-readiness-supervisor-v1",
+    "refs": "70b7470a6ca8f43a544cf41dd988802dc5f8c9f1 refs/heads/scale/generation-capacity-full-300k-readiness-decision-waiter-v1\n87b043339df073437e8130e20a032d367a2e1649 refs/heads/scale/generation-capacity-full-300k-readiness-supervisor-v1\n70b7470a6ca8f43a544cf41dd988802dc5f8c9f1 refs/remotes/origin/HEAD\nb9f940ddf555837ae5303124af09d80c9f698ce3 refs/remotes/origin/scale/generation-capacity-completion-100k-result-waiter-v1\n70b7470a6ca8f43a544cf41dd988802dc5f8c9f1 refs/remotes/origin/scale/generation-capacity-full-300k-readiness-decision-waiter-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-full-readiness-decision-70b7470/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-full-readiness-decision-70b7470/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/87b043339df0"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-readiness-decision-70b7470/CoFiTok-internal",
+    "head": "70b7470a6ca8f43a544cf41dd988802dc5f8c9f1",
+    "branch": "scale/generation-capacity-full-300k-readiness-decision-waiter-v1",
+    "refs": "b9f940ddf555837ae5303124af09d80c9f698ce3 refs/heads/scale/generation-capacity-completion-100k-result-waiter-v1\n70b7470a6ca8f43a544cf41dd988802dc5f8c9f1 refs/heads/scale/generation-capacity-full-300k-readiness-decision-waiter-v1\nb9f940ddf555837ae5303124af09d80c9f698ce3 refs/remotes/origin/HEAD\n892c1d63db872f1135d41adaf0a25ee7388999c7 refs/remotes/origin/scale/generation-capacity-completion-100k-execution-v1\nb9f940ddf555837ae5303124af09d80c9f698ce3 refs/remotes/origin/scale/generation-capacity-completion-100k-result-waiter-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-completion-result-b9f940d/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-completion-result-b9f940d/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/70b7470a6ca8"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-pipeline-observer-0bbd1cc/CoFiTok-internal",
+    "head": "0bbd1cc43b9bb713ab2da8d4da6404f304f88ffe",
+    "branch": "scale/generation-capacity-pipeline-observer-v1",
+    "refs": "5e04dbe488ee166d2756bc99c71ee5fffbe0bd83 refs/heads/scale/generation-capacity-full-postprocessing-v1\n0bbd1cc43b9bb713ab2da8d4da6404f304f88ffe refs/heads/scale/generation-capacity-pipeline-observer-v1\n5e04dbe488ee166d2756bc99c71ee5fffbe0bd83 refs/remotes/origin/HEAD\n5e04dbe488ee166d2756bc99c71ee5fffbe0bd83 refs/remotes/origin/scale/generation-capacity-full-postprocessing-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/0bbd1cc43b9b"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-scaling-50k-9c5848e/CoFiTok-internal",
+    "head": "9c5848e6a3e2f7ba10e9527b4ffc5e30bb4d56dc",
+    "branch": "scale/generation-capacity-scaling-50k-execution-v1",
+    "refs": "9c5848e6a3e2f7ba10e9527b4ffc5e30bb4d56dc refs/heads/scale/generation-capacity-scaling-50k-execution-v1\nc18a606953e34725f0bae6f6f568db3ebf7c42c6 refs/heads/scale/generation-capacity-scaling-decision-waiter-v1\nc18a606953e34725f0bae6f6f568db3ebf7c42c6 refs/remotes/origin/HEAD\ne7d09a1c287bdcfe4880437a861a98ea6fd8d9a9 refs/remotes/origin/scale/generation-capacity-scaling-decision-v1\nc18a606953e34725f0bae6f6f568db3ebf7c42c6 refs/remotes/origin/scale/generation-capacity-scaling-decision-waiter-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-scaling-decision-c18a606/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-scaling-decision-c18a606/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/9c5848e6a3e2"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-scaling-decision-c18a606/CoFiTok-internal",
+    "head": "c18a606953e34725f0bae6f6f568db3ebf7c42c6",
+    "branch": "scale/generation-capacity-scaling-decision-waiter-v1",
+    "refs": "e7d09a1c287bdcfe4880437a861a98ea6fd8d9a9 refs/heads/scale/generation-capacity-scaling-decision-v1\nc18a606953e34725f0bae6f6f568db3ebf7c42c6 refs/heads/scale/generation-capacity-scaling-decision-waiter-v1\ne7d09a1c287bdcfe4880437a861a98ea6fd8d9a9 refs/remotes/origin/HEAD\ne7d09a1c287bdcfe4880437a861a98ea6fd8d9a9 refs/remotes/origin/scale/generation-capacity-scaling-decision-v1\nc1abf65fdafb8e198a8f1ac59c83b3038a9702b5 refs/remotes/origin/scale/generation-terminal-visual-audit-waiter-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-scaling-decision-e7d09a1/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-scaling-decision-e7d09a1/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/c18a606953e3"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-scaling-decision-e7d09a1/CoFiTok-internal",
+    "head": "e7d09a1c287bdcfe4880437a861a98ea6fd8d9a9",
+    "branch": "scale/generation-capacity-scaling-decision-v1",
+    "refs": "e7d09a1c287bdcfe4880437a861a98ea6fd8d9a9 refs/heads/scale/generation-capacity-scaling-decision-v1\nc1abf65fdafb8e198a8f1ac59c83b3038a9702b5 refs/heads/scale/generation-terminal-visual-audit-waiter-v1\nc1abf65fdafb8e198a8f1ac59c83b3038a9702b5 refs/remotes/origin/HEAD\n2e86ed24925fa958c86dc9bcfa8bc5f029b3a1d8 refs/remotes/origin/scale/generation-requested-class-visual-audit-v1\nc1abf65fdafb8e198a8f1ac59c83b3038a9702b5 refs/remotes/origin/scale/generation-terminal-visual-audit-waiter-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-visual-audit-waiter-c1abf65/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-visual-audit-waiter-c1abf65/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/e7d09a1c287b"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/classifier-calibration-b9a3454/CoFiTok-internal",
+    "head": "b9a34542b905e5b2d6a4cb241dae2f46cac785c7",
+    "branch": "scale/generation-classifier-calibration-v1",
+    "refs": "b9a34542b905e5b2d6a4cb241dae2f46cac785c7 refs/heads/scale/generation-classifier-calibration-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\nb9a34542b905e5b2d6a4cb241dae2f46cac785c7 refs/remotes/calibration/generation-classifier-calibration-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/b9a34542b905"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/requested-class-visual-audit-2e86ed2/CoFiTok-internal",
+    "head": "2e86ed24925fa958c86dc9bcfa8bc5f029b3a1d8",
+    "branch": "scale/generation-requested-class-visual-audit-v1",
+    "refs": "b9a34542b905e5b2d6a4cb241dae2f46cac785c7 refs/heads/scale/generation-classifier-calibration-v1\n2e86ed24925fa958c86dc9bcfa8bc5f029b3a1d8 refs/heads/scale/generation-requested-class-visual-audit-v1\nb9a34542b905e5b2d6a4cb241dae2f46cac785c7 refs/remotes/origin/HEAD\nb9a34542b905e5b2d6a4cb241dae2f46cac785c7 refs/remotes/origin/scale/generation-classifier-calibration-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system\n2e86ed24925fa958c86dc9bcfa8bc5f029b3a1d8 refs/remotes/visual-audit/generation-requested-class-visual-audit-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/classifier-calibration-b9a3454/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/classifier-calibration-b9a3454/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/2e86ed24925f"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/sample-diversity-execution-7b01496/CoFiTok-internal",
+    "head": "7b0149632afd16e1e9122241451654ec0d9b60a7",
+    "branch": "scale/generation-sample-diversity-diagnostic-v1",
+    "refs": "7b0149632afd16e1e9122241451654ec0d9b60a7 refs/heads/scale/generation-sample-diversity-diagnostic-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/7b0149632afd"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-visual-audit-waiter-c1abf65/CoFiTok-internal",
+    "head": "c1abf65fdafb8e198a8f1ac59c83b3038a9702b5",
+    "branch": "scale/generation-terminal-visual-audit-waiter-v1",
+    "refs": "2e86ed24925fa958c86dc9bcfa8bc5f029b3a1d8 refs/heads/scale/generation-requested-class-visual-audit-v1\nc1abf65fdafb8e198a8f1ac59c83b3038a9702b5 refs/heads/scale/generation-terminal-visual-audit-waiter-v1\n2e86ed24925fa958c86dc9bcfa8bc5f029b3a1d8 refs/remotes/origin/HEAD\nb9a34542b905e5b2d6a4cb241dae2f46cac785c7 refs/remotes/origin/scale/generation-classifier-calibration-v1\n2e86ed24925fa958c86dc9bcfa8bc5f029b3a1d8 refs/remotes/origin/scale/generation-requested-class-visual-audit-v1\nc1abf65fdafb8e198a8f1ac59c83b3038a9702b5 refs/remotes/waiter/generation-terminal-visual-audit-waiter-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/requested-class-visual-audit-2e86ed2/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/requested-class-visual-audit-2e86ed2/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/c1abf65fdafb"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/tmp-archive-20260814/cofitok-verify-24c2154/CoFiTok-internal",
+    "head": "24c2154baeadca8c25b0125d89fe5ddbf4732903",
+    "branch": "",
+    "refs": "781a01444fddbf0d48a427ba58bdeed50167b5be refs/heads/scale/generative-system\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/HEAD\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/24c2154baead"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/tmp-archive-20260814/cofitok-verify-9036fdb/CoFiTok-internal",
+    "head": "9036fdb6b9471da30e32ce497f16f3acb86b5a26",
+    "branch": "",
+    "refs": "781a01444fddbf0d48a427ba58bdeed50167b5be refs/heads/scale/generative-system\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/HEAD\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal/. (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal/. (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/9036fdb6b947"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/tmp-archive-20260814/cofitok-verify-a064e54/CoFiTok-internal",
+    "head": "a064e5432adb08819038402ba37cf3e164d89a06",
+    "branch": "",
+    "refs": "781a01444fddbf0d48a427ba58bdeed50167b5be refs/heads/scale/generative-system\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/HEAD\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal/. (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal/. (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/a064e5432adb"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/tmp-archive-20260814/cofitok-verify-c9e9221/CoFiTok-internal",
+    "head": "c9e9221bc4c8c0024bd7a5783fd4d07fd41389a1",
+    "branch": "",
+    "refs": "781a01444fddbf0d48a427ba58bdeed50167b5be refs/heads/scale/generative-system\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/HEAD\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal/. (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal/. (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/c9e9221bc4c8"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/tmp-archive-20260814/cofitok-verify-d007fd8/CoFiTok-internal",
+    "head": "d007fd8ce553bd814b3dd0cc7d8aa997b78ca706",
+    "branch": "",
+    "refs": "781a01444fddbf0d48a427ba58bdeed50167b5be refs/heads/scale/generative-system\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/HEAD\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal/. (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal/. (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/d007fd8ce553"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/tmp-archive-20260814/cofitok-verify-f96eb12/CoFiTok-internal",
+    "head": "f96eb1270e46324d1972dec6719513967059227b",
+    "branch": "",
+    "refs": "781a01444fddbf0d48a427ba58bdeed50167b5be refs/heads/scale/generative-system\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/HEAD\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal/. (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal/. (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/f96eb1270e46"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/tmp-archive-20260814/cofitok-verify-f9f1d47/CoFiTok-internal",
+    "head": "f9f1d47b8f7ecb8db8b67dda563d4a33bac198f7",
+    "branch": "",
+    "refs": "781a01444fddbf0d48a427ba58bdeed50167b5be refs/heads/scale/generative-system\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/HEAD\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n781a01444fddbf0d48a427ba58bdeed50167b5be refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal/. (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal/. (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/f9f1d47b8f7e"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-ipc-recovery-564b751",
+    "head": "564b751b31e0a75fb5a8756d12325cdcc515c531",
+    "branch": "fix/quality-bridge-ipc-recovery-v2",
+    "refs": "172388fc4d873bb1001313f979442516ea7b5069 refs/heads/checkpoint-waiter-172388f\n564b751b31e0a75fb5a8756d12325cdcc515c531 refs/heads/fix/quality-bridge-ipc-recovery-v2\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/564b751b31e0"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-checkpoint-waiter-172388f",
+    "head": "172388fc4d873bb1001313f979442516ea7b5069",
+    "branch": "",
+    "refs": "172388fc4d873bb1001313f979442516ea7b5069 refs/heads/checkpoint-waiter-172388f\n564b751b31e0a75fb5a8756d12325cdcc515c531 refs/heads/fix/quality-bridge-ipc-recovery-v2\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/172388fc4d87"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/recovery-cost-audit-2b3c397/CoFiTok-internal",
+    "head": "2b3c3975255f92cc9613f9990592f37ba2cfa968",
+    "branch": "fix/quality-bridge-ipc-recovery-v2",
+    "refs": "2b3c3975255f92cc9613f9990592f37ba2cfa968 refs/heads/fix/quality-bridge-ipc-recovery-v2\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/2b3c3975255f"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-586fe30/CoFiTok-internal",
+    "head": "1ff6bb3db932ef9e43ddfafc067db779dab797d9",
+    "branch": "scale/generation-capacity-pipeline-observer-v1",
+    "refs": "1ff6bb3db932ef9e43ddfafc067db779dab797d9 refs/heads/scale/generation-capacity-pipeline-observer-v1\n586fe30cb3390deb89c25f1b0292d237510829e1 refs/remotes/bundle/observer\n0bbd1cc43b9bb713ab2da8d4da6404f304f88ffe refs/remotes/origin/HEAD\n5e04dbe488ee166d2756bc99c71ee5fffbe0bd83 refs/remotes/origin/scale/generation-capacity-full-postprocessing-v1\n0bbd1cc43b9bb713ab2da8d4da6404f304f88ffe refs/remotes/origin/scale/generation-capacity-pipeline-observer-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-pipeline-observer-0bbd1cc/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-pipeline-observer-0bbd1cc/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/1ff6bb3db932"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-ema-transition-2a80f6e",
+    "head": "2a80f6e55f71c9c25c405564bc4393bf06cb3154",
+    "branch": "",
+    "refs": "",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/2a80f6e55f71"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/matched-uncertainty-1c8ef20/CoFiTok-internal",
+    "head": "1c8ef207cb6d79850d73a45abc345fc421e6aa7f",
+    "branch": "",
+    "refs": "1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-uncertainty-manifest-rehearsal-mRqd3i/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-uncertainty-manifest-rehearsal-mRqd3i/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/1c8ef207cb6d"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/matched-uncertainty-waiter-f161fe3/CoFiTok-internal",
+    "head": "f161fe31453231b7c126d10cfbe78344f10ff463",
+    "branch": "analysis/generation-matched-uncertainty-v1",
+    "refs": "f161fe31453231b7c126d10cfbe78344f10ff463 refs/heads/analysis/generation-matched-uncertainty-v1\nf161fe31453231b7c126d10cfbe78344f10ff463 refs/remotes/waiter/analysis/generation-matched-uncertainty-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/matched-uncertainty-1c8ef20/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/matched-uncertainty-1c8ef20/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/f161fe314532"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-runtime-compute-fairness-85bf1d6/CoFiTok-internal",
+    "head": "85bf1d6ae5b44f401153d0d1e390fc3973ff4bed",
+    "branch": "analysis/generation-quality-bridge-runtime-compute-fairness-v1",
+    "refs": "85bf1d6ae5b44f401153d0d1e390fc3973ff4bed refs/heads/analysis/generation-quality-bridge-runtime-compute-fairness-v1\n2b3c3975255f92cc9613f9990592f37ba2cfa968 refs/heads/fix/quality-bridge-ipc-recovery-v2\n85bf1d6ae5b44f401153d0d1e390fc3973ff4bed refs/remotes/bundle/runtime_compute\n2b3c3975255f92cc9613f9990592f37ba2cfa968 refs/remotes/origin/HEAD\n2b3c3975255f92cc9613f9990592f37ba2cfa968 refs/remotes/origin/fix/quality-bridge-ipc-recovery-v2\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/recovery-cost-audit-2b3c397/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/recovery-cost-audit-2b3c397/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/85bf1d6ae5b4"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-uncertainty-e9a424b/CoFiTok-internal",
+    "head": "e9a424b36bc5b951a9a27d7e1dc7f7afc650f706",
+    "branch": "analysis/generation-quality-bridge-terminal-uncertainty-v1",
+    "refs": "e9a424b36bc5b951a9a27d7e1dc7f7afc650f706 refs/heads/analysis/generation-quality-bridge-terminal-uncertainty-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\ne9a424b36bc5b951a9a27d7e1dc7f7afc650f706 refs/remotes/bundle/terminal-uncertainty\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/e9a424b36bc5"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-terminal-uncertainty-b071405/CoFiTok-internal",
+    "head": "b0714052424065c18a21384e1d998c529724d098",
+    "branch": "analysis/generation-capacity-terminal-uncertainty-v1",
+    "refs": "b0714052424065c18a21384e1d998c529724d098 refs/heads/analysis/generation-capacity-terminal-uncertainty-v1\ne9a424b36bc5b951a9a27d7e1dc7f7afc650f706 refs/heads/analysis/generation-quality-bridge-terminal-uncertainty-v1\ne9a424b36bc5b951a9a27d7e1dc7f7afc650f706 refs/remotes/origin/HEAD\ne9a424b36bc5b951a9a27d7e1dc7f7afc650f706 refs/remotes/origin/analysis/generation-quality-bridge-terminal-uncertainty-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-uncertainty-e9a424b/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-uncertainty-e9a424b/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/b07140524240"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-terminal-receipt-031356f/CoFiTok-internal",
+    "head": "031356f7879b8777a6b74386ed421f00fd9704f4",
+    "branch": "",
+    "refs": "b0714052424065c18a21384e1d998c529724d098 refs/heads/analysis/generation-capacity-terminal-uncertainty-v1\ne9a424b36bc5b951a9a27d7e1dc7f7afc650f706 refs/heads/analysis/generation-quality-bridge-terminal-uncertainty-v1\ne9a424b36bc5b951a9a27d7e1dc7f7afc650f706 refs/remotes/origin/HEAD\ne9a424b36bc5b951a9a27d7e1dc7f7afc650f706 refs/remotes/origin/analysis/generation-quality-bridge-terminal-uncertainty-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-uncertainty-e9a424b/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-uncertainty-e9a424b/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/031356f7879b"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-terminal-receipt-f7e3f9f/CoFiTok-internal",
+    "head": "f7e3f9fdcdf7238eefaa3efac9a8215df6122e03",
+    "branch": "",
+    "refs": "b0714052424065c18a21384e1d998c529724d098 refs/heads/analysis/generation-capacity-terminal-uncertainty-v1\ne9a424b36bc5b951a9a27d7e1dc7f7afc650f706 refs/heads/analysis/generation-quality-bridge-terminal-uncertainty-v1\ne9a424b36bc5b951a9a27d7e1dc7f7afc650f706 refs/remotes/origin/HEAD\ne9a424b36bc5b951a9a27d7e1dc7f7afc650f706 refs/remotes/origin/analysis/generation-quality-bridge-terminal-uncertainty-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-uncertainty-e9a424b/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-uncertainty-e9a424b/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/f7e3f9fdcdf7"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-claim-qualification-013beb7/CoFiTok-internal",
+    "head": "c42ac96c6628ff71f7c67c8957c86ea0523aea0b",
+    "branch": "analysis/generation-quality-bridge-claim-qualification-v1",
+    "refs": "c42ac96c6628ff71f7c67c8957c86ea0523aea0b refs/heads/analysis/generation-quality-bridge-claim-qualification-v1\nc42ac96c6628ff71f7c67c8957c86ea0523aea0b refs/remotes/hotfix/quality-claim-waiter",
+    "remotes": "origin\t/tmp/cofitok-capacity-claim-addendum-9dfa3c3-rehearsal (fetch)\norigin\t/tmp/cofitok-capacity-claim-addendum-9dfa3c3-rehearsal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/c42ac96c6628"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-claim-language-guard-waiter-5fab079/CoFiTok-internal",
+    "head": "5fab079a7b48024b05e2a306b95040baf839e276",
+    "branch": "analysis/generation-quality-bridge-claim-language-guard-waiter-v1",
+    "refs": "5fab079a7b48024b05e2a306b95040baf839e276 refs/heads/analysis/generation-quality-bridge-claim-language-guard-waiter-v1\nc42ac96c6628ff71f7c67c8957c86ea0523aea0b refs/heads/analysis/generation-quality-bridge-claim-qualification-v1\nc42ac96c6628ff71f7c67c8957c86ea0523aea0b refs/remotes/origin/HEAD\nc42ac96c6628ff71f7c67c8957c86ea0523aea0b refs/remotes/origin/analysis/generation-quality-bridge-claim-qualification-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-claim-qualification-013beb7/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-claim-qualification-013beb7/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/5fab079a7b48"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-runtime-claim-guard-6fdeebe/CoFiTok-internal",
+    "head": "6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46",
+    "branch": "analysis/generation-quality-bridge-runtime-claim-guard-v1",
+    "refs": "6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46 refs/heads/analysis/generation-quality-bridge-runtime-claim-guard-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/6fdeebe7c0ca"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-controller-identity-guard-57b2897/CoFiTok-internal",
+    "head": "57b2897a4cfbcde09bb24f3082d7fe3c67b83960",
+    "branch": "analysis/generation-quality-bridge-controller-identity-guard-v1",
+    "refs": "57b2897a4cfbcde09bb24f3082d7fe3c67b83960 refs/heads/analysis/generation-quality-bridge-controller-identity-guard-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/57b2897a4cfb"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-monitor-exact-runbook-ab2999d/CoFiTok-internal",
+    "head": "ab2999d6e2fd8a6e4bacca1f8962469f5c778a06",
+    "branch": "fix/generation-monitor-exact-runbook-identity-v1",
+    "refs": "ab2999d6e2fd8a6e4bacca1f8962469f5c778a06 refs/heads/fix/generation-monitor-exact-runbook-identity-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/ab2999d6e2fd"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-monitor-runbook-wiring-261fbca/CoFiTok-internal",
+    "head": "261fbca92e6259b678b9f3fc498942695cefc763",
+    "branch": "fix/generation-monitor-exact-runbook-identity-v1",
+    "refs": "261fbca92e6259b678b9f3fc498942695cefc763 refs/heads/fix/generation-monitor-exact-runbook-identity-v1\nab2999d6e2fd8a6e4bacca1f8962469f5c778a06 refs/remotes/origin/HEAD\nab2999d6e2fd8a6e4bacca1f8962469f5c778a06 refs/remotes/origin/fix/generation-monitor-exact-runbook-identity-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-monitor-exact-runbook-ab2999d/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-monitor-exact-runbook-ab2999d/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/261fbca92e62"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-system-guard-8ec9a09/CoFiTok-internal",
+    "head": "8ec9a09ddcd981c1ffbd06b6bda81386b33321de",
+    "branch": "analysis/generation-terminal-system-claim-guard-v1",
+    "refs": "5fab079a7b48024b05e2a306b95040baf839e276 refs/heads/analysis/generation-quality-bridge-claim-language-guard-waiter-v1\n8ec9a09ddcd981c1ffbd06b6bda81386b33321de refs/heads/analysis/generation-terminal-system-claim-guard-v1\n5fab079a7b48024b05e2a306b95040baf839e276 refs/remotes/origin/HEAD\n5fab079a7b48024b05e2a306b95040baf839e276 refs/remotes/origin/analysis/generation-quality-bridge-claim-language-guard-waiter-v1\nc42ac96c6628ff71f7c67c8957c86ea0523aea0b refs/remotes/origin/analysis/generation-quality-bridge-claim-qualification-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-claim-language-guard-waiter-5fab079/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-claim-language-guard-waiter-5fab079/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/8ec9a09ddcd9"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/factorization-quality-regression-8749138/CoFiTok-internal",
+    "head": "8749138f4b8e144ccbcae0f897e3237dc5aacada",
+    "branch": "scale/generation-factorization-quality-regression-v1",
+    "refs": "11c7a4be2abd8c17b933dc00194477ca38541664 refs/heads/analysis/generation-factorization-quality-regression-decision-rebind-v2-20260822\n06154f41b159c8848000b6aa84f267493c51e3bf refs/heads/analysis/generation-factorization-quality-regression-decision-rebind-v3-20260822\n5ca7bc66231e0d1c66b740b7e0be32cf59a771fa refs/heads/bootstrap-full-5ca7bc6\n8749138f4b8e144ccbcae0f897e3237dc5aacada refs/heads/scale/generation-factorization-quality-regression-v1",
+    "remotes": "",
+    "local_ref": "refs/heads/archive/server-snapshot/8749138f4b8e"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-confirm5k-execution-ed9463e.failed-prerequisite-20260819T0418/CoFiTok-internal",
+    "head": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "branch": "scale/generative-system",
+    "refs": "1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/1ebcc15210e6"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-confirm5k-execution-ed9463e/CoFiTok-internal",
+    "head": "ed9463eb85ffb97545b5506e264123e46ff2fcfc",
+    "branch": "scale/generation-label-ranking-5k-training-confirmation-v1",
+    "refs": "ed9463eb85ffb97545b5506e264123e46ff2fcfc refs/heads/scale/generation-label-ranking-5k-training-confirmation-v1\nf77e311546beba697020debd35e26888096ca258 refs/heads/scale/generation-label-ranking-standing-authorization-v1\nf77e311546beba697020debd35e26888096ca258 refs/remotes/origin/HEAD\nf77e311546beba697020debd35e26888096ca258 refs/remotes/origin/scale/generation-label-ranking-standing-authorization-v1",
+    "remotes": "origin\t/tmp/cofitok-label-ranking-sampling-standing-auth-f77e311 (fetch)\norigin\t/tmp/cofitok-label-ranking-sampling-standing-auth-f77e311 (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/ed9463eb85ff"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-heldout5k-evaluation-90f7206/CoFiTok-internal",
+    "head": "90f7206dd6d65b398a05222821cd6bc4cbf95efd",
+    "branch": "scale/generation-label-ranking-5k-heldout-evaluation-v1",
+    "refs": "90f7206dd6d65b398a05222821cd6bc4cbf95efd refs/heads/scale/generation-label-ranking-5k-heldout-evaluation-v1\ned9463eb85ffb97545b5506e264123e46ff2fcfc refs/heads/scale/generation-label-ranking-5k-training-confirmation-v1\ned9463eb85ffb97545b5506e264123e46ff2fcfc refs/remotes/origin/HEAD\ned9463eb85ffb97545b5506e264123e46ff2fcfc refs/remotes/origin/scale/generation-label-ranking-5k-training-confirmation-v1\nf77e311546beba697020debd35e26888096ca258 refs/remotes/origin/scale/generation-label-ranking-standing-authorization-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/conditioning-confirm5k-execution-ed9463e/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/conditioning-confirm5k-execution-ed9463e/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/90f7206dd6d6"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-posttraining5k-sampling-5cc51b2/CoFiTok-internal",
+    "head": "5cc51b2bef473b49bd90e95399cf3086c7dbed54",
+    "branch": "scale/generation-label-ranking-posttraining-5k-sampling-confirmation-v1",
+    "refs": "5cc51b2bef473b49bd90e95399cf3086c7dbed54 refs/heads/scale/generation-label-ranking-posttraining-5k-sampling-confirmation-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/5cc51b2bef47"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/training-exposure-waiter-d8749a6",
+    "head": "d8749a6aea927545eb194f290a3b46017d7d99dd",
+    "branch": "analysis/generation-training-exposure-snapshot-v1",
+    "refs": "d8749a6aea927545eb194f290a3b46017d7d99dd refs/heads/analysis/generation-training-exposure-snapshot-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/d8749a6aea92"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-exposure-waiter-e6f083d",
+    "head": "e6f083d01062d594c32b1d595a77f0feb81a0ac4",
+    "branch": "analysis/generation-terminal-exposure-binding-v1",
+    "refs": "e6f083d01062d594c32b1d595a77f0feb81a0ac4 refs/heads/analysis/generation-terminal-exposure-binding-v1\nd8749a6aea927545eb194f290a3b46017d7d99dd refs/heads/analysis/generation-training-exposure-snapshot-v1\nd8749a6aea927545eb194f290a3b46017d7d99dd refs/remotes/origin/HEAD\nd8749a6aea927545eb194f290a3b46017d7d99dd refs/remotes/origin/analysis/generation-training-exposure-snapshot-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/training-exposure-waiter-d8749a6 (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/training-exposure-waiter-d8749a6 (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/e6f083d01062"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal",
+    "head": "a58f2e28abdd671550d7c70b0303184bbdb029e4",
+    "branch": "analysis/generation-conditioning-pipeline-lineage-observer-v1",
+    "refs": "a58f2e28abdd671550d7c70b0303184bbdb029e4 refs/heads/analysis/generation-conditioning-pipeline-lineage-observer-v1\n1ff6bb3db932ef9e43ddfafc067db779dab797d9 refs/heads/scale/generation-capacity-pipeline-observer-v1\n1ff6bb3db932ef9e43ddfafc067db779dab797d9 refs/remotes/origin/HEAD\n1ff6bb3db932ef9e43ddfafc067db779dab797d9 refs/remotes/origin/scale/generation-capacity-pipeline-observer-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-586fe30/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-586fe30/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/a58f2e28abdd"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/resume-trajectory-audit-7e5856b/CoFiTok-internal",
+    "head": "40ee55202545ea01e48fb6642d1b5a51b5264663",
+    "branch": "analysis/generation-resume-aware-matched-trajectory-v1",
+    "refs": "fbda904ac97b6049f0efa1e96b66ea16526fdc8f refs/heads/analysis/generation-full-data-40k-trajectory-waiter-v1\n48e2a6f00f544ba48412dd4e45426e095c06c411 refs/heads/analysis/generation-matched-trajectory-multi-resume-v1-20260823\n40ee55202545ea01e48fb6642d1b5a51b5264663 refs/heads/analysis/generation-resume-aware-matched-trajectory-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/40ee55202545"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-supervisor-acedc6d",
+    "head": "acedc6d32b4f77875f83948d8cb0a2024bd69a84",
+    "branch": "fix/generation-capacity-probe-child-heartbeat-deploy-v1",
+    "refs": "acedc6d32b4f77875f83948d8cb0a2024bd69a84 refs/heads/fix/generation-capacity-probe-child-heartbeat-deploy-v1\n3a7dc9db6950055829db00c8ffdd6e906501fbb4 refs/heads/scale/generation-capacity-probe-v1\n3a7dc9db6950055829db00c8ffdd6e906501fbb4 refs/remotes/origin/HEAD\n3a7dc9db6950055829db00c8ffdd6e906501fbb4 refs/remotes/origin/scale/generation-capacity-probe-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-execution-3a7dc9d (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-execution-3a7dc9d (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/acedc6d32b4f"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/matched-trajectory-waiter-fbda904",
+    "head": "fbda904ac97b6049f0efa1e96b66ea16526fdc8f",
+    "branch": "analysis/generation-full-data-40k-trajectory-waiter-v1",
+    "refs": "fbda904ac97b6049f0efa1e96b66ea16526fdc8f refs/heads/analysis/generation-full-data-40k-trajectory-waiter-v1\n48e2a6f00f544ba48412dd4e45426e095c06c411 refs/heads/analysis/generation-matched-trajectory-multi-resume-v1-20260823\n40ee55202545ea01e48fb6642d1b5a51b5264663 refs/heads/analysis/generation-resume-aware-matched-trajectory-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/fbda904ac97b"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-50k-claim-guard-ab1f024/CoFiTok-internal",
+    "head": "ab1f02428d679daf5b751e19492303967f280404",
+    "branch": "analysis/generation-full-data-50k-milestone-claim-guard-v1",
+    "refs": "ab1f02428d679daf5b751e19492303967f280404 refs/heads/analysis/generation-full-data-50k-milestone-claim-guard-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/ab1f02428d67"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-supervisor-migration-rehearsal-2fbcadd/CoFiTok-internal",
+    "head": "2fbcadd794f8461d4746a54e073ec55a2fcb05fe",
+    "branch": "fix/generation-capacity-pipeline-supervisor-migration-v1",
+    "refs": "2fbcadd794f8461d4746a54e073ec55a2fcb05fe refs/heads/fix/generation-capacity-pipeline-supervisor-migration-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/2fbcadd794f8"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-supervisor-heartbeat-hardened-2fbcadd/CoFiTok-internal",
+    "head": "a963ff4bb91fd837f67856be996810ff45958712",
+    "branch": "fix/generation-capacity-pipeline-supervisor-migration-v1",
+    "refs": "a963ff4bb91fd837f67856be996810ff45958712 refs/heads/fix/generation-capacity-pipeline-supervisor-migration-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system\na963ff4bb91fd837f67856be996810ff45958712 refs/remotes/repair/a963ff4",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/a963ff4bb91f"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-ranking-full-data-prep-8a2840e",
+    "head": "8a2840e200c7adcdddac458cba8c84b4a771f0f2",
+    "branch": "scale/generation-conditioning-ranking-full-data-100k-v1",
+    "refs": "8a2840e200c7adcdddac458cba8c84b4a771f0f2 refs/heads/scale/generation-conditioning-ranking-full-data-100k-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/8a2840e200c7"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-exposure-routing-85e3ece/CoFiTok-internal",
+    "head": "85e3ece1196fd318cd6823439824e19fca4275a3",
+    "branch": "analysis/generation-quality-bridge-exposure-routing-v1",
+    "refs": "85e3ece1196fd318cd6823439824e19fca4275a3 refs/heads/analysis/generation-quality-bridge-exposure-routing-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/85e3ece1196f"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-distribution-support-37cb1fe/CoFiTok-internal",
+    "head": "37cb1fe474197b8ec8c2f94c6cc97cfd11fc29f0",
+    "branch": "analysis/generation-terminal-distribution-support-v1",
+    "refs": "37cb1fe474197b8ec8c2f94c6cc97cfd11fc29f0 refs/heads/analysis/generation-terminal-distribution-support-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/37cb1fe47419"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-3338f6c/CoFiTok-internal",
+    "head": "3338f6c9474cae800df92fa6465039ccc578a424",
+    "branch": "fix/generation-recovery-supersession-v2",
+    "refs": "a963ff4bb91fd837f67856be996810ff45958712 refs/heads/fix/generation-capacity-pipeline-supervisor-migration-v1\n3338f6c9474cae800df92fa6465039ccc578a424 refs/heads/fix/generation-recovery-supersession-v2\na963ff4bb91fd837f67856be996810ff45958712 refs/remotes/origin/HEAD\na963ff4bb91fd837f67856be996810ff45958712 refs/remotes/origin/fix/generation-capacity-pipeline-supervisor-migration-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-supervisor-heartbeat-hardened-2fbcadd/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/capacity-supervisor-heartbeat-hardened-2fbcadd/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/3338f6c9474c"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-runtime-claim-guard-rebind-0d1fa8d/CoFiTok-internal",
+    "head": "0d1fa8db971c9b33b16f943f511efaf5e51b0ace",
+    "branch": "analysis/generation-quality-bridge-runtime-claim-guard-rebind-v2",
+    "refs": "0d1fa8db971c9b33b16f943f511efaf5e51b0ace refs/heads/analysis/generation-quality-bridge-runtime-claim-guard-rebind-v2\n6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46 refs/heads/analysis/generation-quality-bridge-runtime-claim-guard-v1\n2764089f97713ebc52d2a67f0e1b60b08cca3d50 refs/heads/analysis/generation-runtime-claim-strict-comparison-v1\n6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46 refs/remotes/origin/HEAD\n6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46 refs/remotes/origin/analysis/generation-quality-bridge-runtime-claim-guard-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system\n0d1fa8db971c9b33b16f943f511efaf5e51b0ace refs/remotes/rebind/runtime-claim-guard-v2",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-runtime-claim-guard-6fdeebe/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-runtime-claim-guard-6fdeebe/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/0d1fa8db971c"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/random-token-semantic-visual-4bf9f1d/CoFiTok-internal",
+    "head": "4bf9f1d523b76bf5aa9284bc42b53143e784de01",
+    "branch": "analysis/generation-random-token-semantic-visual-v1",
+    "refs": "4bf9f1d523b76bf5aa9284bc42b53143e784de01 refs/heads/analysis/generation-random-token-semantic-visual-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/4bf9f1d523b7"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/random-token-semantic-visual-e6323c8/CoFiTok-internal",
+    "head": "e6323c8583dfcff44e9404e97c0e31b724819ebc",
+    "branch": "analysis/generation-random-token-semantic-visual-v1",
+    "refs": "e6323c8583dfcff44e9404e97c0e31b724819ebc refs/heads/analysis/generation-random-token-semantic-visual-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/e6323c8583df"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/random-token-semantic-visual-eae02a6/CoFiTok-internal",
+    "head": "eae02a60e643e8357a1911d65cb2c21dd4fbfc48",
+    "branch": "analysis/generation-random-token-semantic-visual-v1",
+    "refs": "fdff5dc048b0fa4a1075ed1498b3da17228f69a2 refs/heads/analysis/generation-random-token-exact-route-guard-v2-20260822\neae02a60e643e8357a1911d65cb2c21dd4fbfc48 refs/heads/analysis/generation-random-token-semantic-visual-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/eae02a60e643"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/checkpoint-audit-replay-da67abe/CoFiTok-internal",
+    "head": "da67abeb7a78064beb0b975f7b11f7d4ba5fc809",
+    "branch": "analysis/generation-checkpoint-audit-replay-v1",
+    "refs": "da67abeb7a78064beb0b975f7b11f7d4ba5fc809 refs/heads/analysis/generation-checkpoint-audit-replay-v1\n172388fc4d873bb1001313f979442516ea7b5069 refs/heads/checkpoint-waiter-172388f\n172388fc4d873bb1001313f979442516ea7b5069 refs/remotes/origin/HEAD\n172388fc4d873bb1001313f979442516ea7b5069 refs/remotes/origin/checkpoint-waiter-172388f\n564b751b31e0a75fb5a8756d12325cdcc515c531 refs/remotes/origin/fix/quality-bridge-ipc-recovery-v2\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-checkpoint-waiter-172388f (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-checkpoint-waiter-172388f (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/da67abeb7a78"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/checkpoint-audit-replay-waiter-21587fa/CoFiTok-internal",
+    "head": "21587fa1a4c6e1dfcd17c297dad523d607b75864",
+    "branch": "analysis/generation-checkpoint-audit-replay-v1",
+    "refs": "21587fa1a4c6e1dfcd17c297dad523d607b75864 refs/heads/analysis/generation-checkpoint-audit-replay-v1\nda67abeb7a78064beb0b975f7b11f7d4ba5fc809 refs/remotes/origin/HEAD\nda67abeb7a78064beb0b975f7b11f7d4ba5fc809 refs/remotes/origin/analysis/generation-checkpoint-audit-replay-v1\n172388fc4d873bb1001313f979442516ea7b5069 refs/remotes/origin/checkpoint-waiter-172388f",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/checkpoint-audit-replay-da67abe/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/checkpoint-audit-replay-da67abe/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/21587fa1a4c6"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-class-only-route-6448e43/CoFiTok-internal",
+    "head": "6448e43783babe3d856355d2a28f5d6f930f8173",
+    "branch": "analysis/generation-quality-bridge-class-only-route-v2-20260822",
+    "refs": "6448e43783babe3d856355d2a28f5d6f930f8173 refs/heads/analysis/generation-quality-bridge-class-only-route-v2-20260822\n85e3ece1196fd318cd6823439824e19fca4275a3 refs/heads/analysis/generation-quality-bridge-exposure-routing-v1\ncd78a348769f0efad0d42de063e5b0943444a29b refs/heads/analysis/generation-quality-bridge-mixed-route-v3-20260822\n85e3ece1196fd318cd6823439824e19fca4275a3 refs/remotes/origin/HEAD\n85e3ece1196fd318cd6823439824e19fca4275a3 refs/remotes/origin/analysis/generation-quality-bridge-exposure-routing-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-exposure-routing-85e3ece/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-exposure-routing-85e3ece/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/6448e43783ba"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-mixed-route-cd78a34/CoFiTok-internal",
+    "head": "cd78a348769f0efad0d42de063e5b0943444a29b",
+    "branch": "",
+    "refs": "6448e43783babe3d856355d2a28f5d6f930f8173 refs/heads/analysis/generation-quality-bridge-class-only-route-v2-20260822\n85e3ece1196fd318cd6823439824e19fca4275a3 refs/heads/analysis/generation-quality-bridge-exposure-routing-v1\ncd78a348769f0efad0d42de063e5b0943444a29b refs/heads/analysis/generation-quality-bridge-mixed-route-v3-20260822\n85e3ece1196fd318cd6823439824e19fca4275a3 refs/remotes/origin/HEAD\n85e3ece1196fd318cd6823439824e19fca4275a3 refs/remotes/origin/analysis/generation-quality-bridge-exposure-routing-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-exposure-routing-85e3ece/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-exposure-routing-85e3ece/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/cd78a348769f"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/factorization-decision-rebind-11c7a4b/CoFiTok-internal",
+    "head": "11c7a4be2abd8c17b933dc00194477ca38541664",
+    "branch": "analysis/generation-factorization-quality-regression-decision-rebind-v2-20260822",
+    "refs": "11c7a4be2abd8c17b933dc00194477ca38541664 refs/heads/analysis/generation-factorization-quality-regression-decision-rebind-v2-20260822\n06154f41b159c8848000b6aa84f267493c51e3bf refs/heads/analysis/generation-factorization-quality-regression-decision-rebind-v3-20260822\n5ca7bc66231e0d1c66b740b7e0be32cf59a771fa refs/heads/bootstrap-full-5ca7bc6\n8749138f4b8e144ccbcae0f897e3237dc5aacada refs/heads/scale/generation-factorization-quality-regression-v1",
+    "remotes": "",
+    "local_ref": "refs/heads/archive/server-snapshot/11c7a4be2abd"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-mixed-route-v3-cd78a34/CoFiTok-internal",
+    "head": "cd78a348769f0efad0d42de063e5b0943444a29b",
+    "branch": "analysis/generation-quality-bridge-mixed-route-v3-20260822",
+    "refs": "6448e43783babe3d856355d2a28f5d6f930f8173 refs/heads/analysis/generation-quality-bridge-class-only-route-v2-20260822\n85e3ece1196fd318cd6823439824e19fca4275a3 refs/heads/analysis/generation-quality-bridge-exposure-routing-v1\ncd78a348769f0efad0d42de063e5b0943444a29b refs/heads/analysis/generation-quality-bridge-mixed-route-v3-20260822\n85e3ece1196fd318cd6823439824e19fca4275a3 refs/remotes/origin/HEAD\n85e3ece1196fd318cd6823439824e19fca4275a3 refs/remotes/origin/analysis/generation-quality-bridge-exposure-routing-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-exposure-routing-85e3ece/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-exposure-routing-85e3ece/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/cd78a348769f"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/factorization-decision-rebind-v3-06154f4/CoFiTok-internal",
+    "head": "06154f41b159c8848000b6aa84f267493c51e3bf",
+    "branch": "analysis/generation-factorization-quality-regression-decision-rebind-v3-20260822",
+    "refs": "11c7a4be2abd8c17b933dc00194477ca38541664 refs/heads/analysis/generation-factorization-quality-regression-decision-rebind-v2-20260822\n06154f41b159c8848000b6aa84f267493c51e3bf refs/heads/analysis/generation-factorization-quality-regression-decision-rebind-v3-20260822\n5ca7bc66231e0d1c66b740b7e0be32cf59a771fa refs/heads/bootstrap-full-5ca7bc6\n8749138f4b8e144ccbcae0f897e3237dc5aacada refs/heads/scale/generation-factorization-quality-regression-v1",
+    "remotes": "",
+    "local_ref": "refs/heads/archive/server-snapshot/06154f41b159"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/random-token-exact-route-guard-fdff5dc/CoFiTok-internal",
+    "head": "fdff5dc048b0fa4a1075ed1498b3da17228f69a2",
+    "branch": "analysis/generation-random-token-exact-route-guard-v2-20260822",
+    "refs": "fdff5dc048b0fa4a1075ed1498b3da17228f69a2 refs/heads/analysis/generation-random-token-exact-route-guard-v2-20260822\neae02a60e643e8357a1911d65cb2c21dd4fbfc48 refs/heads/analysis/generation-random-token-semantic-visual-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/fdff5dc048b0"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-exact-route-rebind-ccb93c9/CoFiTok-internal",
+    "head": "ccb93c9d17401d41d221173f6d4ca9564ab1b8ea",
+    "branch": "analysis/generation-conditioning-exact-route-rebind-v2-20260822",
+    "refs": "ccb93c9d17401d41d221173f6d4ca9564ab1b8ea refs/heads/analysis/generation-conditioning-exact-route-rebind-v2-20260822\ncd78a348769f0efad0d42de063e5b0943444a29b refs/heads/analysis/generation-quality-bridge-mixed-route-v3-20260822\ncd78a348769f0efad0d42de063e5b0943444a29b refs/remotes/origin/HEAD\n6448e43783babe3d856355d2a28f5d6f930f8173 refs/remotes/origin/analysis/generation-quality-bridge-class-only-route-v2-20260822\n85e3ece1196fd318cd6823439824e19fca4275a3 refs/remotes/origin/analysis/generation-quality-bridge-exposure-routing-v1\ncd78a348769f0efad0d42de063e5b0943444a29b refs/remotes/origin/analysis/generation-quality-bridge-mixed-route-v3-20260822",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-mixed-route-v3-cd78a34/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-mixed-route-v3-cd78a34/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/ccb93c9d1740"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-comparison-waiter-f7cfa34/CoFiTok-internal",
+    "head": "f7cfa34719797bca13cae95217ffd50bf59e2f09",
+    "branch": "analysis/generation-quality-bridge-comparison-v1-20260822",
+    "refs": "f7cfa34719797bca13cae95217ffd50bf59e2f09 refs/heads/analysis/generation-quality-bridge-comparison-v1-20260822\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/f7cfa3471979"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-completion-audit-c3bfc3d/CoFiTok-internal",
+    "head": "c3bfc3dcb4ae732d555191d9d813248b6c0c4941",
+    "branch": "analysis/generation-quality-bridge-terminal-completion-audit-v1-20260822",
+    "refs": "f7cfa34719797bca13cae95217ffd50bf59e2f09 refs/heads/analysis/generation-quality-bridge-comparison-v1-20260822\nc3bfc3dcb4ae732d555191d9d813248b6c0c4941 refs/heads/analysis/generation-quality-bridge-terminal-completion-audit-v1-20260822\nf7cfa34719797bca13cae95217ffd50bf59e2f09 refs/remotes/origin/HEAD\nf7cfa34719797bca13cae95217ffd50bf59e2f09 refs/remotes/origin/analysis/generation-quality-bridge-comparison-v1-20260822\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-comparison-waiter-f7cfa34/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-comparison-waiter-f7cfa34/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/c3bfc3dcb4ae"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/metric-cache-integrity-056d1d2/CoFiTok-internal",
+    "head": "056d1d281167e5a990f1d50ba66b954c31b641b2",
+    "branch": "analysis/generation-metric-cache-integrity-v1-20260822",
+    "refs": "056d1d281167e5a990f1d50ba66b954c31b641b2 refs/heads/analysis/generation-metric-cache-integrity-v1-20260822\nc3bfc3dcb4ae732d555191d9d813248b6c0c4941 refs/heads/analysis/generation-quality-bridge-terminal-completion-audit-v1-20260822\nc3bfc3dcb4ae732d555191d9d813248b6c0c4941 refs/remotes/origin/HEAD\nf7cfa34719797bca13cae95217ffd50bf59e2f09 refs/remotes/origin/analysis/generation-quality-bridge-comparison-v1-20260822\nc3bfc3dcb4ae732d555191d9d813248b6c0c4941 refs/remotes/origin/analysis/generation-quality-bridge-terminal-completion-audit-v1-20260822",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-completion-audit-c3bfc3d/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-completion-audit-c3bfc3d/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/056d1d281167"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/metric-cache-integrity-15ccd94/CoFiTok-internal",
+    "head": "15ccd94f3ecc07e2714b2726e43b55a13d2a1589",
+    "branch": "analysis/generation-metric-cache-integrity-v1-20260822",
+    "refs": "15ccd94f3ecc07e2714b2726e43b55a13d2a1589 refs/heads/analysis/generation-metric-cache-integrity-v1-20260822\nc3bfc3dcb4ae732d555191d9d813248b6c0c4941 refs/heads/analysis/generation-quality-bridge-terminal-completion-audit-v1-20260822\nc3bfc3dcb4ae732d555191d9d813248b6c0c4941 refs/remotes/origin/HEAD\nf7cfa34719797bca13cae95217ffd50bf59e2f09 refs/remotes/origin/analysis/generation-quality-bridge-comparison-v1-20260822\nc3bfc3dcb4ae732d555191d9d813248b6c0c4941 refs/remotes/origin/analysis/generation-quality-bridge-terminal-completion-audit-v1-20260822",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-completion-audit-c3bfc3d/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-terminal-completion-audit-c3bfc3d/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/15ccd94f3ecc"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/class-fidelity-integrity-a253d56/CoFiTok-internal",
+    "head": "a253d56e49b78e1c8ddb10c3bd07af5aa22e5919",
+    "branch": "analysis/generation-class-fidelity-integrity-v1-20260822",
+    "refs": "a253d56e49b78e1c8ddb10c3bd07af5aa22e5919 refs/heads/analysis/generation-class-fidelity-integrity-v1-20260822\n15ccd94f3ecc07e2714b2726e43b55a13d2a1589 refs/heads/analysis/generation-metric-cache-integrity-v1-20260822\n15ccd94f3ecc07e2714b2726e43b55a13d2a1589 refs/remotes/origin/HEAD\n15ccd94f3ecc07e2714b2726e43b55a13d2a1589 refs/remotes/origin/analysis/generation-metric-cache-integrity-v1-20260822\nc3bfc3dcb4ae732d555191d9d813248b6c0c4941 refs/remotes/origin/analysis/generation-quality-bridge-terminal-completion-audit-v1-20260822",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/metric-cache-integrity-15ccd94/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/metric-cache-integrity-15ccd94/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/a253d56e49b7"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/factorization-classifier-integrity-14e82e4",
+    "head": "14e82e43f128e92e70d25c020548e7192a561df9",
+    "branch": "analysis/generation-factorization-classifier-integrity-v1-20260822",
+    "refs": "14e82e43f128e92e70d25c020548e7192a561df9 refs/heads/analysis/generation-factorization-classifier-integrity-v1-20260822\n06154f41b159c8848000b6aa84f267493c51e3bf refs/heads/analysis/generation-factorization-quality-regression-decision-rebind-v3-20260822\n14e82e43f128e92e70d25c020548e7192a561df9 refs/remotes/bundle/factorization-classifier-integrity\n14e82e43f128e92e70d25c020548e7192a561df9 refs/remotes/bundle/factorization-classifier-integrity-v1\n06154f41b159c8848000b6aa84f267493c51e3bf refs/remotes/origin/HEAD\n11c7a4be2abd8c17b933dc00194477ca38541664 refs/remotes/origin/analysis/generation-factorization-quality-regression-decision-rebind-v2-20260822\n06154f41b159c8848000b6aa84f267493c51e3bf refs/remotes/origin/analysis/generation-factorization-quality-regression-decision-rebind-v3-20260822\n5ca7bc66231e0d1c66b740b7e0be32cf59a771fa refs/remotes/origin/bootstrap-full-5ca7bc6\n8749138f4b8e144ccbcae0f897e3237dc5aacada refs/remotes/origin/scale/generation-factorization-quality-regression-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/factorization-decision-rebind-v3-06154f4/CoFiTok-internal/. (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/factorization-decision-rebind-v3-06154f4/CoFiTok-internal/. (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/14e82e43f128"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-classifier-integrity-7e08924/CoFiTok-internal",
+    "head": "7e0892458257afb55c2c77c789cb77ca01bb329f",
+    "branch": "analysis/generation-conditioning-classifier-integrity-v1-20260822",
+    "refs": "7e0892458257afb55c2c77c789cb77ca01bb329f refs/heads/analysis/generation-conditioning-classifier-integrity-v1-20260822\nccb93c9d17401d41d221173f6d4ca9564ab1b8ea refs/heads/analysis/generation-conditioning-exact-route-rebind-v2-20260822\n7e0892458257afb55c2c77c789cb77ca01bb329f refs/remotes/bundle/conditioning-classifier-integrity\nccb93c9d17401d41d221173f6d4ca9564ab1b8ea refs/remotes/origin/HEAD\nccb93c9d17401d41d221173f6d4ca9564ab1b8ea refs/remotes/origin/analysis/generation-conditioning-exact-route-rebind-v2-20260822\ncd78a348769f0efad0d42de063e5b0943444a29b refs/remotes/origin/analysis/generation-quality-bridge-mixed-route-v3-20260822",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/conditioning-exact-route-rebind-ccb93c9/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/conditioning-exact-route-rebind-ccb93c9/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/7e0892458257"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-classifier-integrity-fc78b85/CoFiTok-internal",
+    "head": "fc78b85ac78faa1498d749c6a24d78289cde8438",
+    "branch": "analysis/generation-conditioning-classifier-integrity-v1-20260822",
+    "refs": "fc78b85ac78faa1498d749c6a24d78289cde8438 refs/heads/analysis/generation-conditioning-classifier-integrity-v1-20260822\nccb93c9d17401d41d221173f6d4ca9564ab1b8ea refs/heads/analysis/generation-conditioning-exact-route-rebind-v2-20260822\nfc78b85ac78faa1498d749c6a24d78289cde8438 refs/remotes/bundle/conditioning-classifier-integrity\nccb93c9d17401d41d221173f6d4ca9564ab1b8ea refs/remotes/origin/HEAD\nccb93c9d17401d41d221173f6d4ca9564ab1b8ea refs/remotes/origin/analysis/generation-conditioning-exact-route-rebind-v2-20260822\ncd78a348769f0efad0d42de063e5b0943444a29b refs/remotes/origin/analysis/generation-quality-bridge-mixed-route-v3-20260822",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/conditioning-exact-route-rebind-ccb93c9/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/conditioning-exact-route-rebind-ccb93c9/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/fc78b85ac78f"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-system-classifier-integrity-4087f42/CoFiTok-internal",
+    "head": "4087f4293e3fd197c81cbfa9029f3d6083654415",
+    "branch": "analysis/generation-terminal-classifier-integrity-v1-20260822",
+    "refs": "4087f4293e3fd197c81cbfa9029f3d6083654415 refs/heads/analysis/generation-terminal-classifier-integrity-v1-20260822\n8ec9a09ddcd981c1ffbd06b6bda81386b33321de refs/heads/analysis/generation-terminal-system-claim-guard-v1\n4087f4293e3fd197c81cbfa9029f3d6083654415 refs/remotes/bundle/terminal-system-classifier-integrity\n8ec9a09ddcd981c1ffbd06b6bda81386b33321de refs/remotes/origin/HEAD\n5fab079a7b48024b05e2a306b95040baf839e276 refs/remotes/origin/analysis/generation-quality-bridge-claim-language-guard-waiter-v1\n8ec9a09ddcd981c1ffbd06b6bda81386b33321de refs/remotes/origin/analysis/generation-terminal-system-claim-guard-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-system-guard-8ec9a09/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-system-guard-8ec9a09/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/4087f4293e3f"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-comparison-classifier-integrity-8d11f0a/CoFiTok-internal",
+    "head": "8d11f0aad652197c922454104353f88b4f09d46a",
+    "branch": "analysis/generation-quality-bridge-comparison-classifier-integrity-v1-20260823",
+    "refs": "8d11f0aad652197c922454104353f88b4f09d46a refs/heads/analysis/generation-quality-bridge-comparison-classifier-integrity-v1-20260823\nf7cfa34719797bca13cae95217ffd50bf59e2f09 refs/heads/analysis/generation-quality-bridge-comparison-v1-20260822\nf7cfa34719797bca13cae95217ffd50bf59e2f09 refs/remotes/origin/HEAD\nf7cfa34719797bca13cae95217ffd50bf59e2f09 refs/remotes/origin/analysis/generation-quality-bridge-comparison-v1-20260822\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-comparison-waiter-f7cfa34/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-comparison-waiter-f7cfa34/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/8d11f0aad652"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/random-token-classifier-integrity-4ca66c8/CoFiTok-internal",
+    "head": "4ca66c83a573a04345def51d3501919b6b427a4c",
+    "branch": "analysis/generation-random-token-classifier-integrity-v1-20260823",
+    "refs": "4ca66c83a573a04345def51d3501919b6b427a4c refs/heads/analysis/generation-random-token-classifier-integrity-v1-20260823\nfdff5dc048b0fa4a1075ed1498b3da17228f69a2 refs/heads/analysis/generation-random-token-exact-route-guard-v2-20260822\nfdff5dc048b0fa4a1075ed1498b3da17228f69a2 refs/remotes/origin/HEAD\nfdff5dc048b0fa4a1075ed1498b3da17228f69a2 refs/remotes/origin/analysis/generation-random-token-exact-route-guard-v2-20260822\neae02a60e643e8357a1911d65cb2c21dd4fbfc48 refs/remotes/origin/analysis/generation-random-token-semantic-visual-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/random-token-exact-route-guard-fdff5dc/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/random-token-exact-route-guard-fdff5dc/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/4ca66c83a573"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/matched-trajectory-multi-resume-48e2a6f/CoFiTok-internal",
+    "head": "48e2a6f00f544ba48412dd4e45426e095c06c411",
+    "branch": "analysis/generation-matched-trajectory-multi-resume-v1-20260823",
+    "refs": "fbda904ac97b6049f0efa1e96b66ea16526fdc8f refs/heads/analysis/generation-full-data-40k-trajectory-waiter-v1\n48e2a6f00f544ba48412dd4e45426e095c06c411 refs/heads/analysis/generation-matched-trajectory-multi-resume-v1-20260823\n40ee55202545ea01e48fb6642d1b5a51b5264663 refs/heads/analysis/generation-resume-aware-matched-trajectory-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\n5f57757a2162507c6166dbfe976246df6ae1af91 refs/remotes/origin/scale/generation-stability-dense-recovery-control-00549fe\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/48e2a6f00f54"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/metrics-resume-history-8bd1ce7/CoFiTok-internal",
+    "head": "8bd1ce78c725ef7a1e764fefbacd7f63feabdc9a",
+    "branch": "",
+    "refs": "8bd1ce78c725ef7a1e764fefbacd7f63feabdc9a refs/heads/fix/generation-metrics-resume-history-v1-20260823\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/8bd1ce78c725"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/resume-history-trajectory-3c6dc32/CoFiTok-internal",
+    "head": "3c6dc320f93d7f2071e13e5b5d87ad618ca02bbf",
+    "branch": "",
+    "refs": "cf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/3c6dc320f93d"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/resume-history-completion-e0d0d4c/CoFiTok-internal",
+    "head": "e0d0d4c0119a40fb91e42ff0adb1a0f2f2075163",
+    "branch": "",
+    "refs": "e0d0d4c0119a40fb91e42ff0adb1a0f2f2075163 refs/heads/rehearsal-resume-history-completion\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/resume-history-trajectory-3c6dc32/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/resume-history-trajectory-3c6dc32/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/e0d0d4c0119a"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/runtime-claim-strict-comparison-4ed865c/CoFiTok-internal",
+    "head": "2764089f97713ebc52d2a67f0e1b60b08cca3d50",
+    "branch": "analysis/generation-runtime-claim-strict-comparison-v1",
+    "refs": "0d1fa8db971c9b33b16f943f511efaf5e51b0ace refs/heads/analysis/generation-quality-bridge-runtime-claim-guard-rebind-v2\n6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46 refs/heads/analysis/generation-quality-bridge-runtime-claim-guard-v1\n2764089f97713ebc52d2a67f0e1b60b08cca3d50 refs/heads/analysis/generation-runtime-claim-strict-comparison-v1\n6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46 refs/remotes/origin/HEAD\n6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46 refs/remotes/origin/analysis/generation-quality-bridge-runtime-claim-guard-v1\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system\n0d1fa8db971c9b33b16f943f511efaf5e51b0ace refs/remotes/rebind/runtime-claim-guard-v2",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-runtime-claim-guard-6fdeebe/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-runtime-claim-guard-6fdeebe/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/2764089f9771"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-runtime-strict-conjunct-ebd0a49/CoFiTok-internal",
+    "head": "ebd0a49fe17a43cbf4159ad1ad1932ad8fd96ec1",
+    "branch": "analysis/generation-terminal-runtime-strict-conjunct-v1",
+    "refs": "2764089f97713ebc52d2a67f0e1b60b08cca3d50 refs/heads/analysis/generation-runtime-claim-strict-comparison-v1\nebd0a49fe17a43cbf4159ad1ad1932ad8fd96ec1 refs/heads/analysis/generation-terminal-runtime-strict-conjunct-v1\n2764089f97713ebc52d2a67f0e1b60b08cca3d50 refs/remotes/origin/HEAD\n0d1fa8db971c9b33b16f943f511efaf5e51b0ace refs/remotes/origin/analysis/generation-quality-bridge-runtime-claim-guard-rebind-v2\n6fdeebe7c0ca6b2f7fbe593b3690f14d36f98e46 refs/remotes/origin/analysis/generation-quality-bridge-runtime-claim-guard-v1\n2764089f97713ebc52d2a67f0e1b60b08cca3d50 refs/remotes/origin/analysis/generation-runtime-claim-strict-comparison-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/runtime-claim-strict-comparison-4ed865c/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/runtime-claim-strict-comparison-4ed865c/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/ebd0a49fe17a"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/runtime-claim-strict-recovery-06ac9b4",
+    "head": "06ac9b4f034c4cc7ce8961d9499937e0dbe6dfa3",
+    "branch": "analysis/generation-runtime-claim-strict-recovery-v2",
+    "refs": "06ac9b4f034c4cc7ce8961d9499937e0dbe6dfa3 refs/heads/analysis/generation-runtime-claim-strict-recovery-v2\nebd0a49fe17a43cbf4159ad1ad1932ad8fd96ec1 refs/heads/analysis/generation-terminal-runtime-strict-conjunct-v1\nebd0a49fe17a43cbf4159ad1ad1932ad8fd96ec1 refs/remotes/origin/HEAD\n2764089f97713ebc52d2a67f0e1b60b08cca3d50 refs/remotes/origin/analysis/generation-runtime-claim-strict-comparison-v1\nebd0a49fe17a43cbf4159ad1ad1932ad8fd96ec1 refs/remotes/origin/analysis/generation-terminal-runtime-strict-conjunct-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-runtime-strict-conjunct-ebd0a49/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-runtime-strict-conjunct-ebd0a49/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/06ac9b4f034c"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-runtime-strict-conjunct-fail-closed-0a64804",
+    "head": "0a64804ea698c9708afa1368198274395f34c15b",
+    "branch": "analysis/generation-terminal-runtime-strict-conjunct-fail-closed-v2",
+    "refs": "06ac9b4f034c4cc7ce8961d9499937e0dbe6dfa3 refs/heads/analysis/generation-runtime-claim-strict-recovery-v2\n0a64804ea698c9708afa1368198274395f34c15b refs/heads/analysis/generation-terminal-runtime-strict-conjunct-fail-closed-v2\n06ac9b4f034c4cc7ce8961d9499937e0dbe6dfa3 refs/remotes/origin/HEAD\n06ac9b4f034c4cc7ce8961d9499937e0dbe6dfa3 refs/remotes/origin/analysis/generation-runtime-claim-strict-recovery-v2\nebd0a49fe17a43cbf4159ad1ad1932ad8fd96ec1 refs/remotes/origin/analysis/generation-terminal-runtime-strict-conjunct-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/runtime-claim-strict-recovery-06ac9b4 (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/runtime-claim-strict-recovery-06ac9b4 (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/0a64804ea698"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-comparison-runtime-strict-ac03888/CoFiTok-internal",
+    "head": "ac0388869ee5dd0f3a36bbf9f79550eed99a6f9c",
+    "branch": "analysis/generation-quality-bridge-comparison-runtime-strict-v2-20260823",
+    "refs": "8d11f0aad652197c922454104353f88b4f09d46a refs/heads/analysis/generation-quality-bridge-comparison-classifier-integrity-v1-20260823\nac0388869ee5dd0f3a36bbf9f79550eed99a6f9c refs/heads/analysis/generation-quality-bridge-comparison-runtime-strict-v2-20260823\n8d11f0aad652197c922454104353f88b4f09d46a refs/remotes/origin/HEAD\n8d11f0aad652197c922454104353f88b4f09d46a refs/remotes/origin/analysis/generation-quality-bridge-comparison-classifier-integrity-v1-20260823\nf7cfa34719797bca13cae95217ffd50bf59e2f09 refs/remotes/origin/analysis/generation-quality-bridge-comparison-v1-20260822",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-comparison-classifier-integrity-8d11f0a/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-comparison-classifier-integrity-8d11f0a/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/ac0388869ee5"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-completion-runtime-strict-107f739/CoFiTok-internal",
+    "head": "107f739035a71297fa9d970281097e04fa1a0b45",
+    "branch": "analysis/generation-terminal-completion-runtime-strict-v2-20260823",
+    "refs": "a253d56e49b78e1c8ddb10c3bd07af5aa22e5919 refs/heads/analysis/generation-class-fidelity-integrity-v1-20260822\n107f739035a71297fa9d970281097e04fa1a0b45 refs/heads/analysis/generation-terminal-completion-runtime-strict-v2-20260823\na253d56e49b78e1c8ddb10c3bd07af5aa22e5919 refs/remotes/origin/HEAD\na253d56e49b78e1c8ddb10c3bd07af5aa22e5919 refs/remotes/origin/analysis/generation-class-fidelity-integrity-v1-20260822\n15ccd94f3ecc07e2714b2726e43b55a13d2a1589 refs/remotes/origin/analysis/generation-metric-cache-integrity-v1-20260822",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/class-fidelity-integrity-a253d56/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/class-fidelity-integrity-a253d56/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/107f739035a7"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-runtime-strict-conjunct-completion-rebind-b9c03a7/CoFiTok-internal",
+    "head": "b9c03a70204fe7e89af39c041894539f31097086",
+    "branch": "analysis/generation-terminal-runtime-strict-conjunct-completion-rebind-v3-20260823",
+    "refs": "b9c03a70204fe7e89af39c041894539f31097086 refs/heads/analysis/generation-terminal-runtime-strict-conjunct-completion-rebind-v3-20260823\n0a64804ea698c9708afa1368198274395f34c15b refs/heads/analysis/generation-terminal-runtime-strict-conjunct-fail-closed-v2\n0a64804ea698c9708afa1368198274395f34c15b refs/remotes/origin/HEAD\n06ac9b4f034c4cc7ce8961d9499937e0dbe6dfa3 refs/remotes/origin/analysis/generation-runtime-claim-strict-recovery-v2\n0a64804ea698c9708afa1368198274395f34c15b refs/remotes/origin/analysis/generation-terminal-runtime-strict-conjunct-fail-closed-v2",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-runtime-strict-conjunct-fail-closed-0a64804 (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-runtime-strict-conjunct-fail-closed-0a64804 (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/b9c03a70204f"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-route-supersession-interlock-b92248b/CoFiTok-internal",
+    "head": "b92248bff10a7225e04b95f5b5370a1abea97e68",
+    "branch": "analysis/generation-terminal-route-supersession-interlock-v1-20260823",
+    "refs": "b92248bff10a7225e04b95f5b5370a1abea97e68 refs/heads/analysis/generation-terminal-route-supersession-interlock-v1-20260823\nb9c03a70204fe7e89af39c041894539f31097086 refs/heads/analysis/generation-terminal-runtime-strict-conjunct-completion-rebind-v3-20260823\nb9c03a70204fe7e89af39c041894539f31097086 refs/remotes/origin/HEAD\nb9c03a70204fe7e89af39c041894539f31097086 refs/remotes/origin/analysis/generation-terminal-runtime-strict-conjunct-completion-rebind-v3-20260823\n0a64804ea698c9708afa1368198274395f34c15b refs/remotes/origin/analysis/generation-terminal-runtime-strict-conjunct-fail-closed-v2",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-runtime-strict-conjunct-completion-rebind-b9c03a7/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-runtime-strict-conjunct-completion-rebind-b9c03a7/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/b92248bff10a"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-route-supersession-interlock-bdcab4b/CoFiTok-internal",
+    "head": "bdcab4b15bbbb18a78deaba85ff96eac6c129964",
+    "branch": "analysis/generation-terminal-route-supersession-interlock-v1-20260823",
+    "refs": "bdcab4b15bbbb18a78deaba85ff96eac6c129964 refs/heads/analysis/generation-terminal-route-supersession-interlock-v1-20260823\nb9c03a70204fe7e89af39c041894539f31097086 refs/heads/analysis/generation-terminal-runtime-strict-conjunct-completion-rebind-v3-20260823\nb9c03a70204fe7e89af39c041894539f31097086 refs/remotes/origin/HEAD\nb9c03a70204fe7e89af39c041894539f31097086 refs/remotes/origin/analysis/generation-terminal-runtime-strict-conjunct-completion-rebind-v3-20260823\n0a64804ea698c9708afa1368198274395f34c15b refs/remotes/origin/analysis/generation-terminal-runtime-strict-conjunct-fail-closed-v2",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-runtime-strict-conjunct-completion-rebind-b9c03a7/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-runtime-strict-conjunct-completion-rebind-b9c03a7/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/bdcab4b15bbb"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/runtime-strict-route-selection-91b42a9/CoFiTok-internal",
+    "head": "91b42a94f35de6723414fad9eb7b4cfdd09ce008",
+    "branch": "analysis/generation-runtime-strict-route-selection-v1-20260824",
+    "refs": "91b42a94f35de6723414fad9eb7b4cfdd09ce008 refs/heads/analysis/generation-runtime-strict-route-selection-v1-20260824\nbdcab4b15bbbb18a78deaba85ff96eac6c129964 refs/heads/analysis/generation-terminal-route-supersession-interlock-v1-20260823\n91b42a94f35de6723414fad9eb7b4cfdd09ce008 refs/remotes/bundle/runtime-strict-route-selection\nbdcab4b15bbbb18a78deaba85ff96eac6c129964 refs/remotes/origin/HEAD\nbdcab4b15bbbb18a78deaba85ff96eac6c129964 refs/remotes/origin/analysis/generation-terminal-route-supersession-interlock-v1-20260823\nb9c03a70204fe7e89af39c041894539f31097086 refs/remotes/origin/analysis/generation-terminal-runtime-strict-conjunct-completion-rebind-v3-20260823",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-route-supersession-interlock-bdcab4b/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-route-supersession-interlock-bdcab4b/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/91b42a94f35d"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/requested-class-visual-schema6-504e51d/CoFiTok-internal",
+    "head": "504e51d75b378b752eced99ff4335ee2c6cfb018",
+    "branch": "fix/generation-requested-class-visual-schema6-v1",
+    "refs": "504e51d75b378b752eced99ff4335ee2c6cfb018 refs/heads/fix/generation-requested-class-visual-schema6-v1\nc1abf65fdafb8e198a8f1ac59c83b3038a9702b5 refs/heads/scale/generation-terminal-visual-audit-waiter-v1\nc1abf65fdafb8e198a8f1ac59c83b3038a9702b5 refs/remotes/origin/HEAD\n2e86ed24925fa958c86dc9bcfa8bc5f029b3a1d8 refs/remotes/origin/scale/generation-requested-class-visual-audit-v1\nc1abf65fdafb8e198a8f1ac59c83b3038a9702b5 refs/remotes/origin/scale/generation-terminal-visual-audit-waiter-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-visual-audit-waiter-c1abf65/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-visual-audit-waiter-c1abf65/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/504e51d75b37"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-exposure-authoritative-verifier-152cab6/CoFiTok-internal",
+    "head": "152cab6a4795277109b13a38de3e8f6f3ccbac6c",
+    "branch": "fix/generation-terminal-exposure-authoritative-verifier-v2",
+    "refs": "e6f083d01062d594c32b1d595a77f0feb81a0ac4 refs/heads/analysis/generation-terminal-exposure-binding-v1\n152cab6a4795277109b13a38de3e8f6f3ccbac6c refs/heads/fix/generation-terminal-exposure-authoritative-verifier-v2\ne6f083d01062d594c32b1d595a77f0feb81a0ac4 refs/remotes/origin/HEAD\ne6f083d01062d594c32b1d595a77f0feb81a0ac4 refs/remotes/origin/analysis/generation-terminal-exposure-binding-v1\nd8749a6aea927545eb194f290a3b46017d7d99dd refs/remotes/origin/analysis/generation-training-exposure-snapshot-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-exposure-waiter-e6f083d (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/terminal-exposure-waiter-e6f083d (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/152cab6a4795"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/exposure-aware-decision-authoritative-bb1dc3d/CoFiTok-internal",
+    "head": "bb1dc3dba8db4947b800d49a6dc7dfe160a8fe69",
+    "branch": "fix/generation-exposure-aware-decision-authoritative-v3",
+    "refs": "cd78a348769f0efad0d42de063e5b0943444a29b refs/heads/analysis/generation-quality-bridge-mixed-route-v3-20260822\nbb1dc3dba8db4947b800d49a6dc7dfe160a8fe69 refs/heads/fix/generation-exposure-aware-decision-authoritative-v3\ncd78a348769f0efad0d42de063e5b0943444a29b refs/remotes/origin/HEAD\n6448e43783babe3d856355d2a28f5d6f930f8173 refs/remotes/origin/analysis/generation-quality-bridge-class-only-route-v2-20260822\n85e3ece1196fd318cd6823439824e19fca4275a3 refs/remotes/origin/analysis/generation-quality-bridge-exposure-routing-v1\ncd78a348769f0efad0d42de063e5b0943444a29b refs/remotes/origin/analysis/generation-quality-bridge-mixed-route-v3-20260822",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-mixed-route-v3-cd78a34/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/quality-bridge-mixed-route-v3-cd78a34/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/bb1dc3dba8db"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/100k-cross-protocol-reconciliation-c1a27c5/CoFiTok-internal",
+    "head": "c1a27c557e81e89d4e015648e9c065924725ce6c",
+    "branch": "analysis/generation-100k-cross-protocol-reconciliation-v1",
+    "refs": "c1a27c557e81e89d4e015648e9c065924725ce6c refs/heads/analysis/generation-100k-cross-protocol-reconciliation-v1\nbb1dc3dba8db4947b800d49a6dc7dfe160a8fe69 refs/heads/fix/generation-exposure-aware-decision-authoritative-v3\nbb1dc3dba8db4947b800d49a6dc7dfe160a8fe69 refs/remotes/origin/HEAD\ncd78a348769f0efad0d42de063e5b0943444a29b refs/remotes/origin/analysis/generation-quality-bridge-mixed-route-v3-20260822\nbb1dc3dba8db4947b800d49a6dc7dfe160a8fe69 refs/remotes/origin/fix/generation-exposure-aware-decision-authoritative-v3",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/exposure-aware-decision-authoritative-bb1dc3d/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/exposure-aware-decision-authoritative-bb1dc3d/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/c1a27c557e81"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/100k-post-reconciliation-decision-2ebecf5/CoFiTok-internal",
+    "head": "2ebecf56c5e4c86fc9021b617588dc94bd72a475",
+    "branch": "analysis/generation-100k-post-reconciliation-decision-v1",
+    "refs": "c1a27c557e81e89d4e015648e9c065924725ce6c refs/heads/analysis/generation-100k-cross-protocol-reconciliation-v1\n2ebecf56c5e4c86fc9021b617588dc94bd72a475 refs/heads/analysis/generation-100k-post-reconciliation-decision-v1\nc1a27c557e81e89d4e015648e9c065924725ce6c refs/remotes/origin/HEAD\nc1a27c557e81e89d4e015648e9c065924725ce6c refs/remotes/origin/analysis/generation-100k-cross-protocol-reconciliation-v1\nbb1dc3dba8db4947b800d49a6dc7dfe160a8fe69 refs/remotes/origin/fix/generation-exposure-aware-decision-authoritative-v3",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/100k-cross-protocol-reconciliation-c1a27c5/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/100k-cross-protocol-reconciliation-c1a27c5/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/2ebecf56c5e4"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/epsilon-stability-sampling-recovery-7044293/CoFiTok-internal",
+    "head": "62b5c7a77052605dff579e17a7d9cc88397b4a31",
+    "branch": "scale/generation-quality-repair-epsilon-stability-v1",
+    "refs": "62b5c7a77052605dff579e17a7d9cc88397b4a31 refs/heads/scale/generation-quality-repair-epsilon-stability-v1\n704429355f7bd524cd3a3d49fc77c684923e3486 refs/remotes/origin/scale/generation-quality-repair-epsilon-stability-v1",
+    "remotes": "origin\t/tmp/epsilon-stability-sampling-recovery-7044293.bundle (fetch)\norigin\t/tmp/epsilon-stability-sampling-recovery-7044293.bundle (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/62b5c7a77052"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/epsilon-stability-jpeg-materialization-850a6eb/CoFiTok-internal",
+    "head": "1ba53bb409f30a8bf42467df50af3d7286df6762",
+    "branch": "scale/generation-quality-repair-epsilon-stability-pre-gpu-recovery-v1",
+    "refs": "850a6eb32efd6459d6207f6ff33d4ae7ba1435da refs/heads/scale/generation-quality-repair-epsilon-stability-jpeg-fix-v1\n1ba53bb409f30a8bf42467df50af3d7286df6762 refs/heads/scale/generation-quality-repair-epsilon-stability-pre-gpu-recovery-v1\n62b5c7a77052605dff579e17a7d9cc88397b4a31 refs/heads/scale/generation-quality-repair-epsilon-stability-v1\n62b5c7a77052605dff579e17a7d9cc88397b4a31 refs/remotes/origin/HEAD\n62b5c7a77052605dff579e17a7d9cc88397b4a31 refs/remotes/origin/scale/generation-quality-repair-epsilon-stability-v1",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/epsilon-stability-sampling-recovery-7044293/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/epsilon-stability-sampling-recovery-7044293/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/1ba53bb409f3"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-ranking-terminal-rebind-v2-d019a17",
+    "head": "d019a17b742c5da867e71fa72b2d67f75cb0bc7c",
+    "branch": "analysis/generation-conditioning-ranking-terminal-rebind-v2-20260824",
+    "refs": "fc78b85ac78faa1498d749c6a24d78289cde8438 refs/heads/analysis/generation-conditioning-classifier-integrity-v1-20260822\nd019a17b742c5da867e71fa72b2d67f75cb0bc7c refs/heads/analysis/generation-conditioning-ranking-terminal-rebind-v2-20260824\nfc78b85ac78faa1498d749c6a24d78289cde8438 refs/remotes/origin/HEAD\nfc78b85ac78faa1498d749c6a24d78289cde8438 refs/remotes/origin/analysis/generation-conditioning-classifier-integrity-v1-20260822\nccb93c9d17401d41d221173f6d4ca9564ab1b8ea refs/remotes/origin/analysis/generation-conditioning-exact-route-rebind-v2-20260822",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/conditioning-classifier-integrity-fc78b85/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/conditioning-classifier-integrity-fc78b85/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/d019a17b742c"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/required-checkpoint-physical-integrity-17eaa4a",
+    "head": "17eaa4a2d37521281e5abcbc4050ad0e8b11ba94",
+    "branch": "analysis/generation-required-checkpoint-physical-integrity-v1-20260825",
+    "refs": "d019a17b742c5da867e71fa72b2d67f75cb0bc7c refs/heads/analysis/generation-conditioning-ranking-terminal-rebind-v2-20260824\n17eaa4a2d37521281e5abcbc4050ad0e8b11ba94 refs/heads/analysis/generation-required-checkpoint-physical-integrity-v1-20260825\nd019a17b742c5da867e71fa72b2d67f75cb0bc7c refs/remotes/origin/HEAD\nfc78b85ac78faa1498d749c6a24d78289cde8438 refs/remotes/origin/analysis/generation-conditioning-classifier-integrity-v1-20260822\nd019a17b742c5da867e71fa72b2d67f75cb0bc7c refs/remotes/origin/analysis/generation-conditioning-ranking-terminal-rebind-v2-20260824",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/conditioning-ranking-terminal-rebind-v2-d019a17 (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/conditioning-ranking-terminal-rebind-v2-d019a17 (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/17eaa4a2d375"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/semantic-residual-alignment-probe-5b3163b/CoFiTok-internal",
+    "head": "5b3163b1490ca62b95591a9aae7d7b082782309e",
+    "branch": "analysis/generation-semantic-residual-alignment-v2-20260825",
+    "refs": "d019a17b742c5da867e71fa72b2d67f75cb0bc7c refs/heads/analysis/generation-conditioning-ranking-terminal-rebind-v2-20260824\n5b3163b1490ca62b95591a9aae7d7b082782309e refs/heads/analysis/generation-semantic-residual-alignment-v2-20260825\nd019a17b742c5da867e71fa72b2d67f75cb0bc7c refs/remotes/origin/HEAD\nfc78b85ac78faa1498d749c6a24d78289cde8438 refs/remotes/origin/analysis/generation-conditioning-classifier-integrity-v1-20260822\nd019a17b742c5da867e71fa72b2d67f75cb0bc7c refs/remotes/origin/analysis/generation-conditioning-ranking-terminal-rebind-v2-20260824",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/conditioning-ranking-terminal-rebind-v2-d019a17 (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/conditioning-ranking-terminal-rebind-v2-d019a17 (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/5b3163b1490c"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/exposure-semantic-trajectory-54d0bb0/CoFiTok-internal",
+    "head": "54d0bb0abf16ddf80de641264404b33ea2b0e3e5",
+    "branch": "analysis/generation-exposure-semantic-trajectory-v1-20260825",
+    "refs": "a8143b1c18c5e295b68064e98860ee8e084ab3ce refs/heads/analysis/generation-exposure-semantic-trajectory-replay-v1-20260825\n54d0bb0abf16ddf80de641264404b33ea2b0e3e5 refs/heads/analysis/generation-exposure-semantic-trajectory-v1-20260825\n5b3163b1490ca62b95591a9aae7d7b082782309e refs/heads/analysis/generation-semantic-residual-alignment-v2-20260825\n5b3163b1490ca62b95591a9aae7d7b082782309e refs/remotes/origin/HEAD\nd019a17b742c5da867e71fa72b2d67f75cb0bc7c refs/remotes/origin/analysis/generation-conditioning-ranking-terminal-rebind-v2-20260824\n5b3163b1490ca62b95591a9aae7d7b082782309e refs/remotes/origin/analysis/generation-semantic-residual-alignment-v2-20260825",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/semantic-residual-alignment-probe-5b3163b/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/semantic-residual-alignment-probe-5b3163b/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/54d0bb0abf16"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/exposure-semantic-trajectory-replay-a8143b1/CoFiTok-internal",
+    "head": "a8143b1c18c5e295b68064e98860ee8e084ab3ce",
+    "branch": "analysis/generation-exposure-semantic-trajectory-replay-v1-20260825",
+    "refs": "a8143b1c18c5e295b68064e98860ee8e084ab3ce refs/heads/analysis/generation-exposure-semantic-trajectory-replay-v1-20260825\n54d0bb0abf16ddf80de641264404b33ea2b0e3e5 refs/heads/analysis/generation-exposure-semantic-trajectory-v1-20260825\n5b3163b1490ca62b95591a9aae7d7b082782309e refs/heads/analysis/generation-semantic-residual-alignment-v2-20260825\n5b3163b1490ca62b95591a9aae7d7b082782309e refs/remotes/origin/HEAD\nd019a17b742c5da867e71fa72b2d67f75cb0bc7c refs/remotes/origin/analysis/generation-conditioning-ranking-terminal-rebind-v2-20260824\n5b3163b1490ca62b95591a9aae7d7b082782309e refs/remotes/origin/analysis/generation-semantic-residual-alignment-v2-20260825",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/semantic-residual-alignment-probe-5b3163b/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/semantic-residual-alignment-probe-5b3163b/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/a8143b1c18c5"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/terminal-versioned-claim-chain-fccaf57/CoFiTok-internal",
+    "head": "ce6fe90639cece7d712254ba7e09ff5d96bf7905",
+    "branch": "analysis/generation-terminal-versioned-consumer-chain-v1-20260825",
+    "refs": "ce6fe90639cece7d712254ba7e09ff5d96bf7905 refs/heads/analysis/generation-terminal-versioned-consumer-chain-v1-20260825\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/ce6fe90639ce"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/epsilon-stability-post-diagnostic-decision-139bcd9/CoFiTok-internal",
+    "head": "139bcd91015e62a0fb8aa4cd1fea8b2ae177439f",
+    "branch": "analysis/generation-epsilon-stability-post-diagnostic-decision-v1-20260825",
+    "refs": "139bcd91015e62a0fb8aa4cd1fea8b2ae177439f refs/heads/analysis/generation-epsilon-stability-post-diagnostic-decision-v1-20260825\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/139bcd91015e"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-dfb9b2c/CoFiTok-internal",
+    "head": "dfb9b2c05ed1b731492335665f0cf450425ec1d9",
+    "branch": "scale/generation-min-snr-matched-pilot-v1-20260825",
+    "refs": "dfb9b2c05ed1b731492335665f0cf450425ec1d9 refs/heads/scale/generation-min-snr-matched-pilot-v1-20260825\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/dfb9b2c05ed1"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal",
+    "head": "842a34130e82f241330707118a05bf6ed01e263e",
+    "branch": "scale/generation-min-snr-matched-pilot-v1-20260825",
+    "refs": "842a34130e82f241330707118a05bf6ed01e263e refs/heads/scale/generation-min-snr-matched-pilot-v1-20260825\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/HEAD\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (fetch)\norigin\t/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/842a34130e82"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-pilot-health-monitor-4bbc880/CoFiTok-internal",
+    "head": "4bbc880ad3928b607ee61bc1be41d10a60853e4d",
+    "branch": "analysis/generation-min-snr-pilot-health-monitor-v1-20260825",
+    "refs": "4bbc880ad3928b607ee61bc1be41d10a60853e4d refs/heads/analysis/generation-min-snr-pilot-health-monitor-v1-20260825\n842a34130e82f241330707118a05bf6ed01e263e refs/heads/scale/generation-min-snr-matched-pilot-v1-20260825\n842a34130e82f241330707118a05bf6ed01e263e refs/remotes/origin/HEAD\n842a34130e82f241330707118a05bf6ed01e263e refs/remotes/origin/scale/generation-min-snr-matched-pilot-v1-20260825\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/4bbc880ad392"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-treatment-delivery-39251b7/CoFiTok-internal",
+    "head": "39251b797de0e2b4dab7c827e952b5e660b89672",
+    "branch": "analysis/generation-min-snr-treatment-delivery-v1-20260825",
+    "refs": "39251b797de0e2b4dab7c827e952b5e660b89672 refs/heads/analysis/generation-min-snr-treatment-delivery-v1-20260825\n842a34130e82f241330707118a05bf6ed01e263e refs/heads/scale/generation-min-snr-matched-pilot-v1-20260825\n842a34130e82f241330707118a05bf6ed01e263e refs/remotes/origin/HEAD\n842a34130e82f241330707118a05bf6ed01e263e refs/remotes/origin/scale/generation-min-snr-matched-pilot-v1-20260825\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/39251b797de0"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-terminal-physical-replay-eef0fc7/CoFiTok-internal",
+    "head": "eef0fc7e9ff8136fa71b4803da998867ad818407",
+    "branch": "analysis/generation-min-snr-terminal-physical-replay-v1-20260825",
+    "refs": "eef0fc7e9ff8136fa71b4803da998867ad818407 refs/heads/analysis/generation-min-snr-terminal-physical-replay-v1-20260825\n831caff20d6c7052d3012037ebc7ff622507b101 refs/heads/analysis/generation-min-snr-terminal-physical-replay-v2-20260901\n842a34130e82f241330707118a05bf6ed01e263e refs/heads/scale/generation-min-snr-matched-pilot-v1-20260825\n842a34130e82f241330707118a05bf6ed01e263e refs/remotes/origin/HEAD\n842a34130e82f241330707118a05bf6ed01e263e refs/remotes/origin/scale/generation-min-snr-matched-pilot-v1-20260825\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/eef0fc7e9ff8"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/min-snr-terminal-physical-replay-v2/CoFiTok-internal",
+    "head": "831caff20d6c7052d3012037ebc7ff622507b101",
+    "branch": "analysis/generation-min-snr-terminal-physical-replay-v2-20260901",
+    "refs": "eef0fc7e9ff8136fa71b4803da998867ad818407 refs/heads/analysis/generation-min-snr-terminal-physical-replay-v1-20260825\n831caff20d6c7052d3012037ebc7ff622507b101 refs/heads/analysis/generation-min-snr-terminal-physical-replay-v2-20260901\n842a34130e82f241330707118a05bf6ed01e263e refs/heads/scale/generation-min-snr-matched-pilot-v1-20260825\n842a34130e82f241330707118a05bf6ed01e263e refs/remotes/origin/HEAD\n842a34130e82f241330707118a05bf6ed01e263e refs/remotes/origin/scale/generation-min-snr-matched-pilot-v1-20260825\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/remotes/origin/scale/generation-stability-quality-bridge-100k",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/checkouts/min-snr-matched-pilot-842a341/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/831caff20d6c"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_v2_restore_rehearsal/cofitok-capacity-probe-22a5994",
+    "head": "22a5994f0475c29cca38a80188ed6ce00c6e6d15",
+    "branch": "scale/generation-capacity-probe-v1",
+    "refs": "22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/continuity/capacity_probe_preparation\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/heads/continuity/capacity_probe_reference\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/continuity/quality_bridge_execution\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/continuity/quality_bridge_followup_decision\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/scale/generation-capacity-probe-v1\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/scale/generation-quality-bridge-followup-decision-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k",
+    "remotes": "",
+    "local_ref": "refs/heads/archive/server-snapshot/22a5994f0475"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_v2_restore_rehearsal/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+    "head": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "refs": "22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/continuity/capacity_probe_preparation\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/heads/continuity/capacity_probe_reference\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/continuity/quality_bridge_execution\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/continuity/quality_bridge_followup_decision\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/scale/generation-capacity-probe-v1\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/scale/generation-quality-bridge-followup-decision-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k",
+    "remotes": "",
+    "local_ref": "refs/heads/archive/server-snapshot/cf0e5faa94bf"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_v2_restore_rehearsal/cofitok-quality-bridge-followup-decision-9b02fa8",
+    "head": "9b02fa83d20b1459a2706d6d82371caf5c023f54",
+    "branch": "scale/generation-quality-bridge-followup-decision-v1",
+    "refs": "22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/continuity/capacity_probe_preparation\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/heads/continuity/capacity_probe_reference\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/continuity/quality_bridge_execution\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/continuity/quality_bridge_followup_decision\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/scale/generation-capacity-probe-v1\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/scale/generation-quality-bridge-followup-decision-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k",
+    "remotes": "",
+    "local_ref": "refs/heads/archive/server-snapshot/9b02fa83d20b"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_v3_restore_rehearsal/cofitok-capacity-probe-22a5994",
+    "head": "22a5994f0475c29cca38a80188ed6ce00c6e6d15",
+    "branch": "scale/generation-capacity-probe-v1",
+    "refs": "22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/continuity/capacity_probe_preparation\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/heads/continuity/capacity_probe_reference\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/continuity/quality_bridge_execution\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/continuity/quality_bridge_followup_decision\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/heads/scale/generation-capacity-probe-reference-v1\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/scale/generation-capacity-probe-v1\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/scale/generation-quality-bridge-followup-decision-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k",
+    "remotes": "",
+    "local_ref": "refs/heads/archive/server-snapshot/22a5994f0475"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_v3_restore_rehearsal/cofitok-capacity-reference-c7424ed",
+    "head": "c7424ed74da1bd7907d094d10725b337b1d822ac",
+    "branch": "scale/generation-capacity-probe-reference-v1",
+    "refs": "22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/continuity/capacity_probe_preparation\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/heads/continuity/capacity_probe_reference\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/continuity/quality_bridge_execution\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/continuity/quality_bridge_followup_decision\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/heads/scale/generation-capacity-probe-reference-v1\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/scale/generation-capacity-probe-v1\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/scale/generation-quality-bridge-followup-decision-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k",
+    "remotes": "",
+    "local_ref": "refs/heads/archive/server-snapshot/c7424ed74da1"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_v3_restore_rehearsal/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+    "head": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "refs": "22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/continuity/capacity_probe_preparation\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/heads/continuity/capacity_probe_reference\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/continuity/quality_bridge_execution\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/continuity/quality_bridge_followup_decision\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/heads/scale/generation-capacity-probe-reference-v1\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/scale/generation-capacity-probe-v1\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/scale/generation-quality-bridge-followup-decision-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k",
+    "remotes": "",
+    "local_ref": "refs/heads/archive/server-snapshot/cf0e5faa94bf"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_generation_pipeline_v3_restore_rehearsal/cofitok-quality-bridge-followup-decision-9b02fa8",
+    "head": "9b02fa83d20b1459a2706d6d82371caf5c023f54",
+    "branch": "scale/generation-quality-bridge-followup-decision-v1",
+    "refs": "22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/continuity/capacity_probe_preparation\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/heads/continuity/capacity_probe_reference\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/continuity/quality_bridge_execution\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/continuity/quality_bridge_followup_decision\nc7424ed74da1bd7907d094d10725b337b1d822ac refs/heads/scale/generation-capacity-probe-reference-v1\n22a5994f0475c29cca38a80188ed6ce00c6e6d15 refs/heads/scale/generation-capacity-probe-v1\n9b02fa83d20b1459a2706d6d82371caf5c023f54 refs/heads/scale/generation-quality-bridge-followup-decision-v1\ncf0e5faa94bf4ab38d947b921935b3b765b5537a refs/heads/scale/generation-stability-quality-bridge-100k",
+    "remotes": "",
+    "local_ref": "refs/heads/archive/server-snapshot/9b02fa83d20b"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-08d4850",
+    "head": "08d48504ac4898321b0c873574599bcfa063813f",
+    "branch": "scale/generation-large-capacity",
+    "refs": "08d48504ac4898321b0c873574599bcfa063813f refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/08d48504ac48"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-1604dc4",
+    "head": "1604dc45c21ec73d9debf8a81e3d7367cd9fb220",
+    "branch": "scale/generation-large-capacity",
+    "refs": "1604dc45c21ec73d9debf8a81e3d7367cd9fb220 refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/1604dc45c21e"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-27edb63",
+    "head": "27edb632d8cb9a642040ba6fcd3b1a0d682e6c79",
+    "branch": "scale/generation-large-capacity",
+    "refs": "27edb632d8cb9a642040ba6fcd3b1a0d682e6c79 refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/27edb632d8cb"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-2f8da43",
+    "head": "2f8da43a5643541ef547fee76c334bde0e4c3fcc",
+    "branch": "scale/generation-large-capacity",
+    "refs": "2f8da43a5643541ef547fee76c334bde0e4c3fcc refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/2f8da43a5643"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-340c2af",
+    "head": "340c2af80bc18c67a49583e6000c7649679a0512",
+    "branch": "scale/generation-large-capacity",
+    "refs": "340c2af80bc18c67a49583e6000c7649679a0512 refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/340c2af80bc1"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-58ae56c",
+    "head": "58ae56c718e795f9b831ab73704dabd3767b7977",
+    "branch": "scale/generation-large-capacity",
+    "refs": "58ae56c718e795f9b831ab73704dabd3767b7977 refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/58ae56c718e7"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-5dd3488",
+    "head": "5dd3488ac9b30274f4960195e252cc9fdb161002",
+    "branch": "scale/generation-large-capacity",
+    "refs": "5dd3488ac9b30274f4960195e252cc9fdb161002 refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/5dd3488ac9b3"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-7bab083",
+    "head": "7bab083b8d303c03d19074af4c1ed3200b1ad445",
+    "branch": "scale/generation-large-capacity",
+    "refs": "7bab083b8d303c03d19074af4c1ed3200b1ad445 refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/7bab083b8d30"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-847658e",
+    "head": "847658eb5bad1a888f6efe80690ab7ca5244329a",
+    "branch": "scale/generation-large-capacity",
+    "refs": "847658eb5bad1a888f6efe80690ab7ca5244329a refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/847658eb5bad"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-b4fb415",
+    "head": "b4fb415c51c608e68ea5e9484646eb10047f7181",
+    "branch": "scale/generation-large-capacity",
+    "refs": "b4fb415c51c608e68ea5e9484646eb10047f7181 refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/b4fb415c51c6"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-b8ba139",
+    "head": "b8ba139ae8710baedaa0e2f11d9bfa66f73909dc",
+    "branch": "scale/generation-large-capacity",
+    "refs": "b8ba139ae8710baedaa0e2f11d9bfa66f73909dc refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/b8ba139ae871"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-caa66eb",
+    "head": "caa66eba2e513fc28fe11c9763b1dedbb7f3fc87",
+    "branch": "scale/generation-large-capacity",
+    "refs": "caa66eba2e513fc28fe11c9763b1dedbb7f3fc87 refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/caa66eba2e51"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-e971fbd",
+    "head": "e971fbdcf0169ca1c17f6d604a0d983a2e102370",
+    "branch": "scale/generation-large-capacity",
+    "refs": "e971fbdcf0169ca1c17f6d604a0d983a2e102370 refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/e971fbdcf016"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/deployment/large_capacity/checkout-f89bdc2",
+    "head": "f89bdc29af3ea66b9e12292b0c438abf75fcfd7d",
+    "branch": "scale/generation-large-capacity",
+    "refs": "f89bdc29af3ea66b9e12292b0c438abf75fcfd7d refs/heads/scale/generation-large-capacity\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/f89bdc29af3e"
+  },
+  {
+    "path": "/root/autodl-tmp/CoFiTok/rehearsals/schedule_audit_c1efb12/CoFiTok-internal",
+    "head": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+    "branch": "",
+    "refs": "1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/heads/scale/generative-system\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/HEAD\n3f98a4e106a1251d5242a41e260bd9fc4686c5f0 refs/remotes/origin/deploy-capacity-path-v5\n88c3aabf5408f19da92ae01e33e23878e018a4db refs/remotes/origin/paper-evidence-locked\n94a3bb3a11da94ef91f2fe165aa092f5ba5ea129 refs/remotes/origin/probe-v7-prevalidate-94a3bb3\naed20142a496c3c16f9b2e8c8aba4a465fbaf4d7 refs/remotes/origin/scale/generation-stability-50k-posteval-v2\n08b67cc58026adf3e052a3eeab48b4bc0834cfd4 refs/remotes/origin/scale/generation-stability-50k-posteval-v3\ncd88c6cb0811d59d3a1706761079f977936268dd refs/remotes/origin/scale/generation-stability-full-prep-cd88c6c\n1ebcc15210e63a776a2ba448481cbd8bb94a4066 refs/remotes/origin/scale/generative-system",
+    "remotes": "origin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (fetch)\norigin\t/root/autodl-tmp/CoFiTok/CoFiTok-internal (push)",
+    "local_ref": "refs/heads/archive/server-snapshot/c1efb12c6640"
+  }
+]
