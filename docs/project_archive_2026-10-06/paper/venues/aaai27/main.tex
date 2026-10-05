@@ -1,0 +1,554 @@
+\documentclass[letterpaper]{article}
+\usepackage[submission]{aaai2027}
+\usepackage[hyphens]{url}
+\usepackage{graphicx}
+\urlstyle{rm}
+\def\UrlFont{\rm}
+\usepackage{natbib}
+\usepackage{caption}
+\frenchspacing
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+
+\pdfinfo{
+/TemplateVersion (2027.1)
+}
+
+\graphicspath{
+  {../../../CoFiTok-internal/artifacts/figures/method_overview_2026-07-08/}
+  {../../../CoFiTok-internal/artifacts/figures/visual_panels_2026-07-08/}
+  {../../../CoFiTok-internal/artifacts/figures/final_visual_claim_2026-07-11/}
+  {../../../CoFiTok-internal/artifacts/figures/final_visual_claim_2026-07-10/}
+  {../../../CoFiTok-internal/artifacts/figures/ablation_hyperparameters_2026-07-11/}
+  {../../../CoFiTok-internal/artifacts/figures/summary_2026-07-08/}
+}
+
+\newcommand{\method}{CoFiTok}
+\newcommand{\epshat}{\hat{\epsilon}}
+\newcommand{\xzero}{x_0}
+\newcommand{\xt}{x_t}
+\newcommand{\zk}{z^{(k)}}
+\newcommand{\sk}{S_k}
+
+\title{\method: Coarse-to-Fine Denoising Tokens for Pixel-Space Diffusion}
+\author{Anonymous Submission}
+\affiliations{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Pixel-space diffusion models usually predict a full dense noise field with a
+single monolithic network output. We introduce \method, a denoising-token
+factorization that represents the dense noise prediction as an ordered sum of
+negative-noise components. Each token is expanded by a restricted,
+condition-free synthesis operator that only sees the current token, so prefix
+sums form valid partial noise predictions and produce controllable partial
+denoising results in pixel space. Across eight current datasets spanning
+CIFAR-10, ImageNet-family 64x64 and 256x256 settings, FFHQ-64, and AFHQv2-64,
+\method{} improves cross-batch prefix path AUC over an endpoint-only factorized control
+on all datasets and avoids zero-token leakage that appears when the synthesis
+operator is made deeper. In a two-seed ImageNet-256 confirmatory study, the
+learned order ranks first among all 24 K4 permutations for both seeds while
+preserving the endpoint sum. Frechet-style generation metrics favor EDM or direct dense
+epsilon on most rows, so the supported claim is not unconditional generation
+superiority; it is that ordered restricted dense-noise factorization yields
+prefix-controllable denoising without relying on a VAE-style decoder.
+\end{abstract}
+
+\section{Introduction}
+
+Diffusion models reverse a noising process by repeatedly predicting a dense
+noise field. This dense prediction is effective, but it is also monolithic:
+there is no direct way to ask how much of the denoising update has been
+explained, whether the update has an interpretable coarse-to-fine order, or how
+to stop after a valid partial prediction. Ordered visual tokenizers and
+diffusion-autoregressive methods suggest that generation can benefit from
+structured intermediate representations. The question in this paper is
+narrower: can the dense pixel-space noise prediction itself be factorized into
+ordered denoising tokens?
+
+\method{} rewrites the predicted noise field as
+\begin{equation}
+  \epshat^{(K)} = \sum_{k=1}^{K} S_k\left(z^{(k)}\right),
+  \label{eq:full-factorization}
+\end{equation}
+where each $z^{(k)}$ is a denoising token and $S_k$ expands only
+that token into one dense component. Prefixes are meaningful by construction:
+\begin{align}
+  \epshat^{(1:m)} &= \sum_{k=1}^{m} S_k\left(z^{(k)}\right), \\
+  \hat{x}^{(m)}_0 &= \frac{\xt - \sigma_t \epshat^{(1:m)}}{\alpha_t}.
+  \label{eq:prefix-denoise}
+\end{align}
+
+The central design constraint is that the synthesis operator must not become a
+decoder. In the default \method{} model, $S_k$ is token-only, bias-free,
+shallow, local, and condition-free. It does not receive the noised image,
+timestep, class label, text prompt, previous tokens, skip features, or a learned
+constant. This restriction forces the token itself to carry the sample-specific
+negative-noise information and gives the zero-token test a concrete meaning:
+$S_k(0)=0$ by construction.
+
+The current evidence supports a scoped method claim. \method{} learns ordered
+denoising components across eight datasets, including ImageNet-family 64x64 and
+256x256 settings and non-classification FFHQ/AFHQv2 rows. Compared with an
+endpoint-only factorized predictor, \method{} consistently improves
+  prefix/path alignment, while matched objective, prediction, and synthesis
+  ablations expose why ordering and restricted synthesis matter. Generated-sample
+distribution metrics do not show a stable unconditional generation-quality win,
+which clarifies the present contribution: \method{} makes dense noise
+prediction prefix-controllable without relying on a final VAE-style decoder.
+
+\paragraph{Contributions.}
+\begin{enumerate}
+  \item We formulate dense pixel-space diffusion noise prediction as an ordered
+  sum of denoising-token components.
+  \item We introduce a restricted, condition-free synthesis operator whose
+  token-only interface and bias-free construction prevent decoder-style
+  shortcuts and make $S_k(0)=0$ testable.
+  \item We train \method{} with a denoise-path objective that makes token
+  prefixes approximate a partial denoising trajectory rather than only the final
+  clean image.
+  \item We evaluate prefix controllability, component ordering,
+  non-degeneration, endpoint quality, matched short-run generation metrics, and
+  tokenizer-related reconstruction baselines across the current eight-dataset
+  evidence matrix.
+\end{enumerate}
+
+\section{Related Work}
+
+\paragraph{Diffusion models and latent diffusion.}
+Denoising diffusion probabilistic models learn to reverse a Gaussian noising
+process by predicting noise targets \citep{ho2020denoising}. Latent diffusion
+models move this process into a learned latent space and decode the final latent
+through a VAE-style decoder \citep{rombach2022latentdiffusion}. \method{}
+instead stays in the pixel-space denoising algebra and factorizes the dense
+noise prediction itself. The \method{} token is not a final image latent; it is a
+negative-noise component that directly contributes to the pixel-space
+denoising update.
+
+\paragraph{Trajectory ordering and latent-pixel interaction.}
+Latent Forcing studies how changing the schedule between latent and pixel
+variables changes the information revealed by the diffusion trajectory
+\citep{baade2026latentforcing}. \method{} is inspired by this view of trajectory
+ordering, but tokenizes the noise prediction inside the reverse trajectory
+rather than introducing a separate latent-pixel trajectory.
+
+\paragraph{Ordered visual tokenizers.}
+Spectral Image Tokenizer, FlexTok, Matryoshka Representation Learning, M3, and
+related nested-token approaches organize image or multimodal representations so
+that prefixes or subsets can be useful
+\citep{esteves2025spectral,bachmann2025flextok,kusupati2024matryoshka,cai2024matryoshkamultimodal}.
+These methods operate on image representations or visual-token budgets.
+\method{} operates on dense diffusion noise prediction. Its prefixes are valid
+pixel-space denoising updates, not partial decodes from a general image
+tokenizer.
+
+\paragraph{Diffusion-autoregressive visual tokens.}
+Selftok and D-AR are the closest conceptual neighbors because they connect
+diffusion processes and autoregressive tokens \citep{wang2025selftok,gao2025dar}.
+\method{} differs in the represented object and in the anti-degeneration
+mechanism. \method{} tokens are continuous negative-noise components,
+and the synthesis operator is deliberately weak and condition-free. The main
+claim is not that diffusion steps are visual tokens, but that dense noise
+prediction can be decomposed into ordered components whose prefixes are directly
+usable in the diffusion denoising formula.
+
+\section{Method}
+
+\subsection{Forward Noising and Dense Prediction}
+
+For a clean image $x_0$, timestep $t$, and Gaussian noise $\epsilon$, the forward
+process is
+\begin{equation}
+  x_t = \alpha_t x_0 + \sigma_t \epsilon.
+  \label{eq:forward}
+\end{equation}
+A conventional diffusion model predicts $\epsilon_\theta(x_t,t,c)$.
+\method{} instead predicts the ordered component sum
+in Eq.~\ref{eq:full-factorization}. The current implementation uses
+unconditional models for the main MVP evidence. Class labels may exist in
+datasets, but the restricted synthesis operator never receives labels, prompts,
+timesteps, previous tokens, or image features. Figure~\ref{fig:method} shows the
+dataflow and marks the blocked paths into $S_k$ that define the default method
+boundary.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{method_overview.png}
+  \caption{%
+  \method{} factorizes dense pixel-space diffusion noise prediction into ordered
+  denoising tokens. The predictor may be expressive, but each
+  synthesis operator $S_k$ receives only the current token and is restricted to
+  shallow, condition-free, bias-free local synthesis. Any prefix of components
+  forms a valid partial noise prediction and therefore a valid pixel-space
+  denoising result. Dashed blocked paths mark information that must not enter
+  $S_k$, including $x_t$, timesteps, labels, prompts, previous tokens, skip
+  features, and learned constants.}
+  \label{fig:method}
+\end{figure}
+
+\subsection{Next Denoising Tokens}
+
+The token predictor $T_k$ may be expressive. Our default implementation sees
+the noised image, timestep, and previous tokens:
+\begin{align}
+  z^{(1)} &= T_1(x_t,t), \\
+  z^{(k)} &= T_k(x_t,z^{(<k)},t), \quad k>1.
+\end{align}
+In the tiny MVP model, $T_k$ is a small U-Net-like predictor with token heads.
+Autoregressive feedback is not part of the synthesis restriction or the core
+factorization claim: a simultaneous variant may instead use
+$z^{(k)}=T_k(x_t,t)$. We evaluate this choice directly.
+
+\subsection{Restricted Synthesis Operator}
+
+Each token is expanded independently:
+\begin{equation}
+  \epsilon^{(k)} = S_k\left(z^{(k)}\right).
+\end{equation}
+The default $S_k$ is a bias-free projection followed by a bias-free local
+convolution. It is token-only and condition-free. Because no layer has bias and
+there is no learned constant input, zero tokens map to zero components:
+\begin{equation}
+  S_k(0)=0.
+\end{equation}
+This restriction separates \method{} from a learned decoder. A deep-$S_k$
+ablation is included only to test degeneration risk: it uses biased nonlinear
+convolutions while preserving the token-only interface. This ablation can
+improve apparent endpoint metrics but fails the zero-token diagnostic, so it is
+not the default method.
+
+\subsection{Prefix Denoising}
+
+For any prefix length $m$, \method{} forms the prefix prediction and pixel-space
+denoising result in Eq.~\ref{eq:prefix-denoise}. Thus every prefix is a valid
+partial noise prediction and every prefix produces a pixel-space denoising
+result. This is the primary interface exposed by the method.
+
+\subsection{Denoise-Path Objective}
+
+The current MVP objective is
+\begin{equation}
+  \mathcal{L}
+  =
+  \mathcal{L}_{\epsilon}
+  + 0.15\,\mathcal{L}_{\mathrm{path\ prefix}}
+  + 0.30\,\mathcal{L}_{\mathrm{path\ component}}.
+\end{equation}
+The denoise path interpolates from the zero-update $x_t$ reconstruction toward
+coarse-to-fine spatial targets. The progress schedule uses power 1.5 in the
+current best MVP configuration. This objective deliberately avoids forcing early
+prefixes to be immediately clean; instead, prefixes are trained to follow a
+partial denoising path.
+
+\section{Experiments}
+
+\subsection{Setup}
+
+\paragraph{Datasets and models.}
+We evaluate on CIFAR-10, Tiny ImageNet-200,
+ImageNet-1K 64x64 HF, strict-source downsampled ImageNet-64, FFHQ-64,
+AFHQv2-64, ImageNet-256 10\%, and full ImageNet-256. The HF ImageNet-64 row
+and the strict-source downsampled ImageNet-64 row are reported separately; older
+HF-derived results are not silently renamed as strict-source results.
+All matched experiments use small unconditional models and short training
+budgets. The primary model is K8 light \method{} at 64px and K4 at 256px. We
+compare it with a parameter-matched direct dense predictor, an endpoint-only
+factorized control, explicit objective/prediction/synthesis ablations, Improved
+DDPM, and EDM. FlexTok/TiTok reconstruction and official D-AR/MAR/ReTok 50K
+results are protocol-separated secondary context.
+
+\paragraph{Protocols.}
+The P0 rows match dataset, resolution, split, and nominal optimizer steps;
+batch size, nominal images seen, parameter count, and NFE are reported because
+the external methods are not compute matched. The direct dense control is the
+strictest factorization control: it is parameter matched and uses the same
+training budget, but is not claimed to be FLOP or latency matched.
+The broad matrix uses locked per-dataset evaluation sizes. Repeated and
+ablation claims use seeds 103/139 and 1,024 validation images at fixed $t=500$.
+All power-sweep models are evaluated against the same progress-$1.5$ path.
+
+\paragraph{Metrics and evidence tiers.}
+We report endpoint PSNR and MSE, path AUC, effective token count, and zero-input
+energy. Lower path AUC means better alignment of all prefixes
+to the prescribed partial-denoising path; endpoint metrics alone do not measure
+that interface. Frechet-style values are internal comparison metrics rather
+than SOTA FID claims. The locked evidence matrix contains 80 matched P0 cells,
+16 tokenizer eval-only cells, and 24 explicitly protocol-blocked cross-task
+cells; full settings and provenance are in the supplement.
+
+\subsection{Results}
+
+\paragraph{All-dataset evidence.}
+
+Table~\ref{tab:cofitok-diagnostics-current} isolates the supported claim. C is
+\method{}, D is the parameter-matched direct dense predictor, and E is the
+endpoint-only factorized control. \method{} has lower path AUC than E on all
+eight datasets and exactly preserves the restricted zero-token contract. Its
+endpoint PSNR is close to, but not uniformly better than, direct dense.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Diagnostics for the supported \method{} claim. Higher PSNR is better;
+  lower path AUC and zero ratio are better.}
+  \label{tab:cofitok-diagnostics-current}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrrrrrr}
+    \toprule
+    Dataset & C PSNR & D PSNR & C path & E path & C effK & E effK & C zero & deep-$S_k$ zero \\
+    \midrule
+    \input{../../../CoFiTok-internal/artifacts/reports/aaai27_experiment_tables_2026-07-11/all_dataset_result_rows.tex}\\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table*}
+
+\begin{figure*}[t]
+  \centering
+  \begin{minipage}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figure2a_tiny_prefix.png}
+    \par\smallskip
+    {\footnotesize\textbf{(a)} Tiny-IN: endpoint-only (left), \method{} (right).}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figure2b_imagenet64_prefix.png}
+    \par\smallskip
+    {\footnotesize\textbf{(b)} ImageNet-64: endpoint-only (left), \method{} (right).}
+  \end{minipage}
+
+  \medskip
+  \begin{minipage}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figure2c_restricted_synthesis.png}
+    \par\smallskip
+    {\footnotesize\textbf{(c)} Restricted $S_k$: ordered (left), shuffled (right).}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figure2d_deep_synthesis.png}
+    \par\smallskip
+    {\footnotesize\textbf{(d)} Deep $S_k$: ordered (left), shuffled (right).}
+  \end{minipage}
+  \caption{%
+  Qualitative prefix and degeneration evidence assembled from four standalone
+  subfigure files. In (a--b), each half shows the same examples across the
+  prefix path; \method{} produces more organized intermediate denoising than
+  endpoint-only factorization. In (c--d), shuffling breaks sample alignment,
+  while deep synthesis can carry structure that the restricted, zero-preserving
+  operator cannot. Quantitative path and zero-token results are reported in
+  Tables~\ref{tab:cofitok-diagnostics-current} and~\ref{tab:component-ablation}.}
+  \label{fig:final-visual}
+\end{figure*}
+
+\paragraph{Endpoint quality and prefixes.}
+
+At the same 20k training budget, K8 light \method{} nearly matches the
+endpoint-only factorized control in endpoint $x_0$ MSE at $t=500$ while greatly
+improving path alignment.
+
+\begin{table*}[t]
+  \centering
+  \caption{Matched 20k two-seed comparison (mean $\pm$ sample standard
+  deviation over seeds 103 and 139). Endpoint $x_0$ MSE and path AUC use
+  1,024 validation images at $t=500$; lower is better. Higher is better for
+  effective token count.}
+  \label{tab:fair20k}
+  \small
+  \begin{tabular}{llrrrr}
+    \toprule
+    Dataset & Method & Endpoint $x_0$ MSE $\downarrow$ & Path AUC $\downarrow$ & Eff. K $\uparrow$ & Zero ratio $\downarrow$ \\
+    \midrule
+    \input{../../../CoFiTok-internal/artifacts/reports/long_budget_repeat_2026-07-11/long_budget_repeat_rows.tex}\\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+Across the four paired dataset-seed comparisons, \method{} lowers path AUC in
+4/4 cases, with a mean relative reduction of 96.18\%. This structural gain has
+a measurable endpoint tradeoff: endpoint $x_0$ MSE increases by 4.20\% on average and
+is not lower in any of the four pairs. Figure~\ref{fig:final-visual} shows the
+corresponding qualitative prefix grids.
+In the full-validation deterministic sweep, K8 light also improves MSE AUC and
+low-res Frechet proxy AUC on both Tiny ImageNet-200 and ImageNet-64 HF, while
+the endpoint-only factorized control keeps the lower endpoint MSE.
+
+\paragraph{Learned order and ImageNet-256 scaling.}
+
+Order ablations keep the same component sum at the endpoint but change the
+prefix trajectory. This makes order evaluation a direct test of whether prefixes
+are organized rather than an endpoint-quality test.
+
+Table~\ref{tab:imagenet256-confirmatory-order} gives the preregistered
+ImageNet-256 K4 20k two-seed test. Besides a fixed random permutation and
+reverse order, it exhaustively evaluates all 24 component permutations over
+1,024 images and reports a paired-bootstrap confidence interval for the mean of
+the 23 non-identity orders. Because every order sums the same components, the
+endpoint is preserved; the test isolates the organization of the prefix path.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{ImageNet-256 K4 20k confirmatory order and endpoint results over
+  1,024 validation images at $t=500$.}
+  \label{tab:imagenet256-confirmatory-order}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{rrrrrrrrr}
+    \toprule
+    Seed & E path & C ordered & non-ID mean & reverse & rank/24 & $\Delta$ CI low & D endpoint & C endpoint \\
+    \midrule
+    \input{../../../CoFiTok-internal/artifacts/reports/aaai27_experiment_tables_2026-07-11/imagenet256_confirmatory_rows.tex}\\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table*}
+
+The preregistered confirmatory test passes all seven gates. For both seeds, the
+learned order ranks 1st of 24, every non-identity permutation has worse path
+AUC, and the paired-bootstrap lower bounds for non-identity minus ordered AUC
+are positive (0.2489 and 0.2400). The endpoint component sum is invariant up to
+$3\times10^{-15}$ MSE. Relative to the parameter-matched direct dense control,
+\method{} also lowers endpoint $x_0$ MSE by 6.73\% on average in this
+ImageNet-256 confirmatory setting.
+
+\paragraph{Generation and related-method context.}
+Cross-batch validation confirms that endpoint-only factorization remains a
+strong endpoint baseline. Generated-sample metrics do not establish stable
+unconditional superiority: the matched controls favor endpoint-only on Tiny
+ImageNet-200 and ImageNet-64 HF under the internal streamed protocol, and EDM
+or direct dense wins the broad Frechet-style rows. Official D-AR/MAR/ReTok 50K
+and FlexTok/TiTok reconstruction results remain secondary protocol tiers in the
+supplement; none is used as a matched \method{} superiority claim.
+
+\subsection{Ablations}
+
+\paragraph{Matched component protocol.}
+We isolate the K8 method components on ImageNet-64 HF with identical 5k-step
+training, seeds 103/139, and 1,024-image evaluation at $t=500$. The full model
+uses $(\lambda_p,\lambda_c,p)=(0.15,0.30,1.5)$. Endpoint-only removes both path
+terms; the next two rows remove one term at a time; simultaneous prediction
+removes token feedback; deep synthesis replaces restricted $S_k$ with a biased
+nonlinear decoder. Table~\ref{tab:component-ablation} reports mean $\pm$ sample
+standard deviation.
+
+\begin{table*}[t]
+  \centering
+  \small
+  \caption{Matched two-seed component ablations on ImageNet-64 HF. Lower is
+  better for endpoint MSE, path AUC, and zero ratio; higher effective K indicates
+  broader component use. All path values use the same progress-$1.5$ target.}
+  \label{tab:component-ablation}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Variant & Endpoint $x_0$ MSE $\downarrow$ & Path AUC $\downarrow$ & Eff. K $\uparrow$ & Zero ratio $\downarrow$ \\
+    \midrule
+    \input{../../../CoFiTok-internal/artifacts/reports/aaai27_ablation_2026-07-11/component_ablation_rows.tex}\\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\paragraph{Objective, prediction, and synthesis components.}
+Relative to endpoint-only factorization, the full objective lowers mean path AUC
+by 93.0\% with a 2.0\% endpoint-MSE cost. Relative to removing only the prefix
+or component path term, it lowers path AUC by 45.7\% and 37.9\%, respectively,
+while endpoint MSE changes by less than 0.2\%. Both path terms therefore improve
+the claimed interface rather than endpoint fit. Sequential feedback is a modest
+implementation gain, not a core requirement: full improves the two-seed mean by
+2.8\% in path AUC and 1.0\% in endpoint MSE over simultaneous heads, but wins
+path AUC on only one seed. Deep synthesis attains lower path AUC yet has zero
+ratio $0.0485\pm0.0050$ versus exactly zero for restricted $S_k$; its apparent
+gain violates the identifiability contract. Figure~\ref{fig:final-visual}
+visualizes zero/shuffle/deep-$S_k$ diagnostics.
+
+\paragraph{Hyperparameter sensitivity.}
+Figure~\ref{fig:ablation-hyperparameters} varies the two path-loss weights,
+progress power, and token count. Every point is a two-seed mean with sample
+standard-deviation bars; the dashed line marks the default. Crucially, the power
+sweep is evaluated against one common progress-$1.5$ path rather than allowing
+each training target to define its own metric. Raising either path weight
+steadily improves path AUC with little endpoint movement; $(0.15,0.30)$ is a
+moderate tradeoff rather than the path-only optimum. Power 1.5 is the clear
+minimum under the common target. K8 gives the lowest mean path AUC, while K4 has
+slightly lower endpoint MSE and K16 adds cost without a 5k-step path gain.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{aaai27_ablation_hyperparameters.pdf}
+  \caption{Matched ImageNet-64 HF hyperparameter ablations. Top: denoise-path
+  AUC; bottom: endpoint $x_0$ MSE. Curves vary prefix weight $\lambda_p$,
+  component weight $\lambda_c$, progress power $p$, and token count $K$.
+  Lower is better; bars show sample standard deviation over seeds 103/139.}
+  \label{fig:ablation-hyperparameters}
+\end{figure*}
+
+\paragraph{Component-separation stress test.}
+
+We treat component decorrelation as a pressure-term ablation rather than a
+default objective. The headline \method{} rows use the no-decorrelation light
+denoise-path objective because it most directly measures ordered prefix
+denoising. On Tiny ImageNet-200, a conservative schedule
+(\texttt{weight=0.003}, start step 3000, warmup 1500, full weight at step 4500
+of 5000) reduces component correlation on two seeds while keeping the
+ordered-prefix penalty small.
+
+Across the two seeds, scheduled decor 0.003 changes ordered path AUC by +0.0036,
+mean absolute component cosine by -0.0328, final MSE by -0.0002, and effective
+token count by +0.0336. Thus mild separation pressure can make components less
+correlated without materially breaking ordered prefix behavior. Stronger decor
+weights reduce cosine further but impose larger path-AUC penalties, so we keep
+them as stress-test ablations rather than the default \method{} objective.
+
+\section{Discussion}
+
+\method{} suggests that dense pixel-space diffusion noise prediction can be
+treated as a sequence of ordered denoising-token components. The restricted
+synthesis operator is central: it gives the prefix interface meaning and
+prevents the method from becoming a generic latent decoder. The denoise-path
+objective is also central because early prefixes should represent partial
+denoising rather than clean reconstructions.
+
+The strongest empirical result is the all-dataset prefix-control diagnostic:
+\method{} has lower cross-batch path AUC than the endpoint-only factorized control on all
+eight datasets, while matched objective, prediction, order, and deep-$S_k$
+ablations identify the roles of path supervision and restricted synthesis. The most important negative result is that
+generated-sample Frechet-style metrics do not show a stable unconditional
+generation-quality win. Together, these results define the current scope of the
+contribution.
+
+\section{Limitations}
+
+The current models are small and trained with short MVP budgets. Frechet-style
+sample-quality results are mixed and do not show a robust \method{} generation
+win; EDM is stronger on most generation rows, while direct dense prediction
+provides the strict factorization control. P1 FlexTok and
+TiTok rows use official pretrained reconstruction at 256x256 and are not
+retrained generation baselines. D-AR, MAR, and ReTok use separate official
+ImageNet-256 eval-only protocols and remain protocol-blocked under the
+matched-dataset/step training definition. Seed repeats cover the main
+endpoint-only/K8 comparison but not every ablation. The AAAI-27 adaptation is an
+anonymous submission build and still needs author metadata and final checklist
+decisions before any camera-ready version. Sequential token prediction can also
+cost more latency and memory than a direct dense head; the current audit reports
+parameters, batch, nominal training images, and NFE, but not a standardized
+cross-implementation FLOP or wall-clock benchmark.
+
+\section{Conclusion}
+
+\method{} factorizes pixel-space diffusion noise prediction into an ordered
+  sequence of denoising tokens. Each token is expanded by a restricted,
+condition-free synthesis operator into a dense negative-noise component, and
+prefix sums yield valid partial denoising results. Across the current
+eight-dataset evidence matrix, \method{} consistently improves prefix-control
+diagnostics over an endpoint-only factorized control and passes the restricted zero-token
+diagnostic where deep synthesis leaks token-independent structure. The current
+evidence therefore supports a scoped contribution about ordered restricted
+dense-noise factorization, while leaving raw unconditional generation quality
+to stronger monolithic diffusion baselines. The next step is to scale the
+protocol with stronger backbones, longer training, and broader seed coverage.
+
+\bibliography{../../references}
+
+\end{document}

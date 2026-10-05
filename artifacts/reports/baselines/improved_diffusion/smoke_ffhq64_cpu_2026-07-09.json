@@ -1,0 +1,9 @@
+{
+  "baseline": "improved_diffusion",
+  "date_tag": "2026-07-09",
+  "status": "completed",
+  "mode": "cpu_integration_smoke",
+  "output_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/smoke_ffhq64_cpu_2026-07-09",
+  "data_dir": "/root/autodl-tmp/CoFiTok/datasets/ffhq_64/extracted/images/00000",
+  "notes": "This is not a paper result. It validates the adapter and upstream finite training loop only."
+}

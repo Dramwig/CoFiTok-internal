@@ -1,0 +1,388 @@
+\documentclass[letterpaper]{article}
+\usepackage[submission]{aaai2027}
+
+% Keep the supplementary PDF in the same official AAAI format as the paper.
+\usepackage[hyphens]{url}
+\usepackage{graphicx}
+\urlstyle{rm}
+\def\UrlFont{\rm}
+\usepackage{natbib}
+\usepackage{caption}
+\frenchspacing
+\usepackage{amsmath,amssymb}
+\usepackage{array}
+\usepackage{booktabs}
+
+\graphicspath{
+  {../../../CoFiTok-internal/artifacts/figures/ablation_hyperparameters_2026-07-11/}
+}
+
+\pdfinfo{
+/TemplateVersion (2027.1)
+}
+
+\setcounter{secnumdepth}{0}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+
+\newcommand{\method}{CoFiTok}
+\newcommand{\epshat}{\hat{\epsilon}}
+\newcommand{\xzero}{x_0}
+\newcommand{\xt}{x_t}
+\newcommand{\zk}{z^{(k)}}
+\newcommand{\sk}{S_k}
+
+\title{Supplementary Material for \method: Coarse-to-Fine Denoising Tokens for Pixel-Space Diffusion}
+\author{Anonymous Submission}
+\affiliations{}
+
+\begin{document}
+\maketitle
+\raggedbottom
+
+\section{Supplementary Scope}
+
+This document separates comparison evidence from the main paper's
+mechanism-centered tables by protocol, not by outcome. P0 contains
+matched-dataset and matched-step pixel-space training. P1 contains
+official-pretrained tokenizer reconstruction. A third tier contains official
+ImageNet-256 50K evaluations for architecture-incompatible methods. Values from
+different tiers are not used to claim direct superiority.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Comparison protocols used throughout the paper and supplement.}
+  \label{tab:supp-protocol-map}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llllp{0.34\textwidth}}
+    \toprule
+    Tier & Methods & Coverage & Evidence & Valid interpretation \\
+    \midrule
+    P0 matched training & \method, direct dense, endpoint-only, ablations, Improved DDPM, EDM & Eight datasets & Train/eval under locked per-dataset steps & Within-row short-budget context; external methods are not compute matched \\
+    P1 reconstruction & FlexTok, TiTok & Eight datasets & Official-pretrained reconstruction on 256 images & Tokenizer reconstruction context only; not a generation comparison \\
+    Official related & D-AR, MAR, ReTok & ImageNet-256 & Official-pretrained 50K evaluation & Secondary large-model context; not matched retraining against \method \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table*}
+
+\section{Complete Evidence Coverage}
+
+Table~\ref{tab:supp-coverage-matrix} exposes the full eight-dataset by
+15-method Cartesian product. A blocked cell marks a cross-task comparison that
+is not interchangeable with the available official evaluation; official
+results are never counted as matched training.
+
+\begin{table*}[t]
+  \centering
+  \tiny
+  \caption{Evidence coverage matrix (8 datasets $\times$ 15 methods). T = completed matched train/eval; E = completed official-pretrained reconstruction eval-only; B = matched cross-task protocol blocked; O = separate official ImageNet-256 50K eval-only result. B+O retains the blocked matched cell while exposing the secondary official result.}
+  \label{tab:supp-coverage-matrix}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lcccccccc}
+    \toprule
+    Method & CIFAR & Tiny-IN & IN64-HF & IN64-strict & FFHQ & AFHQv2 & IN256-10\% & IN256 \\
+    \midrule
+    \method & T & T & T & T & T & T & T & T \\
+    Direct dense epsilon & T & T & T & T & T & T & T & T \\
+    Endpoint-only factorized & T & T & T & T & T & T & T & T \\
+    Legacy clean-prefix objective & T & T & T & T & T & T & T & T \\
+    No denoise-path prefix term & T & T & T & T & T & T & T & T \\
+    Add clean-space monotonic term & T & T & T & T & T & T & T & T \\
+    Simultaneous prediction & T & T & T & T & T & T & T & T \\
+    Deep-$S_k$ synthesis & T & T & T & T & T & T & T & T \\
+    Improved DDPM & T & T & T & T & T & T & T & T \\
+    EDM & T & T & T & T & T & T & T & T \\
+    D-AR & B & B & B & B & B & B & B & B+O \\
+    FlexTok & E & E & E & E & E & E & E & E \\
+    TiTok & E & E & E & E & E & E & E & E \\
+    MAR & B & B & B & B & B & B & B & B+O \\
+    ReTok & B & B & B & B & B & B & B & B+O \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table*}
+
+The locked matrix contains 80 completed P0 train/eval cells, 16 P1 eval-only
+cells, and 24 protocol-blocked cells. Three official 50K rows remain separate.
+
+\section{External-Method Results}
+
+The next four tables are generated from the locked evidence JSON. They report
+P0 generation, FlexTok/TiTok reconstruction, official D-AR/MAR/ReTok
+ImageNet-256 results, and the paper's claim boundary.
+
+\newpage
+
+\section{How to Read the External Comparisons}
+
+\paragraph{Improved DDPM and EDM.}
+Table~\ref{tab:p0-generation-current} is the direct external pixel-diffusion
+context. Dataset, resolution, split, and nominal optimizer steps are aligned,
+but parameter count, batch size, nominal images seen, and NFE remain explicit.
+EDM is the low-resolution Frechet-style winner on seven of eight rows, and the
+direct dense predictor wins the remaining row. These results rule out a broad
+unconditional-generation superiority claim for \method. They do not test the
+paper's distinctive interface claim because monolithic predictors do not expose
+ordered component prefixes.
+
+\paragraph{FlexTok and TiTok.}
+Table~\ref{tab:p1-tokenizer-recon-current} uses official-pretrained models and
+evaluates reconstruction at $256\times256$ on 256 images per dataset. These
+methods tokenize image content; \method{} factorizes a dense diffusion noise
+prediction. Their reconstruction PSNR and Frechet-style values therefore
+document adjacent capability rather than a shared generation objective.
+
+\input{../../../CoFiTok-internal/artifacts/reports/paper_evidence_report_2026-07-11_final/latex_tables/paper_tables_appendix.tex}
+
+\paragraph{D-AR, MAR, and ReTok.}
+Table~\ref{tab:official-related-eval-only} reports 50K-sample official
+evaluations on ImageNet-256. The rows use available pretrained checkpoints and
+their corresponding generation protocols. They are useful large-model context,
+but they cannot be relabeled as eight-dataset matched-step retraining. The
+Inception Score for MAR follows the ADM-style evaluator used in the recorded
+run and is not mixed with the differently scaled value reported by another
+evaluation implementation.
+
+\section{Matched P0 Protocol Details}
+
+The P0 protocol fixes dataset identity, spatial resolution, split, and nominal
+optimizer steps. It does not pretend that different published architectures
+have equal FLOPs. Table~\ref{tab:supp-p0-settings} exposes the remaining major
+differences instead of hiding them in a single rank.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Locked P0 short-budget settings. C = \method; D = direct dense; E = endpoint-only factorized. NFE is listed in the order C/D/Improved-DDPM/EDM.}
+  \label{tab:supp-p0-settings}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llrrrrrrl}
+    \toprule
+    Protocol family & Datasets & Resolution & Steps & C/D/E batch & DDPM/EDM batch & Quality images & Sample/real images & NFE \\
+    \midrule
+    CIFAR-10 & CIFAR-10 & 32 & 3000 & 64 & 32 & 512 & 1024/4096 & 50/50/50/79 \\
+    64px & Tiny-IN, IN64-HF, IN64-strict, FFHQ, AFHQv2 & 64 & 5000 & 32 & 32 & 512 & 1024/4096 & 50/50/50/79 \\
+    ImageNet-256 & 10\% and full train & 256 & 5000 & 4 & 4 & 256 & 512/2048 & 50/50/50/79 \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Trainable parameter counts in the P0 protocols. The direct dense predictor is the parameter-matched factorization control; Improved DDPM and EDM are external architecture baselines.}
+  \label{tab:supp-parameter-counts}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Resolution & \method & Direct dense & Dense delta vs. \method & Improved DDPM & EDM \\
+    \midrule
+    $32\times32$ & 81,808 & 80,707 & $-1.35\%$ & 9,593,539 & 3,870,531 \\
+    $64\times64$ & 81,808 & 80,707 & $-1.35\%$ & 21,715,907 & 3,870,531 \\
+    $256\times256$ & 15,776 & 15,690 & $-0.55\%$ & 7,200,579 & 952,291 \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+Only the direct dense control isolates factorization at nearly equal parameter
+count. Improved DDPM and EDM test whether the short-budget generator is
+competitive with established monolithic objectives, while endpoint-only
+factorized prediction tests whether ordered prefix supervision contributes
+beyond retaining $K$ token components.
+
+\section{Dataset and Source Conditions}
+
+The two ImageNet-64 aliases are intentionally distinct. Results labeled
+ImageNet-64 HF use the HF-derived source; results labeled ImageNet-64 strict use
+the exact downsampled ImageNet source. No result is silently renamed between
+them.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Dataset roles in the locked evidence matrix.}
+  \label{tab:supp-datasets}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lllp{0.37\textwidth}}
+    \toprule
+    Dataset label & Resolution & Split role & Source condition \\
+    \midrule
+    CIFAR-10 & 32 & Train/test & Canonical CIFAR-10 staging \\
+    Tiny-IN & 64 & Train/validation & Tiny ImageNet-200 staging \\
+    ImageNet-64 HF & 64 & Train/validation & HF-derived ImageNet-1K 64x64 source \\
+    ImageNet-64 strict & 64 & Train/validation & Exact downsampled ImageNet source from Academic Torrents \\
+    FFHQ-64 & 64 & Train/evaluation & Non-classification face-domain extension \\
+    AFHQv2-64 & 64 & Train/evaluation & Non-classification animal-domain extension \\
+    ImageNet-256 10\% & 256 & 10\% train/full validation & Deterministic subset derived from the staged 256x256 source \\
+    ImageNet-256 & 256 & Full train/validation & Full staged 256x256 ImageNet source \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table*}
+
+\section{Metric Definitions}
+
+For prefix budget $m$, the cumulative prediction and pixel-space estimate are
+\begin{equation}
+  \epshat^{(1:m)}=\sum_{k=1}^{m}S_k(z^{(k)}), \qquad
+  \hat{x}_0^{(m)}=\frac{x_t-\sigma_t\epshat^{(1:m)}}{\alpha_t}.
+\end{equation}
+Let $e_m$ be the mean-squared error between $\hat{x}_0^{(m)}$ and the
+preregistered denoise-path target at prefix $m$. The reported path AUC is the
+equal-spaced trapezoid average
+\begin{equation}
+  \operatorname{AUC}_{\mathrm{path}}
+  =\frac{1}{K-1}\sum_{m=1}^{K-1}\frac{e_m+e_{m+1}}{2}.
+\end{equation}
+Lower values indicate that intermediate prefixes follow the intended partial
+denoising path. Endpoint MSE instead uses only $m=K$ and does not measure the
+quality of intermediate prefixes.
+
+For component energy proportions $p_k$, effective token count is
+\begin{equation}
+  K_{\mathrm{eff}}=\exp\!\left(-\sum_k p_k\log p_k\right).
+\end{equation}
+The zero-token ratio divides the energy produced by $S_k(0)$ by the energy of
+the corresponding observed components. A bias-free restricted synthesis
+operator satisfies this diagnostic exactly up to numerical precision.
+
+\section{Repeated and Confirmatory Evidence}
+
+The matched 20K repeat uses K8 models, seeds 103 and 139, and 1,024 validation
+images at $t=500$ on Tiny ImageNet-200 and ImageNet-64 HF. \method{} lowers path
+AUC in all four paired dataset-seed comparisons, with a mean relative reduction
+of 96.18\%. The mean endpoint $x_0$-MSE change is $+4.20\%$, so this repeat
+supports prefix organization rather than an endpoint-quality win.
+
+The ImageNet-256 K4 20K confirmatory run uses the same two seeds and exhaustively
+evaluates all 24 component permutations. The learned order ranks first for both
+seeds, the paired-bootstrap lower bounds for non-identity minus ordered AUC are
+positive, and every permutation preserves the endpoint component sum up to
+$3\times10^{-15}$ MSE. Relative to the parameter-matched direct dense control,
+\method{} lowers endpoint MSE by 6.73\% on average in this confirmatory setting.
+
+\section{Matched Component Ablations}
+
+The component ablation suite uses ImageNet-64 HF, K8, 5,000 optimizer steps,
+seeds 103/139, and 1,024 validation images at fixed $t=500$. All variants share
+the data, model width, optimizer, and evaluation noise for each seed. The
+progress-power sweep is scored against one common $p=1.5$ path; it is not scored
+against a different target for each point.
+
+\begin{table*}[t]
+  \centering
+  \small
+  \caption{Matched component ablations (mean $\pm$ sample standard deviation).
+  Lower is better for endpoint MSE, path AUC, and zero ratio; higher effective K
+  indicates broader component use.}
+  \label{tab:supp-component-ablation}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Variant & Endpoint $x_0$ MSE $\downarrow$ & Path AUC $\downarrow$ & Eff. K $\uparrow$ & Zero ratio $\downarrow$ \\
+    \midrule
+    \input{../../../CoFiTok-internal/artifacts/reports/aaai27_ablation_2026-07-11/component_ablation_rows.tex}\\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \small
+  \caption{Parameter-matched architecture control under the same two-seed 5k
+  ImageNet-64 HF protocol. Direct dense has no native multi-prefix path.}
+  \label{tab:supp-direct-dense-control}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Variant & Endpoint $x_0$ MSE $\downarrow$ & Path AUC $\downarrow$ & Eff. K $\uparrow$ & Zero ratio $\downarrow$ \\
+    \midrule
+    \input{../../../CoFiTok-internal/artifacts/reports/aaai27_ablation_2026-07-11/architecture_control_rows.tex}\\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+The direct removals distinguish the path-prefix and path-component terms from
+the endpoint objective. The simultaneous variant removes token-to-token
+feedback while retaining the same heads and losses. The deep-synthesis variant
+retains token-only inputs but introduces biased nonlinear layers, so its
+zero-token ratio directly tests whether decoder capacity can carry a
+token-independent prior. Full \method{} lowers path AUC by 93.0\% relative to
+endpoint-only and by 45.7\%/37.9\% relative to removing the prefix/component
+path term, respectively. Endpoint MSE changes by less than 0.2\% in the two
+single-term comparisons. Sequential feedback changes the mean more modestly
+($-2.8\%$ path AUC and $-1.0\%$ endpoint MSE) and wins path AUC on only one of
+two seeds, so it is treated as an optional predictor implementation rather than
+part of the core claim. Deep synthesis reaches lower path AUC but produces a
+nonzero zero-token ratio of $0.0485\pm0.0050$.
+The parameter-matched direct dense control is only 0.6\% lower in endpoint MSE
+at 64px but exposes no multi-prefix interface; conversely, the ImageNet-256
+confirmatory setting gives \method{} a 6.73\% endpoint advantage over direct
+dense. Factorization is therefore supported as an interface with a small or
+favorable endpoint tradeoff, not as a universal endpoint-quality guarantee.
+
+\section{Hyperparameter Sensitivity}
+
+Figure~\ref{fig:supp-ablation-hyperparameters} and
+Table~\ref{tab:supp-hyperparameter-values} report the full two-seed sweeps. The
+dashed lines mark the main values: $\lambda_p=0.15$, $\lambda_c=0.30$,
+$p=1.5$, and $K=8$.
+Increasing either loss weight improves path AUC with little endpoint movement;
+the chosen weights are a moderate endpoint/path tradeoff. Power 1.5 is the
+minimum under the common evaluation target. K8 has the lowest mean path AUC,
+K4 the lowest endpoint MSE, and K16 no short-budget path advantage.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{aaai27_ablation_hyperparameters.pdf}
+  \caption{Matched ImageNet-64 HF hyperparameter sensitivity. Top row:
+  denoise-path AUC; bottom row: endpoint $x_0$ MSE. Error bars are sample
+  standard deviations over seeds 103/139. Lower is better.}
+  \label{fig:supp-ablation-hyperparameters}
+\end{figure*}
+
+\begin{table*}[t]
+  \centering
+  \small
+  \caption{Numerical values underlying
+  Figure~\ref{fig:supp-ablation-hyperparameters}. Each entry is mean $\pm$
+  sample standard deviation over seeds 103/139.}
+  \label{tab:supp-hyperparameter-values}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Axis & Value & Endpoint $x_0$ MSE $\downarrow$ & Path AUC $\downarrow$ & Eff. K $\uparrow$ \\
+    \midrule
+    \input{../../../CoFiTok-internal/artifacts/reports/aaai27_ablation_2026-07-11/hyperparameter_sweep_rows.tex}\\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Exploratory ImageNet-256 confirmatory generation controls. These rows do not replace the path and endpoint preregistered tests. Lower is better.}
+  \label{tab:supp-imagenet256-generation-controls}
+  \begin{tabular}{rlrrr}
+    \toprule
+    Seed & Method & Samples & Lowres Frechet & Inception Frechet \\
+    \midrule
+    103 & Endpoint-only factorized & 4096 & 11.1619 & 370.3672 \\
+    103 & Direct dense & 4096 & 9.7396 & 449.3913 \\
+    103 & \method & 4096 & 10.8232 & 349.4076 \\
+    139 & Endpoint-only factorized & 4096 & 8.9753 & 404.6116 \\
+    139 & Direct dense & 4096 & 10.5597 & 384.8126 \\
+    139 & \method & 4096 & 11.0839 & 356.9311 \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\section{Evidence Lock and Reproducibility}
+
+All numerical tables imported above are generated from the final locked JSON
+evidence package. The paper source does not hand-edit those metrics. The locked
+state contains the per-run configuration, dataset alias, split, optimizer
+steps, batch size, seed, parameter count, NFE, evaluation image count, and
+sample count needed to distinguish the three protocol tiers. New experiments
+must produce a new evidence package rather than silently overwrite these rows.
+
+\end{document}

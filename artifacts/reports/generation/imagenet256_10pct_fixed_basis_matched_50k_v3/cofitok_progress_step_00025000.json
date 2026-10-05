@@ -1,0 +1,97 @@
+{
+  "checkpoint": {
+    "interval": 5000,
+    "latest": {
+      "checkpoint": "checkpoint_step_00025000.pt",
+      "checkpoint_bytes": 1006351466,
+      "checkpoint_format_version": 1,
+      "checkpoint_sha256": "5b056311d7651f3a222ce10b5bdd1a1652b4446f0a88f26185ef89ab09a7a542",
+      "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+      "git_branch": "scale/generative-system",
+      "git_dirty": false,
+      "git_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+      "integrity_manifest": "checkpoint_step_00025000.pt.integrity.json",
+      "runtime_environment_sha256": "51ef815bff2dcb9ea3e222cba9f0731dd837d11cf0b42cbf489f91e32075da57",
+      "schema_version": 1,
+      "step": 25000
+    },
+    "latest_integrity": {
+      "checkpoint": "checkpoint_step_00025000.pt",
+      "checkpoint_bytes": 1006351466,
+      "checkpoint_format_version": 1,
+      "checkpoint_sha256": "5b056311d7651f3a222ce10b5bdd1a1652b4446f0a88f26185ef89ab09a7a542",
+      "integrity_manifest": "checkpoint_step_00025000.pt.integrity.json",
+      "policy": "required",
+      "status": "verified",
+      "step": 25000
+    },
+    "missing_required_steps": [],
+    "required_steps": [
+      25000
+    ],
+    "status": "available",
+    "steps": [
+      15000,
+      20000,
+      25000
+    ]
+  },
+  "current_segment_start_step": 1,
+  "eta_seconds": 55546.16117297165,
+  "expected_steps": 50000,
+  "gradient_clipping": {
+    "configured_max_norm": 1.0,
+    "logged_norm_semantics": "pre_clip_total_norm",
+    "observed_max_pre_clip_norm": 13.340559005737305,
+    "pre_clip_exceedance_count": 16
+  },
+  "issues": [],
+  "last_step": 25000,
+  "latest_metrics": {
+    "component_decorrelation": 0.0,
+    "cumulative_elapsed_seconds": 55547.63576889038,
+    "denoise_path_component": 0.08467128127813339,
+    "denoise_path_energy": 0.008866562508046627,
+    "denoise_path_prefix": 0.08790330588817596,
+    "elapsed_seconds": 55547.63576889038,
+    "ema_decay": 0.9999,
+    "energy_budget": 0.0,
+    "epsilon": 0.02513977698981762,
+    "epsilon_band_component": 0.0,
+    "epsilon_band_prefix": 0.0,
+    "grad_norm": 0.036724645644426346,
+    "group_residual": 0.0,
+    "learning_rate": 5.64423209907245e-05,
+    "monotonic": 0.0,
+    "prefix": 0.0,
+    "residual_component": 0.0,
+    "sampled_budget": 0.0,
+    "sampled_component": 0.0,
+    "sampled_prefix": 0.0,
+    "samples_seen": 1600000,
+    "step": 25000,
+    "tail_floor": 0.0,
+    "total": 0.038888730108737946,
+    "validation_epsilon_mse": 0.030501648783683777,
+    "zero_token": 0.0
+  },
+  "metric_row_count": 501,
+  "progress_fraction": 0.5,
+  "recent_mean": {
+    "epsilon": 0.026886860281229018,
+    "grad_norm": 0.04374165926128626,
+    "total": 0.040926843881607056
+  },
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3",
+  "schema_version": 2,
+  "seconds_per_step": 2.221846446918866,
+  "status": "healthy",
+  "validation": {
+    "configured_interval": 1000,
+    "event_count": 25,
+    "expected_event_count": 25,
+    "logging_complete": true
+  },
+  "validation_event_count": 25,
+  "warnings": []
+}

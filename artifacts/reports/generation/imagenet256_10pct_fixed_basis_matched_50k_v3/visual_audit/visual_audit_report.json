@@ -1,0 +1,663 @@
+{
+  "claim_policy": {
+    "quantitative_metric": false,
+    "reason": "Fixed panels support human inspection and do not replace formal FID/IS/precision/recall."
+  },
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tracked_dirty": false
+  },
+  "indices": [
+    0,
+    1,
+    2,
+    3,
+    250,
+    251,
+    1000,
+    1001,
+    5000,
+    5001,
+    9998,
+    9999
+  ],
+  "panels": {
+    "cofitok": {
+      "grid_shape": [
+        3,
+        776,
+        1034
+      ],
+      "image_count": 12,
+      "nrow": 4,
+      "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/visual_audit/cofitok_fixed_samples.png",
+      "sha256": "44958d36427a84fd97a086ad35cc872ed1e3b38647c46708ce096010701a63b4"
+    },
+    "cofitok_prefix_paths": {
+      "grid_shape": [
+        3,
+        4130,
+        1034
+      ],
+      "image_count": 64,
+      "nrow": 4,
+      "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/visual_audit/cofitok_prefix_paths.png",
+      "sha256": "59da5461b392ddc5dc827293ed243db848229cc87171299411ee52e960c8a9f9"
+    },
+    "dense_identity": {
+      "grid_shape": [
+        3,
+        776,
+        1034
+      ],
+      "image_count": 12,
+      "nrow": 4,
+      "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/visual_audit/dense_fixed_samples.png",
+      "sha256": "29d99a62fb4493e10811a881beca4511df2e3023e94660f801bf5b8af1918560"
+    }
+  },
+  "prefix_budgets": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "prefix_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "role": "deterministic_visual_quality_audit",
+  "schema_version": 1,
+  "selected_files": {
+    "cofitok": [
+      {
+        "index": 0,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8/000000.png",
+        "sha256": "749409a5e89c52706357dba9ef0a027bb7fb736bb1d806f8251c541cae6e7de4"
+      },
+      {
+        "index": 1,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8/000001.png",
+        "sha256": "0fd64c07cc0f8209f6ac6464623ea3f0d79543b4c6a0b24329c8124b915bc6a8"
+      },
+      {
+        "index": 2,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8/000002.png",
+        "sha256": "8846700c8f2ec1c5be29b846d575f35abeac3a526fc95a188d7f6ea69d32b596"
+      },
+      {
+        "index": 3,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8/000003.png",
+        "sha256": "4c5726bc612dbb6ed0fd1b462ad3820462a74cc5283ece0ec072a97ddfcf6f83"
+      },
+      {
+        "index": 250,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8/000250.png",
+        "sha256": "6717722494cedebc9f35e52d57f7ff7bcc692b233d04d0d7085fcf46fd5bb301"
+      },
+      {
+        "index": 251,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8/000251.png",
+        "sha256": "432a36fd7eddfc624d3c5420041707a912394a5f68053e00947359acb271fbf8"
+      },
+      {
+        "index": 1000,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8/001000.png",
+        "sha256": "6a066eee539b68534a9a2e4a2eba679b4488f5535469cfb2e9ff4a4a37808dfa"
+      },
+      {
+        "index": 1001,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8/001001.png",
+        "sha256": "497d541b33912a0433382507c08032f63beb2822bc69543e1a5a39e1cc43d3e9"
+      },
+      {
+        "index": 5000,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8/005000.png",
+        "sha256": "124fe0c2e759ac12306e873f41b55c29e6107e56a627212aaaca913646dea25a"
+      },
+      {
+        "index": 5001,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8/005001.png",
+        "sha256": "1a328d8d67d897e0c92dae448f5900b186dd9add1d8a853e0283067f58195854"
+      },
+      {
+        "index": 9998,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8/009998.png",
+        "sha256": "89e178f0f7c8d25a0d03f9a673d51bac21e577a66afefe8722b56281068ac8ce"
+      },
+      {
+        "index": 9999,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/samples_gate10k_ddim100_cfg15/prefix_8/009999.png",
+        "sha256": "ecbca158259cf8efac215e2d15decce658fbdf06b051e9629036ba83d3fb7332"
+      }
+    ],
+    "cofitok_prefix": [
+      {
+        "index": 0,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000000.png",
+        "prefix_budget": 1,
+        "sha256": "a4a9eb00caa816621d8f3955e223dede98888f72c8b9f8253814461649a5c5fc"
+      },
+      {
+        "index": 0,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000000.png",
+        "prefix_budget": 2,
+        "sha256": "4c0d225136345c853c3df354b340edfc9e1dfc2b36c8940a04fa9cc9180065a6"
+      },
+      {
+        "index": 0,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000000.png",
+        "prefix_budget": 4,
+        "sha256": "1d7ea018a70ba308421c371e00c5c4f3b542f6535608f2766a8333dc39a4d2a0"
+      },
+      {
+        "index": 0,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000000.png",
+        "prefix_budget": 8,
+        "sha256": "749409a5e89c52706357dba9ef0a027bb7fb736bb1d806f8251c541cae6e7de4"
+      },
+      {
+        "index": 1,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000001.png",
+        "prefix_budget": 1,
+        "sha256": "7a732d71096bb9fd7ecccfd7db02b3c946c892d99b99c8e59667fbc02b6c0b4d"
+      },
+      {
+        "index": 1,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000001.png",
+        "prefix_budget": 2,
+        "sha256": "fa06eb1bd6e3c9a38021788b13ff367786c53b271d5c7101ceb097bf2f4734ed"
+      },
+      {
+        "index": 1,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000001.png",
+        "prefix_budget": 4,
+        "sha256": "c42c0ca3399a9c32af2c6b12d065fdda2444c6cb0d663b8f713171b6d4c8dc91"
+      },
+      {
+        "index": 1,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000001.png",
+        "prefix_budget": 8,
+        "sha256": "0fd64c07cc0f8209f6ac6464623ea3f0d79543b4c6a0b24329c8124b915bc6a8"
+      },
+      {
+        "index": 2,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000002.png",
+        "prefix_budget": 1,
+        "sha256": "c2fb5e8c544b66b538c019f540a8d1161fa832445d8aaaedf0cbe4b7bed812db"
+      },
+      {
+        "index": 2,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000002.png",
+        "prefix_budget": 2,
+        "sha256": "3de4d87b63a4801881423c71c59f6210f6aef395e01bdcf2b35f91bae791e68d"
+      },
+      {
+        "index": 2,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000002.png",
+        "prefix_budget": 4,
+        "sha256": "218b1e8a844232f4d14bbbe247b63d815d71d9f33b6dfc9bd3d5fe26c774263e"
+      },
+      {
+        "index": 2,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000002.png",
+        "prefix_budget": 8,
+        "sha256": "8846700c8f2ec1c5be29b846d575f35abeac3a526fc95a188d7f6ea69d32b596"
+      },
+      {
+        "index": 3,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000003.png",
+        "prefix_budget": 1,
+        "sha256": "aae048969d1e28946e34293c398ffaaabaad167968f48816c1158f7c831c3a70"
+      },
+      {
+        "index": 3,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000003.png",
+        "prefix_budget": 2,
+        "sha256": "9fce53f0d312ba968763dcd4b520b6c3c771206b744044b253ca8681fa367154"
+      },
+      {
+        "index": 3,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000003.png",
+        "prefix_budget": 4,
+        "sha256": "9885718003e9e051b33b807f5a3326753c4a3b50f429da332c9e55749bd6f208"
+      },
+      {
+        "index": 3,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000003.png",
+        "prefix_budget": 8,
+        "sha256": "4c5726bc612dbb6ed0fd1b462ad3820462a74cc5283ece0ec072a97ddfcf6f83"
+      },
+      {
+        "index": 4,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000004.png",
+        "prefix_budget": 1,
+        "sha256": "745fc8aa6203c28d6adf7b8ff7cf7162178ff2a0250a24c0df85e53606302402"
+      },
+      {
+        "index": 4,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000004.png",
+        "prefix_budget": 2,
+        "sha256": "322fb02dfb31cabae2c6e7194e2cd7d60137f03c2ed2cd6f9c261fbbe570ca23"
+      },
+      {
+        "index": 4,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000004.png",
+        "prefix_budget": 4,
+        "sha256": "8d3f10e417606f1ee0f676e9615bac3ece981c2064400635b92ce31b1b46f7b1"
+      },
+      {
+        "index": 4,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000004.png",
+        "prefix_budget": 8,
+        "sha256": "6544aa1946ae9f915e5f5f7f84c30316163e600dd7b03956ca6918ce1cf4a9c5"
+      },
+      {
+        "index": 5,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000005.png",
+        "prefix_budget": 1,
+        "sha256": "c0b259560bdc50027e02ac6bd3d3528f2399defe7e3a613b54d9c72c9680fdba"
+      },
+      {
+        "index": 5,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000005.png",
+        "prefix_budget": 2,
+        "sha256": "418f4ef6d2902b1a19757c6e8a66ce5b875d124bf75e0aa188bf82e9aa6d7fd6"
+      },
+      {
+        "index": 5,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000005.png",
+        "prefix_budget": 4,
+        "sha256": "f72e119bc3afd1b0daabd57c00168cc32fd75a1f265c3af989803e43fa5654de"
+      },
+      {
+        "index": 5,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000005.png",
+        "prefix_budget": 8,
+        "sha256": "6a9034a2c02b4ab42ec87e593159786113c80b35cee0cd2ff11472fc8424f36f"
+      },
+      {
+        "index": 6,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000006.png",
+        "prefix_budget": 1,
+        "sha256": "26e466d77879225a32ade8f8ec26249c90f02ba06008eb9d3423038920e47a44"
+      },
+      {
+        "index": 6,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000006.png",
+        "prefix_budget": 2,
+        "sha256": "c994c0bde0045eddce5ed03fe5f22385adc81277889d7ee5eb26fd4b98b74d44"
+      },
+      {
+        "index": 6,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000006.png",
+        "prefix_budget": 4,
+        "sha256": "e9dcd5f6e3956c091b5dab52dce528dbe3d188928ea821bc7fd8aaeeac726e0f"
+      },
+      {
+        "index": 6,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000006.png",
+        "prefix_budget": 8,
+        "sha256": "9f7dbc588cb22c5d14460ea0df68699f6f956c61de4a849930942fe08d764a16"
+      },
+      {
+        "index": 7,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000007.png",
+        "prefix_budget": 1,
+        "sha256": "710167f1658cda27ef86450847a0a235ebefc0e3744291fb4238f6829ca71b64"
+      },
+      {
+        "index": 7,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000007.png",
+        "prefix_budget": 2,
+        "sha256": "d9e43b6d038ef9951482e88b74f96d299dc484db3ac6ae6c1effd26e574a13b9"
+      },
+      {
+        "index": 7,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000007.png",
+        "prefix_budget": 4,
+        "sha256": "27137bd7443616f2fee145940369d0055beca2395453856e72cec2be243df129"
+      },
+      {
+        "index": 7,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000007.png",
+        "prefix_budget": 8,
+        "sha256": "c5a059b76a18d4610bf7e656efafc1f182dbdfdcfe9db6504515b8c28ecfebc3"
+      },
+      {
+        "index": 8,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000008.png",
+        "prefix_budget": 1,
+        "sha256": "34a0e37ac94f3bdf2e2484f26eb1e58bf2978f10877057ad0be906f60345d672"
+      },
+      {
+        "index": 8,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000008.png",
+        "prefix_budget": 2,
+        "sha256": "0fc5aa2cbd5b382bd8aec2280f5b4be22d5bbd121916335c8ed45931d1e6daba"
+      },
+      {
+        "index": 8,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000008.png",
+        "prefix_budget": 4,
+        "sha256": "a01f66e9063c6cc819e31116340bc2e1d5243f8bd706e3fe2d3efb6fac611451"
+      },
+      {
+        "index": 8,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000008.png",
+        "prefix_budget": 8,
+        "sha256": "3c189b1425af5a16c666391409eecfbc0bf3ce3742e9e1195cd79fe7f8bbabb2"
+      },
+      {
+        "index": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000009.png",
+        "prefix_budget": 1,
+        "sha256": "8f9b2318f6e13722d630248c7374ab721d661a7c8c0927d693d645de6e6e014b"
+      },
+      {
+        "index": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000009.png",
+        "prefix_budget": 2,
+        "sha256": "748ff3d3b28c850c0bed693330acd51dc0c05f19719d8658a98320979bc65d4c"
+      },
+      {
+        "index": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000009.png",
+        "prefix_budget": 4,
+        "sha256": "7bc2d812a7bedb36b8aa477ee99676855418e7218e11f616715160e28c4e47ba"
+      },
+      {
+        "index": 9,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000009.png",
+        "prefix_budget": 8,
+        "sha256": "adfbd7cefc5142523a2042b884c4eca841ceaf2e57def068949648be96356814"
+      },
+      {
+        "index": 10,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000010.png",
+        "prefix_budget": 1,
+        "sha256": "d10292d69eb1e503f288b05120884214d2a23ec068020a810bd1a57960d7224a"
+      },
+      {
+        "index": 10,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000010.png",
+        "prefix_budget": 2,
+        "sha256": "a36a4c3e62135d3b7295806a5a9410ef6efd221b0e4db4816fe47093ec251db0"
+      },
+      {
+        "index": 10,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000010.png",
+        "prefix_budget": 4,
+        "sha256": "edf4257a2901218bf2e9e6bec5f139107f44615080643c3f74391c9c20ae1a08"
+      },
+      {
+        "index": 10,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000010.png",
+        "prefix_budget": 8,
+        "sha256": "a890a6edda8d4582fa07315df3d5bc25a5d76b29c8ba3a97fb2d33c307f9a536"
+      },
+      {
+        "index": 11,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000011.png",
+        "prefix_budget": 1,
+        "sha256": "b74381573e61402ac6e751d3b24c0f4b695469faaff6aa2674e295b35a2e7452"
+      },
+      {
+        "index": 11,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000011.png",
+        "prefix_budget": 2,
+        "sha256": "f88916124206626a109ec95b6b8e1fdcad50a51e6771cfa6a57792212b77f4a0"
+      },
+      {
+        "index": 11,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000011.png",
+        "prefix_budget": 4,
+        "sha256": "d42c56834770de88d616f33a71e78fb5d2180a8e3ede68b97263570a5ce97c5a"
+      },
+      {
+        "index": 11,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000011.png",
+        "prefix_budget": 8,
+        "sha256": "66e00fe17f5d7a6334652bdb0090c8fe556bd88bb4d2ad49a164d4f80c4da272"
+      },
+      {
+        "index": 12,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000012.png",
+        "prefix_budget": 1,
+        "sha256": "9686a721f52752a407ea8311a654a418c7c8faeb0b4093b82884a01dd7857f79"
+      },
+      {
+        "index": 12,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000012.png",
+        "prefix_budget": 2,
+        "sha256": "e82c542aedcfd3d6d9fa7cd5d63b5977e7d86f60e647faaccd58b2dcd0605595"
+      },
+      {
+        "index": 12,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000012.png",
+        "prefix_budget": 4,
+        "sha256": "3fbf0ed90b0351adc41984582fab6dfbc62d88cd688cdd16fb07981f4d253b61"
+      },
+      {
+        "index": 12,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000012.png",
+        "prefix_budget": 8,
+        "sha256": "16cae1261b6e21f3045786d22c444a1568160247435ad91163054acbab684360"
+      },
+      {
+        "index": 13,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000013.png",
+        "prefix_budget": 1,
+        "sha256": "97238ca8c105a2b5003ec568a4ab75abe859c8388307800d76e6c5568965152f"
+      },
+      {
+        "index": 13,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000013.png",
+        "prefix_budget": 2,
+        "sha256": "064a6d7a41fd3cf063ba4b8d9de0fc03b2e926c236f2fc0c0f4583c7aa495394"
+      },
+      {
+        "index": 13,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000013.png",
+        "prefix_budget": 4,
+        "sha256": "a190a8b46b46a8a48ebf98f1322fcea947d3abc601e4fb3a699dd7ee46f95232"
+      },
+      {
+        "index": 13,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000013.png",
+        "prefix_budget": 8,
+        "sha256": "dff4fd89ee6bcf2976ba6c321e87d75443d3453a42899ee1180ddf57b5771ff6"
+      },
+      {
+        "index": 14,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000014.png",
+        "prefix_budget": 1,
+        "sha256": "7e1d3b752028610a424d972d68981c6a3b89d137d7a9446a99869b2a730f37ba"
+      },
+      {
+        "index": 14,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000014.png",
+        "prefix_budget": 2,
+        "sha256": "8c8ecb69750b714d4cbd3012c3c6e53f231fc72660fb80f816953febe29034b2"
+      },
+      {
+        "index": 14,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000014.png",
+        "prefix_budget": 4,
+        "sha256": "cc38bca363c35f4b746c9d9efd61418f708931f5c93df6ca0f3221a748824368"
+      },
+      {
+        "index": 14,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000014.png",
+        "prefix_budget": 8,
+        "sha256": "d080611e010559e30879db125924c929213b6343fc47596d7f8cb1caa8cfa466"
+      },
+      {
+        "index": 15,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_1/000015.png",
+        "prefix_budget": 1,
+        "sha256": "96e9721b9bf1f6c9ef73e20243f19e47347bd69eeedd9f91abc532839a675082"
+      },
+      {
+        "index": 15,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_2/000015.png",
+        "prefix_budget": 2,
+        "sha256": "105378777a0d2026faf18af5b3570e7371bfe7033951dd70a021187ec9a1c301"
+      },
+      {
+        "index": 15,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_4/000015.png",
+        "prefix_budget": 4,
+        "sha256": "b29cbccef07fdf7476f1f91d8c7148319b73cc4643ce63fc794ef389c9abcf4b"
+      },
+      {
+        "index": 15,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_cofitok_k8_50k_v3/prefix_diagnostic_64_ddim100_cfg15/prefix_8/000015.png",
+        "prefix_budget": 8,
+        "sha256": "17e153cf11857d2beed4a83ea0233817eff334176d907c7d5396848cf8996350"
+      }
+    ],
+    "dense_identity": [
+      {
+        "index": 0,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1/000000.png",
+        "sha256": "1ab98fd0bd2050cdee73e67ea815302f28f886f531d1acd63fe426273a7cb02a"
+      },
+      {
+        "index": 1,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1/000001.png",
+        "sha256": "9faad9f2cf4265db87bf25d4cf89752955d93619aa540402f9c37a7058137c8b"
+      },
+      {
+        "index": 2,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1/000002.png",
+        "sha256": "68ce0cb8601e298ae4db18575f1c175f3125b6fbec51b0212ac11f0099ff639b"
+      },
+      {
+        "index": 3,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1/000003.png",
+        "sha256": "806a648b7b9a62beeb1ac8db507602a94faf8011e6ad3e4429e37f524c7e7cbf"
+      },
+      {
+        "index": 250,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1/000250.png",
+        "sha256": "3570001c6182c89aa5de39efa7346a8f53e6d8eb1949903c2638dc2d254255c7"
+      },
+      {
+        "index": 251,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1/000251.png",
+        "sha256": "48532f76efb81ffaeacdd2faae6287897a60cd71b3aa534107e96d328fc94494"
+      },
+      {
+        "index": 1000,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1/001000.png",
+        "sha256": "2e3ea74cab1d53146fb47fda3b83d1793fe76b4d8979fe49b4a7236a8995415c"
+      },
+      {
+        "index": 1001,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1/001001.png",
+        "sha256": "c521f2f500c72e154bfc8e9af0b07b7a21a84637673e179fea4a9c0b72df0111"
+      },
+      {
+        "index": 5000,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1/005000.png",
+        "sha256": "d7872a6254432ee1ac2b03cef23bae9d5736edad63b30f0d8bf29289bb8fe137"
+      },
+      {
+        "index": 5001,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1/005001.png",
+        "sha256": "1b041e43da55c2e80b72f753444c85f7170bb5c733705a4e1f99403fef01a34c"
+      },
+      {
+        "index": 9998,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1/009998.png",
+        "sha256": "33af25d120a75e43e2db0acf7ea8117c2ced48cda1644ec4dbb0d427385217e9"
+      },
+      {
+        "index": 9999,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_fixed_basis_dense_50k_v3/samples_gate10k_ddim100_cfg15/prefix_1/009999.png",
+        "sha256": "0298002f448f2eff65286b04650540e253d9190417c7c83df900d2f0d2e7bf98"
+      }
+    ]
+  },
+  "sources": {
+    "cofitok": {
+      "budget": 8,
+      "checkpoint_sha256": "6591bd55418e0c7fa712047d29355703cba5da7026d76f5044589820def84ae4",
+      "checkpoint_step": 50000,
+      "sample_count": 10000,
+      "sample_set_sha256": "1e88b4a727c939280dbf2689e3ba2ffcb81d9ee490d3900c55265f2a710659c1"
+    },
+    "cofitok_prefix": {
+      "1": {
+        "budget": 1,
+        "checkpoint_sha256": "6591bd55418e0c7fa712047d29355703cba5da7026d76f5044589820def84ae4",
+        "checkpoint_step": 50000,
+        "sample_count": 64,
+        "sample_set_sha256": "7672c5d41df35a1f0ec0f0669b9e038cb5933e47e5acf67c7357f5dc9428c2da"
+      },
+      "2": {
+        "budget": 2,
+        "checkpoint_sha256": "6591bd55418e0c7fa712047d29355703cba5da7026d76f5044589820def84ae4",
+        "checkpoint_step": 50000,
+        "sample_count": 64,
+        "sample_set_sha256": "7abfdd2248a6b3ea06a6b8eb40e4396cc5b8cacef25bd86e74ae7098513d9029"
+      },
+      "4": {
+        "budget": 4,
+        "checkpoint_sha256": "6591bd55418e0c7fa712047d29355703cba5da7026d76f5044589820def84ae4",
+        "checkpoint_step": 50000,
+        "sample_count": 64,
+        "sample_set_sha256": "d22eba34d511875c15457214cb124dff19c1fdf733d2bc308094d8a43b2e9d4f"
+      },
+      "8": {
+        "budget": 8,
+        "checkpoint_sha256": "6591bd55418e0c7fa712047d29355703cba5da7026d76f5044589820def84ae4",
+        "checkpoint_step": 50000,
+        "sample_count": 64,
+        "sample_set_sha256": "536799ba6f31db24585197a0f98401ee4c089481cef19f468a262fb0855e0dac"
+      }
+    },
+    "dense_identity": {
+      "budget": 1,
+      "checkpoint_sha256": "c2d09aee0c979cf3bcf378f65d78c3d189b5efb3ddc583b6408d4031b4ea67f3",
+      "checkpoint_step": 50000,
+      "sample_count": 10000,
+      "sample_set_sha256": "d3e615ab019f9b1fd21ebc4acafbd473404193db6c0cdfb56cec737ebd43cdd4"
+    }
+  },
+  "statistics": {
+    "cofitok": {
+      "exact_duplicate_count": 0,
+      "image_count": 12,
+      "pixel_max": 1.0,
+      "pixel_mean": 0.5167388319969177,
+      "pixel_min": 0.0,
+      "pixel_std": 0.2663276493549347
+    },
+    "dense_identity": {
+      "exact_duplicate_count": 0,
+      "image_count": 12,
+      "pixel_max": 1.0,
+      "pixel_mean": 0.4915505647659302,
+      "pixel_min": 0.0,
+      "pixel_std": 0.25425779819488525
+    }
+  },
+  "status": "completed"
+}

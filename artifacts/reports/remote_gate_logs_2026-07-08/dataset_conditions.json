@@ -1,0 +1,55 @@
+{
+  "check_count": 3,
+  "checks": [
+    {
+      "evidence": {
+        "datasets": {
+          "cifar10": {
+            "present_count": 12,
+            "required_snippet_count": 12
+          },
+          "tiny_imagenet_200": {
+            "present_count": 13,
+            "required_snippet_count": 13
+          }
+        },
+        "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/datasets_2026-07-07.md"
+      },
+      "missing": [],
+      "name": "cifar_tiny_records",
+      "status": "ok"
+    },
+    {
+      "evidence": {
+        "manifest": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/imagenet_1k_64x64_hf_manifest_summary_2026-07-08.json",
+        "manifest_dataset_alias": "imagenet_1k_64x64_hf",
+        "manifest_source_loader": "benjamin-paine/imagenet-1k-64x64",
+        "plan": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/imagenet_1k_64x64_hf_plan_2026-07-08.md",
+        "split_rows": {
+          "train": 1281167,
+          "validation": 50000
+        }
+      },
+      "missing": [],
+      "name": "imagenet_hf_records",
+      "status": "ok"
+    },
+    {
+      "evidence": {
+        "fallback": "imagenet_1k_64x64_hf",
+        "inspect": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/downsampled_imagenet_64_tfds_inspect_2026-07-08.json",
+        "inspect_dataset_alias": "downsampled_imagenet_64",
+        "inspect_source_loader": "downsampled_imagenet",
+        "plan": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/downsampled_imagenet_64_plan_2026-07-08.md",
+        "tfds_version": "4.9.10"
+      },
+      "missing": [],
+      "name": "downsampled_fallback_record",
+      "status": "ok"
+    }
+  ],
+  "conditions_dir": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions",
+  "missing_count": 0,
+  "ok_count": 3,
+  "status": "ok"
+}

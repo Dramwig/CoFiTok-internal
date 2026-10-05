@@ -1,0 +1,31 @@
+{
+  "config_name": "baseline_improved_diffusion_downsampled_imagenet_64",
+  "dataset": "downsampled_imagenet_64",
+  "evaluation": {
+    "available_sample_images": 1024,
+    "feature_size": 8,
+    "real_image_count": 4096,
+    "sample_image_count": 1024,
+    "seed": 139,
+    "split": "val"
+  },
+  "metric_notes": {
+    "inception_frechet": {
+      "available": true,
+      "model": "torchvision.models.inception_v3/IMAGENET1K_V1"
+    },
+    "lowres_frechet_proxy": "Small-scale relative metric over deterministic low-resolution RGB/color features."
+  },
+  "metrics": {
+    "inception_frechet": 355.10614289345926,
+    "lowres_frechet_proxy": 8.804418110119745
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 134.21512818336487,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  },
+  "samples_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_downsampled_imagenet_64_5000steps_ddim50_2026-07-09/samples_png"
+}

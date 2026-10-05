@@ -1,0 +1,23 @@
+{
+  "adapter": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/baselines/adapters/improved_diffusion",
+  "imports": {
+    "blobfile": {
+      "file": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/baselines/adapters/improved_diffusion/blobfile.py",
+      "status": "ok"
+    },
+    "improved_diffusion.script_util": {
+      "file": "/root/autodl-tmp/CoFiTok/baselines/repos/improved_diffusion/improved_diffusion/script_util.py",
+      "status": "ok"
+    },
+    "mpi4py": {
+      "file": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/baselines/adapters/improved_diffusion/mpi4py/__init__.py",
+      "status": "ok"
+    }
+  },
+  "model_defaults": {
+    "diffusion_steps": 1000,
+    "image_size": 64,
+    "num_channels": 128
+  },
+  "repo": "/root/autodl-tmp/CoFiTok/baselines/repos/improved_diffusion"
+}

@@ -1,0 +1,73 @@
+\section{Hyperparameter Sensitivity}
+
+Figure~\ref{fig:app-ablation-hyperparameters} and
+Table~\ref{tab:app-hyperparameter-values} report the full two-seed sweeps. The
+dashed lines mark the main values: $\lambda_p=0.15$, $\lambda_c=0.30$,
+$p=1.5$, and $K=8$.
+Increasing either loss weight improves path AUC with little endpoint movement;
+the chosen weights are a moderate endpoint/path tradeoff. Power 1.5 is the
+minimum under the common evaluation target. K8 has the lowest mean path AUC,
+K4 the lowest endpoint MSE, and K16 no short-budget path advantage.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{aaai27_ablation_hyperparameters.pdf}
+  \caption{Matched ImageNet-64 HF hyperparameter sensitivity. Top row:
+  denoise-path AUC; bottom row: endpoint $x_0$ MSE. Error bars are sample
+  standard deviations over seeds 103/139. Lower is better.}
+  \label{fig:app-ablation-hyperparameters}
+\end{figure*}
+
+\begin{table*}[t]
+  \centering
+  \small
+  \caption{Numerical values underlying
+  Figure~\ref{fig:app-ablation-hyperparameters}. Each entry is mean $\pm$
+  sample standard deviation over seeds 103/139.}
+  \label{tab:app-hyperparameter-values}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Axis & Value & Endpoint $x_0$ MSE $\downarrow$ & Path AUC $\downarrow$ & Eff. K $\uparrow$ \\
+    \midrule
+    $\lambda_p$ & 0 & $0.1300 \pm 0.0003$ & $0.1269 \pm 0.0096$ & $6.547 \pm 0.027$ \\
+ & 0.05 & $0.1309 \pm 0.0020$ & $0.0894 \pm 0.0009$ & $6.694 \pm 0.033$ \\
+ & 0.15 & $0.1300 \pm 0.0027$ & $0.0686 \pm 0.0017$ & $6.780 \pm 0.015$ \\
+ & 0.3 & $0.1310 \pm 0.0020$ & $0.0604 \pm 0.0015$ & $6.819 \pm 0.002$ \\
+\midrule
+$\lambda_c$ & 0 & $0.1302 \pm 0.0012$ & $0.1105 \pm 0.0013$ & $6.752 \pm 0.069$ \\
+ & 0.1 & $0.1298 \pm 0.0022$ & $0.0856 \pm 0.0004$ & $6.860 \pm 0.001$ \\
+ & 0.3 & $0.1300 \pm 0.0027$ & $0.0686 \pm 0.0017$ & $6.780 \pm 0.015$ \\
+ & 0.6 & $0.1314 \pm 0.0018$ & $0.0581 \pm 0.0036$ & $6.717 \pm 0.010$ \\
+\midrule
+$p$ & 0.75 & $0.1344 \pm 0.0025$ & $0.4909 \pm 0.0159$ & $7.035 \pm 0.102$ \\
+ & 1 & $0.1318 \pm 0.0021$ & $0.2143 \pm 0.0133$ & $7.912 \pm 0.015$ \\
+ & 1.5 & $0.1300 \pm 0.0027$ & $0.0686 \pm 0.0017$ & $6.780 \pm 0.015$ \\
+ & 2 & $0.1307 \pm 0.0031$ & $0.1541 \pm 0.0010$ & $5.449 \pm 0.020$ \\
+ & 2.5 & $0.1308 \pm 0.0005$ & $0.3069 \pm 0.0031$ & $4.459 \pm 0.007$ \\
+\midrule
+$K$ & 4 & $0.1285 \pm 0.0014$ & $0.0693 \pm 0.0058$ & $3.321 \pm 0.006$ \\
+ & 8 & $0.1300 \pm 0.0027$ & $0.0686 \pm 0.0017$ & $6.780 \pm 0.015$ \\
+ & 16 & $0.1313 \pm 0.0025$ & $0.0711 \pm 0.0018$ & $13.676 \pm 0.154$\\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\begin{center}
+  \refstepcounter{table}
+  \label{tab:app-imagenet256-generation-controls}
+  \textbf{Table~\thetable: Exploratory ImageNet-256 confirmatory generation controls.}
+  \par\smallskip
+  \small These rows do not replace the path and endpoint preregistered tests. Lower is better.\par\smallskip
+  \begin{tabular}{rlrrr}
+    \toprule
+    Seed & Method & Samples & Lowres Frechet & Inception Frechet \\
+    \midrule
+    103 & Endpoint-only factorized & 4096 & 11.1619 & 370.3672 \\
+    103 & Direct dense & 4096 & 9.7396 & 449.3913 \\
+    103 & \method & 4096 & 10.8232 & 349.4076 \\
+    139 & Endpoint-only factorized & 4096 & 8.9753 & 404.6116 \\
+    139 & Direct dense & 4096 & 10.5597 & 384.8126 \\
+    139 & \method & 4096 & 11.0839 & 356.9311 \\
+    \bottomrule
+  \end{tabular}
+\end{center}

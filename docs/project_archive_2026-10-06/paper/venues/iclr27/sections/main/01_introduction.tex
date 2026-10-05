@@ -1,0 +1,58 @@
+\section{Introduction}
+
+Diffusion models reverse a noising process by repeatedly predicting a dense
+noise field. This dense prediction is effective, but it is also monolithic:
+there is no direct way to ask how much of the denoising update has been
+explained, whether the update has an interpretable coarse-to-fine order, or how
+to stop after a valid partial prediction. Ordered visual tokenizers and
+diffusion-autoregressive methods suggest that generation can benefit from
+structured intermediate representations. The question in this paper is
+narrower: can the dense pixel-space noise prediction itself be factorized into
+ordered denoising tokens?
+
+\method{} rewrites the predicted noise field as
+\begin{equation}
+  \epshat^{(K)} = \sum_{k=1}^{K} S_k\left(z^{(k)}\right),
+  \label{eq:full-factorization}
+\end{equation}
+where each $z^{(k)}$ is a denoising token and $S_k$ expands only
+that token into one dense component. Prefixes are meaningful by construction:
+\begin{align}
+  \epshat^{(1:m)} &= \sum_{k=1}^{m} S_k\left(z^{(k)}\right), \\
+  \hat{x}^{(m)}_0 &= \frac{\xt - \sigma_t \epshat^{(1:m)}}{\alpha_t}.
+  \label{eq:prefix-denoise}
+\end{align}
+
+The central design constraint is that the synthesis operator must not become a
+decoder. In the default \method{} model, $S_k$ is token-only, bias-free,
+shallow, local, and condition-free. It does not receive the noised image,
+timestep, class label, text prompt, previous tokens, skip features, or a learned
+constant. This restriction forces the token itself to carry the sample-specific
+negative-noise information and gives the zero-token test a concrete meaning:
+$S_k(0)=0$ by construction.
+
+The current evidence supports a scoped method claim. \method{} learns ordered
+denoising components across eight datasets, including ImageNet-family 64x64 and
+256x256 settings and non-classification FFHQ/AFHQv2 rows. Compared with an
+endpoint-only factorized predictor, \method{} consistently improves
+  prefix/path alignment, while matched objective, prediction, and synthesis
+  ablations expose why ordering and restricted synthesis matter. Generated-sample
+distribution metrics do not show a stable unconditional generation-quality win,
+which clarifies the present contribution: \method{} makes dense noise
+prediction prefix-controllable without relying on a final VAE-style decoder.
+
+\paragraph{Contributions.}
+\begin{enumerate}
+  \item We formulate dense pixel-space diffusion noise prediction as an ordered
+  sum of denoising-token components.
+  \item We introduce a restricted, condition-free synthesis operator whose
+  token-only interface and bias-free construction prevent decoder-style
+  shortcuts and make $S_k(0)=0$ testable.
+  \item We train \method{} with a denoise-path objective that makes token
+  prefixes approximate a partial denoising trajectory rather than only the final
+  clean image.
+  \item We evaluate prefix controllability, component ordering,
+  non-degeneration, endpoint quality, matched short-run generation metrics, and
+  tokenizer-related reconstruction baselines across the current eight-dataset
+  evidence matrix.
+\end{enumerate}

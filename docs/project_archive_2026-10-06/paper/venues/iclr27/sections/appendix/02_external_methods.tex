@@ -1,0 +1,133 @@
+\section{External-Method Results}
+
+The next four tables are generated from the locked evidence JSON. They report
+P0 generation, FlexTok/TiTok reconstruction, official D-AR/MAR/ReTok
+ImageNet-256 results, and the paper's claim boundary.
+
+\section{How to Read the External Comparisons}
+
+\paragraph{Improved DDPM and EDM.}
+Table~\ref{tab:p0-generation-current} is the direct external pixel-diffusion
+context. Dataset, resolution, split, and nominal optimizer steps are aligned,
+but parameter count, batch size, nominal images seen, and NFE remain explicit.
+EDM is the low-resolution Frechet-style winner on seven of eight rows, and the
+direct dense predictor wins the remaining row. These results rule out a broad
+unconditional-generation superiority claim for \method. They do not test the
+paper's distinctive interface claim because monolithic predictors do not expose
+ordered component prefixes.
+
+\paragraph{FlexTok and TiTok.}
+Table~\ref{tab:p1-tokenizer-recon-current} uses official-pretrained models and
+evaluates reconstruction at $256\times256$ on 256 images per dataset. These
+methods tokenize image content; \method{} factorizes a dense diffusion noise
+prediction. Their reconstruction PSNR and Frechet-style values therefore
+document adjacent capability rather than a shared generation objective.
+
+% Auto-generated from paper_evidence_report.json. Do not hand-edit metrics here.
+
+% Appendix subset: generation context, tokenizer reconstruction, official related rows, and claim summary.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Eight-dataset P0 generated-sample comparison under the locked short-budget protocols. Lower Frechet-style metrics are better.}
+  \label{tab:p0-generation-current}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrrlrrrrlr}
+    \toprule
+    Dataset & C low & D low & DDPM low & EDM low & low winner & C Inc & D Inc & DDPM Inc & EDM Inc & Inc winner & C rank \\
+    \midrule
+    CIFAR-10 & 6.47 & 5.80 & 7.86 & 2.87 & EDM & 312.00 & 359.50 & 498.65 & 351.17 & CoFiTok & 1 \\
+    Tiny-IN & 8.49 & 6.99 & 9.07 & 3.10 & EDM & 373.63 & 392.40 & 381.24 & 268.72 & EDM & 2 \\
+    ImageNet-64 HF & 8.09 & 6.89 & 8.88 & 3.23 & EDM & 390.99 & 417.79 & 378.33 & 258.40 & EDM & 3 \\
+    ImageNet-64 strict & 8.36 & 6.87 & 8.80 & 2.75 & EDM & 374.68 & 383.72 & 355.11 & 248.31 & EDM & 3 \\
+    FFHQ-64 & 8.74 & 6.84 & 9.44 & 2.51 & EDM & 425.71 & 427.05 & 369.01 & 325.49 & EDM & 3 \\
+    AFHQv2-64 & 7.08 & 5.68 & 8.29 & 1.96 & EDM & 331.06 & 333.42 & 335.18 & 230.40 & EDM & 2 \\
+    ImageNet-256 10\% & 10.44 & 12.59 & 10.40 & 10.39 & EDM & 414.19 & 366.42 & 419.60 & 368.68 & Direct dense epsilon & 3 \\
+    ImageNet-256 & 10.54 & 10.24 & 10.40 & 10.40 & Direct dense epsilon & 417.26 & 354.13 & 414.30 & 368.43 & Direct dense epsilon & 4 \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \vspace{0.3em}
+  \caption*{\footnotesize C = CoFiTok; D = parameter-matched direct dense epsilon. Rows use the locked per-dataset short-budget protocol; they are not formal SOTA FID claims.}
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Official-pretrained tokenizer reconstruction context (eval-only).}
+  \label{tab:p1-tokenizer-recon-current}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrrrr}
+    \toprule
+    Dataset & src & eval & FlexTok PSNR & FlexTok low & TiTok PSNR & TiTok low \\
+    \midrule
+    AFHQv2-64 & 64 & 256 & 24.04 & 0.036 & 17.29 & 0.217 \\
+    CIFAR-10 & 32 & 256 & 26.77 & 0.037 & 19.35 & 0.168 \\
+    ImageNet-64 strict & 64 & 256 & 22.57 & 0.042 & 16.73 & 0.196 \\
+    FFHQ-64 & 64 & 256 & 24.06 & 0.042 & 17.39 & 0.231 \\
+    ImageNet-64 HF & 64 & 256 & 23.60 & 0.039 & 18.04 & 0.182 \\
+    ImageNet-256 & 256 & 256 & 19.12 & 0.044 & 15.54 & 0.196 \\
+    ImageNet-256 10\% & 256 & 256 & 19.12 & 0.044 & 15.54 & 0.196 \\
+    Tiny-IN & 64 & 256 & 21.81 & 0.044 & 17.30 & 0.160 \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \vspace{0.3em}
+  \caption*{\footnotesize Official pretrained reconstruction at 256x256 on 256 images per dataset. These rows are not retrained generation baselines.}
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Official ImageNet-256 related-method evaluations (50K samples).}
+  \label{tab:official-related-eval-only}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lllrlrrrr}
+    \toprule
+    Method & Dataset & Protocol & Samples & FID & sFID & IS & Prec. & Rec. \\
+    \midrule
+    D-AR & ImageNet-256 & official 50K eval-only & 50000 & 2.628 & 6.720 & 285.89 & 0.803 & 0.588 \\
+    MAR & ImageNet-256 & official 50K eval-only & 50000 & 2.338 & 4.700 & 62.90 & 0.822 & 0.572 \\
+    ReTok & ImageNet-256 & official 50K eval-only & 50000 & 2.219 & 5.896 & 245.94 & 0.816 & 0.599 \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \vspace{0.3em}
+  \caption*{\footnotesize These rows use official pretrained protocols where available and are secondary comparisons; they are not part of the matched-dataset/optimizer-step P0 matrix.}
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Claim-evidence boundary.}
+  \label{tab:claim-support-current}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{p{0.24\textwidth}p{0.68\textwidth}}
+    \toprule
+    Claim axis & Evidence summary \\
+    \midrule
+    Generation quality & CoFiTok is best on 0/8 lowres rows and 1/8 Inception rows; average ranks are 3.12 and 2.62. Do not claim generation SOTA. \\
+    Prefix control & CoFiTok path AUC is lower than the endpoint-only factorized control on 8/8 datasets. \\
+    Repeated 20k evidence & CoFiTok lowers path AUC in 4/4 paired dataset-seed runs (mean relative reduction 96.18\%), while endpoint $x_0$ MSE at $t=500$ changes by +4.20\% on average. \\
+    ImageNet-256 scaling & ImageNet-256 K4 20k confirmatory gates: 7/7 passed; overall PASS; mean endpoint-MSE change -6.73\%; ordered ranks among all 24 permutations 1/1. \\
+    Restricted synthesis & CoFiTok zero-token ratio is zero in current rows; deep-$S_k$ has nonzero zero-token ratio on 8/8 datasets. \\
+    Related methods & completed official 50K: D-AR, MAR, ReTok. All rows remain secondary and outside P0 matched-dataset/step training. \\
+    Main paper stance & The core empirical gates support the scoped claim of ordered restricted dense-noise factorization with prefix-controllable denoising, not broad unconditional generation superiority. \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+\end{table*}
+
+\paragraph{D-AR, MAR, and ReTok.}
+Table~\ref{tab:official-related-eval-only} reports 50K-sample official
+evaluations on ImageNet-256. The rows use available pretrained checkpoints and
+their corresponding generation protocols. They are useful large-model context,
+but they cannot be relabeled as eight-dataset matched-step retraining. The
+Inception Score for MAR follows the ADM-style evaluator used in the recorded
+run and is not mixed with the differently scaled value reported by another
+evaluation implementation.

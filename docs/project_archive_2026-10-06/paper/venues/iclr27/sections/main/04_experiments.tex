@@ -1,0 +1,278 @@
+\section{Experiments}
+
+\subsection{Setup}
+
+\paragraph{Datasets and models.}
+We evaluate on CIFAR-10, Tiny ImageNet-200,
+ImageNet-1K 64x64 HF, strict-source downsampled ImageNet-64, FFHQ-64,
+AFHQv2-64, ImageNet-256 10\%, and full ImageNet-256. The HF ImageNet-64 row
+and the strict-source downsampled ImageNet-64 row are reported separately; older
+HF-derived results are not silently renamed as strict-source results.
+All matched experiments use small unconditional models and short training
+budgets. The primary model is K8 light \method{} at 64px and K4 at 256px. We
+compare it with a parameter-matched direct dense predictor, an endpoint-only
+factorized control, explicit objective/prediction/synthesis ablations, Improved
+DDPM, and EDM. FlexTok/TiTok reconstruction and official D-AR/MAR/ReTok 50K
+results are protocol-separated secondary context.
+
+\paragraph{Protocols.}
+The P0 rows match dataset, resolution, split, and nominal optimizer steps;
+batch size, nominal images seen, parameter count, and NFE are reported because
+the external methods are not compute matched. The direct dense control is the
+strictest factorization control: it is parameter matched and uses the same
+training budget, but is not claimed to be FLOP or latency matched.
+The broad matrix uses locked per-dataset evaluation sizes. Repeated and
+ablation claims use seeds 103/139 and 1,024 validation images at fixed $t=500$.
+All power-sweep models are evaluated against the same progress-$1.5$ path.
+
+\paragraph{Metrics and evidence tiers.}
+We report endpoint PSNR and MSE, path AUC, effective token count, and zero-input
+energy. Lower path AUC means better alignment of all prefixes
+to the prescribed partial-denoising path; endpoint metrics alone do not measure
+that interface. Frechet-style values are internal comparison metrics rather
+than SOTA FID claims. The locked evidence matrix contains 80 matched P0 cells,
+16 tokenizer eval-only cells, and 24 explicitly protocol-blocked cross-task
+cells; full settings and provenance are in the appendix.
+
+\subsection{Results}
+
+\paragraph{All-dataset evidence.}
+
+Table~\ref{tab:cofitok-diagnostics-current} isolates the supported claim. C is
+\method{}, D is the parameter-matched direct dense predictor, and E is the
+endpoint-only factorized control. \method{} has lower path AUC than E on all
+eight datasets and exactly preserves the restricted zero-token contract. Its
+endpoint PSNR is close to, but not uniformly better than, direct dense.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Diagnostics for the supported \method{} claim. Higher PSNR is better;
+  lower path AUC and zero ratio are better.}
+  \label{tab:cofitok-diagnostics-current}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrrrrrr}
+    \toprule
+    Dataset & C PSNR & D PSNR & C path & E path & C effK & E effK & C zero & deep-$S_k$ zero \\
+    \midrule
+    CIFAR-10 & 14.245 & 14.407 & 0.0967 & 0.7906 & 6.84 & 5.24 & 0.0000 & 0.0619 \\
+Tiny-IN & 14.348 & 14.453 & 0.0731 & 1.1177 & 6.80 & 5.57 & 0.0000 & 0.0505 \\
+ImageNet-64 HF & 14.897 & 15.004 & 0.0672 & 1.1120 & 6.79 & 5.33 & 0.0000 & 0.0522 \\
+ImageNet-64 strict & 14.521 & 14.656 & 0.0705 & 1.0502 & 6.82 & 5.36 & 0.0000 & 0.0535 \\
+FFHQ-64 & 15.024 & 15.126 & 0.0676 & 1.0830 & 6.82 & 5.41 & 0.0000 & 0.0518 \\
+AFHQv2-64 & 15.167 & 15.154 & 0.0653 & 1.0185 & 6.82 & 5.45 & 0.0000 & 0.0561 \\
+ImageNet-256 10\% & 13.627 & 13.490 & 0.1416 & 1.5686 & 3.36 & 3.67 & 0.0000 & 0.0179 \\
+ImageNet-256 & 13.809 & 13.770 & 0.1325 & 1.5003 & 3.37 & 3.67 & 0.0000 & 0.0185\\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table*}
+
+\begin{figure*}[t]
+  \centering
+  \begin{minipage}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figure2a_tiny_prefix.png}
+    \par\smallskip
+    {\footnotesize\textbf{(a)} Tiny-IN: endpoint-only (left), \method{} (right).}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figure2b_imagenet64_prefix.png}
+    \par\smallskip
+    {\footnotesize\textbf{(b)} ImageNet-64: endpoint-only (left), \method{} (right).}
+  \end{minipage}
+
+  \medskip
+  \begin{minipage}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figure2c_restricted_synthesis.png}
+    \par\smallskip
+    {\footnotesize\textbf{(c)} Restricted $S_k$: ordered (left), shuffled (right).}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.49\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{figure2d_deep_synthesis.png}
+    \par\smallskip
+    {\footnotesize\textbf{(d)} Deep $S_k$: ordered (left), shuffled (right).}
+  \end{minipage}
+  \caption{%
+  Qualitative prefix and degeneration evidence assembled from four standalone
+  subfigure files. In (a--b), each half shows the same examples across the
+  prefix path; \method{} produces more organized intermediate denoising than
+  endpoint-only factorization. In (c--d), shuffling breaks sample alignment,
+  while deep synthesis can carry structure that the restricted, zero-preserving
+  operator cannot. Quantitative path and zero-token results are reported in
+  Tables~\ref{tab:cofitok-diagnostics-current} and~\ref{tab:component-ablation}.}
+  \label{fig:final-visual}
+\end{figure*}
+
+\paragraph{Endpoint quality and prefixes.}
+
+At the same 20k training budget, K8 light \method{} nearly matches the
+endpoint-only factorized control in endpoint $x_0$ MSE at $t=500$ while greatly
+improving path alignment.
+
+\begin{table*}[t]
+  \centering
+  \caption{Matched 20k two-seed comparison (mean $\pm$ sample standard
+  deviation over seeds 103 and 139). Endpoint $x_0$ MSE and path AUC use
+  1,024 validation images at $t=500$; lower is better. Higher is better for
+  effective token count.}
+  \label{tab:fair20k}
+  \small
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llrrrr}
+    \toprule
+    Dataset & Method & Endpoint $x_0$ MSE $\downarrow$ & Path AUC $\downarrow$ & Eff. K $\uparrow$ & Zero ratio $\downarrow$ \\
+    \midrule
+  Tiny ImageNet-200 & Endpoint-only factorized & $0.1253 \pm 0.0001$ & $1.0098 \pm 0.1430$ & $5.312 \pm 0.049$ & $0.0000 \pm 0.0000$ \\
+Tiny ImageNet-200 & CoFiTok & $0.1296 \pm 0.0015$ & $0.0378 \pm 0.0007$ & $6.766 \pm 0.015$ & $0.0000 \pm 0.0000$ \\
+ImageNet-64 HF & Endpoint-only factorized & $0.1096 \pm 0.0006$ & $0.9984 \pm 0.1210$ & $5.169 \pm 0.108$ & $0.0000 \pm 0.0000$ \\
+ImageNet-64 HF & CoFiTok & $0.1151 \pm 0.0016$ & $0.0379 \pm 0.0037$ & $6.752 \pm 0.012$ & $0.0000 \pm 0.0000$\\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table*}
+
+Across the four paired dataset-seed comparisons, \method{} lowers path AUC in
+4/4 cases, with a mean relative reduction of 96.18\%. This structural gain has
+a measurable endpoint tradeoff: endpoint $x_0$ MSE increases by 4.20\% on average and
+is not lower in any of the four pairs. Figure~\ref{fig:final-visual} shows the
+corresponding qualitative prefix grids.
+In the full-validation deterministic sweep, K8 light also improves MSE AUC and
+low-res Frechet proxy AUC on both Tiny ImageNet-200 and ImageNet-64 HF, while
+the endpoint-only factorized control keeps the lower endpoint MSE.
+
+\paragraph{Learned order and ImageNet-256 scaling.}
+
+Order ablations keep the same component sum at the endpoint but change the
+prefix trajectory. This makes order evaluation a direct test of whether prefixes
+are organized rather than an endpoint-quality test.
+
+Table~\ref{tab:imagenet256-confirmatory-order} gives the preregistered
+ImageNet-256 K4 20k two-seed test. Besides a fixed random permutation and
+reverse order, it exhaustively evaluates all 24 component permutations over
+1,024 images and reports a paired-bootstrap confidence interval for the mean of
+the 23 non-identity orders. Because every order sums the same components, the
+endpoint is preserved; the test isolates the organization of the prefix path.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{ImageNet-256 K4 20k confirmatory order and endpoint results over
+  1,024 validation images at $t=500$.}
+  \label{tab:imagenet256-confirmatory-order}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{rrrrrrrrr}
+    \toprule
+    Seed & E path & C ordered & non-ID mean & reverse & rank/24 & $\Delta$ CI low & D endpoint & C endpoint \\
+    \midrule
+    103 & 1.7879 & 0.0664 & 0.3157 & 0.7192 & 1 & 0.2489 & 0.1234 & 0.1133 \\
+139 & 1.4401 & 0.0678 & 0.3082 & 0.6821 & 1 & 0.2400 & 0.1244 & 0.1179\\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table*}
+
+The preregistered confirmatory test passes all seven gates. For both seeds, the
+learned order ranks 1st of 24, every non-identity permutation has worse path
+AUC, and the paired-bootstrap lower bounds for non-identity minus ordered AUC
+are positive (0.2489 and 0.2400). The endpoint component sum is invariant up to
+$3\times10^{-15}$ MSE. Relative to the parameter-matched direct dense control,
+\method{} also lowers endpoint $x_0$ MSE by 6.73\% on average in this
+ImageNet-256 confirmatory setting.
+
+\paragraph{Generation and related-method context.}
+Cross-batch validation confirms that endpoint-only factorization remains a
+strong endpoint baseline. Generated-sample metrics do not establish stable
+unconditional superiority: the matched controls favor endpoint-only on Tiny
+ImageNet-200 and ImageNet-64 HF under the internal streamed protocol, and EDM
+or direct dense wins the broad Frechet-style rows. Official D-AR/MAR/ReTok 50K
+and FlexTok/TiTok reconstruction results remain secondary protocol tiers in the
+appendix; none is used as a matched \method{} superiority claim.
+
+\subsection{Ablations}
+
+\paragraph{Matched component protocol.}
+We isolate the K8 method components on ImageNet-64 HF with identical 5k-step
+training, seeds 103/139, and 1,024-image evaluation at $t=500$. The full model
+uses $(\lambda_p,\lambda_c,p)=(0.15,0.30,1.5)$. Endpoint-only removes both path
+terms; the next two rows remove one term at a time; simultaneous prediction
+removes token feedback; deep synthesis replaces restricted $S_k$ with a biased
+nonlinear decoder. Table~\ref{tab:component-ablation} reports mean $\pm$ sample
+standard deviation.
+
+\begin{table*}[t]
+  \centering
+  \small
+  \caption{Matched two-seed component ablations on ImageNet-64 HF. Lower is
+  better for endpoint MSE, path AUC, and zero ratio; higher effective K indicates
+  broader component use. All path values use the same progress-$1.5$ target.}
+  \label{tab:component-ablation}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrr}
+    \toprule
+    Variant & Endpoint $x_0$ MSE $\downarrow$ & Path AUC $\downarrow$ & Eff. K $\uparrow$ & Zero ratio $\downarrow$ \\
+    \midrule
+  CoFiTok (full) & $0.1300 \pm 0.0027$ & $0.0686 \pm 0.0017$ & $6.780 \pm 0.015$ & $0.0000 \pm 0.0000$ \\
+Endpoint-only factorized & $0.1275 \pm 0.0019$ & $0.9991 \pm 0.1607$ & $5.366 \pm 0.054$ & $0.0000 \pm 0.0000$ \\
+No path-prefix term & $0.1300 \pm 0.0003$ & $0.1269 \pm 0.0096$ & $6.547 \pm 0.027$ & $0.0000 \pm 0.0000$ \\
+No path-component term & $0.1302 \pm 0.0012$ & $0.1105 \pm 0.0013$ & $6.752 \pm 0.069$ & $0.0000 \pm 0.0000$ \\
+Simultaneous tokens & $0.1314 \pm 0.0016$ & $0.0709 \pm 0.0081$ & $6.829 \pm 0.025$ & $0.0000 \pm 0.0000$ \\
+Deep synthesis & $0.1496 \pm 0.0305$ & $0.0463 \pm 0.0051$ & $6.774 \pm 0.032$ & $0.0485 \pm 0.0050$\\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table*}
+
+\paragraph{Objective, prediction, and synthesis components.}
+Relative to endpoint-only factorization, the full objective lowers mean path AUC
+by 93.0\% with a 2.0\% endpoint-MSE cost. Relative to removing only the prefix
+or component path term, it lowers path AUC by 45.7\% and 37.9\%, respectively,
+while endpoint MSE changes by less than 0.2\%. Both path terms therefore improve
+the claimed interface rather than endpoint fit. Sequential feedback is a modest
+implementation gain, not a core requirement: full improves the two-seed mean by
+2.8\% in path AUC and 1.0\% in endpoint MSE over simultaneous heads, but wins
+path AUC on only one seed. Deep synthesis attains lower path AUC yet has zero
+ratio $0.0485\pm0.0050$ versus exactly zero for restricted $S_k$; its apparent
+gain violates the identifiability contract. Figure~\ref{fig:final-visual}
+visualizes zero/shuffle/deep-$S_k$ diagnostics.
+
+\paragraph{Hyperparameter sensitivity.}
+Figure~\ref{fig:ablation-hyperparameters} varies the two path-loss weights,
+progress power, and token count. Every point is a two-seed mean with sample
+standard-deviation bars; the dashed line marks the default. Crucially, the power
+sweep is evaluated against one common progress-$1.5$ path rather than allowing
+each training target to define its own metric. Raising either path weight
+steadily improves path AUC with little endpoint movement; $(0.15,0.30)$ is a
+moderate tradeoff rather than the path-only optimum. Power 1.5 is the clear
+minimum under the common target. K8 gives the lowest mean path AUC, while K4 has
+slightly lower endpoint MSE and K16 adds cost without a 5k-step path gain.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{aaai27_ablation_hyperparameters.pdf}
+  \caption{Matched ImageNet-64 HF hyperparameter ablations. Top: denoise-path
+  AUC; bottom: endpoint $x_0$ MSE. Curves vary prefix weight $\lambda_p$,
+  component weight $\lambda_c$, progress power $p$, and token count $K$.
+  Lower is better; bars show sample standard deviation over seeds 103/139.}
+  \label{fig:ablation-hyperparameters}
+\end{figure*}
+
+\paragraph{Component-separation stress test.}
+
+We treat component decorrelation as a pressure-term ablation rather than a
+default objective. The headline \method{} rows use the no-decorrelation light
+denoise-path objective because it most directly measures ordered prefix
+denoising. On Tiny ImageNet-200, a conservative schedule
+(\texttt{weight=0.003}, start step 3000, warmup 1500, full weight at step 4500
+of 5000) reduces component correlation on two seeds while keeping the
+ordered-prefix penalty small.
+
+Across the two seeds, scheduled decor 0.003 changes ordered path AUC by +0.0036,
+mean absolute component cosine by -0.0328, final MSE by -0.0002, and effective
+token count by +0.0336. Thus mild separation pressure can make components less
+correlated without materially breaking ordered prefix behavior. Stronger decor
+weights reduce cosine further but impose larger path-AUC penalties, so we keep
+them as stress-test ablations rather than the default \method{} objective.

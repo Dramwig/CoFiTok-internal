@@ -1,0 +1,16 @@
+\section{Discussion}
+
+\method{} suggests that dense pixel-space diffusion noise prediction can be
+treated as a sequence of ordered denoising-token components. The restricted
+synthesis operator is central: it gives the prefix interface meaning and
+prevents the method from becoming a generic latent decoder. The denoise-path
+objective is also central because early prefixes should represent partial
+denoising rather than clean reconstructions.
+
+The strongest empirical result is the all-dataset prefix-control diagnostic:
+\method{} has lower cross-batch path AUC than the endpoint-only factorized control on all
+eight datasets, while matched objective, prediction, order, and deep-$S_k$
+ablations identify the roles of path supervision and restricted synthesis. The most important negative result is that
+generated-sample Frechet-style metrics do not show a stable unconditional
+generation-quality win. Together, these results define the current scope of the
+contribution.

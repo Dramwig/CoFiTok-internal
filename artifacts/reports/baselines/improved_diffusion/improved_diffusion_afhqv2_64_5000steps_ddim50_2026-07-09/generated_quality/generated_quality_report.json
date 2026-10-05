@@ -1,0 +1,31 @@
+{
+  "config_name": "baseline_improved_diffusion_afhqv2_64",
+  "dataset": "afhqv2_64",
+  "evaluation": {
+    "available_sample_images": 1024,
+    "feature_size": 8,
+    "real_image_count": 4096,
+    "sample_image_count": 1024,
+    "seed": 139,
+    "split": "val"
+  },
+  "metric_notes": {
+    "inception_frechet": {
+      "available": true,
+      "model": "torchvision.models.inception_v3/IMAGENET1K_V1"
+    },
+    "lowres_frechet_proxy": "Small-scale relative metric over deterministic low-resolution RGB/color features."
+  },
+  "metrics": {
+    "inception_frechet": 335.18135687651903,
+    "lowres_frechet_proxy": 8.291808750162996
+  },
+  "runtime": {
+    "actual_device": "cuda",
+    "cuda_available": true,
+    "elapsed_seconds": 44.562885999679565,
+    "requested_device": "cuda",
+    "torch_version": "2.7.1+cu128"
+  },
+  "samples_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_afhqv2_64_5000steps_ddim50_2026-07-09/samples_png"
+}

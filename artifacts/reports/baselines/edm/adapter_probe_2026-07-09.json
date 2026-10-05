@@ -1,0 +1,29 @@
+{
+  "baseline": "edm",
+  "imports": {
+    "dnnlib": {
+      "file": "/root/autodl-tmp/CoFiTok/baselines/repos/edm/dnnlib/__init__.py",
+      "status": "ok"
+    },
+    "torch_utils.distributed": {
+      "file": "/root/autodl-tmp/CoFiTok/baselines/repos/edm/torch_utils/distributed.py",
+      "status": "ok"
+    },
+    "training.dataset": {
+      "file": "/root/autodl-tmp/CoFiTok/baselines/repos/edm/training/dataset.py",
+      "status": "ok"
+    },
+    "training.networks": {
+      "file": "/root/autodl-tmp/CoFiTok/baselines/repos/edm/training/networks.py",
+      "status": "ok"
+    }
+  },
+  "repo": "/root/autodl-tmp/CoFiTok/baselines/repos/edm",
+  "repo_commit": "008a4e5316c8e3bfe61a62f874bddba254295afb",
+  "scripts": {
+    "dataset_tool": "/root/autodl-tmp/CoFiTok/baselines/repos/edm/dataset_tool.py",
+    "generate": "/root/autodl-tmp/CoFiTok/baselines/repos/edm/generate.py",
+    "train": "/root/autodl-tmp/CoFiTok/baselines/repos/edm/train.py"
+  },
+  "status": "ok"
+}

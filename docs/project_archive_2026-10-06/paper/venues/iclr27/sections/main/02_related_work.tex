@@ -1,0 +1,38 @@
+\section{Related Work}
+
+\paragraph{Diffusion models and latent diffusion.}
+Denoising diffusion probabilistic models learn to reverse a Gaussian noising
+process by predicting noise targets \citep{ho2020denoising}. Latent diffusion
+models move this process into a learned latent space and decode the final latent
+through a VAE-style decoder \citep{rombach2022latentdiffusion}. \method{}
+instead stays in the pixel-space denoising algebra and factorizes the dense
+noise prediction itself. The \method{} token is not a final image latent; it is a
+negative-noise component that directly contributes to the pixel-space
+denoising update.
+
+\paragraph{Trajectory ordering and latent-pixel interaction.}
+Latent Forcing studies how changing the schedule between latent and pixel
+variables changes the information revealed by the diffusion trajectory
+\citep{baade2026latentforcing}. \method{} is inspired by this view of trajectory
+ordering, but tokenizes the noise prediction inside the reverse trajectory
+rather than introducing a separate latent-pixel trajectory.
+
+\paragraph{Ordered visual tokenizers.}
+Spectral Image Tokenizer, FlexTok, Matryoshka Representation Learning, M3, and
+related nested-token approaches organize image or multimodal representations so
+that prefixes or subsets can be useful
+\citep{esteves2025spectral,bachmann2025flextok,kusupati2024matryoshka,cai2024matryoshkamultimodal}.
+These methods operate on image representations or visual-token budgets.
+\method{} operates on dense diffusion noise prediction. Its prefixes are valid
+pixel-space denoising updates, not partial decodes from a general image
+tokenizer.
+
+\paragraph{Diffusion-autoregressive visual tokens.}
+Selftok and D-AR are the closest conceptual neighbors because they connect
+diffusion processes and autoregressive tokens \citep{wang2025selftok,gao2025dar}.
+\method{} differs in the represented object and in the anti-degeneration
+mechanism. \method{} tokens are continuous negative-noise components,
+and the synthesis operator is deliberately weak and condition-free. The main
+claim is not that diffusion steps are visual tokens, but that dense noise
+prediction can be decomposed into ordered components whose prefixes are directly
+usable in the diffusion denoising formula.

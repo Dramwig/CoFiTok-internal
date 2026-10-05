@@ -1,0 +1,46 @@
+\section{Matched P0 Protocol Details}
+
+The P0 protocol fixes dataset identity, spatial resolution, split, and nominal
+optimizer steps. It does not pretend that different published architectures
+have equal FLOPs. Table~\ref{tab:app-p0-settings} exposes the remaining major
+differences instead of hiding them in a single rank.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Locked P0 short-budget settings. C = \method; D = direct dense; E = endpoint-only factorized. NFE is listed in the order C/D/Improved-DDPM/EDM.}
+  \label{tab:app-p0-settings}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llrrrrrrl}
+    \toprule
+    Protocol family & Datasets & Resolution & Steps & C/D/E batch & DDPM/EDM batch & Quality images & Sample/real images & NFE \\
+    \midrule
+    CIFAR-10 & CIFAR-10 & 32 & 3000 & 64 & 32 & 512 & 1024/4096 & 50/50/50/79 \\
+    64px & Tiny-IN, IN64-HF, IN64-strict, FFHQ, AFHQv2 & 64 & 5000 & 32 & 32 & 512 & 1024/4096 & 50/50/50/79 \\
+    ImageNet-256 & 10\% and full train & 256 & 5000 & 4 & 4 & 256 & 512/2048 & 50/50/50/79 \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Trainable parameter counts in the P0 protocols. The direct dense predictor is the parameter-matched factorization control; Improved DDPM and EDM are external architecture baselines.}
+  \label{tab:app-parameter-counts}
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Resolution & \method & Direct dense & Dense delta vs. \method & Improved DDPM & EDM \\
+    \midrule
+    $32\times32$ & 81,808 & 80,707 & $-1.35\%$ & 9,593,539 & 3,870,531 \\
+    $64\times64$ & 81,808 & 80,707 & $-1.35\%$ & 21,715,907 & 3,870,531 \\
+    $256\times256$ & 15,776 & 15,690 & $-0.55\%$ & 7,200,579 & 952,291 \\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+Only the direct dense control isolates factorization at nearly equal parameter
+count. Improved DDPM and EDM test whether the short-budget generator is
+competitive with established monolithic objectives, while endpoint-only
+factorized prediction tests whether ordered prefix supervision contributes
+beyond retaining $K$ token components.

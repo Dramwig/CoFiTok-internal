@@ -1,0 +1,29 @@
+{
+  "baseline": "edm",
+  "checkpoints": {
+    "snapshot": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_afhqv2_64_5000steps_edm40_2026-07-09/train/network-snapshot-000160.pkl"
+  },
+  "data_dir": "/root/autodl-tmp/CoFiTok/datasets/afhqv2_64/extracted/train",
+  "dataset": "afhqv2_64",
+  "output_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/edm/edm_afhqv2_64_5000steps_edm40_2026-07-09/train",
+  "parameters": {
+    "arch": "ddpmpp",
+    "batch_gpu": 16,
+    "batch_size": 32,
+    "cbase": 64,
+    "cres": "1,1,1",
+    "learning_rate": "1e-4",
+    "precond": "edm",
+    "train_mimg": 0.16,
+    "train_steps": 5000
+  },
+  "repo": "/root/autodl-tmp/CoFiTok/baselines/repos/edm",
+  "repo_commit": "008a4e5316c8e3bfe61a62f874bddba254295afb",
+  "report_type": "baseline_train",
+  "run_name": "edm_afhqv2_64_5000steps_edm40_2026-07-09",
+  "runtime": {
+    "finished_at": "2026-07-09T23:18:23+08:00",
+    "started_at": "2026-07-09T23:10:46+08:00"
+  },
+  "status": "completed"
+}

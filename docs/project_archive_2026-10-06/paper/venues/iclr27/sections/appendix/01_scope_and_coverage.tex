@@ -1,0 +1,66 @@
+\section{Scope and Coverage}
+
+This appendix separates comparison evidence from the main paper's
+mechanism-centered tables by protocol, not by outcome. P0 contains
+matched-dataset and matched-step pixel-space training. P1 contains
+official-pretrained tokenizer reconstruction. A third tier contains official
+ImageNet-256 50K evaluations for architecture-incompatible methods. Values from
+different tiers are not used to claim direct superiority.
+
+\begin{table}[!ht]
+  \centering
+  \scriptsize
+  \caption{Comparison protocols used throughout the paper and appendix.}
+  \label{tab:app-protocol-map}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llllp{0.34\textwidth}}
+    \toprule
+    Tier & Methods & Coverage & Evidence & Valid interpretation \\
+    \midrule
+    P0 matched training & \method, direct dense, endpoint-only, ablations, Improved DDPM, EDM & Eight datasets & Train/eval under locked per-dataset steps & Within-row short-budget context; external methods are not compute matched \\
+    P1 reconstruction & FlexTok, TiTok & Eight datasets & Official-pretrained reconstruction on 256 images & Tokenizer reconstruction context only; not a generation comparison \\
+    Official related & D-AR, MAR, ReTok & ImageNet-256 & Official-pretrained 50K evaluation & Secondary large-model context; not matched retraining against \method \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+\section{Complete Evidence Coverage}
+
+Table~\ref{tab:app-coverage-matrix} exposes the full eight-dataset by
+15-method Cartesian product. A blocked cell marks a cross-task comparison that
+is not interchangeable with the available official evaluation; official
+results are never counted as matched training.
+
+\begin{table}[!ht]
+  \centering
+  \tiny
+  \caption{Evidence coverage matrix (8 datasets $\times$ 15 methods). T = completed matched train/eval; E = completed official-pretrained reconstruction eval-only; B = matched cross-task protocol blocked; O = separate official ImageNet-256 50K eval-only result. B+O retains the blocked matched cell while exposing the secondary official result.}
+  \label{tab:app-coverage-matrix}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lcccccccc}
+    \toprule
+    Method & CIFAR & Tiny-IN & IN64-HF & IN64-strict & FFHQ & AFHQv2 & IN256-10\% & IN256 \\
+    \midrule
+    \method & T & T & T & T & T & T & T & T \\
+    Direct dense epsilon & T & T & T & T & T & T & T & T \\
+    Endpoint-only factorized & T & T & T & T & T & T & T & T \\
+    Legacy clean-prefix objective & T & T & T & T & T & T & T & T \\
+    No denoise-path prefix term & T & T & T & T & T & T & T & T \\
+    Add clean-space monotonic term & T & T & T & T & T & T & T & T \\
+    Simultaneous prediction & T & T & T & T & T & T & T & T \\
+    Deep-$S_k$ synthesis & T & T & T & T & T & T & T & T \\
+    Improved DDPM & T & T & T & T & T & T & T & T \\
+    EDM & T & T & T & T & T & T & T & T \\
+    D-AR & B & B & B & B & B & B & B & B+O \\
+    FlexTok & E & E & E & E & E & E & E & E \\
+    TiTok & E & E & E & E & E & E & E & E \\
+    MAR & B & B & B & B & B & B & B & B+O \\
+    ReTok & B & B & B & B & B & B & B & B+O \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table}
+
+The locked matrix contains 80 completed P0 train/eval cells, 16 P1 eval-only
+cells, and 24 protocol-blocked cells. Three official 50K rows remain separate.

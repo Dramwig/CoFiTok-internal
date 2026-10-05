@@ -1,0 +1,14 @@
+\section{Repeated and Confirmatory Evidence}
+
+The matched 20K repeat uses K8 models, seeds 103 and 139, and 1,024 validation
+images at $t=500$ on Tiny ImageNet-200 and ImageNet-64 HF. \method{} lowers path
+AUC in all four paired dataset-seed comparisons, with a mean relative reduction
+of 96.18\%. The mean endpoint $x_0$-MSE change is $+4.20\%$, so this repeat
+supports prefix organization rather than an endpoint-quality win.
+
+The ImageNet-256 K4 20K confirmatory run uses the same two seeds and exhaustively
+evaluates all 24 component permutations. The learned order ranks first for both
+seeds, the paired-bootstrap lower bounds for non-identity minus ordered AUC are
+positive, and every permutation preserves the endpoint component sum up to
+$3\times10^{-15}$ MSE. Relative to the parameter-matched direct dense control,
+\method{} lowers endpoint MSE by 6.73\% on average in this confirmatory setting.

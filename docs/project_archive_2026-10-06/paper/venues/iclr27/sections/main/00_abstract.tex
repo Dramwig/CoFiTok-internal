@@ -1,0 +1,18 @@
+\begin{abstract}
+Pixel-space diffusion models usually predict a full dense noise field with a
+single monolithic network output. We introduce \method, a denoising-token
+factorization that represents the dense noise prediction as an ordered sum of
+negative-noise components. Each token is expanded by a restricted,
+condition-free synthesis operator that only sees the current token, so prefix
+sums form valid partial noise predictions and produce controllable partial
+denoising results in pixel space. Across eight current datasets spanning
+CIFAR-10, ImageNet-family 64x64 and 256x256 settings, FFHQ-64, and AFHQv2-64,
+\method{} improves cross-batch prefix path AUC over an endpoint-only factorized control
+on all datasets and avoids zero-token leakage that appears when the synthesis
+operator is made deeper. In a two-seed ImageNet-256 confirmatory study, the
+learned order ranks first among all 24 K4 permutations for both seeds while
+preserving the endpoint sum. Frechet-style generation metrics favor EDM or direct dense
+epsilon on most rows, so the supported claim is not unconditional generation
+superiority; it is that ordered restricted dense-noise factorization yields
+ prefix-controllable denoising without relying on a VAE-style decoder.
+\end{abstract}

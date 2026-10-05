@@ -1,0 +1,87 @@
+\section{Method}
+
+\subsection{Forward Noising and Dense Prediction}
+
+For a clean image $x_0$, timestep $t$, and Gaussian noise $\epsilon$, the forward
+process is
+\begin{equation}
+  x_t = \alpha_t x_0 + \sigma_t \epsilon.
+  \label{eq:forward}
+\end{equation}
+A conventional diffusion model predicts $\epsilon_\theta(x_t,t,c)$.
+\method{} instead predicts the ordered component sum
+in Eq.~\ref{eq:full-factorization}. The current implementation uses
+unconditional models for the main MVP evidence. Class labels may exist in
+datasets, but the restricted synthesis operator never receives labels, prompts,
+timesteps, previous tokens, or image features. Figure~\ref{fig:method} shows the
+dataflow and marks the blocked paths into $S_k$ that define the default method
+boundary.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{method_overview.png}
+  \caption{%
+  \method{} factorizes dense pixel-space diffusion noise prediction into ordered
+  denoising tokens. The predictor may be expressive, but each
+  synthesis operator $S_k$ receives only the current token and is restricted to
+  shallow, condition-free, bias-free local synthesis. Any prefix of components
+  forms a valid partial noise prediction and therefore a valid pixel-space
+  denoising result. Dashed blocked paths mark information that must not enter
+  $S_k$, including $x_t$, timesteps, labels, prompts, previous tokens, skip
+  features, and learned constants.}
+  \label{fig:method}
+\end{figure}
+
+\subsection{Next Denoising Tokens}
+
+The token predictor $T_k$ may be expressive. Our default implementation sees
+the noised image, timestep, and previous tokens:
+\begin{align}
+  z^{(1)} &= T_1(x_t,t), \\
+  z^{(k)} &= T_k(x_t,z^{(<k)},t), \quad k>1.
+\end{align}
+In the tiny MVP model, $T_k$ is a small U-Net-like predictor with token heads.
+Autoregressive feedback is not part of the synthesis restriction or the core
+factorization claim: a simultaneous variant may instead use
+$z^{(k)}=T_k(x_t,t)$. We evaluate this choice directly.
+
+\subsection{Restricted Synthesis Operator}
+
+Each token is expanded independently:
+\begin{equation}
+  \epsilon^{(k)} = S_k\left(z^{(k)}\right).
+\end{equation}
+The default $S_k$ is a bias-free projection followed by a bias-free local
+convolution. It is token-only and condition-free. Because no layer has bias and
+there is no learned constant input, zero tokens map to zero components:
+\begin{equation}
+  S_k(0)=0.
+\end{equation}
+This restriction separates \method{} from a learned decoder. A deep-$S_k$
+ablation is included only to test degeneration risk: it uses biased nonlinear
+convolutions while preserving the token-only interface. This ablation can
+improve apparent endpoint metrics but fails the zero-token diagnostic, so it is
+not the default method.
+
+\subsection{Prefix Denoising}
+
+For any prefix length $m$, \method{} forms the prefix prediction and pixel-space
+denoising result in Eq.~\ref{eq:prefix-denoise}. Thus every prefix is a valid
+partial noise prediction and every prefix produces a pixel-space denoising
+result. This is the primary interface exposed by the method.
+
+\subsection{Denoise-Path Objective}
+
+The current MVP objective is
+\begin{equation}
+  \mathcal{L}
+  =
+  \mathcal{L}_{\epsilon}
+  + 0.15\,\mathcal{L}_{\mathrm{path\ prefix}}
+  + 0.30\,\mathcal{L}_{\mathrm{path\ component}}.
+\end{equation}
+The denoise path interpolates from the zero-update $x_t$ reconstruction toward
+coarse-to-fine spatial targets. The progress schedule uses power 1.5 in the
+current best MVP configuration. This objective deliberately avoids forcing early
+prefixes to be immediately clean; instead, prefixes are trained to follow a
+partial denoising path.

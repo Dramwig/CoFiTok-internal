@@ -1,0 +1,67 @@
+\section{Matched Component Ablations}
+
+The component ablation suite uses ImageNet-64 HF, K8, 5,000 optimizer steps,
+seeds 103/139, and 1,024 validation images at fixed $t=500$. All variants share
+the data, model width, optimizer, and evaluation noise for each seed. The
+progress-power sweep is scored against one common $p=1.5$ path; it is not scored
+against a different target for each point.
+
+\begin{table*}[t]
+  \centering
+  \small
+  \caption{Matched component ablations (mean $\pm$ sample standard deviation).
+  Lower is better for endpoint MSE, path AUC, and zero ratio; higher effective K
+  indicates broader component use.}
+  \label{tab:app-component-ablation}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrr}
+    \toprule
+    Variant & Endpoint $x_0$ MSE $\downarrow$ & Path AUC $\downarrow$ & Eff. K $\uparrow$ & Zero ratio $\downarrow$ \\
+    \midrule
+  CoFiTok (full) & $0.1300 \pm 0.0027$ & $0.0686 \pm 0.0017$ & $6.780 \pm 0.015$ & $0.0000 \pm 0.0000$ \\
+Endpoint-only factorized & $0.1275 \pm 0.0019$ & $0.9991 \pm 0.1607$ & $5.366 \pm 0.054$ & $0.0000 \pm 0.0000$ \\
+No path-prefix term & $0.1300 \pm 0.0003$ & $0.1269 \pm 0.0096$ & $6.547 \pm 0.027$ & $0.0000 \pm 0.0000$ \\
+No path-component term & $0.1302 \pm 0.0012$ & $0.1105 \pm 0.0013$ & $6.752 \pm 0.069$ & $0.0000 \pm 0.0000$ \\
+Simultaneous tokens & $0.1314 \pm 0.0016$ & $0.0709 \pm 0.0081$ & $6.829 \pm 0.025$ & $0.0000 \pm 0.0000$ \\
+Deep synthesis & $0.1496 \pm 0.0305$ & $0.0463 \pm 0.0051$ & $6.774 \pm 0.032$ & $0.0485 \pm 0.0050$\\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table*}
+
+\begin{table*}[t]
+  \centering
+  \small
+  \caption{Parameter-matched architecture control under the same two-seed 5k
+  ImageNet-64 HF protocol. Direct dense has no native multi-prefix path.}
+  \label{tab:app-direct-dense-control}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrr}
+    \toprule
+    Variant & Endpoint $x_0$ MSE $\downarrow$ & Path AUC $\downarrow$ & Eff. K $\uparrow$ & Zero ratio $\downarrow$ \\
+    \midrule
+  CoFiTok (full) & $0.1300 \pm 0.0027$ & $0.0686 \pm 0.0017$ & $6.780 \pm 0.015$ & $0.0000 \pm 0.0000$ \\
+Parameter-matched direct dense & $0.1292 \pm 0.0006$ & $--$ & $1.000 \pm 0.000$ & $0.0000 \pm 0.0000$\\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table*}
+
+The direct removals distinguish the path-prefix and path-component terms from
+the endpoint objective. The simultaneous variant removes token-to-token
+feedback while retaining the same heads and losses. The deep-synthesis variant
+retains token-only inputs but introduces biased nonlinear layers, so its
+zero-token ratio directly tests whether decoder capacity can carry a
+token-independent prior. Full \method{} lowers path AUC by 93.0\% relative to
+endpoint-only and by 45.7\%/37.9\% relative to removing the prefix/component
+path term, respectively. Endpoint MSE changes by less than 0.2\% in the two
+single-term comparisons. Sequential feedback changes the mean more modestly
+($-2.8\%$ path AUC and $-1.0\%$ endpoint MSE) and wins path AUC on only one of
+two seeds, so it is treated as an optional predictor implementation rather than
+part of the core claim. Deep synthesis reaches lower path AUC but produces a
+nonzero zero-token ratio of $0.0485\pm0.0050$.
+The parameter-matched direct dense control is only 0.6\% lower in endpoint MSE
+at 64px but exposes no multi-prefix interface; conversely, the ImageNet-256
+confirmatory setting gives \method{} a 6.73\% endpoint advantage over direct
+dense. Factorization is therefore supported as an interface with a small or
+favorable endpoint tradeoff, not as a universal endpoint-quality guarantee.

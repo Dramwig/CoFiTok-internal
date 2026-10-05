@@ -1,0 +1,1255 @@
+{
+  "by_type": {
+    "generated_quality": {
+      "complete": 0,
+      "expected": 6,
+      "missing": 6
+    },
+    "order_eval": {
+      "complete": 0,
+      "expected": 24,
+      "missing": 24
+    },
+    "quality": {
+      "complete": 0,
+      "expected": 10,
+      "missing": 10
+    },
+    "sampling": {
+      "complete": 0,
+      "expected": 6,
+      "missing": 6
+    },
+    "train": {
+      "complete": 0,
+      "expected": 10,
+      "missing": 10
+    }
+  },
+  "checkpoint_root": "/root/autodl-tmp/CoFiTok/checkpoints",
+  "counts": {
+    "complete": 0,
+    "expected": 56,
+    "missing": 56
+  },
+  "date_tag": "2026-07-08",
+  "missing": [
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+      "relative_path": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_tiny_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "relative_path": "generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "report_type": "sampling",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "relative_path": "generated_quality_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "report_type": "generated_quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+      "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_tiny_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_random_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_20k_seed2_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "relative_path": "generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "report_type": "sampling",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "relative_path": "generated_quality_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "report_type": "generated_quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+      "relative_path": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_imagenet_hf_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "relative_path": "generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "report_type": "sampling",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "relative_path": "generated_quality_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "report_type": "generated_quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+      "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_imagenet_hf_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "relative_path": "generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "report_type": "sampling",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "relative_path": "generated_quality_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "report_type": "generated_quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+      "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_tiny_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_random_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_multiscale_10k_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+      "relative_path": "generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+      "report_type": "sampling",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "relative_path": "generated_quality_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "report_type": "generated_quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+      "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_imagenet_hf_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+      "relative_path": "generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+      "report_type": "sampling",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "relative_path": "generated_quality_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "report_type": "generated_quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+      "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_tiny_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+      "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_tiny_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+      "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_imagenet_hf_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+      "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_imagenet_hf_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    }
+  ],
+  "quality_images": 1024,
+  "queued_runs": [
+    {
+      "config": "configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "label": "tiny_epsilononly_20k_seed2",
+      "order_eval": false,
+      "sample_eval": true,
+      "train_id": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "label": "tiny_k8_light_20k_seed2",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "order_eval": false,
+      "sample_eval": true,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "label": "tiny_k8_light_multiscale_10k",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "label": "tiny_k8_light_cleanmono_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    }
+  ],
+  "run_count": 10,
+  "runs": [
+    {
+      "complete_count": 0,
+      "config": "configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "expected_count": 4,
+      "label": "tiny_epsilononly_20k_seed2",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 4,
+      "order_eval": false,
+      "sample_eval": true,
+      "status": "incomplete",
+      "train_id": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "expected_count": 7,
+      "label": "tiny_k8_light_20k_seed2",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_random_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_20k_seed2_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 7,
+      "order_eval": true,
+      "sample_eval": true,
+      "status": "incomplete",
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "expected_count": 4,
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 4,
+      "order_eval": false,
+      "sample_eval": true,
+      "status": "incomplete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "expected_count": 7,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 7,
+      "order_eval": true,
+      "sample_eval": true,
+      "status": "incomplete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "expected_count": 7,
+      "label": "tiny_k8_light_multiscale_10k",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_random_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_multiscale_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 7,
+      "order_eval": true,
+      "sample_eval": true,
+      "status": "incomplete",
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "expected_count": 7,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 7,
+      "order_eval": true,
+      "sample_eval": true,
+      "status": "incomplete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "expected_count": 5,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        }
+      ],
+      "missing_count": 5,
+      "order_eval": true,
+      "sample_eval": false,
+      "status": "incomplete",
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "expected_count": 5,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        }
+      ],
+      "missing_count": 5,
+      "order_eval": true,
+      "sample_eval": false,
+      "status": "incomplete",
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "expected_count": 5,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        }
+      ],
+      "missing_count": 5,
+      "order_eval": true,
+      "sample_eval": false,
+      "status": "incomplete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "expected_count": 5,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        }
+      ],
+      "missing_count": 5,
+      "order_eval": true,
+      "sample_eval": false,
+      "status": "incomplete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    }
+  ],
+  "sample_count": 2048,
+  "sample_steps": 50,
+  "status": "incomplete"
+}

@@ -1,0 +1,55 @@
+\section{Dataset and Source Conditions}
+
+The two ImageNet-64 aliases are intentionally distinct. Results labeled
+ImageNet-64 HF use the HF-derived source; results labeled ImageNet-64 strict use
+the exact downsampled ImageNet source. No result is silently renamed between
+them.
+
+\begin{table*}[t]
+  \centering
+  \scriptsize
+  \caption{Dataset roles in the locked evidence matrix.}
+  \label{tab:app-datasets}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lllp{0.37\textwidth}}
+    \toprule
+    Dataset label & Resolution & Split role & Source condition \\
+    \midrule
+    CIFAR-10 & 32 & Train/test & Canonical CIFAR-10 staging \\
+    Tiny-IN & 64 & Train/validation & Tiny ImageNet-200 staging \\
+    ImageNet-64 HF & 64 & Train/validation & HF-derived ImageNet-1K 64x64 source \\
+    ImageNet-64 strict & 64 & Train/validation & Exact downsampled ImageNet source from Academic Torrents \\
+    FFHQ-64 & 64 & Train/evaluation & Non-classification face-domain extension \\
+    AFHQv2-64 & 64 & Train/evaluation & Non-classification animal-domain extension \\
+    ImageNet-256 10\% & 256 & 10\% train/full validation & Deterministic subset derived from the staged 256x256 source \\
+    ImageNet-256 & 256 & Full train/validation & Full staged 256x256 ImageNet source \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table*}
+
+\section{Metric Definitions}
+
+For prefix budget $m$, the cumulative prediction and pixel-space estimate are
+\begin{equation}
+  \epshat^{(1:m)}=\sum_{k=1}^{m}S_k(z^{(k)}), \qquad
+  \hat{x}_0^{(m)}=\frac{x_t-\sigma_t\epshat^{(1:m)}}{\alpha_t}.
+\end{equation}
+Let $e_m$ be the mean-squared error between $\hat{x}_0^{(m)}$ and the
+preregistered denoise-path target at prefix $m$. The reported path AUC is the
+equal-spaced trapezoid average
+\begin{equation}
+  \operatorname{AUC}_{\mathrm{path}}
+  =\frac{1}{K-1}\sum_{m=1}^{K-1}\frac{e_m+e_{m+1}}{2}.
+\end{equation}
+Lower values indicate that intermediate prefixes follow the intended partial
+denoising path. Endpoint MSE instead uses only $m=K$ and does not measure the
+quality of intermediate prefixes.
+
+For component energy proportions $p_k$, effective token count is
+\begin{equation}
+  K_{\mathrm{eff}}=\exp\!\left(-\sum_k p_k\log p_k\right).
+\end{equation}
+The zero-token ratio divides the energy produced by $S_k(0)$ by the energy of
+the corresponding observed components. A bias-free restricted synthesis
+operator satisfies this diagnostic exactly up to numerical precision.

@@ -1,0 +1,71 @@
+\documentclass{article}
+\usepackage{iclr2027_conference,times}
+\usepackage{hyperref}
+\usepackage{url}
+\hypersetup{hidelinks}
+\usepackage{graphicx}
+\urlstyle{rm}
+\def\UrlFont{\rm}
+\frenchspacing
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+
+\pdfinfo{
+/TemplateVersion (2027.1)
+}
+
+\graphicspath{
+  {../../../CoFiTok-internal/artifacts/figures/method_overview_2026-07-08/}
+  {../../../CoFiTok-internal/artifacts/figures/visual_panels_2026-07-08/}
+  {../../../CoFiTok-internal/artifacts/figures/final_visual_claim_2026-07-11/}
+  {../../../CoFiTok-internal/artifacts/figures/final_visual_claim_2026-07-10/}
+  {../../../CoFiTok-internal/artifacts/figures/ablation_hyperparameters_2026-07-11/}
+  {../../../CoFiTok-internal/artifacts/figures/summary_2026-07-08/}
+}
+
+\newcommand{\method}{CoFiTok}
+\newcommand{\epshat}{\hat{\epsilon}}
+\newcommand{\xzero}{x_0}
+\newcommand{\xt}{x_t}
+\newcommand{\zk}{z^{(k)}}
+\newcommand{\sk}{S_k}
+
+\title{\method: Coarse-to-Fine Denoising Tokens for Pixel-Space Diffusion}
+\author{Anonymous authors}
+
+\begin{document}
+\maketitle
+
+\input{sections/main/00_abstract}
+\input{sections/main/01_introduction}
+\input{sections/main/02_related_work}
+\input{sections/main/03_method}
+\input{sections/main/04_experiments}
+\input{sections/main/05_discussion}
+\input{sections/main/06_limitations}
+\input{sections/main/07_conclusion}
+\input{sections/main/08_declarations}
+
+\bibliographystyle{iclr2027_conference}
+\bibliography{references}
+
+% ICLR uses one submission PDF with the technical appendix after the references.
+\clearpage
+\appendix
+\setcounter{table}{0}
+\setcounter{figure}{0}
+\renewcommand{\thetable}{A\arabic{table}}
+\renewcommand{\thefigure}{A\arabic{figure}}
+\renewcommand{\theHtable}{A\arabic{table}}
+\renewcommand{\theHfigure}{A\arabic{figure}}
+
+\input{sections/appendix/01_scope_and_coverage}
+\input{sections/appendix/02_external_methods}
+\input{sections/appendix/03_matched_protocol}
+\input{sections/appendix/04_dataset_and_metrics}
+\input{sections/appendix/05_repeated_confirmatory}
+\input{sections/appendix/06_component_ablations}
+\input{sections/appendix/07_hyperparameter_sensitivity}
+\input{sections/appendix/08_reproducibility}
+
+\end{document}

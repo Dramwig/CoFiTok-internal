@@ -1,0 +1,21 @@
+{
+  "branch": "scale/generative-system",
+  "reason": "sampler_rng_state_device_compatibility",
+  "role": "frozen_runtime_selection_revision_compatibility",
+  "runtime_environment_sha256": "51ef815bff2dcb9ea3e222cba9f0731dd837d11cf0b42cbf489f91e32075da57",
+  "schema_version": 1,
+  "selected": {
+    "effective_batch_size": 64,
+    "gradient_accumulation_steps": 1,
+    "micro_batch_size": 64
+  },
+  "selection": {
+    "bytes": 68006,
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_fixed_basis_matched_50k_v3/runtime_selection.json",
+    "sha256": "cb125609a28bf8a531c495b365c6e22a8ee9d2eb7e377ba4c2d538be1b63df0d",
+    "source_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86"
+  },
+  "source_revision": "58d83bfce2770eab2565b8c89a5f9a06201a0c86",
+  "status": "pass",
+  "target_revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066"
+}

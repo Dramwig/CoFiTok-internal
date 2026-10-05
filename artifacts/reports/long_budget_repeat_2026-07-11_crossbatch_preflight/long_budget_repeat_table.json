@@ -1,0 +1,253 @@
+{
+  "aggregates": [
+    {
+      "dataset": "tiny_imagenet_200",
+      "dataset_display": "Tiny ImageNet-200",
+      "effective_k": {
+        "mean": 5.311895705788521,
+        "std": 0.04922896504352944
+      },
+      "final_mse": {
+        "mean": 0.1253372065257281,
+        "std": 9.317021844488714e-05
+      },
+      "method": "endpoint_only_factorized",
+      "method_display": "Endpoint-only factorized",
+      "path_auc": {
+        "mean": 1.0098374352382962,
+        "std": 0.14298372338566906
+      },
+      "seed_count": 2,
+      "seeds": [
+        103,
+        139
+      ],
+      "zero_ratio": {
+        "mean": 0.0,
+        "std": 0.0
+      }
+    },
+    {
+      "dataset": "tiny_imagenet_200",
+      "dataset_display": "Tiny ImageNet-200",
+      "effective_k": {
+        "mean": 6.7663961016114245,
+        "std": 0.014507641762757593
+      },
+      "final_mse": {
+        "mean": 0.12958551722113043,
+        "std": 0.0014578606424447136
+      },
+      "method": "cofitok",
+      "method_display": "CoFiTok",
+      "path_auc": {
+        "mean": 0.03776057705649041,
+        "std": 0.0007014814776063041
+      },
+      "seed_count": 2,
+      "seeds": [
+        103,
+        139
+      ],
+      "zero_ratio": {
+        "mean": 0.0,
+        "std": 0.0
+      }
+    },
+    {
+      "dataset": "imagenet_1k_64x64_hf",
+      "dataset_display": "ImageNet-64 HF",
+      "effective_k": {
+        "mean": 5.168541659415153,
+        "std": 0.10825373352706427
+      },
+      "final_mse": {
+        "mean": 0.10963036515749991,
+        "std": 0.0005739333925080835
+      },
+      "method": "endpoint_only_factorized",
+      "method_display": "Endpoint-only factorized",
+      "path_auc": {
+        "mean": 0.9983739411275435,
+        "std": 0.12100190708705079
+      },
+      "seed_count": 2,
+      "seeds": [
+        103,
+        139
+      ],
+      "zero_ratio": {
+        "mean": 0.0,
+        "std": 0.0
+      }
+    },
+    {
+      "dataset": "imagenet_1k_64x64_hf",
+      "dataset_display": "ImageNet-64 HF",
+      "effective_k": {
+        "mean": 6.751811010440205,
+        "std": 0.012135942914234102
+      },
+      "final_mse": {
+        "mean": 0.11512017459608614,
+        "std": 0.001623656301682824
+      },
+      "method": "cofitok",
+      "method_display": "CoFiTok",
+      "path_auc": {
+        "mean": 0.037945647579493064,
+        "std": 0.0037448793240415913
+      },
+      "seed_count": 2,
+      "seeds": [
+        103,
+        139
+      ],
+      "zero_ratio": {
+        "mean": 0.0,
+        "std": 0.0
+      }
+    }
+  ],
+  "paired": [
+    {
+      "dataset": "imagenet_1k_64x64_hf",
+      "final_mse_better": false,
+      "final_mse_relative_change": 0.05663659573889657,
+      "path_auc_better": true,
+      "path_auc_relative_reduction": 0.9555290166477276,
+      "seed": 103
+    },
+    {
+      "dataset": "imagenet_1k_64x64_hf",
+      "final_mse_better": false,
+      "final_mse_relative_change": 0.04346590571112241,
+      "path_auc_better": true,
+      "path_auc_relative_reduction": 0.9674356754133349,
+      "seed": 139
+    },
+    {
+      "dataset": "tiny_imagenet_200",
+      "final_mse_better": false,
+      "final_mse_relative_change": 0.04157228214314568,
+      "path_auc_better": true,
+      "path_auc_relative_reduction": 0.9579011513224023,
+      "seed": 103
+    },
+    {
+      "dataset": "tiny_imagenet_200",
+      "final_mse_better": false,
+      "final_mse_relative_change": 0.02620973982895891,
+      "path_auc_better": true,
+      "path_auc_relative_reduction": 0.9664568013593096,
+      "seed": 139
+    }
+  ],
+  "protocol": "matched_20k_k8_two_seed_cofitok_vs_endpoint_only_factorized",
+  "runs": [
+    {
+      "dataset": "tiny_imagenet_200",
+      "effective_k": 5.346705840801596,
+      "final_mse": 0.1252713252324611,
+      "method": "endpoint_only_factorized",
+      "path_auc": 1.1109421956436043,
+      "quality_report": "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_tiny_endpoint_only_20k_seed103_1024_t500_2026-07-11_confirmatory/quality_report.json",
+      "seed": 139,
+      "steps": 20000,
+      "train_report": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_2026-07-08/report.json",
+      "zero_ratio": 0.0
+    },
+    {
+      "dataset": "tiny_imagenet_200",
+      "effective_k": 5.277085570775446,
+      "final_mse": 0.12540308781899512,
+      "method": "endpoint_only_factorized",
+      "path_auc": 0.908732674832988,
+      "quality_report": "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_tiny_endpoint_only_20k_seed139_1024_t500_2026-07-11_confirmatory/quality_report.json",
+      "seed": 103,
+      "steps": 20000,
+      "train_report": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+      "zero_ratio": 0.0
+    },
+    {
+      "dataset": "tiny_imagenet_200",
+      "effective_k": 6.7766545534808955,
+      "final_mse": 0.1285546540748328,
+      "method": "cofitok",
+      "path_auc": 0.03726455474679824,
+      "quality_report": "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_tiny_cofitok_20k_seed103_1024_t500_2026-07-11_confirmatory/quality_report.json",
+      "seed": 139,
+      "steps": 20000,
+      "train_report": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_2026-07-08/report.json",
+      "zero_ratio": 0.0
+    },
+    {
+      "dataset": "tiny_imagenet_200",
+      "effective_k": 6.756137649741953,
+      "final_mse": 0.13061638036742806,
+      "method": "cofitok",
+      "path_auc": 0.03825659936618259,
+      "quality_report": "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_tiny_cofitok_20k_seed139_1024_t500_2026-07-11_confirmatory/quality_report.json",
+      "seed": 103,
+      "steps": 20000,
+      "train_report": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+      "zero_ratio": 0.0
+    },
+    {
+      "dataset": "imagenet_1k_64x64_hf",
+      "effective_k": 5.245088608480902,
+      "final_mse": 0.10922453296370804,
+      "method": "endpoint_only_factorized",
+      "path_auc": 1.0839352101653017,
+      "quality_report": "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet_hf_endpoint_only_20k_seed103_1024_t500_2026-07-11_confirmatory/quality_report.json",
+      "seed": 139,
+      "steps": 20000,
+      "train_report": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_2026-07-08/report.json",
+      "zero_ratio": 0.0
+    },
+    {
+      "dataset": "imagenet_1k_64x64_hf",
+      "effective_k": 5.091994710349405,
+      "final_mse": 0.11003619735129178,
+      "method": "endpoint_only_factorized",
+      "path_auc": 0.9128126720897853,
+      "quality_report": "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet_hf_endpoint_only_20k_seed139_1024_t500_2026-07-11_confirmatory/quality_report.json",
+      "seed": 103,
+      "steps": 20000,
+      "train_report": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+      "zero_ratio": 0.0
+    },
+    {
+      "dataset": "imagenet_1k_64x64_hf",
+      "effective_k": 6.7603924179709525,
+      "final_mse": 0.11397207621484995,
+      "method": "cofitok",
+      "path_auc": 0.035297618014737964,
+      "quality_report": "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet_hf_cofitok_20k_seed103_1024_t500_2026-07-11_confirmatory/quality_report.json",
+      "seed": 139,
+      "steps": 20000,
+      "train_report": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_2026-07-08/report.json",
+      "zero_ratio": 0.0
+    },
+    {
+      "dataset": "imagenet_1k_64x64_hf",
+      "effective_k": 6.743229602909457,
+      "final_mse": 0.11626827297732234,
+      "method": "cofitok",
+      "path_auc": 0.04059367714424817,
+      "quality_report": "/root/autodl-tmp/CoFiTok/checkpoints/quality_path_imagenet_hf_cofitok_20k_seed139_1024_t500_2026-07-11_confirmatory/quality_report.json",
+      "seed": 103,
+      "steps": 20000,
+      "train_report": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+      "zero_ratio": 0.0
+    }
+  ],
+  "schema_version": 1,
+  "summary": {
+    "final_mse_better_pairs": 0,
+    "mean_final_mse_relative_change": 0.04197113085553089,
+    "mean_path_auc_relative_reduction": 0.9618306611856936,
+    "pair_count": 4,
+    "path_auc_better_pairs": 4
+  }
+}

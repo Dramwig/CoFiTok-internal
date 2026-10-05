@@ -1,0 +1,13 @@
+\section{Conclusion}
+
+\method{} factorizes pixel-space diffusion noise prediction into an ordered
+  sequence of denoising tokens. Each token is expanded by a restricted,
+condition-free synthesis operator into a dense negative-noise component, and
+prefix sums yield valid partial denoising results. Across the current
+eight-dataset evidence matrix, \method{} consistently improves prefix-control
+diagnostics over an endpoint-only factorized control and passes the restricted zero-token
+diagnostic where deep synthesis leaks token-independent structure. The current
+evidence therefore supports a scoped contribution about ordered restricted
+dense-noise factorization, while leaving raw unconditional generation quality
+to stronger monolithic diffusion baselines. Scaling to stronger backbones,
+longer training, and broader seed coverage remains future work.

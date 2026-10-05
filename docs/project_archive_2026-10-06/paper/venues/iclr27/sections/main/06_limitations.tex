@@ -1,0 +1,15 @@
+\section{Limitations}
+
+The current models are small and trained with short MVP budgets. Frechet-style
+sample-quality results are mixed and do not show a robust \method{} generation
+win; EDM is stronger on most generation rows, while direct dense prediction
+provides the strict factorization control. P1 FlexTok and
+TiTok rows use official pretrained reconstruction at 256x256 and are not
+retrained generation baselines. D-AR, MAR, and ReTok use separate official
+ImageNet-256 eval-only protocols and remain protocol-blocked under the
+matched-dataset/step training definition. Seed repeats cover the main
+endpoint-only/K8 comparison but not every ablation. The current manuscript is an
+ICLR-27 double-blind submission build. Sequential token prediction can also
+cost more latency and memory than a direct dense head; the current audit reports
+parameters, batch, nominal training images, and NFE, but not a standardized
+cross-implementation FLOP or wall-clock benchmark.

@@ -1,0 +1,93 @@
+{
+  "date": "2026-07-08",
+  "method": "Downloaded the arXiv PDFs listed in references.bib to a temporary local cache, extracted text with pdftotext, and audited the 2026-07-08 draft/LaTeX related-work claims against PDF text.",
+  "pdf_storage": "PDFs were kept in a temporary OS cache only, not in the project tree.",
+  "extractor": {
+    "tool": "pdftotext",
+    "path": "C:/Workspace/Dev/Envs/texlive/2026/bin/windows/pdftotext.exe",
+    "options": "-layout -enc UTF-8"
+  },
+  "sources": [
+    {
+      "key": "ho2020denoising",
+      "arxiv_id": "2006.11239",
+      "url": "https://arxiv.org/abs/2006.11239",
+      "pdf_url": "https://arxiv.org/pdf/2006.11239",
+      "pdf_bytes": 10267274,
+      "text_bytes": 103622,
+      "pdf_sha256": "aee5e07a802e8dfd2a386374c94fd61d1d056cb7e1e0fec4f28e8120ff5d8505"
+    },
+    {
+      "key": "rombach2022latentdiffusion",
+      "arxiv_id": "2112.10752",
+      "url": "https://arxiv.org/abs/2112.10752",
+      "pdf_url": "https://arxiv.org/pdf/2112.10752",
+      "pdf_bytes": 40842586,
+      "text_bytes": 156234,
+      "pdf_sha256": "46ede043a8dc07ca1f0f445620523fe1ad8b2436bd83856a3835612a47e9f79e"
+    },
+    {
+      "key": "baade2026latentforcing",
+      "arxiv_id": "2602.11401",
+      "url": "https://arxiv.org/abs/2602.11401",
+      "pdf_url": "https://arxiv.org/pdf/2602.11401",
+      "pdf_bytes": 1480071,
+      "text_bytes": 86607,
+      "pdf_sha256": "fa28a00bdbc067db4057c1736da0b85a55bf2be32f39bc60636aadb7d1894451"
+    },
+    {
+      "key": "esteves2025spectral",
+      "arxiv_id": "2412.09607",
+      "url": "https://arxiv.org/abs/2412.09607",
+      "pdf_url": "https://arxiv.org/pdf/2412.09607",
+      "pdf_bytes": 42261614,
+      "text_bytes": 73191,
+      "pdf_sha256": "f12b068eb88495b4612b28ef017aac3699a8b0764485ad84b9d704a2def44314"
+    },
+    {
+      "key": "bachmann2025flextok",
+      "arxiv_id": "2502.13967",
+      "url": "https://arxiv.org/abs/2502.13967",
+      "pdf_url": "https://arxiv.org/pdf/2502.13967",
+      "pdf_bytes": 47540819,
+      "text_bytes": 264200,
+      "pdf_sha256": "ff80434f50fbb1aef2c000a0ca614723de62c3f6505f3352f4fa1ee0a4840f1c"
+    },
+    {
+      "key": "kusupati2024matryoshka",
+      "arxiv_id": "2205.13147",
+      "url": "https://arxiv.org/abs/2205.13147",
+      "pdf_url": "https://arxiv.org/pdf/2205.13147",
+      "pdf_bytes": 7006007,
+      "text_bytes": 181458,
+      "pdf_sha256": "63c3a304e66215b219eb2fa3a6fc45ddc51096a41e8eefef6a41440a6bd1f3c6"
+    },
+    {
+      "key": "cai2024matryoshkamultimodal",
+      "arxiv_id": "2405.17430",
+      "url": "https://arxiv.org/abs/2405.17430",
+      "pdf_url": "https://arxiv.org/pdf/2405.17430",
+      "pdf_bytes": 2869389,
+      "text_bytes": 68059,
+      "pdf_sha256": "bda93ef502635fdc9d0837229204dd07ca648a3873cbc40abb00b5471e39467f"
+    },
+    {
+      "key": "wang2025selftok",
+      "arxiv_id": "2505.07538",
+      "url": "https://arxiv.org/abs/2505.07538",
+      "pdf_url": "https://arxiv.org/pdf/2505.07538",
+      "pdf_bytes": 29567110,
+      "text_bytes": 167921,
+      "pdf_sha256": "a9f5774aefb3ea8ddfeda9fd7c5aa7440822518bd8947b89d89c31ff361b5e12"
+    },
+    {
+      "key": "gao2025dar",
+      "arxiv_id": "2505.23660",
+      "url": "https://arxiv.org/abs/2505.23660",
+      "pdf_url": "https://arxiv.org/pdf/2505.23660",
+      "pdf_bytes": 13804366,
+      "text_bytes": 68632,
+      "pdf_sha256": "ceb498b53c1cb42d0b4115f16d5cdacc98386da3579b713f5c41541919e1072a"
+    }
+  ]
+}
