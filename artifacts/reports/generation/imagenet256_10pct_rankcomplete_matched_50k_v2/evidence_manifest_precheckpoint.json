@@ -1,0 +1,314 @@
+{
+  "schema_version": 1,
+  "status": "in_progress",
+  "role": "fresh_10pct_matched_pair_precheckpoint_evidence_index",
+  "created_at": "2026-07-21T08:27:46.2316238+08:00",
+  "updated_at": "2026-07-21T11:22:27.2678204+08:00",
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "tracked_dirty": false
+  },
+  "run": {
+    "method": "cofitok",
+    "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2",
+    "target_steps": 50000,
+    "training_complete": false,
+    "promotion_complete": false
+  },
+  "evidence": [
+    {
+      "file": "deployment_receipt_a8f43f4.json",
+      "bytes": 2305,
+      "sha256": "de3f460f7b9786fb2b585a779d67a2708619925ca4e60e04c24f09fa0d2b92ca",
+      "role": "target_specific_deployment_attestation"
+    },
+    {
+      "file": "config_pair.json",
+      "bytes": 11663,
+      "sha256": "8fe3c6c8bcf9bc3329cf36f2308dfc49c8c96799dbfcc8dda5843f14272ce24d",
+      "role": "matched_configuration_contract"
+    },
+    {
+      "file": "full_300k_config_recipe_precheck_a8f43f4.json",
+      "bytes": 11887,
+      "sha256": "eda0339e1f201ebb910b71edac2b7087d7c0fe90b427285ec60d5f8131c7516e",
+      "role": "full_300k_configuration_and_recipe_precheck"
+    },
+    {
+      "file": "runtime_selection.json",
+      "bytes": 68020,
+      "sha256": "6638f7f63ae5a685f346497bea767feadb637e8ae76c132bc596d9ff5e8aded6",
+      "role": "shared_runtime_selection_lock"
+    },
+    {
+      "file": "cofitok_run_manifest.json",
+      "bytes": 7013,
+      "sha256": "48e1a8ee81e37347ce36fe307c528fbae86d5be948b3bf034f84911066489901",
+      "role": "fresh_run_identity"
+    },
+    {
+      "file": "cofitok_progress_step_00001000.json",
+      "bytes": 2058,
+      "sha256": "43162cdc92fe4561b440b370a7fc67e7a4e327182c3d9ad4256e0c98b3c9adbc",
+      "role": "first_scheduled_validation_audit"
+    },
+    {
+      "file": "cofitok_progress_step_00002000.json",
+      "bytes": 2076,
+      "sha256": "417298f38e44bba8a1318e8e84e487f19af29d1c7a809d294703763ea8e9ed35",
+      "role": "second_scheduled_validation_audit"
+    },
+    {
+      "file": "precompletion_gap_audit_a8f43f4.json",
+      "bytes": 3635,
+      "sha256": "3dff962581ad7c170d3326846d04b8ebcb8909e1d4b94b6c01c74d8af2d0c6f4",
+      "role": "terminal_auditor_precompletion_gap_snapshot"
+    },
+    {
+      "file": "precompletion_gap_audit_after_step5000_a8f43f4.json",
+      "bytes": 3635,
+      "sha256": "3dff962581ad7c170d3326846d04b8ebcb8909e1d4b94b6c01c74d8af2d0c6f4",
+      "role": "terminal_auditor_source_report_rechecked_after_first_live_checkpoint"
+    },
+    {
+      "file": "precompletion_gap_reaudit_step5000.json",
+      "bytes": 2297,
+      "sha256": "cb30dfc1bcf62d498ca86f467efbef704a1c80853ec7dd927efbe62f40274e6d",
+      "role": "terminal_auditor_step5000_recheck_attestation"
+    },
+    {
+      "file": "stable_inference_contract_a8f43f4.log",
+      "bytes": 99,
+      "sha256": "600bca32fa521e46c4c859008803035ca1f16f814758f3e7e445259e3d8fdd82",
+      "role": "stable_inference_contract_pytest_log"
+    },
+    {
+      "file": "stable_inference_contract_a8f43f4.json",
+      "bytes": 1453,
+      "sha256": "976a2d1ce75e2cb0844d1069143e4c4c178a2cb3807abe31490c13086cfeb6ac",
+      "role": "stable_inference_contract_report"
+    },
+    {
+      "file": "matched_baseline_contract_a8f43f4.log",
+      "bytes": 179,
+      "sha256": "35a2ff102b9bf8fa42443eca838b563f49ad845b5bb6b16d0307e37f981aa75c",
+      "role": "matched_baseline_fairness_contract_pytest_log"
+    },
+    {
+      "file": "matched_baseline_contract_a8f43f4.json",
+      "bytes": 2304,
+      "sha256": "871a76cbda2159d377cf516397cb2dd8af48e34686f498533682f5c4706db120",
+      "role": "matched_baseline_fairness_contract_report"
+    },
+    {
+      "file": "reproducible_checkpoint_contract_a8f43f4.log",
+      "bytes": 100,
+      "sha256": "4ec437b93447de1a3ecd79ed62c4ccc3cc505cd7ce2acf9249b5f1bdc2a007c6",
+      "role": "reproducible_checkpoint_contract_pytest_log"
+    },
+    {
+      "file": "reproducible_checkpoint_contract_a8f43f4.json",
+      "bytes": 1917,
+      "sha256": "2cf4b92a2bd9896fd03332983267a029433fc6270384423e00667766e00e243e",
+      "role": "reproducible_checkpoint_contract_report"
+    },
+    {
+      "file": "sample_quality_contract_a8f43f4.log",
+      "bytes": 99,
+      "sha256": "977aff91e5419d5c1e3d49c0548fc2f4d8f157ab91db4c203ae969c17524a825",
+      "role": "sample_quality_evaluation_contract_pytest_log"
+    },
+    {
+      "file": "sample_quality_contract_a8f43f4.json",
+      "bytes": 2005,
+      "sha256": "2ee687429edad83464a7aa0ce4c4452c0da7f71bd04824863ccf7d1df7ad37c6",
+      "role": "sample_quality_evaluation_contract_report"
+    },
+    {
+      "file": "scale_operations_contract_a8f43f4.log",
+      "bytes": 111,
+      "sha256": "ebdd300aac7a96bc7e5ae784517d134bdfe376f641dbd8165b92cb7c6367ec10",
+      "role": "large_scale_operations_contract_pytest_log"
+    },
+    {
+      "file": "storage_full_training_precheck_a8f43f4.json",
+      "bytes": 959,
+      "sha256": "9c7301a7a97a19e01bb1434e0c1c1ba75bd848153b0870f4ed238b8f931cfe07",
+      "role": "full_training_storage_capacity_precheck"
+    },
+    {
+      "file": "storage_full_posteval_precheck_a8f43f4.json",
+      "bytes": 950,
+      "sha256": "2cca95f1fe4a81a30a0c023346c419542e82b187d8f972b2dbbb1cded3d2d501",
+      "role": "full_posteval_storage_capacity_precheck"
+    },
+    {
+      "file": "scale_operations_contract_a8f43f4.json",
+      "bytes": 2461,
+      "sha256": "5140eb79ed6c477021bd35308c89042a0d0eeab7a343f151c0d893e44aaf15fb",
+      "role": "large_scale_operations_contract_report"
+    },
+    {
+      "file": "cofitok_progress_step_00003000.json",
+      "bytes": 2074,
+      "sha256": "edba0ba9e3c91ae5ac04809b1de97b2823619df94e08f6f78707728f7485c186",
+      "role": "third_scheduled_validation_audit"
+    },
+    {
+      "file": "cofitok_formal_vs_v7_training_health_step_00003000.json",
+      "bytes": 4313,
+      "sha256": "42e724bc3d7dff1d3ae66a5ed3e59d31e5470b14ea0a79c61a671e3a7f5086ec",
+      "role": "windowed_formal_vs_selected_probe_training_health_comparison"
+    },
+    {
+      "file": "cofitok_progress_step_00004000.json",
+      "bytes": 2076,
+      "sha256": "3f4ef6c769d0a4ce3f5521acb5108b3fcd56562d798cd74461e10a1fea04b1de",
+      "role": "fourth_scheduled_validation_audit"
+    },
+    {
+      "file": "cofitok_step5000_integrity_audit.json",
+      "bytes": 3098,
+      "sha256": "987556ad471024798ed17de4e8cf55c3dafa367be9c1807b0fe1e5aa26ebdea8",
+      "role": "first_live_checkpoint_progress_and_integrity_audit"
+    },
+    {
+      "file": "cofitok_step5000_payload_audit.json",
+      "bytes": 1550,
+      "sha256": "56d9f78d15113f5e168adfce962ebf808734833454ed62dc6cff63acea151f9b",
+      "role": "first_live_checkpoint_exact_resume_payload_audit"
+    },
+    {
+      "file": "cofitok_checkpoint_step_00005000.pt.integrity.json",
+      "bytes": 572,
+      "sha256": "1c01cdf1cac6f69b3b9e2ba898b0ec71bdf18a5016528daff469fae64fbfc16b",
+      "role": "native_checkpoint_integrity_sidecar"
+    },
+    {
+      "file": "cofitok_latest_step_00005000.json",
+      "bytes": 642,
+      "sha256": "1cb519949727bf1b2e4142b2802b7de1adfb8348086a09a5ccf7220be88cbaa3",
+      "role": "atomic_latest_checkpoint_binding"
+    },
+    {
+      "file": "cofitok_step5000_collector_verification.json",
+      "bytes": 3573,
+      "sha256": "2cdaa7013bbdcc3114ab549dc6c15e40c8de681dbc3edca06a45a3b91aed41d0",
+      "role": "source_destination_evidence_copy_verification"
+    },
+    {
+      "file": "cofitok_50k_completion_evidence_waiter.sh",
+      "bytes": 6726,
+      "sha256": "f8388ddac37529ffbf13540bd2ed4cd62a4d950597824280eca737e3c89e7292",
+      "role": "read_only_step50000_immediate_integrity_waiter"
+    },
+    {
+      "file": "cofitok_50k_completion_evidence_waiter_launch.json",
+      "bytes": 2797,
+      "sha256": "26950a386ec4409925badc5a2f1a0724bfea9c452f67ea83a2c815d88925df59",
+      "role": "step50000_integrity_waiter_launch_attestation"
+    }
+  ],
+  "verified_claims": {
+    "deployment_receipt_status": "pass",
+    "deployment_pytest_count": 642,
+    "deployment_runbook_syntax_count": 50,
+    "deployment_untracked_conflict_count": 0,
+    "configuration_pair_status": "pass",
+    "configuration_pair_mismatch_count": 0,
+    "relative_parameter_gap": 0.00019242429574721295,
+    "full_300k_config_recipe_status": "pass",
+    "full_300k_recipe_schema": "cofitok_generation_training_recipe_v2",
+    "full_300k_pair_contract_valid": true,
+    "full_rank_complete_token_layout": true,
+    "full_per_token_strict_compression": true,
+    "full_token_total_scalar_count": 280576,
+    "full_dense_scalar_count": 196608,
+    "full_token_aggregate_to_dense_scalar_ratio": 1.4270833333333333,
+    "runtime_selection_status": "selected",
+    "selected_micro_batch_size": 64,
+    "selected_gradient_accumulation_steps": 1,
+    "selected_effective_batch_size": 64,
+    "selected_cofitok_mean_optimizer_step_seconds": 2.2261347783108554,
+    "selected_dense_mean_optimizer_step_seconds": 2.0170783400535583,
+    "selected_cofitok_images_per_second": 28.749382392993233,
+    "selected_dense_images_per_second": 31.72906016049959,
+    "selected_cofitok_relative_walltime_overhead": 0.10364319228758667,
+    "progress_audit_status": "healthy",
+    "progress_audit_step": 5000,
+    "validation_event_count": 5,
+    "validation_expected_event_count": 5,
+    "second_validation_epsilon_mse": 0.035930439829826355,
+    "third_validation_epsilon_mse": 0.04086462780833244,
+    "fourth_validation_epsilon_mse": 0.03169603645801544,
+    "fifth_validation_epsilon_mse": 0.032889582216739655,
+    "formal_vs_v7_training_health_status": "healthy_comparable",
+    "formal_vs_v7_compared_through_step": 3000,
+    "formal_vs_v7_windowed_epsilon_regression_detected": false,
+    "formal_vs_v7_report_is_scientific_promotion_evidence": false,
+    "ema_decay_after_warmup": 0.9999,
+    "checkpoint_status": "available",
+    "checkpoint_step": 5000,
+    "checkpoint_bytes": 1006396450,
+    "checkpoint_sha256": "f2d8287252e26d07ce90a9749d7e9dd427be591fe94b5e706fb196f2529e9b6a",
+    "checkpoint_integrity_status": "verified",
+    "checkpoint_payload_audit_status": "pass",
+    "checkpoint_exact_resume_fields_present": true,
+    "checkpoint_identity_bindings_match": true,
+    "checkpoint_rng_state_complete": true,
+    "checkpoint_sampler_state_complete": true,
+    "checkpoint_bytes_unchanged_by_audit": true,
+    "checkpoint_mtime_unchanged_by_audit": true,
+    "cofitok_step50000_integrity_waiter_status": "waiting",
+    "cofitok_step50000_integrity_waiter_timeout_pid": 260148,
+    "cofitok_step50000_integrity_waiter_uses_gpu": false,
+    "cofitok_step50000_integrity_waiter_controls_training": false,
+    "cofitok_step50000_integrity_waiter_changes_pipeline_decision": false,
+    "precompletion_audit_status": "in_progress",
+    "precompletion_failed_check_count": 0,
+    "precompletion_warning_count": 0,
+    "precompletion_missing_check_count": 17,
+    "precompletion_reaudit_after_step5000_status": "expected_in_progress",
+    "precompletion_reaudit_exit_code": 1,
+    "precompletion_reaudit_premature_completion_rejected": true,
+    "precompletion_reaudit_new_failure_count": 0,
+    "precompletion_reaudit_new_warning_count": 0,
+    "stable_inference_contract_status": "pass",
+    "stable_inference_contract_test_count": 51,
+    "stable_inference_contract_device": "cpu",
+    "final_full_300k_ema_artifacts_pending": true,
+    "matched_baseline_contract_status": "pass",
+    "matched_baseline_contract_test_count": 83,
+    "matched_direct_tier": "matched_training_direct",
+    "external_context_tier": "official_pretrained_contextual",
+    "cross_tier_numeric_ranking_allowed": false,
+    "formal_matched_generation_metrics_pending": true,
+    "reproducible_checkpoint_contract_status": "pass",
+    "reproducible_checkpoint_contract_test_count": 57,
+    "live_step_5000_checkpoint_integrity_pending": false,
+    "full_300k_checkpoint_reproducibility_pending": true,
+    "sample_quality_contract_status": "pass",
+    "sample_quality_contract_test_count": 28,
+    "formal_10k_scaling_metrics_pending": true,
+    "formal_50k_full_metrics_pending": true,
+    "scientific_sample_quality_passed": false,
+    "scale_operations_contract_status": "pass",
+    "scale_operations_contract_test_count": 55,
+    "scale_operations_contract_cuda_skip_count": 1,
+    "full_training_storage_headroom_bytes": 443744906720,
+    "full_posteval_storage_headroom_bytes": 437860708352,
+    "formal_stage_entry_storage_reports_pending": true
+  },
+  "next_required_evidence": {
+    "stage": "cofitok_training_completion",
+    "step": 50000,
+    "checkpoint": "checkpoint_step_00050000.pt",
+    "training_report": "training_report.json",
+    "integrity_policy": "required",
+    "required_training_status": "completed",
+    "required_audit_status": "healthy",
+    "required_integrity_status": "verified",
+    "followed_by": "matched_dense_identity_50000_then_formal_10000_sample_promotion_gate"
+  }
+}

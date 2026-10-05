@@ -1,0 +1,28 @@
+{
+  "baseline": "improved_diffusion",
+  "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_downsampled_imagenet_64_5000steps_ddim50_2026-07-09/train/ema_0.9999_005000.pt",
+  "dataset": "downsampled_imagenet_64",
+  "evaluation": {
+    "available_sample_images": 1024,
+    "feature_size": 8,
+    "real_image_count": 4096,
+    "sample_image_count": 1024,
+    "seed": 139,
+    "split": "val"
+  },
+  "generated_quality_report": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines/improved_diffusion/improved_diffusion_downsampled_imagenet_64_5000steps_ddim50_2026-07-09/generated_quality/generated_quality_report.json",
+  "metrics": {
+    "inception_frechet": 355.10614289345926,
+    "lowres_frechet_proxy": 8.804418110119745
+  },
+  "parameters": {
+    "real_count": 4096,
+    "sample_count": 1024,
+    "sample_steps": 50
+  },
+  "report_type": "baseline_eval",
+  "run_name": "improved_diffusion_downsampled_imagenet_64_5000steps_ddim50_2026-07-09",
+  "sample_npz": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_downsampled_imagenet_64_5000steps_ddim50_2026-07-09/sample/samples_1024x64x64x3.npz",
+  "samples_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/improved_diffusion/improved_diffusion_downsampled_imagenet_64_5000steps_ddim50_2026-07-09/samples_png",
+  "status": "completed"
+}

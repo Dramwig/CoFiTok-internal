@@ -1,0 +1,91 @@
+{
+  "artifacts": {
+    "generation_report": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/samples_50k_hf/MAR-B-hf-size-256-ariter-256-diffsteps-100-cfg-2.9-linear-temp-1.0-seed-0/baseline_eval_report.json",
+    "hf_repo_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo",
+    "metrics_txt": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/samples_50k_hf/MAR-B-hf-size-256-ariter-256-diffsteps-100-cfg-2.9-linear-temp-1.0-seed-0.txt",
+    "npz": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/samples_50k_hf/MAR-B-hf-size-256-ariter-256-diffsteps-100-cfg-2.9-linear-temp-1.0-seed-0.npz",
+    "sample_npz": {
+      "bytes": 9830400360,
+      "dtype": "uint8",
+      "key": "arr_0",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/samples_50k_hf/MAR-B-hf-size-256-ariter-256-diffsteps-100-cfg-2.9-linear-temp-1.0-seed-0.npz",
+      "sha256": "26461197a9dbfa84ac7413f58e987c0e6154450a185622ea5db6cdc9a75309d7",
+      "shape": [
+        50000,
+        256,
+        256,
+        3
+      ]
+    },
+    "samples_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/samples_50k_hf/MAR-B-hf-size-256-ariter-256-diffsteps-100-cfg-2.9-linear-temp-1.0-seed-0",
+    "weights": {
+      "model": {
+        "bytes": 831736456,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/mar-base.safetensors",
+        "sha256": "d8735425f563a88bd7aabc5ff8ac43d2b3dbb0777b8dc4e0dbcb1abfb6c5cb07"
+      },
+      "vae": {
+        "bytes": 265856244,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/kl16.safetensors",
+        "sha256": "ae6e66b66cce64248cace5aa6cf8bdb3e834947801cbf7e059028592e2b1de31"
+      }
+    }
+  },
+  "baseline": "mar",
+  "dataset": "imagenet_256",
+  "limitations": [
+    "Official ImageNet-256 pretrained eval-only, not same-dataset retraining.",
+    "HF safetensors adapter uses official MAR-B sampling parameters.",
+    "Use only as a secondary related-method row.",
+    "Do not merge into the P0 all-dataset same-budget generation table."
+  ],
+  "metric_notes": {
+    "protocol": "Official MAR-B ImageNet-256 sampling parameters through verified HF safetensors. This is eval-only and not same-budget P0 retraining."
+  },
+  "metrics": {
+    "fid": 5.560985685249818,
+    "inception_score": 52.001953125,
+    "precision": 0.71664,
+    "recall": 0.6248,
+    "sfid": 6.2549410871109785
+  },
+  "paper_table_role": "secondary related-method only",
+  "parameters": {
+    "balanced_images_per_class": 50,
+    "batch_size": 768,
+    "cfg_scale": 2.9,
+    "cfg_schedule": "linear",
+    "class_num": 1000,
+    "decode_batch_size": 16,
+    "model_type": "mar_base",
+    "num_ar_steps": 256,
+    "num_images": 50000,
+    "num_sampling_steps": 100,
+    "precision": "fp16",
+    "resume_seed_rule": "batch_seed=global_seed+batch_start_index",
+    "seed": 0,
+    "temperature": 1.0
+  },
+  "png_count": 50000,
+  "progress": {
+    "completed_images": 50000,
+    "elapsed_seconds": 17255.10194130242,
+    "eta_seconds": 0.0,
+    "expected_images": 50000,
+    "images_per_second": 2.9218758355332324,
+    "measured_generation_seconds": 17112.29457184486
+  },
+  "protocol": "official_imagenet256_hf_safetensors_eval_only_50k",
+  "reference_npz": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/official_refs/VIRTUAL_imagenet256_labeled.npz",
+  "report_type": "baseline_eval",
+  "resolution": 256,
+  "runtime": {
+    "cuda_version": "12.8",
+    "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "peak_memory_bytes": 14745516544,
+    "torch_version": "2.7.1+cu128"
+  },
+  "sample_count": 50000,
+  "schema_version": 1,
+  "status": "completed"
+}

@@ -1,0 +1,35 @@
+{
+  "csv_counts": {
+    "generated_quality": 19,
+    "order_eval": 95,
+    "quality": 58,
+    "sampling": 22,
+    "train": 109
+  },
+  "doc_counts": {
+    "docs/records/2026-07-08_completion_audit.md": {
+      "generated_quality": 19,
+      "order_eval": 95,
+      "quality": 58,
+      "sampling": 22,
+      "train": 109
+    },
+    "docs/reports/cofitok_mvp_report_2026-07-08.md": {
+      "generated_quality": 19,
+      "order_eval": 95,
+      "quality": 58,
+      "sampling": 22,
+      "train": 109
+    }
+  },
+  "json_counts": {
+    "generated_quality": 19,
+    "order_eval": 95,
+    "quality": 58,
+    "sampling": 22,
+    "train": 109
+  },
+  "required_report_dirs": [],
+  "status": "ok",
+  "summary": "artifacts/reports/summary_2026-07-08/experiment_summary.json"
+}

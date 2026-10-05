@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "role": "precheckpoint_stable_inference_contract",
+  "created_at": "2026-07-21T09:14:32.6158250+08:00",
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "tracked_dirty": false
+  },
+  "runtime": {
+    "device": "cpu",
+    "cuda_visible_devices": "",
+    "elapsed_seconds": 5.849453562
+  },
+  "pytest": {
+    "status": "pass",
+    "passed": 51,
+    "exit_code": 0,
+    "files": [
+      "tests/test_generation_inference_artifact.py",
+      "tests/test_generation_sampling.py",
+      "tests/test_generation_sampling_protocol.py",
+      "tests/test_generation_sampling_preflight.py",
+      "tests/test_generation_sampling_batch_selection.py"
+    ],
+    "log": "stable_inference_contract_a8f43f4.log",
+    "log_bytes": 99,
+    "log_sha256": "600bca32fa521e46c4c859008803035ca1f16f814758f3e7e445259e3d8fdd82"
+  },
+  "coverage": [
+    "EMA-only inference artifact export and verification",
+    "artifact/source authorization and tamper rejection",
+    "deterministic DDIM sampling behavior",
+    "batch-size-invariant and resume-index-invariant random streams",
+    "formal sampling protocol validation",
+    "real-forward sampling preflight contract",
+    "matched sampling batch selection"
+  ],
+  "scope": {
+    "code_contract_verified": true,
+    "final_full_300k_ema_artifacts_verified": false,
+    "final_full_300k_smoke_pending": true
+  }
+}

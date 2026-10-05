@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "status": "healthy_comparable",
+  "created_at": "2026-07-21T09:50:05.8765437+08:00",
+  "role": "early_training_health_comparison_not_scientific_promotion_evidence",
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "tracked_dirty": false
+  },
+  "sources": {
+    "formal_config": {
+      "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/generation/imagenet256_10pct_compressed_cofitok_k8_50k.json",
+      "sha256": "e69db96cf87d82867d23ec9138aa04a7c2b7c1cddf064b16c96544515aed30f1"
+    },
+    "probe_v7_config": {
+      "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/generation/imagenet256_10pct_rankcomplete_capacity_path_hellinger_k8_probe5k.json",
+      "sha256": "4bb56b3f455289a675ad34072c87fe6b7e232bb225deaacecffda21b25e80300"
+    },
+    "formal_metrics_prefix": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2/train_metrics.jsonl",
+      "through_step": 3000,
+      "rows": 61,
+      "bytes": 44180,
+      "sha256": "bcffc7d7e9738fecbeee1e42415353fc36e3e4d39095e7891a9416d3f64fb3fa"
+    },
+    "probe_v7_metrics_prefix": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_hellinger_k8_probe5k_v7/train_metrics.jsonl",
+      "through_step": 3000,
+      "rows": 61,
+      "bytes": 44193,
+      "sha256": "d302a06faaa39f3a6da45c86941cc80b4ff2dd607d27c9a19ccbc52be714835b"
+    }
+  },
+  "expected_config_differences": {
+    "data.random_horizontal_flip_prob": {
+      "formal": 0.5,
+      "probe_v7": 0.0
+    },
+    "optimization.min_learning_rate": {
+      "formal": 0.00001,
+      "probe_v7": 0.000098
+    },
+    "runtime.keep_last_checkpoints": {
+      "formal": 3,
+      "probe_v7": 1
+    },
+    "runtime.steps": {
+      "formal": 50000,
+      "probe_v7": 5000
+    }
+  },
+  "training_windows": [
+    {
+      "steps": [1, 1000],
+      "formal": {
+        "rows": 21,
+        "epsilon_mean": 0.584948480838821,
+        "total_mean": 0.6014381185883567,
+        "grad_norm_mean": 2.7104256550470986
+      },
+      "probe_v7": {
+        "rows": 21,
+        "epsilon_mean": 0.5841255483350584,
+        "total_mean": 0.6004662849896011,
+        "grad_norm_mean": 2.0430872525487627
+      }
+    },
+    {
+      "steps": [1001, 2000],
+      "formal": {
+        "rows": 20,
+        "epsilon_mean": 0.04726995080709458,
+        "total_mean": 0.06551203094422817,
+        "grad_norm_mean": 0.7818954944610595
+      },
+      "probe_v7": {
+        "rows": 20,
+        "epsilon_mean": 0.045014334050938486,
+        "total_mean": 0.06324822595342994,
+        "grad_norm_mean": 0.7560518234968185
+      }
+    },
+    {
+      "steps": [2001, 3000],
+      "formal": {
+        "rows": 20,
+        "epsilon_mean": 0.03792044129222631,
+        "total_mean": 0.05388023033738136,
+        "grad_norm_mean": 0.34097601026296614
+      },
+      "probe_v7": {
+        "rows": 20,
+        "epsilon_mean": 0.03737118875142187,
+        "total_mean": 0.0535941940266639,
+        "grad_norm_mean": 0.3517669767141342
+      }
+    }
+  ],
+  "scheduled_validation": {
+    "formal": [
+      {
+        "step": 1000,
+        "epsilon_mse": 0.10599732398986816
+      },
+      {
+        "step": 2000,
+        "epsilon_mse": 0.035930439829826355
+      },
+      {
+        "step": 3000,
+        "epsilon_mse": 0.04086462780833244
+      }
+    ],
+    "probe_v7": [
+      {
+        "step": 1000,
+        "epsilon_mse": 0.0969863161444664
+      },
+      {
+        "step": 2000,
+        "epsilon_mse": 0.04076909273862839
+      },
+      {
+        "step": 3000,
+        "epsilon_mse": 0.025815952569246292
+      }
+    ]
+  },
+  "interpretation": {
+    "formal_training_divergence_detected": false,
+    "windowed_epsilon_regression_detected": false,
+    "single_validation_batch_is_sufficient_for_promotion": false,
+    "checkpoint_reproducibility_proven": false,
+    "sample_quality_proven": false,
+    "promotion_gate_passed": false,
+    "notes": "The formal run tracks the selected v7 probe closely through step 3000 in windowed epsilon and total loss. Scheduled validation uses one batch and differs under formal random horizontal augmentation, so its step-to-step variance is not a scientific quality result."
+  }
+}

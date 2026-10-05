@@ -1,0 +1,29 @@
+{
+  "baseline": "edm",
+  "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/baseline_smoke_tmp/baselines/edm/edm_ffhq_64_32steps_edm4_smoke_gpu_2026-07-09/train/network-snapshot-000001.pkl",
+  "dataset": "ffhq_64",
+  "evaluation": {
+    "available_sample_images": 4,
+    "feature_size": 8,
+    "real_image_count": 8,
+    "sample_image_count": 4,
+    "seed": 139,
+    "split": "val"
+  },
+  "generated_quality_report": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/baselines_smoke/edm/edm_ffhq_64_32steps_edm4_smoke_gpu_2026-07-09/generated_quality/generated_quality_report.json",
+  "metrics": {
+    "inception_frechet": 410.7340951826104,
+    "lowres_frechet_proxy": 13.826866348646787
+  },
+  "parameters": {
+    "real_count": 8,
+    "sample_count": 4,
+    "sample_steps": 4,
+    "sampler": "edm_heun",
+    "sampler_nfe": 7
+  },
+  "report_type": "baseline_eval",
+  "run_name": "edm_ffhq_64_32steps_edm4_smoke_gpu_2026-07-09",
+  "samples_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baseline_smoke_tmp/baselines/edm/edm_ffhq_64_32steps_edm4_smoke_gpu_2026-07-09/samples_png",
+  "status": "completed"
+}

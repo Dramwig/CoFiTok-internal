@@ -1,0 +1,282 @@
+{
+  "candidates": [
+    {
+      "checkpoint_sha256": "4adb333cff4d1c6030cbac5af5222828a847b0013f5b74921cbb4bfd93316f26",
+      "component_energy": [
+        5.125269083805506e-06,
+        2.396544232396991e-05,
+        7.281667512870627e-05,
+        1.8387760576388246e-05,
+        0.0035954504637629725,
+        0.004508793863351457,
+        0.34401412680745125,
+        0.6726718433201313
+      ],
+      "diagnostic_fid_512": 275.13469981442813,
+      "diagnostic_inception_score_512": 2.2748744707900443,
+      "endpoint_clean_mse": 0.019939537334721535,
+      "endpoint_clean_psnr": 23.023449143487422,
+      "git": {
+        "branch": "scale/generative-system",
+        "dirty": false,
+        "revision": "05bbb4af63a9f1d9b7f11bc4222d50875e382e1d"
+      },
+      "name": "denoise_path",
+      "ordered_prefix_path_mse_auc": 0.19952743616782495,
+      "ordered_rank_by_path_auc": 6,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k_v2",
+      "sources": {
+        "checkpoint_evaluation": {
+          "bytes": 27686,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k_v2/checkpoint_eval_ema_t500_512/checkpoint_evaluation_report.json",
+          "sha256": "a50c2045fcdac87362ae70ea4898d05f2338869e86f3507b06b5d4d7160be439"
+        },
+        "generation_metrics": {
+          "bytes": 10478,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k_v2/samples_probe512_ddim50_cfg15/metrics/generation_metrics_report.json",
+          "sha256": "e1743d9b86a8355585058a19888a76531a3fa93a6cc3e974ad26a9e942388411"
+        },
+        "sampling": {
+          "bytes": 5625,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k_v2/samples_probe512_ddim50_cfg15/sampling_report.json",
+          "sha256": "5b866cea25d7ebc8d8adbe60802113bd5f5cca8f7caeae4e1b85681cd184b73d"
+        },
+        "training": {
+          "bytes": 8641,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_denoise_path_k8_probe5k_v2/training_report.json",
+          "sha256": "712a22ed16ed9ac64ba419b5cf56628009a60cb5b9965c06c513faaff5da5e40"
+        }
+      }
+    },
+    {
+      "checkpoint_sha256": "b03e3bee66dfb368330f056df3afc2bac451ed2a52a8c90ddae292825d1ef83c",
+      "component_energy": [
+        0.004833427468838636,
+        0.003650893959274981,
+        0.010213445086264983,
+        0.0017146383761428297,
+        0.01578706971486099,
+        0.016315374989062548,
+        0.32382285315543413,
+        0.6002702880650759
+      ],
+      "diagnostic_fid_512": 375.83995768543247,
+      "diagnostic_inception_score_512": 1.4768113548248185,
+      "endpoint_clean_mse": 0.022481086140032858,
+      "endpoint_clean_psnr": 22.502427016361075,
+      "git": {
+        "branch": "scale/generative-system",
+        "dirty": false,
+        "revision": "a37b2e410aa558e831688009b13012a6a7da616b"
+      },
+      "name": "equal_progress",
+      "ordered_prefix_path_mse_auc": 0.2858201364163376,
+      "ordered_rank_by_path_auc": 17,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_equal_progress_k8_probe5k_v3",
+      "sources": {
+        "checkpoint_evaluation": {
+          "bytes": 27760,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_equal_progress_k8_probe5k_v3/checkpoint_eval_ema_t500_512/checkpoint_evaluation_report.json",
+          "sha256": "ad70507582e4be56d99aef8830e39f3a97ac472600f512e8fa5d8e31fb91e026"
+        },
+        "generation_metrics": {
+          "bytes": 10486,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_equal_progress_k8_probe5k_v3/samples_probe512_ddim50_cfg15/metrics/generation_metrics_report.json",
+          "sha256": "204163e97e8df0276edb9cd41ff00b3728e5234df767aff9ca3a2de5a332b75f"
+        },
+        "sampling": {
+          "bytes": 5637,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_equal_progress_k8_probe5k_v3/samples_probe512_ddim50_cfg15/sampling_report.json",
+          "sha256": "62c93c98b31a98a32820ff45beb035a5f595a979ad98944228690a1796244804"
+        },
+        "training": {
+          "bytes": 8769,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_equal_progress_k8_probe5k_v3/training_report.json",
+          "sha256": "18c5aca54e0a2776a033cd149b4e5d15f6560dedc1f2e988d2808eb833a18bdf"
+        }
+      }
+    },
+    {
+      "checkpoint_sha256": "c73ba02a5e793d0daf9232c0e7f5b1222b0df2f555ab0b60e530c9490d4d81f3",
+      "component_energy": [
+        0.010523458971874788,
+        0.01639769517350942,
+        0.024048800114542246,
+        0.008060650754487142,
+        0.023344519664533436,
+        0.02400258689885959,
+        0.3279425920918584,
+        0.6131814885884523
+      ],
+      "diagnostic_fid_512": 337.1272485053577,
+      "diagnostic_inception_score_512": 1.6389999788716239,
+      "endpoint_clean_mse": 0.02251443511340767,
+      "endpoint_clean_psnr": 22.495989363295905,
+      "git": {
+        "branch": "scale/generative-system",
+        "dirty": false,
+        "revision": "2a45b27dd197f5c014bded11f0590520e35c3527"
+      },
+      "name": "target_energy",
+      "ordered_prefix_path_mse_auc": 0.2884318225385089,
+      "ordered_rank_by_path_auc": 17,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_target_energy_k8_probe5k_v4",
+      "sources": {
+        "checkpoint_evaluation": {
+          "bytes": 29194,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_target_energy_k8_probe5k_v4/checkpoint_eval_ema_t500_512/checkpoint_evaluation_report.json",
+          "sha256": "0723646108e5e17162ea17fb77fb0da8aba9b18068bc046b07838c836f2e0698"
+        },
+        "generation_metrics": {
+          "bytes": 10481,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_target_energy_k8_probe5k_v4/samples_probe512_ddim50_cfg15/metrics/generation_metrics_report.json",
+          "sha256": "3bbd91924e29923367a79226124f749acadafbb50acf3da8ab49f8cb4b93d8cf"
+        },
+        "sampling": {
+          "bytes": 5632,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_target_energy_k8_probe5k_v4/samples_probe512_ddim50_cfg15/sampling_report.json",
+          "sha256": "2f8ec6a0d9b5d55578329e9da97e53220a7e433f16e835b756476a268045c380"
+        },
+        "training": {
+          "bytes": 8767,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_target_energy_k8_probe5k_v4/training_report.json",
+          "sha256": "279fbf4982672a9e1b57811c633a941831f08a4210d8e598d4db4ab7896b83cc"
+        }
+      }
+    },
+    {
+      "checkpoint_sha256": "51138d35be612d94b507bfd20a80ef4f68ff94693c216803e9deeff006fc1644",
+      "component_energy": [
+        9.356527044701579e-06,
+        1.8686108717247407e-05,
+        2.3585960036598408e-05,
+        2.2085910529767716e-05,
+        0.0035613116197055206,
+        0.004835947693209164,
+        0.3125682706013322,
+        0.6268222443759441
+      ],
+      "diagnostic_fid_512": 370.5892053230507,
+      "diagnostic_inception_score_512": 1.3818412931320316,
+      "endpoint_clean_mse": 0.02169818291440606,
+      "endpoint_clean_psnr": 22.656366253729278,
+      "git": {
+        "branch": "scale/generative-system",
+        "dirty": false,
+        "revision": "3f98a4e106a1251d5242a41e260bd9fc4686c5f0"
+      },
+      "name": "capacity_path_heavy",
+      "ordered_prefix_path_mse_auc": 0.08728085704491864,
+      "ordered_rank_by_path_auc": 1,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_k8_probe5k_v5",
+      "sources": {
+        "checkpoint_evaluation": {
+          "bytes": 29298,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_k8_probe5k_v5/checkpoint_eval_ema_t500_512/checkpoint_evaluation_report.json",
+          "sha256": "58e0d4f02465e3661e3d6f3644d42b99edcb51576fb480367e92687be9632a09"
+        },
+        "generation_metrics": {
+          "bytes": 10482,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_k8_probe5k_v5/samples_probe512_ddim50_cfg15/metrics/generation_metrics_report.json",
+          "sha256": "2514fc1ec84cab321cbc845208bed17017d7aa5d308b16d0ff740fda4519f33c"
+        },
+        "sampling": {
+          "bytes": 5634,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_k8_probe5k_v5/samples_probe512_ddim50_cfg15/sampling_report.json",
+          "sha256": "f82eabfb26a611be207dbe2fd613be56238573c9e8672abb641c934aa66fbabe"
+        },
+        "training": {
+          "bytes": 8827,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_k8_probe5k_v5/training_report.json",
+          "sha256": "22f222c61bd07db4be367567977061cc45a1b02e3e4021c675a2a3b12f188632"
+        }
+      }
+    },
+    {
+      "checkpoint_sha256": "1032cd8b0702c41f5da64d4df5dae7a628dfec20a1b00fc345150456c62aa53f",
+      "component_energy": [
+        2.706806895957925e-06,
+        6.233068305050438e-06,
+        1.250556582022e-05,
+        6.7070573379623966e-06,
+        0.0015510667144553736,
+        0.004210874860291369,
+        0.34291419107466936,
+        0.6766339782625437
+      ],
+      "diagnostic_fid_512": 294.0330152219009,
+      "diagnostic_inception_score_512": 1.9437140559695454,
+      "endpoint_clean_mse": 0.019987743376987055,
+      "endpoint_clean_psnr": 23.012962264366358,
+      "git": {
+        "branch": "scale/generative-system",
+        "dirty": false,
+        "revision": "ead85dcb304bea8d5b23611add8e5397c65b5e73"
+      },
+      "name": "capacity_path_light",
+      "ordered_prefix_path_mse_auc": 0.09072474886826447,
+      "ordered_rank_by_path_auc": 1,
+      "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k_v6",
+      "sources": {
+        "checkpoint_evaluation": {
+          "bytes": 29321,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k_v6/checkpoint_eval_ema_t500_512/checkpoint_evaluation_report.json",
+          "sha256": "2163445c5aa9e320c9a550421ec4d644ce33eb64dc029320cc8612aeda3d746b"
+        },
+        "generation_metrics": {
+          "bytes": 10511,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k_v6/samples_probe512_ddim50_cfg15/metrics/generation_metrics_report.json",
+          "sha256": "67998f437b51e2eb60c3da729f66dcb542aa5ab74b3615b67bc78d26848cc43c"
+        },
+        "sampling": {
+          "bytes": 5676,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k_v6/samples_probe512_ddim50_cfg15/sampling_report.json",
+          "sha256": "683f1df9ff1f9a5f11d5f6ab93b65358c4bc21ba9a3314259fa129da42185fef"
+        },
+        "training": {
+          "bytes": 8842,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_capacity_path_light_k8_probe5k_v6/training_report.json",
+          "sha256": "c00fc664703c29113e657689e38e50ede40ba7bce15e841187ae7476f7be52c1"
+        }
+      }
+    }
+  ],
+  "formal_claim_allowed": false,
+  "legacy_rank_deficient_reference": {
+    "component_energy": [
+      0.00021321014992281562,
+      0.0004590516919051879,
+      0.0011092808081230032,
+      0.0009870820722426288,
+      0.016798279393697158,
+      0.01899101326125674,
+      0.3507180227898061,
+      0.73304941970855
+    ],
+    "endpoint_clean_mse": 0.16952239605598152,
+    "ordered_rank_by_path_auc": 3,
+    "source": {
+      "bytes": 27490,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_compressed_cofitok_k8_50k/checkpoint_eval_ema_t500_1024/checkpoint_evaluation_report.json",
+      "sha256": "c7114c2d4e03752368d4ee90c62f26626cb78d1194f598c6feb1d7a7258fa268"
+    }
+  },
+  "protocol": {
+    "checkpoint_evaluation_images": 512,
+    "checkpoint_evaluation_timestep": 500,
+    "guidance_scale": 1.5,
+    "note": "The 512-image FID/IS values are directional diagnostics only and cannot replace the 10K promotion gate.",
+    "sample_count": 512,
+    "sample_steps": 50,
+    "training_steps": 5000
+  },
+  "role": "non_formal_rank_recovery_probe",
+  "schema_version": 1,
+  "selection": {
+    "automatic_50k_or_300k_launch_allowed": false,
+    "best_mechanism_candidate": "capacity_path_light",
+    "decision": "manual_visual_review_required",
+    "mechanism_ready_for_visual_review": true
+  },
+  "status": "completed"
+}

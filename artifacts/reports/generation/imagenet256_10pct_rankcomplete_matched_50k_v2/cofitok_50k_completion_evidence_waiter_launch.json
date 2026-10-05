@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "status": "waiting",
+  "created_at": "2026-07-21T11:15:59.8339297+08:00",
+  "role": "read_only_cofitok_step50000_immediate_integrity_observer",
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "tracked_dirty": false
+  },
+  "script": {
+    "local_archive": "CoFiTok-internal/artifacts/reports/generation/imagenet256_10pct_rankcomplete_matched_50k_v2/cofitok_50k_completion_evidence_waiter.sh",
+    "remote_path": "/tmp/cofitok_50k_completion_evidence_waiter.sh",
+    "bytes": 6726,
+    "sha256": "f8388ddac37529ffbf13540bd2ed4cd62a4d950597824280eca737e3c89e7292",
+    "bash_syntax_status": "pass",
+    "python_heredoc_compile_status": "pass",
+    "python_heredoc_count": 3
+  },
+  "process": {
+    "timeout_pid": 260148,
+    "child_pid": 260150,
+    "timeout_seconds": 132000,
+    "poll_seconds": 240,
+    "maximum_script_wait_seconds": 129600,
+    "pid_file": "/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_rankcomplete_v2_cofitok_50k_evidence_waiter.pid",
+    "log": "/root/autodl-tmp/CoFiTok/checkpoints/generation/generation_10pct_rankcomplete_v2_cofitok_50k_evidence_waiter.log",
+    "alive_after_launch": true,
+    "log_bytes_after_launch": 0
+  },
+  "target": {
+    "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2",
+    "step": 50000,
+    "expected_validation_events": 50,
+    "integrity_policy": "required",
+    "checkpoint": "checkpoint_step_00050000.pt",
+    "required_training_report_complete": true,
+    "required_progress_status": "healthy",
+    "required_integrity_status": "verified"
+  },
+  "outputs": {
+    "progress_audit": "cofitok_progress_step_00050000.json",
+    "training_report_copy": "cofitok_training_report_step_00050000.json",
+    "latest_copy": "cofitok_latest_step_00050000.json",
+    "sidecar_copy": "cofitok_checkpoint_step_00050000.pt.integrity.json",
+    "copy_verification": "cofitok_50k_completion_collector_verification.json"
+  },
+  "safety": {
+    "uses_gpu": false,
+    "loads_checkpoint_payload": false,
+    "copies_checkpoint": false,
+    "controls_training_process": false,
+    "controls_supervisor_process": false,
+    "changes_git_revision": false,
+    "changes_tracked_files": false,
+    "changes_pipeline_decision": false,
+    "hashes_final_checkpoint_once_after_training_completion": true
+  },
+  "operational_scope": {
+    "purpose": "Detect and archive final CoFiTok checkpoint corruption immediately after the first matched method completes instead of waiting for the dense run and post-evaluation loader.",
+    "authoritative_pipeline_still_controls_promotion": true,
+    "waiter_success_is_training_pair_completion": false,
+    "waiter_success_is_promotion_pass": false
+  }
+}

@@ -1,0 +1,485 @@
+{
+  "counts": {
+    "generated_image_count": 128,
+    "real_image_count": 50000
+  },
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+    "tracked_dirty": false
+  },
+  "implementation": {
+    "package": "torch_fidelity",
+    "version": "0.4.0"
+  },
+  "metrics": {
+    "frechet_inception_distance": 301.47992349332895,
+    "inception_score_mean": 2.4987597247275533,
+    "inception_score_std": 0.5536469104504395
+  },
+  "parameters": {
+    "batch_size": 64,
+    "cuda": true,
+    "prc_batch_size": 10000,
+    "precision_recall_enabled": false,
+    "real_cache_name": "imagenet256_val_50k_torch_fidelity_v04__cofitok_19ace4e37bee2fca",
+    "requested_real_cache_name": "imagenet256_val_50k_torch_fidelity_v04",
+    "samples_find_deep": true,
+    "samples_shuffle": false,
+    "seed": 2027
+  },
+  "paths": {
+    "generated_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/diagnostics/imagenet256_10pct_rankcomplete_v2_sampling_recovery_2026-07-24/cofitok_ema_cfg15_rescale05/prefix_8",
+    "real_dir": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val"
+  },
+  "protocol": "torch_fidelity_directory_metrics",
+  "real_set": {
+    "digest_schema": "cofitok_image_tree_sha256_v1",
+    "image_count": 50000,
+    "root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256/extracted/val",
+    "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f"
+  },
+  "runtime": {
+    "cuda_available": true,
+    "elapsed_seconds": 9.699460506439209,
+    "real_set_digest_elapsed_seconds": 3.3916115760803223,
+    "torch_version": "2.7.1+cu128"
+  },
+  "runtime_environment": {
+    "device": {
+      "capability": [
+        12,
+        0
+      ],
+      "multi_processor_count": 188,
+      "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+      "total_memory_bytes": 101976440832,
+      "type": "cuda"
+    },
+    "environment_variables": {
+      "CUBLAS_WORKSPACE_CONFIG": null,
+      "CUDA_VISIBLE_DEVICES": null,
+      "PYTHONHASHSEED": null,
+      "PYTORCH_ALLOC_CONF": null
+    },
+    "packages": {
+      "numpy": "2.2.6",
+      "pillow": "12.2.0",
+      "torch": "2.7.1+cu128",
+      "torchvision": "0.22.1+cu128",
+      "tqdm": "4.67.3"
+    },
+    "platform": {
+      "machine": "x86_64",
+      "release": "5.15.0-78-generic",
+      "system": "Linux"
+    },
+    "project_files": {
+      "pyproject.toml": {
+        "bytes": 786,
+        "path": "pyproject.toml",
+        "sha256": "8ae66e4835c49a0e842499b0f6f4d6786bdd5f3f243cbee29adf436b2673d617"
+      },
+      "uv.lock": {
+        "bytes": 363675,
+        "path": "uv.lock",
+        "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+      }
+    },
+    "python": {
+      "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+      "implementation": "CPython",
+      "version": "3.10.20"
+    },
+    "schema_version": 1,
+    "torch": {
+      "cuda_matmul_allow_tf32": false,
+      "cuda_version": "12.8",
+      "cudnn_allow_tf32": true,
+      "cudnn_benchmark": false,
+      "cudnn_version": 90701,
+      "deterministic_algorithms": false,
+      "float32_matmul_precision": "highest",
+      "num_interop_threads": 104,
+      "num_threads": 104,
+      "nvidia_driver_version": "590.44.01",
+      "version": "2.7.1+cu128"
+    }
+  },
+  "runtime_environment_sha256": "6e18ec86e76ba5a4923e2a0c2984bc15a0204df9cc0932d75775106b06380c17",
+  "sample_provenance": {
+    "checkpoint": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2/checkpoint_step_00050000.pt",
+    "checkpoint_integrity_manifest": "/root/autodl-tmp/CoFiTok/checkpoints/generation/imagenet256_10pct_rankcomplete_cofitok_k8_50k_v2/checkpoint_step_00050000.pt.integrity.json",
+    "checkpoint_sha256": "4ca727feba29a12045da5aa6bbaf5030c622cf1f9cb4348e208a35da616de239",
+    "checkpoint_step": 50000,
+    "git": {
+      "branch": "scale/generative-system",
+      "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e",
+      "tracked_dirty": false
+    },
+    "image_shape": [
+      3,
+      256,
+      256
+    ],
+    "report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/diagnostics/imagenet256_10pct_rankcomplete_v2_sampling_recovery_2026-07-24/cofitok_ema_cfg15_rescale05/sampling_report.json",
+    "runtime_environment": {
+      "device": {
+        "capability": [
+          12,
+          0
+        ],
+        "multi_processor_count": 188,
+        "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+        "total_memory_bytes": 101976440832,
+        "type": "cuda"
+      },
+      "environment_variables": {
+        "CUBLAS_WORKSPACE_CONFIG": null,
+        "CUDA_VISIBLE_DEVICES": null,
+        "PYTHONHASHSEED": null,
+        "PYTORCH_ALLOC_CONF": null
+      },
+      "packages": {
+        "numpy": "2.2.6",
+        "pillow": "12.2.0",
+        "torch": "2.7.1+cu128",
+        "torchvision": "0.22.1+cu128",
+        "tqdm": "4.67.3"
+      },
+      "platform": {
+        "machine": "x86_64",
+        "release": "5.15.0-78-generic",
+        "system": "Linux"
+      },
+      "project_files": {
+        "pyproject.toml": {
+          "bytes": 786,
+          "path": "pyproject.toml",
+          "sha256": "8ae66e4835c49a0e842499b0f6f4d6786bdd5f3f243cbee29adf436b2673d617"
+        },
+        "uv.lock": {
+          "bytes": 363675,
+          "path": "uv.lock",
+          "sha256": "9cf2443b09d7bb8c69d74fd87ded45826995d0a86769f33bcbc595d46c5471e4"
+        }
+      },
+      "python": {
+        "executable": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python3.10",
+        "implementation": "CPython",
+        "version": "3.10.20"
+      },
+      "schema_version": 1,
+      "torch": {
+        "cuda_matmul_allow_tf32": true,
+        "cuda_version": "12.8",
+        "cudnn_allow_tf32": true,
+        "cudnn_benchmark": false,
+        "cudnn_version": 90701,
+        "deterministic_algorithms": false,
+        "float32_matmul_precision": "high",
+        "num_interop_threads": 104,
+        "num_threads": 104,
+        "nvidia_driver_version": "590.44.01",
+        "version": "2.7.1+cu128"
+      }
+    },
+    "runtime_environment_sha256": "dabbf101270ec83c4e22fac4bf1c5e65c04268e68dbfb687136629c84fb6f23b",
+    "sample_set_sha256": "049b1f11fe47fff5d33703413741499d37e822f0d858ffafe01a57b560258da6",
+    "sampling": {
+      "actual_timesteps": [
+        999,
+        989,
+        979,
+        969,
+        959,
+        949,
+        938,
+        928,
+        918,
+        908,
+        898,
+        888,
+        878,
+        868,
+        858,
+        848,
+        838,
+        827,
+        817,
+        807,
+        797,
+        787,
+        777,
+        767,
+        757,
+        747,
+        737,
+        727,
+        716,
+        706,
+        696,
+        686,
+        676,
+        666,
+        656,
+        646,
+        636,
+        626,
+        616,
+        605,
+        595,
+        585,
+        575,
+        565,
+        555,
+        545,
+        535,
+        525,
+        515,
+        505,
+        494,
+        484,
+        474,
+        464,
+        454,
+        444,
+        434,
+        424,
+        414,
+        404,
+        394,
+        383,
+        373,
+        363,
+        353,
+        343,
+        333,
+        323,
+        313,
+        303,
+        293,
+        283,
+        272,
+        262,
+        252,
+        242,
+        232,
+        222,
+        212,
+        202,
+        192,
+        182,
+        172,
+        161,
+        151,
+        141,
+        131,
+        121,
+        111,
+        101,
+        91,
+        81,
+        71,
+        61,
+        50,
+        40,
+        30,
+        20,
+        10,
+        0
+      ],
+      "batch_size": 64,
+      "cfg_batch_mode": "batched",
+      "class_schedule": "balanced_modulo",
+      "clip_x0": true,
+      "eta": 0.0,
+      "guidance_rescale": 0.5,
+      "guidance_scale": 1.5,
+      "image_shape": [
+        3,
+        256,
+        256
+      ],
+      "inference_api": {
+        "name": "cofitok.generation.GenerationSession",
+        "version": 1
+      },
+      "num_samples": 128,
+      "num_train_timesteps": 1000,
+      "precision": "bf16",
+      "prefix_budgets": [
+        8
+      ],
+      "protocol_schema": "cofitok_ddim_sampling_v1",
+      "random_stream": {
+        "batch_size_invariant": true,
+        "prefix_budgets_share_stream": true,
+        "resume_index_invariant": true,
+        "scope": "per_global_sample_index",
+        "seed_formula": "(seed + global_index) mod 2^63"
+      },
+      "sample_set_digest": {
+        "algorithm": "sha256",
+        "framing": "filename_utf8_nul_file_bytes_nul"
+      },
+      "sample_steps": 100,
+      "sampler": "ddim",
+      "seed": 0,
+      "start_index": 0
+    },
+    "sampling_progress": {
+      "completed_samples": 128,
+      "cumulative_elapsed_seconds": 271.6098527908325,
+      "invocation": 1,
+      "report": "/root/autodl-tmp/CoFiTok/checkpoints/generation/diagnostics/imagenet256_10pct_rankcomplete_v2_sampling_recovery_2026-07-24/cofitok_ema_cfg15_rescale05/sampling_progress.json",
+      "status": "completed"
+    },
+    "sampling_protocol_contract": {
+      "actual": {
+        "actual_timesteps": [
+          999,
+          989,
+          979,
+          969,
+          959,
+          949,
+          938,
+          928,
+          918,
+          908,
+          898,
+          888,
+          878,
+          868,
+          858,
+          848,
+          838,
+          827,
+          817,
+          807,
+          797,
+          787,
+          777,
+          767,
+          757,
+          747,
+          737,
+          727,
+          716,
+          706,
+          696,
+          686,
+          676,
+          666,
+          656,
+          646,
+          636,
+          626,
+          616,
+          605,
+          595,
+          585,
+          575,
+          565,
+          555,
+          545,
+          535,
+          525,
+          515,
+          505,
+          494,
+          484,
+          474,
+          464,
+          454,
+          444,
+          434,
+          424,
+          414,
+          404,
+          394,
+          383,
+          373,
+          363,
+          353,
+          343,
+          333,
+          323,
+          313,
+          303,
+          293,
+          283,
+          272,
+          262,
+          252,
+          242,
+          232,
+          222,
+          212,
+          202,
+          192,
+          182,
+          172,
+          161,
+          151,
+          141,
+          131,
+          121,
+          111,
+          101,
+          91,
+          81,
+          71,
+          61,
+          50,
+          40,
+          30,
+          20,
+          10,
+          0
+        ],
+        "cfg_batch_mode": "batched",
+        "class_schedule": "balanced_modulo",
+        "clip_x0": true,
+        "eta": 0.0,
+        "guidance_rescale": 0.5,
+        "guidance_scale": 1.5,
+        "inference_api": {
+          "name": "cofitok.generation.GenerationSession",
+          "version": 1
+        },
+        "num_samples": 128,
+        "num_train_timesteps": 1000,
+        "precision": "bf16",
+        "protocol_schema": "cofitok_ddim_sampling_v1",
+        "random_stream": {
+          "batch_size_invariant": true,
+          "prefix_budgets_share_stream": true,
+          "resume_index_invariant": true,
+          "scope": "per_global_sample_index",
+          "seed_formula": "(seed + global_index) mod 2^63"
+        },
+        "sample_steps": 100,
+        "sampler": "ddim",
+        "seed": 0,
+        "start_index": 0
+      },
+      "expected": {
+        "inference_api": {
+          "name": "cofitok.generation.GenerationSession",
+          "version": 1
+        },
+        "protocol_schema": "cofitok_ddim_sampling_v1",
+        "sampler": "ddim"
+      },
+      "issues": [],
+      "stage": null,
+      "valid": true
+    },
+    "selected_prefix_budget": 8,
+    "weights": "ema"
+  },
+  "schema_version": 2,
+  "status": "completed"
+}

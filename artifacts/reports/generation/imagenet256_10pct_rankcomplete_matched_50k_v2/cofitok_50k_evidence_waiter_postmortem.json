@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "status": "false_negative",
+  "role": "non_authoritative_observer_postmortem",
+  "recorded_at": "2026-07-24T21:40:30.2983603+08:00",
+  "git": {
+    "branch": "scale/generative-system",
+    "revision": "a8f43f4b8695ce1ac92ca9bd774309c62947396e"
+  },
+  "observer": {
+    "script": "cofitok_50k_completion_evidence_waiter.sh",
+    "script_bytes": 6726,
+    "script_sha256": "f8388ddac37529ffbf13540bd2ed4cd62a4d950597824280eca737e3c89e7292",
+    "log": "cofitok_50k_evidence_waiter.log",
+    "log_bytes": 194,
+    "log_sha256": "bf70b09afa9f49d75191fe94f202e98503e3561b3b1347f1f6a88aceedd85ff9",
+    "failed_condition": "audit.status == healthy",
+    "failed_at_script_line": 66,
+    "observed_terminal_status": "complete"
+  },
+  "root_cause": {
+    "summary": "The temporary waiter accepted only the in-progress audit status healthy. The authoritative auditor correctly changes its status to complete at the exact terminal step, so the waiter rejected a valid completed run before copying its remaining small evidence files.",
+    "training_or_checkpoint_failure": false,
+    "formal_pipeline_decision_affected": false
+  },
+  "authoritative_completion_evidence": {
+    "progress_audit": {
+      "file": "cofitok_progress_step_00050000.json",
+      "bytes": 3123,
+      "sha256": "f2ef82bde9b85c5644ec3a00d364aa20e09ce7f1940075a32484cf3c17949dfe",
+      "status": "complete",
+      "last_step": 50000,
+      "validation_event_count": 50,
+      "expected_validation_event_count": 50,
+      "issues": [],
+      "warnings": [],
+      "latest_checkpoint_integrity": "verified"
+    },
+    "training_report": {
+      "file": "cofitok_training_report_step_00050000.json",
+      "bytes": 8851,
+      "sha256": "34674324e612b0c1637af0f85d69168e11fcdfd8004a65c9a27e5b6994db482d",
+      "training_complete": true,
+      "completed_steps": 50000
+    },
+    "checkpoint_binding": {
+      "latest_file": "cofitok_latest_step_00050000.json",
+      "latest_bytes": 643,
+      "latest_sha256": "537b77e8deac14ddf3f2495e71b7e6f31b38bf755d581e29a0f692df24ac3e2a",
+      "integrity_file": "cofitok_checkpoint_step_00050000.pt.integrity.json",
+      "integrity_bytes": 573,
+      "integrity_sha256": "3ad688d86476acf6e4265b0983e4e9fd9c442efd67b689a279961213e4a94aa5",
+      "checkpoint_bytes": 1006396450,
+      "checkpoint_sha256": "4ca727feba29a12045da5aa6bbaf5030c622cf1f9cb4348e208a35da616de239"
+    },
+    "prepromotion_audit": {
+      "file": "cofitok_prepromotion_training_audit.json",
+      "bytes": 3106,
+      "sha256": "5c5726b84608318272daee25028ebb8cde913ca327013da22c468e345a84afa2",
+      "status": "complete",
+      "issues": [],
+      "warnings": [],
+      "latest_checkpoint_integrity": "verified"
+    },
+    "checkpoint_load_evaluation": {
+      "file": "cofitok_checkpoint_eval_ema_t500_1024.json",
+      "bytes": 29261,
+      "sha256": "ade59f6abc15a8253f3b4e3c990e22225c4eeaf66b2a9564ee959648de1655fc",
+      "weights": "ema",
+      "evaluated_images": 1024
+    }
+  },
+  "claim_boundary": "This postmortem proves that the waiter result was a false negative and that CoFiTok training/checkpoint completion has independent authoritative evidence. It does not change the failed scaling promotion decision."
+}

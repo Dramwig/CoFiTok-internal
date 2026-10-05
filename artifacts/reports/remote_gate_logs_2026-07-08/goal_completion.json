@@ -1,0 +1,3724 @@
+{
+  "failed_gate_count": 0,
+  "gate_count": 7,
+  "gates": [
+    {
+      "evidence": {
+        "csv_counts": {
+          "generated_quality": 19,
+          "order_eval": 95,
+          "quality": 58,
+          "sampling": 22,
+          "train": 109
+        },
+        "doc_counts": {
+          "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/records/2026-07-08_completion_audit.md": {
+            "generated_quality": 19,
+            "order_eval": 95,
+            "quality": 58,
+            "sampling": 22,
+            "train": 109
+          },
+          "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/reports/cofitok_mvp_report_2026-07-08.md": {
+            "generated_quality": 19,
+            "order_eval": 95,
+            "quality": 58,
+            "sampling": 22,
+            "train": 109
+          }
+        },
+        "json_counts": {
+          "generated_quality": 19,
+          "order_eval": 95,
+          "quality": 58,
+          "sampling": 22,
+          "train": 109
+        },
+        "required_report_dirs": [],
+        "status": "ok",
+        "summary": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/summary_2026-07-08/experiment_summary.json"
+      },
+      "missing": [],
+      "name": "summary_consistency",
+      "status": "ok"
+    },
+    {
+      "evidence": {
+        "check_count": 6,
+        "checks": [
+          {
+            "evidence": "train datasets include ['cifar10', 'imagenet_1k_64x64_hf', 'tiny_imagenet_200']",
+            "name": "dataset_coverage",
+            "status": "ok"
+          },
+          {
+            "evidence": "Tiny/ImageNet 20k epsilon vs K8 light rows exist and support prefix tradeoff",
+            "name": "main_20k_tradeoff",
+            "status": "ok"
+          },
+          {
+            "evidence": "K4/K8/K16 ordered/random/reverse order evals exist for seeds 103 and 139",
+            "name": "order_scaling",
+            "status": "ok"
+          },
+          {
+            "evidence": "Deep S_k and simultaneous ablations have seed repeats and diagnostics",
+            "name": "deep_and_simultaneous",
+            "status": "ok"
+          },
+          {
+            "evidence": "Seed-103 ImageNet quality slice covers endpoint and prefix metrics",
+            "name": "quality_seed_slice",
+            "status": "ok"
+          },
+          {
+            "evidence": "Sampling smoke and 1024-sample generated quality rows exist",
+            "name": "sampling_and_generated_quality",
+            "status": "ok"
+          }
+        ],
+        "status": "ok",
+        "summary": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/summary_2026-07-08/experiment_summary.json"
+      },
+      "missing": [],
+      "name": "mvp_evidence",
+      "status": "ok"
+    },
+    {
+      "evidence": {
+        "check_count": 11,
+        "checks": [
+          {
+            "evidence": {
+              "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/cofitok.py",
+              "present_count": 7,
+              "required_snippet_count": 7
+            },
+            "group": "method",
+            "missing": [],
+            "name": "dense_noise_factorization_code",
+            "next_action": "Keep as invariant.",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "forbidden_present": [],
+              "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "present_count": 6,
+              "required_snippet_count": 6
+            },
+            "group": "method",
+            "missing": [],
+            "name": "restricted_synthesis_operator_code",
+            "next_action": "Keep as invariant.",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "diagnostics": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/diagnostics.py",
+              "losses": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/training/losses.py",
+              "present_count": 9,
+              "required_snippet_count": 9
+            },
+            "group": "method",
+            "missing": [],
+            "name": "losses_and_diagnostics_code",
+            "next_action": "Keep as invariant.",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "required_datasets": [
+                "cifar10",
+                "imagenet_1k_64x64_hf",
+                "tiny_imagenet_200"
+              ],
+              "train_datasets": [
+                "cifar10",
+                "imagenet_1k_64x64_hf",
+                "tiny_imagenet_200"
+              ]
+            },
+            "group": "evidence",
+            "missing": [],
+            "name": "multi_dataset_coverage",
+            "next_action": "Keep as invariant.",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "imagenet_1k_64x64_hf": {
+                "matching_rows": 3
+              },
+              "tiny_imagenet_200": {
+                "matching_rows": 3
+              }
+            },
+            "group": "evidence",
+            "missing": [],
+            "name": "prefix_denoising_evidence",
+            "next_action": "Keep as invariant.",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "cifar10": {
+                "rows": 10,
+                "shuffle_ok": true,
+                "zero_ok": true
+              },
+              "imagenet_1k_64x64_hf": {
+                "rows": 20,
+                "shuffle_ok": true,
+                "zero_ok": true
+              },
+              "tiny_imagenet_200": {
+                "rows": 16,
+                "shuffle_ok": true,
+                "zero_ok": true
+              }
+            },
+            "group": "evidence",
+            "missing": [],
+            "name": "zero_random_shuffle_diagnostics",
+            "next_action": "Keep as invariant.",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "imagenet_1k_64x64_hf/K16/seed103": {
+                "order_ok": true,
+                "path_auc": {
+                  "ordered": 0.07005246113985777,
+                  "random": 0.529435259103775,
+                  "reverse": 0.7031745508313179
+                }
+              },
+              "imagenet_1k_64x64_hf/K16/seed139": {
+                "order_ok": true,
+                "path_auc": {
+                  "ordered": 0.06800160259008407,
+                  "random": 0.4679565533995628,
+                  "reverse": 0.7019642959038417
+                }
+              },
+              "imagenet_1k_64x64_hf/K4/seed103": {
+                "order_ok": true,
+                "path_auc": {
+                  "ordered": 0.057458663980166115,
+                  "random": 0.06519172340631485,
+                  "reverse": 0.697486070295175
+                }
+              },
+              "imagenet_1k_64x64_hf/K4/seed139": {
+                "order_ok": true,
+                "path_auc": {
+                  "ordered": 0.06738702083627383,
+                  "random": 0.07266763225197792,
+                  "reverse": 0.7515646057824293
+                }
+              },
+              "imagenet_1k_64x64_hf/K8/seed103": {
+                "order_ok": true,
+                "path_auc": {
+                  "ordered": 0.06466275959142617,
+                  "random": 0.2605389409831592,
+                  "reverse": 0.7406402805021831
+                }
+              },
+              "imagenet_1k_64x64_hf/K8/seed139": {
+                "order_ok": true,
+                "path_auc": {
+                  "ordered": 0.06346555346889156,
+                  "random": 0.2440529034606048,
+                  "reverse": 0.6947122269443103
+                }
+              }
+            },
+            "group": "evidence",
+            "missing": [],
+            "name": "order_ablation_and_token_scaling",
+            "next_action": "Keep as invariant.",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "seed103": {
+                "deep_ok": true,
+                "simultaneous_order_ok": true
+              },
+              "seed139": {
+                "deep_ok": true,
+                "simultaneous_order_ok": true
+              }
+            },
+            "group": "evidence",
+            "missing": [],
+            "name": "degeneration_and_predictor_ablations",
+            "next_action": "Keep as invariant.",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "generated_ok": true,
+              "generated_quality_rows": 19,
+              "quality_ok": true,
+              "quality_rows": 58,
+              "sampling_ok": true,
+              "sampling_rows": 22
+            },
+            "group": "evidence",
+            "missing": [],
+            "name": "quality_and_sampling_evidence",
+            "next_action": "Keep as invariant.",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "generated_quality_count": 6,
+              "order_eval_count": 24,
+              "quality_count": 10,
+              "real_count": 8192,
+              "run_count": 10,
+              "sample_count": 2048,
+              "sample_steps": 50,
+              "sampling_count": 6
+            },
+            "group": "publication",
+            "missing": [],
+            "name": "queued_publication_scale_batch",
+            "next_action": "Run the queued batch on pro6000, then regenerate summaries and rerun publication readiness.",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "main_20k_seed_counts": {
+                "imagenet_1k_64x64_hf/epsilon_only": 2,
+                "imagenet_1k_64x64_hf/light_denoise_path": 3,
+                "tiny_imagenet_200/epsilon_only": 2,
+                "tiny_imagenet_200/light_denoise_path": 3
+              },
+              "max_generated_samples": 2048,
+              "max_quality_images": 50000,
+              "max_real_images": 8192
+            },
+            "group": "publication",
+            "missing": [],
+            "name": "publication_readiness",
+            "next_action": "Keep as invariant.",
+            "status": "ok"
+          }
+        ],
+        "missing_count": 0,
+        "ok_count": 11,
+        "pending_count": 0,
+        "project_root": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+        "queue_manifest": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/runbooks/next_validation_queue_2026-07-08.sh.manifest.json",
+        "status": "ready",
+        "summary": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/summary_2026-07-08/experiment_summary.json"
+      },
+      "missing": [],
+      "name": "idea_requirements",
+      "status": "ready"
+    },
+    {
+      "evidence": {
+        "check_count": 7,
+        "checks": [
+          {
+            "evidence": {
+              "imagenet_1k_64x64_hf/epsilon_only": {
+                "seed_count": 2,
+                "seeds": [
+                  103,
+                  139
+                ]
+              },
+              "imagenet_1k_64x64_hf/light_denoise_path": {
+                "seed_count": 2,
+                "seeds": [
+                  103,
+                  139
+                ]
+              },
+              "tiny_imagenet_200/epsilon_only": {
+                "seed_count": 2,
+                "seeds": [
+                  103,
+                  139
+                ]
+              },
+              "tiny_imagenet_200/light_denoise_path": {
+                "seed_count": 2,
+                "seeds": [
+                  103,
+                  139
+                ]
+              }
+            },
+            "missing": [],
+            "name": "main_train_seed_coverage",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "imagenet_1k_64x64_hf/epsilon_only": {
+                "matching_rows": 1,
+                "max_image_count": 50000
+              },
+              "imagenet_1k_64x64_hf/light_denoise_path": {
+                "matching_rows": 1,
+                "max_image_count": 50000
+              },
+              "tiny_imagenet_200/epsilon_only": {
+                "matching_rows": 1,
+                "max_image_count": 10000
+              },
+              "tiny_imagenet_200/light_denoise_path": {
+                "matching_rows": 1,
+                "max_image_count": 10000
+              }
+            },
+            "missing": [],
+            "name": "quality_scale",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "imagenet_1k_64x64_hf": {
+                "complete_seed": 103,
+                "path_auc": {
+                  "ordered": 0.03654025348701647,
+                  "random": 0.1845878820334162,
+                  "reverse": 0.6514063371079308
+                }
+              },
+              "tiny_imagenet_200": {
+                "complete_seed": 103,
+                "path_auc": {
+                  "ordered": 0.03982743075383561,
+                  "random": 0.1884874701499939,
+                  "reverse": 0.6895469512258258
+                }
+              }
+            },
+            "missing": [],
+            "name": "main_20k_order_diagnostics",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "imagenet_1k_64x64_hf/epsilon_only": {
+                "matching_rows": 1,
+                "max_num_samples": 2048,
+                "max_sample_steps": 50
+              },
+              "imagenet_1k_64x64_hf/light_denoise_path": {
+                "matching_rows": 1,
+                "max_num_samples": 2048,
+                "max_sample_steps": 50
+              },
+              "tiny_imagenet_200/epsilon_only": {
+                "matching_rows": 1,
+                "max_num_samples": 2048,
+                "max_sample_steps": 50
+              },
+              "tiny_imagenet_200/light_denoise_path": {
+                "matching_rows": 1,
+                "max_num_samples": 2048,
+                "max_sample_steps": 50
+              }
+            },
+            "missing": [],
+            "name": "sampling_scale",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "imagenet_1k_64x64_hf/epsilon_only": {
+                "matching_rows": 1,
+                "max_real_image_count": 8192,
+                "max_sample_image_count": 2048
+              },
+              "imagenet_1k_64x64_hf/light_denoise_path": {
+                "matching_rows": 1,
+                "max_real_image_count": 8192,
+                "max_sample_image_count": 2048
+              },
+              "tiny_imagenet_200/epsilon_only": {
+                "matching_rows": 1,
+                "max_real_image_count": 8192,
+                "max_sample_image_count": 2048
+              },
+              "tiny_imagenet_200/light_denoise_path": {
+                "matching_rows": 1,
+                "max_real_image_count": 8192,
+                "max_sample_image_count": 2048
+              }
+            },
+            "missing": [],
+            "name": "generated_quality_scale",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "imagenet_1k_64x64_hf": {
+                "generated_quality_rows": 1,
+                "quality_rows": 1,
+                "sampling_rows": 1,
+                "train_rows": 2
+              },
+              "tiny_imagenet_200": {
+                "generated_quality_rows": 1,
+                "quality_rows": 1,
+                "sampling_rows": 1,
+                "train_rows": 2
+              }
+            },
+            "missing": [],
+            "name": "multiscale_pilots",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "imagenet_1k_64x64_hf/clean_monotonic_ablation": {
+                "orders": [
+                  "ordered",
+                  "random",
+                  "reverse"
+                ],
+                "quality_rows": 1,
+                "train_rows": 1
+              },
+              "imagenet_1k_64x64_hf/no_monotonic_reference": {
+                "train_rows": 2
+              },
+              "imagenet_1k_64x64_hf/no_prefix_loss_ablation": {
+                "orders": [
+                  "ordered",
+                  "random",
+                  "reverse"
+                ],
+                "quality_rows": 1,
+                "train_rows": 1
+              },
+              "tiny_imagenet_200/clean_monotonic_ablation": {
+                "orders": [
+                  "ordered",
+                  "random",
+                  "reverse"
+                ],
+                "quality_rows": 1,
+                "train_rows": 1
+              },
+              "tiny_imagenet_200/no_monotonic_reference": {
+                "train_rows": 2
+              },
+              "tiny_imagenet_200/no_prefix_loss_ablation": {
+                "orders": [
+                  "ordered",
+                  "random",
+                  "reverse"
+                ],
+                "quality_rows": 1,
+                "train_rows": 1
+              }
+            },
+            "missing": [],
+            "name": "loss_ablation_pilots",
+            "status": "ok"
+          }
+        ],
+        "criteria": {
+          "main_steps": 20000,
+          "min_generated_samples": 2048,
+          "min_main_train_seeds": 2,
+          "min_quality_images": 1024,
+          "min_real_images": 8192,
+          "min_sample_steps": 50,
+          "multiscale_steps": 10000,
+          "token_count": 8
+        },
+        "missing_count": 0,
+        "ready_count": 7,
+        "status": "ready",
+        "summary": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/artifacts/reports/summary_2026-07-08/experiment_summary.json"
+      },
+      "missing": [],
+      "name": "publication_readiness",
+      "status": "ready"
+    },
+    {
+      "evidence": {
+        "check_count": 3,
+        "checks": [
+          {
+            "evidence": {
+              "datasets": {
+                "cifar10": {
+                  "present_count": 12,
+                  "required_snippet_count": 12
+                },
+                "tiny_imagenet_200": {
+                  "present_count": 13,
+                  "required_snippet_count": 13
+                }
+              },
+              "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/datasets_2026-07-07.md"
+            },
+            "missing": [],
+            "name": "cifar_tiny_records",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "manifest": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/imagenet_1k_64x64_hf_manifest_summary_2026-07-08.json",
+              "manifest_dataset_alias": "imagenet_1k_64x64_hf",
+              "manifest_source_loader": "benjamin-paine/imagenet-1k-64x64",
+              "plan": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/imagenet_1k_64x64_hf_plan_2026-07-08.md",
+              "split_rows": {
+                "train": 1281167,
+                "validation": 50000
+              }
+            },
+            "missing": [],
+            "name": "imagenet_hf_records",
+            "status": "ok"
+          },
+          {
+            "evidence": {
+              "fallback": "imagenet_1k_64x64_hf",
+              "inspect": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/downsampled_imagenet_64_tfds_inspect_2026-07-08.json",
+              "inspect_dataset_alias": "downsampled_imagenet_64",
+              "inspect_source_loader": "downsampled_imagenet",
+              "plan": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/downsampled_imagenet_64_plan_2026-07-08.md",
+              "tfds_version": "4.9.10"
+            },
+            "missing": [],
+            "name": "downsampled_fallback_record",
+            "status": "ok"
+          }
+        ],
+        "conditions_dir": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions",
+        "missing_count": 0,
+        "ok_count": 3,
+        "status": "ok"
+      },
+      "missing": [],
+      "name": "dataset_conditions",
+      "status": "ok"
+    },
+    {
+      "evidence": {
+        "ablation_count": 2,
+        "checked_count": 117,
+        "restricted_ok_count": 115,
+        "results": [
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/smoke_cifar10_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "smoke_cifar10_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/smoke_downsampled_imagenet64_cuda.json",
+            "dataset": "downsampled_imagenet_64",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "smoke_downsampled_imagenet64_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/smoke_imagenet_1k_64x64_hf_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "smoke_imagenet_1k_64x64_hf_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/smoke_random_cpu.json",
+            "dataset": "random",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "smoke_random_cpu",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/smoke_random_cuda.json",
+            "dataset": "random",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "smoke_random_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/smoke_tiny_imagenet_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "smoke_tiny_imagenet_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k4_1k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k4_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k4_channelmask_1k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                8,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k4_channelmask_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k4_channelmask_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                8,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k4_channelmask_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k4_channelmask_soft_1k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                8,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k4_channelmask_soft_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k4_channelmask_soft_energy_1k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                8,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k4_channelmask_soft_energy_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k4_energy_1k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k4_energy_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k4_multiscale_1k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": [
+                4,
+                2,
+                1,
+                1
+              ]
+            },
+            "name": "train_cifar10_k4_multiscale_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k4_multiscale_soft_1k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": [
+                2,
+                1,
+                1,
+                1
+              ]
+            },
+            "name": "train_cifar10_k4_multiscale_soft_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k4_prefixsample_1k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k4_prefixsample_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k4_residual_1k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k4_residual_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k4_smoke_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k4_smoke_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k4_tailfloor_1k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k4_tailfloor_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_channelmask_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_channelmask_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_channelmask_p150eval_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_channelmask_p150eval_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_channelmask_p150eval_3k_seed2_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_channelmask_p150eval_3k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_denoisepath_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_denoisepath_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_denoisepath_3k_seed2_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_denoisepath_3k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_denoisepath_p150_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_denoisepath_p150_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_denoisepath_p150_3k_seed2_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_denoisepath_p150_3k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_denoisepath_p150_light_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_denoisepath_p150_light_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_denoisepath_p150_light_3k_seed2_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_denoisepath_p150_light_3k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_denoisepath_p150_light_decor_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_denoisepath_p150_light_decor_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_denoisepath_p150_light_decorw0005_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_denoisepath_p150_light_decorw0005_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_denoisepath_p150_light_decorw0005_sched1500w1000_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_denoisepath_p150_light_decorw0005_sched1500w1000_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_denoisepath_p150_light_decorw001_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_denoisepath_p150_light_decorw001_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_epsilonband_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_epsilonband_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_epsilonband_hybrid_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_epsilonband_hybrid_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_epsilononly_p150eval_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_epsilononly_p150eval_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_epsilononly_p150eval_3k_seed2_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_epsilononly_p150eval_3k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_groupres_3k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_groupres_3k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_tailstage_2k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_tailstage_2k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_tailstage_anneal_guard_1200_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_tailstage_anneal_guard_1200_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_tailstage_earlydrop_guard_2k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_tailstage_earlydrop_guard_2k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_tailstage_guard_2k_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_tailstage_guard_2k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_tailstage_replay_endpoint_1200_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_tailstage_replay_endpoint_1200_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_tailstage_replay_guard_1200_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_tailstage_replay_guard_1200_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_tailstage_replay_guard_strong_1200_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_tailstage_replay_guard_strong_1200_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_tailstage_replay_lateprefix_1200_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_tailstage_replay_lateprefix_1200_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_cifar10_k8_tailstage_warm_800_cuda.json",
+            "dataset": "cifar10",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_cifar10_k8_tailstage_warm_800_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_downsampled_imagenet64_k8_channelmask_p150eval_5k_cuda.json",
+            "dataset": "downsampled_imagenet_64",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_downsampled_imagenet64_k8_channelmask_p150eval_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_downsampled_imagenet64_k8_denoisepath_p150_light_5k_cuda.json",
+            "dataset": "downsampled_imagenet_64",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_downsampled_imagenet64_k8_denoisepath_p150_light_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_downsampled_imagenet64_k8_epsilononly_p150eval_5k_cuda.json",
+            "dataset": "downsampled_imagenet_64",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_downsampled_imagenet64_k8_epsilononly_p150eval_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k16_denoisepath_p150_light_5k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                2,
+                2,
+                4,
+                4,
+                6,
+                6,
+                8,
+                8,
+                10,
+                10,
+                12,
+                12,
+                14,
+                14,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 16,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k16_denoisepath_p150_light_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k16_denoisepath_p150_light_5k_seed2_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                2,
+                2,
+                4,
+                4,
+                6,
+                6,
+                8,
+                8,
+                10,
+                10,
+                12,
+                12,
+                14,
+                14,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 16,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k16_denoisepath_p150_light_5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k4_denoisepath_p150_light_5k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                8,
+                12,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k4_denoisepath_p150_light_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k4_denoisepath_p150_light_5k_seed2_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                8,
+                12,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 4,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k4_denoisepath_p150_light_5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_channelmask_p150eval_5k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_channelmask_p150eval_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_5k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_deepsk_5k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "reason": "non-restricted synthesis mode is an explicit ablation, not a valid default S_k"
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_deepsk_5k_cuda",
+            "status": "ablation",
+            "synthesis_mode": "deep_decoder"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_deepsk_5k_seed2_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "reason": "non-restricted synthesis mode is an explicit ablation, not a valid default S_k"
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_deepsk_5k_seed2_cuda",
+            "status": "ablation",
+            "synthesis_mode": "deep_decoder"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_20k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_20k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_simultaneous_5k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_simultaneous_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_simultaneous_5k_seed2_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_simultaneous_5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_5k_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_5k_seed2_cuda.json",
+            "dataset": "imagenet_1k_64x64_hf",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_channelmask_2k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_channelmask_2k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_channelmask_2k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_channelmask_2k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_channelmask_3500_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_channelmask_3500_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_channelmask_3500_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_channelmask_3500_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_channelmask_5k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_channelmask_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_channelmask_5k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_channelmask_5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_channelmask_6500_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_channelmask_6500_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_channelmask_p150eval_5k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_channelmask_p150eval_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_channelmask_p150eval_5k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_channelmask_p150eval_5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_channelmask_smoke_800_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_channelmask_smoke_800_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_2k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_2k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_2k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_2k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p075_2k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p075_2k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_2k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_2k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_2k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_2k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_5k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_5k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_light_5k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_light_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_light_5k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_light_5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_light_decorw0003_sched3000w1500_5k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_light_decorw0003_sched3000w1500_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_light_decorw0003_sched3000w1500_5k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_light_decorw0003_sched3000w1500_5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_light_decorw0005_5k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_light_decorw0005_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_light_decorw0005_sched2500w1500_5k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_light_decorw0005_sched2500w1500_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_20k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_20k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_epsilonband_2k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_epsilonband_2k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_epsilononly_p150eval_5k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_epsilononly_p150eval_5k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_epsilononly_p150eval_5k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_epsilononly_p150eval_5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_alt_endpoint_200_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_alt_endpoint_200_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_alt_tail_200_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_alt_tail_200_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_endpoint_1k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_endpoint_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_endpoint_500_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_endpoint_500_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_endpoint_latemono_1k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_endpoint_latemono_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_endpoint_latemono_soft_1k_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_endpoint_latemono_soft_1k_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_endpoint_latemono_soft_1k_from5k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_endpoint_latemono_soft_1k_from5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_endpoint_latemono_soft_1k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_endpoint_latemono_soft_1k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_endpoint_latemono_soft_e006_1k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_endpoint_latemono_soft_e006_1k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_warm_300_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_warm_300_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_warm_500_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_warm_500_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_warm_500_from5k_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_warm_500_from5k_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          },
+          {
+            "config": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/configs/train_tiny_imagenet_k8_tailstage_warm_500_seed2_cuda.json",
+            "dataset": "tiny_imagenet_200",
+            "evidence": {
+              "active_token_channels": [
+                4,
+                4,
+                8,
+                8,
+                12,
+                12,
+                16,
+                16
+              ],
+              "forbidden_source_module_count": 0,
+              "kernel_size": 3,
+              "mode": "static",
+              "required_snippet_count": 5,
+              "source": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/src/cofitok/models/synthesis.py",
+              "token_channels": 16,
+              "token_count": 8,
+              "token_strides": []
+            },
+            "name": "train_tiny_imagenet_k8_tailstage_warm_500_seed2_cuda",
+            "status": "ok",
+            "synthesis_mode": "restricted"
+          }
+        ],
+        "status": "ok",
+        "validation_mode": "static"
+      },
+      "missing": [],
+      "name": "synthesis_contract_static",
+      "status": "ok"
+    },
+    {
+      "evidence": {
+        "forbidden_claims_present": [],
+        "paper/README.md": {
+          "bytes": 1639,
+          "exists": true
+        },
+        "paper/citation_claim_audit.md": {
+          "bytes": 3700,
+          "exists": true
+        },
+        "paper/draft.md": {
+          "bytes": 19653,
+          "exists": true
+        },
+        "paper/figures_and_tables.md": {
+          "bytes": 5952,
+          "exists": true
+        },
+        "paper/full_pdf_claim_audit.md": {
+          "bytes": 5259,
+          "exists": true
+        },
+        "paper/full_pdf_claim_audit_sources.json": {
+          "bytes": 3434,
+          "exists": true
+        },
+        "paper/latex/Makefile": {
+          "bytes": 133,
+          "exists": true
+        },
+        "paper/latex/README.md": {
+          "bytes": 606,
+          "exists": true
+        },
+        "paper/latex/main.pdf": {
+          "bytes": 5116220,
+          "exists": true
+        },
+        "paper/latex/main.tex": {
+          "bytes": 23943,
+          "exists": true
+        },
+        "paper/references.bib": {
+          "bytes": 3468,
+          "exists": true
+        }
+      },
+      "missing": [],
+      "name": "paper_artifacts",
+      "status": "ok"
+    }
+  ],
+  "internal_root": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+  "objective": "Implement CoFiTok denoising-token diffusion and validate effectiveness on multiple common datasets.",
+  "open_gap_count": 3,
+  "project_root": "/root/autodl-tmp/CoFiTok",
+  "scoped_claim_ready": true,
+  "status": "scoped_ready_with_open_gaps",
+  "strict_completion_ready": false,
+  "strict_gaps": [
+    {
+      "evidence": {
+        "max_generated_samples": 2048,
+        "max_real_images": 8192
+      },
+      "name": "official_generation_quality_protocol",
+      "next_action": "Only if generation quality becomes central, run larger DDIM sampling and formal FID/LPIPS protocol.",
+      "reason": "Generated-sample evidence reaches the current 2048/8192 smoke protocol, but this is not a full official FID or large-sample generation-quality claim.",
+      "status": "open"
+    },
+    {
+      "evidence": {
+        "fallback": "imagenet_1k_64x64_hf"
+      },
+      "name": "exact_downsampled_imagenet64_source",
+      "next_action": "Keep fallback naming or retry the exact source later if the target venue demands canonical ImageNet-64.",
+      "reason": "The exact TFDS downsampled_imagenet/64x64 source failed; current ImageNet-family evidence uses an explicit HF fallback.",
+      "status": "open"
+    },
+    {
+      "evidence": {
+        "full_pdf_claim_audit": true,
+        "venue_neutral_latex": true
+      },
+      "name": "venue_template_and_submission_format",
+      "next_action": "Choose target venue/template and port the current LaTeX draft into that format.",
+      "reason": "A venue-neutral LaTeX draft and full-PDF related-work claim audit exist, but no target venue template/proceedings-metadata pass/camera-ready layout is finished.",
+      "status": "open"
+    }
+  ],
+  "summary_counts": {
+    "generated_quality": 19,
+    "order_eval": 95,
+    "quality": 58,
+    "sampling": 22,
+    "train": 109
+  }
+}

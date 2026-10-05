@@ -1,0 +1,58 @@
+{
+  "cofitok": {
+    "name": "imagenet256_10pct_cofitok_k8_generation_50k",
+    "parameter_count": 62950800,
+    "synthesis_mode": "restricted",
+    "token_count": 8
+  },
+  "dense": {
+    "name": "imagenet256_10pct_dense_generation_50k",
+    "parameter_count": 62824707,
+    "synthesis_mode": "dense_identity",
+    "token_count": 1
+  },
+  "matched_backbone": {
+    "base_channels": 128,
+    "class_dropout_prob": 0.1,
+    "image_channels": 3,
+    "image_size": 256,
+    "num_classes": 1000,
+    "predictor_attention_resolutions": [
+      32,
+      16
+    ],
+    "predictor_channel_multipliers": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "predictor_dropout": 0.0,
+    "predictor_gradient_checkpointing": true,
+    "predictor_num_heads": 8,
+    "predictor_num_res_blocks": 2,
+    "predictor_type": "scalable_unet"
+  },
+  "matched_data": {
+    "batch_size": 16,
+    "channels": 3,
+    "class_conditional": true,
+    "dataset": "imagenet_256_10pct",
+    "image_size": 256,
+    "num_workers": 8,
+    "persistent_workers": true,
+    "prefetch_factor": 2,
+    "root": "/root/autodl-tmp/CoFiTok/datasets"
+  },
+  "matched_diffusion": {
+    "beta_end": 0.02,
+    "beta_start": 0.0001,
+    "num_train_timesteps": 1000,
+    "prediction_target": "epsilon",
+    "schedule_type": "cosine"
+  },
+  "max_parameter_gap": 0.02,
+  "mismatches": [],
+  "relative_parameter_gap": 0.0020070606934943606,
+  "status": "pass"
+}
