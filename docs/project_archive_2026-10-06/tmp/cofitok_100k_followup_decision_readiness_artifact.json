@@ -1,0 +1,188 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "CoFiTok 100K 质量桥接后续决策就绪报告",
+    "description": "100K bridge 排队状态、后续实验决策策略、Linux 验证与非授权边界的技术报告。",
+    "generatedAt": "2026-08-14T05:14:48+08:00",
+    "sources": [
+      {
+        "id": "deployment_receipt",
+        "label": "后续决策层 Linux rehearsal 与部署回执",
+        "path": "C:/qbfd1/artifacts/reports/generation/stability_full_data_quality_bridge_followup_decision_2026-08-14/rehearsal_and_deployment_receipt.json",
+        "query": {
+          "language": "json",
+          "description": "读取精确 revision、测试计数、部署身份、正式 checkout 不变量、在线等待器与授权边界。",
+          "tables_used": ["rehearsal_and_deployment_receipt.json"],
+          "filters": ["status = pass", "implementation revision = 9b02fa8", "GPU work performed = false"],
+          "metric_definitions": {
+            "passed_tests": "完整 Linux pytest 中状态为 passed 的测试数；1169 collected 减去 2 skipped。",
+            "storage_headroom": "实时可用字节减去 bridge preflight 要求字节。"
+          }
+        }
+      },
+      {
+        "id": "decision_policy",
+        "label": "后续实验确定性决策实现",
+        "path": "C:/qbfd1/src/cofitok/generation/quality_bridge_followup.py",
+        "query": {
+          "language": "python",
+          "description": "读取终端 pass、绝对质量、机制、matched quality、class fidelity、跨协议冲突与 fail-closed 分支。",
+          "tables_used": ["quality_bridge_followup.py"],
+          "filters": ["FOLLOWUP_DECISION_SCHEMA_VERSION = 1", "all execution authorization fields = false"],
+          "metric_definitions": {
+            "shared_fid_improvement": "CoFiTok 与 dense 的 milestone FID 均从 50K 到 100K 严格下降；milestone IS 仅作敏感性记录。"
+          }
+        }
+      },
+      {
+        "id": "bridge_preparation",
+        "label": "Full-data matched 100K bridge preparation",
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/preparation.json",
+        "query": {
+          "language": "json",
+          "description": "读取 full ImageNet-256、100K matched training、50K/100K milestones、终端 10K evaluation 与 storage contract。",
+          "tables_used": ["preparation.json"],
+          "filters": ["dataset = imagenet_256", "100000 steps per method", "effective batch = 64"],
+          "metric_definitions": {
+            "milestone_samples": "每方法 2048 个 EMA DDIM-50 样本，仅用于 trend/early warning。",
+            "terminal_samples": "每方法 10000 个 EMA DDIM-100 样本，包含 FID、IS、precision、recall 并控制 terminal quality screen。"
+          }
+        }
+      },
+      {
+        "id": "live_waiter",
+        "label": "CPU-only follow-up decision waiter live status",
+        "path": "/tmp/cofitok-quality-bridge-followup-decision-9b02fa8/wait_for_quality_bridge_result_status.json",
+        "query": {
+          "language": "json",
+          "description": "读取后置等待器 PID、精确 Git 身份、轮询状态以及 GPU/training/promotion/release 全部禁用的 scope。",
+          "tables_used": ["wait_for_quality_bridge_result_status.json"],
+          "filters": ["status = waiting", "detail = waiting_for_quality_bridge_result"]
+        }
+      }
+    ],
+    "charts": [
+      {
+        "id": "evaluation_budget",
+        "title": "各证据层的每方法采样数",
+        "subtitle": "100K terminal 的样本预算约为 milestone 的 4.88 倍，因此 terminal 控制最终质量判断。",
+        "type": "bar",
+        "dataset": "evaluation_budgets",
+        "sourceId": "bridge_preparation",
+        "source": {
+          "query": {
+            "engine": "duckdb",
+            "sql": "SELECT * FROM (VALUES ('50K/100K milestone', 2048, 'DDIM-50', 'trend only'), ('100K terminal', 10000, 'DDIM-100', 'terminal screen')) AS t(tier, samples_per_method, sampler, role) ORDER BY samples_per_method;",
+            "description": "Materialize the frozen bridge evaluation budgets and their evidence roles."
+          }
+        },
+        "encodings": {
+          "x": {"field": "tier", "type": "nominal", "label": "证据层"},
+          "y": {"field": "samples_per_method", "type": "quantitative", "label": "每方法样本数", "format": "number"}
+        },
+        "settings": {"orientation": "vertical", "show_values": true, "y_zero": true}
+      }
+    ],
+    "tables": [
+      {
+        "id": "decision_matrix",
+        "title": "100K 终端证据到后续实验的确定性映射",
+        "subtitle": "所有行只生成建议，不执行建议。",
+        "dataset": "decision_branches",
+        "sourceId": "decision_policy",
+        "source": {
+          "query": {
+            "engine": "duckdb",
+            "sql": "SELECT * FROM (VALUES (1, '跨协议 terminal alert 冲突', 'reconcile_100k_cross_protocol_evidence', 'No'), (2, '全部 terminal checks 通过', 'build_source_compatible_formal_quality_gate', 'No'), (3, '任一 factorization mechanism 失败', 'run_matched_factorization_mechanism_recovery_probe', 'No'), (4, '任一 matched quality tolerance 失败', 'run_matched_factorization_quality_regression_probe', 'No'), (5, 'class fidelity 失败', 'run_class_conditioning_fidelity_diagnostic', 'No'), (6, '仅绝对质量失败，且双方 FID 严格改善', 'prepare_matched_250m_capacity_qualification_probe', 'No'), (7, '仅绝对质量失败，但非双方 FID 严格改善', 'diagnose_terminal_distribution_support_then_recipe_probe', 'No'), (8, '未分类组合', 'extend_followup_policy_before_execution', 'No')) AS t(priority, trigger, recommendation, execution_allowed) ORDER BY priority;",
+            "description": "Materialize the tested fail-closed policy branches in evaluation order."
+          }
+        },
+        "columns": [
+          {"field": "priority", "label": "优先级", "type": "number", "format": "number"},
+          {"field": "trigger", "label": "触发证据", "type": "text"},
+          {"field": "recommendation", "label": "建议阶段", "type": "text"},
+          {"field": "execution_allowed", "label": "自动执行", "type": "text"}
+        ],
+        "defaultSort": {"field": "priority", "direction": "asc"}
+      }
+    ],
+    "blocks": [
+      {"id": "title", "type": "markdown", "body": "# CoFiTok 100K 质量桥接后续决策就绪报告"},
+      {
+        "id": "technical_summary",
+        "type": "markdown",
+        "sourceId": "deployment_receipt",
+        "body": "## 技术摘要\n\n100K full-data matched bridge 尚未启动，原因是 GPU 上仍有无关 FieldScope 工作；CoFiTok waiter 正确保持等待，没有抢占或终止该进程。后续决策层已完成：精确实现 commit 为 `9b02fa8`，Linux 全量验证为 **1167 passed、2 skipped、0 failed**，CPU-only waiter PID 为 **123342**。它只在 100K terminal result 出现后完整重放物理来源并写出建议，不会执行训练、300K、promotion 或 release。"
+      },
+      {
+        "id": "current_state",
+        "type": "markdown",
+        "sourceId": "live_waiter",
+        "body": "## 当前在线状态\n\nBridge launch receipt、训练目录与 terminal result 均尚不存在。GPU 仅观察到 FieldScope PID 910099，约占 2256 MiB；可用存储约 223.19 GB，高于 bridge 预估所需 103.83 GB。正式远端 checkout 仍为 `scale/generative-system@1ebcc152` 且 tracked-clean。"
+      },
+      {"id": "evaluation_budget_chart", "type": "chart", "chartId": "evaluation_budget"},
+      {
+        "id": "key_findings",
+        "type": "markdown",
+        "sourceId": "bridge_preparation",
+        "body": "## 关键发现与证据权重\n\n50K/100K milestone 每方法只有 2048 个 DDIM-50 样本，定位是趋势和预警；100K terminal 每方法使用 10000 个 DDIM-100 样本并补齐 precision/recall，所以终局 pass/hold 必须以后者为准。Milestone FID 只回答两种方法是否共同继续改善，IS 方向不能单独否决这一容量信号。"
+      },
+      {"id": "decision_table", "type": "table", "tableId": "decision_matrix"},
+      {
+        "id": "scope",
+        "type": "markdown",
+        "body": "## 范围与定义\n\n本报告评估的是 100K bridge 的后续实验选择机制，不评估尚未产生的 100K 图像质量。`absolute quality` 指 CoFiTok 的 FID/precision/recall 绝对门槛；`matched quality` 指 CoFiTok 相对 dense identity 的容差；`mechanism` 指 endpoint、ordered prefix、coarse-token utilization、zero-token 与 shuffle checks。"
+      },
+      {
+        "id": "methodology",
+        "type": "markdown",
+        "sourceId": "decision_policy",
+        "body": "## 方法\n\n决策 builder 不信任已有 JSON 摘要，而是调用原 bridge builder 从绑定源重建 terminal result，重新核对 checkpoint/sidecar、样本树、sample-set SHA、real-set tree、metrics、class fidelity 和 matched reports；两份 milestone 还由独立 verifier 复核，并要求 100K milestone checkpoint 与 terminal checkpoint 完全一致。最后按互斥、优先级明确的规则生成一个 fail-closed 建议。"
+      },
+      {
+        "id": "limitations",
+        "type": "markdown",
+        "body": "## 局限与稳健性边界\n\n100K 尚未运行，因此当前不能推断 full-data FID、recall 或最优后续分支。Milestone 只有 2048 samples，不能替代 terminal 10K screen；两个时间点也不足以估计平滑学习曲线。部署在 `/tmp` 的 waiter 依赖服务器运行期文件存在，但它每 60 秒写原子状态、绑定自身 SHA 与精确 checkout，失败时关闭而不是执行建议。"
+      },
+      {
+        "id": "recommended_next",
+        "type": "markdown",
+        "body": "## 建议的下一步\n\n继续让现有 bridge idle waiter 等待 GPU 自然空闲。FieldScope 退出并连续 5 次 idle check 通过后，现有受限控制器会启动 full ImageNet-256 matched 100K bridge。Bridge 完成后，CPU-only waiter 自动生成并验证 `followup_experiment_decision.json`；随后才按该报告准备最小、信息增益最高的下一实验。"
+      },
+      {
+        "id": "further_questions",
+        "type": "markdown",
+        "body": "## 后续问题\n\n- Full-data 50K→100K 是否让 CoFiTok 与 dense 的 FID 同时严格下降？\n- Terminal 10K recall 是否摆脱 50K 阶段约 0.008 的共同覆盖崩塌？\n- 若只剩绝对质量失败，250M 容量探针相对 recipe/objective 探针哪一个更能隔离瓶颈？"
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "status": "ready",
+    "generatedAt": "2026-08-14T05:14:48+08:00",
+    "datasets": {
+      "evaluation_budgets": [
+        {"tier": "50K/100K milestone", "samples_per_method": 2048, "sampler": "DDIM-50", "role": "trend only"},
+        {"tier": "100K terminal", "samples_per_method": 10000, "sampler": "DDIM-100", "role": "terminal screen"}
+      ],
+      "decision_branches": [
+        {"priority": 1, "trigger": "跨协议 terminal alert 冲突", "recommendation": "reconcile_100k_cross_protocol_evidence", "execution_allowed": "No"},
+        {"priority": 2, "trigger": "全部 terminal checks 通过", "recommendation": "build_source_compatible_formal_quality_gate", "execution_allowed": "No"},
+        {"priority": 3, "trigger": "任一 factorization mechanism 失败", "recommendation": "run_matched_factorization_mechanism_recovery_probe", "execution_allowed": "No"},
+        {"priority": 4, "trigger": "任一 matched quality tolerance 失败", "recommendation": "run_matched_factorization_quality_regression_probe", "execution_allowed": "No"},
+        {"priority": 5, "trigger": "class fidelity 失败", "recommendation": "run_class_conditioning_fidelity_diagnostic", "execution_allowed": "No"},
+        {"priority": 6, "trigger": "仅绝对质量失败，且双方 FID 严格改善", "recommendation": "prepare_matched_250m_capacity_qualification_probe", "execution_allowed": "No"},
+        {"priority": 7, "trigger": "仅绝对质量失败，但非双方 FID 严格改善", "recommendation": "diagnose_terminal_distribution_support_then_recipe_probe", "execution_allowed": "No"},
+        {"priority": 8, "trigger": "未分类组合", "recommendation": "extend_followup_policy_before_execution", "execution_allowed": "No"}
+      ]
+    }
+  },
+  "sources": [
+    {"id": "deployment_receipt", "label": "后续决策层 Linux rehearsal 与部署回执", "path": "C:/qbfd1/artifacts/reports/generation/stability_full_data_quality_bridge_followup_decision_2026-08-14/rehearsal_and_deployment_receipt.json", "query": {"language": "json", "description": "读取测试、部署和授权边界。"}},
+    {"id": "decision_policy", "label": "后续实验确定性决策实现", "path": "C:/qbfd1/src/cofitok/generation/quality_bridge_followup.py", "query": {"language": "python", "description": "读取 fail-closed 分支。"}},
+    {"id": "bridge_preparation", "label": "Full-data matched 100K bridge preparation", "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/preparation.json", "query": {"language": "json", "description": "读取 bridge budget 和 evaluation contract。"}},
+    {"id": "live_waiter", "label": "CPU-only follow-up decision waiter live status", "path": "/tmp/cofitok-quality-bridge-followup-decision-9b02fa8/wait_for_quality_bridge_result_status.json", "query": {"language": "json", "description": "读取在线等待器状态。"}}
+  ]
+}

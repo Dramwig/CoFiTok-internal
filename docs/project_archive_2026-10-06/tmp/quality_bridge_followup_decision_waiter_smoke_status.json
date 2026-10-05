@@ -1,0 +1,34 @@
+{
+  "decision_exists": false,
+  "detail": "bounded_wait_completed_without_result",
+  "expected_branch": "scale/generation-quality-bridge-followup-decision-v1",
+  "expected_revision": "9b02fa83d20b1459a2706d6d82371caf5c023f54",
+  "expected_tree": "474520aa848f3da143379a7b7f72d59a085fbe38",
+  "git": {
+    "branch": "scale/generation-quality-bridge-followup-decision-v1",
+    "revision": "9b02fa83d20b1459a2706d6d82371caf5c023f54",
+    "runbook_sha256": "7d03191f0312ef90e08e25609be93c1ec4ad63badb59dc26bb049c6f971df89b",
+    "tracked_dirty": "false",
+    "tree": "474520aa848f3da143379a7b7f72d59a085fbe38"
+  },
+  "hostname": "ybforever",
+  "pid": 11756,
+  "poll_seconds": 1,
+  "polls": 1,
+  "project": "C:\\qbfd1",
+  "quality_bridge_root": "C:\\Users\\17194\\Desktop\\PaperFiled\\CoFiTok\\tmp\\missing-quality-bridge-result-root",
+  "result_exists": false,
+  "role": "cofitok_quality_bridge_followup_decision_waiter",
+  "schema_version": 1,
+  "scope": {
+    "decision_build_allowed": true,
+    "full_300k_launch_allowed": false,
+    "gpu_use_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "training_launch_allowed": false
+  },
+  "status": "stopped",
+  "updated_at": "2026-08-13T21:10:24.091939+00:00",
+  "waiter_sha256": "07f43a8b9e694896ef437ae8c16faff58266257362c494dffdb302d0c5444f2f"
+}

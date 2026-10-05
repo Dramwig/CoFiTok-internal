@@ -1,0 +1,80 @@
+{
+  "authorization_boundary": {
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "quality_bridge_recovery_allowed": true,
+    "release_authorization_allowed": false,
+    "report_is_promotion_gate": false,
+    "unrelated_gpu_processes_must_not_be_signaled": true
+  },
+  "created_at": "2026-08-13T19:44:07.681918+00:00",
+  "git": {
+    "execution": {
+      "branch": "scale/generation-stability-quality-bridge-100k",
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "tracked_dirty": false,
+      "tree": "6cef27723196fd363379bca2e7b85b1678ebd777"
+    },
+    "formal": {
+      "branch": "scale/generative-system",
+      "porcelain_count": 87,
+      "porcelain_sha256": "a7e1a2daf19f77e5d92efaa09b2768f36f5df2e989475480f7d22e54b46e9497",
+      "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066"
+    }
+  },
+  "issues": [],
+  "prelaunch_contract_audit": {
+    "bytes": 8844,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/prelaunch_contract_audit.json",
+    "sha256": "00dd284187a060be945e47d8ade4d1b3e1d51cbbfdd030413cf66232ffd979d4"
+  },
+  "role": "cofitok_quality_bridge_100k_recovery_supervisor_deployment_receipt",
+  "runtime": {
+    "gpu_compute_rows": [
+      "910099, /root/autodl-tmp/FieldScope/.venv/bin/python, 2256"
+    ],
+    "idle_waiter_status": {
+      "bytes": 1206,
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/idle_waiter_status.json",
+      "pid": 927790,
+      "sha256": "41bd68dc982fa6f44bea05dc127165c5bdbc2d00ec9f0a37e7d5fd86029cbef8",
+      "updated_at": "2026-08-13T19:43:39.225670+00:00"
+    },
+    "launch_receipt_present": false,
+    "quality_bridge_result_present": false,
+    "supervisor_status": {
+      "bytes": 3309,
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor_status.json",
+      "sha256": "f784ca68992b3802a4613faaa7d8267039b0d57f3f077b34425a3de8a01309b0",
+      "updated_at": "2026-08-13T19:43:44.483571+00:00"
+    }
+  },
+  "schema_version": 1,
+  "status": "deployed_observing_existing_waiter",
+  "supervisor": {
+    "bytes": 33131,
+    "command": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python /tmp/cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor.py",
+    "cwd": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+    "lock_exclusion_verified": true,
+    "max_recovery_attempts": 6,
+    "monitor_health_exit_86_retryable": false,
+    "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/recovery_supervisor.py",
+    "pid": 110237,
+    "poll_seconds": 60,
+    "retryable_exit_codes": [
+      -15,
+      -9,
+      9,
+      12,
+      15,
+      87,
+      88,
+      89,
+      137,
+      143
+    ],
+    "script_self_hash_revalidated_each_heartbeat": true,
+    "sha256": "008a9d83e59fa433d2d4542dbb3b3e29ec8e5bee8eadf5190f5b3b1c99b40cbf",
+    "watchdog_transient_evidence_required_for_87_88_89": true
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "CoFiTok 50K matched sampling confirmation diagnosis",
+    "description": "Technical diagnosis of the frozen and independent matched 10K sampling evidence and the transition to the full-data matched 100K bridge.",
+    "generatedAt": "2026-08-14T02:20:00+08:00",
+    "sources": [
+      {
+        "id": "confirmation_report",
+        "label": "Matched independent 10K confirmation report",
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/confirmation_report.json",
+        "query": {
+          "language": "sql",
+          "engine": "duckdb",
+          "sql": "WITH r AS (SELECT * FROM read_json_auto('/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/confirmation_report.json')) SELECT 'Frozen formal' AS stream, 1 AS stream_order, 'CoFiTok' AS method, 10000 AS samples, preflight.methods.cofitok.formal_reference.fid AS fid, preflight.methods.cofitok.formal_reference.inception_score_mean AS inception_score, preflight.methods.cofitok.formal_reference.precision AS precision, preflight.methods.cofitok.formal_reference.recall AS recall, preflight.methods.cofitok.formal_reference.fid / preflight.methods.dense_identity.formal_reference.fid - 1 AS cofitok_vs_dense_fid, 0 AS start_index, 100 AS sample_steps, 1.5 AS guidance_scale FROM r UNION ALL SELECT 'Frozen formal', 1, 'Dense identity', 10000, preflight.methods.dense_identity.formal_reference.fid, preflight.methods.dense_identity.formal_reference.inception_score_mean, preflight.methods.dense_identity.formal_reference.precision, preflight.methods.dense_identity.formal_reference.recall, NULL::DOUBLE, 0, 100, 1.5 FROM r UNION ALL SELECT 'Independent confirmation', 2, 'CoFiTok', 10000, rows.cofitok.metrics.frechet_inception_distance, rows.cofitok.metrics.inception_score_mean, rows.cofitok.metrics.precision, rows.cofitok.metrics.recall, rows.cofitok.metrics.frechet_inception_distance / rows.dense_identity.metrics.frechet_inception_distance - 1, 10000, 100, 1.5 FROM r UNION ALL SELECT 'Independent confirmation', 2, 'Dense identity', 10000, rows.dense_identity.metrics.frechet_inception_distance, rows.dense_identity.metrics.inception_score_mean, rows.dense_identity.metrics.precision, rows.dense_identity.metrics.recall, NULL::DOUBLE, 10000, 100, 1.5 FROM r;",
+          "description": "Read the physically bound CoFiTok and dense rows, frozen references, thresholds, random-stream contract, and terminal hold decision.",
+          "tables_used": ["confirmation_report.json"],
+          "filters": ["selected_case = cfg150_r100", "10000 samples per method", "EMA DDIM-100 bf16"],
+          "metric_definitions": {
+            "fid": "Frechet Inception Distance from torch-fidelity 0.4.0; lower is better.",
+            "precision": "Improved precision from 10000 generated samples against the fixed ImageNet-256 validation feature set.",
+            "recall": "Improved recall from 10000 generated samples against the fixed ImageNet-256 validation feature set."
+          }
+        }
+      },
+      {
+        "id": "frozen_gate",
+        "label": "Frozen formal 50K promotion gate",
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/promotion_gate.json",
+        "query": {
+          "language": "json",
+          "description": "Read source-verified frozen metrics, thresholds, mechanism checks, and the hold decision.",
+          "tables_used": ["promotion_gate.json"],
+          "filters": ["10000 samples per method", "start_index = 0", "EMA DDIM-100 bf16"],
+          "metric_definitions": {
+            "absolute_fid_gate": "CoFiTok absolute FID must be at most 100.",
+            "relative_fid": "CoFiTok FID divided by dense FID under one matched stream; below 1 favors CoFiTok."
+          }
+        }
+      },
+      {
+        "id": "bridge_preparation",
+        "label": "Full-data matched 100K bridge preparation",
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/preparation.json",
+        "query": {
+          "language": "json",
+          "description": "Read the validated full ImageNet-256 selection, budget analysis, matched training contract, storage evidence, and authorization boundary.",
+          "tables_used": ["preparation.json"],
+          "filters": ["dataset = imagenet_256", "100000 steps per method", "effective batch = 64", "milestones = 50000,100000"],
+          "metric_definitions": {
+            "equivalent_epochs": "Steps times effective batch divided by 1281167 full ImageNet-256 training images.",
+            "images_seen": "100000 optimizer steps times effective batch 64 equals 6.4M images per method."
+          }
+        }
+      }
+    ],
+    "charts": [
+      {
+        "id": "fid_by_stream",
+        "title": "FID under frozen and independent matched streams",
+        "subtitle": "10000 samples per method; lower is better. CoFiTok remains better than dense in both streams.",
+        "type": "bar",
+        "dataset": "matched_metrics",
+        "sourceId": "confirmation_report",
+        "encodings": {
+          "x": {"field": "stream", "type": "nominal", "label": "Random stream"},
+          "y": {"field": "fid", "type": "quantitative", "label": "FID", "format": "number"},
+          "color": {"field": "method", "type": "nominal", "label": "Method"}
+        },
+        "settings": {"orientation": "vertical", "group_mode": "grouped", "show_values": true, "y_zero": true}
+      }
+    ],
+    "tables": [
+      {
+        "id": "metrics_detail",
+        "title": "Exact matched 10K metrics",
+        "subtitle": "Frozen formal and disjoint independent confirmation streams",
+        "dataset": "matched_metrics",
+        "sourceId": "confirmation_report",
+        "columns": [
+          {"field": "stream", "label": "Stream", "type": "text"},
+          {"field": "method", "label": "Method", "type": "text"},
+          {"field": "samples", "label": "Samples", "type": "number", "format": "number"},
+          {"field": "fid", "label": "FID", "type": "number", "format": "number"},
+          {"field": "inception_score", "label": "IS", "type": "number", "format": "number"},
+          {"field": "precision", "label": "Precision", "type": "number", "format": "number"},
+          {"field": "recall", "label": "Recall", "type": "number", "format": "number"},
+          {"field": "cofitok_vs_dense_fid", "label": "CoFiTok vs dense FID", "type": "number", "format": "percent", "semantic": "movement"}
+        ],
+        "defaultSort": {"field": "stream", "direction": "asc"}
+      }
+    ],
+    "blocks": [
+      {"id": "title", "type": "markdown", "body": "# CoFiTok 50K matched sampling confirmation diagnosis"},
+      {
+        "id": "technical_summary",
+        "type": "markdown",
+        "sourceId": "confirmation_report",
+        "body": "## Technical summary\n\nThe independent matched 10K confirmation finished correctly and returned **hold**, not an operational failure. CoFiTok retained a **7.69% lower FID than dense identity** on the disjoint stream (138.99 vs 150.57), so the relative sampling result generalized. The hold is driven by absolute quality and distribution support: CoFiTok FID remained above 100, recall was only 0.00756, and its independent-stream FID was 0.50% worse than the frozen stream. The evidence rejects further CFG-only tuning as the main next step and supports the full-data matched 100K bridge."
+      },
+      {
+        "id": "relative_result",
+        "type": "markdown",
+        "sourceId": "confirmation_report",
+        "body": "## CoFiTok keeps the relative FID advantage across random streams\n\nCoFiTok beats dense by 8.68% on the frozen stream and 7.69% on the independent stream. This supports the factorized predictor under matched inference, but it is not evidence of usable absolute generation quality."
+      },
+      {"id": "fid_chart_block", "type": "chart", "chartId": "fid_by_stream"},
+      {
+        "id": "absolute_hold",
+        "type": "markdown",
+        "sourceId": "confirmation_report",
+        "body": "## Absolute quality and distribution coverage still fail\n\nCoFiTok is 38.99 FID points above the 100 threshold on the independent stream. Precision remains relatively high, but recall is about 0.0075 for both methods, far below the declared 0.1 confirmation threshold. The shared collapse makes insufficient data coverage and optimization scale more plausible than a CoFiTok-only factorization failure."
+      },
+      {"id": "metrics_table_block", "type": "table", "tableId": "metrics_detail"},
+      {
+        "id": "scope_definitions",
+        "type": "markdown",
+        "body": "## Scope and metric definitions\n\nBoth rows use the same ImageNet-256 validation tree and torch-fidelity 0.4.0. Each method contributes exactly 10000 EMA, bf16, DDIM-100 samples with CFG 1.5. The frozen window uses global indices 0-9999; the confirmation window uses 10000-19999. FID is lower-is-better; Precision and Recall measure fidelity and coverage under the fixed evaluator contract."
+      },
+      {
+        "id": "methodology",
+        "type": "markdown",
+        "body": "## Diagnostic method\n\nThe diagnosis reproduces the terminal comparison, checks both disjoint random windows, reconciles thresholds and identities, and separates relative quality from absolute usability. A next experiment is selected only if it addresses a failed dimension that sampling-parameter changes cannot isolate."
+      },
+      {
+        "id": "limitations",
+        "type": "markdown",
+        "body": "## Limitations and robustness boundary\n\nThis is a two-window descriptive comparison, not a variance estimate over many independent 10K replications. The 0.50% CoFiTok FID change may be sampling variation, but the absolute gap to FID 100 and the near-zero recall are too large to explain away. This report does not promote, release, or authorize 300K training."
+      },
+      {
+        "id": "next_step",
+        "type": "markdown",
+        "sourceId": "bridge_preparation",
+        "body": "## Recommended next step: full-data matched 100K bridge\n\nRun the validated base-128 bridge on full ImageNet-256, preserving matched CoFiTok/dense capacity and the qualified loss recipe. Each method trains for 100000 steps at effective batch 64, with matched 50K and 100K checkpoints, milestone diagnostics, exact-resume integrity, and terminal 10K FID/IS/Precision/Recall. This directly tests whether unique-data coverage and continued optimization repair the shared distribution-support failure."
+      },
+      {
+        "id": "further_questions",
+        "type": "markdown",
+        "body": "## Further questions\n\n- Does full-data training raise recall materially by the matched 50K milestone?\n- Does CoFiTok preserve its relative FID advantage at both milestones?\n- If absolute quality remains poor at 100K, is the next bottleneck capacity, objective design, or the pixel-space backbone?"
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "status": "ready",
+    "generatedAt": "2026-08-14T02:20:00+08:00",
+    "datasets": {
+      "matched_metrics": [
+        {"stream": "Frozen formal", "stream_order": 1, "method": "CoFiTok", "samples": 10000, "fid": 138.29702495267782, "inception_score": 7.924543688266955, "precision": 0.7505000233650208, "recall": 0.008679999969899654, "cofitok_vs_dense_fid": -0.0868329750854379, "start_index": 0, "sample_steps": 100, "guidance_scale": 1.5},
+        {"stream": "Frozen formal", "stream_order": 1, "method": "Dense identity", "samples": 10000, "fid": 151.4476773464495, "inception_score": 7.053977445069071, "precision": 0.78329998254776, "recall": 0.00977999996393919, "cofitok_vs_dense_fid": null, "start_index": 0, "sample_steps": 100, "guidance_scale": 1.5},
+        {"stream": "Independent confirmation", "stream_order": 2, "method": "CoFiTok", "samples": 10000, "fid": 138.99172622210307, "inception_score": 7.882937390367002, "precision": 0.7439000010490417, "recall": 0.0075599998235702515, "cofitok_vs_dense_fid": -0.07687174294822874, "start_index": 10000, "sample_steps": 100, "guidance_scale": 1.5},
+        {"stream": "Independent confirmation", "stream_order": 2, "method": "Dense identity", "samples": 10000, "fid": 150.56599682692638, "inception_score": 7.008788739407178, "precision": 0.7789999842643738, "recall": 0.007519999984651804, "cofitok_vs_dense_fid": null, "start_index": 10000, "sample_steps": 100, "guidance_scale": 1.5}
+      ]
+    }
+  },
+  "sources": [
+    {"id": "confirmation_report", "label": "Matched independent 10K confirmation report", "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/confirmation_report.json", "query": {"language": "sql", "engine": "duckdb", "sql": "WITH r AS (SELECT * FROM read_json_auto('/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1/confirmation_report.json')) SELECT 'Frozen formal' AS stream, 1 AS stream_order, 'CoFiTok' AS method, 10000 AS samples, preflight.methods.cofitok.formal_reference.fid AS fid, preflight.methods.cofitok.formal_reference.inception_score_mean AS inception_score, preflight.methods.cofitok.formal_reference.precision AS precision, preflight.methods.cofitok.formal_reference.recall AS recall, preflight.methods.cofitok.formal_reference.fid / preflight.methods.dense_identity.formal_reference.fid - 1 AS cofitok_vs_dense_fid, 0 AS start_index, 100 AS sample_steps, 1.5 AS guidance_scale FROM r UNION ALL SELECT 'Frozen formal', 1, 'Dense identity', 10000, preflight.methods.dense_identity.formal_reference.fid, preflight.methods.dense_identity.formal_reference.inception_score_mean, preflight.methods.dense_identity.formal_reference.precision, preflight.methods.dense_identity.formal_reference.recall, NULL::DOUBLE, 0, 100, 1.5 FROM r UNION ALL SELECT 'Independent confirmation', 2, 'CoFiTok', 10000, rows.cofitok.metrics.frechet_inception_distance, rows.cofitok.metrics.inception_score_mean, rows.cofitok.metrics.precision, rows.cofitok.metrics.recall, rows.cofitok.metrics.frechet_inception_distance / rows.dense_identity.metrics.frechet_inception_distance - 1, 10000, 100, 1.5 FROM r UNION ALL SELECT 'Independent confirmation', 2, 'Dense identity', 10000, rows.dense_identity.metrics.frechet_inception_distance, rows.dense_identity.metrics.inception_score_mean, rows.dense_identity.metrics.precision, rows.dense_identity.metrics.recall, NULL::DOUBLE, 10000, 100, 1.5 FROM r;", "description": "Expand the frozen and independent matched metric rows from the terminal report."}},
+    {"id": "frozen_gate", "label": "Frozen formal 50K promotion gate", "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_ema_teacher/reports/promotion_gate.json", "query": {"language": "json", "description": "Read frozen formal metrics and thresholds."}},
+    {"id": "bridge_preparation", "label": "Full-data matched 100K bridge preparation", "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/preparation.json", "query": {"language": "json", "description": "Read validated bridge selection and training contract."}}
+  ]
+}

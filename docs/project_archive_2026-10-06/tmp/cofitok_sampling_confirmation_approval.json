@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "role": "generation_stability_sampling_execution_approval",
+  "status": "approved",
+  "scope": "stability_50k_sampling_confirmation_10k_v1_execution_only",
+  "evidence": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_recovery_v1/summary.json",
+    "bytes": 22316,
+    "sha256": "79bc585c8fe9e0f6fef0fa0803c64e4a7e0f99af9da34d0884670ed0b8b03de5"
+  },
+  "git": {
+    "revision": "11d8f954030915f1d8848594683ac70518ce39bc",
+    "branch": "scale/generation-large-capacity",
+    "tracked_dirty": false
+  },
+  "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_scaling_50k_sampling_confirmation_10k_v1",
+  "approval_record": {
+    "approved_by": "user",
+    "approved_at": "2026-08-13T00:11:00+08:00",
+    "approval_text": "Approve the non-authorizing matched 10000-sample sampling confirmation only."
+  },
+  "authorization_boundary": {
+    "sampling_recovery_execution_allowed": false,
+    "sampling_confirmation_execution_allowed": true,
+    "training_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "release_authorization_allowed": false,
+    "replaces_frozen_promotion_gate": false,
+    "formal_protocol_change_allowed": false
+  }
+}
+

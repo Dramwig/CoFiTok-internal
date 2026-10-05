@@ -1,0 +1,282 @@
+[
+  {
+    "worktree": "c5k",
+    "head": "175b34be088a1299fd38f1d74b684ac411635623",
+    "index_tree": "05a8af46795e8f28891a6cfb71f9b261206d42f6",
+    "staged_changes": false,
+    "preserved_commit": "175b34be088a1299fd38f1d74b684ac411635623"
+  },
+  {
+    "worktree": "cofitok-capacity-hold-recovery-20260907",
+    "head": "7e9899e694fa35e4069c50ee3bb325ef0d77469a",
+    "index_tree": "d47a5d8affed53d5e404e2720ce917acd588e192",
+    "staged_changes": false,
+    "preserved_commit": "7e9899e694fa35e4069c50ee3bb325ef0d77469a"
+  },
+  {
+    "worktree": "cofitok-conditioning-diagnostic",
+    "head": "2236073144c8fb2ba6fff91153c3c6d673a534ad",
+    "index_tree": "c650d10119e2733fc3eaa8dae32a1f1c05484827",
+    "staged_changes": false,
+    "preserved_commit": "2236073144c8fb2ba6fff91153c3c6d673a534ad"
+  },
+  {
+    "worktree": "cofitok-exposure-result-recovery-20260904",
+    "head": "b15d979d8c03d50f29d1e6e460d3ce3988152fbe",
+    "index_tree": "90ae809eac1ee20b10d000cda1e04ded8df97f80",
+    "staged_changes": false,
+    "preserved_commit": "b15d979d8c03d50f29d1e6e460d3ce3988152fbe"
+  },
+  {
+    "worktree": "cofitok-label-ranking-probe",
+    "head": "7d5ff8c661ee3f17c99b2c5fb17525051b27a92f",
+    "index_tree": "1d634e8610453958009be41a2f085c8e129958b6",
+    "staged_changes": false,
+    "preserved_commit": "7d5ff8c661ee3f17c99b2c5fb17525051b27a92f"
+  },
+  {
+    "worktree": "cofitok-terminal-snr-capacity-scaling-20260908",
+    "head": "53ae13ed9d85ff5573a3840539feb63b78038c1f",
+    "index_tree": "c8433b2e75559de7743f00ad4b6034e299107ede",
+    "staged_changes": false,
+    "preserved_commit": "53ae13ed9d85ff5573a3840539feb63b78038c1f"
+  },
+  {
+    "worktree": "cscfull",
+    "head": "5397e8d9a885ca7e2944b3b175affc5b8b0b8fdc",
+    "index_tree": "0448c5b130583d6be5e363e00d84ff39f10f8589",
+    "staged_changes": false,
+    "preserved_commit": "5397e8d9a885ca7e2944b3b175affc5b8b0b8fdc"
+  },
+  {
+    "worktree": "cscv1",
+    "head": "9358bce29c65d47ddb783c0f26b7cfb53252258d",
+    "index_tree": "77068099be12ca574b0c93fe5183e7e4af552b6a",
+    "staged_changes": false,
+    "preserved_commit": "9358bce29c65d47ddb783c0f26b7cfb53252258d"
+  },
+  {
+    "worktree": "qbcapacityheartbeat",
+    "head": "f3d940b050cf7bdfe3a9ab99b66e175f39e26b08",
+    "index_tree": "bb6f69b628d4b60bc0e9b8408fe24938d1e6033b",
+    "staged_changes": false,
+    "preserved_commit": "f3d940b050cf7bdfe3a9ab99b66e175f39e26b08"
+  },
+  {
+    "worktree": "qbcapacityheartbeatdeploy",
+    "head": "acedc6d32b4f77875f83948d8cb0a2024bd69a84",
+    "index_tree": "7afcf46846f2d079a026c6aeccd2850a5ee7e2de",
+    "staged_changes": false,
+    "preserved_commit": "acedc6d32b4f77875f83948d8cb0a2024bd69a84"
+  },
+  {
+    "worktree": "qbcapall",
+    "head": "fb47c473cdc02715f68c443085d37ccd67713c9d",
+    "index_tree": "25b79f05bf1c9f3f701114603f6e367dc6f72e22",
+    "staged_changes": false,
+    "preserved_commit": "fb47c473cdc02715f68c443085d37ccd67713c9d"
+  },
+  {
+    "worktree": "qbcapmigration",
+    "head": "a963ff4bb91fd837f67856be996810ff45958712",
+    "index_tree": "248685d888e74c7844ba0aedd3d858e9c67e3162",
+    "staged_changes": false,
+    "preserved_commit": "a963ff4bb91fd837f67856be996810ff45958712"
+  },
+  {
+    "worktree": "qbcheckpointtransition",
+    "head": "ecd2e72235d97d580e388a8c6910f6d176f33029",
+    "index_tree": "c697c15951858b783253aa8096cc44900b3f2531",
+    "staged_changes": false,
+    "preserved_commit": "ecd2e72235d97d580e388a8c6910f6d176f33029"
+  },
+  {
+    "worktree": "qbcheckpointwaiterrecord",
+    "head": "564bb27d64cccaf1c63084aecdc33f6b1799d1ca",
+    "index_tree": "e6bd70207afd2417f68c0bcff38bc884cc69b07f",
+    "staged_changes": false,
+    "preserved_commit": "564bb27d64cccaf1c63084aecdc33f6b1799d1ca"
+  },
+  {
+    "worktree": "qbcompressionaudit",
+    "head": "bc97699b60b06d5a44ca1e991f7ace5505110bda",
+    "index_tree": "bb2368d5abc023ed0ec6254476ed0b3fee330d52",
+    "staged_changes": false,
+    "preserved_commit": "bc97699b60b06d5a44ca1e991f7ace5505110bda"
+  },
+  {
+    "worktree": "qbcsc",
+    "head": "751eafe86afaae49c1277b035928ecbd57eeef03",
+    "index_tree": "20d9dfb653e59f5fee69b1d90d8df1e7ade26694",
+    "staged_changes": false,
+    "preserved_commit": "751eafe86afaae49c1277b035928ecbd57eeef03"
+  },
+  {
+    "worktree": "qbevidenceaudit",
+    "head": "cd83cf70203a9acf2e9077ed2806998287e787c0",
+    "index_tree": "c81cc630ad9bca65babdf2619c14ac7f557ec342",
+    "staged_changes": false,
+    "preserved_commit": "cd83cf70203a9acf2e9077ed2806998287e787c0"
+  },
+  {
+    "worktree": "qbexposurequalification",
+    "head": "22b744c7dba56617b4b76b5dfa649979109f7255",
+    "index_tree": "cd3d404498c1dc4f2d50c37ee889681af64be124",
+    "staged_changes": false,
+    "preserved_commit": "22b744c7dba56617b4b76b5dfa649979109f7255"
+  },
+  {
+    "worktree": "qbexposureroute",
+    "head": "c8de421137797fe3a12fc9197d83116f12dd9d3b",
+    "index_tree": "b52d3e73c2198c9f1503a24916f0fd5a4d77b0ea",
+    "staged_changes": false,
+    "preserved_commit": "c8de421137797fe3a12fc9197d83116f12dd9d3b"
+  },
+  {
+    "worktree": "qbfactorizationregression",
+    "head": "65e246fea96aa464f24e3e1601e2ab11862ed6d2",
+    "index_tree": "53305459973351fa852f2d853cb4590ded2b5230",
+    "staged_changes": false,
+    "preserved_commit": "65e246fea96aa464f24e3e1601e2ab11862ed6d2"
+  },
+  {
+    "worktree": "qbfd1",
+    "head": "24cce1ee3b464b0b46776fb7e2c9f56cec514f4b",
+    "index_tree": "0386b085afad5a26144906be0405a8bc52a39480",
+    "staged_changes": false,
+    "preserved_commit": "24cce1ee3b464b0b46776fb7e2c9f56cec514f4b"
+  },
+  {
+    "worktree": "qbfd2",
+    "head": "442c0051af85226c97645043d6f29646420b901d",
+    "index_tree": "7851cf985a12c7047f4cfcd58c5547c17863074b",
+    "staged_changes": false,
+    "preserved_commit": "442c0051af85226c97645043d6f29646420b901d"
+  },
+  {
+    "worktree": "qbfd3",
+    "head": "8f72d931130f5a9a96d0514bd44f51cd6051b5f8",
+    "index_tree": "09974efd0bb05b0b5a169e765d67ea89954c2be6",
+    "staged_changes": false,
+    "preserved_commit": "8f72d931130f5a9a96d0514bd44f51cd6051b5f8"
+  },
+  {
+    "worktree": "qbfd4",
+    "head": "74a7c7d0abfcb107235f38f5b364215633a99e68",
+    "index_tree": "d7e100666079e90551a7bcb140384601ac64bd15",
+    "staged_changes": false,
+    "preserved_commit": "74a7c7d0abfcb107235f38f5b364215633a99e68"
+  },
+  {
+    "worktree": "qbfd5",
+    "head": "eb2ec30d331641fc153f59cd6a732543771571c7",
+    "index_tree": "e46ffd1b35b1bb629e4b3fce5b21f33243abf0a8",
+    "staged_changes": false,
+    "preserved_commit": "eb2ec30d331641fc153f59cd6a732543771571c7"
+  },
+  {
+    "worktree": "qbfinalreleaseaudit",
+    "head": "c904876f167d844d4dbb277ee16deab3e8d8c874",
+    "index_tree": "36644dd17b2d7908c2e9a0890d5988f97ab84c1a",
+    "staged_changes": false,
+    "preserved_commit": "c904876f167d844d4dbb277ee16deab3e8d8c874"
+  },
+  {
+    "worktree": "qbguardrebind",
+    "head": "9e17853739d91df6e6c885692f1eb06754fd0425",
+    "index_tree": "cc5abacc762b2fd1d69b93e20f279df8a81d5800",
+    "staged_changes": false,
+    "preserved_commit": "9e17853739d91df6e6c885692f1eb06754fd0425"
+  },
+  {
+    "worktree": "qbintegration",
+    "head": "ced549b7199181e9060f824796c258eeb6b51a39",
+    "index_tree": "c3c5847ba980ae16b8fe4d169214df6142356dc6",
+    "staged_changes": false,
+    "preserved_commit": "ced549b7199181e9060f824796c258eeb6b51a39"
+  },
+  {
+    "worktree": "qblive",
+    "head": "0a9e26e63498e0e23e6baaedd0d63c0fd3ed0d1a",
+    "index_tree": "00241f6c38da926728efe9662331482ff631db9e",
+    "staged_changes": false,
+    "preserved_commit": "0a9e26e63498e0e23e6baaedd0d63c0fd3ed0d1a"
+  },
+  {
+    "worktree": "qbmilestone50kguard",
+    "head": "54b03857a9634a1db00f895e54d6c1dd4a709e64",
+    "index_tree": "f6ea420ea030b77af7b3468795509a6d890411f0",
+    "staged_changes": false,
+    "preserved_commit": "54b03857a9634a1db00f895e54d6c1dd4a709e64"
+  },
+  {
+    "worktree": "qbrankedlong",
+    "head": "8d7564f9b5c86dadf43443ca0c1df7fe4528ec86",
+    "index_tree": "c49db319b4d4d7d14b6735c252443ee87cb01dea",
+    "staged_changes": false,
+    "preserved_commit": "8d7564f9b5c86dadf43443ca0c1df7fe4528ec86"
+  },
+  {
+    "worktree": "qbrecoverysupersessionv2",
+    "head": "5ca7bc66231e0d1c66b740b7e0be32cf59a771fa",
+    "index_tree": "3b938c56d53f39fa89fe506912e7815d0a7d1ed8",
+    "staged_changes": false,
+    "preserved_commit": "5ca7bc66231e0d1c66b740b7e0be32cf59a771fa"
+  },
+  {
+    "worktree": "qbruntimefairnessguard",
+    "head": "7014008d6cdd8ef228a38290deeae15fc6ba5959",
+    "index_tree": "78f26c85c28835e65e7f6e59473da48efb364da1",
+    "staged_changes": false,
+    "preserved_commit": "7014008d6cdd8ef228a38290deeae15fc6ba5959"
+  },
+  {
+    "worktree": "qbruntimefairnessorphan",
+    "head": "dca80675d4ae6e7d00d2ea89af50dda7b8ade3c3",
+    "index_tree": "266ae9399ccdbb1df7c55e4f4cc047971c886728",
+    "staged_changes": false,
+    "preserved_commit": "dca80675d4ae6e7d00d2ea89af50dda7b8ade3c3"
+  },
+  {
+    "worktree": "qbschedule",
+    "head": "b5c610674120e7334e16c51d18ea9884ccf42631",
+    "index_tree": "736629396acaefe8009440196631a2bdf934cd2a",
+    "staged_changes": false,
+    "preserved_commit": "b5c610674120e7334e16c51d18ea9884ccf42631"
+  },
+  {
+    "worktree": "qbstats",
+    "head": "26a0f130ea42ebb36e99db239ddf4155b57b2f04",
+    "index_tree": "01bcb215085799a4dfa98db8ecafc0b7c85cb173",
+    "staged_changes": false,
+    "preserved_commit": "26a0f130ea42ebb36e99db239ddf4155b57b2f04"
+  },
+  {
+    "worktree": "qbterminalstats",
+    "head": "e1791bd42a32e3c4251ea94360e336535079388d",
+    "index_tree": "9a2bbb1f987327f3a795c6d313e054d804259060",
+    "staged_changes": false,
+    "preserved_commit": "e1791bd42a32e3c4251ea94360e336535079388d"
+  },
+  {
+    "worktree": "qbterminalsupport",
+    "head": "db52b8a54867a7acaeaa9a6e1fb02adc84c69972",
+    "index_tree": "9ee567da6728f8960f39737d979283c59284ae8c",
+    "staged_changes": false,
+    "preserved_commit": "db52b8a54867a7acaeaa9a6e1fb02adc84c69972"
+  },
+  {
+    "worktree": "qbterminalsystem",
+    "head": "9d5483e605981ed14493d395b87d1afb4dddd827",
+    "index_tree": "7b9b49c91a8196279d586b7cbec8b342b8cad40a",
+    "staged_changes": false,
+    "preserved_commit": "9d5483e605981ed14493d395b87d1afb4dddd827"
+  },
+  {
+    "worktree": "qbtrajectory40kwaiter",
+    "head": "b40e44d739d952a642885906dd909888421ee603",
+    "index_tree": "0a331f56f7b7599ef8070e99cfc4110fbd65226f",
+    "staged_changes": false,
+    "preserved_commit": "b40e44d739d952a642885906dd909888421ee603"
+  }
+]

@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "role": "stability_full_data_quality_bridge_execution_approval",
+  "status": "approved",
+  "scope": "stability_quality_bridge_100k_execution_only",
+  "preparation": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/preparation.json",
+    "bytes": 23398,
+    "sha256": "7398d9a6f096ea9c178295c9016bb56fd38e28dff30f26662ae4225aded208ea"
+  },
+  "git": {
+    "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "tracked_dirty": false
+  },
+  "selection": {
+    "dataset": "imagenet_256",
+    "steps": 100000,
+    "milestone_steps": [
+      50000,
+      100000
+    ],
+    "effective_batch_size": 64
+  },
+  "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+  "approval_record": {
+    "approved_by": "user",
+    "approved_at": "2026-08-13T00:11:00+08:00",
+    "approval_text": "之后不要我授权你直接运行需要的实验",
+    "standing_authorization": {
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/standing_authorization.json",
+      "bytes": 865,
+      "sha256": "5fe64a0941acb55a21cb6479a726987c6259e93a772c47290f2d6883752de4df"
+    },
+    "stage_interpretation": "Directly execute the scientifically necessary full-data matched 100K quality bridge without another per-stage authorization request."
+  },
+  "authorization_boundary": {
+    "quality_bridge_execution_allowed": true,
+    "scope_limited_to_quality_bridge": true,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false,
+    "scaling_authorization_created": false,
+    "report_is_promotion_gate": false
+  }
+}
