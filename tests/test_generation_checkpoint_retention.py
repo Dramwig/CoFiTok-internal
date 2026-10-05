@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,7 @@ from cofitok.checkpoint_retention import (
     build_checkpoint_retention_inventory,
     build_retention_runway_report,
     verify_checkpoint_retention_inventory,
+    verify_checkpoint_retention_inventory_binding,
 )
 from cofitok.reporting import file_sha256, write_json_report
 
@@ -239,4 +241,104 @@ def test_runway_binds_locked_inventory_without_rehashing_checkpoints(
             used_bytes=400,
             free_bytes=600,
             required_free_bytes=500,
+        )
+
+
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Unix symlink creation requires elevated privileges on Windows",
+)
+def test_retention_inventory_rejects_symlinked_roots_and_checkpoints(
+    tmp_path: Path,
+) -> None:
+    real_root = tmp_path / "real-probe"
+    _completed_run(real_root)
+
+    root_alias = tmp_path / "root-alias"
+    root_alias.symlink_to(real_root, target_is_directory=True)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        build_checkpoint_retention_inventory(
+            inventory_root=root_alias,
+            reference_roots=[],
+            physical_hash=True,
+        )
+
+    external = tmp_path / "external.pt"
+    external.write_bytes(b"external")
+    symlink_checkpoint = real_root / "pair" / "method" / "checkpoint_step_00000750.pt"
+    symlink_checkpoint.symlink_to(external)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        build_checkpoint_retention_inventory(
+            inventory_root=real_root,
+            reference_roots=[],
+            physical_hash=True,
+        )
+
+    pointer_root = tmp_path / "pointer-probe"
+    pointer_run, _, pointer_latest = _completed_run(pointer_root)
+    external_latest = tmp_path / "external-latest.json"
+    external_latest.write_text(
+        (pointer_run / "latest.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    latest_pointer = pointer_run / "latest.json"
+    latest_pointer.unlink()
+    latest_pointer.symlink_to(external_latest)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        build_checkpoint_retention_inventory(
+            inventory_root=pointer_root,
+            reference_roots=[],
+            physical_hash=True,
+        )
+
+    sidecar_root = tmp_path / "sidecar-probe"
+    _, _, sidecar_latest = _completed_run(sidecar_root)
+    sidecar = sidecar_latest.with_name(f"{sidecar_latest.name}.integrity.json")
+    external_sidecar = tmp_path / "external-sidecar.json"
+    external_sidecar.write_text(sidecar.read_text(encoding="utf-8"), encoding="utf-8")
+    sidecar.unlink()
+    sidecar.symlink_to(external_sidecar)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        build_checkpoint_retention_inventory(
+            inventory_root=sidecar_root,
+            reference_roots=[],
+            physical_hash=True,
+        )
+
+    evidence = tmp_path / "evidence"
+    evidence.mkdir()
+    reference_alias = tmp_path / "evidence-alias"
+    reference_alias.symlink_to(evidence, target_is_directory=True)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        build_checkpoint_retention_inventory(
+            inventory_root=real_root,
+            reference_roots=[("tracked", reference_alias, "authoritative")],
+            physical_hash=True,
+        )
+
+
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Unix symlink creation requires elevated privileges on Windows",
+)
+def test_retention_inventory_binding_rejects_symlinked_report(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "probe"
+    _completed_run(root)
+    inventory = build_checkpoint_retention_inventory(
+        inventory_root=root,
+        reference_roots=[],
+        physical_hash=True,
+    )
+    report_path = tmp_path / "retention.json"
+    write_json_report(report_path, inventory)
+    report_alias = tmp_path / "retention-alias.json"
+    report_alias.symlink_to(report_path)
+
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        verify_checkpoint_retention_inventory_binding(
+            inventory,
+            report_path=report_alias,
+            expected_sha256=file_sha256(report_path),
         )

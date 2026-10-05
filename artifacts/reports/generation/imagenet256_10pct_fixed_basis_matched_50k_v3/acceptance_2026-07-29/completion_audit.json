@@ -1,0 +1,582 @@
+{
+  "checks": [
+    {
+      "evidence": {
+        "authorization_gate_identity_sha256": null,
+        "cofitok": {
+          "branch": "scale/generative-system",
+          "completed_steps": 50000,
+          "dataset": "imagenet_256_10pct",
+          "dataset_provenance": {
+            "dataset": "imagenet_256_10pct",
+            "dataset_root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct",
+            "identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+            "manifest_bytes": 54885982,
+            "manifest_sha256": "dcdd622564941ad418fffa960051f14f0ad41852c681ed9a8329c5e6f561cca7",
+            "splits": {
+              "train": 128161,
+              "val": 50000
+            }
+          },
+          "dataset_provenance_warning": null,
+          "latest_checkpoint": "checkpoint_step_00050000.pt",
+          "parameter_count": 62836011,
+          "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+          "training_authorization": null
+        },
+        "dataset_identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+        "dense": {
+          "branch": "scale/generative-system",
+          "completed_steps": 50000,
+          "dataset": "imagenet_256_10pct",
+          "dataset_provenance": {
+            "dataset": "imagenet_256_10pct",
+            "dataset_root": "/root/autodl-tmp/CoFiTok/datasets/imagenet_256_10pct",
+            "identity_sha256": "97cfec247a6991d3fcda6ff14bc75a89c07063836fd9cbe99fa58a41ab867741",
+            "manifest_bytes": 54885982,
+            "manifest_sha256": "dcdd622564941ad418fffa960051f14f0ad41852c681ed9a8329c5e6f561cca7",
+            "splits": {
+              "train": 128161,
+              "val": 50000
+            }
+          },
+          "dataset_provenance_warning": null,
+          "latest_checkpoint": "checkpoint_step_00050000.pt",
+          "parameter_count": 62824707,
+          "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+          "training_authorization": null
+        },
+        "expected_branch": "scale/generative-system",
+        "expected_dataset": "imagenet_256_10pct",
+        "expected_revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+        "expected_steps": 50000,
+        "legacy_dataset_provenance_allowed": false,
+        "matched_config_sections": [
+          "data",
+          "diffusion",
+          "runtime",
+          "optimization"
+        ],
+        "max_parameter_gap": 0.02,
+        "pair_contract": {
+          "dense_nonzero_auxiliary_losses": [],
+          "factorization_model_fields": [
+            "deep_synthesis_depth",
+            "deep_synthesis_hidden_channels",
+            "gamma_mode",
+            "predictor_use_feedback",
+            "synthesis_active_token_channels",
+            "synthesis_kernel_size",
+            "synthesis_mode",
+            "synthesis_token_strides",
+            "token_channel_schedule",
+            "token_channels",
+            "token_count",
+            "token_spatial_strides"
+          ],
+          "identities": {
+            "cofitok_feedback": true,
+            "cofitok_synthesis": "fixed_basis",
+            "cofitok_token_count": 8,
+            "dense_feedback": false,
+            "dense_synthesis": "dense_identity",
+            "dense_token_count": 1
+          },
+          "issues": [],
+          "matched_config_sections": [
+            "data",
+            "diffusion",
+            "runtime",
+            "optimization"
+          ],
+          "mismatched_config_sections": [],
+          "mismatched_shared_model_fields": [],
+          "primary_epsilon_weight": 1.0,
+          "shared_model_fields": [
+            "base_channels",
+            "class_dropout_prob",
+            "image_channels",
+            "image_size",
+            "num_classes",
+            "predictor_attention_resolutions",
+            "predictor_channel_multipliers",
+            "predictor_depth",
+            "predictor_dropout",
+            "predictor_gradient_checkpointing",
+            "predictor_multiscale_levels",
+            "predictor_num_heads",
+            "predictor_num_res_blocks",
+            "predictor_type"
+          ],
+          "valid": true
+        },
+        "relative_parameter_gap": 0.00017992921160778355,
+        "schema_version": 3,
+        "status": "pass",
+        "training_recipe": {
+          "allowed_runtime_batches": [
+            [
+              16,
+              4
+            ],
+            [
+              32,
+              2
+            ],
+            [
+              64,
+              1
+            ]
+          ],
+          "effective_batches": {
+            "cofitok": {
+              "effective_batch_size": 64,
+              "gradient_accumulation_steps": 1,
+              "micro_batch_size": 64
+            },
+            "dense_identity": {
+              "effective_batch_size": 64,
+              "gradient_accumulation_steps": 1,
+              "micro_batch_size": 64
+            }
+          },
+          "expected_shared": {
+            "data.channels": 3,
+            "data.class_conditional": true,
+            "data.dataset": "imagenet_256_10pct",
+            "data.image_size": 256,
+            "data.random_horizontal_flip_prob": 0.5,
+            "diffusion.num_train_timesteps": 1000,
+            "diffusion.prediction_target": "epsilon",
+            "diffusion.schedule_type": "cosine",
+            "model.base_channels": 128,
+            "model.class_dropout_prob": 0.1,
+            "model.image_channels": 3,
+            "model.image_size": 256,
+            "model.num_classes": 1000,
+            "model.predictor_attention_resolutions": [
+              32,
+              16
+            ],
+            "model.predictor_channel_multipliers": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "model.predictor_dropout": 0.0,
+            "model.predictor_gradient_checkpointing": true,
+            "model.predictor_num_heads": 8,
+            "model.predictor_num_res_blocks": 2,
+            "model.predictor_type": "scalable_unet",
+            "optimization.betas": [
+              0.9,
+              0.99
+            ],
+            "optimization.ema_decay": 0.9999,
+            "optimization.ema_warmup_steps": 2000,
+            "optimization.grad_clip_norm": 1.0,
+            "optimization.learning_rate": 0.0001,
+            "optimization.min_learning_rate": 1e-05,
+            "optimization.warmup_steps": 1000,
+            "optimization.weight_decay": 0.01,
+            "runtime.allow_tf32": true,
+            "runtime.checkpoint_interval": 5000,
+            "runtime.device": "cuda",
+            "runtime.evaluation_interval": 1000,
+            "runtime.keep_last_checkpoints": 3,
+            "runtime.precision": "bf16",
+            "runtime.protected_checkpoint_steps": [],
+            "runtime.seed": 2027,
+            "runtime.steps": 50000
+          },
+          "issues": [],
+          "observed": {
+            "cofitok": {
+              "data.channels": 3,
+              "data.class_conditional": true,
+              "data.dataset": "imagenet_256_10pct",
+              "data.image_size": 256,
+              "data.random_horizontal_flip_prob": 0.5,
+              "diffusion.num_train_timesteps": 1000,
+              "diffusion.prediction_target": "epsilon",
+              "diffusion.schedule_type": "cosine",
+              "loss.denoise_path_component_weight": 0.1,
+              "loss.denoise_path_energy_mode": "hellinger",
+              "loss.denoise_path_energy_weight": 0.1,
+              "loss.denoise_path_prefix_weight": 0.05,
+              "loss.denoise_path_progress_mode": "token_capacity",
+              "loss.denoise_path_progress_power": 1.0,
+              "loss.epsilon_weight": 1.0,
+              "model.base_channels": 128,
+              "model.class_dropout_prob": 0.1,
+              "model.gamma_mode": "fixed_one",
+              "model.image_channels": 3,
+              "model.image_size": 256,
+              "model.num_classes": 1000,
+              "model.predictor_attention_resolutions": [
+                32,
+                16
+              ],
+              "model.predictor_channel_multipliers": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "model.predictor_dropout": 0.0,
+              "model.predictor_gradient_checkpointing": true,
+              "model.predictor_num_heads": 8,
+              "model.predictor_num_res_blocks": 2,
+              "model.predictor_type": "scalable_unet",
+              "model.predictor_use_feedback": true,
+              "model.synthesis_active_token_channels": [],
+              "model.synthesis_kernel_size": 1,
+              "model.synthesis_mode": "fixed_basis",
+              "model.synthesis_token_strides": [],
+              "model.token_channel_schedule": [
+                4,
+                4,
+                8,
+                8,
+                8,
+                8,
+                1,
+                2
+              ],
+              "model.token_channels": 8,
+              "model.token_count": 8,
+              "model.token_spatial_strides": [
+                16,
+                16,
+                8,
+                8,
+                4,
+                4,
+                1,
+                1
+              ],
+              "optimization.betas": [
+                0.9,
+                0.99
+              ],
+              "optimization.ema_decay": 0.9999,
+              "optimization.ema_warmup_steps": 2000,
+              "optimization.grad_clip_norm": 1.0,
+              "optimization.learning_rate": 0.0001,
+              "optimization.min_learning_rate": 1e-05,
+              "optimization.warmup_steps": 1000,
+              "optimization.weight_decay": 0.01,
+              "runtime.allow_tf32": true,
+              "runtime.checkpoint_interval": 5000,
+              "runtime.device": "cuda",
+              "runtime.evaluation_interval": 1000,
+              "runtime.keep_last_checkpoints": 3,
+              "runtime.precision": "bf16",
+              "runtime.protected_checkpoint_steps": [],
+              "runtime.seed": 2027,
+              "runtime.steps": 50000
+            },
+            "dense_identity": {
+              "data.channels": 3,
+              "data.class_conditional": true,
+              "data.dataset": "imagenet_256_10pct",
+              "data.image_size": 256,
+              "data.random_horizontal_flip_prob": 0.5,
+              "diffusion.num_train_timesteps": 1000,
+              "diffusion.prediction_target": "epsilon",
+              "diffusion.schedule_type": "cosine",
+              "loss.epsilon_weight": 1.0,
+              "model.base_channels": 128,
+              "model.class_dropout_prob": 0.1,
+              "model.image_channels": 3,
+              "model.image_size": 256,
+              "model.num_classes": 1000,
+              "model.predictor_attention_resolutions": [
+                32,
+                16
+              ],
+              "model.predictor_channel_multipliers": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "model.predictor_dropout": 0.0,
+              "model.predictor_gradient_checkpointing": true,
+              "model.predictor_num_heads": 8,
+              "model.predictor_num_res_blocks": 2,
+              "model.predictor_type": "scalable_unet",
+              "model.predictor_use_feedback": false,
+              "model.synthesis_mode": "dense_identity",
+              "model.token_channel_schedule": [],
+              "model.token_channels": 3,
+              "model.token_count": 1,
+              "model.token_spatial_strides": [],
+              "optimization.betas": [
+                0.9,
+                0.99
+              ],
+              "optimization.ema_decay": 0.9999,
+              "optimization.ema_warmup_steps": 2000,
+              "optimization.grad_clip_norm": 1.0,
+              "optimization.learning_rate": 0.0001,
+              "optimization.min_learning_rate": 1e-05,
+              "optimization.warmup_steps": 1000,
+              "optimization.weight_decay": 0.01,
+              "runtime.allow_tf32": true,
+              "runtime.checkpoint_interval": 5000,
+              "runtime.device": "cuda",
+              "runtime.evaluation_interval": 1000,
+              "runtime.keep_last_checkpoints": 3,
+              "runtime.precision": "bf16",
+              "runtime.protected_checkpoint_steps": [],
+              "runtime.seed": 2027,
+              "runtime.steps": 50000
+            }
+          },
+          "pair_contract": {
+            "dense_nonzero_auxiliary_losses": [],
+            "factorization_model_fields": [
+              "deep_synthesis_depth",
+              "deep_synthesis_hidden_channels",
+              "gamma_mode",
+              "predictor_use_feedback",
+              "synthesis_active_token_channels",
+              "synthesis_kernel_size",
+              "synthesis_mode",
+              "synthesis_token_strides",
+              "token_channel_schedule",
+              "token_channels",
+              "token_count",
+              "token_spatial_strides"
+            ],
+            "identities": {
+              "cofitok_feedback": true,
+              "cofitok_synthesis": "fixed_basis",
+              "cofitok_token_count": 8,
+              "dense_feedback": false,
+              "dense_synthesis": "dense_identity",
+              "dense_token_count": 1
+            },
+            "issues": [],
+            "matched_config_sections": [
+              "data",
+              "diffusion",
+              "runtime",
+              "optimization"
+            ],
+            "mismatched_config_sections": [],
+            "mismatched_shared_model_fields": [],
+            "primary_epsilon_weight": 1.0,
+            "shared_model_fields": [
+              "base_channels",
+              "class_dropout_prob",
+              "image_channels",
+              "image_size",
+              "num_classes",
+              "predictor_attention_resolutions",
+              "predictor_channel_multipliers",
+              "predictor_depth",
+              "predictor_dropout",
+              "predictor_gradient_checkpointing",
+              "predictor_multiscale_levels",
+              "predictor_num_heads",
+              "predictor_num_res_blocks",
+              "predictor_type"
+            ],
+            "valid": true
+          },
+          "schema": "cofitok_generation_training_recipe_v3",
+          "stage": "scaling",
+          "token_layout": {
+            "aggregate_compression": 0.7007299270072993,
+            "aggregate_token_to_dense_ratio": 1.4270833333333333,
+            "channels": [
+              4,
+              4,
+              8,
+              8,
+              8,
+              8,
+              1,
+              2
+            ],
+            "dense_scalar_count": 196608,
+            "full_resolution_channels": 3,
+            "issues": [],
+            "per_token_compression": [
+              192.0,
+              192.0,
+              24.0,
+              24.0,
+              6.0,
+              6.0,
+              3.0,
+              1.5
+            ],
+            "required_full_resolution_channels": 3,
+            "scalar_counts": [
+              1024,
+              1024,
+              8192,
+              8192,
+              32768,
+              32768,
+              65536,
+              131072
+            ],
+            "spatial_sizes": [
+              16,
+              16,
+              32,
+              32,
+              64,
+              64,
+              256,
+              256
+            ],
+            "spatial_strides": [
+              16,
+              16,
+              8,
+              8,
+              4,
+              4,
+              1,
+              1
+            ],
+            "total_scalar_count": 280576
+          },
+          "valid": true
+        }
+      },
+      "name": "ten_percent_matched_training",
+      "status": "pass"
+    },
+    {
+      "evidence": {
+        "bundle_sha256": "e63f20f97cc756a8c76451e6c07d514693060ba209c990668a0f84229b8fcc7d",
+        "conflict_scan_sha256": "309897b2d227e9f079e36faee4590e3df87dc5a5d0de0d5c9f512f1ddd772ce4",
+        "pytest_sha256": "1a044a5e55db13e26de3193636965ae28b3b345b1453c842f6a002bb0a387959",
+        "runbook_count": 51,
+        "runbook_syntax_sha256": "cb7fdc3732d9e7b970e0195cee02cc35058bf4412b0e368af45dfdc553d02b35",
+        "target_revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+        "training_pair_validation_sha256": "e2ad793a84ed844d7cae01eabe49db5c9b62bb12e7185d7e6194f93f1712aea6",
+        "training_revision": "781a01444fddbf0d48a427ba58bdeed50167b5be"
+      },
+      "name": "controlled_revision_transition",
+      "status": "pass"
+    },
+    {
+      "evidence": null,
+      "name": "generation_storage_capacity",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "full_training_operational_monitor",
+      "status": "missing"
+    },
+    {
+      "error": "scaling gate did not authorize promote_to_full_imagenet256",
+      "evidence": null,
+      "name": "scaling_promotion_gate",
+      "status": "fail"
+    },
+    {
+      "evidence": null,
+      "name": "full_matched_training",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "full_training_runtime_environment",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "full_training_checkpoint_code_provenance",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "reproducible_full_checkpoint_files",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "full_runtime_selection",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "full_training_audits",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "full_milestone_evaluations",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "formal_50k_generation",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "formal_sampling_runtime_selection",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "deterministic_visual_quality_audit",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "deployable_ema_inference_artifacts",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "final_generation_gate",
+      "status": "missing"
+    },
+    {
+      "evidence": null,
+      "name": "final_comparison_report",
+      "status": "missing"
+    }
+  ],
+  "complete": false,
+  "expected_revisions": {
+    "deployment_source": "781a01444fddbf0d48a427ba58bdeed50167b5be",
+    "full_training": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "ten_percent_training": "1ebcc15210e63a776a2ba448481cbd8bb94a4066"
+  },
+  "failed_checks": [
+    "scaling_promotion_gate"
+  ],
+  "missing_checks": [
+    "generation_storage_capacity",
+    "full_training_operational_monitor",
+    "full_matched_training",
+    "full_training_runtime_environment",
+    "full_training_checkpoint_code_provenance",
+    "reproducible_full_checkpoint_files",
+    "full_runtime_selection",
+    "full_training_audits",
+    "full_milestone_evaluations",
+    "formal_50k_generation",
+    "formal_sampling_runtime_selection",
+    "deterministic_visual_quality_audit",
+    "deployable_ema_inference_artifacts",
+    "final_generation_gate",
+    "final_comparison_report"
+  ],
+  "schema_version": 1,
+  "status": "failed",
+  "warnings": []
+}

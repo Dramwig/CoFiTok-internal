@@ -10,6 +10,7 @@ from cofitok.generation.artifact import (
     verify_inference_artifact,
     verify_inference_export_manifest,
 )
+from cofitok.path_security import reject_symlink_chain
 from cofitok.reporting import file_sha256, write_json_report
 
 
@@ -29,7 +30,7 @@ _METHODS = ("cofitok", "dense_identity")
 
 
 def _read_object(path: str | Path, *, name: str) -> dict[str, Any]:
-    source = Path(path)
+    source = reject_symlink_chain(path, name=name)
     if not source.is_file():
         raise FileNotFoundError(f"{name} is missing: {source}")
     with source.open("r", encoding="utf-8") as handle:
@@ -40,7 +41,7 @@ def _read_object(path: str | Path, *, name: str) -> dict[str, Any]:
 
 
 def _file_identity(path: str | Path) -> dict[str, Any]:
-    source = Path(path).resolve()
+    source = reject_symlink_chain(path, name="release source")
     if not source.is_file():
         raise FileNotFoundError(f"release source is missing: {source}")
     return {
@@ -96,6 +97,7 @@ def _artifact_receipt_row(method: str, evidence: Mapping[str, Any]) -> dict[str,
     path = Path(str(evidence.get("artifact_path", "")))
     if not path.is_absolute():
         raise ValueError(f"{method} completion artifact path is not absolute")
+    path = reject_symlink_chain(path, name=f"{method} completion artifact")
     sha256 = str(evidence.get("artifact_sha256", ""))
     source_checkpoint_sha256 = str(
         evidence.get("source_checkpoint_sha256", "")
@@ -122,7 +124,7 @@ def _artifact_receipt_row(method: str, evidence: Mapping[str, Any]) -> dict[str,
     ):
         raise ValueError(f"{method} completion artifact evidence is malformed")
     return {
-        "path": path.resolve().as_posix(),
+        "path": path.as_posix(),
         "artifact_sha256": sha256,
         "artifact_bytes": int(evidence["artifact_bytes"]),
         "checkpoint_step": 300_000,
@@ -210,8 +212,14 @@ def _validate_manifest_against_row(
     *,
     verify_sources: bool,
 ) -> None:
-    artifact = Path(str(row.get("path", ""))).resolve()
-    expected_path = inference_export_manifest_path(artifact).resolve()
+    artifact = reject_symlink_chain(
+        str(row.get("path", "")),
+        name=f"{method} release artifact",
+    )
+    expected_path = reject_symlink_chain(
+        inference_export_manifest_path(artifact),
+        name=f"{method} inference export manifest",
+    )
     descriptor = row.get("export_manifest")
     if not isinstance(descriptor, Mapping):
         raise ValueError(f"{method} release receipt lacks export manifest")
@@ -283,7 +291,7 @@ def write_generation_release_receipt(
         integrity = verify_inference_artifact(row["path"])
         _validate_artifact_against_row(method, row, integrity)
         _validate_manifest_against_row(method, row, verify_sources=True)
-    target = Path(output)
+    target = reject_symlink_chain(output, name="generation release receipt")
     if target.exists():
         existing = _read_object(target, name="generation release receipt")
         if existing != payload:
@@ -321,11 +329,15 @@ def verify_generation_release_receipt(
     if receipt != expected:
         raise ValueError("generation release receipt differs from completion audit")
 
-    artifact = Path(artifact_path).resolve()
+    artifact = reject_symlink_chain(artifact_path, name="generation release artifact")
     matches = [
         (method, row)
         for method, row in receipt["artifacts"].items()
-        if Path(str(row.get("path", ""))).resolve() == artifact
+        if reject_symlink_chain(
+            str(row.get("path", "")),
+            name=f"{method} release artifact",
+        )
+        == artifact
     ]
     if len(matches) != 1:
         raise ValueError("inference artifact is not authorized by release receipt")

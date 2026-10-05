@@ -278,7 +278,8 @@ def test_waiter_main_launches_only_readiness_after_pass_gate_and_idle_gpu(
         pid = 901
 
         @staticmethod
-        def wait() -> int:
+        def wait(*, timeout: float) -> int:
+            assert timeout == 1.0
             return 0
 
     def fake_popen(command: list[str], **kwargs: object) -> Child:

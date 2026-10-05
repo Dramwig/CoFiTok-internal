@@ -1,0 +1,60 @@
+{
+  "approved_at": "2026-08-19T18:26:46.326405+00:00",
+  "formal_git": {
+    "branch": "scale/generative-system",
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "porcelain_count": 89,
+    "porcelain_sha256": "18e5981f22a2ac255c7f60343429daa6ceea86412b1d7bd09bc474f2faf74004",
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tracked_dirty": false,
+    "tree": "659fa94726c4aec0afef49904f82b828bb62872b"
+  },
+  "migration": {
+    "approval": {
+      "bytes": 2582,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_pipeline_supervisor_migration_v1/approval.json",
+      "sha256": "5a07a5e0776e7dfdcbf4de60ab3d00b771b8dbd12aee4d67fb41ea6c88de7fdc"
+    },
+    "execution": {
+      "bytes": 8242,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_pipeline_supervisor_migration_v1/execution.json",
+      "sha256": "a9d5cb81312d1d7de6adf6fbbfb76d04b0f5a14002a6c16a835fd478a74a8f39"
+    },
+    "plan": {
+      "bytes": 88603,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_pipeline_supervisor_migration_v1/plan.json",
+      "sha256": "1a8d8783b88211cbb6b1f203b732b6a0cf3863fa6c8daa9a7c51cb0744972c4c"
+    }
+  },
+  "plan": {
+    "bytes": 27186,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_pipeline_supervisor_receipt_repair_v1/plan.json",
+    "sha256": "fa7343a704546dc6eacecdc5dc0b17e9dc0a8b2e93e6bddbc00bad4315adb190"
+  },
+  "role": "generation_capacity_supervisor_receipt_repair_approval",
+  "schema_version": 1,
+  "scope": {
+    "active_quality_bridge_or_capacity_probe_signaling_allowed": false,
+    "byte_preserving_receipt_archive_required": true,
+    "canonical_receipt_rotation_allowed": true,
+    "direct_training_sampling_or_evaluation_launch_allowed": false,
+    "existing_process_signaling_allowed": false,
+    "formal_checkout_modification_allowed": false,
+    "gpu_query_or_allocation_allowed": false,
+    "selected_missing_control_process_launch_allowed": [
+      "capacity_full_300k_posteval",
+      "capacity_full_300k_finalization"
+    ],
+    "unrelated_process_signaling_allowed": false
+  },
+  "status": "approved",
+  "target_git": {
+    "branch": "fix/generation-capacity-pipeline-supervisor-migration-v1",
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-supervisor-heartbeat-hardened-2fbcadd/CoFiTok-internal",
+    "porcelain_count": 0,
+    "porcelain_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "revision": "a963ff4bb91fd837f67856be996810ff45958712",
+    "tracked_dirty": false,
+    "tree": "248685d888e74c7844ba0aedd3d858e9c67e3162"
+  }
+}

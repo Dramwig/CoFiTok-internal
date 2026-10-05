@@ -111,7 +111,10 @@ def _run_checkpoint_evaluator(
     check: bool = True,
 ) -> subprocess.CompletedProcess[str]:
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(ROOT / "src")
+    inherited_pythonpath = environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(ROOT / "src"), inherited_pythonpath) if path
+    )
     command = [
         sys.executable,
         str(ROOT / "scripts/evaluate_generation_checkpoint.py"),

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import os
 from types import SimpleNamespace
 
 import pytest
@@ -118,3 +119,32 @@ def test_checkpoint_binds_dataset_before_deserialization(tmp_path, monkeypatch) 
             expected_dataset_provenance=drifted,
         )
     monkeypatch.setattr(torch, "load", real_torch_load)
+
+
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Unix symlink creation requires elevated privileges on Windows",
+)
+def test_capture_rejects_symlinked_dataset_root_or_manifest_parent(
+    tmp_path, monkeypatch
+) -> None:
+    report, config = _fixture_provenance(tmp_path, monkeypatch)
+    assert report["status"] == "pass"
+
+    dataset_root = tmp_path / "fixture_imagenet"
+    alias_config = SimpleNamespace(dataset="fixture_imagenet", root=str(tmp_path))
+    # The normal dataset name remains real; put the alias in an upstream root
+    # so the path itself contains a symlinked parent component.
+    upstream_alias = tmp_path / "upstream-alias"
+    upstream_alias.symlink_to(tmp_path, target_is_directory=True)
+    alias_config.root = str(upstream_alias)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        capture_dataset_provenance(alias_config, train_images=1, val_images=1)
+
+    manifest = dataset_root / "metadata" / "image_manifest.jsonl"
+    external = tmp_path / "external-manifest.jsonl"
+    external.write_bytes(manifest.read_bytes())
+    manifest.unlink()
+    manifest.symlink_to(external)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        capture_dataset_provenance(config, train_images=1, val_images=1)

@@ -27,5 +27,6 @@
     "This schematic is a paper-facing method overview, not a numeric result.",
     "The expressive predictor T can be upgraded without changing the restricted S_k interface.",
     "The blocked dashed path marks information that must not enter S_k in the default method."
-  ]
+  ],
+  "subtitle": "Dense pixel-space noise prediction is factorized into ordered restricted denoising components."
 }

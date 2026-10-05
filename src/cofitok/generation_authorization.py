@@ -10,6 +10,7 @@ from cofitok.generation_gate import (
     validate_generation_gate_authorization,
 )
 from cofitok.generation_gate_sources import verify_generation_gate_source_reports
+from cofitok.path_security import reject_symlink_chain
 from cofitok.reporting import file_sha256
 
 
@@ -28,6 +29,10 @@ def build_generation_gate_binding(
     gate_bytes: int,
     gate_sha256: str,
 ) -> dict[str, Any]:
+    gate_source = reject_symlink_chain(
+        gate_path,
+        name="generation authorization gate",
+    )
     validation = validate_generation_gate_authorization(
         gate,
         expected_stage=expected_stage,
@@ -41,7 +46,7 @@ def build_generation_gate_binding(
         "status": "pass",
         "stage": validation["stage"],
         "decision": validation["decision"],
-        "gate_path": Path(gate_path).resolve().as_posix(),
+        "gate_path": gate_source.as_posix(),
         "gate_bytes": int(gate_bytes),
         "gate_sha256": gate_sha256,
         "gate_identity_sha256": generation_gate_identity_sha256(gate),
@@ -54,7 +59,12 @@ def capture_generation_gate_binding(
     *,
     expected_stage: str,
 ) -> dict[str, Any]:
-    path = Path(gate_path).resolve()
+    path = reject_symlink_chain(
+        gate_path,
+        name="generation authorization gate",
+    )
+    if not path.is_file():
+        raise FileNotFoundError(f"generation authorization gate is missing: {path}")
     with path.open("r", encoding="utf-8") as handle:
         gate = json.load(handle)
     verify_generation_gate_source_reports(gate)
@@ -99,9 +109,13 @@ def validate_generation_gate_binding(
         or authorization["decision"] != _EXPECTED_DECISIONS[expected_stage]
     ):
         raise ValueError("generation authorization identity is invalid")
-    gate_path = str(authorization["gate_path"])
-    if not gate_path or not Path(gate_path).is_absolute():
+    raw_gate_path = str(authorization["gate_path"])
+    if not raw_gate_path or not Path(raw_gate_path).is_absolute():
         raise ValueError("generation authorization gate path is not absolute")
+    gate_path = reject_symlink_chain(
+        raw_gate_path,
+        name="generation authorization gate",
+    ).as_posix()
     if int(authorization["gate_bytes"]) < 1:
         raise ValueError("generation authorization gate byte count is invalid")
     for name in ("gate_sha256", "gate_identity_sha256"):

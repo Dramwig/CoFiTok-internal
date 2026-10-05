@@ -18,6 +18,7 @@ from cofitok.generation.artifact import (
 from cofitok.generation.release import verify_generation_release_receipt
 from cofitok.generation_authorization import validate_generation_gate_binding
 from cofitok.models import CoFiTokTiny
+from cofitok.path_security import reject_symlink_chain
 from cofitok.training import ExponentialMovingAverage
 from cofitok.training.authorization import (
     validate_checkpoint_training_authorization,
@@ -62,8 +63,11 @@ def load_generation_model(
     if weights not in {"ema", "model"}:
         raise ValueError("weights must be ema or model")
 
-    path = Path(checkpoint_path)
-    integrity_path = checkpoint_integrity_path(path)
+    path = reject_symlink_chain(checkpoint_path, name="generation checkpoint")
+    integrity_path = reject_symlink_chain(
+        checkpoint_integrity_path(path),
+        name="generation checkpoint integrity manifest",
+    )
     with integrity_path.open("r", encoding="utf-8") as handle:
         integrity_hint = json.load(handle)
     is_inference_artifact = (

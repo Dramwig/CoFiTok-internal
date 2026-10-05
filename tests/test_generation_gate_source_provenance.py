@@ -44,6 +44,22 @@ def test_generation_gate_source_reports_rehash_every_bound_file(tmp_path: Path) 
         verify_generation_gate_source_reports(gate)
 
 
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Unix symlink creation requires elevated privileges on Windows",
+)
+def test_generation_gate_source_identity_rejects_symlink(tmp_path: Path) -> None:
+    target = tmp_path / "training_report.json"
+    target.write_text("{}\n", encoding="ascii")
+    alias = tmp_path / "alias.json"
+    alias.symlink_to(target)
+
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        from cofitok.generation_gate_sources import gate_source_report_identity
+
+        gate_source_report_identity(alias)
+
+
 def test_generation_gate_source_reports_reject_wrong_authoritative_path(
     tmp_path: Path,
 ) -> None:
@@ -188,7 +204,10 @@ def test_sources_only_cli_accepts_quality_hold_but_rejects_source_drift(
     gate_path = tmp_path / "promotion_gate.json"
     gate_path.write_text(json.dumps(gate), encoding="utf-8")
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(ROOT / "src")
+    inherited_pythonpath = environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(ROOT / "src"), inherited_pythonpath) if path
+    )
     command = [
         sys.executable,
         str(ROOT / "scripts/validate_generation_gate_report.py"),

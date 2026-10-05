@@ -1,0 +1,278 @@
+{
+  "authorization_boundary": {
+    "final_quality_gate_build_allowed": true,
+    "formal_generation_completion_claim_allowed": false,
+    "inference_export_allowed": false,
+    "posteval_50k_allowed_after_exact_training_pass": true,
+    "process_signaling_allowed": false,
+    "release_receipt_allowed": false,
+    "training_launch_allowed": false,
+    "unrelated_gpu_process_modification_allowed": false
+  },
+  "checkout": {
+    "git": {
+      "branch": "scale/generation-capacity-full-postprocessing-v1",
+      "revision": "5e04dbe488ee166d2756bc99c71ee5fffbe0bd83",
+      "tracked_dirty": false,
+      "tree": "29d4e24f5ae9c294401902d554a1f2388a61ef64"
+    },
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal"
+  },
+  "control_checkout": {
+    "git": {
+      "branch": "fix/generation-capacity-pipeline-supervisor-migration-v1",
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-supervisor-heartbeat-hardened-2fbcadd/CoFiTok-internal",
+      "revision": "a963ff4bb91fd837f67856be996810ff45958712",
+      "tracked_dirty": false,
+      "tree": "248685d888e74c7844ba0aedd3d858e9c67e3162"
+    },
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-supervisor-heartbeat-hardened-2fbcadd/CoFiTok-internal"
+  },
+  "deployed_at": "2026-08-19T18:27:36.237461+00:00",
+  "formal_checkout_snapshot": {
+    "head": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+    "porcelain_count": 89,
+    "porcelain_sha256": "18e5981f22a2ac255c7f60343429daa6ceea86412b1d7bd09bc474f2faf74004"
+  },
+  "full_output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1",
+  "git": {
+    "branch": "scale/generation-capacity-full-postprocessing-v1",
+    "revision": "5e04dbe488ee166d2756bc99c71ee5fffbe0bd83",
+    "tracked_dirty": false,
+    "tree": "29d4e24f5ae9c294401902d554a1f2388a61ef64"
+  },
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "role": "capacity_full_300k_posteval_supervisor_deployment",
+  "schema_version": 1,
+  "source_output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1",
+  "sources": {
+    "base_posteval_runbook": {
+      "bytes": 22431,
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal/artifacts/runbooks/generation_stability_ema_teacher_full_posteval_50k.sh",
+      "sha256": "d205f7c5fc811fef4098ac632c5a9b9f14343391dfd6b7eb1a6352385db68a95"
+    },
+    "completion_audit": {
+      "bytes": 26431,
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal/scripts/audit_generation_capacity_full_completion.py",
+      "sha256": "6fa3ed2ffbe3a5718c8c03349b0c92c1b159162631132597d2f23005413fe46f"
+    },
+    "failed_migration_execution": {
+      "bytes": 8242,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_pipeline_supervisor_migration_v1/execution.json",
+      "sha256": "a9d5cb81312d1d7de6adf6fbbfb76d04b0f5a14002a6c16a835fd478a74a8f39"
+    },
+    "finalization_runbook": {
+      "bytes": 3230,
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal/artifacts/runbooks/generation_capacity_full_300k_finalize_after_gate.sh",
+      "sha256": "e4f7e6b9b20ffcc976e7656519a7d80b53286b7f12e6bbebf52deb55161e1c6e"
+    },
+    "finalization_supervisor_runbook": {
+      "bytes": 4746,
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal/artifacts/runbooks/generation_capacity_full_300k_finalization_supervisor.sh",
+      "sha256": "eeba572a3b18152353234f9d47fdd8505ef6afb1204a5486a1beafe55553f6ff"
+    },
+    "finalization_supervisor_script": {
+      "bytes": 24994,
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal/scripts/run_generation_capacity_full_300k_finalization_supervisor.py",
+      "sha256": "5c4b317064e3176bd7792452f9ed5cdac81efbc2dd8bd0d3499e1d29e03f1577"
+    },
+    "hardened_control_entrypoint": {
+      "bytes": 29371,
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-supervisor-heartbeat-hardened-2fbcadd/CoFiTok-internal/scripts/run_generation_capacity_full_300k_posteval_supervisor.py",
+      "sha256": "3fab1f39372e35c0f08d0b4ac97b512d4e6037695115259fb56b6706f7fe3d79"
+    },
+    "posteval_protocol_runbook": {
+      "bytes": 1089,
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal/artifacts/runbooks/generation_capacity_full_300k_posteval_50k.sh",
+      "sha256": "f7d403993c398ebc518983795c15003063157f6a6df589a937952a5c1c00a1f4"
+    },
+    "posteval_supervisor_runbook": {
+      "bytes": 3956,
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal/artifacts/runbooks/generation_capacity_full_300k_posteval_supervisor.sh",
+      "sha256": "e92938fe14d72cd446f6dbe2f3eebc036bb70a499075eb6b0de8991327a2b885"
+    },
+    "posteval_supervisor_script": {
+      "bytes": 29079,
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal/scripts/run_generation_capacity_full_300k_posteval_supervisor.py",
+      "sha256": "2839afecc3705ae6d9cb583628821b6c21067f07830c45e740e4315e104f74a3"
+    },
+    "training_supervisor_deployment": {
+      "bytes": 20433,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_training_supervisor_deployment_receipt.json",
+      "sha256": "4a86f1c399cf4dcc3457d9a63db9f3cca0d4dfe028e22c551693ac2bf3f54267"
+    }
+  },
+  "status": "active",
+  "supersession": {
+    "byte_preserving_archive": {
+      "bytes": 7985,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_pipeline_supervisor_receipt_repair_v1/receipt_archives/capacity_full_300k_posteval_supervisor_deployment_receipt.1dd2326555fce015be4c28063edc8f34d45a66c8e311555f929273d9755b6e1c.json",
+      "sha256": "1dd2326555fce015be4c28063edc8f34d45a66c8e311555f929273d9755b6e1c"
+    },
+    "claim_boundary": {
+      "control_process_continuity_repaired": true,
+      "direct_gpu_work_launched": false,
+      "formal_checkout_modified": false,
+      "scientific_checkout_or_protocol_changed": false
+    },
+    "legacy_incremental_bundle": {
+      "advertised_ref": "refs/heads/scale/generation-capacity-full-postprocessing-v1",
+      "advertised_revision": "5e04dbe488ee166d2756bc99c71ee5fffbe0bd83",
+      "bytes": 57876,
+      "path": "/tmp/cofitok-capacity-full-postprocessing-5e04dbe.bundle",
+      "prerequisite_revision": "d75dfea37ddcb504cfe8ecba25774ee36f522480",
+      "sha256": "be6d1d5b548db6fe694d52bd1fd19a2f6e47bddaff8466bbef71d7e39b16fbb1"
+    },
+    "legacy_missing_sources": {
+      "incremental_bundle": {
+        "bytes": 57876,
+        "path": "/tmp/cofitok-capacity-full-postprocessing-5e04dbe.bundle",
+        "sha256": "be6d1d5b548db6fe694d52bd1fd19a2f6e47bddaff8466bbef71d7e39b16fbb1"
+      }
+    },
+    "migration": {
+      "approval": {
+        "bytes": 2582,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_pipeline_supervisor_migration_v1/approval.json",
+        "sha256": "5a07a5e0776e7dfdcbf4de60ab3d00b771b8dbd12aee4d67fb41ea6c88de7fdc"
+      },
+      "execution": {
+        "bytes": 8242,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_pipeline_supervisor_migration_v1/execution.json",
+        "sha256": "a9d5cb81312d1d7de6adf6fbbfb76d04b0f5a14002a6c16a835fd478a74a8f39"
+      },
+      "plan": {
+        "bytes": 88603,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/control_plane_continuity/capacity_pipeline_supervisor_migration_v1/plan.json",
+        "sha256": "1a8d8783b88211cbb6b1f203b732b6a0cf3863fa6c8daa9a7c51cb0744972c4c"
+      }
+    },
+    "reason": "formal_checkout_snapshot_changed_and_failed_migration",
+    "role": "capacity_supervisor_deployment_receipt_supersession",
+    "schema_version": 1,
+    "superseded_canonical": {
+      "bytes": 7985,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_posteval_supervisor_deployment_receipt.json",
+      "sha256": "1dd2326555fce015be4c28063edc8f34d45a66c8e311555f929273d9755b6e1c"
+    }
+  },
+  "supervisor": {
+    "child_log_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_posteval_child.log",
+    "initial_detail": "waiting_for_passed_capacity_full_training",
+    "initial_status": "waiting",
+    "initial_status_identity": {
+      "bytes": 2474,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_posteval_supervisor_status.json",
+      "sha256": "cd77c70d0a82e8726ce411425af59170d3cb2671fb1cfef649935c48b77d62b3"
+    },
+    "max_attempts": 8,
+    "nice": 19,
+    "pid": 409865,
+    "pid_pointer": {
+      "bytes": 7,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_posteval_supervisor.pid",
+      "sha256": "61f9a646568be6d34eb416003bdba93331eaaa34669e0b728dc80ffed8c12a02"
+    },
+    "poll_seconds": 60,
+    "process": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/run_generation_capacity_full_300k_posteval_supervisor.py --evaluation-project /root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal --training-project /root/autodl-tmp/CoFiTok/checkouts/capacity-full-execution-d75dfea/CoFiTok-internal --formal-project /root/autodl-tmp/CoFiTok/CoFiTok-internal --checkpoint-root /root/autodl-tmp/CoFiTok/checkpoints/generation --full-output-root /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1 --training-supervisor-status /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_training_supervisor_status.json --training-supervisor-deployment /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_training_supervisor_deployment_receipt.json --expected-training-supervisor-deployment-sha256 4a86f1c399cf4dcc3457d9a63db9f3cca0d4dfe028e22c551693ac2bf3f54267 --training-launch-receipt /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/reports/capacity_full_300k_training_launch_receipt.json --cofitok-training /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/cofitok/training_report.json --dense-training /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/dense_identity/training_report.json --pair-monitor /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/pair_monitor.json --final-gate /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/reports/final_generation_gate.json --comparison /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/reports/comparison/large_scale_generation_comparison.json --runbook /root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal/artifacts/runbooks/generation_capacity_full_300k_posteval_50k.sh --status-output /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_posteval_supervisor_status.json --child-log /root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_posteval_child.log --expected-evaluation-revision 5e04dbe488ee166d2756bc99c71ee5fffbe0bd83 --expected-evaluation-tree 29d4e24f5ae9c294401902d554a1f2388a61ef64 --expected-evaluation-branch scale/generation-capacity-full-postprocessing-v1 --expected-training-revision d75dfea37ddcb504cfe8ecba25774ee36f522480 --expected-training-tree e96059ab0e77942e716c23a69364fc6c8ad9048d --expected-training-branch scale/generation-capacity-full-300k-execution-v1 --poll-seconds 60 --required-idle-polls 5 --max-attempts 8 --retry-seconds 120 --timeout-seconds 31536000",
+    "process_argv": [
+      "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+      "scripts/run_generation_capacity_full_300k_posteval_supervisor.py",
+      "--evaluation-project",
+      "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal",
+      "--training-project",
+      "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-execution-d75dfea/CoFiTok-internal",
+      "--formal-project",
+      "/root/autodl-tmp/CoFiTok/CoFiTok-internal",
+      "--checkpoint-root",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation",
+      "--full-output-root",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1",
+      "--training-supervisor-status",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_training_supervisor_status.json",
+      "--training-supervisor-deployment",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_training_supervisor_deployment_receipt.json",
+      "--expected-training-supervisor-deployment-sha256",
+      "4a86f1c399cf4dcc3457d9a63db9f3cca0d4dfe028e22c551693ac2bf3f54267",
+      "--training-launch-receipt",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/reports/capacity_full_300k_training_launch_receipt.json",
+      "--cofitok-training",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/cofitok/training_report.json",
+      "--dense-training",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/dense_identity/training_report.json",
+      "--pair-monitor",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/pair_monitor.json",
+      "--final-gate",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/reports/final_generation_gate.json",
+      "--comparison",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1/reports/comparison/large_scale_generation_comparison.json",
+      "--runbook",
+      "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-postprocessing-5e04dbe-v2/CoFiTok-internal/artifacts/runbooks/generation_capacity_full_300k_posteval_50k.sh",
+      "--status-output",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_posteval_supervisor_status.json",
+      "--child-log",
+      "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_posteval_child.log",
+      "--expected-evaluation-revision",
+      "5e04dbe488ee166d2756bc99c71ee5fffbe0bd83",
+      "--expected-evaluation-tree",
+      "29d4e24f5ae9c294401902d554a1f2388a61ef64",
+      "--expected-evaluation-branch",
+      "scale/generation-capacity-full-postprocessing-v1",
+      "--expected-training-revision",
+      "d75dfea37ddcb504cfe8ecba25774ee36f522480",
+      "--expected-training-tree",
+      "e96059ab0e77942e716c23a69364fc6c8ad9048d",
+      "--expected-training-branch",
+      "scale/generation-capacity-full-300k-execution-v1",
+      "--poll-seconds",
+      "60",
+      "--required-idle-polls",
+      "5",
+      "--max-attempts",
+      "8",
+      "--retry-seconds",
+      "120",
+      "--timeout-seconds",
+      "31536000"
+    ],
+    "required_idle_polls": 5,
+    "status_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_posteval_supervisor_status.json"
+  },
+  "target_state_at_deployment": {
+    "formal_generation_completion_claimed": false,
+    "full_output_root_absent": true,
+    "posteval_launch_performed": false,
+    "training_launch_receipt_absent": true
+  },
+  "training_checkout": {
+    "git": {
+      "branch": "scale/generation-capacity-full-300k-execution-v1",
+      "revision": "d75dfea37ddcb504cfe8ecba25774ee36f522480",
+      "tracked_dirty": false,
+      "tree": "e96059ab0e77942e716c23a69364fc6c8ad9048d"
+    },
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-full-execution-d75dfea/CoFiTok-internal"
+  },
+  "training_supervisor_deployment": {
+    "bytes": 20433,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_training_supervisor_deployment_receipt.json",
+    "sha256": "4a86f1c399cf4dcc3457d9a63db9f3cca0d4dfe028e22c551693ac2bf3f54267"
+  },
+  "validation": {
+    "linux_python_compile": "passed",
+    "linux_runbook_bash_n": "passed",
+    "linux_source_scoped": "254 passed",
+    "local_capacity_chain": "40 passed",
+    "local_capacity_posteval_and_paths": "19 passed",
+    "local_entrypoint_contract": "2 passed",
+    "local_gate_export_completion": "212 passed",
+    "waiting_state_rehearsal": {
+      "detail": "capacity_full_posteval_supervisor_timeout",
+      "expected_timeout": true,
+      "full_output_root_created": false,
+      "posteval_launch_performed": false,
+      "status": "failed"
+    }
+  }
+}

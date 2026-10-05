@@ -1179,7 +1179,12 @@ def test_quality_bridge_execute_runbook_is_receipted_and_never_authorizes_300k()
 
 def test_quality_bridge_direct_entrypoints_import_under_runbook_pythonpath() -> None:
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = os.pathsep.join((str(ROOT), str(ROOT / "src")))
+    inherited_pythonpath = environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path
+        for path in (str(ROOT), str(ROOT / "src"), inherited_pythonpath)
+        if path
+    )
     for script in QUALITY_BRIDGE_DIRECT_ENTRYPOINTS:
         result = subprocess.run(
             [sys.executable, str(ROOT / "scripts" / script), "--help"],

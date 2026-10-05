@@ -478,7 +478,10 @@ def test_ema_export_is_smaller_verified_and_sample_equivalent(tmp_path) -> None:
     cli_report_path = tmp_path / "cli_export_report.json"
     cli_artifact = tmp_path / "cli_cofitok_ema_inference.pt"
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(ROOT / "src")
+    inherited_pythonpath = environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(ROOT / "src"), inherited_pythonpath) if path
+    )
     result = subprocess.run(
         [
             sys.executable,
@@ -524,6 +527,31 @@ def test_ema_export_rejects_source_without_deployment_provenance(tmp_path) -> No
             source,
             tmp_path / "unprovenanced_inference.pt",
         )
+
+
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Windows symlink creation requires elevated privileges",
+)
+def test_inference_artifact_rejects_symlinked_artifact_and_integrity_manifest(
+    tmp_path,
+) -> None:
+    source = _training_checkpoint(tmp_path)
+    artifact = tmp_path / "cofitok_ema_inference.pt"
+    export_ema_inference_artifact(source, artifact)
+
+    artifact_alias = tmp_path / "artifact_alias.pt"
+    artifact_alias.symlink_to(artifact)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        verify_inference_artifact(artifact_alias)
+
+    integrity_path = checkpoint_integrity_path(artifact)
+    integrity_target = tmp_path / "artifact_integrity_target.json"
+    integrity_target.write_bytes(integrity_path.read_bytes())
+    integrity_path.unlink()
+    integrity_path.symlink_to(integrity_target)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        verify_inference_artifact(artifact)
 
 
 def test_completed_export_replay_preserves_all_bound_bytes(tmp_path) -> None:
@@ -640,7 +668,10 @@ def test_concurrent_export_fails_closed_before_creating_outputs(tmp_path) -> Non
     artifact = tmp_path / "cofitok_ema_inference.pt"
     report = tmp_path / "export_report.json"
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(ROOT / "src")
+    inherited_pythonpath = environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(ROOT / "src"), inherited_pythonpath) if path
+    )
 
     with exclusive_output_lock(artifact, role="test_export_owner"):
         result = subprocess.run(
@@ -817,6 +848,19 @@ def test_release_receipt_requires_bound_export_manifest_at_consumption(tmp_path)
 
     with pytest.raises(FileNotFoundError, match="release source is missing"):
         verify_generation_release_receipt(receipt, artifact)
+
+
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Unix symlink creation requires elevated privileges on Windows",
+)
+def test_release_receipt_rejects_symlinked_receipt(tmp_path) -> None:
+    artifact, _, receipt = _release_receipt_fixture(tmp_path)
+    alias = tmp_path / "release_receipt_alias.json"
+    alias.symlink_to(receipt)
+
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        verify_generation_release_receipt(alias, artifact)
 
 
 def test_release_artifact_remains_portable_after_source_checkpoint_archival(

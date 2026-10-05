@@ -7,6 +7,7 @@ from cofitok.models import CoFiTokOutput
 from cofitok.training.losses import (
     _component_energy_distribution_loss,
     _low_snr_high_frequency_loss,
+    _min_snr_epsilon_loss,
     compute_losses,
     denoise_path_schedule,
 )
@@ -583,3 +584,80 @@ def test_low_snr_high_frequency_loss_emphasizes_noisy_timesteps() -> None:
     )
 
     assert late.item() > early.item()
+
+
+def test_min_snr_gamma_zero_preserves_raw_epsilon_objective() -> None:
+    schedule = DiffusionSchedule(
+        DiffusionConfig(num_train_timesteps=16, schedule_type="cosine"),
+        device="cpu",
+    )
+    output_epsilon = torch.randn(2, 3, 4, 4)
+    noise = torch.randn_like(output_epsilon)
+    timesteps = torch.tensor([0, 15])
+
+    raw = torch.nn.functional.mse_loss(output_epsilon, noise)
+    weighted, mean_weight = _min_snr_epsilon_loss(
+        output_epsilon,
+        noise,
+        schedule,
+        timesteps,
+        gamma=0.0,
+    )
+
+    torch.testing.assert_close(weighted, raw)
+    torch.testing.assert_close(mean_weight, output_epsilon.new_tensor(1.0))
+
+
+def test_min_snr_epsilon_loss_uses_standard_per_sample_weights() -> None:
+    schedule = DiffusionSchedule(
+        DiffusionConfig(num_train_timesteps=16, schedule_type="cosine"),
+        device="cpu",
+    )
+    output_epsilon = torch.zeros(2, 1, 1, 1)
+    noise = torch.tensor([[[[1.0]]], [[[2.0]]]])
+    timesteps = torch.tensor([0, 15])
+    gamma = 1.5
+
+    weighted, mean_weight = _min_snr_epsilon_loss(
+        output_epsilon,
+        noise,
+        schedule,
+        timesteps,
+        gamma=gamma,
+    )
+    alpha_cumprod = schedule.alphas_cumprod[timesteps]
+    snr = alpha_cumprod / (1.0 - alpha_cumprod)
+    expected_weights = torch.minimum(snr, snr.new_tensor(gamma)) / snr
+    expected_loss = (noise.square().flatten(1).mean(dim=1) * expected_weights).mean()
+
+    torch.testing.assert_close(weighted, expected_loss)
+    torch.testing.assert_close(mean_weight, expected_weights.mean())
+
+
+def test_compute_losses_reports_raw_and_weighted_epsilon_separately() -> None:
+    output = _fake_output_with_count(1, shape=(4, 4))
+    schedule = DiffusionSchedule(DiffusionConfig(num_train_timesteps=10), device="cpu")
+    clean = torch.zeros(2, 3, 4, 4)
+    noise = torch.randn_like(clean)
+    timesteps = torch.tensor([1, 8])
+    noisy = schedule.add_noise(clean, noise, timesteps)
+
+    losses = compute_losses(
+        LossConfig(
+            prefix_weight=0.0,
+            monotonic_weight=0.0,
+            zero_token_weight=0.0,
+            min_snr_gamma=2.0,
+        ),
+        output,
+        schedule,
+        noisy,
+        clean,
+        noise,
+        timesteps,
+    )
+
+    assert losses.epsilon.item() != losses.epsilon_unweighted.item()
+    assert losses.min_snr_weight_mean.item() < 1.0
+    assert "epsilon_unweighted" in losses.as_dict()
+    assert "min_snr_weight_mean" in losses.as_dict()

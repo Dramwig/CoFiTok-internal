@@ -126,6 +126,25 @@ def test_ema_teacher_consistency_is_a_matched_training_loss() -> None:
     ]
 
 
+def test_min_snr_gamma_is_a_matched_training_loss() -> None:
+    cofitok = _read("imagenet256_10pct_fixed_basis_cofitok_k8_50k.json")
+    dense = _read("imagenet256_10pct_fixed_basis_dense_50k.json")
+    for config in (cofitok, dense):
+        config["loss"]["min_snr_gamma"] = 5.0
+
+    report = generation_pair_contract(cofitok, dense)
+
+    assert report["valid"] is True, report["issues"]
+    assert report["mismatched_shared_training_loss_fields"] == []
+    assert "min_snr_gamma" in report["shared_training_loss_fields"]
+
+    mismatched = copy.deepcopy(dense)
+    mismatched["loss"]["min_snr_gamma"] = 0.0
+    report = generation_pair_contract(cofitok, mismatched)
+    assert report["valid"] is False
+    assert report["mismatched_shared_training_loss_fields"] == ["min_snr_gamma"]
+
+
 def test_ema_teacher_5k_pair_targets_the_late_drift_window() -> None:
     cofitok = _read(
         "imagenet256_10pct_stability_rgbtail3_rollout_x0_u2_ema_teacher_k8_probe5k.json"

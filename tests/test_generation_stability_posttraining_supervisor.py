@@ -249,7 +249,8 @@ def test_stage_runner_stops_on_nonretryable_audit_report(
         pid = 19
 
         @staticmethod
-        def wait() -> int:
+        def wait(*, timeout: float) -> int:
+            assert timeout == 5.0
             return 1
 
     monkeypatch.setattr(supervisor.subprocess, "Popen", lambda *a, **k: Child())
@@ -260,6 +261,7 @@ def test_stage_runner_stops_on_nonretryable_audit_report(
             project=tmp_path,
             environment={},
             max_attempts=3,
+            poll_seconds=5.0,
             retry_seconds=1.0,
             write_status=lambda **kwargs: calls.append(kwargs),
             nonretryable_report=report,
@@ -279,7 +281,8 @@ def test_stage_runner_stops_immediately_when_replay_is_rejected(
         pid = 23
 
         @staticmethod
-        def wait() -> int:
+        def wait(*, timeout: float) -> int:
+            assert timeout == 5.0
             return supervisor.STAGE_REPLAY_ERROR_EXIT_CODE
 
     def popen(*args, **kwargs):
@@ -296,12 +299,51 @@ def test_stage_runner_stops_immediately_when_replay_is_rejected(
             project=tmp_path,
             environment={},
             max_attempts=3,
+            poll_seconds=5.0,
             retry_seconds=1.0,
             write_status=lambda **kwargs: calls.append(kwargs),
         )
 
     assert launches == 1
     assert calls[-1]["detail"] == "inference_export_replay_rejected"
+
+
+def test_stage_runner_refreshes_status_while_child_is_running(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict] = []
+
+    class Child:
+        pid = 29
+        wait_calls = 0
+
+        @classmethod
+        def wait(cls, *, timeout: float) -> int:
+            assert timeout == 3.0
+            cls.wait_calls += 1
+            if cls.wait_calls == 1:
+                raise subprocess.TimeoutExpired(["posteval"], timeout)
+            return 0
+
+    monkeypatch.setattr(supervisor.subprocess, "Popen", lambda *a, **k: Child())
+    supervisor._run_stage(
+        name="full_postevaluation",
+        runbook=tmp_path / "posteval.sh",
+        project=tmp_path,
+        environment={},
+        max_attempts=1,
+        poll_seconds=3.0,
+        retry_seconds=1.0,
+        write_status=lambda **kwargs: calls.append(kwargs),
+    )
+
+    assert Child.wait_calls == 2
+    assert [call["detail"] for call in calls] == [
+        "full_postevaluation_running",
+        "full_postevaluation_running",
+    ]
+    assert all(call["child_pid"] == 29 for call in calls)
 
 
 def test_posttraining_supervisor_runbook_cannot_launch_training() -> None:

@@ -1,0 +1,200 @@
+{
+  "authorization_boundary": {
+    "decision_is_execution_authorization": false,
+    "export_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "gpu_execution_authorized": false,
+    "process_signals_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "remote_mutation_allowed": false,
+    "sampling_launch_allowed": false,
+    "terminal_hold_replacement_allowed": false,
+    "training_launch_allowed": false
+  },
+  "builder_git": {
+    "branch": "scale/generation-stability-quality-bridge-100k",
+    "revision": "354f9dc52aec295dff439d4198efdff51beacdb8",
+    "tracked_dirty": true,
+    "tree": "e829077cf0289a9414964d8c2e53fb8c1ac907a1"
+  },
+  "candidate_arms": {
+    "capacity_qualification": {
+      "candidate_base_channels": 256,
+      "conditioning_change_allowed": false,
+      "controlled_change": "model_capacity_only",
+      "formal_quality_claim_allowed": false,
+      "initialization": "fresh_matched_initialization_required",
+      "objective_change_allowed": false,
+      "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/capacity",
+      "qualification_protocol": "matched_1000_screen_then_10000_confirmation_if_selected",
+      "qualification_steps": 10000,
+      "role": "matched_capacity_discriminator",
+      "source_base_channels": 128,
+      "source_stage": "stability_quality_bridge",
+      "token_layout_change_allowed": false
+    },
+    "exposure_continuation": {
+      "conditioning_change_allowed": false,
+      "controlled_change": "training_exposure_only",
+      "formal_quality_claim_allowed": false,
+      "initialization": "exact_100k_checkpoint_resume_only",
+      "model_layout_change_allowed": false,
+      "objective_change_allowed": false,
+      "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/exposure",
+      "qualification_protocol": "matched_10000_ddim100_plus_class_fidelity_and_mechanism",
+      "role": "same_capacity_exposure_discriminator",
+      "source_base_channels": 128,
+      "source_stage": "stability_quality_bridge",
+      "target_step": "must_be_selected_by_a_new_stage_gate"
+    }
+  },
+  "decision": "preserve_qualified_objective_prepare_exposure_capacity_disambiguation",
+  "evidence": {
+    "cross_protocol_reconciliation": {
+      "operational_status": "pass",
+      "status": "completed",
+      "terminal_status": "hold"
+    },
+    "min_snr": {
+      "scientific_status": "screening_only",
+      "selection_status": "no_shared_min_snr_candidate_at_50k",
+      "status": "completed"
+    },
+    "pair_monitor": {
+      "issues": [],
+      "stage": "complete",
+      "status": "pass"
+    },
+    "post_reconciliation_decision": {
+      "operational_status": "pass",
+      "status": "completed",
+      "terminal_status": "hold"
+    },
+    "quality_bridge": {
+      "generation_advantage_proven": false,
+      "status": "completed",
+      "terminal_status": "hold"
+    },
+    "sampling_recovery": {
+      "selection_status": "no_shared_sampling_recovery_candidate",
+      "status": "pass"
+    },
+    "training": {
+      "completed_steps": 100000,
+      "git_branch": "scale/generation-stability-quality-bridge-100k",
+      "git_revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "images_seen_per_method": 6400000,
+      "matched_primary_loss_divergence_is_large": false,
+      "source_checkpoints": {
+        "cofitok": {
+          "checkpoint": {
+            "bytes": 1010937514,
+            "name": "checkpoint_step_00100000.pt",
+            "sha256": "b36a92229ba2dd021db9c7585970ddda1d17d1919ca6b0eec0362b06d4bd462e"
+          },
+          "integrity_manifest_name": "checkpoint_step_00100000.pt.integrity.json",
+          "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher",
+          "step": 100000
+        },
+        "dense_identity": {
+          "checkpoint": {
+            "bytes": 1010735510,
+            "name": "checkpoint_step_00100000.pt",
+            "sha256": "b6586cc906a9c38bbf9d592f5f6169b7a37a8d3aa485ca4879021fa840943d0b"
+          },
+          "integrity_manifest_name": "checkpoint_step_00100000.pt.integrity.json",
+          "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher",
+          "step": 100000
+        }
+      },
+      "validation_epsilon_mse": {
+        "cofitok": 0.029256021603941917,
+        "dense_identity": 0.029240703210234642
+      }
+    }
+  },
+  "required_successor_gate": {
+    "must_bind": [
+      "current_preparation_sha256",
+      "current_quality_bridge_result_sha256",
+      "cross_protocol_reconciliation_sha256",
+      "sampling_recovery_result_sha256",
+      "min_snr_result_sha256",
+      "exact_source_checkout_revision_tree_branch",
+      "dataset_and_runtime_identity",
+      "new_versioned_output_roots",
+      "checkpoint_sidecars_and_latest_binding",
+      "matched_sampling_and_class_fidelity_protocol"
+    ],
+    "must_reverify_before_gpu": true
+  },
+  "role": "source_bound_exposure_capacity_preparation",
+  "route_id": "prepare_source_bound_exposure_or_capacity_gate",
+  "schema_version": "cofitok_generation_exposure_capacity_preparation_v1",
+  "scientific_scope": "Preparation only: distinguish insufficient full-data exposure from capacity limitation while preserving the qualified objective.",
+  "selection_policy": {
+    "automatic_300k_escalation_allowed": false,
+    "exact_stage_authorization_required": true,
+    "execution_order": "undetermined_until_new_source_compatible_gate",
+    "failure_policy": "fail_closed",
+    "fresh_remote_rehash_required": true,
+    "selection_by_current_fid_allowed": false,
+    "shared_matched_pair_required": true,
+    "terminal_hold_replacement_allowed": false
+  },
+  "sources": {
+    "cofitok_metrics": {
+      "bytes": 1900888,
+      "path": "D:\\cofitok-exposure-capacity-evidence-20260831\\cofitok_metrics.jsonl",
+      "sha256": "fe97fbdbe9a5154ee4ed0e9913feac797aea367e70477a8a55e7bc411be53abe"
+    },
+    "cofitok_training_report": {
+      "bytes": 11232,
+      "path": "D:\\cofitok-exposure-capacity-evidence-20260831\\cofitok_training_report.json",
+      "sha256": "9056b47fe7733b092608e29b9b5d14c95f5af6a35c170be4ec0dcd553f6b4a86"
+    },
+    "cross_protocol_reconciliation": {
+      "bytes": 77960,
+      "path": "D:\\cofitok-exposure-capacity-evidence-20260831\\cross_protocol_reconciliation.json",
+      "sha256": "6fc639caec0320225c2e8d26316490cde2d765d49c6062a18e0e671f79384d19"
+    },
+    "dense_metrics": {
+      "bytes": 1768512,
+      "path": "D:\\cofitok-exposure-capacity-evidence-20260831\\dense_metrics.jsonl",
+      "sha256": "c06a486336030ebe357ae2ea62418fe9994e3b8c14d8768006d08ae71f15a509"
+    },
+    "dense_training_report": {
+      "bytes": 10888,
+      "path": "D:\\cofitok-exposure-capacity-evidence-20260831\\dense_training_report.json",
+      "sha256": "5b38303da71f324acb668fca8c52cf7558fbee7ab8a38a5bc7768836387f08ec"
+    },
+    "min_snr_result": {
+      "bytes": 17348,
+      "path": "D:\\cofitok-exposure-capacity-evidence-20260831\\min_snr_result.json",
+      "sha256": "dde62640e84a461be3b571b228e7903785e42f118dd7103941e20592bd0059fc"
+    },
+    "pair_monitor": {
+      "bytes": 44316,
+      "path": "D:\\cofitok-exposure-capacity-evidence-20260831\\pair_monitor.json",
+      "sha256": "78306a02a47d96be78f325ec2cd708ff4741f248c544fbc861dc9acfa829a2eb"
+    },
+    "post_reconciliation_decision": {
+      "bytes": 27220,
+      "path": "D:\\cofitok-exposure-capacity-evidence-20260831\\post_reconciliation_decision.json",
+      "sha256": "45817b27c33866f9c48eddc557c921e48c69c708d9fd47ee09695e086a1c47f4"
+    },
+    "quality_bridge_result": {
+      "bytes": 60024,
+      "path": "D:\\cofitok-exposure-capacity-evidence-20260831\\quality_bridge_result.json",
+      "sha256": "15752e05611fa888e15352934c1627ccb95418df0339f9ad120e195bc088d165"
+    },
+    "sampling_recovery_result": {
+      "bytes": 193144,
+      "path": "D:\\cofitok-exposure-capacity-evidence-20260831\\sampling_recovery_result.json",
+      "sha256": "d6b5c3190a205f5be886c01e8543b9e2511988d5f0b9f2e642a33d0e8be1249f"
+    }
+  },
+  "status": "prepared"
+}

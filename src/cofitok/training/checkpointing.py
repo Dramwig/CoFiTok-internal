@@ -16,6 +16,7 @@ from cofitok.environment import (
     runtime_environment_mismatch_paths,
     runtime_environment_sha256,
 )
+from cofitok.path_security import reject_symlink_chain
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training.authorization import (
     validate_checkpoint_training_authorization,
@@ -73,8 +74,13 @@ def checkpoint_integrity_path(path: str | Path) -> Path:
 
 
 def verify_training_checkpoint(path: str | Path) -> dict[str, Any]:
-    checkpoint = Path(path)
-    integrity_path = checkpoint_integrity_path(checkpoint)
+    checkpoint = reject_symlink_chain(path, name="training checkpoint")
+    integrity_path = reject_symlink_chain(
+        checkpoint_integrity_path(checkpoint),
+        name="checkpoint integrity manifest",
+    )
+    if not checkpoint.is_file():
+        raise FileNotFoundError(f"Training checkpoint is missing: {checkpoint}")
     if not integrity_path.is_file():
         raise FileNotFoundError(f"Checkpoint integrity manifest is missing: {integrity_path}")
     with integrity_path.open("r", encoding="utf-8") as handle:
@@ -139,8 +145,11 @@ def backfill_training_checkpoint_integrity(
     update_latest: bool = False,
 ) -> dict[str, Any]:
     """Add integrity metadata to a legacy atomic checkpoint without changing its bytes."""
-    checkpoint_path = Path(path)
-    integrity_path = checkpoint_integrity_path(checkpoint_path)
+    checkpoint_path = reject_symlink_chain(path, name="training checkpoint")
+    integrity_path = reject_symlink_chain(
+        checkpoint_integrity_path(checkpoint_path),
+        name="checkpoint integrity manifest",
+    )
     if integrity_path.is_file():
         integrity = verify_training_checkpoint(checkpoint_path)
     else:
@@ -178,7 +187,10 @@ def backfill_training_checkpoint_integrity(
         verify_training_checkpoint(checkpoint_path)
 
     if update_latest:
-        latest_path = checkpoint_path.parent / "latest.json"
+        latest_path = reject_symlink_chain(
+            checkpoint_path.parent / "latest.json",
+            name="checkpoint latest pointer",
+        )
         if latest_path.is_file():
             with latest_path.open("r", encoding="utf-8") as handle:
                 previous_latest = json.load(handle)
@@ -194,8 +206,11 @@ def backfill_training_checkpoint_integrity(
 
 
 def resolve_latest_checkpoint(directory: str | Path) -> Path:
-    root = Path(directory)
-    latest_path = root / "latest.json"
+    root = reject_symlink_chain(directory, name="checkpoint directory")
+    latest_path = reject_symlink_chain(
+        root / "latest.json",
+        name="checkpoint latest pointer",
+    )
     if not latest_path.is_file():
         raise FileNotFoundError(f"No automatic resume pointer at {latest_path}")
     with latest_path.open("r", encoding="utf-8") as handle:
@@ -288,7 +303,15 @@ def save_training_checkpoint(
     metrics: Mapping[str, Any] | None = None,
     extra_state: Mapping[str, Any] | None = None,
 ) -> Path:
-    target = Path(path)
+    target = reject_symlink_chain(path, name="training checkpoint")
+    integrity_path = reject_symlink_chain(
+        checkpoint_integrity_path(target),
+        name="checkpoint integrity manifest",
+    )
+    latest_path = reject_symlink_chain(
+        target.parent / "latest.json",
+        name="checkpoint latest pointer",
+    )
     target.parent.mkdir(parents=True, exist_ok=True)
     resolved_extra_state = dict(extra_state or {})
     git_provenance = resolved_extra_state.get("git")
@@ -384,10 +407,9 @@ def save_training_checkpoint(
                 ],
             }
         )
-    integrity_path = checkpoint_integrity_path(target)
     write_json_report(integrity_path, integrity)
     write_json_report(
-        target.parent / "latest.json",
+        latest_path,
         {**integrity, "integrity_manifest": integrity_path.name},
     )
     return target
@@ -410,6 +432,7 @@ def load_training_checkpoint(
     expected_training_authorization: Mapping[str, Any] | None = None,
     map_location: str | torch.device = "cpu",
 ) -> dict[str, Any]:
+    path = reject_symlink_chain(path, name="training checkpoint")
     integrity = None
     if verify_integrity:
         integrity = verify_training_checkpoint(path)
@@ -618,7 +641,11 @@ def prune_checkpoints(
         raise ValueError("keep_last must be positive")
     if any(step < 1 for step in protected_steps):
         raise ValueError("protected checkpoint steps must be positive")
-    paths = sorted(Path(directory).glob("checkpoint_step_*.pt"))
+    root = reject_symlink_chain(directory, name="checkpoint directory")
+    paths = sorted(root.glob("checkpoint_step_*.pt"))
+    paths = [
+        reject_symlink_chain(path, name="training checkpoint") for path in paths
+    ]
     protected = {int(step) for step in protected_steps}
     recent = set(paths[-keep_last:])
     retained = recent | {
@@ -628,6 +655,10 @@ def prune_checkpoints(
     }
     removed = [path for path in paths if path not in retained]
     for path in removed:
+        integrity_path = reject_symlink_chain(
+            checkpoint_integrity_path(path),
+            name="checkpoint integrity manifest",
+        )
         path.unlink()
-        checkpoint_integrity_path(path).unlink(missing_ok=True)
+        integrity_path.unlink(missing_ok=True)
     return removed

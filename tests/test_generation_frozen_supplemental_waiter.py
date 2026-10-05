@@ -252,7 +252,8 @@ def test_waiter_launches_only_supplemental_after_readiness_terminal_and_idle_gpu
     class Child:
         pid = 902
 
-        def wait(self) -> int:
+        def wait(self, *, timeout: float) -> int:
+            assert timeout == 1.0
             args.supplemental_report.write_text(
                 json.dumps(_supplemental()), encoding="utf-8"
             )
@@ -316,7 +317,8 @@ def test_waiter_does_not_race_the_queued_readiness_gpu_stage(
     class Child:
         pid = 903
 
-        def wait(self) -> int:
+        def wait(self, *, timeout: float) -> int:
+            assert timeout == 1.0
             args.supplemental_report.write_text(
                 json.dumps(_supplemental()), encoding="utf-8"
             )

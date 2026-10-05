@@ -133,6 +133,8 @@ def _validate_config(config: ExperimentConfig) -> None:
         raise ValueError("gradient_accumulation_steps must be positive")
     if config.runtime.precision not in {"fp32", "bf16", "fp16"}:
         raise ValueError("runtime.precision must be fp32, bf16, or fp16")
+    if not math.isfinite(config.loss.min_snr_gamma) or config.loss.min_snr_gamma < 0.0:
+        raise ValueError("min_snr_gamma must be finite and non-negative")
     if config.loss.energy_budget_weight > 0.0:
         target = config.loss.energy_target
         if len(target) != config.model.token_count:

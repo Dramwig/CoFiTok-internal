@@ -35,6 +35,8 @@ from scripts.audit_large_scale_generation_completion import (
     MILESTONE_STEPS,
     _inference_export_evidence,
     _verify_deployment_bundle_source,
+    _verify_deployment_json_source,
+    _verify_deployment_pytest_source,
     _verify_formal_real_set_files,
     _verify_formal_sample_files,
     _verify_inference_smoke_outputs,
@@ -1817,6 +1819,27 @@ def test_completion_audit_verifies_archived_bundle_bytes_and_head(tmp_path) -> N
     assert tampered["bytes"] == verified["bytes"] - 1
 
 
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Unix symlink creation requires elevated privileges on Windows",
+)
+def test_deployment_source_verifiers_reject_symlink_inputs(tmp_path: Path) -> None:
+    target = tmp_path / "source.json"
+    target.write_text("{}\n", encoding="ascii")
+    alias = tmp_path / "source-alias.json"
+    alias.symlink_to(target)
+
+    for verifier in (
+        _verify_deployment_json_source,
+        _verify_deployment_pytest_source,
+        _verify_deployment_bundle_source,
+    ):
+        invalid = verifier(alias)
+        assert invalid is not None
+        assert invalid["status"] == "invalid"
+        assert "symlink" in invalid["error"]
+
+
 def test_completion_audit_reports_missing_work_as_in_progress() -> None:
     kwargs = _kwargs()
     kwargs["dense_full_training"] = None
@@ -2591,6 +2614,41 @@ def test_formal_sample_file_verifier_rejects_missing_numbered_png(tmp_path) -> N
     assert "numbered PNG set differs" in verified["error"]
 
 
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Unix symlink creation requires elevated privileges on Windows",
+)
+def test_formal_sample_file_verifier_rejects_symlinked_root_and_progress(
+    tmp_path: Path,
+) -> None:
+    report, generated = _write_formal_sample_fixture(tmp_path)
+    root_alias = tmp_path / "samples-alias"
+    root_alias.symlink_to(generated, target_is_directory=True)
+
+    invalid_root = _verify_formal_sample_files(
+        report,
+        expected_generated_dir=root_alias,
+        expected_count=2,
+    )
+    assert invalid_root is not None
+    assert invalid_root["status"] == "invalid"
+    assert "symlink" in invalid_root["error"]
+
+    progress = generated.parent / "sampling_progress.json"
+    progress_target = tmp_path / "progress-target.json"
+    progress_target.write_bytes(progress.read_bytes())
+    progress.unlink()
+    progress.symlink_to(progress_target)
+    invalid_progress = _verify_formal_sample_files(
+        report,
+        expected_generated_dir=generated,
+        expected_count=2,
+    )
+    assert invalid_progress is not None
+    assert invalid_progress["status"] == "invalid"
+    assert "symlink" in invalid_progress["error"]
+
+
 def _write_formal_real_set_fixture(tmp_path: Path) -> tuple[dict[str, dict], Path]:
     real_dir = tmp_path / "imagenet_val"
     for class_index in range(2):
@@ -2706,6 +2764,35 @@ def test_inference_smoke_file_verifier_rejects_path_escape(tmp_path) -> None:
     assert verified is not None
     assert verified["status"] == "invalid"
     assert "escapes its output root" in verified["error"]
+
+
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Unix symlink creation requires elevated privileges on Windows",
+)
+def test_inference_smoke_file_verifier_rejects_symlinked_root(tmp_path: Path) -> None:
+    root = tmp_path / "smoke"
+    root.mkdir()
+    output = root / "output_0.png"
+    Image.new("RGB", (256, 256), (10, 20, 30)).save(output)
+    report = {
+        "output_count": 1,
+        "outputs": [
+            {
+                "path": output.resolve().as_posix(),
+                "filename": output.name,
+                "sha256": file_sha256(output),
+            }
+        ],
+    }
+    root_alias = tmp_path / "smoke-alias"
+    root_alias.symlink_to(root, target_is_directory=True)
+
+    invalid = _verify_inference_smoke_outputs(report, expected_root=root_alias)
+
+    assert invalid is not None
+    assert invalid["status"] == "invalid"
+    assert "symlink" in invalid["error"]
 
 
 def test_completion_audit_rejects_export_from_stale_training_checkpoint() -> None:
@@ -3042,7 +3129,10 @@ def test_completion_audit_direct_cli_reports_in_progress(tmp_path) -> None:
     output_root.mkdir()
     output = tmp_path / "completion_audit.json"
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(ROOT / "src")
+    inherited_pythonpath = environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(ROOT / "src"), inherited_pythonpath) if path
+    )
 
     result = subprocess.run(
         [

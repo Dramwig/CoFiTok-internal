@@ -41,6 +41,18 @@ class DiffusionSchedule:
     def sample_timesteps(self, batch_size: int, device: torch.device | str) -> torch.Tensor:
         return torch.randint(0, self.num_train_timesteps, (batch_size,), device=device)
 
+    def min_snr_loss_weights(
+        self,
+        timesteps: torch.Tensor,
+        gamma: float,
+    ) -> torch.Tensor:
+        """Return standard epsilon-prediction Min-SNR loss weights."""
+        if gamma <= 0.0:
+            return torch.ones_like(timesteps, dtype=torch.float32)
+        alpha_bar = self.alphas_cumprod[timesteps].float()
+        snr = alpha_bar / (1.0 - alpha_bar).clamp_min(1e-12)
+        return torch.minimum(snr, torch.full_like(snr, gamma)) / snr.clamp_min(1e-12)
+
     def add_noise(
         self,
         clean_images: torch.Tensor,

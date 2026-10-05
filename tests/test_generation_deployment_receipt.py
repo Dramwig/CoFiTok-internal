@@ -247,7 +247,10 @@ def test_deployment_receipt_cli_verifies_real_bundle_head(tmp_path) -> None:
     )
     output = tmp_path / "receipt.json"
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(ROOT / "src")
+    inherited_pythonpath = environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(ROOT / "src"), inherited_pythonpath) if path
+    )
 
     result = subprocess.run(
         [

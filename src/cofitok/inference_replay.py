@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import math
-import os
 from pathlib import Path
 from typing import Any
 
+from cofitok.path_security import reject_symlink_chain
 from cofitok.reporting import file_sha256, write_json_report
 
 
@@ -18,7 +18,7 @@ INFERENCE_PROGRESS_ROLE = "generation_inference_progress"
 def read_json_object(path: str | Path, *, name: str) -> dict[str, Any]:
     import json
 
-    source = Path(path)
+    source = reject_symlink_chain(path, name=name)
     try:
         with source.open(encoding="utf-8") as handle:
             payload = json.load(handle)
@@ -27,18 +27,6 @@ def read_json_object(path: str | Path, *, name: str) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError(f"{name} must contain a JSON object")
     return payload
-
-
-def reject_symlink_chain(path: str | Path, *, name: str) -> Path:
-    absolute = Path(os.path.abspath(Path(path).expanduser()))
-    current = absolute
-    while True:
-        if current.is_symlink():
-            raise ValueError(f"{name} path must not contain a symlink: {current}")
-        if current.parent == current:
-            break
-        current = current.parent
-    return absolute
 
 
 def file_identity(path: str | Path) -> dict[str, Any]:

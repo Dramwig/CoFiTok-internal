@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "name": "stability_50k_sampling_recovery_v1",
+  "role": "non_authorizing_matched_inference_protocol_diagnostic",
+  "source_profile": "stability_scaling",
+  "source": {
+    "promotion_gate_sha256": "2f763913d5a07ba5563f5bc75548780678fcdf9da4e119e03262f10daf84dd90",
+    "required_gate_status": "fail",
+    "required_gate_decision": "hold",
+    "required_failed_gates": [
+      "absolute_fid_quality"
+    ],
+    "provenance_contract": {
+      "training_revision": "2c2c1f5166b73d4f28df93b276901671ac1a7836",
+      "training_branch": "scale/generation-stability-50k-preflight",
+      "evaluation_revision": "c1efb12c6640f2d2d62ac7e9982c8804d96e7289",
+      "evaluation_branch": "scale/generation-stability-50k-posteval-v4"
+    },
+    "real_set": {
+      "digest_schema": "cofitok_image_tree_sha256_v1",
+      "image_count": 50000,
+      "sha256": "19ace4e37bee2fcaeac2b7cbd26ed785aa0e6e01015c90b4955027d163f6e44f"
+    },
+    "formal_sample_count": 10000,
+    "formal_protocol": {
+      "sample_steps": 100,
+      "sampler": "ddim",
+      "seed": 0,
+      "start_index": 0,
+      "class_schedule": "balanced_modulo",
+      "guidance_scale": 1.5,
+      "guidance_rescale": 0.0,
+      "cfg_batch_mode": "batched",
+      "eta": 0.0,
+      "clip_x0": true,
+      "precision": "bf16",
+      "weights": "ema"
+    },
+    "sampling_runtime_environment_sha256": "8b424f8f4095a919daee99d1345c7657e94ca133f19369958410f793a35b1bb1",
+    "metrics_runtime_environment_sha256": "0cfe4f0bf03a70cff136a084f36cce8daaaf0316d4a7fdb818d912257cc302f2",
+    "evaluator": {
+      "package": "torch_fidelity",
+      "version": "0.4.0"
+    }
+  },
+  "methods": {
+    "cofitok": {
+      "checkpoint_step": 50000,
+      "checkpoint_sha256": "ec7b9a0981f1d45420a9a86cdb80339d6d87b87fa77891c234db3d1b84376c2a",
+      "checkpoint_integrity_sha256": "4f3f6f3f401f34131f902b016baf41897b35f95d242bb023981feff4a36226a8",
+      "prefix_budget": 8,
+      "formal_metrics_sha256": "123f51f303a8fe112433bb3541376a8c88aa7abf64f7829b6b699c164a6259b9",
+      "formal_sample_set_sha256": "de17e26507c57f6ab473aa20fe5749e19dcd22941391dd7709b3d700297731da",
+      "formal_fid": 138.29702495267782
+    },
+    "dense_identity": {
+      "checkpoint_step": 50000,
+      "checkpoint_sha256": "325da25f9fd228ab224abd977da7f9e1d000ba36e3e8136b55edae9c9f47c716",
+      "checkpoint_integrity_sha256": "31b1cf05a0bafaf06e3fb434ebabe3fbed41800687e28e447140565b8f4cafff",
+      "prefix_budget": 1,
+      "formal_metrics_sha256": "957ffa636c9d3b80a40e8a1078c818674c9119ee3cb825291b09e806ea0b0afc",
+      "formal_sample_set_sha256": "97c21492f4146ea1df889b639687e836dab54e46d5a4aff3c6ec4a59f2394e83",
+      "formal_fid": 151.4476773464495
+    }
+  },
+  "diagnostic": {
+    "sample_count_per_case": 512,
+    "sample_steps": 100,
+    "batch_size": 32,
+    "seed": 0,
+    "start_index": 0,
+    "class_schedule": "balanced_modulo",
+    "cfg_batch_mode": "batched",
+    "eta": 0.0,
+    "clip_x0": true,
+    "precision": "bf16",
+    "weights": "ema",
+    "skip_precision_recall": true,
+    "cases": [
+      {
+        "id": "cfg100_r000",
+        "guidance_scale": 1.0,
+        "guidance_rescale": 0.0
+      },
+      {
+        "id": "cfg125_r000",
+        "guidance_scale": 1.25,
+        "guidance_rescale": 0.0
+      },
+      {
+        "id": "cfg150_r000",
+        "guidance_scale": 1.5,
+        "guidance_rescale": 0.0
+      },
+      {
+        "id": "cfg150_r050",
+        "guidance_scale": 1.5,
+        "guidance_rescale": 0.5
+      },
+      {
+        "id": "cfg150_r100",
+        "guidance_scale": 1.5,
+        "guidance_rescale": 1.0
+      }
+    ]
+  },
+  "selection_policy": {
+    "shared_protocol_required": true,
+    "baseline_case_id": "cfg150_r000",
+    "objective": "minimize_worst_method_fid_ratio_to_shared_baseline",
+    "eligibility": "strict_fid_improvement_for_both_methods",
+    "tie_break": [
+      "worst_method_ratio",
+      "prefer_formal_baseline",
+      "mean_method_ratio",
+      "case_id"
+    ],
+    "per_method_protocol_selection_allowed": false,
+    "automatic_formal_protocol_change_allowed": false
+  },
+  "claim_boundary": {
+    "diagnostic_non_authorizing": true,
+    "small_sample_fid_is_formal": false,
+    "replaces_frozen_promotion_gate": false,
+    "formal_protocol_change_allowed": false,
+    "matched_10000_confirmation_required": true,
+    "full_training_launch_allowed": false,
+    "full_300k_launch_allowed": false
+  }
+}

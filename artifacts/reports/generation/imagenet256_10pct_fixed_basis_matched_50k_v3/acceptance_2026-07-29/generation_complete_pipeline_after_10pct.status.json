@@ -1,0 +1,11 @@
+{
+  "detail": "pipeline stopped during promotion_gate",
+  "exit_code": 1,
+  "git_commit": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "pipeline": "generation_complete_after_10pct",
+  "schema_version": 1,
+  "stage": "promotion_gate",
+  "status": "failed",
+  "updated_at": "2026-07-28T16:27:42.049940+00:00"
+}

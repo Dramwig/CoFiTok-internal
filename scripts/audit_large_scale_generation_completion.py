@@ -44,6 +44,7 @@ from cofitok.inference_replay import (
     INFERENCE_REPORT_SCHEMA_VERSION,
     validate_completed_inference_evidence,
 )
+from cofitok.path_security import reject_symlink_chain
 from cofitok.reporting import file_sha256, write_json_report
 from cofitok.training.checkpointing import (
     checkpoint_integrity_path,
@@ -603,13 +604,21 @@ def _verify_formal_sample_files(
     if report is None:
         return None
     declared_generated_dir = Path(expected_generated_dir)
-    generated_dir = declared_generated_dir.resolve()
+    generated_dir = declared_generated_dir
     try:
+        generated_dir = reject_symlink_chain(
+            declared_generated_dir,
+            name="formal sample directory",
+        )
         if expected_count < 1:
             raise ValueError("formal sample count must be positive")
-        if declared_generated_dir.is_symlink() or not generated_dir.is_dir():
+        if not generated_dir.is_dir():
             raise ValueError(f"formal sample directory is invalid: {generated_dir}")
-        if Path(str(report.get("paths", {}).get("generated_dir", ""))).resolve() != generated_dir:
+        reported_generated_dir = reject_symlink_chain(
+            Path(str(report.get("paths", {}).get("generated_dir", ""))),
+            name="formal metrics generated directory",
+        )
+        if reported_generated_dir != generated_dir:
             raise ValueError("formal metrics generated directory differs")
         entries = list(generated_dir.iterdir())
         if any(entry.is_symlink() or not entry.is_file() for entry in entries):
@@ -624,9 +633,15 @@ def _verify_formal_sample_files(
             raise ValueError("formal sample-set SHA256 differs from metrics provenance")
 
         sampling_root = generated_dir.parent
-        sampling_report_path = sampling_root / "sampling_report.json"
-        provenance_report = Path(str(provenance.get("report", ""))).resolve()
-        if provenance_report != sampling_report_path.resolve() or not sampling_report_path.is_file():
+        sampling_report_path = reject_symlink_chain(
+            sampling_root / "sampling_report.json",
+            name="formal sampling report",
+        )
+        provenance_report = reject_symlink_chain(
+            Path(str(provenance.get("report", ""))),
+            name="formal sampling provenance report",
+        )
+        if provenance_report != sampling_report_path or not sampling_report_path.is_file():
             raise ValueError("formal sampling report is missing or outside the sample run")
         sampling_report = json.loads(sampling_report_path.read_text(encoding="utf-8"))
         sampling = provenance.get("sampling", {})
@@ -634,13 +649,16 @@ def _verify_formal_sample_files(
         if not isinstance(budgets, list) or len(budgets) != 1:
             raise ValueError("formal sampling report must select exactly one prefix budget")
         budget = str(int(budgets[0]))
+        reported_output_dir = reject_symlink_chain(
+            Path(str(sampling_report.get("output_dirs", {}).get(budget, ""))),
+            name="formal sampling output directory",
+        )
         if (
             int(sampling_report.get("schema_version", -1))
             != SAMPLING_REPORT_SCHEMA_VERSION
             or sampling_report.get("status") != "completed"
             or sampling_report.get("sampling") != sampling
-            or Path(str(sampling_report.get("output_dirs", {}).get(budget, ""))).resolve()
-            != generated_dir
+            or reported_output_dir != generated_dir
             or sampling_report.get("sample_sets", {}).get(budget)
             != {"count": expected_count, "sha256": actual_sha}
         ):
@@ -658,7 +676,10 @@ def _verify_formal_sample_files(
             if sampling_report.get(field) != provenance.get(field):
                 raise ValueError(f"formal sampling report {field} differs from metrics provenance")
 
-        manifest_path = sampling_root / "sampling_manifest.json"
+        manifest_path = reject_symlink_chain(
+            sampling_root / "sampling_manifest.json",
+            name="formal sampling manifest",
+        )
         if not manifest_path.is_file():
             raise ValueError("formal immutable sampling manifest is missing")
         manifest_sha = file_sha256(manifest_path)
@@ -682,12 +703,21 @@ def _verify_formal_sample_files(
             if manifest.get(field) != sampling_report.get(field):
                 raise ValueError(f"formal sampling manifest {field} differs from report")
 
-        progress_path = sampling_root / "sampling_progress.json"
+        progress_path = reject_symlink_chain(
+            sampling_root / "sampling_progress.json",
+            name="formal sampling progress",
+        )
+        reported_progress = reject_symlink_chain(
+            Path(str(sampling_report.get("sampling_progress", ""))),
+            name="formal sampling report progress",
+        )
+        provenance_progress = reject_symlink_chain(
+            Path(str(provenance.get("sampling_progress", {}).get("report", ""))),
+            name="formal sampling provenance progress",
+        )
         if (
-            Path(str(sampling_report.get("sampling_progress", ""))).resolve()
-            != progress_path.resolve()
-            or Path(str(provenance.get("sampling_progress", {}).get("report", ""))).resolve()
-            != progress_path.resolve()
+            reported_progress != progress_path
+            or provenance_progress != progress_path
             or not progress_path.is_file()
         ):
             raise ValueError("formal sampling progress is missing or outside the sample run")
@@ -711,11 +741,11 @@ def _verify_formal_sample_files(
         "generated_dir": generated_dir.as_posix(),
         "sample_count": expected_count,
         "sample_set_sha256": actual_sha,
-        "sampling_report": sampling_report_path.resolve().as_posix(),
+        "sampling_report": sampling_report_path.as_posix(),
         "sampling_report_sha256": file_sha256(sampling_report_path),
-        "sampling_manifest": manifest_path.resolve().as_posix(),
+        "sampling_manifest": manifest_path.as_posix(),
         "sampling_manifest_sha256": manifest_sha,
-        "sampling_progress": progress_path.resolve().as_posix(),
+        "sampling_progress": progress_path.as_posix(),
         "sampling_progress_sha256": file_sha256(progress_path),
     }
 
@@ -729,7 +759,7 @@ def _verify_formal_real_set_files(
     if any(report is None for report in reports.values()):
         return None
     declared_real_dir = Path(expected_real_dir)
-    real_dir = declared_real_dir.resolve()
+    real_dir = declared_real_dir
 
     def collect_image_tree() -> tuple[list[Path], tuple[str, ...]]:
         entries = list(real_dir.rglob("*"))
@@ -766,9 +796,13 @@ def _verify_formal_real_set_files(
         return images, relative_paths
 
     try:
+        real_dir = reject_symlink_chain(
+            declared_real_dir,
+            name="formal real-set directory",
+        )
         if expected_count < 1:
             raise ValueError("formal real-set image count must be positive")
-        if declared_real_dir.is_symlink() or not real_dir.is_dir():
+        if not real_dir.is_dir():
             raise ValueError(f"formal real-set directory is invalid: {real_dir}")
         images, relative_paths = collect_image_tree()
         if len(images) != expected_count:
@@ -783,11 +817,17 @@ def _verify_formal_real_set_files(
             if report is None:
                 raise ValueError(f"{method} formal real-set report is missing")
             reported_real_set = report.get("real_set", {})
+            reported_real_dir = reject_symlink_chain(
+                Path(str(report.get("paths", {}).get("real_dir", ""))),
+                name=f"{method} formal real-set report directory",
+            )
+            reported_real_root = reject_symlink_chain(
+                Path(str(reported_real_set.get("root", ""))),
+                name=f"{method} formal real-set root",
+            )
             if (
-                Path(str(report.get("paths", {}).get("real_dir", ""))).resolve()
-                != real_dir
-                or Path(str(reported_real_set.get("root", ""))).resolve()
-                != real_dir
+                reported_real_dir != real_dir
+                or reported_real_root != real_dir
                 or reported_real_set.get("root") != real_dir.as_posix()
                 or reported_real_set.get("digest_schema")
                 != IMAGE_TREE_DIGEST_SCHEMA
@@ -1222,9 +1262,13 @@ def _verify_inference_smoke_outputs(
     if report is None:
         return None
     declared_root = Path(expected_root)
-    root = declared_root.resolve()
+    root = declared_root
     try:
-        if declared_root.is_symlink() or not root.is_dir():
+        root = reject_symlink_chain(
+            declared_root,
+            name="inference smoke directory",
+        )
+        if not root.is_dir():
             raise ValueError(f"inference smoke directory is missing: {root}")
         rows = report.get("outputs")
         if not isinstance(rows, list) or int(report.get("output_count", -1)) != len(rows):
@@ -1238,11 +1282,16 @@ def _verify_inference_smoke_outputs(
             path = Path(raw_path)
             if not path.is_absolute():
                 raise ValueError("inference smoke output path is not absolute")
-            resolved = path.resolve(strict=True)
+            resolved = reject_symlink_chain(
+                path,
+                name="inference smoke output",
+            )
             if path.as_posix() != resolved.as_posix():
                 raise ValueError("inference smoke output path is not canonical")
             if not resolved.is_relative_to(root):
                 raise ValueError("inference smoke output escapes its output root")
+            if not resolved.is_file():
+                raise ValueError("inference smoke output is missing")
             if resolved.suffix.lower() != ".png" or resolved.name != row.get("filename"):
                 raise ValueError("inference smoke output filename differs")
             if resolved in paths:
@@ -1268,11 +1317,15 @@ def _verify_inference_smoke_outputs(
                     "height": height,
                 }
             )
-        discovered = {
-            path.resolve()
-            for path in root.rglob("*")
-            if path.is_file() and path.suffix.lower() == ".png"
-        }
+        discovered = set()
+        for path in root.rglob("*"):
+            if path.is_file() and path.suffix.lower() == ".png":
+                discovered.add(
+                    reject_symlink_chain(
+                        path,
+                        name="inference smoke discovered output",
+                    )
+                )
         if discovered != paths:
             raise ValueError("inference smoke directory PNG set differs from report")
         replay_evidence = (
@@ -2910,6 +2963,7 @@ def build_completion_audit(
 
 
 def _read_optional(path: Path) -> dict[str, Any] | None:
+    path = reject_symlink_chain(path, name="large-scale audit source")
     if not path.is_file():
         return None
     with path.open("r", encoding="utf-8") as handle:
@@ -2917,52 +2971,67 @@ def _read_optional(path: Path) -> dict[str, Any] | None:
 
 
 def _verify_deployment_json_source(path: Path) -> dict[str, Any] | None:
-    if not path.is_file():
-        return None
+    checked_path = Path(path)
     try:
-        content = _read_optional(path)
+        checked_path = reject_symlink_chain(
+            checked_path,
+            name="deployment verification JSON",
+        )
+        if not checked_path.is_file():
+            return None
+        content = _read_optional(checked_path)
         if not isinstance(content, dict):
             raise ValueError("deployment verification JSON must contain an object")
         return {
             "status": "verified",
-            "path": path.resolve().as_posix(),
-            "bytes": path.stat().st_size,
-            "sha256": file_sha256(path),
+            "path": checked_path.as_posix(),
+            "bytes": checked_path.stat().st_size,
+            "sha256": file_sha256(checked_path),
             "content": content,
         }
     except (OSError, TypeError, ValueError, json.JSONDecodeError) as error:
         return {
             "status": "invalid",
-            "path": path.resolve().as_posix(),
+            "path": checked_path.absolute().as_posix(),
             "error": str(error),
         }
 
 
 def _verify_deployment_pytest_source(path: Path) -> dict[str, Any] | None:
-    if not path.is_file():
-        return None
+    checked_path = Path(path)
     try:
+        checked_path = reject_symlink_chain(
+            checked_path,
+            name="deployment pytest source",
+        )
+        if not checked_path.is_file():
+            return None
         return {
             "status": "verified",
-            "path": path.resolve().as_posix(),
-            "bytes": path.stat().st_size,
-            "sha256": file_sha256(path),
-            "summary": pytest_junit_summary(path),
+            "path": checked_path.as_posix(),
+            "bytes": checked_path.stat().st_size,
+            "sha256": file_sha256(checked_path),
+            "summary": pytest_junit_summary(checked_path),
         }
     except (OSError, TypeError, ValueError) as error:
         return {
             "status": "invalid",
-            "path": path.resolve().as_posix(),
+            "path": checked_path.absolute().as_posix(),
             "error": str(error),
         }
 
 
 def _verify_deployment_bundle_source(path: Path) -> dict[str, Any] | None:
-    if not path.is_file():
-        return None
+    checked_path = Path(path)
     try:
+        checked_path = reject_symlink_chain(
+            checked_path,
+            name="deployment bundle source",
+        )
+        if not checked_path.is_file():
+            return None
         result = subprocess.run(
-            ["git", "bundle", "list-heads", path.as_posix()],
+            ["git", "bundle", "list-heads", checked_path.as_posix()],
             check=True,
             capture_output=True,
             text=True,
@@ -2974,16 +3043,16 @@ def _verify_deployment_bundle_source(path: Path) -> dict[str, Any] | None:
             raise ValueError("deployment bundle has no advertised heads")
         return {
             "status": "verified",
-            "path": path.resolve().as_posix(),
-            "bytes": path.stat().st_size,
-            "sha256": file_sha256(path),
+            "path": checked_path.as_posix(),
+            "bytes": checked_path.stat().st_size,
+            "sha256": file_sha256(checked_path),
             "heads": heads,
-            "prerequisites": bundle_prerequisites(path),
+            "prerequisites": bundle_prerequisites(checked_path),
         }
     except (OSError, subprocess.CalledProcessError, ValueError) as error:
         return {
             "status": "invalid",
-            "path": path.resolve().as_posix(),
+            "path": checked_path.absolute().as_posix(),
             "error": str(error),
         }
 
@@ -3022,45 +3091,60 @@ def _verify_gate_sources_optional(
 
 
 def _verify_checkpoint_file(path: Path) -> dict[str, Any]:
+    declared_path = Path(path)
+    checked_path = declared_path
     try:
-        integrity = verify_training_checkpoint(path)
+        checked_path = reject_symlink_chain(
+            declared_path,
+            name="large-scale checkpoint",
+        )
+        integrity = verify_training_checkpoint(checked_path)
     except (OSError, KeyError, TypeError, ValueError) as error:
         return {
             "status": "invalid",
-            "path": path.resolve().as_posix(),
+            "path": checked_path.absolute().as_posix(),
             "error": str(error),
         }
     return {
         "status": "verified",
-        "path": path.resolve().as_posix(),
-        "integrity_manifest": checkpoint_integrity_path(path).resolve().as_posix(),
+        "path": checked_path.as_posix(),
+        "integrity_manifest": checkpoint_integrity_path(checked_path).as_posix(),
         **integrity,
     }
 
 
 def _verify_inference_artifact_file(path: Path) -> dict[str, Any]:
+    declared_path = Path(path)
+    checked_path = declared_path
     try:
-        integrity = verify_inference_artifact(path)
-        manifest_path = inference_export_manifest_path(path)
+        checked_path = reject_symlink_chain(
+            declared_path,
+            name="large-scale inference artifact",
+        )
+        integrity = verify_inference_artifact(checked_path)
+        manifest_path = reject_symlink_chain(
+            inference_export_manifest_path(checked_path),
+            name="large-scale inference export manifest",
+        )
         export_manifest_payload = verify_inference_export_manifest(
             manifest_path,
-            expected_artifact=path,
+            expected_artifact=checked_path,
         )
         export_manifest = {
-            "path": manifest_path.resolve().as_posix(),
+            "path": manifest_path.as_posix(),
             "bytes": manifest_path.stat().st_size,
             "sha256": file_sha256(manifest_path),
         }
     except (OSError, KeyError, TypeError, ValueError) as error:
         return {
             "status": "invalid",
-            "path": path.resolve().as_posix(),
+            "path": checked_path.absolute().as_posix(),
             "error": str(error),
         }
     return {
         "status": "verified",
-        "path": path.resolve().as_posix(),
-        "integrity_manifest": checkpoint_integrity_path(path).resolve().as_posix(),
+        "path": checked_path.as_posix(),
+        "integrity_manifest": checkpoint_integrity_path(checked_path).as_posix(),
         "export_manifest": export_manifest,
         "export_manifest_payload": export_manifest_payload,
         **integrity,
@@ -3086,8 +3170,8 @@ def main() -> None:
     parser.add_argument("--allow-incomplete", action="store_true")
     args = parser.parse_args()
 
-    project = Path(args.project_root).resolve()
-    output_root = Path(args.output_root).resolve()
+    project = reject_symlink_chain(args.project_root, name="project root")
+    output_root = reject_symlink_chain(args.output_root, name="output root")
     workspace = generation_workspace_paths(
         project_root=project,
         output_root=output_root,

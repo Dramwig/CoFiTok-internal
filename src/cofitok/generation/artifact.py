@@ -366,8 +366,13 @@ def _validated_release_authorization(
 
 
 def verify_inference_artifact(path: str | Path) -> dict[str, Any]:
-    artifact = Path(path)
-    integrity_path = checkpoint_integrity_path(artifact)
+    artifact = reject_symlink_chain(path, name="inference artifact")
+    integrity_path = reject_symlink_chain(
+        checkpoint_integrity_path(artifact),
+        name="inference artifact integrity manifest",
+    )
+    if not artifact.is_file():
+        raise FileNotFoundError(f"Inference artifact is missing: {artifact}")
     if not integrity_path.is_file():
         raise FileNotFoundError(f"Inference artifact integrity manifest is missing: {integrity_path}")
     with integrity_path.open("r", encoding="utf-8") as handle:

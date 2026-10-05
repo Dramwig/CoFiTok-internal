@@ -175,7 +175,10 @@ def test_stability_completion_cli_reports_empty_workspace_as_incomplete(
 ) -> None:
     output = tmp_path / "completion.json"
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(ROOT / "src")
+    inherited_pythonpath = environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(ROOT / "src"), inherited_pythonpath) if path
+    )
     command = [
         sys.executable,
         str(ROOT / "scripts/audit_generation_stability_completion.py"),
@@ -454,3 +457,37 @@ def test_visual_panel_verifier_rejects_unreported_png(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="PNG set differs"):
         _verify_visual_panels({"panels": panels}, expected_root=root)
+
+
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Unix symlink creation requires elevated privileges on Windows",
+)
+def test_completion_source_verifier_rejects_symlink_file_and_parent(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "source.json"
+    target.write_text('{"status":"pass"}\n', encoding="ascii")
+    alias = tmp_path / "source-alias.json"
+    alias.symlink_to(target)
+    descriptor = {
+        "path": alias.as_posix(),
+        "bytes": target.stat().st_size,
+        "sha256": file_sha256(target),
+    }
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        stability_audit._verified_source(descriptor)
+
+    parent_target = tmp_path / "sources"
+    parent_target.mkdir()
+    parent_file = parent_target / "nested.json"
+    parent_file.write_text('{"status":"pass"}\n', encoding="ascii")
+    parent_alias = tmp_path / "sources-alias"
+    parent_alias.symlink_to(parent_target, target_is_directory=True)
+    parent_descriptor = {
+        "path": (parent_alias / "nested.json").as_posix(),
+        "bytes": parent_file.stat().st_size,
+        "sha256": file_sha256(parent_file),
+    }
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        stability_audit._verified_source(parent_descriptor)

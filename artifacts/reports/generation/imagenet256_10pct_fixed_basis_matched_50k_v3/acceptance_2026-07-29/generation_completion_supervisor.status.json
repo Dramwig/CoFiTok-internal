@@ -1,0 +1,15 @@
+{
+  "attempt": 1,
+  "child_exit_code": 1,
+  "detail": "completion pipeline stopped at a nonretryable stage",
+  "git_commit": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+  "hostname": "autodl-container-azfd082n2h-d63aaa37",
+  "max_attempts": 4,
+  "next_retry_seconds": null,
+  "pipeline_stage": "promotion_gate",
+  "pipeline_status": "failed",
+  "schema_version": 1,
+  "status": "failed",
+  "supervisor": "generation_completion_supervisor",
+  "updated_at": "2026-07-28T16:27:43.397693+00:00"
+}

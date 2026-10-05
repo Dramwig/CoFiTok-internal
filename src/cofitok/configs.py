@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 
+_LEGACY_DATA_ROOT = "/root/autodl-tmp/CoFiTok/datasets"
+
+
 @dataclass(frozen=True)
 class DataConfig:
     dataset: str = "random"
-    root: str = "/root/autodl-tmp/CoFiTok/datasets"
+    root: str = _LEGACY_DATA_ROOT
     image_size: int = 32
     channels: int = 3
     batch_size: int = 4
@@ -62,6 +66,8 @@ class ModelConfig:
 @dataclass(frozen=True)
 class LossConfig:
     epsilon_weight: float = 1.0
+    # A zero gamma preserves the historical unweighted epsilon objective.
+    min_snr_gamma: float = 0.0
     prefix_weight: float = 0.25
     monotonic_weight: float = 0.05
     monotonic_margin: float = 0.0
@@ -178,9 +184,14 @@ def _dataclass_to_dict(obj: Any) -> dict[str, Any]:
 def _build_config(raw: dict[str, Any]) -> ExperimentConfig:
     default = _dataclass_to_dict(ExperimentConfig())
     merged = _merge_dict(default, raw)
+    data = dict(merged["data"])
+    configured_root = data["root"]
+    override_root = os.environ.get("COFITOK_DATA_ROOT")
+    if override_root and configured_root == _LEGACY_DATA_ROOT:
+        data["root"] = override_root
     return ExperimentConfig(
         name=merged["name"],
-        data=DataConfig(**merged["data"]),
+        data=DataConfig(**data),
         diffusion=DiffusionConfig(**merged["diffusion"]),
         model=ModelConfig(**merged["model"]),
         loss=LossConfig(**merged["loss"]),

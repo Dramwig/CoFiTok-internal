@@ -13,6 +13,7 @@ from typing import Any, Callable
 
 from cofitok.generation_gate import validate_generation_gate_authorization
 from cofitok.generation_gate_sources import verify_generation_gate_source_reports
+from cofitok.process_monitoring import wait_for_child_with_heartbeat
 from cofitok.reporting import file_sha256, write_json_report
 
 try:
@@ -408,6 +409,7 @@ def _run_stage(
     project: Path,
     environment: dict[str, str],
     max_attempts: int,
+    poll_seconds: float,
     retry_seconds: float,
     write_status: Callable[..., None],
     nonretryable_report: Path | None = None,
@@ -425,7 +427,17 @@ def _run_stage(
             attempt=attempt,
             child_pid=child.pid,
         )
-        exit_code = child.wait()
+        exit_code = wait_for_child_with_heartbeat(
+            child,
+            poll_seconds=poll_seconds,
+            heartbeat=lambda: write_status(
+                status="running",
+                detail=f"{name}_running",
+                stage=name,
+                attempt=attempt,
+                child_pid=child.pid,
+            ),
+        )
         if exit_code == 0:
             return
         if exit_code == STAGE_REPLAY_ERROR_EXIT_CODE:
@@ -644,6 +656,7 @@ def main() -> int:
         project=project,
         environment=environment,
         max_attempts=args.max_stage_attempts,
+        poll_seconds=args.poll_seconds,
         retry_seconds=args.retry_seconds,
         write_status=publish,
     )
@@ -672,6 +685,7 @@ def main() -> int:
         project=project,
         environment=export_environment,
         max_attempts=args.max_stage_attempts,
+        poll_seconds=args.poll_seconds,
         retry_seconds=args.retry_seconds,
         write_status=publish,
     )
@@ -707,6 +721,7 @@ def main() -> int:
         project=project,
         environment=audit_environment,
         max_attempts=args.max_stage_attempts,
+        poll_seconds=args.poll_seconds,
         retry_seconds=args.retry_seconds,
         write_status=publish,
         nonretryable_report=completion_path,

@@ -427,7 +427,10 @@ repository or mutate an active training checkout.
   stale/failed/mismatched state, and launches formal EMA post-evaluation only
   after the GPU is idle. Its successful exit is operational evidence, not a
   scientific scaling decision: `promotion_gate.json` must independently pass
-  complete validation. The waiter cannot launch full 300K training.
+  complete validation. While a long child is active, its source-bound status is
+  refreshed periodically. A heartbeat write failure is reported and retried
+  without detaching the still-running child. The waiter cannot launch full 300K
+  training.
 
 The failed learned-synthesis v2 pair keeps its original run and report
 directories as immutable evidence. The historical fixed-basis v3 attempt uses
@@ -1016,7 +1019,10 @@ gate, exports release-authorized EMA artifacts, and invokes the terminal audit.
 Execution-stage failures receive bounded retries, while a failed scientific
 gate or a failed/incomplete completion report stops permanently. Existing
 final-gate or completion files are rehashed and must match the current complete
-expectation map before reuse.
+expectation map before reuse. Formal post-evaluation, inference export, and the
+completion audit refresh the supervisor's source-bound running status while
+their children remain active; a heartbeat write failure is retried without
+detaching the child.
 After the final gate, both methods export separate EMA-only deployment
 artifacts. Their type-specific sidecars are verified before deserialization;
 source training checkpoint SHA, runtime-environment SHA, Git identity, step,
@@ -1089,6 +1095,26 @@ of a closely matched, finite training trajectory, not free-rollout or generation
 quality evidence. EMA-teacher consistency has not reached its 30K start in that
 window, and exact matched 50K completion plus formal EMA post-evaluation remains
 required.
+
+The checkpoint-aligned 35K extension is recorded in
+`docs/records/2026-08-03_generation_stability_matched_35k_schedule_trajectory.md`.
+It binds 701 finite, strictly ordered rows and 35 matched validation events per
+method, including the first six EMA-teacher warmup events from 30K through 35K.
+Across 1K--35K CoFiTok's validation epsilon-MSE ratio of means is `-0.107561%`;
+within the six-event teacher warmup it is `+0.172577%`, with no schedule,
+provenance, integrity, or sample-accounting issue. This remains a non-authorizing
+training-space diagnostic: exact matched 50K completion and formal frozen EMA
+post-evaluation are still required for any sample-quality decision.
+
+The exact EMA-teacher full-scale transition at 40K is frozen in
+`docs/records/2026-08-03_generation_stability_matched_40k_schedule_trajectory.md`.
+Trajectory schema 3 binds CoFiTok's exact 36,545 resume checkpoint and metrics
+reconciliation before admitting the trainer's single first-post-resume row at
+36,546; arbitrary off-grid rows still fail closed. Through 40K, 40 paired
+validation events have a CoFiTok/dense epsilon-MSE ratio-of-means delta of
+`-0.074012%`. EMA-teacher warmup at 30K--39K is `+0.202082%`; the first 40K
+full-scale event is `-0.005674%`. These finite matched values diagnose the
+transition only and do not replace exact 50K frozen EMA sample evaluation.
 
 ## Full-data base-128 quality bridge
 

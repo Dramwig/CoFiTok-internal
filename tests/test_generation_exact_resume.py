@@ -44,7 +44,10 @@ def _run(
     environment_overrides: dict[str, str] | None = None,
 ) -> None:
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(ROOT / "src")
+    inherited_pythonpath = environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(ROOT / "src"), inherited_pythonpath) if path
+    )
     environment.update(environment_overrides or {})
     subprocess.run(
         [

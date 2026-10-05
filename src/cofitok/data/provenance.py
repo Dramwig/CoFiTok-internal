@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
+from cofitok.path_security import reject_symlink_chain
 from cofitok.reporting import file_sha256
 
 
@@ -77,7 +78,10 @@ def capture_dataset_provenance(
 ) -> dict[str, Any]:
     dataset = str(data_config.dataset).lower()
     configured_root = Path(data_config.root) / dataset
-    dataset_root = configured_root.resolve()
+    dataset_root = reject_symlink_chain(
+        configured_root,
+        name="dataset root",
+    )
     spec = FORMAL_GENERATION_DATASETS.get(dataset)
     if spec is None:
         return {
@@ -89,12 +93,11 @@ def capture_dataset_provenance(
             "splits": {"train": int(train_images), "val": int(val_images)},
         }
 
-    manifest_path = configured_root / "metadata" / "image_manifest.jsonl"
+    manifest_path = reject_symlink_chain(
+        dataset_root / "metadata" / "image_manifest.jsonl",
+        name="dataset manifest",
+    )
     issues = []
-    if configured_root.is_symlink():
-        issues.append("dataset root is a symlink")
-    if manifest_path.is_symlink():
-        issues.append("dataset manifest is a symlink")
     if not manifest_path.is_file():
         raise FileNotFoundError(f"formal dataset manifest is missing: {manifest_path}")
     manifest_bytes = manifest_path.stat().st_size

@@ -15,6 +15,7 @@ from cofitok.generation_paths import (
     STABILITY_FULL_DENSE_RUN_ID,
     STABILITY_FULL_ROOT_ID,
 )
+from cofitok.path_security import reject_symlink_chain
 from cofitok.reporting import file_sha256
 
 
@@ -196,7 +197,10 @@ def _diagnostic_suffixes(
 
 
 def gate_source_report_identity(path: str | Path) -> dict[str, Any]:
-    source = Path(path).resolve()
+    source = reject_symlink_chain(
+        path,
+        name="generation gate source report",
+    )
     if not source.is_file():
         raise FileNotFoundError(
             f"generation gate source report does not exist: {source}"

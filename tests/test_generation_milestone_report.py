@@ -249,7 +249,10 @@ def test_milestone_report_revalidates_content_addressed_sources(tmp_path) -> Non
     report_path = tmp_path / "milestone.json"
     report_path.write_text(json.dumps(report), encoding="utf-8")
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(ROOT / "src")
+    inherited_pythonpath = environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(ROOT / "src"), inherited_pythonpath) if path
+    )
     result = subprocess.run(
         [
             sys.executable,

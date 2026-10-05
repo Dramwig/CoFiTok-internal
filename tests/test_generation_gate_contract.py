@@ -695,6 +695,22 @@ def test_training_authorization_binds_gate_file_and_checkpoint_before_load(
         capture_generation_training_authorization(gate_path)
 
 
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Unix symlink creation requires elevated privileges on Windows",
+)
+def test_training_authorization_rejects_symlinked_gate(tmp_path: Path) -> None:
+    gate = _gate()
+    _bind_gate_sources(gate, tmp_path)
+    target = tmp_path / "promotion_gate.json"
+    target.write_text(json.dumps(gate, sort_keys=True), encoding="utf-8")
+    alias = tmp_path / "promotion_gate_alias.json"
+    alias.symlink_to(target)
+
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        capture_generation_training_authorization(alias)
+
+
 def test_full_training_runbook_binds_authorization_to_every_segment() -> None:
     runbook = (
         Path(__file__).resolve().parents[1]
@@ -733,7 +749,10 @@ def test_full_posteval_revalidates_gate_sources_and_training_pair() -> None:
 def test_formal_full_trainer_refuses_to_start_without_authorization(tmp_path) -> None:
     root = Path(__file__).resolve().parents[1]
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(root / "src")
+    inherited_pythonpath = environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(root / "src"), inherited_pythonpath) if path
+    )
     result = subprocess.run(
         [
             sys.executable,

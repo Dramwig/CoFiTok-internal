@@ -1,0 +1,541 @@
+{
+  "authorization_boundary": {
+    "decision_is_execution_authorization": false,
+    "evaluation_launch_allowed": false,
+    "export_allowed": false,
+    "frozen_confirmation_launch_allowed": false,
+    "frozen_confirmation_preparation_allowed": false,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "full_training_preparation_allowed": false,
+    "gpu_execution_allowed": false,
+    "large_capacity_readiness_preparation_allowed": false,
+    "paper_integration_allowed": false,
+    "process_signals_allowed": false,
+    "promotion_allowed": false,
+    "release_allowed": false,
+    "remote_mutation_allowed": false,
+    "sampling_launch_allowed": false,
+    "training_launch_allowed": false
+  },
+  "builder_git": {
+    "branch": "analysis/generation-support-collapse-causal-discriminator-v1-20260909",
+    "revision": "94f7dd1a5833f76eda66ef8880a704e9730f4602",
+    "tracked_dirty": false,
+    "tree": "7a0d8bdc6a0ab626d8b8a9a595d2b63ce1886a4b"
+  },
+  "builder_script": {
+    "bytes": 103524,
+    "path": "/tmp/cofitok-support-collapse-causal-discriminator-20260909/scripts/build_support_collapse_causal_discriminator.py",
+    "sha256": "1e7fb3412556eeb1c279b68a71adc4aa57eb0cb914a3b3c290c61049d75b5fca"
+  },
+  "decision": {
+    "bytes": 420423,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/support_collapse_causal_discriminator_v1/support_collapse_causal_discriminator.json",
+    "sha256": "6b0887dec10d6908550bee8e90c3a6e242dbddb3cb62c97935eac841dd262bc0"
+  },
+  "generation_advantage_proven": false,
+  "physical_source_replay": {
+    "performed": true,
+    "recomputed_decision_canonical_sha256": "544421289905625f1fe88b92c2af1e7ebf959362d3b8da8f4c463d0ed3cd95f6",
+    "source_count": 70
+  },
+  "role": "content_addressed_support_collapse_causal_discriminator_validation",
+  "schema_version": "cofitok_generation_support_collapse_causal_discriminator_validation_v1",
+  "scientific_status": "hold",
+  "selected_candidate": null,
+  "source_evidence": {
+    "active_controller": {
+      "arm_validations": {
+        "control_cofitok": {
+          "bytes": 26921,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1/arm_validations/control_cofitok.json",
+          "sha256": "2d4997167f1b1e21b32d6ef8b7d0147d1d507dcd1f32a66e50434bd00bb24bce"
+        },
+        "control_dense_identity": {
+          "bytes": 26303,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1/arm_validations/control_dense_identity.json",
+          "sha256": "f66e2439dd96a7461b13202f62f36b3bd4976d423e13506e80e581bcb3e6aac5"
+        },
+        "endpoint0975_cofitok": {
+          "bytes": 27091,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1/arm_validations/endpoint0975_cofitok.json",
+          "sha256": "68dfe99313dfa7e13d75f8279851055b93c1e2dd3f415bb6de74490ab1ddc429"
+        },
+        "endpoint0975_dense_identity": {
+          "bytes": 26469,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1/arm_validations/endpoint0975_dense_identity.json",
+          "sha256": "5a1c90e1e18e9823515d1d0a7afe4ce29d36a398af5a657d1189dc6197df5219"
+        }
+      },
+      "log": {
+        "bytes": 110616,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.terminal_snr_screen_control/controller.log",
+        "sha256": "2167f99c0c899c7e79896dc2924849e9a5bd8638e9c985777f13f97edaca084d"
+      },
+      "prelaunch_evidence": {
+        "execution_authorization": {
+          "bytes": 8306,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.prelaunch_evidence.89bcd9a/execution_authorization.json",
+          "sha256": "6f989930ba8eb6150917717a3d0e6fb342a91ebf0a50c82360843aba4e8a4e36"
+        },
+        "launch_receipt": {
+          "bytes": 22145,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.prelaunch_evidence.89bcd9a/launch_receipt.json",
+          "sha256": "24ff4acc496f8ea24698da9c5dfe5fa5c56b6e681b9b8d4db8d84b32ec28c26d"
+        },
+        "live_snapshot": {
+          "bytes": 4509,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.prelaunch_evidence.89bcd9a/live_snapshot.json",
+          "sha256": "c3598bcbc87cb0c8091eed0f6c3e010869009d4819ab709f5e773766efd38f8f"
+        },
+        "preparation": {
+          "bytes": 16754,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.prelaunch_evidence.89bcd9a/preparation.json",
+          "sha256": "af417ae383ff289a0ad6c91a347046567fb80e7c211b27db754fc3f3fdb75144"
+        },
+        "runtime_selection": {
+          "bytes": 75814,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.prelaunch_evidence.89bcd9a/runtime_selection.json",
+          "sha256": "cee1bf37b5e8972ec77e498a0b0b4756bced401200d2e2511dea2e2f4d8941cd"
+        },
+        "storage_capacity": {
+          "bytes": 1065,
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.prelaunch_evidence.89bcd9a/storage_capacity.json",
+          "sha256": "371f1171dbe16600e30ad5485a6505968447cb2e1d9a1b6075179e17a85794e2"
+        }
+      },
+      "status": {
+        "bytes": 1232,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.terminal_snr_screen_control/controller_status.json",
+        "sha256": "dfba8a85c6aa0b530e27874c5a0187f18ace3ac2624ab0cfedd92b8f4dd45e14"
+      }
+    },
+    "active_terminal_and_prelaunch": {
+      "bytes": 26143,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1/terminal_snr_screen_result.json",
+      "sha256": "b740c8b21aabf640c156aea076058c73350d26c110e2cc967576a26492a52dea"
+    },
+    "active_terminal_result_validation": {
+      "bytes": 3503,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1/terminal_snr_screen_result.validation.json",
+      "sha256": "3be043d852bd61d6e79005dc9d14f77113f1250bef967ca4e2a8ac74bc715f95"
+    },
+    "all_bound_sources": {
+      "arm_control_cofitok": {
+        "bytes": 26921,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1/arm_validations/control_cofitok.json",
+        "sha256": "2d4997167f1b1e21b32d6ef8b7d0147d1d507dcd1f32a66e50434bd00bb24bce"
+      },
+      "arm_control_dense_identity": {
+        "bytes": 26303,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1/arm_validations/control_dense_identity.json",
+        "sha256": "f66e2439dd96a7461b13202f62f36b3bd4976d423e13506e80e581bcb3e6aac5"
+      },
+      "arm_endpoint0975_cofitok": {
+        "bytes": 27091,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1/arm_validations/endpoint0975_cofitok.json",
+        "sha256": "68dfe99313dfa7e13d75f8279851055b93c1e2dd3f415bb6de74490ab1ddc429"
+      },
+      "arm_endpoint0975_dense_identity": {
+        "bytes": 26469,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1/arm_validations/endpoint0975_dense_identity.json",
+        "sha256": "5a1c90e1e18e9823515d1d0a7afe4ce29d36a398af5a657d1189dc6197df5219"
+      },
+      "capacity_hold_decision": {
+        "bytes": 10905,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/capacity_qualification_v1/capacity_screen_hold_recovery.json",
+        "sha256": "585840359db244c51cbfddc6c425f8703ea8ed1b12557fbfc9b6b441812ae013"
+      },
+      "capacity_hold_validation": {
+        "bytes": 8513,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/capacity_qualification_v1/capacity_screen_hold_recovery.validation.json",
+        "sha256": "79baa341bbf9017d53775af3dc6c2c14405dbfbb3b80c4332400bb26bed15880"
+      },
+      "capacity_result": {
+        "bytes": 22852,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/capacity_qualification_v1/capacity_screen_result.json",
+        "sha256": "1ec16a2ac7dbf247f04be6b14bd980bc85a6f933791b37964767b1fea9998e45"
+      },
+      "capacity_result_validation": {
+        "bytes": 3311,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/capacity_qualification_v1/capacity_screen_result.validation.json",
+        "sha256": "213685d6d6f38232c83272250d0d211cfdc2f390a38b79f1f3bee0ab383b44ba"
+      },
+      "conditioning_control_cofitok_manifest": {
+        "bytes": 5068,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/control_cofitok/conditioning_sensitivity_manifest.json",
+        "sha256": "35cb72c18539d49934a363c885e9a5c69b444fcf8bf75aada73349e9564e5760"
+      },
+      "conditioning_control_cofitok_report": {
+        "bytes": 62515,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/control_cofitok/conditioning_sensitivity_report.json",
+        "sha256": "ff7c2a65af4306f42b03609388f5b2e57897086a8c5def3a3384ad6ca16db59c"
+      },
+      "conditioning_control_dense_manifest": {
+        "bytes": 5096,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/control_dense_identity/conditioning_sensitivity_manifest.json",
+        "sha256": "bcab51f5c6dbdad53f2cbe266dc7952296b8f5639c9c7ca73c859001c9c1d94f"
+      },
+      "conditioning_control_dense_report": {
+        "bytes": 62549,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/control_dense_identity/conditioning_sensitivity_report.json",
+        "sha256": "3ac4265e4c170215fcb167202e83e36e9202bc11858c3ba6e34d4dc5b6d85880"
+      },
+      "conditioning_ranked_cofitok_manifest": {
+        "bytes": 5064,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/ranked_cofitok/conditioning_sensitivity_manifest.json",
+        "sha256": "051408d9757a90482ee681ec21d4f4745951ce41f41b5378e3a6f725978dc8d0"
+      },
+      "conditioning_ranked_cofitok_report": {
+        "bytes": 62529,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/ranked_cofitok/conditioning_sensitivity_report.json",
+        "sha256": "b4ff0c34367279f72e6597ef9d536149717131d540a9250b129d888fdd0958e8"
+      },
+      "conditioning_ranked_dense_manifest": {
+        "bytes": 5092,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/ranked_dense_identity/conditioning_sensitivity_manifest.json",
+        "sha256": "48451b143c73fc6ab0d31c2e2e77104633fcc6bb181de4f36f1f62ac45c4207e"
+      },
+      "conditioning_ranked_dense_report": {
+        "bytes": 62550,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/ranked_dense_identity/conditioning_sensitivity_report.json",
+        "sha256": "2a5d39e6f21653a075b5b01956d5f6fc16d0df1ac24e4cda8b43bb72f9a6418f"
+      },
+      "conditioning_ranking_postevaluation": {
+        "bytes": 46071,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/postevaluation.json",
+        "sha256": "97f33bf774ad4537a674a2d37af3e50f7f03b6e1283f7644f6c629be430a08bb"
+      },
+      "controller_log": {
+        "bytes": 110616,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.terminal_snr_screen_control/controller.log",
+        "sha256": "2167f99c0c899c7e79896dc2924849e9a5bd8638e9c985777f13f97edaca084d"
+      },
+      "controller_status": {
+        "bytes": 1232,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.terminal_snr_screen_control/controller_status.json",
+        "sha256": "dfba8a85c6aa0b530e27874c5a0187f18ace3ac2624ab0cfedd92b8f4dd45e14"
+      },
+      "execution_authorization": {
+        "bytes": 8306,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.prelaunch_evidence.89bcd9a/execution_authorization.json",
+        "sha256": "6f989930ba8eb6150917717a3d0e6fb342a91ebf0a50c82360843aba4e8a4e36"
+      },
+      "exposure_cofitok_1250_manifest": {
+        "bytes": 7810,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/cofitok/step_00001250/conditioning_sensitivity_manifest.json",
+        "sha256": "e52e70a783377f5cf4b0bcfe0e76935402c59aed6ffaac76a527b3a95ad98940"
+      },
+      "exposure_cofitok_1250_report": {
+        "bytes": 128888,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/cofitok/step_00001250/conditioning_sensitivity_report.json",
+        "sha256": "0e6fd0184c166fbbaf7c2603878384f3f5c4f89192a6d5095907493dcdf769bf"
+      },
+      "exposure_cofitok_2500_manifest": {
+        "bytes": 7810,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/cofitok/step_00002500/conditioning_sensitivity_manifest.json",
+        "sha256": "a7479c98327317a232eda957a5eaa8d68593d0a4b62c49ff8ab49d3ece471f9a"
+      },
+      "exposure_cofitok_2500_report": {
+        "bytes": 128872,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/cofitok/step_00002500/conditioning_sensitivity_report.json",
+        "sha256": "37fc31e619ea0a82614779e96f253da6676304a9660087c53b2ebacfba7913b5"
+      },
+      "exposure_cofitok_5000_manifest": {
+        "bytes": 7810,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/cofitok/step_00005000/conditioning_sensitivity_manifest.json",
+        "sha256": "12215349377648a171fddf323f8b5ff5ecd2102a206da47937365190f63b52fc"
+      },
+      "exposure_cofitok_5000_report": {
+        "bytes": 128920,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/cofitok/step_00005000/conditioning_sensitivity_report.json",
+        "sha256": "3afbc1a8bac29a5d7f7ef4a907f0b7f52b664007e40c8f72982880b75d2d55ad"
+      },
+      "exposure_controller_log": {
+        "bytes": 278867,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/exposure/controller.log",
+        "sha256": "5ecb8ff848ecb5bca89e4c444c459f6af232774ab318a68938fa02d18155fe5f"
+      },
+      "exposure_controller_status": {
+        "bytes": 3281,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/exposure/controller_status.json",
+        "sha256": "55798ba18720b80b90630eaca68ef2c18e0dd806eb61176f5ba5aa15607fff31"
+      },
+      "exposure_decision": {
+        "bytes": 18159,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/exposure/exposure_capacity_decision.json",
+        "sha256": "f7af487108d1cfcd26d27887b9dbc0a97cbf00cf22564b5183b3345eede131c1"
+      },
+      "exposure_decision_validation": {
+        "bytes": 4277,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/exposure/exposure_capacity_decision.validation.json",
+        "sha256": "6bc62c2f1cfb2c90ae0f6bd1e9874d466d9456f7a635551ef208cdb039b3e989"
+      },
+      "exposure_dense_1250_manifest": {
+        "bytes": 7802,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/dense_identity/step_00001250/conditioning_sensitivity_manifest.json",
+        "sha256": "f1e9d57938360f3e5ad637f45ecfdb2ea1e8950c82b33f10d4606d908bb8c6d1"
+      },
+      "exposure_dense_1250_report": {
+        "bytes": 128817,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/dense_identity/step_00001250/conditioning_sensitivity_report.json",
+        "sha256": "f561e97d26b5dcbecc7f6787e828d2502c60e22230feb14bc91eabfd600224a2"
+      },
+      "exposure_dense_2500_manifest": {
+        "bytes": 7802,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/dense_identity/step_00002500/conditioning_sensitivity_manifest.json",
+        "sha256": "c5b3927582be023ffe0b6f89c02a2cd53d6c10c2277ad353d08665af3e44cc38"
+      },
+      "exposure_dense_2500_report": {
+        "bytes": 128799,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/dense_identity/step_00002500/conditioning_sensitivity_report.json",
+        "sha256": "8f870c3857d0da6e8928ebb58586be6443682da8765c27ca9cf67c53f7c33add"
+      },
+      "exposure_dense_5000_manifest": {
+        "bytes": 7802,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/dense_identity/step_00005000/conditioning_sensitivity_manifest.json",
+        "sha256": "5a46ab538e0f953b74f50d01fd6b0b68711c65e4dd15734c89cef1787ad95403"
+      },
+      "exposure_dense_5000_report": {
+        "bytes": 128863,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/dense_identity/step_00005000/conditioning_sensitivity_report.json",
+        "sha256": "17882cc9d317f271babfae802fbd45b8c26ae7a13e11ea5c2ab8648bf5a17f36"
+      },
+      "exposure_result": {
+        "bytes": 77033,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/exposure/exposure_capacity_result.json",
+        "sha256": "d35995f503a395b047f88c979fc3c9773eff9132b7cabc751016ff5a0dc726db"
+      },
+      "exposure_result_validation": {
+        "bytes": 10126,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/exposure/exposure_capacity_result.validation.json",
+        "sha256": "8ca77a8d67f903cd04b6e03ab91750b0d33f00e95bfc2f0939b893f37835acd8"
+      },
+      "exposure_semantic_trajectory": {
+        "bytes": 141273,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/trajectory_report.json",
+        "sha256": "773c9294cbebb6d5654edb7a00ff565612beabca46f16bf3621b8e0a5beae7af"
+      },
+      "exposure_semantic_trajectory_replay_audit": {
+        "bytes": 16568,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/trajectory_replay_audit_v1.json",
+        "sha256": "7227e168b36d44f93c13c9f62b16faa5396bc356720309c94b4fd32b30a2ae4e"
+      },
+      "launch_receipt": {
+        "bytes": 22145,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.prelaunch_evidence.89bcd9a/launch_receipt.json",
+        "sha256": "24ff4acc496f8ea24698da9c5dfe5fa5c56b6e681b9b8d4db8d84b32ec28c26d"
+      },
+      "live_snapshot": {
+        "bytes": 4509,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.prelaunch_evidence.89bcd9a/live_snapshot.json",
+        "sha256": "c3598bcbc87cb0c8091eed0f6c3e010869009d4819ab709f5e773766efd38f8f"
+      },
+      "min_snr_physical_guard": {
+        "bytes": 89426,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/reports/terminal_physical_guard_v1/terminal_physical_guard.json",
+        "sha256": "3ff6ad8314e0ea9e10c88aee785564d6713d2e93ddfd9f83f33e1ed33f0b99ed"
+      },
+      "min_snr_result": {
+        "bytes": 17348,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/min_snr_gamma5_matched_50k_pilot_v1/reports/min_snr_pilot_result.json",
+        "sha256": "dde62640e84a461be3b571b228e7903785e42f118dd7103941e20592bd0059fc"
+      },
+      "preparation": {
+        "bytes": 16754,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.prelaunch_evidence.89bcd9a/preparation.json",
+        "sha256": "af417ae383ff289a0ad6c91a347046567fb80e7c211b27db754fc3f3fdb75144"
+      },
+      "prior_reassessment": {
+        "bytes": 17472,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_intervention_reassessment_v1/terminal_snr_intervention_reassessment.json",
+        "sha256": "6da8e3b61e9cd632ee16bcace16e6f32f0d3a3c011847c573603e79e3f7d1075"
+      },
+      "prior_reassessment_validation": {
+        "bytes": 17004,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_intervention_reassessment_v1/terminal_snr_intervention_reassessment.validation.json",
+        "sha256": "1e3b82f40385d2489d3c59404f9df027573c5c8b30d7d98eec258c3cb409c48e"
+      },
+      "prior_terminal_reassessment": {
+        "bytes": 17364,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/capacity_qualification_v1/terminal_snr_objective_reassessment.json",
+        "sha256": "646e47f4efab523ae3d27e1d341a48ac07c10e6c16e5fdbba912cb4e96be67af"
+      },
+      "prior_terminal_reassessment_validation": {
+        "bytes": 11625,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/capacity_qualification_v1/terminal_snr_objective_reassessment.validation.json",
+        "sha256": "76ce4f3bba0f0e3abfa3f06f0810c072c3773507e4106f8cd2ae6eecffc10b1a"
+      },
+      "quality_bridge_comparison": {
+        "bytes": 26683,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/quality_bridge_comparison_v4_authoritative/quality_bridge_comparison.json",
+        "sha256": "991600ffddc66d3d3f81d7294f202b636f71acc9e7de52fb33418f16f4f882e8"
+      },
+      "quality_bridge_result": {
+        "bytes": 60024,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/quality_bridge_result.json",
+        "sha256": "15752e05611fa888e15352934c1627ccb95418df0339f9ad120e195bc088d165"
+      },
+      "quality_class_fidelity_qualification": {
+        "bytes": 9188,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/class_fidelity/qualification_report.json",
+        "sha256": "91b03a57f033c9d8d6f7918fdd4071c9b1f13426980a464114f7371a059858f8"
+      },
+      "quality_cofitok_class_fidelity": {
+        "bytes": 14531,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/class_fidelity/class_fidelity_report.json",
+        "sha256": "d84bad6dc9834f98600af44221b82b3433b0fb91063ba0ba5c27a7ba5435fd21"
+      },
+      "quality_cofitok_metrics": {
+        "bytes": 14180,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/metrics/generation_metrics_report.json",
+        "sha256": "4dc4c6afd68f9e9f8ac335bf84108b8134d5a6404c316079c1185330f67f76dc"
+      },
+      "quality_dense_class_fidelity": {
+        "bytes": 14412,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/class_fidelity/class_fidelity_report.json",
+        "sha256": "987cf89e0d886ac9fbfdcdd814beb760a2fb7fbe3621c0eea6d665f3c1e0bf4b"
+      },
+      "quality_dense_metrics": {
+        "bytes": 14057,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/metrics/generation_metrics_report.json",
+        "sha256": "b59f33f98a34906a0c7d97767728595f990cc0f52838f51fa9f3cc18bf7acfba"
+      },
+      "runtime_selection": {
+        "bytes": 75814,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.prelaunch_evidence.89bcd9a/runtime_selection.json",
+        "sha256": "cee1bf37b5e8972ec77e498a0b0b4756bced401200d2e2511dea2e2f4d8941cd"
+      },
+      "sampling_recovery_result": {
+        "bytes": 193144,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_epsilon_stability_sampling_recovery_v1/reports/epsilon_stability_sampling_result.json",
+        "sha256": "d6b5c3190a205f5be886c01e8543b9e2511988d5f0b9f2e642a33d0e8be1249f"
+      },
+      "semantic_control_cofitok_manifest": {
+        "bytes": 5045,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/control_cofitok/conditioning_sensitivity_manifest.json",
+        "sha256": "7555dd32e58af3b06e021fceefc83faaad47c8211b58e58d375066caba1d0a30"
+      },
+      "semantic_control_cofitok_report": {
+        "bytes": 76346,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/control_cofitok/conditioning_sensitivity_report.json",
+        "sha256": "8b87768ad046ed5df584daf62204cde8a9522104f2f09a620bb895ec1231306b"
+      },
+      "semantic_control_dense_manifest": {
+        "bytes": 5073,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/control_dense_identity/conditioning_sensitivity_manifest.json",
+        "sha256": "2b369dd18e633683031d8125c0b10cafac132bca4b592c190257ed6c49eda478"
+      },
+      "semantic_control_dense_report": {
+        "bytes": 76370,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/control_dense_identity/conditioning_sensitivity_report.json",
+        "sha256": "4085d51665fdcf8e93d75ee6e7ae5e2a1d1bb8df48dfdbb4149ff6a731cf2afd"
+      },
+      "semantic_residual_cofitok_manifest": {
+        "bytes": 5049,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/residual_cofitok/conditioning_sensitivity_manifest.json",
+        "sha256": "a9b503d8b35f1d348dfeeef127d9393bb890b2f7540edb45e7848aa95e96deff"
+      },
+      "semantic_residual_cofitok_report": {
+        "bytes": 76240,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/residual_cofitok/conditioning_sensitivity_report.json",
+        "sha256": "aa10bdf8be8311afd5941732c3ad8b7dfd6f806a5e769377b9d21edafb0b1dee"
+      },
+      "semantic_residual_dense_manifest": {
+        "bytes": 5077,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/residual_dense_identity/conditioning_sensitivity_manifest.json",
+        "sha256": "589387dbb5eaacac2e2f1fa5f887899deefbee5f138fb4aef675041c600f0a3c"
+      },
+      "semantic_residual_dense_report": {
+        "bytes": 76295,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/residual_dense_identity/conditioning_sensitivity_report.json",
+        "sha256": "39ffcc450285f52c60500755b38bbc770f92d1e54eb29e0b82f6dc232c12f7f3"
+      },
+      "semantic_residual_postevaluation": {
+        "bytes": 62819,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/postevaluation.json",
+        "sha256": "3e63f7ed934cbc017e406dd71ccc598eb7e23e6d0ddbf998e98a8108d0d5675a"
+      },
+      "storage_capacity": {
+        "bytes": 1065,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/.terminal_snr_endpoint_screen_v1.prelaunch_evidence.89bcd9a/storage_capacity.json",
+        "sha256": "371f1171dbe16600e30ad5485a6505968447cb2e1d9a1b6075179e17a85794e2"
+      },
+      "terminal_result": {
+        "bytes": 26143,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1/terminal_snr_screen_result.json",
+        "sha256": "b740c8b21aabf640c156aea076058c73350d26c110e2cc967576a26492a52dea"
+      },
+      "terminal_result_validation": {
+        "bytes": 3503,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/terminal_snr_endpoint_screen_v1/terminal_snr_screen_result.validation.json",
+        "sha256": "3be043d852bd61d6e79005dc9d14f77113f1250bef967ca4e2a8ac74bc715f95"
+      }
+    },
+    "diagnostic_reports": {
+      "conditioning_ranking_postevaluation": {
+        "bytes": 46071,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_ranking_four_arm_probe1k_terminal_rebind_v2/reports/conditioning_ranking_posteval_v1/postevaluation.json",
+        "sha256": "97f33bf774ad4537a674a2d37af3e50f7f03b6e1283f7644f6c629be430a08bb"
+      },
+      "exposure_semantic_trajectory": {
+        "bytes": 141273,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/trajectory_report.json",
+        "sha256": "773c9294cbebb6d5654edb7a00ff565612beabca46f16bf3621b8e0a5beae7af"
+      },
+      "exposure_semantic_trajectory_replay_audit": {
+        "bytes": 16568,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_semantic_trajectory_pair5k_v1/reports/exposure_semantic_trajectory_v1/trajectory_replay_audit_v1.json",
+        "sha256": "7227e168b36d44f93c13c9f62b16faa5396bc356720309c94b4fd32b30a2ae4e"
+      },
+      "quality_bridge_comparison": {
+        "bytes": 26683,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/quality_bridge_comparison_v4_authoritative/quality_bridge_comparison.json",
+        "sha256": "991600ffddc66d3d3f81d7294f202b636f71acc9e7de52fb33418f16f4f882e8"
+      },
+      "quality_bridge_result": {
+        "bytes": 60024,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/quality_bridge_result.json",
+        "sha256": "15752e05611fa888e15352934c1627ccb95418df0339f9ad120e195bc088d165"
+      },
+      "quality_class_fidelity_qualification": {
+        "bytes": 9188,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/class_fidelity/qualification_report.json",
+        "sha256": "91b03a57f033c9d8d6f7918fdd4071c9b1f13426980a464114f7371a059858f8"
+      },
+      "semantic_residual_postevaluation": {
+        "bytes": 62819,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/semantic_residual_alignment_four_arm_probe1k_v1/reports/semantic_residual_alignment_posteval_v1/postevaluation.json",
+        "sha256": "3e63f7ed934cbc017e406dd71ccc598eb7e23e6d0ddbf998e98a8108d0d5675a"
+      }
+    },
+    "historical_and_prior": {
+      "controller_log": {
+        "bytes": 278867,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/exposure/controller.log",
+        "sha256": "5ecb8ff848ecb5bca89e4c444c459f6af232774ab318a68938fa02d18155fe5f"
+      },
+      "controller_status": {
+        "bytes": 3281,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/exposure_capacity_disambiguation_v1/exposure/controller_status.json",
+        "sha256": "55798ba18720b80b90630eaca68ef2c18e0dd806eb61176f5ba5aa15607fff31"
+      },
+      "status": "failed_historical_evidence"
+    }
+  },
+  "status": "pass",
+  "terminal_status": "hold",
+  "validation_basis_sha256": "5cddd58595a3d0ec0f11fed1dc77146f664e33bc8fd5cbf516eba2e232354dce",
+  "validator_git": {
+    "branch": "validation/generation-support-collapse-causal-discriminator-v1-20260909",
+    "revision": "94f7dd1a5833f76eda66ef8880a704e9730f4602",
+    "tracked_dirty": false,
+    "tree": "7a0d8bdc6a0ab626d8b8a9a595d2b63ce1886a4b"
+  },
+  "validator_script": {
+    "bytes": 103524,
+    "path": "/tmp/cofitok-support-collapse-causal-discriminator-validator-20260909/scripts/build_support_collapse_causal_discriminator.py",
+    "sha256": "1e7fb3412556eeb1c279b68a71adc4aa57eb0cb914a3b3c290c61049d75b5fca"
+  }
+}

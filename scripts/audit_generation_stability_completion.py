@@ -20,6 +20,7 @@ from cofitok.generation_paths import (
     generation_large_capacity_deployment_paths,
     generation_stability_workspace_paths,
 )
+from cofitok.path_security import reject_symlink_chain
 from cofitok.reporting import file_sha256, write_json_report
 
 try:
@@ -164,9 +165,17 @@ def _verified_source(
     *,
     expected_path: Path | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    path = Path(str(descriptor.get("path", ""))).resolve()
-    if expected_path is not None and path != expected_path.resolve():
-        raise ValueError(f"source path differs: {path}")
+    path = reject_symlink_chain(
+        Path(str(descriptor.get("path", ""))),
+        name="completion audit source",
+    )
+    if expected_path is not None:
+        expected = reject_symlink_chain(
+            expected_path,
+            name="completion audit expected source",
+        )
+        if path != expected:
+            raise ValueError(f"source path differs: {path}")
     if not path.is_file():
         raise ValueError(f"source file is missing: {path}")
     identity = {
@@ -752,8 +761,16 @@ def _verify_visual_panels(
     *,
     expected_root: Path,
 ) -> dict[str, Any]:
-    root = expected_root.resolve()
-    if expected_root.is_symlink() or not root.is_dir():
+    try:
+        root = reject_symlink_chain(
+            expected_root,
+            name="formal visual-audit directory",
+        )
+    except ValueError as error:
+        raise ValueError(
+            "formal visual-audit directory is missing or symlinked"
+        ) from error
+    if not root.is_dir():
         raise ValueError("formal visual-audit directory is missing or symlinked")
     panels = visual.get("panels")
     if not isinstance(panels, dict) or set(panels) != {
@@ -768,12 +785,21 @@ def _verify_visual_panels(
         if not isinstance(panel, dict):
             raise ValueError(f"formal visual-audit panel is malformed: {name}")
         declared = Path(str(panel.get("path", "")))
-        if not declared.is_absolute() or declared.is_symlink():
+        if not declared.is_absolute():
             raise ValueError(f"formal visual-audit panel path is invalid: {name}")
-        resolved = declared.resolve(strict=True)
+        try:
+            resolved = reject_symlink_chain(
+                declared,
+                name=f"formal visual-audit panel {name}",
+            )
+        except ValueError as error:
+            raise ValueError(
+                f"formal visual-audit panel path is invalid: {name}"
+            ) from error
         if (
             declared.as_posix() != resolved.as_posix()
             or not resolved.is_relative_to(root)
+            or not resolved.is_file()
             or resolved.suffix.lower() != ".png"
             or resolved in paths
         ):
@@ -797,11 +823,15 @@ def _verify_visual_panels(
             "width": width,
             "height": height,
         }
-    discovered = {
-        path.resolve()
-        for path in root.glob("*.png")
-        if path.is_file()
-    }
+    discovered = set()
+    for path in root.glob("*.png"):
+        if path.is_file():
+            discovered.add(
+                reject_symlink_chain(
+                    path,
+                    name="formal visual-audit discovered panel",
+                )
+            )
     if discovered != paths:
         raise ValueError("formal visual-audit PNG set differs from its report")
     return evidence
@@ -946,8 +976,8 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = _parse_args()
-    project = Path(args.project_root).resolve()
-    output_root = Path(args.output_root).resolve()
+    project = reject_symlink_chain(args.project_root, name="project root")
+    output_root = reject_symlink_chain(args.output_root, name="output root")
     paths = generation_stability_workspace_paths(output_root=output_root)
     expectations = {
         "decision_source_revision": _validate_revision(
@@ -1086,7 +1116,10 @@ def main() -> None:
             deployment_receipt.get("checkout", {}).get("path", "")
         )
     training_project = (
-        Path(deployment_checkout_value).resolve()
+        reject_symlink_chain(
+            deployment_checkout_value,
+            name="deployed training checkout",
+        )
         if deployment_checkout_value
         else project
     )

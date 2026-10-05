@@ -13,6 +13,7 @@ RECIPE_STAGES = {
     "full",
     "stability_scaling",
     "stability_quality_bridge",
+    "stability_min_snr_pilot",
     "stability_full",
 }
 ALLOWED_RUNTIME_BATCHES = {
@@ -49,6 +50,10 @@ def infer_generation_training_stage(
     cofitok_config: dict[str, Any],
     dense_config: dict[str, Any],
 ) -> str:
+    min_snr_recipe = any(
+        float(config.get("loss", {}).get("min_snr_gamma", 0.0)) > 0.0
+        for config in (cofitok_config, dense_config)
+    )
     stability_recipe = any(
         float(config.get("loss", {}).get(field, 0.0)) > 0.0
         for config in (cofitok_config, dense_config)
@@ -73,17 +78,19 @@ def infer_generation_training_stage(
     if identities == {("imagenet_256", 300_000)}:
         return "stability_full" if stability_recipe else "full"
     if identities == {("imagenet_256", 100_000)} and stability_recipe:
-        return "stability_quality_bridge"
+        return "stability_min_snr_pilot" if min_snr_recipe else "stability_quality_bridge"
     raise ValueError(f"cannot infer formal generation training stage: {sorted(identities)}")
 
 
 def _expected_shared(stage: str) -> dict[str, Any]:
     full = stage in {"full", "stability_full"}
     quality_bridge = stage == "stability_quality_bridge"
-    full_data = full or quality_bridge
+    min_snr_pilot = stage == "stability_min_snr_pilot"
+    full_data = full or quality_bridge or min_snr_pilot
     stability = stage in {
         "stability_scaling",
         "stability_quality_bridge",
+        "stability_min_snr_pilot",
         "stability_full",
     }
     if full:
@@ -93,6 +100,15 @@ def _expected_shared(stage: str) -> dict[str, Any]:
         min_learning_rate = 5e-6
         warmup_steps = 5_000
     elif quality_bridge:
+        runtime_steps = 100_000
+        evaluation_interval = 1_000
+        protected_checkpoint_steps = [50_000, 100_000]
+        min_learning_rate = 1e-5
+        warmup_steps = 1_000
+    elif min_snr_pilot:
+        # The pilot keeps the 100K scheduler horizon and stops at 50K via the
+        # execution runbook; treating it as a 50K schedule changes the LR
+        # trajectory and is therefore rejected by the recipe contract.
         runtime_steps = 100_000
         evaluation_interval = 1_000
         protected_checkpoint_steps = [50_000, 100_000]
@@ -134,6 +150,7 @@ def _expected_shared(stage: str) -> dict[str, Any]:
         "runtime.evaluation_interval": evaluation_interval,
         "runtime.keep_last_checkpoints": 3,
         "runtime.protected_checkpoint_steps": protected_checkpoint_steps,
+        "loss.min_snr_gamma": 5.0 if min_snr_pilot else 0.0,
         "optimization.learning_rate": 1e-4,
         "optimization.min_learning_rate": min_learning_rate,
         "optimization.warmup_steps": warmup_steps,
@@ -180,6 +197,7 @@ def _expected_method(method: str, stage: str) -> dict[str, Any]:
         if stage in {
             "stability_scaling",
             "stability_quality_bridge",
+            "stability_min_snr_pilot",
             "stability_full",
         }:
             return {
@@ -307,6 +325,7 @@ def generation_training_recipe_contract(
     stability = stage in {
         "stability_scaling",
         "stability_quality_bridge",
+        "stability_min_snr_pilot",
         "stability_full",
     }
     shared_stability_losses = (

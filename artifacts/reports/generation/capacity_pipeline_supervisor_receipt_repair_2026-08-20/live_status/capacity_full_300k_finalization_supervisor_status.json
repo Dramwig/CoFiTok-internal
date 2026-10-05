@@ -1,0 +1,78 @@
+{
+  "attempt": 0,
+  "authorization_boundary": {
+    "completion_audit_allowed_after_verified_exports": true,
+    "formal_generation_completion_claim_allowed_after_release_receipt": true,
+    "inference_export_allowed_after_passed_full_gate": true,
+    "posteval_launch_allowed": false,
+    "process_signaling_allowed": false,
+    "release_receipt_allowed_after_passed_completion_audit": true,
+    "training_launch_allowed": false,
+    "unrelated_gpu_process_modification_allowed": false
+  },
+  "child_exit_code": null,
+  "child_pid": null,
+  "child_process_group_id": null,
+  "completion": null,
+  "completion_audit_passed": false,
+  "detail": "waiting_for_capacity_full_final_gate",
+  "error": null,
+  "expected": {
+    "evaluation_git": {
+      "branch": "scale/generation-capacity-full-postprocessing-v1",
+      "revision": "5e04dbe488ee166d2756bc99c71ee5fffbe0bd83",
+      "tracked_dirty": false,
+      "tree": "29d4e24f5ae9c294401902d554a1f2388a61ef64"
+    },
+    "full_output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1",
+    "max_attempts": 8,
+    "posteval_supervisor_deployment": {
+      "git": {
+        "branch": "scale/generation-capacity-full-postprocessing-v1",
+        "revision": "5e04dbe488ee166d2756bc99c71ee5fffbe0bd83",
+        "tracked_dirty": false,
+        "tree": "29d4e24f5ae9c294401902d554a1f2388a61ef64"
+      },
+      "identity": {
+        "bytes": 17603,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_posteval_supervisor_deployment_receipt.json",
+        "sha256": "d97552388ef71ffb4c91b623eae7df6209e5100748193e1631fceae7ad375f3e"
+      }
+    },
+    "required_idle_polls": 5,
+    "training_git": {
+      "branch": "scale/generation-capacity-full-300k-execution-v1",
+      "revision": "d75dfea37ddcb504cfe8ecba25774ee36f522480",
+      "tracked_dirty": false,
+      "tree": "e96059ab0e77942e716c23a69364fc6c8ad9048d"
+    },
+    "training_supervisor_deployment": {
+      "git": {
+        "branch": "scale/generation-capacity-full-300k-execution-v1",
+        "revision": "d75dfea37ddcb504cfe8ecba25774ee36f522480",
+        "tracked_dirty": false,
+        "tree": "e96059ab0e77942e716c23a69364fc6c8ad9048d"
+      },
+      "identity": {
+        "bytes": 20433,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_training_supervisor_deployment_receipt.json",
+        "sha256": "4a86f1c399cf4dcc3457d9a63db9f3cca0d4dfe028e22c551693ac2bf3f54267"
+      }
+    }
+  },
+  "finalization_launch_performed": false,
+  "formal_generation_completion_claimed": false,
+  "gpu_compute_rows": [],
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "idle_polls": 0,
+  "inference_export_performed": false,
+  "pid": 409956,
+  "posteval": null,
+  "release_receipt_built": false,
+  "required_idle_polls": 5,
+  "role": "capacity_full_300k_finalization_supervisor",
+  "runbook_processes": [],
+  "schema_version": 1,
+  "status": "waiting",
+  "updated_at": "2026-08-19T18:30:38.630282+00:00"
+}

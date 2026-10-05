@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -89,6 +90,31 @@ def _snippet_check(text: str, snippets: list[str]) -> tuple[list[str], dict[str,
     return missing, {"required_snippet_count": len(snippets), "present_count": len(snippets) - len(missing)}
 
 
+def _has_token_projection_local_pattern(text: str) -> tuple[bool, str]:
+    """Accept direct or named intermediate token -> projection -> local forms.
+
+    The restricted operator may need to mask/resample a token before projection,
+    so requiring one exact nested call would reject an equivalent implementation.
+    Keep this as a small static check: the projection must consume ``token`` and
+    its result must be the sole argument to ``self.local``.
+    """
+    direct_call = re.compile(
+        r"self\s*\.\s*local\s*\(\s*self\s*\.\s*proj\s*\(\s*token\s*\)\s*\)"
+    )
+    if direct_call.search(text):
+        return True, "direct_nested_call"
+    assignment = re.search(
+        r"\b([A-Za-z_]\w*)\s*=\s*self\s*\.\s*proj\s*\(\s*token\s*\)",
+        text,
+    )
+    if assignment and re.search(
+        rf"self\s*\.\s*local\s*\(\s*{re.escape(assignment.group(1))}\s*\)",
+        text,
+    ):
+        return True, "named_projection_intermediate"
+    return False, "missing_token_projection_to_local"
+
+
 def check_factorization_code(root: Path) -> RequirementResult:
     path = root / "src/cofitok/models/cofitok.py"
     text = _read_text(path)
@@ -121,14 +147,22 @@ def check_restricted_synthesis_code(root: Path) -> RequirementResult:
         "Maps one denoising token to one dense noise component",
         "def forward(self, token: torch.Tensor)",
         "bias=False",
-        "self.local(self.proj(token))",
         "zero_components_like",
         "deep synthesis",
     ]
     forbidden = ["self.bias = nn.Parameter", "nn.MultiheadAttention", "Transformer", "learned_constant"]
     missing, counts = _snippet_check(text, snippets)
+    projection_local_ok, projection_local_pattern = _has_token_projection_local_pattern(text)
+    if not projection_local_ok:
+        missing.append("token projection must feed self.local")
     forbidden_present = [snippet for snippet in forbidden if snippet in text]
-    evidence = {"path": path.as_posix(), **counts, "forbidden_present": forbidden_present}
+    evidence = {
+        "path": path.as_posix(),
+        **counts,
+        "token_projection_local_ok": projection_local_ok,
+        "token_projection_local_pattern": projection_local_pattern,
+        "forbidden_present": forbidden_present,
+    }
     if missing or forbidden_present:
         return _missing(
             "restricted_synthesis_operator_code",

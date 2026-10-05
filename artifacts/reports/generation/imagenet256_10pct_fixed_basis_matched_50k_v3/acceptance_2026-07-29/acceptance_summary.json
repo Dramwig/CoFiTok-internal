@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "status": "hold",
+  "accepted_as_large_scale_generation_complete": false,
+  "accepted_scope": [
+    "matched_10pct_training_complete",
+    "matched_10k_sampling_complete",
+    "source_provenance_verified",
+    "mechanism_diagnostics_passed"
+  ],
+  "rejected_scope": [
+    "promotion_to_full_imagenet256",
+    "large_scale_generation_complete"
+  ],
+  "accepted_at": "2026-07-29T15:16:09+08:00",
+  "git": {
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "branch": "scale/generative-system",
+    "tracked_dirty": false
+  },
+  "terminal_state": {
+    "supervisor": "failed",
+    "pipeline": "failed",
+    "stage": "promotion_gate",
+    "gpu_idle": true
+  },
+  "training": {
+    "cofitok": {
+      "steps": 50000,
+      "parameter_count": 62836011,
+      "elapsed_seconds": 111263.03421282768,
+      "images_per_second": 28.76067530100727,
+      "checkpoint_sha256": "6591bd55418e0c7fa712047d29355703cba5da7026d76f5044589820def84ae4",
+      "checkpoint_integrity_recomputed": true
+    },
+    "dense_identity": {
+      "steps": 50000,
+      "parameter_count": 62824707,
+      "elapsed_seconds": 101251.08560752869,
+      "images_per_second": 31.604599405520435,
+      "checkpoint_sha256": "c2d09aee0c979cf3bcf378f65d78c3d189b5efb3ddc583b6408d4031b4ea67f3",
+      "checkpoint_integrity_recomputed": true
+    },
+    "relative_parameter_gap": 0.00017992921160778355,
+    "pair_contract": "pass"
+  },
+  "generation_metrics": {
+    "cofitok": {
+      "sample_count": 10000,
+      "fid": 226.48448755216552,
+      "inception_score_mean": 3.1244049463475028,
+      "precision": 0.9534000158309937,
+      "recall": 0.000019999999494757503,
+      "sampling_elapsed_seconds": 21040.840671539307
+    },
+    "dense_identity": {
+      "sample_count": 10000,
+      "fid": 117.1659886077835,
+      "inception_score_mean": 9.086161305411279,
+      "precision": 0.6664000153541565,
+      "recall": 0.012179999612271786,
+      "sampling_elapsed_seconds": 19119.74356341362
+    },
+    "cofitok_fid_relative_change_vs_dense": 0.9330224602152151
+  },
+  "mechanism_diagnostics": {
+    "cofitok_endpoint_mse": 0.016461260267533362,
+    "dense_endpoint_mse": 0.016313422296661884,
+    "endpoint_relative_change": 0.009062351736075058,
+    "ordered_path_rank": 1,
+    "order_count": 18,
+    "coarse_token_energy_ratio": 0.08283361442590831,
+    "zero_token_max_abs": 0.0,
+    "shuffled_to_ordered_endpoint_ratio": 124.21335716303126
+  },
+  "failed_gates": [
+    {
+      "name": "fid_within_tolerance",
+      "cofitok_fid": 226.48448755216552,
+      "dense_fid": 117.1659886077835,
+      "relative_change": 0.9330224602152151,
+      "max_regression": 0.05
+    },
+    {
+      "name": "absolute_fid_quality",
+      "cofitok_fid": 226.48448755216552,
+      "max_absolute_fid": 100.0
+    }
+  ],
+  "visual_acceptance": {
+    "status": "failed",
+    "cofitok_endpoint": "Strong high-frequency residual noise and weak class-semantic structure.",
+    "cofitok_prefix": "Early prefixes are low-frequency color fields; middle prefixes introduce regular chromatic texture; the full prefix remains noisy.",
+    "dense_identity": "Low fidelity but visibly smoother with more stable coarse semantic structure than CoFiTok."
+  },
+  "terminal_audit": {
+    "status": "failed",
+    "failed_checks": [
+      "scaling_promotion_gate"
+    ],
+    "full_300k_started": false,
+    "formal_50k_evaluation_started": false,
+    "final_gate_available": false
+  },
+  "recommendation": "Do not bypass the promotion gate or launch full 300K. Diagnose iterative denoising error amplification and tail-token energy concentration, then run a new matched 10% qualification pair."
+}

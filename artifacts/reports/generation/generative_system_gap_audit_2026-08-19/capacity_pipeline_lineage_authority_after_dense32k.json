@@ -1,0 +1,234 @@
+{
+  "schema_version": 1,
+  "role": "capacity_pipeline_lineage_authority_snapshot",
+  "observed_at": "2026-08-19T08:30:57.601975+00:00",
+  "status": "pass",
+  "authority_resolution": {
+    "current_recovery_aware_observer": "v2",
+    "v2_is_active_healthy_source": true,
+    "old_observer_formally_superseded": false,
+    "reason": "The v2 deployment preserves the old observer and contains no observer-level supersession contract. Only the obsolete quality-bridge recovery failure is source-bound superseded."
+  },
+  "entry_route": "prepare_matched_250m_capacity_qualification_probe",
+  "v2": {
+    "identity": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_generation_pipeline_lineage_observer_v2.json",
+      "bytes": 24690,
+      "sha256": "d653ad9b2995b613e02539deca8926b4fe992bf9a54e806a2501562f104b779b"
+    },
+    "status": "running",
+    "detail": "waiting_at:quality_bridge_100k_recovery:superseded_by_source_bound_exact_resume:existing_quality_bridge_execution_is_active",
+    "issues": [],
+    "pid": 765120,
+    "git": {
+      "branch": "scale/generation-capacity-pipeline-observer-v1",
+      "revision": "1ff6bb3db932ef9e43ddfafc067db779dab797d9",
+      "tree": "bf0d2e8208ea3bce0ab04c7f1991ea17882a3ea2",
+      "tracked_dirty": false
+    },
+    "progress": {
+      "blocking_stage_count": 14,
+      "current_stage": "quality_bridge_100k_recovery",
+      "current_stage_index": 0,
+      "current_stage_status": "running",
+      "successful_blocking_stage_count": 0
+    },
+    "authorization_boundary": {
+      "gpu_allocation_allowed": false,
+      "process_signaling_allowed": false,
+      "promotion_or_release_allowed": false,
+      "read_only_status_observation_allowed": true,
+      "sampling_or_evaluation_launch_allowed": false,
+      "training_launch_allowed": false,
+      "unrelated_gpu_process_modification_allowed": false
+    }
+  },
+  "old_observer": {
+    "identity": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_generation_pipeline_lineage_observer.json",
+      "bytes": 20536,
+      "sha256": "f11e5ca2914c04980397bf9b8559a15c2ef9b6d392e88a9ef9858d5c9a69e9e2"
+    },
+    "status": "failed",
+    "detail": "lineage_health_failure:quality_bridge_100k_recovery",
+    "issues": [
+      "formal_checkout_snapshot_changed"
+    ],
+    "pid": 12692,
+    "preserved_alive_without_signal_or_modification": true
+  },
+  "v2_deployment_receipt": {
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_generation_pipeline_lineage_observer_v2_deployment_receipt.json",
+    "bytes": 12867,
+    "sha256": "925e62a420bb9b6f5d84e161cc31f62ae7def0f69ec8582794ccdd4066f9de9a",
+    "status": "active"
+  },
+  "recovery_supersession": {
+    "status": "pass",
+    "contract": {
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/capacity-lineage-recovery-586fe30/CoFiTok-internal/configs/generation/diagnostics/quality_bridge_recovery_supersession_20260817.json",
+      "bytes": 3568,
+      "sha256": "28318ff89c009be65899117bbb9d45f533bc116f63b6bd335e21463818d5f609"
+    },
+    "resume_step": 20000,
+    "trusted_checkpoint_step": 25000,
+    "watchdog_target_step": 50000
+  },
+  "blocking_stages": [
+    {
+      "index": 0,
+      "name": "quality_bridge_100k_recovery",
+      "role": "cofitok_quality_bridge_100k_bounded_recovery_supervisor_v2",
+      "pid": 630988,
+      "status": "running",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 1,
+      "name": "quality_bridge_followup_decision",
+      "role": "cofitok_quality_bridge_followup_decision_waiter",
+      "pid": 11777,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 2,
+      "name": "capacity_probe_preparation",
+      "role": "generation_capacity_probe_preparation_waiter",
+      "pid": 11787,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 3,
+      "name": "capacity_probe_10k_execution",
+      "role": "generation_capacity_probe_execution_supervisor",
+      "pid": 11853,
+      "child_pid": null,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 4,
+      "name": "capacity_scaling_decision",
+      "role": "generation_capacity_scaling_decision_waiter",
+      "pid": 11945,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 5,
+      "name": "capacity_scaling_50k_execution",
+      "role": "generation_capacity_scaling_50k_supervisor",
+      "pid": 12020,
+      "child_pid": null,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 6,
+      "name": "capacity_completion_100k_decision",
+      "role": "capacity_completion_100k_source_replay_waiter",
+      "pid": 12114,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 7,
+      "name": "capacity_completion_100k_execution",
+      "role": "generation_capacity_completion_100k_supervisor",
+      "pid": 12127,
+      "child_pid": null,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 8,
+      "name": "capacity_completion_100k_result",
+      "role": "capacity_completion_100k_result_source_replay_waiter",
+      "pid": 12221,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 9,
+      "name": "capacity_full_300k_readiness_decision",
+      "role": "capacity_full_300k_readiness_decision_waiter",
+      "pid": 12233,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 10,
+      "name": "capacity_full_300k_readiness",
+      "role": "capacity_full_300k_readiness_supervisor",
+      "pid": 12247,
+      "child_pid": null,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 11,
+      "name": "capacity_full_300k_training",
+      "role": "capacity_full_300k_training_supervisor",
+      "pid": 12259,
+      "child_pid": null,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 12,
+      "name": "capacity_full_300k_posteval",
+      "role": "capacity_full_300k_posteval_supervisor",
+      "pid": 12345,
+      "child_pid": null,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    },
+    {
+      "index": 13,
+      "name": "capacity_full_300k_finalization",
+      "role": "capacity_full_300k_finalization_supervisor",
+      "pid": 12434,
+      "child_pid": null,
+      "status": "waiting",
+      "process_alive": true,
+      "issues": []
+    }
+  ],
+  "nonblocking_stages": [
+    {
+      "index": 14,
+      "name": "quality_bridge_step10k_reference_preservation",
+      "status": "completed",
+      "health": "pass"
+    },
+    {
+      "index": 15,
+      "name": "quality_bridge_requested_class_visual_audit",
+      "pid": 12601,
+      "status": "waiting",
+      "process_alive": true
+    }
+  ],
+  "claim_boundary": {
+    "capacity_pipeline_is_fully_deployed": true,
+    "capacity_pipeline_has_launched_a_child": false,
+    "capacity_or_quality_advantage_proven": false,
+    "full_300k_training_authorized_by_this_snapshot": false,
+    "promotion_or_release_authorized_by_this_snapshot": false
+  }
+}

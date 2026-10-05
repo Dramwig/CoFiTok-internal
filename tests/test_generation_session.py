@@ -202,6 +202,28 @@ def test_generation_session_production_mode_rejects_training_checkpoint(
         )
 
 
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Windows symlink creation requires elevated privileges",
+)
+def test_generation_loader_rejects_symlinked_checkpoint_and_sidecar(tmp_path) -> None:
+    checkpoint = _checkpoint(tmp_path)
+    checkpoint_alias = tmp_path / "checkpoint_alias.pt"
+    checkpoint_alias.symlink_to(checkpoint)
+
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        GenerationSession.from_checkpoint(checkpoint_alias, weights="ema")
+
+    integrity_path = checkpoint_integrity_path(checkpoint)
+    integrity_target = tmp_path / "integrity_target.json"
+    integrity_target.write_bytes(integrity_path.read_bytes())
+    integrity_path.unlink()
+    integrity_path.symlink_to(integrity_target)
+
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        GenerationSession.from_checkpoint(checkpoint, weights="ema")
+
+
 def test_inference_cli_core_writes_atomic_provenance_report(tmp_path) -> None:
     checkpoint = _checkpoint(tmp_path)
     output_dir = tmp_path / "inference"
@@ -469,7 +491,10 @@ def test_formal_sampling_cli_runs_checkpoint_to_png_and_report(tmp_path) -> None
     checkpoint = _checkpoint(tmp_path)
     output_dir = tmp_path / "formal_samples"
     environment = dict(os.environ)
-    environment["PYTHONPATH"] = str(ROOT / "src")
+    inherited_pythonpath = environment.get("PYTHONPATH", "")
+    environment["PYTHONPATH"] = os.pathsep.join(
+        path for path in (str(ROOT / "src"), inherited_pythonpath) if path
+    )
 
     result = subprocess.run(
         [

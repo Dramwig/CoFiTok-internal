@@ -1,0 +1,70 @@
+{
+  "builder": {
+    "checkout": {
+      "branch": "analysis/generation-resume-aware-matched-trajectory-v1",
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/resume-trajectory-audit-7e5856b/CoFiTok-internal",
+      "revision": "40ee55202545ea01e48fb6642d1b5a51b5264663",
+      "tracked_dirty": false,
+      "tree": "2ae2599a7dddb000a6042132b3d1065046ed3944"
+    },
+    "source": {
+      "bytes": 31844,
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/resume-trajectory-audit-7e5856b/CoFiTok-internal/scripts/build_generation_matched_training_trajectory.py",
+      "sha256": "2477345f81a99895f73b5c9a93844c8005ca959a2ed74ab3fa5a077c4753c21a"
+    }
+  },
+  "control": {
+    "checkout": {
+      "branch": "analysis/generation-full-data-40k-trajectory-waiter-v1",
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/matched-trajectory-waiter-fbda904",
+      "revision": "fbda904ac97b6049f0efa1e96b66ea16526fdc8f",
+      "tracked_dirty": false,
+      "tree": "94f40df8c451af9496cd464aa73a42f3f2fbdbba"
+    },
+    "source": {
+      "bytes": 33925,
+      "path": "/root/autodl-tmp/CoFiTok/checkouts/matched-trajectory-waiter-fbda904/scripts/wait_generation_matched_training_trajectory.py",
+      "sha256": "826663a67c8de2ad20e304b36f2622858bf8ac539df75562abb4a3d2c2795e66"
+    }
+  },
+  "created_at": "2026-08-19T13:59:40.935845+00:00",
+  "cutoff_step": 40000,
+  "dense_schedule_report": {
+    "bytes": 19988,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/dense_ema_teacher_full_warmup_00030000_00040000.json",
+    "sha256": "a72ff3a8cac2b7be8f9c35d852836818a9144104a665e576083c441521496d5a"
+  },
+  "outputs": {
+    "byte_replay_verified": true,
+    "cofitok_metrics_snapshot": {
+      "bytes": 756538,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/matched_training_trajectory_step_00040000_v1/source_snapshots/cofitok_train_metrics_through_step_00040000.jsonl",
+      "sha256": "1cab16d3d08d7e24749f9776a6de1d76354d3b83e49139d708ab332c4cc88e2e"
+    },
+    "dense_metrics_snapshot": {
+      "bytes": 703263,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/matched_training_trajectory_step_00040000_v1/source_snapshots/dense_train_metrics_through_step_00040000.jsonl",
+      "sha256": "15e537cdc1c301b127a88b82ce88d13c26db883195a37ac1ba4a260c3ea30218"
+    },
+    "replay_sha256": "78a747d59988c5e02953f411aa60495c98c25f3f20b8899c79b8a528d8ff5186",
+    "trajectory_report": {
+      "bytes": 45691,
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/matched_training_trajectory_step_00040000_v1/trajectory_report.json",
+      "sha256": "78a747d59988c5e02953f411aa60495c98c25f3f20b8899c79b8a528d8ff5186"
+    }
+  },
+  "role": "generation_matched_training_trajectory_waiter_receipt",
+  "schema_version": 1,
+  "scope": {
+    "diagnostic_artifact_writes_only": true,
+    "full_300k_launch_allowed": false,
+    "full_training_launch_allowed": false,
+    "gpu_required": false,
+    "promotion_authorization_allowed": false,
+    "read_only_training_sources": true,
+    "release_authorization_allowed": false,
+    "training_process_signals_allowed": false,
+    "unrelated_process_signals_allowed": false
+  },
+  "status": "pass"
+}

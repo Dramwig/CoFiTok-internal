@@ -1,0 +1,553 @@
+{
+  "authorization_boundary": {
+    "atomic_observer_report_write_allowed": true,
+    "gpu_allocation_allowed": false,
+    "process_signaling_allowed": false,
+    "promotion_or_release_allowed": false,
+    "read_only_source_observation_allowed": true,
+    "sampling_or_evaluation_launch_allowed": false,
+    "standing_authorization_modified": false,
+    "supervisor_or_child_process_modified": false,
+    "training_launch_allowed": false
+  },
+  "complete": false,
+  "detail": "waiting_at:conditioning_probe_1k:waiting_for_quality_bridge_followup_decision",
+  "disk": {
+    "free_bytes": 314821738496,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation",
+    "total_bytes": 1073741824000,
+    "used_bytes": 758920085504
+  },
+  "gpu": {
+    "compute_processes": [
+      {
+        "cmdline_sha256": "568e70a8a0371417ea4c88d73df0e3fc480c12edec369791af44cd46bb150007",
+        "cwd": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/CoFiTok-internal",
+        "pid": 79894,
+        "process_name": "/root/autodl-tmp/conda/envs/pf-vlm/bin/python",
+        "start_ticks": 1669627817,
+        "used_memory_mib": 77970
+      }
+    ],
+    "query_complete": true
+  },
+  "history": {
+    "conditioning_heldout_5k": {
+      "child_pids": [],
+      "first_observed_at_unix": 1787114520.918069,
+      "idle_gate_observed": true,
+      "launch_receipt_sha256s": [],
+      "max_idle_gpu_polls": 0,
+      "observation_count": 1141,
+      "unbound_output_observations": 0
+    },
+    "conditioning_posttraining_sampling_5k": {
+      "child_pids": [],
+      "first_observed_at_unix": 1787114520.918069,
+      "idle_gate_observed": false,
+      "launch_receipt_sha256s": [],
+      "max_idle_gpu_polls": 0,
+      "observation_count": 1141,
+      "unbound_output_observations": 0
+    },
+    "conditioning_probe_1k": {
+      "child_pids": [],
+      "first_observed_at_unix": 1787114520.918069,
+      "idle_gate_observed": false,
+      "launch_receipt_sha256s": [],
+      "max_idle_gpu_polls": 0,
+      "observation_count": 1141,
+      "unbound_output_observations": 0
+    },
+    "conditioning_sampling_5k": {
+      "child_pids": [],
+      "first_observed_at_unix": 1787114520.918069,
+      "idle_gate_observed": false,
+      "launch_receipt_sha256s": [],
+      "max_idle_gpu_polls": 0,
+      "observation_count": 1141,
+      "unbound_output_observations": 0
+    },
+    "conditioning_training_5k": {
+      "child_pids": [],
+      "first_observed_at_unix": 1787114520.918069,
+      "idle_gate_observed": false,
+      "launch_receipt_sha256s": [],
+      "max_idle_gpu_polls": 0,
+      "observation_count": 1141,
+      "unbound_output_observations": 0
+    }
+  },
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "issues": [],
+  "observed_at": "2026-08-19T07:55:52.759100+00:00",
+  "observed_at_unix": 1787126152.7591,
+  "observer": {
+    "output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/conditioning_pipeline_lineage_observer_v1/lineage_report.json",
+    "pid": 427175,
+    "poll_seconds": 10.0,
+    "stale_seconds": 300.0,
+    "timeout_seconds": 31536000.0
+  },
+  "observer_git": {
+    "branch": "analysis/generation-conditioning-pipeline-lineage-observer-v1",
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal",
+    "revision": "a58f2e28abdd671550d7c70b0303184bbdb029e4",
+    "tracked_dirty": false,
+    "tree": "0c41f230d572f4524406b5679335775bbe2b23ac"
+  },
+  "plan": {
+    "bytes": 12462,
+    "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-lineage-observer-a58f2e2/CoFiTok-internal/configs/generation/diagnostics/conditioning_generation_pipeline_lineage_v1.json",
+    "sha256": "9cbae4a436fe23ce4f1022c7a20654f9d4192b03a4ecf05af0538da95617c7af"
+  },
+  "progress": {
+    "current_stage": "conditioning_probe_1k",
+    "current_stage_detail": "waiting_for_quality_bridge_followup_decision",
+    "current_stage_status": "waiting",
+    "fraction": 0.0,
+    "stage_count": 5,
+    "successful_stage_count": 0
+  },
+  "role": "generation_conditioning_pipeline_lineage_observer",
+  "schema_version": 1,
+  "stages": [
+    {
+      "child_pid": null,
+      "classification": "active",
+      "detail": "waiting_for_quality_bridge_followup_decision",
+      "expected_role": "generation_conditioning_ranking_probe_supervisor",
+      "health": "waiting",
+      "idle_gpu_evidence": null,
+      "idle_gpu_polls": 0,
+      "index": 0,
+      "issues": [],
+      "launch_count_lower_bound": 0,
+      "launch_receipt": null,
+      "max_launches": 1,
+      "name": "conditioning_probe_1k",
+      "project": {
+        "actual": {
+          "branch": "scale/generation-label-ranking-standing-authorization-v1",
+          "path": "/tmp/cofitok-label-ranking-standing-auth-64f85fe",
+          "revision": "64f85fe3a34aebd664c083d43bfb38d1c61aaeb7",
+          "tracked_dirty": false,
+          "tree": "e445020ed50580bbae9958cd9586e5a8fa0bffab"
+        },
+        "expected": {
+          "branch": "scale/generation-label-ranking-standing-authorization-v1",
+          "path": "/tmp/cofitok-label-ranking-standing-auth-64f85fe",
+          "revision": "64f85fe3a34aebd664c083d43bfb38d1c61aaeb7",
+          "tracked_dirty": false,
+          "tree": "e445020ed50580bbae9958cd9586e5a8fa0bffab"
+        }
+      },
+      "required_idle_gpu_polls": 5,
+      "role": "generation_conditioning_ranking_probe_supervisor",
+      "source_files": [
+        {
+          "actual": {
+            "bytes": 14508,
+            "path": "/tmp/cofitok-label-ranking-standing-auth-64f85fe/scripts/run_generation_conditioning_ranking_probe_supervisor.py",
+            "sha256": "184a614d99544f9ff733caa5b0b4afddcee7169d934a1cf5cba1a94c6bd9a4f4"
+          },
+          "expected": {
+            "bytes": 14508,
+            "path": "/tmp/cofitok-label-ranking-standing-auth-64f85fe/scripts/run_generation_conditioning_ranking_probe_supervisor.py",
+            "sha256": "184a614d99544f9ff733caa5b0b4afddcee7169d934a1cf5cba1a94c6bd9a4f4"
+          }
+        },
+        {
+          "actual": {
+            "bytes": 6656,
+            "path": "/tmp/cofitok-label-ranking-standing-auth-64f85fe/artifacts/runbooks/generation_conditioning_ranking_four_arm_probe1k_v1.sh",
+            "sha256": "a240f962c530b87c67cc19671176bad6bfa41e489fc86c674a925a4e9c4676a7"
+          },
+          "expected": {
+            "bytes": 6656,
+            "path": "/tmp/cofitok-label-ranking-standing-auth-64f85fe/artifacts/runbooks/generation_conditioning_ranking_four_arm_probe1k_v1.sh",
+            "sha256": "a240f962c530b87c67cc19671176bad6bfa41e489fc86c674a925a4e9c4676a7"
+          }
+        }
+      ],
+      "stage_output_exists": false,
+      "standing_authorization_bound": true,
+      "status": "waiting",
+      "status_age_seconds": 22.83370304107666,
+      "status_identity": {
+        "bytes": 1582,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_probe1k_standing_auth_v1/64f85fe3a34aebd664c083d43bfb38d1c61aaeb7/supervisor_status.json",
+        "sha256": "91dba63b136d5ee516c6d491f557aa68bfb2084961ad52160197fae7352c98a7"
+      },
+      "status_updated_at_unix": 1787126129.925397,
+      "supervisor_process": {
+        "actual": {
+          "alive": true,
+          "cmdline_sha256": "8fb6333649043f7c929ecb661e35cce0dc562f7bb6dbdda4634ee7dcbce918b6",
+          "cwd": "/tmp/cofitok-label-ranking-standing-auth-64f85fe",
+          "pid": 210203,
+          "start_ticks": 1672107223
+        },
+        "expected": {
+          "cmdline_sha256": "8fb6333649043f7c929ecb661e35cce0dc562f7bb6dbdda4634ee7dcbce918b6",
+          "cwd": "/tmp/cofitok-label-ranking-standing-auth-64f85fe",
+          "pid": 210203,
+          "start_ticks": 1672107223
+        }
+      }
+    },
+    {
+      "child_pid": null,
+      "classification": "active",
+      "detail": "waiting_for_conditioning_ranking_1k_postevaluation",
+      "expected_role": "generation_conditioning_ranking_sampling_validation_supervisor",
+      "health": "waiting",
+      "idle_gpu_evidence": null,
+      "idle_gpu_polls": 0,
+      "index": 1,
+      "issues": [],
+      "launch_count_lower_bound": 0,
+      "launch_receipt": null,
+      "max_launches": 1,
+      "name": "conditioning_sampling_5k",
+      "project": {
+        "actual": {
+          "branch": "scale/generation-label-ranking-standing-authorization-v1",
+          "path": "/tmp/cofitok-label-ranking-sampling-standing-auth-f77e311",
+          "revision": "f77e311546beba697020debd35e26888096ca258",
+          "tracked_dirty": false,
+          "tree": "02a4ec60e20930beebde75b2bc8c4a5cf6b2c684"
+        },
+        "expected": {
+          "branch": "scale/generation-label-ranking-standing-authorization-v1",
+          "path": "/tmp/cofitok-label-ranking-sampling-standing-auth-f77e311",
+          "revision": "f77e311546beba697020debd35e26888096ca258",
+          "tracked_dirty": false,
+          "tree": "02a4ec60e20930beebde75b2bc8c4a5cf6b2c684"
+        }
+      },
+      "required_idle_gpu_polls": 5,
+      "role": "generation_conditioning_ranking_sampling_validation_supervisor",
+      "source_files": [
+        {
+          "actual": {
+            "bytes": 24240,
+            "path": "/tmp/cofitok-label-ranking-sampling-standing-auth-f77e311/scripts/run_generation_conditioning_ranking_sampling_validation_supervisor.py",
+            "sha256": "b0ba1e0e9307604cf9990d23d73f30449420b5674f974287f0ec7b155ee227e6"
+          },
+          "expected": {
+            "bytes": 24240,
+            "path": "/tmp/cofitok-label-ranking-sampling-standing-auth-f77e311/scripts/run_generation_conditioning_ranking_sampling_validation_supervisor.py",
+            "sha256": "b0ba1e0e9307604cf9990d23d73f30449420b5674f974287f0ec7b155ee227e6"
+          }
+        },
+        {
+          "actual": {
+            "bytes": 10689,
+            "path": "/tmp/cofitok-label-ranking-sampling-standing-auth-f77e311/artifacts/runbooks/generation_conditioning_ranking_four_arm_sampling5k_v1.sh",
+            "sha256": "e91ae75fd53bab53c1e2ff643ed2d2b72cb26eda4f0b325e55762f81e3685b9a"
+          },
+          "expected": {
+            "bytes": 10689,
+            "path": "/tmp/cofitok-label-ranking-sampling-standing-auth-f77e311/artifacts/runbooks/generation_conditioning_ranking_four_arm_sampling5k_v1.sh",
+            "sha256": "e91ae75fd53bab53c1e2ff643ed2d2b72cb26eda4f0b325e55762f81e3685b9a"
+          }
+        }
+      ],
+      "stage_output_exists": false,
+      "standing_authorization_bound": true,
+      "status": "waiting",
+      "status_age_seconds": 14.085824012756348,
+      "status_identity": {
+        "bytes": 1909,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_sampling5k_standing_auth_v1/f77e311546beba697020debd35e26888096ca258/supervisor_status.json",
+        "sha256": "eb59457350ebbce35eeac6f95b87c15e5524867f50d4116c85aa4cbce523b658"
+      },
+      "status_updated_at_unix": 1787126138.673276,
+      "supervisor_process": {
+        "actual": {
+          "alive": true,
+          "cmdline_sha256": "3cb076fe2f52c89910ac2d37008df4c28c8d1ea01eaaf1cb04d8212fa917d269",
+          "cwd": "/tmp/cofitok-label-ranking-sampling-standing-auth-f77e311",
+          "pid": 245918,
+          "start_ticks": 1672745016
+        },
+        "expected": {
+          "cmdline_sha256": "3cb076fe2f52c89910ac2d37008df4c28c8d1ea01eaaf1cb04d8212fa917d269",
+          "cwd": "/tmp/cofitok-label-ranking-sampling-standing-auth-f77e311",
+          "pid": 245918,
+          "start_ticks": 1672745016
+        }
+      }
+    },
+    {
+      "child_pid": null,
+      "classification": "active",
+      "detail": "waiting_for_shared_pass_5k_sampling_validation",
+      "expected_role": "generation_conditioning_ranking_training_confirmation_supervisor",
+      "health": "waiting",
+      "idle_gpu_evidence": null,
+      "idle_gpu_polls": 0,
+      "index": 2,
+      "issues": [],
+      "launch_count_lower_bound": 0,
+      "launch_receipt": null,
+      "max_launches": 1,
+      "name": "conditioning_training_5k",
+      "project": {
+        "actual": {
+          "branch": "scale/generation-label-ranking-5k-training-confirmation-v1",
+          "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-confirm5k-execution-ed9463e/CoFiTok-internal",
+          "revision": "ed9463eb85ffb97545b5506e264123e46ff2fcfc",
+          "tracked_dirty": false,
+          "tree": "423ab336401bf79eb21ccce822880171bbf246b2"
+        },
+        "expected": {
+          "branch": "scale/generation-label-ranking-5k-training-confirmation-v1",
+          "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-confirm5k-execution-ed9463e/CoFiTok-internal",
+          "revision": "ed9463eb85ffb97545b5506e264123e46ff2fcfc",
+          "tracked_dirty": false,
+          "tree": "423ab336401bf79eb21ccce822880171bbf246b2"
+        }
+      },
+      "required_idle_gpu_polls": 5,
+      "role": "generation_conditioning_ranking_training_confirmation_supervisor",
+      "source_files": [
+        {
+          "actual": {
+            "bytes": 25368,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-confirm5k-execution-ed9463e/CoFiTok-internal/scripts/run_generation_conditioning_ranking_training_confirmation_supervisor.py",
+            "sha256": "505d961ccfa9b3495eb6c70f0db174ab243f7ea8a2f9ac1a50d86d805ada03a8"
+          },
+          "expected": {
+            "bytes": 25368,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-confirm5k-execution-ed9463e/CoFiTok-internal/scripts/run_generation_conditioning_ranking_training_confirmation_supervisor.py",
+            "sha256": "505d961ccfa9b3495eb6c70f0db174ab243f7ea8a2f9ac1a50d86d805ada03a8"
+          }
+        },
+        {
+          "actual": {
+            "bytes": 12489,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-confirm5k-execution-ed9463e/CoFiTok-internal/artifacts/runbooks/generation_conditioning_ranking_four_arm_train5k_confirmation_v1.sh",
+            "sha256": "f2af4e40afff76b7e7141c6c42ea5bbe1827709f6afe532156cd4187e93a351f"
+          },
+          "expected": {
+            "bytes": 12489,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-confirm5k-execution-ed9463e/CoFiTok-internal/artifacts/runbooks/generation_conditioning_ranking_four_arm_train5k_confirmation_v1.sh",
+            "sha256": "f2af4e40afff76b7e7141c6c42ea5bbe1827709f6afe532156cd4187e93a351f"
+          }
+        }
+      ],
+      "stage_output_exists": false,
+      "standing_authorization_bound": true,
+      "status": "waiting",
+      "status_age_seconds": 29.665297508239746,
+      "status_identity": {
+        "bytes": 3742,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_train5k_confirmation_v1/ed9463eb85ffb97545b5506e264123e46ff2fcfc/supervisor_status.json",
+        "sha256": "c3c37986cf0d3cc870718df10fcd5598f9bfd0a0dd9420fa05d770417fcc9f22"
+      },
+      "status_updated_at_unix": 1787126123.0938025,
+      "supervisor_process": {
+        "actual": {
+          "alive": true,
+          "cmdline_sha256": "621a5a4390433a41900bf19b29244fa0bee0dff484ebbbe7dfe389e76455a1df",
+          "cwd": "/root",
+          "pid": 280369,
+          "start_ticks": 1673456061
+        },
+        "expected": {
+          "cmdline_sha256": "621a5a4390433a41900bf19b29244fa0bee0dff484ebbbe7dfe389e76455a1df",
+          "cwd": "/root",
+          "pid": 280369,
+          "start_ticks": 1673456061
+        }
+      }
+    },
+    {
+      "child_pid": null,
+      "classification": "active",
+      "detail": "waiting_for_exact_5k_training_status",
+      "expected_role": "generation_conditioning_ranking_train5k_heldout_evaluation_supervisor",
+      "health": "waiting",
+      "idle_gpu_evidence": null,
+      "idle_gpu_polls": 0,
+      "index": 3,
+      "issues": [],
+      "launch_count_lower_bound": 0,
+      "launch_receipt": null,
+      "max_launches": 1,
+      "name": "conditioning_heldout_5k",
+      "project": {
+        "actual": {
+          "branch": "scale/generation-label-ranking-5k-heldout-evaluation-v1",
+          "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-heldout5k-evaluation-90f7206/CoFiTok-internal",
+          "revision": "90f7206dd6d65b398a05222821cd6bc4cbf95efd",
+          "tracked_dirty": false,
+          "tree": "987dfcd382f5b7c5dbe52435e42062d0739d73f7"
+        },
+        "expected": {
+          "branch": "scale/generation-label-ranking-5k-heldout-evaluation-v1",
+          "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-heldout5k-evaluation-90f7206/CoFiTok-internal",
+          "revision": "90f7206dd6d65b398a05222821cd6bc4cbf95efd",
+          "tracked_dirty": false,
+          "tree": "987dfcd382f5b7c5dbe52435e42062d0739d73f7"
+        }
+      },
+      "required_idle_gpu_polls": 0,
+      "role": "generation_conditioning_ranking_train5k_heldout_evaluation_supervisor",
+      "source_files": [
+        {
+          "actual": {
+            "bytes": 30993,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-heldout5k-evaluation-90f7206/CoFiTok-internal/scripts/run_generation_conditioning_ranking_training_confirmation_posteval_supervisor.py",
+            "sha256": "f67b8f2fac48df359e450a5d79ebd0e4925fa7e8dd0c44a2072e6864133c59b3"
+          },
+          "expected": {
+            "bytes": 30993,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-heldout5k-evaluation-90f7206/CoFiTok-internal/scripts/run_generation_conditioning_ranking_training_confirmation_posteval_supervisor.py",
+            "sha256": "f67b8f2fac48df359e450a5d79ebd0e4925fa7e8dd0c44a2072e6864133c59b3"
+          }
+        },
+        {
+          "actual": {
+            "bytes": 5091,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-heldout5k-evaluation-90f7206/CoFiTok-internal/artifacts/runbooks/generation_conditioning_ranking_four_arm_train5k_heldout_evaluation_v1.sh",
+            "sha256": "975dba32b8933bd0700201261cc72e03d5a37b395ffb83de9ef07062aa6c1659"
+          },
+          "expected": {
+            "bytes": 5091,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-heldout5k-evaluation-90f7206/CoFiTok-internal/artifacts/runbooks/generation_conditioning_ranking_four_arm_train5k_heldout_evaluation_v1.sh",
+            "sha256": "975dba32b8933bd0700201261cc72e03d5a37b395ffb83de9ef07062aa6c1659"
+          }
+        }
+      ],
+      "stage_output_exists": false,
+      "standing_authorization_bound": null,
+      "status": "waiting",
+      "status_age_seconds": 36.0475959777832,
+      "status_identity": {
+        "bytes": 1853,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_train5k_heldout_evaluation_v1/90f7206dd6d65b398a05222821cd6bc4cbf95efd/supervisor_status.json",
+        "sha256": "48b388bb7699e1f92a99fad21e6300b4d870949a0096374d8cec703241833cf8"
+      },
+      "status_updated_at_unix": 1787126116.711504,
+      "supervisor_process": {
+        "actual": {
+          "alive": true,
+          "cmdline_sha256": "ac4415f47db10451580baf8c84f5b8ba7134599bdf9da9d543db53a3e710b421",
+          "cwd": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-heldout5k-evaluation-90f7206/CoFiTok-internal",
+          "pid": 305233,
+          "start_ticks": 1673912476
+        },
+        "expected": {
+          "cmdline_sha256": "ac4415f47db10451580baf8c84f5b8ba7134599bdf9da9d543db53a3e710b421",
+          "cwd": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-heldout5k-evaluation-90f7206/CoFiTok-internal",
+          "pid": 305233,
+          "start_ticks": 1673912476
+        }
+      }
+    },
+    {
+      "child_pid": null,
+      "classification": "active",
+      "detail": "waiting_for_exact_5k_heldout_evaluation",
+      "expected_role": "generation_conditioning_ranking_posttraining_sampling_confirmation_supervisor",
+      "health": "waiting",
+      "idle_gpu_evidence": null,
+      "idle_gpu_polls": 0,
+      "index": 4,
+      "issues": [],
+      "launch_count_lower_bound": 0,
+      "launch_receipt": null,
+      "max_launches": 1,
+      "name": "conditioning_posttraining_sampling_5k",
+      "project": {
+        "actual": {
+          "branch": "scale/generation-label-ranking-posttraining-5k-sampling-confirmation-v1",
+          "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-posttraining5k-sampling-5cc51b2/CoFiTok-internal",
+          "revision": "5cc51b2bef473b49bd90e95399cf3086c7dbed54",
+          "tracked_dirty": false,
+          "tree": "27dab2197064815a9206403f05289dcd5c8cf8f2"
+        },
+        "expected": {
+          "branch": "scale/generation-label-ranking-posttraining-5k-sampling-confirmation-v1",
+          "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-posttraining5k-sampling-5cc51b2/CoFiTok-internal",
+          "revision": "5cc51b2bef473b49bd90e95399cf3086c7dbed54",
+          "tracked_dirty": false,
+          "tree": "27dab2197064815a9206403f05289dcd5c8cf8f2"
+        }
+      },
+      "required_idle_gpu_polls": 5,
+      "role": "generation_conditioning_ranking_posttraining_sampling_confirmation_supervisor",
+      "source_files": [
+        {
+          "actual": {
+            "bytes": 24028,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-posttraining5k-sampling-5cc51b2/CoFiTok-internal/scripts/run_generation_conditioning_ranking_posttraining_sampling_confirmation_supervisor.py",
+            "sha256": "1f40a12537b375e111bd2b8b8e68725f723df55c3232c5cc9940733c60291080"
+          },
+          "expected": {
+            "bytes": 24028,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-posttraining5k-sampling-5cc51b2/CoFiTok-internal/scripts/run_generation_conditioning_ranking_posttraining_sampling_confirmation_supervisor.py",
+            "sha256": "1f40a12537b375e111bd2b8b8e68725f723df55c3232c5cc9940733c60291080"
+          }
+        },
+        {
+          "actual": {
+            "bytes": 12406,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-posttraining5k-sampling-5cc51b2/CoFiTok-internal/artifacts/runbooks/generation_conditioning_ranking_four_arm_posttraining_sampling5k_confirmation_v1.sh",
+            "sha256": "88295f61b5c6bea3e69dd865f1134276f42a28db4fa2c0023287b30cae2c4ba6"
+          },
+          "expected": {
+            "bytes": 12406,
+            "path": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-posttraining5k-sampling-5cc51b2/CoFiTok-internal/artifacts/runbooks/generation_conditioning_ranking_four_arm_posttraining_sampling5k_confirmation_v1.sh",
+            "sha256": "88295f61b5c6bea3e69dd865f1134276f42a28db4fa2c0023287b30cae2c4ba6"
+          }
+        }
+      ],
+      "stage_output_exists": false,
+      "standing_authorization_bound": true,
+      "status": "waiting",
+      "status_age_seconds": 4.681469678878784,
+      "status_identity": {
+        "bytes": 1593,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_posttraining_sampling5k_confirmation_v1/5cc51b2bef473b49bd90e95399cf3086c7dbed54/supervisor_status.json",
+        "sha256": "f5f2941b8204389f1aab0e3f0ae21b61ed9c33934c8f6a636c1a4892f2f8e486"
+      },
+      "status_updated_at_unix": 1787126148.0776303,
+      "supervisor_process": {
+        "actual": {
+          "alive": true,
+          "cmdline_sha256": "64b544f5671d2de66ce8d7a656fd0d357a8b1f10bb56699add7231279962654a",
+          "cwd": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-posttraining5k-sampling-5cc51b2/CoFiTok-internal",
+          "pid": 333312,
+          "start_ticks": 1674486172
+        },
+        "expected": {
+          "cmdline_sha256": "64b544f5671d2de66ce8d7a656fd0d357a8b1f10bb56699add7231279962654a",
+          "cwd": "/root/autodl-tmp/CoFiTok/checkouts/conditioning-posttraining5k-sampling-5cc51b2/CoFiTok-internal",
+          "pid": 333312,
+          "start_ticks": 1674486172
+        }
+      }
+    }
+  ],
+  "standing_authorization": {
+    "actual": {
+      "bytes": 865,
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/standing_authorization.json",
+      "sha256": "5fe64a0941acb55a21cb6479a726987c6259e93a772c47290f2d6883752de4df"
+    },
+    "expected": {
+      "bytes": 865,
+      "path": "/tmp/cofitok-quality-bridge-execution-cf0e5fa/standing_authorization.json",
+      "sha256": "5fe64a0941acb55a21cb6479a726987c6259e93a772c47290f2d6883752de4df"
+    },
+    "valid": true
+  },
+  "status": "waiting",
+  "thresholds": {
+    "active_status_stale_seconds": 300.0
+  }
+}

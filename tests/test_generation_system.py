@@ -1,4 +1,5 @@
 import json
+import os
 import random
 from dataclasses import replace
 from pathlib import Path
@@ -492,6 +493,79 @@ def test_checkpoint_roundtrip_restores_all_training_and_rng_state(tmp_path) -> N
     path.write_bytes(checkpoint_bytes)
     with pytest.raises(ValueError, match="SHA256 mismatch"):
         verify_training_checkpoint(path)
+
+
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Windows symlink creation requires elevated privileges",
+)
+def test_training_checkpoint_rejects_symlinked_checkpoint_and_integrity_manifest(
+    tmp_path,
+) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    checkpoint.write_bytes(b"checkpoint")
+
+    checkpoint_alias = tmp_path / "checkpoint_alias.pt"
+    checkpoint_alias.symlink_to(checkpoint)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        verify_training_checkpoint(checkpoint_alias)
+
+    integrity_path = checkpoint_integrity_path(checkpoint)
+    integrity_target = tmp_path / "integrity_target.json"
+    integrity_target.write_text("{}\n", encoding="utf-8")
+    integrity_path.symlink_to(integrity_target)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        verify_training_checkpoint(checkpoint)
+
+
+@pytest.mark.skipif(
+    os.name == "nt",
+    reason="Windows symlink creation requires elevated privileges",
+)
+def test_checkpoint_entrypoints_reject_symlink_paths_before_io(tmp_path) -> None:
+    checkpoint = tmp_path / "checkpoint.pt"
+    checkpoint.write_bytes(b"checkpoint")
+    checkpoint_alias = tmp_path / "checkpoint_alias.pt"
+    checkpoint_alias.symlink_to(checkpoint)
+
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        load_training_checkpoint(
+            checkpoint_alias,
+            model=object(),
+            verify_integrity=False,
+        )
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        save_training_checkpoint(
+            checkpoint_alias,
+            model=object(),
+            ema=object(),
+            optimizer=object(),
+            scheduler=None,
+            scaler=None,
+            step=1,
+            config={},
+        )
+
+    integrity_path = checkpoint_integrity_path(checkpoint)
+    integrity_target = tmp_path / "integrity_target.json"
+    integrity_target.write_text("{}\n", encoding="utf-8")
+    integrity_path.symlink_to(integrity_target)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        backfill_training_checkpoint_integrity(checkpoint)
+
+    real_latest = tmp_path / "real_latest.json"
+    real_latest.write_text("{}\n", encoding="utf-8")
+    latest_path = tmp_path / "latest.json"
+    latest_path.symlink_to(real_latest)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        resolve_latest_checkpoint(tmp_path)
+
+    real_directory = tmp_path / "checkpoints"
+    real_directory.mkdir()
+    directory_alias = tmp_path / "checkpoints_alias"
+    directory_alias.symlink_to(real_directory, target_is_directory=True)
+    with pytest.raises(ValueError, match="must not contain a symlink"):
+        prune_checkpoints(directory_alias, keep_last=1)
 
 
 def test_prune_checkpoints_removes_matching_integrity_manifests(tmp_path) -> None:

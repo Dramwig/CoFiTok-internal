@@ -1,7 +1,11 @@
 import json
 from pathlib import Path
 
-from scripts.validate_idea_requirements import render_markdown, validate_requirements
+from scripts.validate_idea_requirements import (
+    check_restricted_synthesis_code,
+    render_markdown,
+    validate_requirements,
+)
 
 
 def _write(path: Path, text: str) -> None:
@@ -211,3 +215,24 @@ def test_validate_requirements_reports_missing_factorization_code(tmp_path: Path
     assert result["status"] == "missing"
     factorization = next(check for check in result["checks"] if check["name"] == "dense_noise_factorization_code")
     assert factorization["status"] == "missing"
+
+
+def test_restricted_synthesis_accepts_named_projection_intermediate(tmp_path: Path) -> None:
+    path = tmp_path / "src/cofitok/models/synthesis.py"
+    _write(
+        path,
+        """
+Maps one denoising token to one dense noise component
+def forward(self, token: torch.Tensor)
+bias=False
+projected = self.proj(token)
+return self.local(projected)
+zero_components_like
+deep synthesis
+""",
+    )
+
+    result = check_restricted_synthesis_code(tmp_path)
+
+    assert result.status == "ok"
+    assert result.evidence["token_projection_local_pattern"] == "named_projection_intermediate"

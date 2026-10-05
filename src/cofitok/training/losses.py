@@ -15,6 +15,8 @@ from cofitok.models import CoFiTokOutput
 class LossBreakdown:
     total: torch.Tensor
     epsilon: torch.Tensor
+    epsilon_unweighted: torch.Tensor
+    min_snr_weight_mean: torch.Tensor
     prefix: torch.Tensor
     monotonic: torch.Tensor
     zero_token: torch.Tensor
@@ -41,6 +43,8 @@ class LossBreakdown:
         return {
             "total": self.total.detach(),
             "epsilon": self.epsilon.detach(),
+            "epsilon_unweighted": self.epsilon_unweighted.detach(),
+            "min_snr_weight_mean": self.min_snr_weight_mean.detach(),
             "prefix": self.prefix.detach(),
             "monotonic": self.monotonic.detach(),
             "zero_token": self.zero_token.detach(),
@@ -318,6 +322,38 @@ def _low_snr_high_frequency_loss(
     return (per_sample * low_snr_weight.pow(power)).mean()
 
 
+def _min_snr_epsilon_loss(
+    output_epsilon: torch.Tensor,
+    noise: torch.Tensor,
+    schedule: DiffusionSchedule,
+    timesteps: torch.Tensor,
+    gamma: float,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Return the Min-SNR weighted epsilon loss and mean sample weight.
+
+    The unweighted path is deliberately delegated to ``F.mse_loss`` so a
+    default ``gamma=0`` is compatible with the historical objective. Positive
+    gamma uses the standard epsilon-prediction weight ``min(SNR, gamma) /
+    SNR`` and averages per-sample MSE values.
+    """
+    if not math.isfinite(gamma) or gamma < 0.0:
+        raise ValueError("min_snr_gamma must be finite and non-negative")
+    raw_loss = F.mse_loss(output_epsilon, noise)
+    if gamma == 0.0:
+        return raw_loss, output_epsilon.new_ones(())
+
+    alpha_cumprod = schedule.alphas_cumprod[timesteps]
+    snr = alpha_cumprod / (1.0 - alpha_cumprod).clamp_min(1e-12)
+    snr = snr.clamp_min(1e-12)
+    gamma_tensor = snr.new_tensor(gamma)
+    weights = torch.minimum(snr, gamma_tensor) / snr
+    per_sample = (
+        (output_epsilon.float() - noise.float()).square().flatten(1).mean(dim=1)
+    )
+    weighted_loss = (per_sample * weights.float()).mean()
+    return weighted_loss.to(dtype=raw_loss.dtype), weights.float().mean()
+
+
 def _component_energy_ratios(output: CoFiTokOutput) -> torch.Tensor:
     energies = torch.stack([component.pow(2).mean() for component in output.components])
     return energies / energies.sum().clamp_min(1e-12)
@@ -590,7 +626,22 @@ def compute_losses(
             device=output.epsilon.device,
         )
 
-    epsilon_loss = F.mse_loss(output.epsilon, noise)
+    if config.min_snr_gamma <= 0.0:
+        # Keep the legacy reduction and dtype exactly unchanged when disabled.
+        epsilon_loss = F.mse_loss(output.epsilon, noise)
+        epsilon_unweighted_loss = epsilon_loss
+        min_snr_weight_mean = float32_scalar(1.0)
+    else:
+        per_sample_epsilon_mse = (
+            (output.epsilon.float() - noise.float()).square().flatten(1).mean(dim=1)
+        )
+        epsilon_unweighted_loss = per_sample_epsilon_mse.mean()
+        min_snr_weights = schedule.min_snr_loss_weights(
+            timesteps,
+            config.min_snr_gamma,
+        )
+        epsilon_loss = (per_sample_epsilon_mse * min_snr_weights).mean()
+        min_snr_weight_mean = min_snr_weights.mean()
     if config.prefix_weight > 0.0:
         prefix_loss = _prefix_loss(output, schedule, noisy_images, clean_images, timesteps)
     else:
@@ -750,6 +801,8 @@ def compute_losses(
     return LossBreakdown(
         total=total,
         epsilon=epsilon_loss,
+        epsilon_unweighted=epsilon_unweighted_loss,
+        min_snr_weight_mean=min_snr_weight_mean,
         prefix=prefix_loss,
         monotonic=monotonic_loss,
         zero_token=zero_token_loss,

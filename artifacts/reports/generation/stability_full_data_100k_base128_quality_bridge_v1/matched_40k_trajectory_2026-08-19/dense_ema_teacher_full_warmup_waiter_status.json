@@ -1,0 +1,27 @@
+{
+  "detail": "consistency_schedule_transition_verified",
+  "first_active_step": 39500,
+  "minimum_active_rows": 11,
+  "pid": 821573,
+  "report_identity": {
+    "bytes": 19988,
+    "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/dense_ema_teacher_full_warmup_00030000_00040000.json",
+    "sha256": "a72ff3a8cac2b7be8f9c35d852836818a9144104a665e576083c441521496d5a"
+  },
+  "report_output": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/schedule_audits/dense_ema_teacher_full_warmup_00030000_00040000.json",
+  "role": "generation_consistency_schedule_transition_waiter",
+  "run_dir": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher",
+  "schema_version": 1,
+  "scope": {
+    "gpu_required": false,
+    "promotion_authorization_allowed": false,
+    "read_only_metrics_verification": true,
+    "release_authorization_allowed": false,
+    "training_process_signals_allowed": false,
+    "unrelated_process_signals_allowed": false
+  },
+  "started_at": "2026-08-17T18:16:37.759882+00:00",
+  "status": "pass",
+  "target_step": 40000,
+  "updated_at": "2026-08-19T13:59:17.395145+00:00"
+}

@@ -1,0 +1,205 @@
+{
+  "schema_version": 1,
+  "role": "cofitok_large_scale_generation_goal_live_gap_audit",
+  "status": "incomplete_active_execution",
+  "goal_complete": false,
+  "audited_at": "2026-08-19T02:40:33.0308269+08:00",
+  "objective": [
+    "sample_quality",
+    "training_scale",
+    "strong_baseline_fairness",
+    "stable_inference",
+    "reproducible_auditable_checkpoints"
+  ],
+  "active_quality_bridge": {
+    "output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1",
+    "pair_monitor": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/pair_monitor.json",
+      "snapshot_bytes": 39750,
+      "snapshot_sha256": "6ceda442c5098ccfc7cfd48e9ecb26dcb66e156715e7dc3e12d1403357869330",
+      "updated_at": "2026-08-18T18:38:40.473014+00:00",
+      "status": "running",
+      "stage": "dense_identity_training",
+      "issues": []
+    },
+    "git": {
+      "revision": "cf0e5faa94bf4ab38d947b921935b3b765b5537a",
+      "branch": "scale/generation-stability-quality-bridge-100k",
+      "tracked_dirty": false
+    },
+    "cofitok": {
+      "last_monitor_step": 50000,
+      "latest_checkpoint_step": 50000,
+      "latest_checkpoint_sha256": "d7100a6e8f67adb2b1630d36c17d0f2bc94fb93ed99d3e270a0867979c3343b4",
+      "health_issues": []
+    },
+    "dense_identity": {
+      "last_monitor_step": 12650,
+      "last_metrics_tail_step_observed_during_audit": 12700,
+      "last_metrics_tail_samples_seen": 812800,
+      "latest_checkpoint_step": 10000,
+      "latest_checkpoint_sha256": "7ee56aff9a966668490c83bd5552c710cbc3c683594e1f2a7b0809e0012c26cc",
+      "health_issues": []
+    },
+    "gpu": {
+      "training_pid": 79894,
+      "used_memory_mib": 77970,
+      "utilization_percent": 100,
+      "unrelated_gpu_processes": []
+    },
+    "filesystem_free_bytes": 319187615744,
+    "execution_boundary": {
+      "quality_bridge_only": true,
+      "report_is_promotion_gate": false,
+      "full_training_launch_allowed": false,
+      "full_300k_launch_allowed": false
+    },
+    "terminal_reports_present": {
+      "quality_bridge_result": false,
+      "followup_experiment_decision": false
+    }
+  },
+  "automatic_followup_chain": {
+    "conditioning_ranking_probe1k": {
+      "revision": "64f85fe3a34aebd664c083d43bfb38d1c61aaeb7",
+      "branch": "scale/generation-label-ranking-standing-authorization-v1",
+      "pid": 210203,
+      "status": "waiting",
+      "detail": "waiting_for_quality_bridge_followup_decision",
+      "child_pid": null,
+      "idle_gpu_polls": 0,
+      "preparation_path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/preparations/conditioning_ranking_four_arm_probe1k_standing_auth_v1/64f85fe3a34aebd664c083d43bfb38d1c61aaeb7/preparation.json",
+      "preparation_bytes": 8937,
+      "preparation_sha256": "5872be0fe5b910fd20955c3ac4041cd64bc107447e5d47289f296e98fb769bba",
+      "training_runs": [
+        "control_cofitok",
+        "control_dense_identity",
+        "ranked_cofitok",
+        "ranked_dense_identity"
+      ],
+      "steps_per_run": 1000,
+      "claim_authorization_allowed": false,
+      "full_300k_launch_allowed": false
+    },
+    "conditioning_ranking_sampling5k": {
+      "revision": "f77e311546beba697020debd35e26888096ca258",
+      "branch": "scale/generation-label-ranking-standing-authorization-v1",
+      "pid": 245918,
+      "status": "waiting",
+      "detail": "waiting_for_conditioning_ranking_1k_postevaluation",
+      "child_pid": null,
+      "idle_gpu_polls": 0,
+      "samples_per_arm": 5000,
+      "preparation_creation": "atomic_after_exact_shared_pass_1k_postevaluation",
+      "required_consecutive_idle_gpu_polls": 5,
+      "maximum_runbook_launch_count": 1,
+      "training_allowed": false,
+      "full_100k_or_300k_launch_allowed": false
+    }
+  },
+  "conditioning_implementation_audit": {
+    "base_class_conditioning_path": {
+      "class_embedding_has_explicit_null_class": true,
+      "training_class_dropout_enabled_by_config": true,
+      "batched_cfg_uses_conditional_and_null_class_halves": true,
+      "sequential_cfg_uses_force_unconditional": true,
+      "label_order_real_set_calibration_top1": 0.783691,
+      "obvious_label_index_or_cfg_routing_bug_found": false
+    },
+    "ranking_probe": {
+      "wrong_and_null_references_detached": true,
+      "correct_label_branch_retains_gradients": true,
+      "class_dropout_disabled_for_the_three_way_ranking_comparison": true,
+      "shared_matched_loss_for_cofitok_and_dense": true,
+      "held_out_postevaluation_required_for_both_methods": true
+    },
+    "targeted_test_run": {
+      "checkout": "/tmp/cofitok-label-ranking-sampling-standing-auth-f77e311",
+      "revision": "f77e311546beba697020debd35e26888096ca258",
+      "cuda_visible_devices": "-1",
+      "cpu_threads": 1,
+      "low_cpu_and_io_priority": true,
+      "test_files": 9,
+      "tests_collected": 62,
+      "tests_passed": 62,
+      "tests_failed": 0,
+      "checkout_clean_after_tests": true
+    },
+    "assessment": "The shared class-conditioning failure is not explained by an obvious label-order, null-class, or CFG routing defect. The source-bound four-arm ranking probe is the current highest-information bounded test of a training-time semantic-alignment repair."
+  },
+  "pillars": {
+    "sample_quality": {
+      "status": "unproven_active_bridge",
+      "contradictory_existing_evidence": {
+        "frozen_10pct_cofitok_fid": 138.29702495267782,
+        "frozen_10pct_dense_fid": 151.4476773464495,
+        "frozen_10pct_cofitok_recall": 0.008679999969899654,
+        "frozen_10pct_dense_recall": 0.00977999996393919,
+        "frozen_class_fidelity_near_chance": true
+      },
+      "proof_missing": [
+        "completed matched full-data 100K terminal result",
+        "passing absolute FID, precision, recall, mechanism, and class-fidelity checks",
+        "passing formal 50K-sample DDIM-250 release gate"
+      ]
+    },
+    "training_scale": {
+      "status": "full_data_100k_in_progress",
+      "proof_missing": [
+        "both methods completed at exact 100K with protected 50K and 100K checkpoints",
+        "source-compatible scientific decision after terminal 100K evaluation",
+        "only if authorized by that decision, exact 250M matched 300K pair"
+      ]
+    },
+    "strong_baseline_fairness": {
+      "status": "protocol_complete_terminal_evidence_missing",
+      "direct_matched_methods": [
+        "CoFiTok K8",
+        "dense identity"
+      ],
+      "contextual_eval_only_methods": [
+        "D-AR",
+        "MAR",
+        "ReTok"
+      ],
+      "cross_tier_numeric_ranking_allowed": false,
+      "proof_missing": [
+        "terminal matched full-scale training and generation reports",
+        "source-bound comparison with measured cost, throughput, VRAM, checkpoint, sample-set, evaluator, and runtime identities"
+      ]
+    },
+    "stable_inference": {
+      "status": "implementation_ready_unreleased",
+      "proof_missing": [
+        "release-authorized EMA artifact",
+        "real checkpoint forward preflight and stable inference smoke from the passing source",
+        "terminal completion and release receipt"
+      ]
+    },
+    "reproducible_auditable_checkpoints": {
+      "status": "active_100k_checkpoints_auditable_final_system_incomplete",
+      "current_bridge_integrity_policy": "required",
+      "current_bridge_health_issues": [],
+      "proof_missing": [
+        "physical matched step-100K terminal checkpoints and independent rehash",
+        "if later authorized, physical CoFiTok and dense step-300K exact-resume checkpoints",
+        "all protected milestone checkpoints and integrity sidecars",
+        "terminal replay, completion audit, and distinct inference artifacts"
+      ]
+    }
+  },
+  "next_actions": [
+    "Do not interrupt or contend with PID 79894 while the matched bridge is active.",
+    "Allow the existing source-bound 1K supervisor to consume only the completed quality-bridge follow-up decision.",
+    "Allow the existing 5K supervisor to launch once only after both methods pass the 1K held-out postevaluation and five consecutive idle-GPU observations.",
+    "Use the 5K paired sampling and class-fidelity result to decide whether the semantic-ranking repair is viable before any longer repair training.",
+    "Keep all full-300K and release flags false until a new source-bound scientific gate explicitly permits them."
+  ],
+  "claim_boundary": {
+    "mechanism_advantage_claim_supported": true,
+    "broad_generation_quality_advantage_claim_supported": false,
+    "usable_released_generation_system_claim_supported": false,
+    "full_300k_launch_allowed": false,
+    "release_authorization_allowed": false
+  }
+}

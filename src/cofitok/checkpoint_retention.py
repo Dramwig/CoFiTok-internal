@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from cofitok.path_security import reject_symlink_chain
 from cofitok.reporting import file_sha256
 
 
@@ -17,6 +18,7 @@ TEXT_SUFFIXES = {".json", ".jsonl", ".log", ".md", ".sh", ".txt"}
 
 
 def _read_json(path: Path) -> dict[str, Any]:
+    path = reject_symlink_chain(path, name="checkpoint retention JSON")
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError(f"{path} must contain a JSON object")
@@ -31,7 +33,7 @@ def _step(path: Path) -> int:
 
 
 def _identity(path: Path) -> dict[str, Any]:
-    path = path.resolve()
+    path = reject_symlink_chain(path, name="checkpoint retention identity")
     return {
         "path": path.as_posix(),
         "bytes": path.stat().st_size,
@@ -66,11 +68,22 @@ def _resolve_reference(
     cleaned = raw.strip("`[](),:;")
     value = Path(cleaned)
     candidates = (
-        [value.resolve()]
+        [
+            reject_symlink_chain(
+                value,
+                name="checkpoint retention reference",
+            )
+        ]
         if value.is_absolute()
         else [
-            (source.parent / value).resolve(),
-            (inventory_root / value).resolve(),
+            reject_symlink_chain(
+                source.parent / value,
+                name="checkpoint retention reference",
+            ),
+            reject_symlink_chain(
+                inventory_root / value,
+                name="checkpoint retention reference",
+            ),
         ]
     )
     for candidate in candidates:
@@ -91,11 +104,18 @@ def _scan_references(
     unresolved: list[dict[str, Any]] = []
     seen: set[str] = set()
     for label, root, policy in [("inventory", inventory_root, "operational"), *reference_roots]:
-        root = root.resolve()
+        root = reject_symlink_chain(
+            root,
+            name=f"checkpoint retention {label} root",
+        )
         if not root.is_dir():
             raise FileNotFoundError(f"reference root is missing: {root}")
         for source in sorted(root.rglob("*")):
-            source_key = source.resolve().as_posix()
+            source = reject_symlink_chain(
+                source,
+                name=f"checkpoint retention {label} source",
+            )
+            source_key = source.as_posix()
             if (
                 not source.is_file()
                 or source.suffix.lower() not in TEXT_SUFFIXES
@@ -150,8 +170,22 @@ def _scan_references(
 
 
 def _run_state(run_dir: Path, checkpoints: list[Path]) -> dict[str, Any]:
-    latest_path = run_dir / "latest.json"
-    training_path = run_dir / "training_report.json"
+    run_dir = reject_symlink_chain(run_dir, name="checkpoint retention run")
+    checkpoints = [
+        reject_symlink_chain(
+            checkpoint,
+            name="checkpoint retention checkpoint",
+        )
+        for checkpoint in checkpoints
+    ]
+    latest_path = reject_symlink_chain(
+        run_dir / "latest.json",
+        name="checkpoint retention latest pointer",
+    )
+    training_path = reject_symlink_chain(
+        run_dir / "training_report.json",
+        name="checkpoint retention training report",
+    )
     latest = _read_json(latest_path) if latest_path.is_file() else {}
     training = _read_json(training_path) if training_path.is_file() else {}
     max_step = max(_step(path) for path in checkpoints)
@@ -178,7 +212,7 @@ def _run_state(run_dir: Path, checkpoints: list[Path]) -> dict[str, Any]:
         protected = []
         issues.append("protected_checkpoint_steps_invalid")
     return {
-        "path": run_dir.resolve().as_posix(),
+        "path": run_dir.as_posix(),
         "latest": _identity(latest_path) if latest_path.is_file() else None,
         "training_report": _identity(training_path) if training_path.is_file() else None,
         "latest_checkpoint": latest_name,
@@ -191,7 +225,14 @@ def _run_state(run_dir: Path, checkpoints: list[Path]) -> dict[str, Any]:
 
 
 def _integrity(checkpoint: Path, physical_hash: bool) -> dict[str, Any]:
-    sidecar = checkpoint.with_name(f"{checkpoint.name}.integrity.json")
+    checkpoint = reject_symlink_chain(
+        checkpoint,
+        name="checkpoint retention integrity checkpoint",
+    )
+    sidecar = reject_symlink_chain(
+        checkpoint.with_name(f"{checkpoint.name}.integrity.json"),
+        name="checkpoint retention integrity sidecar",
+    )
     issues = []
     manifest = _read_json(sidecar) if sidecar.is_file() else {}
     if not manifest:
@@ -225,22 +266,42 @@ def build_checkpoint_retention_inventory(
     reference_roots: list[tuple[str, Path, str]],
     physical_hash: bool,
 ) -> dict[str, Any]:
-    root = inventory_root.resolve()
+    root = reject_symlink_chain(inventory_root, name="checkpoint retention inventory root")
     if not root.is_dir():
         raise FileNotFoundError(f"inventory root is missing: {root}")
     if any(policy not in {"authoritative", "operational"} for _, _, policy in reference_roots):
         raise ValueError("reference root policy must be authoritative or operational")
+    reference_roots = [
+        (
+            label,
+            reject_symlink_chain(path, name=f"checkpoint retention {label} root"),
+            policy,
+        )
+        for label, path, policy in reference_roots
+    ]
     checkpoint_paths = sorted(root.rglob("checkpoint_step_*.pt"))
+    checkpoint_paths = [
+        reject_symlink_chain(path, name="checkpoint retention checkpoint")
+        for path in checkpoint_paths
+    ]
     if not checkpoint_paths:
         raise ValueError("inventory root contains no checkpoints")
-    checkpoint_map = {path.resolve().as_posix(): path.resolve() for path in checkpoint_paths}
+    checkpoint_map = {path.as_posix(): path for path in checkpoint_paths}
     sources, references, unresolved = _scan_references(
         inventory_root=root,
         checkpoints=checkpoint_map,
         reference_roots=reference_roots,
     )
     unresolved_names = {item["checkpoint_name"] for item in unresolved}
-    run_dirs = sorted({path.parent.resolve() for path in checkpoint_paths})
+    run_dirs = sorted(
+        {
+            reject_symlink_chain(
+                path.parent,
+                name="checkpoint retention run",
+            )
+            for path in checkpoint_paths
+        }
+    )
     runs = [
         _run_state(run_dir, sorted(run_dir.glob("checkpoint_step_*.pt")))
         for run_dir in run_dirs
@@ -252,7 +313,10 @@ def build_checkpoint_retention_inventory(
     checkpoints = []
     invalid_integrity_count = 0
     for checkpoint in checkpoint_paths:
-        checkpoint = checkpoint.resolve()
+        checkpoint = reject_symlink_chain(
+            checkpoint,
+            name="checkpoint retention checkpoint",
+        )
         run = run_by_path[checkpoint.parent.as_posix()]
         integrity = _integrity(checkpoint, physical_hash)
         invalid_integrity_count += integrity["status"] != "verified"
@@ -320,7 +384,10 @@ def build_checkpoint_retention_inventory(
         "reference_roots": [
             {
                 "label": label,
-                "path": path.resolve().as_posix(),
+                "path": reject_symlink_chain(
+                    path,
+                    name=f"checkpoint retention {label} root",
+                ).as_posix(),
                 "policy": policy,
             }
             for label, path, policy in reference_roots
@@ -387,7 +454,10 @@ def verify_checkpoint_retention_inventory_binding(
     _validate_checkpoint_retention_inventory_policy(report)
     if not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
         raise ValueError("expected checkpoint retention inventory SHA256 is invalid")
-    path = report_path.resolve()
+    path = reject_symlink_chain(
+        report_path,
+        name="checkpoint retention inventory report",
+    )
     if not path.is_file() or file_sha256(path) != expected_sha256:
         raise ValueError("checkpoint retention inventory SHA256 differs")
     persisted = json.loads(path.read_text(encoding="utf-8"))
@@ -428,7 +498,10 @@ def build_retention_runway_report(
         "retention_inventory_verification": "expected_sha256_binding",
         "physical_checkpoint_hashes_replayed": False,
         "filesystem": {
-            "path": filesystem_path.resolve().as_posix(),
+            "path": reject_symlink_chain(
+                filesystem_path,
+                name="checkpoint retention runway filesystem",
+            ).as_posix(),
             "total_bytes": total_bytes,
             "used_bytes": used_bytes,
             "free_bytes": free_bytes,

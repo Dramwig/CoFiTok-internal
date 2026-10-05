@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "role": "generation_capacity_supervisor_receipt_repair_evidence_snapshot",
+  "status": "pass",
+  "captured_at": "2026-08-20T02:33:06+08:00",
+  "failed_migration": {
+    "plan_sha256": "1a8d8783b88211cbb6b1f203b732b6a0cf3863fa6c8daa9a7c51cb0744972c4c",
+    "approval_sha256": "5a07a5e0776e7dfdcbf4de60ab3d00b771b8dbd12aee4d67fb41ea6c88de7fdc",
+    "execution_sha256": "a9d5cb81312d1d7de6adf6fbbfb76d04b0f5a14002a6c16a835fd478a74a8f39",
+    "status": "failed_restore_incomplete"
+  },
+  "repair_code": {
+    "revision": "a963ff4bb91fd837f67856be996810ff45958712",
+    "tree": "248685d888e74c7844ba0aedd3d858e9c67e3162",
+    "branch": "fix/generation-capacity-pipeline-supervisor-migration-v1",
+    "target_checkout_clean": true
+  },
+  "formal_checkout": {
+    "revision": "1ebcc15210e63a776a2ba448481cbd8bb94a4066",
+    "tree": "659fa94726c4aec0afef49904f82b828bb62872b",
+    "branch": "scale/generative-system",
+    "tracked_dirty": false,
+    "porcelain_count": 89,
+    "porcelain_sha256": "18e5981f22a2ac255c7f60343429daa6ceea86412b1d7bd09bc474f2faf74004"
+  },
+  "repair_lineage": {
+    "plan": {
+      "bytes": 27186,
+      "sha256": "fa7343a704546dc6eacecdc5dc0b17e9dc0a8b2e93e6bddbc00bad4315adb190"
+    },
+    "approval": {
+      "bytes": 2726,
+      "sha256": "fd6af61cccac751c66eef30965b1ccb00ea7a3c6083c2eab623b8eb0b46bc720"
+    },
+    "execution": {
+      "bytes": 7700,
+      "sha256": "50aeed70af7f32b29fdd4f9802fd21181516060e51431bbdc63bcaa974e30545",
+      "status": "pass"
+    }
+  },
+  "receipt_rotation": {
+    "training": {
+      "archived_sha256": "2ffb1518c14034f4879c5500f933768e7406c44b52bf0d66ac75b3c3b31696ce",
+      "canonical_sha256": "4a86f1c399cf4dcc3457d9a63db9f3cca0d4dfe028e22c551693ac2bf3f54267"
+    },
+    "posteval": {
+      "archived_sha256": "1dd2326555fce015be4c28063edc8f34d45a66c8e311555f929273d9755b6e1c",
+      "canonical_sha256": "d97552388ef71ffb4c91b623eae7df6209e5100748193e1631fceae7ad375f3e"
+    },
+    "finalization": {
+      "archived_sha256": "5948f31da3ea6b4614e893ccf2cab79297e56a9d39eaed9deaf246ebc89635a5",
+      "canonical_sha256": "9e4cc480efabaf033e1c291779a0f10a899d590e7fba44286fd9722bef8315fe"
+    }
+  },
+  "supervisors": {
+    "training": {
+      "pid": 351260,
+      "status": "waiting",
+      "detail": "waiting_for_passed_capacity_full_readiness"
+    },
+    "posteval": {
+      "pid": 409865,
+      "status": "waiting",
+      "detail": "waiting_for_passed_capacity_full_training",
+      "lifetime_lock_fd": 4,
+      "duplicate_lock_rejected": true
+    },
+    "finalization": {
+      "pid": 409956,
+      "status": "waiting",
+      "detail": "waiting_for_capacity_full_final_gate",
+      "lifetime_lock_fd": 4,
+      "duplicate_lock_rejected": true
+    }
+  },
+  "verification": {
+    "linux_targeted_tests": "13 passed",
+    "lineage_observer_status": "running",
+    "lineage_observer_pid": 765120,
+    "lineage_observer_snapshot_sha256": "b86d1d3bdbfb93ed4ee89b49675bc0f589d1490d9254b7a93ea204a884b3ccb3",
+    "active_dense_pid": 79894,
+    "active_dense_step_after_repair": 46250,
+    "active_dense_process_unchanged": true,
+    "only_active_gpu_process_is_dense": true
+  },
+  "claim_boundary": {
+    "control_process_continuity_repaired": true,
+    "scientific_checkout_or_protocol_changed": false,
+    "formal_checkout_modified": false,
+    "existing_process_signaled": false,
+    "direct_gpu_work_launched": false,
+    "model_quality_claim_changed": false
+  }
+}

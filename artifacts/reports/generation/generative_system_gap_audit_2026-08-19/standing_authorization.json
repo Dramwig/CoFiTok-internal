@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "role": "cofitok_standing_experiment_authorization_record",
+  "status": "active",
+  "instruction": {
+    "language": "zh-CN",
+    "exact_text": "之后不要我授权你直接运行需要的实验",
+    "received_at": "2026-08-13T00:11:00+08:00",
+    "interpretation": "Authorize Codex to directly run future experiments that are necessary for the active CoFiTok long-term objective without requesting per-stage approval."
+  },
+  "preserved_safety_boundaries": {
+    "unrelated_project_processes_must_not_be_modified": true,
+    "formal_remote_checkout_must_not_be_modified": true,
+    "locked_evidence_must_not_be_overwritten": true,
+    "independent_clean_checkout_required": true,
+    "exact_revision_stage_and_output_binding_required": true,
+    "stage_must_remain_non_authorizing_when_protocol_declares_non_authorizing": true
+  }
+}
+

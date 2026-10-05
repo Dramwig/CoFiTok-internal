@@ -1,0 +1,66 @@
+{
+  "attempt": 0,
+  "authorization_boundary": {
+    "final_quality_gate_build_allowed": true,
+    "formal_generation_completion_claim_allowed": false,
+    "inference_export_allowed": false,
+    "posteval_50k_allowed_after_exact_training_pass": true,
+    "process_signaling_allowed": false,
+    "release_receipt_allowed": false,
+    "training_launch_allowed": false,
+    "unrelated_gpu_process_modification_allowed": false
+  },
+  "child_exit_code": null,
+  "child_pid": null,
+  "child_process_group_id": null,
+  "detail": "waiting_for_passed_capacity_full_training",
+  "error": null,
+  "expected": {
+    "evaluation_git": {
+      "branch": "scale/generation-capacity-full-postprocessing-v1",
+      "revision": "5e04dbe488ee166d2756bc99c71ee5fffbe0bd83",
+      "tracked_dirty": false,
+      "tree": "29d4e24f5ae9c294401902d554a1f2388a61ef64"
+    },
+    "full_output_root": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_capacity_full_300k_v1",
+    "max_attempts": 8,
+    "posteval_only": true,
+    "required_idle_polls": 5,
+    "training_git": {
+      "branch": "scale/generation-capacity-full-300k-execution-v1",
+      "revision": "d75dfea37ddcb504cfe8ecba25774ee36f522480",
+      "tracked_dirty": false,
+      "tree": "e96059ab0e77942e716c23a69364fc6c8ad9048d"
+    },
+    "training_supervisor_deployment": {
+      "git": {
+        "branch": "scale/generation-capacity-full-300k-execution-v1",
+        "revision": "d75dfea37ddcb504cfe8ecba25774ee36f522480",
+        "tracked_dirty": false,
+        "tree": "e96059ab0e77942e716c23a69364fc6c8ad9048d"
+      },
+      "identity": {
+        "bytes": 20433,
+        "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_capacity_probe_250m_10k_v1/reports/capacity_full_300k_training_supervisor_deployment_receipt.json",
+        "sha256": "4a86f1c399cf4dcc3457d9a63db9f3cca0d4dfe028e22c551693ac2bf3f54267"
+      }
+    }
+  },
+  "final_quality_gate_passed": false,
+  "formal_generation_completion_claimed": false,
+  "gpu_compute_rows": [],
+  "hostname": "autodl-container-scvpc4sj5x-0e706d96",
+  "idle_polls": 0,
+  "inference_export_performed": false,
+  "pid": 409865,
+  "posteval_launch_performed": false,
+  "posteval_result": null,
+  "release_receipt_built": false,
+  "required_idle_polls": 5,
+  "role": "capacity_full_300k_posteval_supervisor",
+  "runbook_processes": [],
+  "schema_version": 1,
+  "status": "waiting",
+  "training": null,
+  "updated_at": "2026-08-19T18:30:36.393497+00:00"
+}

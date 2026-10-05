@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "role": "non_authorizing_terminal_quality_diagnosis",
+  "date": "2026-09-02",
+  "authorized": false,
+  "generation_advantage_proven": false,
+  "terminal_status": "hold",
+  "protocol": {
+    "dataset": "imagenet_256",
+    "training_steps": 100000,
+    "generated_samples_per_method": 10000,
+    "real_samples": 50000,
+    "sampler": "DDIM-100",
+    "guidance_scale": 1.5,
+    "precision": "bf16",
+    "seed": 0
+  },
+  "sources": {
+    "quality_bridge_result": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/reports/quality_bridge_result.json",
+      "sha256": "15752e05611fa888e15352934c1627ccb95418df0339f9ad120e195bc088d165"
+    },
+    "cofitok_generation_metrics": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/metrics/generation_metrics_report.json",
+      "sha256": "4dc4c6afd68f9e9f8ac335bf84108b8134d5a6404c316079c1185330f67f76dc"
+    },
+    "dense_generation_metrics": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/metrics/generation_metrics_report.json",
+      "sha256": "b59f33f98a34906a0c7d97767728595f990cc0f52838f51fa9f3cc18bf7acfba"
+    },
+    "cofitok_class_fidelity": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/class_fidelity/class_fidelity_report.json",
+      "sha256": "d84bad6dc9834f98600af44221b82b3433b0fb91063ba0ba5c27a7ba5435fd21"
+    },
+    "dense_class_fidelity": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/terminal_100k/samples_10000_ddim100_cfg15/class_fidelity/class_fidelity_report.json",
+      "sha256": "987cf89e0d886ac9fbfdcdd814beb760a2fb7fbe3621c0eea6d665f3c1e0bf4b"
+    },
+    "cofitok_training_report": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/cofitok_rgbtail3_rollout_x0_u2_ema_teacher/training_report.json",
+      "sha256": "9056b47fe7733b092608e29b9b5d14c95f5af6a35c170be4ec0dcd553f6b4a86"
+    },
+    "dense_training_report": {
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generation/stability_full_data_100k_base128_quality_bridge_v1/dense_rollout_x0_u2_ema_teacher/training_report.json",
+      "sha256": "5b38303da71f324acb668fca8c52cf7558fbee7ab8a38a5bc7768836387f08ec"
+    }
+  },
+  "terminal_metrics": {
+    "cofitok": {
+      "fid": 115.26217262363417,
+      "inception_score_mean": 9.755936397830892,
+      "precision": 0.7555999755859375,
+      "recall": 0.008320000022649765,
+      "class_top1": 0.0024,
+      "class_top5": 0.0106,
+      "class_target_probability": 0.0016550545930862426,
+      "class_target_nll": 7.40555559387207,
+      "predicted_class_fraction": 0.734,
+      "predicted_class_count": 734,
+      "normalized_predicted_class_entropy": 0.780127417746333,
+      "validation_epsilon_mse": 0.029256021603941917
+    },
+    "dense_identity": {
+      "fid": 123.02103114594166,
+      "inception_score_mean": 9.06167118448111,
+      "precision": 0.6653000116348267,
+      "recall": 0.009999999776482582,
+      "class_top1": 0.0017,
+      "class_top5": 0.0081,
+      "class_target_probability": 0.0012884528880938888,
+      "class_target_nll": 7.4760595916748045,
+      "predicted_class_fraction": 0.696,
+      "predicted_class_count": 696,
+      "normalized_predicted_class_entropy": 0.7501481296145057,
+      "validation_epsilon_mse": 0.029240703210234642
+    }
+  },
+  "deltas_cofitok_minus_dense": {
+    "fid": -7.75885852230749,
+    "fid_relative_to_dense": -0.0630693666768493,
+    "precision_relative_to_dense": 0.135728186339902,
+    "recall_relative_to_dense": -0.167999979138374,
+    "class_top1": 0.0007,
+    "class_top5": 0.0025,
+    "predicted_class_fraction": 0.038,
+    "normalized_predicted_class_entropy": 0.0299792881318273,
+    "validation_epsilon_mse": 0.000015318393707274
+  },
+  "quality_gate": {
+    "status": "hold",
+    "failed_checks": [
+      "cofitok_absolute_fid",
+      "cofitok_recall_floor",
+      "class_fidelity"
+    ],
+    "milestone_50000": {
+      "cofitok_fid": 221.05073384081678,
+      "dense_fid": 192.1684452482233,
+      "quality_alerts": []
+    },
+    "milestone_100000": {
+      "cofitok_fid": 219.8605344767381,
+      "dense_fid": 134.684114724896,
+      "quality_alerts": ["cofitok_fid_more_than_25pct_above_dense"]
+    }
+  },
+  "diagnosis": {
+    "primary": "distribution_support_and_generation_stability_issue",
+    "class_only_failure": false,
+    "primary_epsilon_loss_divergence": false,
+    "mechanism_checks_survive": true,
+    "rationale": [
+      "Both methods have recall below 0.01 and class top-1 accuracy near the random 1000-way scale; CoFiTok is not uniquely class-collapsed.",
+      "CoFiTok has higher precision, predicted-class coverage, entropy, and class target probability, but still has severely inadequate support recall.",
+      "The 50K/100K milestone FID trajectory is unstable, so the terminal FID advantage is not a robust generation-quality claim.",
+      "Final validation epsilon MSE differs by only 0.0000153, while ordered-prefix, zero-token, shuffle, and coarse-utilization checks pass."
+    ],
+    "candidate_implication": "If a future exact stage is authorized, exposure_or_capacity qualification is better supported by the existing evidence than a conditioning-only or Min-SNR intervention; this record itself selects neither and grants no permission."
+  }
+}
