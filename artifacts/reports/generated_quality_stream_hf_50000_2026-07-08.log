@@ -1,0 +1,6 @@
+[run] generated_quality_stream_imagenet_hf_epsilononly_20k_seed2_50000_ddim50_2026-07-08
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet_hf_epsilononly_20k_seed2_50000_ddim50_2026-07-08/generated_quality_report.json
+[run] generated_quality_stream_imagenet_hf_k8_light_20k_seed2_50000_ddim50_2026-07-08
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_stream_imagenet_hf_k8_light_20k_seed2_50000_ddim50_2026-07-08/generated_quality_report.json
+wrote artifacts/reports/summary_2026-07-08/experiment_summary.json
+wrote artifacts/reports/summary_2026-07-08/core_summary.md

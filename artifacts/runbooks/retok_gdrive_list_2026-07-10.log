@@ -1,0 +1,23 @@
+status=started started_at=2026-07-10T09:24:51+08:00
+warning: `--json` is in beta and its output format may change in a future release
+Error:
+
+	HTTPSConnectionPool(host='drive.google.com', port=443): Max retries
+	exceeded with url:
+	/embeddedfolderview?id=1Qne5GwCILuJVH_fqQSN2MQFK7YF82UAn (Caused by
+	NewConnectionError("HTTPSConnection(host='drive.google.com',
+	port=443): Failed to establish a new connection: [Errno 101] Network
+	is unreachable"))
+
+To report issues, please visit https://github.com/wkentaro/gdown/issues.
+status=command_done rc=1 finished_at=2026-07-10T09:27:03+08:00
+bytes 0
+Traceback (most recent call last):
+  File "<stdin>", line 6, in <module>
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)

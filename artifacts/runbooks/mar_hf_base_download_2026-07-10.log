@@ -1,0 +1,73 @@
+status=started started_at=2026-07-10T09:19:44+08:00
+Fetching 13 files:   0%|          | 0/13 [00:00<?, ?it/s]Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 13 files:   8%|▊         | 1/13 [00:01<00:21,  1.78s/it]Fetching 13 files:  31%|███       | 4/13 [00:02<00:04,  1.91it/s]Fetching 13 files:  38%|███▊      | 5/13 [00:02<00:03,  2.30it/s]Fetching 13 files:  46%|████▌     | 6/13 [00:03<00:03,  2.00it/s]Fetching 13 files:  46%|████▌     | 6/13 [00:03<00:04,  1.52it/s]
+Traceback (most recent call last):
+  File "/root/autodl-tmp/conda/envs/pf-vlm/bin/hf", line 6, in <module>
+    sys.exit(main())
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/huggingface_hub/cli/hf.py", line 114, in main
+    app()
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/typer/main.py", line 1152, in __call__
+    raise e
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/typer/main.py", line 1135, in __call__
+    return get_command(self)(*args, **kwargs)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/click/core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/typer/core.py", line 794, in main
+    return _main(
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/typer/core.py", line 188, in _main
+    rv = self.invoke(ctx)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/huggingface_hub/cli/_cli_utils.py", line 137, in invoke
+    return super().invoke(ctx)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/click/core.py", line 1902, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/click/core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/click/core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/typer/main.py", line 1514, in wrapper
+    return callback(**use_params)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/huggingface_hub/cli/download.py", line 213, in download
+    _print_result(run_download())
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/huggingface_hub/cli/download.py", line 175, in run_download
+    return snapshot_download(
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 88, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/huggingface_hub/_snapshot_download.py", line 455, in snapshot_download
+    thread_map(
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/tqdm/contrib/concurrent.py", line 69, in thread_map
+    return _executor_map(ThreadPoolExecutor, fn, *iterables, **tqdm_kwargs)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/tqdm/contrib/concurrent.py", line 51, in _executor_map
+    return list(tqdm_class(ex.map(fn, *iterables, chunksize=chunksize), **kwargs))
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/tqdm/std.py", line 1181, in __iter__
+    for obj in iterable:
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/concurrent/futures/_base.py", line 621, in result_iterator
+    yield _result_or_cancel(fs.pop())
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/concurrent/futures/_base.py", line 319, in _result_or_cancel
+    return fut.result(timeout)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/concurrent/futures/_base.py", line 458, in result
+    return self.__get_result()
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
+    raise self._exception
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/huggingface_hub/_snapshot_download.py", line 435, in _inner_hf_hub_download
+    hf_hub_download(  # type: ignore
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 88, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 976, in hf_hub_download
+    return _hf_hub_download_to_local_dir(
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1427, in _hf_hub_download_to_local_dir
+    _download_to_tmp_and_move(
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1842, in _download_to_tmp_and_move
+    xet_get(
+  File "/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 558, in xet_get
+    download_files(
+ConnectionError: Network error: Request error: HTTP status client error (401 Unauthorized), domain: https://cas-server.xethub.hf.co/v2/reconstructions/02daa0de2d5411fcca6bc92bbd5c1fe9712916ca1cf7b922203a14a279ceb6cc
+status=command_done rc=1 finished_at=2026-07-10T09:19:50+08:00
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/README.md 3338
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/__init__.py 17
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/diffloss.py 8774
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/diffusion.py 1709
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/diffusion_utils.py 2627
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/gaussian_diffusion.py 34483
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/mar.py 14285

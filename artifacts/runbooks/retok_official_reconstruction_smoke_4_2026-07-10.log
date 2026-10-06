@@ -1,0 +1,30 @@
+status=started_retry_skimage started_at=2026-07-10T12:35:48+08:00
++ TORCH_RUN_PATH=torchrun
+++ nvidia-smi --query-gpu=name --format=csv,noheader
+++ wc -l
++ NV_GPUS=1
++ GPUS=1
++ NNODES=1
++ NODE_RANK=0
++ PORT=55615
++ MASTER_ADDR=127.0.0.1
++ HOSTE_NODE_ADDR=127.0.0.1:55615
++ torchrun --nnodes=1 --nproc_per_node=1 --node_rank=0 --master_port=55615 --master_addr=127.0.0.1 tokenizer/tokenizer_image/reconstruction_ddp.py --qualitative --data-path /root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/smoke_data_4 --dataset imagenet --image-size 256 --image-size-eval 256 --quant-way vq --sample-dir /root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/reconstruction_smoke_4 --vq-ckpt /root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/checkpoints/VQ_SB256_e250.pt --model-config configs/vq/VQ_SB256.yaml --per-proc-batch-size 2 --num-workers 0 --global-seed 0
+/root/autodl-tmp/CoFiTok/baselines/repos/retok/tokenizer/tokenizer_image/fsq/fsq_model.py:200: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled = False)
+Starting rank=0, seed=0, world_size=1.
+VQVitModelPlusArgs(codebook_size=16384, codebook_embed_dim=8, codebook_l2_norm=True, codebook_show_usage=True, commit_loss_beta=0.25, entropy_loss_ratio=0.0, use_lfq=False, bernoulli_sample=False, eval_deterministic=False, simvq=False, codebook_transform=None, freeze_codebook=False, encoder_ch_mult=[1, 1, 2, 2, 4], decoder_ch_mult=[1, 1, 2, 2, 4], model_size=None, encoder_size='small', decoder_size='base', num_latent_tokens=256, z_channels=256, dropout_p=0.0, use_rope=False, use_qk_norm=False, use_flash_attn=False, multi_level_query_init=True, learnable_1d_query_init=False, rope_1d=False, last_level_2d_query_init=False, multi_level_2d_query_init=False, learnable_2d_query_init=False, adaptive_gn=True, d2s_up=True, res_up_down_sample=False, downsample_match_channel=False, upsample_match_channel=False, res_codebook_updown_sample=False, downsample_improve=False, use_attn=False, rope_2d=False, rot=True, stochastic=False, stochastic_temperature=0.03, distill_depth=3, encoder_2d_distill=False, out_inner_dim=768, fea_rec_loss_type='mse', fea_rec_loss_weight=1.0, with_prior_model=False, prior_model_config=None)
+Saving .png samples at /root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/reconstruction_smoke_4/VQVitModelPlus-imagenet-size-256-size-256-codebook-size-16384-dim-8-seed-0-
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:4631: UserWarning: No device id is provided via `init_process_group` or `barrier `. Using the current device set by the user. 
+  warnings.warn(  # warn only once
+[rank0]:[W710 12:35:57.281696121 ProcessGroupNCCL.cpp:4718] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 as device used by this process is currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. You can pecify device_id in init_process_group() to force use of a particular device.
+  0%|          | 0/2 [00:00<?, ?it/s] 50%|█████     | 1/2 [00:00<00:00,  1.86it/s]100%|██████████| 2/2 [00:00<00:00,  3.24it/s]
+status=command_done rc=0 finished_at=2026-07-10T12:36:00+08:00
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/reconstruction_smoke_4/VQVitModelPlus-imagenet-size-256-size-256-codebook-size-16384-dim-8-seed-0-/000000.png 150681
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/reconstruction_smoke_4/VQVitModelPlus-imagenet-size-256-size-256-codebook-size-16384-dim-8-seed-0-/000000_gt.png 145050
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/reconstruction_smoke_4/VQVitModelPlus-imagenet-size-256-size-256-codebook-size-16384-dim-8-seed-0-/000001.png 138888
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/reconstruction_smoke_4/VQVitModelPlus-imagenet-size-256-size-256-codebook-size-16384-dim-8-seed-0-/000001_gt.png 132312
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/reconstruction_smoke_4/VQVitModelPlus-imagenet-size-256-size-256-codebook-size-16384-dim-8-seed-0-/000002.png 156089
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/reconstruction_smoke_4/VQVitModelPlus-imagenet-size-256-size-256-codebook-size-16384-dim-8-seed-0-/000002_gt.png 151495
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/reconstruction_smoke_4/VQVitModelPlus-imagenet-size-256-size-256-codebook-size-16384-dim-8-seed-0-/000003.png 155812
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/retok/official_imagenet256_eval_only/reconstruction_smoke_4/VQVitModelPlus-imagenet-size-256-size-256-codebook-size-16384-dim-8-seed-0-/000003_gt.png 149757

@@ -1,0 +1,124 @@
+设置成功!
+注意：
+1. 仅限学术用途和加速访问github/huggingface，不承诺稳定性
+2. 开启加速后对访问其他资源如pip源等会*更慢*
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/modules/losses.py:141: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:53: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:134: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:154: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:159: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:163: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+attention mode is flash
+wrote artifacts/reports/baselines/titok_1d_tokenizer/cifar10_recon256_eval256_2026-07-10/baseline_eval_report.json
+wrote artifacts/reports/baselines/ml_flextok/cifar10_recon256_eval256_2026-07-10/baseline_eval_report.json
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/modules/losses.py:141: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:53: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:134: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:154: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:159: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:163: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+attention mode is flash
+wrote artifacts/reports/baselines/titok_1d_tokenizer/tiny_imagenet_200_recon256_eval256_2026-07-10/baseline_eval_report.json
+wrote artifacts/reports/baselines/ml_flextok/tiny_imagenet_200_recon256_eval256_2026-07-10/baseline_eval_report.json
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/modules/losses.py:141: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:53: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:134: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:154: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:159: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:163: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+attention mode is flash
+wrote artifacts/reports/baselines/titok_1d_tokenizer/imagenet_1k_64x64_hf_recon256_eval256_2026-07-10/baseline_eval_report.json
+wrote artifacts/reports/baselines/ml_flextok/imagenet_1k_64x64_hf_recon256_eval256_2026-07-10/baseline_eval_report.json
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/modules/losses.py:141: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:53: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:134: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:154: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:159: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:163: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+attention mode is flash
+wrote artifacts/reports/baselines/titok_1d_tokenizer/downsampled_imagenet_64_recon256_eval256_2026-07-10/baseline_eval_report.json
+wrote artifacts/reports/baselines/ml_flextok/downsampled_imagenet_64_recon256_eval256_2026-07-10/baseline_eval_report.json
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/modules/losses.py:141: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:53: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:134: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:154: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:159: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:163: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+attention mode is flash
+wrote artifacts/reports/baselines/titok_1d_tokenizer/ffhq_64_recon256_eval256_2026-07-10/baseline_eval_report.json
+wrote artifacts/reports/baselines/ml_flextok/ffhq_64_recon256_eval256_2026-07-10/baseline_eval_report.json
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/modules/losses.py:141: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:53: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:134: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:154: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:159: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:163: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+attention mode is flash
+wrote artifacts/reports/baselines/titok_1d_tokenizer/afhqv2_64_recon256_eval256_2026-07-10/baseline_eval_report.json
+wrote artifacts/reports/baselines/ml_flextok/afhqv2_64_recon256_eval256_2026-07-10/baseline_eval_report.json
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/modules/losses.py:141: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:53: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:134: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:154: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:159: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:163: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+attention mode is flash
+wrote artifacts/reports/baselines/titok_1d_tokenizer/imagenet_256_10pct_recon256_eval256_2026-07-10/baseline_eval_report.json
+wrote artifacts/reports/baselines/ml_flextok/imagenet_256_10pct_recon256_eval256_2026-07-10/baseline_eval_report.json
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/modules/losses.py:141: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:53: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:134: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:154: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:159: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+/root/autodl-tmp/CoFiTok/baselines/repos/titok_1d_tokenizer/modeling/quantizer/quantizer.py:163: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  @autocast(enabled=False)
+attention mode is flash
+wrote artifacts/reports/baselines/titok_1d_tokenizer/imagenet_256_recon256_eval256_2026-07-10/baseline_eval_report.json
+wrote artifacts/reports/baselines/ml_flextok/imagenet_256_recon256_eval256_2026-07-10/baseline_eval_report.json

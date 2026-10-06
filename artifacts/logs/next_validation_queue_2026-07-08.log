@@ -1,0 +1,2438 @@
+{
+  "by_type": {
+    "generated_quality": {
+      "complete": 0,
+      "expected": 6,
+      "missing": 6
+    },
+    "order_eval": {
+      "complete": 0,
+      "expected": 24,
+      "missing": 24
+    },
+    "quality": {
+      "complete": 0,
+      "expected": 10,
+      "missing": 10
+    },
+    "sampling": {
+      "complete": 0,
+      "expected": 6,
+      "missing": 6
+    },
+    "train": {
+      "complete": 0,
+      "expected": 10,
+      "missing": 10
+    }
+  },
+  "checkpoint_root": "/root/autodl-tmp/CoFiTok/checkpoints",
+  "counts": {
+    "complete": 0,
+    "expected": 56,
+    "missing": 56
+  },
+  "date_tag": "2026-07-08",
+  "missing": [
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+      "relative_path": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_tiny_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "relative_path": "generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "report_type": "sampling",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "relative_path": "generated_quality_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "report_type": "generated_quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+      "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_tiny_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_random_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_20k_seed2_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "relative_path": "generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "report_type": "sampling",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "relative_path": "generated_quality_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "report_type": "generated_quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+      "relative_path": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_imagenet_hf_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "relative_path": "generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "report_type": "sampling",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "relative_path": "generated_quality_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "report_type": "generated_quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+      "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_imagenet_hf_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "relative_path": "generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+      "report_type": "sampling",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "relative_path": "generated_quality_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "report_type": "generated_quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+      "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_tiny_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_random_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_multiscale_10k_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+      "relative_path": "generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+      "report_type": "sampling",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "relative_path": "generated_quality_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "report_type": "generated_quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+      "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_imagenet_hf_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+      "relative_path": "generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+      "report_type": "sampling",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "relative_path": "generated_quality_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+      "report_type": "generated_quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+      "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_tiny_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+      "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_tiny_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+      "relative_path": "order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+      "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_imagenet_hf_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+      "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+      "report_type": "train",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "relative_path": "quality_imagenet_hf_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+      "report_type": "quality",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+      "report_type": "order_eval:ordered",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+      "report_type": "order_eval:random",
+      "required": true
+    },
+    {
+      "bytes": null,
+      "exists": false,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+      "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+      "report_type": "order_eval:reverse",
+      "required": true
+    }
+  ],
+  "quality_images": 1024,
+  "queued_runs": [
+    {
+      "config": "configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "label": "tiny_epsilononly_20k_seed2",
+      "order_eval": false,
+      "sample_eval": true,
+      "train_id": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "label": "tiny_k8_light_20k_seed2",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "order_eval": false,
+      "sample_eval": true,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "label": "tiny_k8_light_multiscale_10k",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "label": "tiny_k8_light_cleanmono_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    }
+  ],
+  "run_count": 10,
+  "runs": [
+    {
+      "complete_count": 0,
+      "config": "configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "expected_count": 4,
+      "label": "tiny_epsilononly_20k_seed2",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 4,
+      "order_eval": false,
+      "sample_eval": true,
+      "status": "incomplete",
+      "train_id": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "expected_count": 7,
+      "label": "tiny_k8_light_20k_seed2",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_random_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_20k_seed2_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 7,
+      "order_eval": true,
+      "sample_eval": true,
+      "status": "incomplete",
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "expected_count": 4,
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 4,
+      "order_eval": false,
+      "sample_eval": true,
+      "status": "incomplete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "expected_count": 7,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 7,
+      "order_eval": true,
+      "sample_eval": true,
+      "status": "incomplete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "expected_count": 7,
+      "label": "tiny_k8_light_multiscale_10k",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_random_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_multiscale_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 7,
+      "order_eval": true,
+      "sample_eval": true,
+      "status": "incomplete",
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "expected_count": 7,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 7,
+      "order_eval": true,
+      "sample_eval": true,
+      "status": "incomplete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "expected_count": 5,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        }
+      ],
+      "missing_count": 5,
+      "order_eval": true,
+      "sample_eval": false,
+      "status": "incomplete",
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "expected_count": 5,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        }
+      ],
+      "missing_count": 5,
+      "order_eval": true,
+      "sample_eval": false,
+      "status": "incomplete",
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "expected_count": 5,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        }
+      ],
+      "missing_count": 5,
+      "order_eval": true,
+      "sample_eval": false,
+      "status": "incomplete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "complete_count": 0,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "expected_count": 5,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "markers": [
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": null,
+          "exists": false,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        }
+      ],
+      "missing_count": 5,
+      "order_eval": true,
+      "sample_eval": false,
+      "status": "incomplete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    }
+  ],
+  "sample_count": 2048,
+  "sample_steps": 50,
+  "status": "incomplete"
+}
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08
+step 0001 total=1.2387 epsilon=1.2387 prefix=436.2491 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 2000 total=0.0871 epsilon=0.0871 prefix=1012.6075 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 4000 total=0.0337 epsilon=0.0337 prefix=683.5481 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 6000 total=0.0198 epsilon=0.0198 prefix=964.6351 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 8000 total=0.0481 epsilon=0.0481 prefix=211.9359 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 10000 total=0.0640 epsilon=0.0640 prefix=439.4821 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 12000 total=0.0349 epsilon=0.0349 prefix=495.8559 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 14000 total=0.0297 epsilon=0.0297 prefix=781.4281 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 16000 total=0.0351 epsilon=0.0351 prefix=166.8029 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 18000 total=0.0659 epsilon=0.0659 prefix=464.6559 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 20000 total=0.0956 epsilon=0.0956 prefix=351.3734 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08 --split val --max-batches 32 --max-images 1024 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/sample_checkpoint.py --config configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08 --num-samples 2048 --batch-size 64 --sample-steps 50 --prefix-budgets 8 --save-images
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8
+wrote 2048
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_generated_samples.py --config configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda.json --samples-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8 --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08 --split val --max-real-images 8192 --max-sample-images 2048 --batch-size 32 --enable-inception-fid
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08
+step 0001 total=1.3153 epsilon=1.2387 prefix=436.2491 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.4026 path_c=0.0537
+step 2000 total=0.1296 epsilon=0.0928 prefix=765.4774 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0923 path_c=0.0767
+step 4000 total=0.0396 epsilon=0.0349 prefix=512.6580 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0119 path_c=0.0097
+step 6000 total=0.0235 epsilon=0.0203 prefix=724.9568 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0080 path_c=0.0064
+step 8000 total=0.0578 epsilon=0.0496 prefix=157.4547 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0210 path_c=0.0169
+step 10000 total=0.0787 epsilon=0.0661 prefix=326.9158 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0298 path_c=0.0271
+step 12000 total=0.0400 epsilon=0.0358 prefix=370.6623 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0108 path_c=0.0087
+step 14000 total=0.0336 epsilon=0.0306 prefix=578.1502 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0083 path_c=0.0060
+step 16000 total=0.0398 epsilon=0.0365 prefix=124.7632 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0092 path_c=0.0065
+step 18000 total=0.0905 epsilon=0.0708 prefix=346.0499 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0431 path_c=0.0442
+step 20000 total=0.1353 epsilon=0.1021 prefix=261.5335 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0697 path_c=0.0758
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08 --split val --max-batches 32 --max-images 1024 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_ordered_2026-07-08 --component-order ordered --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_ordered_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_ordered_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_ordered_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_random_2026-07-08 --component-order random --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_random_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_random_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_random_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_reverse_2026-07-08 --component-order reverse --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_reverse_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_reverse_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_reverse_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/sample_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08 --num-samples 2048 --batch-size 64 --sample-steps 50 --prefix-budgets 8 --save-images
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8
+wrote 2048
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_generated_samples.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json --samples-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8 --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08 --split val --max-real-images 8192 --max-sample-images 2048 --batch-size 32 --enable-inception-fid
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08
+step 0001 total=1.2398 epsilon=1.2398 prefix=436.1602 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 2000 total=0.0698 epsilon=0.0698 prefix=1020.3339 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 4000 total=0.0242 epsilon=0.0242 prefix=690.6020 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 6000 total=0.0158 epsilon=0.0158 prefix=977.8926 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 8000 total=0.0428 epsilon=0.0428 prefix=215.4911 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 10000 total=0.0605 epsilon=0.0605 prefix=446.5126 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 12000 total=0.0246 epsilon=0.0246 prefix=506.9016 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 14000 total=0.0218 epsilon=0.0218 prefix=797.2919 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 16000 total=0.0279 epsilon=0.0279 prefix=170.5495 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 18000 total=0.0569 epsilon=0.0569 prefix=476.2135 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+step 20000 total=0.0984 epsilon=0.0984 prefix=360.2822 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0000 path_c=0.0000
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08 --split val --max-batches 32 --max-images 1024 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/sample_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08 --num-samples 2048 --batch-size 64 --sample-steps 50 --prefix-budgets 8 --save-images
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8
+wrote 2048
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_generated_samples.py --config configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda.json --samples-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8 --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08 --split val --max-real-images 8192 --max-sample-images 2048 --batch-size 32 --enable-inception-fid
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08
+step 0001 total=1.3126 epsilon=1.2398 prefix=436.1602 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.3891 path_c=0.0482
+step 2000 total=0.1066 epsilon=0.0744 prefix=769.3390 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0805 path_c=0.0671
+step 4000 total=0.0283 epsilon=0.0245 prefix=515.3886 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0097 path_c=0.0080
+step 6000 total=0.0188 epsilon=0.0161 prefix=724.3192 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0068 path_c=0.0056
+step 8000 total=0.0524 epsilon=0.0443 prefix=159.1027 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0201 path_c=0.0169
+step 10000 total=0.0717 epsilon=0.0633 prefix=326.1930 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0207 path_c=0.0178
+step 12000 total=0.0289 epsilon=0.0258 prefix=373.2612 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0082 path_c=0.0064
+step 14000 total=0.0247 epsilon=0.0224 prefix=582.1314 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0066 path_c=0.0045
+step 16000 total=0.0315 epsilon=0.0288 prefix=124.5572 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0078 path_c=0.0051
+step 18000 total=0.0795 epsilon=0.0601 prefix=344.8294 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0401 path_c=0.0448
+step 20000 total=0.1419 epsilon=0.1053 prefix=261.2291 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0798 path_c=0.0821
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08 --split val --max-batches 32 --max-images 1024 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08 --component-order ordered --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08 --component-order random --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08 --component-order reverse --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/sample_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08 --num-samples 2048 --batch-size 64 --sample-steps 50 --prefix-budgets 8 --save-images
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8
+wrote 2048
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_generated_samples.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json --samples-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/samples_prefix_8 --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08 --split val --max-real-images 8192 --max-sample-images 2048 --batch-size 32 --enable-inception-fid
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08
+step 0001 total=1.4053 epsilon=1.3297 prefix=1041.2612 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.4073 path_c=0.0485
+step 1000 total=0.0528 epsilon=0.0417 prefix=589.4976 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0281 path_c=0.0232
+step 2000 total=0.0590 epsilon=0.0505 prefix=266.3376 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0200 path_c=0.0182
+step 3000 total=0.1150 epsilon=0.0955 prefix=170.1276 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0435 path_c=0.0432
+step 4000 total=0.0255 epsilon=0.0220 prefix=668.7830 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0085 path_c=0.0074
+step 5000 total=0.0429 epsilon=0.0334 prefix=578.8591 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0211 path_c=0.0210
+step 6000 total=0.0496 epsilon=0.0408 prefix=1816.5033 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0202 path_c=0.0191
+step 7000 total=0.0388 epsilon=0.0347 prefix=390.4599 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0109 path_c=0.0082
+step 8000 total=0.0674 epsilon=0.0590 prefix=451.6499 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0204 path_c=0.0178
+step 9000 total=0.0316 epsilon=0.0284 prefix=865.4672 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0077 path_c=0.0068
+step 10000 total=0.0795 epsilon=0.0698 prefix=223.5525 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0237 path_c=0.0206
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08 --split val --max-batches 32 --max-images 1024 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_ordered_2026-07-08 --component-order ordered --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_random_2026-07-08 --component-order random --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_random_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_random_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_random_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_reverse_2026-07-08 --component-order reverse --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/sample_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08 --num-samples 2048 --batch-size 64 --sample-steps 50 --prefix-budgets 8 --save-images
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/samples_prefix_8.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/samples_prefix_8
+wrote 2048
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_generated_samples.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json --samples-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/samples_prefix_8 --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08 --split val --max-real-images 8192 --max-sample-images 2048 --batch-size 32 --enable-inception-fid
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08
+step 0001 total=1.3999 epsilon=1.3247 prefix=1041.2345 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.4059 path_c=0.0478
+step 1000 total=0.0474 epsilon=0.0377 prefix=587.1521 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0248 path_c=0.0197
+step 2000 total=0.0429 epsilon=0.0350 prefix=265.9583 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0193 path_c=0.0166
+step 3000 total=0.0756 epsilon=0.0544 prefix=172.0330 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0479 path_c=0.0466
+step 4000 total=0.0190 epsilon=0.0160 prefix=661.2997 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0072 path_c=0.0065
+step 5000 total=0.0360 epsilon=0.0293 prefix=578.6590 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0166 path_c=0.0139
+step 6000 total=0.0481 epsilon=0.0396 prefix=1794.6145 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0194 path_c=0.0186
+step 7000 total=0.0242 epsilon=0.0215 prefix=381.1933 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0069 path_c=0.0055
+step 8000 total=0.0585 epsilon=0.0496 prefix=440.5951 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0198 path_c=0.0197
+step 9000 total=0.0281 epsilon=0.0256 prefix=863.1284 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0065 path_c=0.0052
+step 10000 total=0.0624 epsilon=0.0567 prefix=226.7494 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0140 path_c=0.0119
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08 --split val --max-batches 32 --max-images 1024 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08 --component-order ordered --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08 --component-order random --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08 --component-order reverse --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/sample_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08 --num-samples 2048 --batch-size 64 --sample-steps 50 --prefix-budgets 8 --save-images
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/samples_prefix_8.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/samples_prefix_8
+wrote 2048
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_generated_samples.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json --samples-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/samples_prefix_8 --output-dir /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08 --split val --max-real-images 8192 --max-sample-images 2048 --batch-size 32 --enable-inception-fid
+wrote /root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08
+step 0001 total=1.1095 epsilon=1.0981 prefix=1721.0818 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.3761 path_c=0.0380
+step 1000 total=0.0548 epsilon=0.0482 prefix=258.0369 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0393 path_c=0.0221
+step 2000 total=0.0760 epsilon=0.0588 prefix=407.1885 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.1283 path_c=0.0575
+step 3000 total=0.0733 epsilon=0.0604 prefix=675.8557 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0842 path_c=0.0431
+step 4000 total=0.0730 epsilon=0.0560 prefix=290.6747 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.1176 path_c=0.0567
+step 5000 total=0.0551 epsilon=0.0510 prefix=223.9176 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0211 path_c=0.0134
+step 6000 total=0.0596 epsilon=0.0503 prefix=389.1218 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0517 path_c=0.0311
+step 7000 total=0.0187 epsilon=0.0172 prefix=725.6119 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0091 path_c=0.0051
+step 8000 total=0.0491 epsilon=0.0426 prefix=227.3410 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0288 path_c=0.0218
+step 9000 total=0.0396 epsilon=0.0371 prefix=175.9452 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0131 path_c=0.0082
+step 10000 total=0.0583 epsilon=0.0542 prefix=286.0622 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0192 path_c=0.0136
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08 --split val --max-batches 32 --max-images 1024 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08 --component-order ordered --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_random_2026-07-08 --component-order random --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08 --component-order reverse --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08
+step 0001 total=3.0743 epsilon=1.2495 prefix=2739.5439 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.3993 path_c=0.0385
+step 1000 total=0.0696 epsilon=0.0578 prefix=471.2375 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0334 path_c=0.0226
+step 2000 total=0.0410 epsilon=0.0350 prefix=46.9697 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0158 path_c=0.0122
+step 3000 total=0.0546 epsilon=0.0441 prefix=820.7942 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0241 path_c=0.0228
+step 4000 total=0.0608 epsilon=0.0526 prefix=396.9523 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0205 path_c=0.0171
+step 5000 total=0.0746 epsilon=0.0646 prefix=235.4515 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0248 path_c=0.0208
+step 6000 total=0.0644 epsilon=0.0582 prefix=404.3057 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0161 path_c=0.0127
+step 7000 total=0.0472 epsilon=0.0415 prefix=269.6300 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0145 path_c=0.0117
+step 8000 total=0.1083 epsilon=0.0856 prefix=447.1694 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0559 path_c=0.0475
+step 9000 total=0.0647 epsilon=0.0554 prefix=319.6793 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0229 path_c=0.0193
+step 10000 total=0.0624 epsilon=0.0550 prefix=816.4291 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0182 path_c=0.0153
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08 --split val --max-batches 32 --max-images 1024 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08 --component-order ordered --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_random_2026-07-08 --component-order random --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_random_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_random_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_random_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08 --component-order reverse --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08
+step 0001 total=1.1064 epsilon=1.0964 prefix=1721.0291 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.3645 path_c=0.0334
+step 1000 total=0.0514 epsilon=0.0448 prefix=255.7281 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0383 path_c=0.0219
+step 2000 total=0.0608 epsilon=0.0498 prefix=404.0520 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0784 path_c=0.0368
+step 3000 total=0.0612 epsilon=0.0510 prefix=652.6102 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0663 path_c=0.0339
+step 4000 total=0.0617 epsilon=0.0516 prefix=291.9774 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0545 path_c=0.0335
+step 5000 total=0.0473 epsilon=0.0425 prefix=223.2835 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0231 path_c=0.0161
+step 6000 total=0.0548 epsilon=0.0412 prefix=390.1715 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0682 path_c=0.0454
+step 7000 total=0.0190 epsilon=0.0177 prefix=729.4523 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0084 path_c=0.0045
+step 8000 total=0.0478 epsilon=0.0386 prefix=225.4207 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0510 path_c=0.0307
+step 9000 total=0.0313 epsilon=0.0287 prefix=175.4287 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0126 path_c=0.0087
+step 10000 total=0.0550 epsilon=0.0490 prefix=286.3056 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0251 path_c=0.0197
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08 --split val --max-batches 32 --max-images 1024 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08 --component-order ordered --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08 --component-order random --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08 --component-order reverse --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/train_short.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json --output-dir /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08
+step 0001 total=3.0725 epsilon=1.2486 prefix=2739.4272 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.3968 path_c=0.0375
+step 1000 total=0.0648 epsilon=0.0527 prefix=473.3688 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0338 path_c=0.0233
+step 2000 total=0.0346 epsilon=0.0290 prefix=46.9446 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0145 path_c=0.0112
+step 3000 total=0.0488 epsilon=0.0396 prefix=823.6718 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0224 path_c=0.0193
+step 4000 total=0.0623 epsilon=0.0493 prefix=397.0356 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0312 path_c=0.0278
+step 5000 total=0.0549 epsilon=0.0481 prefix=235.9929 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0174 path_c=0.0141
+step 6000 total=0.0399 epsilon=0.0357 prefix=407.6725 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0115 path_c=0.0082
+step 7000 total=0.0413 epsilon=0.0363 prefix=271.8196 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0129 path_c=0.0102
+step 8000 total=0.0995 epsilon=0.0719 prefix=447.4646 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0620 path_c=0.0608
+step 9000 total=0.0559 epsilon=0.0482 prefix=320.5848 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0190 path_c=0.0164
+step 10000 total=0.0506 epsilon=0.0426 prefix=814.4068 energy=0.0000 residual=0.0000 tail=0.0000 sample_m=0 group=0.0000 band_p=0.0000 band_c=0.0000 path_p=0.0193 path_c=0.0169
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/checkpoint_final.pt
+wrote /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/prefix_final.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_quality.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08 --split val --max-batches 32 --max-images 1024 --timestep 500 --enable-lpips --enable-inception-fid
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+/root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /root/autodl-tmp/conda/envs/pf-vlm/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+wrote /root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08 --component-order ordered --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08 --component-order random --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/prefix_final_shuffled.png
+[run] /root/autodl-tmp/conda/envs/pf-vlm/bin/python scripts/evaluate_checkpoint.py --config configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json --checkpoint /root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/checkpoint_final.pt --output-dir /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08 --component-order reverse --random-order-seed 0
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/report.json
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/prefix_final.png
+wrote /root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/prefix_final_shuffled.png
+wrote artifacts/reports/summary_2026-07-08/experiment_summary.json
+wrote artifacts/reports/summary_2026-07-08/core_summary.md
+{
+  "by_type": {
+    "generated_quality": {
+      "complete": 6,
+      "expected": 6,
+      "missing": 0
+    },
+    "order_eval": {
+      "complete": 24,
+      "expected": 24,
+      "missing": 0
+    },
+    "quality": {
+      "complete": 10,
+      "expected": 10,
+      "missing": 0
+    },
+    "sampling": {
+      "complete": 6,
+      "expected": 6,
+      "missing": 0
+    },
+    "train": {
+      "complete": 10,
+      "expected": 10,
+      "missing": 0
+    }
+  },
+  "checkpoint_root": "/root/autodl-tmp/CoFiTok/checkpoints",
+  "counts": {
+    "complete": 56,
+    "expected": 56,
+    "missing": 0
+  },
+  "date_tag": "2026-07-08",
+  "missing": [],
+  "quality_images": 1024,
+  "queued_runs": [
+    {
+      "config": "configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "label": "tiny_epsilononly_20k_seed2",
+      "order_eval": false,
+      "sample_eval": true,
+      "train_id": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "label": "tiny_k8_light_20k_seed2",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "order_eval": false,
+      "sample_eval": true,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "label": "tiny_k8_light_multiscale_10k",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "order_eval": true,
+      "sample_eval": true,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "label": "tiny_k8_light_cleanmono_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "order_eval": true,
+      "sample_eval": false,
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    }
+  ],
+  "run_count": 10,
+  "runs": [
+    {
+      "complete_count": 4,
+      "config": "configs/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "expected_count": 4,
+      "label": "tiny_epsilononly_20k_seed2",
+      "markers": [
+        {
+          "bytes": 12923,
+          "exists": true,
+          "label": "tiny_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": 4825,
+          "exists": true,
+          "label": "tiny_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": 3502,
+          "exists": true,
+          "label": "tiny_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": 987,
+          "exists": true,
+          "label": "tiny_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_tiny_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 0,
+      "order_eval": false,
+      "sample_eval": true,
+      "status": "complete",
+      "train_id": "train_tiny_imagenet_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "complete_count": 7,
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "expected_count": 7,
+      "label": "tiny_k8_light_20k_seed2",
+      "markers": [
+        {
+          "bytes": 13339,
+          "exists": true,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": 4825,
+          "exists": true,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": 6103,
+          "exists": true,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": 6093,
+          "exists": true,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_random_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_20k_seed2_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": 6095,
+          "exists": true,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        },
+        {
+          "bytes": 3503,
+          "exists": true,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": 985,
+          "exists": true,
+          "label": "tiny_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_tiny_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 0,
+      "order_eval": true,
+      "sample_eval": true,
+      "status": "complete",
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "complete_count": 4,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda.json",
+      "expected_count": 4,
+      "label": "imagenet_hf_epsilononly_20k_seed2",
+      "markers": [
+        {
+          "bytes": 12958,
+          "exists": true,
+          "label": "imagenet_hf_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": 4845,
+          "exists": true,
+          "label": "imagenet_hf_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_epsilononly_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": 3535,
+          "exists": true,
+          "label": "imagenet_hf_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": 1005,
+          "exists": true,
+          "label": "imagenet_hf_epsilononly_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_imagenet_hf_epsilononly_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 0,
+      "order_eval": false,
+      "sample_eval": true,
+      "status": "complete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_epsilononly_p150eval_20k_seed2_cuda"
+    },
+    {
+      "complete_count": 7,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda.json",
+      "expected_count": 7,
+      "label": "imagenet_hf_k8_light_20k_seed2",
+      "markers": [
+        {
+          "bytes": 13378,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": 4848,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_k8_light_20k_seed2_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": 6144,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_20k_seed2_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": 6123,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_20k_seed2_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": 6133,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_20k_seed2_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        },
+        {
+          "bytes": 3534,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": 1003,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_20k_seed2",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_imagenet_hf_k8_light_20k_seed2_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 0,
+      "order_eval": true,
+      "sample_eval": true,
+      "status": "complete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_20k_seed2_cuda"
+    },
+    {
+      "complete_count": 7,
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "expected_count": 7,
+      "label": "tiny_k8_light_multiscale_10k",
+      "markers": [
+        {
+          "bytes": 13354,
+          "exists": true,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": 4850,
+          "exists": true,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": 6138,
+          "exists": true,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": 6123,
+          "exists": true,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_random_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_multiscale_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": 6128,
+          "exists": true,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        },
+        {
+          "bytes": 3529,
+          "exists": true,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": 996,
+          "exists": true,
+          "label": "tiny_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_tiny_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 0,
+      "order_eval": true,
+      "sample_eval": true,
+      "status": "complete",
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "complete_count": 7,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda.json",
+      "expected_count": 7,
+      "label": "imagenet_hf_k8_light_multiscale_10k",
+      "markers": [
+        {
+          "bytes": 13409,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": 4862,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_k8_light_multiscale_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": 6185,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": 6169,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": 6171,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_multiscale_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        },
+        {
+          "bytes": 3561,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+          "relative_path": "generated_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/sample_report.json",
+          "report_type": "sampling",
+          "required": true
+        },
+        {
+          "bytes": 1012,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_multiscale_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/generated_quality_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "relative_path": "generated_quality_imagenet_hf_k8_light_multiscale_10k_2048_ddim50_2026-07-08/generated_quality_report.json",
+          "report_type": "generated_quality",
+          "required": true
+        }
+      ],
+      "missing_count": 0,
+      "order_eval": true,
+      "sample_eval": true,
+      "status": "complete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_multiscale_10k_cuda"
+    },
+    {
+      "complete_count": 5,
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "expected_count": 5,
+      "label": "tiny_k8_light_nopathprefix_10k",
+      "markers": [
+        {
+          "bytes": 13358,
+          "exists": true,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": 4844,
+          "exists": true,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": 6129,
+          "exists": true,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": 6126,
+          "exists": true,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": 6132,
+          "exists": true,
+          "label": "tiny_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        }
+      ],
+      "missing_count": 0,
+      "order_eval": true,
+      "sample_eval": false,
+      "status": "complete",
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "complete_count": 5,
+      "config": "configs/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "expected_count": 5,
+      "label": "tiny_k8_light_cleanmono_10k",
+      "markers": [
+        {
+          "bytes": 13346,
+          "exists": true,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": 4843,
+          "exists": true,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_tiny_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_tiny_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": 6125,
+          "exists": true,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": 6110,
+          "exists": true,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": 6118,
+          "exists": true,
+          "label": "tiny_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_tiny_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        }
+      ],
+      "missing_count": 0,
+      "order_eval": true,
+      "sample_eval": false,
+      "status": "complete",
+      "train_id": "train_tiny_imagenet_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    },
+    {
+      "complete_count": 5,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda.json",
+      "expected_count": 5,
+      "label": "imagenet_hf_k8_light_nopathprefix_10k",
+      "markers": [
+        {
+          "bytes": 13393,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": 4857,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_k8_light_nopathprefix_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": 6187,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": 6174,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": 6174,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_nopathprefix_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_nopathprefix_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        }
+      ],
+      "missing_count": 0,
+      "order_eval": true,
+      "sample_eval": false,
+      "status": "complete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_nopathprefix_10k_cuda"
+    },
+    {
+      "complete_count": 5,
+      "config": "configs/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda.json",
+      "expected_count": 5,
+      "label": "imagenet_hf_k8_light_cleanmono_10k",
+      "markers": [
+        {
+          "bytes": 13391,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+          "relative_path": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda_2026-07-08/report.json",
+          "report_type": "train",
+          "required": true
+        },
+        {
+          "bytes": 4857,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/quality_imagenet_hf_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "relative_path": "quality_imagenet_hf_k8_light_cleanmono_10k_1024_t500_lpips_inception_2026-07-08/quality_report.json",
+          "report_type": "quality",
+          "required": true
+        },
+        {
+          "bytes": 6166,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_ordered_2026-07-08/report.json",
+          "report_type": "order_eval:ordered",
+          "required": true
+        },
+        {
+          "bytes": 6156,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_random_2026-07-08/report.json",
+          "report_type": "order_eval:random",
+          "required": true
+        },
+        {
+          "bytes": 6156,
+          "exists": true,
+          "label": "imagenet_hf_k8_light_cleanmono_10k",
+          "path": "/root/autodl-tmp/CoFiTok/checkpoints/order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+          "relative_path": "order_imagenet_hf_k8_light_cleanmono_10k_reverse_2026-07-08/report.json",
+          "report_type": "order_eval:reverse",
+          "required": true
+        }
+      ],
+      "missing_count": 0,
+      "order_eval": true,
+      "sample_eval": false,
+      "status": "complete",
+      "train_id": "train_imagenet_1k_64x64_hf_k8_denoisepath_p150_light_cleanmono_10k_cuda"
+    }
+  ],
+  "sample_count": 2048,
+  "sample_steps": 50,
+  "status": "complete"
+}
+{
+  "check_count": 3,
+  "checks": [
+    {
+      "evidence": {
+        "datasets": {
+          "cifar10": {
+            "present_count": 12,
+            "required_snippet_count": 12
+          },
+          "tiny_imagenet_200": {
+            "present_count": 13,
+            "required_snippet_count": 13
+          }
+        },
+        "path": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/datasets_2026-07-07.md"
+      },
+      "missing": [],
+      "name": "cifar_tiny_records",
+      "status": "ok"
+    },
+    {
+      "evidence": {
+        "manifest": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/imagenet_1k_64x64_hf_manifest_summary_2026-07-08.json",
+        "manifest_dataset_alias": "imagenet_1k_64x64_hf",
+        "manifest_source_loader": "benjamin-paine/imagenet-1k-64x64",
+        "plan": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/imagenet_1k_64x64_hf_plan_2026-07-08.md",
+        "split_rows": {
+          "train": 1281167,
+          "validation": 50000
+        }
+      },
+      "missing": [],
+      "name": "imagenet_hf_records",
+      "status": "ok"
+    },
+    {
+      "evidence": {
+        "fallback": "imagenet_1k_64x64_hf",
+        "inspect": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/downsampled_imagenet_64_tfds_inspect_2026-07-08.json",
+        "inspect_dataset_alias": "downsampled_imagenet_64",
+        "inspect_source_loader": "downsampled_imagenet",
+        "plan": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions/downsampled_imagenet_64_plan_2026-07-08.md",
+        "tfds_version": "4.9.10"
+      },
+      "missing": [],
+      "name": "downsampled_fallback_record",
+      "status": "ok"
+    }
+  ],
+  "conditions_dir": "/root/autodl-tmp/CoFiTok/CoFiTok-internal/docs/experiment_conditions",
+  "missing_count": 0,
+  "ok_count": 3,
+  "status": "ok"
+}
+Traceback (most recent call last):
+  File "/root/autodl-tmp/CoFiTok/CoFiTok-internal/scripts/validate_summary_consistency.py", line 144, in <module>
+    main()
+  File "/root/autodl-tmp/CoFiTok/CoFiTok-internal/scripts/validate_summary_consistency.py", line 135, in main
+    result = validate_summary(
+  File "/root/autodl-tmp/CoFiTok/CoFiTok-internal/scripts/validate_summary_consistency.py", line 115, in validate_summary
+    raise AssertionError(f"{doc} has {key}: {counts_in_doc[key]} but summary has {json_counts[key]}")
+AssertionError: docs/reports/cofitok_mvp_report_2026-07-08.md has train: 89 but summary has 99
