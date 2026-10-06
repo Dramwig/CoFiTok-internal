@@ -1,0 +1,19 @@
+status=started started_at=2026-07-10T09:19:28+08:00
+.gitattributes
+README.md
+__init__.py
+diffloss.py
+diffusion.py
+diffusion_utils.py
+gaussian_diffusion.py
+kl16.safetensors
+mar-base.safetensors
+mar-huge.safetensors
+mar-large.safetensors
+mar.py
+model.safetensors
+model_index.json
+pipeline.py
+respace.py
+vae.py
+status=finished rc=0 finished_at=2026-07-10T09:19:29+08:00

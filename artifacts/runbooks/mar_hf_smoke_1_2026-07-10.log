@@ -1,0 +1,48 @@
+status=started started_at=2026-07-10T09:22:34+08:00
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo/pipeline.py:103: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with torch.cuda.amp.autocast():
+Working with z of shape (1, 16, 16, 16) = 4096 dimensions.
+Loading pre-trained KL-VAE
+Missing keys:
+[]
+Unexpected keys:
+[]
+Restored from /root/.cache/huggingface/hub/models--jadechoghari--mar/snapshots/a89a6d383f64d686dd08f5438a706ef48fe44540/kl16.safetensors
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  2.00it/s]100%|██████████| 1/1 [00:00<00:00,  2.00it/s]
+{
+  "artifacts": {
+    "hf_repo_dir": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_repo",
+    "kl16_bytes": 265856244,
+    "mar_base_bytes": 831736456,
+    "sample_image": "/root/autodl-tmp/CoFiTok/checkpoints/baselines/mar/official_imagenet256_eval_only/hf_smoke_1/sampled_image.png"
+  },
+  "baseline": "mar",
+  "dataset": "imagenet_256",
+  "metric_notes": {
+    "protocol": "Smoke validates official Hugging Face safetensors loading and generation only. It is not a 50K FID/IS result."
+  },
+  "paper_table_role": "not_for_paper_metric_table",
+  "parameters": {
+    "cfg_scale": 1.0,
+    "cfg_schedule": "constant",
+    "class_labels": [
+      207
+    ],
+    "eval_only": true,
+    "model_type": "mar_base",
+    "num_ar_steps": 1,
+    "num_images": 1,
+    "seed": 0
+  },
+  "protocol": "official_hf_safetensors_smoke_only",
+  "report_type": "baseline_eval",
+  "runtime": {
+    "cuda_available": true,
+    "device_name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+    "elapsed_sec": 51.22272753715515
+  },
+  "schema_version": 1,
+  "status": "completed"
+}
+status=command_done rc=0 finished_at=2026-07-10T09:23:30+08:00
